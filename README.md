@@ -1,0 +1,3 @@
+# *Visualizing Multivariate Data and Models in R*
+
+This is the bare beginnings of my new book ...
