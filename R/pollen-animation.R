@@ -3,7 +3,7 @@ data(pollen, package = "animation")
 oopt = ani.options(interval = 0.05)
 
 if (require('rgl')) {
-  ## ajust the view
+  ## adjust the viewpoint
   uM =
     matrix(c(-0.370919227600098, -0.513357102870941,
              -0.773877620697021, 0, -0.73050606250763, 0.675815105438232,
@@ -11,6 +11,8 @@ if (require('rgl')) {
              -0.625681936740875, 0, 0, 0, 0, 1), 4, 4)
   open3d(userMatrix = uM, windowRect = c(10, 10, 510, 510))
   plot3d(pollen[, 1:3])
+  
+  # zoom
   zm = seq(1, 0.045, length = 200)
   par3d(zoom = 1)
   for (i in 1:length(zm)) {

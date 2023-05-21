@@ -6,7 +6,8 @@
 knitr::opts_chunk$set(
   comment = "#>",
   collapse = TRUE,
-  dpi = 300
+  dpi = 300,
+  width = 68
   # fig.retina = 0.8, # figures are either vectors or 300 dpi diagrams
   # out.width = "70%",
   # fig.align = 'center',
@@ -29,7 +30,6 @@ options(
   # str = strOptions(strict.width = "cut"),
   # crayon.enabled = FALSE
 )
-knitr::opts_chunk$set(width = 68)
 
 if (knitr::is_latex_output()) {
   # options(crayon.enabled = FALSE)
@@ -43,4 +43,15 @@ $\\newcommand{\\trans}{\\ensuremath{^\\mathsf{T}}}$
 $\\newcommand*{\\diag}[1]{\\ensuremath{\\mathrm{diag}\\, #1}}$
 '
 }
-  
+
+# packages to be cited here. Code at the end automatically updates packages.bib
+# These should be packages not used in actual code.
+.to.cite <- c(
+  "rgl",
+  "animation",
+  "nnet", 
+  "car", 
+  "broom", 
+  "ggplot2", 
+  "equatiomatic", 
+  "geomtextpath")
