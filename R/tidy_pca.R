@@ -30,6 +30,11 @@ pca_fit %>%
 pca_fit %>%
   tidy(matrix = "rotation")
 
+
+# define arrow style for plotting
+arrow_style <- arrow(
+  angle = 20, ends = "first", type = "closed", length = grid::unit(8, "pt")
+)
 # plot rotation matrix
 pca_fit %>%
   tidy(matrix = "rotation") %>%
