@@ -31,7 +31,7 @@ p1 <- pca_fit |>
   labs(x = dim_labels[1], 
        y = dim_labels[2])
 
-p1 + stat_ellipse(level = 0.68)
+p1 + stat_ellipse(level = 0.68, aes(label=region))
 
 # define arrow style for plotting
 arrow_style <- arrow(
@@ -88,4 +88,3 @@ ggplot(data = points, aes(PC1, PC2)) +
   theme(legend.position = "top")
 
 
-  

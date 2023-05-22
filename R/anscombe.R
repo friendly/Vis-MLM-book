@@ -67,8 +67,11 @@ anscombe_long <- anscombe |>
 anscombe_long |>
   group_by(dataset) |>
   summarise(xbar = mean(x),
-         ybar = mean(y),
-         r = cor(x, y))
+         ybar      = mean(y),
+         r         = cor(x, y),
+         intercept = coef(lm(y ~ x))[1],
+         slope     = coef(lm(y ~ x))[2]
+         )
 
 ggplot(anscombe_long, aes(x = x, y = y)) +
   geom_point(color = col, size = 4) +
@@ -79,3 +82,22 @@ ggplot(anscombe_long, aes(x = x, y = y)) +
   stat_ellipse(level = 0.5, color=col, type="norm") +
   facet_wrap(~dataset, labeller = label_both) +
   theme_bw(base_size = 14)
+
+
+# show result omitting each point in turn ??
+ggplot(anscombe_long, aes(x = x, y = y)) +
+  geom_point(color = "blue", size = 4) +
+  lapply(seq(nrow(anscombe_long)), function(i) {
+    geom_smooth(
+      data = anscombe_long[-i, ],
+      method = "lm", formula = y ~ x, se = FALSE,
+      color = "grey", linewidth = 1.1
+    )
+  }) +
+  geom_smooth(
+    method = "lm", formula = y ~ x, se = FALSE,
+    color = "red", linewidth = 1.5
+  ) +
+  facet_wrap(~dataset, labeller = label_both) +
+  theme_bw(base_size = 14)
+

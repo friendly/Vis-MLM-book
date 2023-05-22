@@ -5,5 +5,7 @@ crime <- read_csv(here::here("data", "crime.csv"))
 crime <- crime |>
   bind_cols(region = state.region) 
 
-write_csv(crime, here::here("data", "crime.RData"))
+rownames(crime) <- crime$st
+write.csv(crime, here::here("data", "crime2.csv"))
 
+save(crime, file = here::here("data", "crime.RData"))
