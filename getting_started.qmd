@@ -4,15 +4,214 @@ source("R/common.R")
 
 # Getting Started {#sec-getting_started}
 
+```{r include=FALSE}
+library(ggplot2) 
+library(tidyverse)
+library(broom)
+ggplot2::theme_set(theme_bw(base_size = 16))
+```
+
+
 ## Why plot your data? {#sec-why_plot}
 
 > Getting information from a table is like extracting sunlight from a cucumber. @FarquharFarquhar:91
 
+At the time the Farhquhar brothers wrote this pithy aphorism, graphical methods for understanding data had
+advanced considerably, 
+
 ### Anscombe's Quartet
+
+In 1973, Francis Anscombe [@Anscombe:73] famously constructed a set of four data sets
+illustrate the importance of plotting the graphs before analyzing and model building, and the effect of unusual observations on fitted models.
+Now known as _Anscombe's Quartet_, these data sets had identical statistical properties: the same
+means, standard devitions, correlations and regression lines. 
+
+The data set `datasets::anscombe` has 11 observation, recorded in wide format,
+with variables `x1:x4` and `y1:y4`.
+```{r}
+data(anscombe) 
+head(anscombe)
+```
+
+The following code transforms this data to long format and calculates some summary statistics
+for each `dataset`.
+
+
+```{r}
+anscombe_long <- anscombe |> 
+  pivot_longer(everything(), 
+               names_to = c(".value", "dataset"), 
+               names_pattern = "(.)(.)"
+  ) |>
+  arrange(dataset)
+
+anscombe_long |>
+  group_by(dataset) |>
+  summarise(xbar      = mean(x),
+            ybar      = mean(y),
+            r         = cor(x, y),
+            intercept = coef(lm(y ~ x))[1],
+            slope     = coef(lm(y ~ x))[2]
+         )
+```
+As we can see, all four data sets have nearly identical univariate and bivariate statistical
+measures. You can only see how they differ in graphs, which show their true natures to be vastly
+different.
+
+@fig-ch02-anscombe1 is an enhanced version of Anscombe's plot of these data, adding
+helpful annotations to show visually the underlying statistical summaries.
+
+```{r}
+#| label: fig-ch02-anscombe1
+#| echo: false
+#| fig-align: center
+#| out-width: "90%"
+#| fig-cap: "Scatterplots of Anscombe's Quartet. Each plot shows the fitted regression line
+#|     and a 68% data ellipse representing the correlation between $x$ and $y$. "
+knitr::include_graphics("figs/ch02-anscombe1.png")
+```
+
+This figure is produced as follows, using a single call to `ggplot`, faceted by `dataset`.
+As we will see later (@sec-data-ellipse), the data ellipse (produced by `stat_ellipse()`)
+reflects the correlation between the variables.
+
+```{r}
+#| eval: false
+desc <- tibble(
+  dataset = 1:4,
+  label = c("Pure error", "Lack of fit", "Outlier", "Influence")
+)
+
+ggplot(anscombe_long, aes(x = x, y = y)) +
+  geom_point(color = "blue", size = 4) +
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE,
+              color = "red", linewidth = 1.5) +
+  scale_x_continuous(breaks = seq(0,20,2)) +
+  scale_y_continuous(breaks = seq(0,12,2)) +
+  stat_ellipse(level = 0.5, color=col, type="norm") +
+  geom_label(data=desc, aes(label = label), x=6, y=12) +
+  facet_wrap(~dataset, labeller = label_both) 
+```
+
+The subplots are labeled with the statistical idea they reflect:
+
+* dataset 1: **Pure error**. This is the typical case with well-behaved data. Variation of the points around the line reflect only measurement error or unreliability in the response, $y$.
+
+* dataset 2: **Lack of fit**. The data is clearly curvilinear, and would be very well described by a quadratic, `y ~ poly(x, 2)`. This violates the assumption of linear regression that the fitted model has the correct form.
+
+* dataset 3: **Outlier**. One point, second from the right, has a very large residual. Because this point is near the extreme of $x$, it pulls the regression line towards it, as you can see by imagining a line through the remaining points.
+
+* dataset 4: **Influence**. All but one of the points have the same $x$ value. The one unusual point has sufficient influence to force the regression line to fit it **exactly**.
+
+One moral from this example:
+
+> **Linear regression only "sees" a line. It does its' best when the data are really curvilinear. Because the line is fit by least squares, it pulls the line toward discrepant points to minimize the sum of squared residuals.**
+
+::: {.callout-note}
+## Quartets
+
+The essential idea of a statistical "quartet" is to illustrate four quite different data sets
+or circumstances that seem superficially the same, but yet are paradoxically very different
+when you look behind the scenes.
+For example, in the context of causal analysis @Gelman-etal:2023, illustrated
+sets of four graphs, within each of which 
+all four represent the same average (latent) causal effect but with
+much different patterns of individual effects.
+As an example of machine learning models, @Biecek-etal:2023, introduced the "Rashamon Quartet",
+a synthetic dataset for which four models from different classes 
+(linear model, regression tree, random forest, neural network)
+have practically identical predictive performance.
+In all cases, the paradox is solved when
+their visualization reveals the distinct ways
+of understanding structure in the data.
+:::
 
 ### A real example
 
-Davis -- `data(Davis, package="carData")`
+
+In the mid 1980s, a consulting client had a strange problem.
+She was conducting a study of the relation between body image and weight preoccupation in
+exercising and non-exercising people [@Davis:1990]. As part of the design, the researcher
+wanted to know if self-reported weight could be taken as a reliable indicator of
+true weight measured on a scale. It was expected that the correlations between reported
+and measured weight should be close to 1.0, and the slope of the regression lines
+for men and women should also be close to 1.0. The data set is `car::Davis`.
+
+She was therefore very surprise to see the following numerical results: For men,
+the correlation was nearly perfect, but not so for women.
+
+```{r davis-cor}
+data(Davis, package="carData")
+Davis <- Davis |>
+  drop_na()          # drop missing cases
+Davis |>
+  group_by(sex) |>
+  select(sex, weight, repwt) |>
+  summarise(r = cor(weight, repwt))
+```
+
+Similarly, the regression lines showed the expected slope for men, but that for women was only 0.26.
+
+```{r davis-lm}
+Davis |>
+  nest(data = -sex) |>
+  mutate(model = map(data, ~ lm(repwt ~ weight, data = .)),
+         tidied = map(model, tidy)) |>
+  unnest(tidied) |>
+  filter(term == "weight") |>
+  select(sex, term, estimate, std.error)
+
+```
+
+What could be wrong here?, the client asked. The consultant replied with the obvious question:
+
+> _Did you plot your data?_
+
+The answer turned out to be one discrepant point, a female, whose measured weight was 166 kg
+(366 lbs!). This single point exerted so much influence that it pulled the fitted regression line
+down to a slope of only 0.26.
+
+```{r}
+#| label: fig-ch02-davis-reg1
+#| fig-cap: "Regression for Davis' data on reported weight and measures weight for men and women.
+#|    Separate regression lines, predicting reported weight from measured weight are shown for males and females.
+#|    One highly unusual point is highlighted."
+Davis |>
+  ggplot(aes(x = weight, y = repwt, color = sex, shape=sex)) +
+  geom_point(size = ifelse(Davis$weight==166, 6, 2)) +
+  labs(y = "Measured weight (kg)", x = "Reported weight (kg)") +
+  geom_smooth(method = "lm", formula = y~x, se = FALSE) +
+  theme(legend.position = c(.8, .8))
+```
+
+In this example, it was arguable that $x$ and $y$ axes should be reversed, 
+to determine how well measured weight can be predicted from reported weight.
+In `ggplot` this can easily be done by reversing the `x` and `y` aesthetics.
+
+```{r}
+#| label: fig-ch02-davis-reg2
+#| fig-cap: "Regression for Davis' data on reported weight and measures weight for men and women.
+#|    Separate regression lines, predicting measured weight from re[ported] weight are shown for males and females.
+#|    The highly unusual point no longer has an effect on the fitted lines."
+Davis |>
+  ggplot(aes(y = weight, x = repwt, color = sex, shape=sex)) +
+  geom_point(size = ifelse(Davis$weight==166, 6, 2)) +
+  labs(y = "Measured weight (kg)", x = "Reported weight (kg)") +
+  geom_smooth(method = "lm", formula = y~x, se = FALSE) +
+  theme(legend.position = c(.8, .8))
+```
+
+In @fig-ch02-davis-reg2, this discrepant observation again stands out like a sore thumb, but
+it makes very little difference in the fitted line for females.
+The reason is that this point is well within the range of the $x$ variable (`repwt`).
+To impact the slope of the regression line, an observation must be unusual in_both_ $x$ and $y$.
+We take up the topic of how to detect influential observations and what to do about them in 
+Chapter XX.
+
+The value of such plots is not only that they can reveal possible problems with an analysis,
+but also help identify their reasons and suggest corrective action.
+What went wrong here? Examination of the original data showed that this person switched
+the values, recording her reported weight in the box for measured weight and vice versa.
 
 ## Plots for data analysis
 
@@ -21,18 +220,39 @@ Visualization methods take an enormous variety of forms,  but it is useful to di
 
 * __data plots__ : primarily plot the raw data, often with annotations to aid interpretation (regression lines and smooths, data ellipses, marginal distributions)
 
-* __model plots__ : primarily plot the results of a fitted model, considering that
-the fitted model may involve more variables than can be shown in a static 2D plot.
-Some examples are: Added variable plots, effect plots, coefficient plots, ...
+* __reconnaissance plots__ : with more than a few variables, reconnaissance plots provide a high-level,
+bird's-eye overview of the data, allowing you to see patterns that might not be visible in a set of separate plots. Some examples are scatterplot matrices, showing all bivariate plots of variables
+in a data set; correlation diagrams, using visual glyphs to represent the correlations between
+all pairs of variables and "trellis" or faceted plots that show how a focal relation of
+one or more variables differs across values of other variables.
+
+* __model plots__ :  plot the results of a fitted model, such as a regression line or curve
+to show uncertainty, or a regression surface in 3D, or a plot of coefficients in model
+together with confidence intervals.
+Other model plots try to take into account that 
+a fitted model may involve more variables than can be shown in a static 2D plot.
+Some examples of these are added variable plots, and marginal effect plots, both of which
+attempt to show the net relation of two focal variables, controling or adjusting for other variables
+in a model.
 
 * __diagnostic plots__ : indicating potential problems with the fitted model. These include residual plots, influence plots, plots for testing homogeneity of variance and so forth.
 
 * __dimension reduction plots__ : plot representations of the data into a space of fewer dimensions than the number of variables in the data set. Simple examples include principal components analysis (PCA) and the related biplots, and multidimensional scaling (MDS) methods.
 
+We give some more details and a few examples in the sections that follow.
 
-## data plots
 
-## model plots
+## Data plots
 
-## diagnostic plots
+Data plots portray the data in a space where the coordinate axes are the observed variables.
 
+*   1D plots include line plots, histograms and density estimates.
+*   2D plots are most often scatterplots, but contour plots or hex-binned plots are also useful when the sample size is large.
+<!-- *   For higher dimensions, biplots, showing the data in principal components space, together with vectors representing the correlations among variables, are often the most useful. -->
+
+
+## Model plots
+
+## Diagnostic plots
+
+## References {.unnumbered}

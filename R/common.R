@@ -7,7 +7,8 @@ knitr::opts_chunk$set(
   comment = "#>",
   collapse = TRUE,
   dpi = 300,
-  width = 68
+  width = 68,
+  fig.path = "figs/"
   # fig.retina = 0.8, # figures are either vectors or 300 dpi diagrams
   # out.width = "70%",
   # fig.align = 'center',
@@ -15,7 +16,9 @@ knitr::opts_chunk$set(
   # fig.asp = 0.618,  # 1 / phi
   # fig.show = "hold"
   # cache = TRUE
+  # screenshot.force =TRUE
 )
+
 knitr::opts_knit$set(
   aliases=c(h='fig.height', 
             w='fig.width',
