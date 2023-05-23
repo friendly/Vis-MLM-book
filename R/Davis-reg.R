@@ -6,9 +6,10 @@
 
 library(ggplot2) 
 library(tidyverse)
+library(broom)
 data(Davis, package="carData")
 
-
+# show the regression lines both ways
 Davis |>
   drop_na() |> 
   ggplot(Davis, aes(x = weight, y = repwt, color = sex, shape=sex)) +
@@ -28,3 +29,25 @@ Davis |>
     theme(legend.position = c(.8, .8))
 
 
+#' Fit models by sex
+
+mods <- list(
+  modF = lm(repwt ~ weight, data = Davis, subset = sex=="F"),
+  modM = lm(repwt ~ weight, data = Davis, subset = sex=="M")
+)
+
+sapply(mods, coef)
+
+#glimpse(mods[[1]])
+
+
+
+Davis_coef <- Davis |>
+  nest(data = -sex) |>
+  mutate(model = map(data, ~ lm(repwt ~ weight, data = .)),
+         tidied = map(model, tidy)) |>
+  unnest(tidied) |>
+  filter(term == "weight") |>
+  select(sex, term, estimate, std.error)
+  
+  
