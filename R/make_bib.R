@@ -6,7 +6,9 @@ pkgs <- .to.cite <- c(
   "broom", 
   "ggplot2", 
   "equatiomatic", 
-  "geomtextpath")
+  "geomtextpath",
+  "tidyverse"
+  )
 
 knitr::write_bib(pkgs, file = here::here("bib", "packages.bib"))
 
