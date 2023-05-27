@@ -1,5 +1,6 @@
 #' ---
 #' title: Penguins data with 3D ellipsoids
+#' ---
 
 library(ggplot2)
 library(dplyr)
@@ -19,6 +20,7 @@ peng <- penguins |>
 str(peng)
 
 shapes <- c(15, 17, 18)
+shapes <- 1:3
 colors <- rainbow(3)
 
 colMax <- function(data) sapply(data, max, na.rm = TRUE)
@@ -28,26 +30,27 @@ par3d(windowRect = c(0, 0, 800, 800) + 50)
 rgl.bringtotop()
 
 plot3d(peng[,-1], type = "n")
-# pch3d(peng[,-1], 
-#       pch = shapes, 
-#       col = adjustcolor(colors[peng$species], alpha=0.4), 
-#       cex = 0.1,
-#       decorate = FALSE)
+pch3d(peng[,-1],
+      pch = shapes,
+      col = adjustcolor(colors[peng$species], alpha=0.4),
+      cex = 0.1,
+      decorate = FALSE)
 
 offset <- 0.01
 for (sp in levels(peng$species)) {
-  cl <- subset(peng, species == sp)
-  max <- colMax(cl[, 2:4])
-  print(max)
-  sigma <- cov(cl[,2:4])
-  mu <- apply(cl[, 2:4], 2, mean)
+  xyz <- subset(peng, species == sp)[, 2:4]
+
+# ellipsoids
+  mu <- apply(xyz, 2, mean)
+  sigma <- cov(xyz)
   ell <- ellipse3d(sigma, centre = mu, level = 0.68)
-  bbox <- matrix(rgl::par3d("bbox"), nrow=2)
-  ranges <- apply(bbox, 2, diff)
-  
+
   shade3d(ell, 
           alpha = 0.2, color = colors[sp])
-  texts3d(max, adj = 0, text = sp, color = colors[sp], cex = 5)
-  # texts3d(x[which.max(x[,2]),] + offset*ranges, 
-  #         adj=0, texts=sp, color=col, lit=FALSE)
+
+# find location to label the ellipse
+  max <- colMax(xyz)
+  bbox <- matrix(rgl::par3d("bbox"), nrow=2)
+  ranges <- apply(bbox, 2, diff)
+  texts3d(max, adj = 0, text = sp, color = colors[sp], cex = 3)
 }

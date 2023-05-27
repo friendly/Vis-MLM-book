@@ -8,8 +8,8 @@ that shows all together the means, standard deviations, correlation,
 and slope of the regression line for
 two variables. 
 Under the classical assumption that the data are bivariate normally distributed,
-the data ellipse is also a _sufficient visual summary_, in the sense that
-it captures all relevant features of the data.
+the data ellipse is also a **sufficient** visual summary, in the sense that
+it captures **all** relevant features of the data.
 See @Friendly-etal:ellipses:2013 for a complete discussion of the role of
 ellipsoids in statistical data visualization.
 
@@ -29,21 +29,83 @@ is the proper measure of how far a point is from the mean.
 knitr::include_graphics("images/mahalanobis.png")
 ```
 
-To illustrate, @fig-mahanalobis shows a scatterplot with labels for two points, "A" and "B".
+To illustrate, @fig-mahalanobis shows a scatterplot with labels for two points, "A" and "B".
 Which is further from the mean, "X"? 
 A contour of constant Euclidean distance, shown by the red dashed circle,
 ignores the apparent negative correlation, so point "A" is further.
 The blue ellipse for Mahalanobis distance 
 takes the correlation into account, so point "B" has a greater distance from the mean.
 
-Mathematically, Euclidean (squared) distance for $p$ variables is just a generalization of
-the square of a univariate standardized ($z$) score
+Mathematically, Euclidean (squared) distance for $p$ variables, $j = 1, 2, \dots , p$,
+is just a generalization of
+the square of a univariate standardized ($z$) score, $z^2 = [(y - \bar{y}) / s]^2$,
 
 $$
-D^2 (\mathbf{y}) = (\mathbf{y} - \bar{\mathbf{y}})^T S^{-1} (\mathbf{y} - \bar{\mathbf{y}})
+D_E^2 (\mathbf{y}) = \sum_j^p z_j^2 = \mathbf{z}^T  \mathbf{z} = (\mathbf{y} - \bar{\mathbf{y}})^T \operatorname{diag}(\mathbf{S})^{-1} (\mathbf{y} - \bar{\mathbf{y}}) \; ,
 $$
+where $\mathbf{S}$ is the sample variance-covariance matrix,
+$\mathbf{S} = ({n-1})^{-1} \sum_{i=1}^n (\mathbf{y}_i - \bar{\mathbf{y}})^T (\mathbf{y}_i - \bar{\mathbf{y}})$.
 
-For two variables, $x$ and $y$, the remarkable properties of the data ellipse are illustrated in @fig-galton-ellipse-r.
+Mahalanobis' distance takes the correlations into account simply by using the covariances
+as well as the variances,
+$$
+D_M^2 (\mathbf{y}) = (\mathbf{y} - \bar{\mathbf{y}})^T S^{-1} (\mathbf{y} - \bar{\mathbf{y}}) \; .
+$$
+For $p$ variables, the data _ellipsoid_ $\mathcal{E}_c$ of
+size $c$ is a $p$-dimensional ellipse,
+defined as the set of points $\mathbf{y} = (y_1, y_2, \dots y_p)$
+whose squared Mahalanobis distance, $D_M^2 ( \mathbf{y} )$ is less than or equal
+to $c^2$.
+
+When $\mathbf{y}$ is (at least approximately) bivariate normal,
+$D_M^2(\mathbf{y})$ has a large-sample $\chi^2_2$ distribution
+($\chi^2$ with 2 df),
+so taking $c^2 = \chi^2_2 (0.68) = 2.28$ gives a "1 standard deviation
+bivariate ellipse,"
+an analog of the standard interval $\bar{y} \pm 1 s$, while
+$c^2 = \chi^2_2 (0.95) = 5.99 \approx 6$ gives a data ellipse of
+95\% coverage.
+
+
+#### Properties {.unnumbered}
+
+The essential ideas of correlation and regression and their relation to ellipses go back to
+@Galton:1886.
+Galton's goal was to  to predict (or explain)  how a heritable trait, $Y$,   (e.g.,
+height) of children was  related to that of  their parents, $X$.
+He made a semi-graphic table of the frequencies of 928 observations of the average
+height of father and mother versus the height of their child, shown in @fig-galton-corr.
+He then drew smoothed contour lines of equal frequencies and had the wonderful
+visual insight that these formed concentric shapes that were tolerably close to ellipses.
+He then calculated summaries,  $\mathrm{Ave}(Y | X)$,  and, for  symmetry, $\mathrm{Ave}(X | Y)$, and plotted these as lines of means on his  diagram.  Lo and behold, he had a  second visual
+insight:  the lines  of means of  ($Y | X$) and ($X | Y$)  corresponded approximately to
+the loci of  horizontal and vertical  tangents to the  concentric ellipses. 
+To complete the picture,  he added lines  showing the major  and minor axes  of the
+family of ellipses, with the result shown in @fig-galton-corr.
+
+```{r}
+#| label: fig-galton-corr
+#| echo: false
+#| fig-align: center
+#| out-width: "70%"
+#| fig-cap: "Galton's 1886 diagram, showing the relationship of height of children to the average of their parents' height. The diagram is essentially an overlay of a geometrical interpretation on a bivariate grouped frequency distribution, shown as numbers."
+knitr::include_graphics("images/galton-corr.jpg")
+```
+
+
+For two variables, $x$ and $y$, the remarkable properties of the data ellipse are illustrated in @fig-galton-ellipse-r, a modern reconstruction of Galton's diagram.
+
+
+```{r}
+#| label: fig-galton-ellipse-r
+#| echo: false
+#| fig-align: center
+#| out-width: "80%"
+#| fig-cap: "Sunflower plot of Galton's data on heights of parents and their children (in.), with
+#|   40%, 68% and 95% data ellipses and the regression lines of $y$ on $x$ (black) and
+#|   $x$ on $y$ (grey)."
+knitr::include_graphics("images/galton-ellipse-r.jpg")
+```
 
 * The ellipses have the mean vector $(\bar{x}, \bar{y})$ as their center.
 
@@ -64,16 +126,42 @@ give any standard interval,
 * The regression line predicting $y$ from $x$ goes through the points where the ellipses have vertical tangents. The _other_ regression line, predicting $x$ from $y$ goes through the points of horizontal
 tangency.
 
-* The correlation $r(x, y)$ is the ratio of the vertical segment from the mean of $y$ to the regression line to the vertical segment going to the top of the ellipse.
+* The correlation $r(x, y)$ is the ratio of the vertical segment from the mean of $y$ to the regression line to the vertical segment going to the top of the ellipse as shown at the right of the figure. It is
+$r = 0.46$ in this example.
 
+* The residual standard deviation, $s_e = \sqrt{MSE} = \sqrt{\Sigma (y - \bar{y})^2 / n-2}$, 
+is the half-length of the ellipse at the mean $\bar{x}$ 
+
+
+
+Because Galton's values of `parent` and `child` height were recorded in class intervals of 1 in.,
+they are shown as sunflower symbols in @fig-galton-ellipse-r,
+with multiple 'petals' reflecting the number of observations
+at each location. This plot is constructed using `sunflowerplot()` and
+`car::dataEllipse()` for the ellipses.
 
 ```{r}
-#| label: fig-galton-ellipse-r
-#| echo: false
-#| fig-align: center
-#| out-width: "80%"
-#| fig-cap: "Sunflower plot of Galton's data on heights of parents and their children (in.), with
-#|   40%, 68% and 95% data ellipses and the regression lines of $y$ on $x$ (black) and
-#|   $x$ on $y$ (grey)."
-knitr::include_graphics("images/galton-ellipse-r.jpg")
+#| eval: false
+data(Galton, package = "HistData")
+
+sunflowerplot(parent ~ child, data=Galton, 
+      xlim=c(61,75), 
+      ylim=c(61,75), 
+      seg.col="black", 
+    	xlab="Child height", 
+      ylab="Mid Parent height")
+
+y.x <- lm(parent ~ child, data=Galton)     # regression of y on x
+abline(y.x, lwd=2)
+x.y <- lm(child ~ parent, data=Galton)     # regression of x on y
+cc <- coef(x.y)
+abline(-cc[1]/cc[2], 1/cc[2], lwd=2, col="gray")
+
+with(Galton, 
+     car::dataEllipse(child, parent, 
+         plot.points=FALSE, 
+         levels=c(0.40, 0.68, 0.95), 
+         lty=1:3)
+    )
 ```
+
