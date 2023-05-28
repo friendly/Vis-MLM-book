@@ -22,6 +22,7 @@ str(peng)
 shapes <- c(15, 17, 18)
 shapes <- 1:3
 colors <- rainbow(3)
+names(colors) <- unique(levels(peng$species))
 
 colMax <- function(data) sapply(data, max, na.rm = TRUE)
 
@@ -52,5 +53,5 @@ for (sp in levels(peng$species)) {
   max <- colMax(xyz)
   bbox <- matrix(rgl::par3d("bbox"), nrow=2)
   ranges <- apply(bbox, 2, diff)
-  texts3d(max, adj = 0, text = sp, color = colors[sp], cex = 3)
+  texts3d(max, adj = 0, text = sp, color = colors[sp], cex = 2)
 }
