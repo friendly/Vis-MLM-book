@@ -28,3 +28,7 @@
 ## car:Salaries
 	+ https://rkabacoff.github.io/datavis/Multivariate.html
 	
+## Others
+  + https://www.r-bloggers.com/2021/11/manovamultivariate-analysis-of-variance-using-r/
+
+	

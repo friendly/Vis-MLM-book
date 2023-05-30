@@ -9,6 +9,10 @@ str(mathscore)
 
 save(mathscore, file = here::here("data", "mathscore.RData"))
 
+# ----------------------------------
+load(here::here("data", "mathscore.RData"))
+str(mathscore)
+
 #' t-test
 t.test(mathscore[, "BM"], mu = 150)
 
@@ -20,20 +24,35 @@ mathscore |>
 mathscore |> 
   filter(group == 1) |>
   select(BM, WP) |>
-  HotellingsT2Test(mu = c(150, 150))
+  HotellingsT2Test(mu = c(100, 150))
 
-
+# two-sample test
+DescTools::HotellingsT2Test(cbind(BM, WP) ~ group, data=mathscore)
 
 mod <- lm(cbind(BM, WP) ~ group, data=mathscore)
-Anova(mod)
+car::Anova(mod)
 
 summary(Anova(mod))
 
 print(summary(Anova(mod)), SSP=FALSE)
 
-covEllipses(mathscore[,2:3], mathscore$group, pooled=FALSE, cex=2,
-	xlab="Basic math", ylab="Word problems",
-	main = "Methods of teaching algebra", cex.lab=1.5)
+
+means <-  aggregate(cbind(BM, WP)~group, mean, data=mathscore)[,-1]
+
+
+covEllipses(mathscore[,2:3], mathscore$group, 
+            cex=2,
+            asp = 1, 
+            fill = c(TRUE, TRUE, FALSE), fill.alpha = 0.1,
+            cex.lab=1.5,
+            xlab="Basic math", ylab="Word problems"
+            )
+
+
+covEllipses(mathscore[,2:3], mathscore$group, 
+            pooled=FALSE, 
+            cex=2, cex.lab=1.5,
+            xlab="Basic math", ylab="Word problems")
 
 pch <- ifelse(mathscore$group==1, 15, 16)
 col <- ifelse(mathscore$group==1, "red", "blue")
@@ -43,7 +62,10 @@ points(mathscore[,2:3], pch=pch, col=col, cex=1.25)
 
 car::scatterplot(WP ~ BM | group, data=mathscore, 
 	ellipse=list(levels=0.68), smooth=FALSE, pch=c(15,16), 
-	legend=list(coords = "topright"))
+	asp = 1, cex.lab = 1.5,
+	legend=list(coords = "topright"),
+	xlab="Basic math", ylab="Word problems"
+)
 
 
 op <- par(mar=c(4,5,1,1)+.2)
@@ -60,10 +82,9 @@ plot(mod.can, var.lwd=3)
 # t-test of canonical scores.
  t.test(Can1 ~ group, data=mod.can$scores)
 
-# overlay
+# overlay with HEplot
 covEllipses(mathscore[,2:3], mathscore$group, pooled=FALSE, cex=2,
 	xlab="Basic math", ylab="Word problems",
-#	xlim=c(120,220),
 	asp=1,
 	main = "Methods of teaching algebra", cex.lab=1.5)
 
@@ -75,7 +96,6 @@ heplot(mod, fill=TRUE, cex=2, cex.lab=1.8,
 	col=c("red", "black"), fill.alpha=0.2, lwd=c(1,3),
 	xlab="Basic math", ylab="Word problems", add=TRUE, error.ellipse=TRUE)
 
-means <-  aggregate(cbind(BM, WP)~group, mean, data=mathscore)[,-1]
 
 # find projection of point A on line between L1 and L2
 project_on <- function(A, L1, L2) {
