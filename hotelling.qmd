@@ -10,7 +10,7 @@ analysis of variance.
 
 ## $T^2$ as a generalized $t$-test
 
-Hotelling's $T^$ is like the square of a univariate $t$ statistic.
+Hotelling's $T^2$ [@Hotelling:1931] is like the square of a univariate $t$ statistic.
 Consider the basic one-sample $t$-test, where we wish to test the hypothesis that the
 mean $\bar{x}$ of a set of $N$ measures on a test of basic math, with standard deviation $s$
 does not differ from an assumed mean $\mu_0 = 150$ for
@@ -29,30 +29,72 @@ $$
 Now consider we also have measures on a test of solving word problems for the same sample.
 Then, a hypothesis test for the means on basic math (BM) and word problems (WP)
 is the test of the means of these two variables jointly equal their separate values,
-say, `c(150, 100)`.
-$$
-H_0 : \mathbf{\mu} = \mathbf{\mu_0} = 
-  \left( 
-    \begin{array}{c}
-    \mu_{0,BM} \\ \mu_{0,WP}
-    \end{array}
-  \right)
-  = 
-  \left( 
-    \begin{array}{c}
-    150 \\ 100
-    \end{array}
-  \right)
+say, $(150, 100)$.
 
-$$
 
-Hotelling's $T^2$ is then the ...
-$$
-T^2 = N (\bar{\mathbf{x}} - \mathbf{\mu}_0)^T \; \mathbf{S}^{-1} \; (\bar{\mathbf{x}} - \mathbf{\mu}_0)
-$$
+<!-- $$ -->
+<!-- H_0 : \mathbf{\mu} = \mathbf{\mu_0} =  -->
+<!--   \begin{pmatrix} -->
+<!--     \mu_{0,BM} \\ \mu_{0,WP} -->
+<!--   \end{pmatrix} -->
+<!--   = -->
+<!--   \begin{pmatrix} -->
+<!--     150 \\ 100 -->
+<!--   \end{pmatrix} -->
+<!-- $$ -->
+
+![](equations/eqn-mathscore1.png){width=50% fig-align="center"}
+
+Hotelling's $T^2$ is then the analog of $t^2$, with the variance-covariance matrix $\mathbf{S}$ of the scores
+on (BM, WP) replacing the variance of a single score.  This is nothing more than the 
+squared Mahalanobis distance between the sample mean vector $(\bar{x}_{BM}, \bar{x}_{BM})^T$
+and the hypothesized means $\mathbf{\mu}_0$, in the metric of $\mathbf{S}$, as shown in @fig-T2-diagram.
+
 
 \begin{align*}
-T^2 &= N (\bar{\mathbf{x}} - \mathbf{\mu}_0)^T \; \mathbf{S}^{-1} \; (\bar{\mathbf{x}} - \mathbf{\mu}_0)
+T^2 &= N (\bar{\mathbf{x}} - \mathbf{\mu}_0)^T \; \mathbf{S}^{-1} \; (\bar{\mathbf{x}} - \mathbf{\mu}_0) \\
     &= N D^2_M (\bar{\mathbf{x}}, \mathbf{\mu}_0)
 \end{align*}
 
+```{r}
+#| label: fig-T2-diagram
+#| echo: false
+#| fig-align: center
+#| out-width: "50%"
+#| fig-cap: "Hotelling's T^2 statistic as the squared distance between the sample means and hypothesized means relative to the variance-covariance matrix. _Source_: Author"
+knitr::include_graphics("images/T2-diagram.png")
+```
+
+## $T^2$ properties
+
+Aside from it's elegant geometric interpretation Hotelling's $T^2 has simple properties that aid in understanding the extension to more complex multivariate tests.
+
+* **Maximum $t^2$** : 
+Consider a linear combination $w$ of the scores in a matrix 
+$\mathbf{X} = [ \mathbf{x_1}, \mathbf{x_2}, \dots, \mathbf{x_p}]$ with weights $\mathbf{a}$,
+
+$$
+w = a_1 \mathbf{x_1} + a_2 \mathbf{x_2} + \dots + a_p \mathbf{x_p} = \mathbf{X} \mathbf{a}
+$$
+Hotelling's $T^2$ is then the maximum value of a univariate $t^2 (\mathbf{a})$ for all choices of the weights in $\mathbf{a}$.
+
+* **Eigenvalue** : Hotelling showed that $T^2$ is the one non-zero eigenvalue (latent root)
+$\lambda$
+of the matrix $\mathbf{Q}_H = N (\bar{\mathbf{x}} - \mathbf{\mu}_0)^T  (\bar{\mathbf{x}} - \mathbf{\mu}_0)$ relative to $\mathbf{Q}_E = \mathbf{S}$
+that solves the equation
+$$
+(\mathbf{Q}_H - \lambda \mathbf{Q}_E) \mathbf{a} = 0
+$$
+
+* **Eigenvector** : The corresponding eigenvector is 
+$\mathbf{a} = \mathbf{S}^{-1} (\bar{\mathbf{x}} - \mathbf{\mu}_0)$. These are the 
+(raw) discriminant coefficients, giving the relative contribution of each variable
+to $T^2$.
+
+* **Critical values** : For a single response, the square of a $t$ statistic with
+$N-1$ degrees of freedom is an $F (1, N-1)$ statistic. Because we chose $\mathbf{a}$
+to give the maximum $t^2 (\mathbf{a})$, this can be taken into account with a
+transformation of $T^2$ to give a proper $F$ test,
+$$
+F^* = \frac{N - p}{n (N-1)} T^2 \; \sim \; F (p, N - p)
+$$

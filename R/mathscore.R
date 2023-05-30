@@ -1,6 +1,7 @@
 library(car)
 library(heplots)
 library(DescTools)
+library(dplyr)
 
 mathscore <- read.table(here::here("data", "mathscore.dat"), header=TRUE)
 mathscore$group <- factor(mathscore$group)
@@ -20,6 +21,7 @@ mathscore |>
   filter(group == 1) |>
   select(BM, WP) |>
   HotellingsT2Test(mu = c(150, 150))
+
 
 
 mod <- lm(cbind(BM, WP) ~ group, data=mathscore)
