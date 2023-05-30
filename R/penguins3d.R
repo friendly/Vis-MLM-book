@@ -20,9 +20,9 @@ peng <- penguins |>
 str(peng)
 
 shapes <- c(15, 17, 18)
-shapes <- 1:3
-colors <- rainbow(3)
-names(colors) <- unique(levels(peng$species))
+#shapes <- 1:3
+colors <- c("red", "blue", "darkgreen")
+names(colors) <- levels(peng$species)
 
 colMax <- function(data) sapply(data, max, na.rm = TRUE)
 
@@ -34,8 +34,7 @@ plot3d(peng[,-1], type = "n")
 pch3d(peng[,-1],
       pch = shapes,
       col = adjustcolor(colors[peng$species], alpha=0.4),
-      cex = 0.1,
-      decorate = FALSE)
+      cex = 0.2)
 
 offset <- 0.01
 for (sp in levels(peng$species)) {
@@ -53,5 +52,19 @@ for (sp in levels(peng$species)) {
   max <- colMax(xyz)
   bbox <- matrix(rgl::par3d("bbox"), nrow=2)
   ranges <- apply(bbox, 2, diff)
-  texts3d(max, adj = 0, text = sp, color = colors[sp], cex = 2)
+  texts3d(mu, adj = 0, text = sp, color = colors[sp], cex = 2)
 }
+
+grid3d('z')
+
+# https://stackoverflow.com/questions/50027798/in-r-rgl-how-to-print-shadows-of-points-in-plot3d
+show2d({
+  par(mar=c(0,0,0,0))
+  plot(# x = df$x, y = df$y, 
+    peng[, 1:2],
+       col = colors)
+})
+
+rgl::decorate3d( # xlim=xlim, ylim=ylim, zlim=zlim, 
+                box=FALSE, axes=FALSE, 
+                xlab=NULL, ylab=NULL, zlab=NULL, top=FALSE)
