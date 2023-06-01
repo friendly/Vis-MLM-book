@@ -3,15 +3,17 @@ library(heplots)
 library(DescTools)
 library(dplyr)
 
-mathscore <- read.table(here::here("data", "mathscore.dat"), header=TRUE)
-mathscore$group <- factor(mathscore$group)
-str(mathscore)
-
-save(mathscore, file = here::here("data", "mathscore.RData"))
+# mathscore <- read.table(here::here("data", "mathscore.dat"), header=TRUE)
+# mathscore$group <- factor(mathscore$group)
+# str(mathscore)
+# 
+# save(mathscore, file = here::here("data", "mathscore.RData"))
 
 # ----------------------------------
-load(here::here("data", "mathscore.RData"))
-str(mathscore)
+# load(here::here("data", "mathscore.RData"))
+# str(mathscore)
+
+data(mathscore, package = "heplots")
 
 #' t-test
 t.test(mathscore[, "BM"], mu = 150)

@@ -52,7 +52,7 @@ for (sp in levels(peng$species)) {
   max <- colMax(xyz)
   bbox <- matrix(rgl::par3d("bbox"), nrow=2)
   ranges <- apply(bbox, 2, diff)
-  texts3d(mu, adj = 0, text = sp, color = colors[sp], cex = 2)
+  texts3d(mu, adj = 0, text = sp, color = colors[sp], cex = 1.5)
 }
 
 grid3d('z')
