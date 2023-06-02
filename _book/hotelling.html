@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.0.37">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>Visualizing Multivariate Data and Models in R - 5&nbsp; Hotelling’s \(T^2\)</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
+</style>
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./mlm-review.html" rel="next">
+<link href="./linear_models-plots.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light"><script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script><script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+</head>
+<body class="nav-sidebar floating">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top"><nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }"><div class="container-fluid d-flex justify-content-between">
+      <h1 class="quarto-secondary-nav-title">
+<span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Hotelling’s <span class="math inline">\(T^2\)</span></span>
+</h1>
+      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </nav></header><!-- content --><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto"><div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Visualizing Multivariate Data and Models in R</a> 
+    </div>
+      </div>
+      <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">Preface</a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./intro.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./multivariate_plots.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Plots of Multivariate Data</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./linear_models.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Overview of Linear models</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./linear_models-plots.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Plots for univariate response models</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./hotelling.html" class="sidebar-item-text sidebar-link active"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Hotelling’s <span class="math inline">\(T^2\)</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./mlm-review.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Brief review of the multivariate linear model</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./summary.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Summary</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./references.html" class="sidebar-item-text sidebar-link">References</a>
+  </div>
+</li>
+    </ul>
+</div>
+</nav><!-- margin-sidebar --><div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc"><h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+<li><a href="#t2-as-a-generalized-t-test" id="toc-t2-as-a-generalized-t-test" class="nav-link active" data-scroll-target="#t2-as-a-generalized-t-test"> <span class="header-section-number">5.1</span> <span class="math inline">\(T^2\)</span> as a generalized <span class="math inline">\(t\)</span>-test</a></li>
+  <li><a href="#t2-properties" id="toc-t2-properties" class="nav-link" data-scroll-target="#t2-properties"> <span class="header-section-number">5.2</span> <span class="math inline">\(T^2\)</span> properties</a></li>
+  <li><a href="#example" id="toc-example" class="nav-link" data-scroll-target="#example"> <span class="header-section-number">5.3</span> Example</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references"> <span class="header-section-number">5.4</span> References</a></li>
+  </ul></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block default"><div class="quarto-title">
+<h1 class="title d-none d-lg-block">
+<span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Hotelling’s <span class="math inline">\(T^2\)</span></span>
+</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+    
+  </div>
+  
+
+</header><p>Just as the one- and two- sample univariate <span class="math inline">\(t\)</span>-test is the gateway drug for understanding analysis of variance, so to Hotelling’s <span class="math inline">\(T^2\)</span> test provides an entry point to multivariate analysis of variance.</p>
+<section id="t2-as-a-generalized-t-test" class="level2" data-number="5.1"><h2 data-number="5.1" class="anchored" data-anchor-id="t2-as-a-generalized-t-test">
+<span class="header-section-number">5.1</span> <span class="math inline">\(T^2\)</span> as a generalized <span class="math inline">\(t\)</span>-test</h2>
+<p>Hotelling’s <span class="math inline">\(T^2\)</span> <span class="citation" data-cites="Hotelling:1931">(<a href="#ref-Hotelling:1931" role="doc-biblioref">Hotelling 1931</a>)</span> is like the square of a univariate <span class="math inline">\(t\)</span> statistic. Consider the basic one-sample <span class="math inline">\(t\)</span>-test, where we wish to test the hypothesis that the mean <span class="math inline">\(\bar{x}\)</span> of a set of <span class="math inline">\(N\)</span> measures on a test of basic math, with standard deviation <span class="math inline">\(s\)</span> does not differ from an assumed mean <span class="math inline">\(\mu_0 = 150\)</span> for a population. The <span class="math inline">\(t\)</span> statistic for testing <span class="math inline">\(H_0 : \mu = \mu_0\)</span> against the two-sided alternative, <span class="math inline">\(H_0 : \mu \ne \mu_0\)</span> is</p>
+<p><span class="math display">\[
+t = \frac{(\bar{x} - \mu_0)}{s / \sqrt{N}} = \frac{(\bar{x} - \mu_0)\sqrt{N}}{s}
+\]</span></p>
+<p>Squaring this gives</p>
+<p><span class="math display">\[
+t^2 = \frac{N (\bar{x} - \mu_0)^2}{s} = N (\bar{x} - \mu_0)(s^2)^{-1} (\bar{x} - \mu_0)
+\]</span></p>
+<p>Now consider we also have measures on a test of solving word problems for the same sample. Then, a hypothesis test for the means on basic math (BM) and word problems (WP) is the test of the means of these two variables jointly equal their separate values, say, <span class="math inline">\((150, 100)\)</span>.</p>
+<!-- $$ -->
+<!-- H_0 : \mathbf{\mu} = \mathbf{\mu_0} =  -->
+<!--   \begin{pmatrix} -->
+<!--     \mu_{0,BM} \\ \mu_{0,WP} -->
+<!--   \end{pmatrix} -->
+<!--   = -->
+<!--   \begin{pmatrix} -->
+<!--     150 \\ 100 -->
+<!--   \end{pmatrix} -->
+<!-- $$ -->
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure"><p><img src="equations/eqn-mathscore1.png" class="img-fluid figure-img" style="width:50.0%"></p>
+</figure>
+</div>
+<p>Hotelling’s <span class="math inline">\(T^2\)</span> is then the analog of <span class="math inline">\(t^2\)</span>, with the variance-covariance matrix <span class="math inline">\(\mathbf{S}\)</span> of the scores on (BM, WP) replacing the variance of a single score. This is nothing more than the squared Mahalanobis distance between the sample mean vector <span class="math inline">\((\bar{x}_{BM}, \bar{x}_{BM})^T\)</span> and the hypothesized means <span class="math inline">\(\mathbf{\mu}_0\)</span>, in the metric of <span class="math inline">\(\mathbf{S}\)</span>, as shown in <a href="#fig-T2-diagram">Figure&nbsp;<span class="quarto-unresolved-ref">fig-T2-diagram</span></a>.</p>
+<p><span class="math display">\[\begin{align*}
+T^2 &amp;= N (\bar{\mathbf{x}} - \mathbf{\mu}_0)^T \; \mathbf{S}^{-1} \; (\bar{\mathbf{x}} - \mathbf{\mu}_0) \\
+    &amp;= N D^2_M (\bar{\mathbf{x}}, \mathbf{\mu}_0)
+\end{align*}\]</span></p>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div id="fig-T2-diagram" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="images/T2-diagram.png" class="img-fluid figure-img" style="width:50.0%"></p>
+<p></p><figcaption class="figure-caption">Figure 5.1: Hotelling’s T^2 statistic as the squared distance between the sample means and hypothesized means relative to the variance-covariance matrix. <em>Source</em>: Author</figcaption><p></p>
+</figure>
+</div>
+</div>
+</div>
+</section><section id="t2-properties" class="level2" data-number="5.2"><h2 data-number="5.2" class="anchored" data-anchor-id="t2-properties">
+<span class="header-section-number">5.2</span> <span class="math inline">\(T^2\)</span> properties</h2>
+<p>Aside from it’s elegant geometric interpretation Hotelling’s $T^2 has simple properties that aid in understanding the extension to more complex multivariate tests.</p>
+<ul>
+<li>
+<strong>Maximum <span class="math inline">\(t^2\)</span></strong> : Consider a linear combination <span class="math inline">\(w\)</span> of the scores in a matrix <span class="math inline">\(\mathbf{X} = [ \mathbf{x_1}, \mathbf{x_2}, \dots, \mathbf{x_p}]\)</span> with weights <span class="math inline">\(\mathbf{a}\)</span>,</li>
+</ul>
+<p><span class="math display">\[
+w = a_1 \mathbf{x_1} + a_2 \mathbf{x_2} + \dots + a_p \mathbf{x_p} = \mathbf{X} \mathbf{a}
+\]</span></p>
+<p>Hotelling’s <span class="math inline">\(T^2\)</span> is then the maximum value of a univariate <span class="math inline">\(t^2 (\mathbf{a})\)</span> for all choices of the weights in <span class="math inline">\(\mathbf{a}\)</span>.</p>
+<ul>
+<li>
+<strong>Eigenvalue</strong> : Hotelling showed that <span class="math inline">\(T^2\)</span> is the one non-zero eigenvalue (latent root) <span class="math inline">\(\lambda\)</span> of the matrix <span class="math inline">\(\mathbf{Q}_H = N (\bar{\mathbf{x}} - \mathbf{\mu}_0)^T (\bar{\mathbf{x}} - \mathbf{\mu}_0)\)</span> relative to <span class="math inline">\(\mathbf{Q}_E = \mathbf{S}\)</span> that solves the equation</li>
+</ul>
+<p><span class="math display">\[
+(\mathbf{Q}_H - \lambda \mathbf{Q}_E) \mathbf{a} = 0
+\]</span></p>
+<ul>
+<li><p><strong>Eigenvector</strong> : The corresponding eigenvector is <span class="math inline">\(\mathbf{a} = \mathbf{S}^{-1} (\bar{\mathbf{x}} - \mathbf{\mu}_0)\)</span>. These are the (raw) discriminant coefficients, giving the relative contribution of each variable to <span class="math inline">\(T^2\)</span>.</p></li>
+<li><p><strong>Critical values</strong> : For a single response, the square of a <span class="math inline">\(t\)</span> statistic with <span class="math inline">\(N-1\)</span> degrees of freedom is an <span class="math inline">\(F (1, N-1)\)</span> statistic. Because we chose <span class="math inline">\(\mathbf{a}\)</span> to give the maximum <span class="math inline">\(t^2 (\mathbf{a})\)</span>, this can be taken into account with a transformation of <span class="math inline">\(T^2\)</span> to give a proper <span class="math inline">\(F\)</span> test,</p></li>
+</ul>
+<p><span class="math display">\[
+F^* = \frac{N - p}{n (N-1)} T^2 \; \sim \; F (p, N - p)
+\]</span></p>
+<ul>
+<li>
+<strong>Invariance under linear transformation</strong> : Just as a univariate <span class="math inline">\(t\)</span>-test is unchanged if we apply a linear transformation to the variable, <span class="math inline">\(x \rightarrow a x + b\)</span>, <span class="math inline">\(T^2\)</span> is invariant under all linear (affine) transformations,</li>
+</ul>
+<p><span class="math display">\[
+\mathbf{x}_{p \times 1} \rightarrow \mathbf{C}_{p \times p} \mathbf{x} + \mathbf{b}
+\]</span></p>
+<p>The same is true for all MANOVA tests.</p>
+<ul>
+<li>
+<strong>Two-sample tests</strong> : With minor variations in notation, everything above applies to the more usual test of equality of multivariate means in a two sample test of <span class="math inline">\(H_0 : \mathbf{\mu}_1 = \mathbf{\mu}_2\)</span>.</li>
+</ul>
+<p><span class="math display">\[
+T^2 = N (\bar{\mathbf{x}}_1 - \bar{\mathbf{x}}_2)^T \; \mathbf{S}_p^{-1} \; (\bar{\mathbf{x}}_1 - \bar{\mathbf{x}}_2)
+\]</span></p>
+<p>where <span class="math inline">\(\mathbf{S}_p\)</span> is the pooled within-sample variance covariance matrix.</p>
+</section><section id="example" class="level2" data-number="5.3"><h2 data-number="5.3" class="anchored" data-anchor-id="example">
+<span class="header-section-number">5.3</span> Example</h2>
+<p>The data set <code>mathscore</code> gives scores on a test of basic math skills (BM) and solving word problems (WP) for two groups of <span class="math inline">\(N=6\)</span> students in an algebra course, each taught by different instructors.</p>
+<div class="cell">
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">mathscore</span>, package <span class="op">=</span> <span class="st">"heplots"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span><span class="op">(</span><span class="va">mathscore</span><span class="op">)</span></span>
+<span><span class="co">#&gt; 'data.frame':    12 obs. of  3 variables:</span></span>
+<span><span class="co">#&gt;  $ group: Factor w/ 2 levels "1","2": 1 1 1 1 1 1 2 2 2 2 ...</span></span>
+<span><span class="co">#&gt;  $ BM   : int  190 170 180 200 150 180 160 190 150 160 ...</span></span>
+<span><span class="co">#&gt;  $ WP   : int  90 80 80 120 60 70 120 150 90 130 ...</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>You can carry out the test that the means for both variables are equal using either <code><a href="https://andrisignorell.github.io/DescTools/reference/HotellingsT.html">DescTools::HotellingsT2Test()</a></code> or <code><a href="https://rdrr.io/pkg/car/man/Anova.html">car::Anova()</a></code>,</p>
+<div class="cell">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">DescTools</span><span class="fu">::</span><span class="fu"><a href="https://andrisignorell.github.io/DescTools/reference/HotellingsT.html">HotellingsT2Test</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">BM</span>, <span class="va">WP</span><span class="op">)</span> <span class="op">~</span> <span class="va">group</span>, data<span class="op">=</span><span class="va">mathscore</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Hotelling's two sample T2-test</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; data:  cbind(BM, WP) by group</span></span>
+<span><span class="co">#&gt; T.2 = 29, df1 = 2, df2 = 9, p-value = 1e-04</span></span>
+<span><span class="co">#&gt; alternative hypothesis: true location difference is not equal to c(0,0)</span></span>
+<span></span>
+<span><span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">BM</span>, <span class="va">WP</span><span class="op">)</span> <span class="op">~</span> <span class="va">group</span>, data<span class="op">=</span><span class="va">mathscore</span><span class="op">)</span></span>
+<span><span class="fu">car</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova</a></span><span class="op">(</span><span class="va">mod</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Type II MANOVA Tests: Pillai test statistic</span></span>
+<span><span class="co">#&gt;       Df test stat approx F num Df den Df  Pr(&gt;F)    </span></span>
+<span><span class="co">#&gt; group  1     0.865     28.9      2      9 0.00012 ***</span></span>
+<span><span class="co">#&gt; ---</span></span>
+<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section><section id="references" class="level2" data-number="5.4"><h2 data-number="5.4" class="anchored" data-anchor-id="references">
+<span class="header-section-number">5.4</span> References</h2>
+
+
+<div id="refs" class="references csl-bib-body hanging-indent" role="doc-bibliography">
+<div id="ref-Hotelling:1931" class="csl-entry" role="doc-biblioentry">
+Hotelling, Harold. 1931. <span>“The Generalization of <span class="nocase">Student’s</span> Ratio.”</span> <em>The Annals of Mathematical Statistics</em> 2 (3): 360–78. <a href="https://doi.org/10.1214/aoms/1177732979">https://doi.org/10.1214/aoms/1177732979</a>.
+</div>
+</div>
+</section></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      let href = ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script><nav class="page-navigation"><div class="nav-page nav-page-previous">
+      <a href="./linear_models-plots.html" class="pagination-link">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Plots for univariate response models</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./mlm-review.html" class="pagination-link">
+        <span class="nav-page-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Brief review of the multivariate linear model</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+</body></html>
