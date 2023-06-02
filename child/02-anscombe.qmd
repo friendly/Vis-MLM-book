@@ -1,0 +1,107 @@
+### Anscombe's Quartet
+
+In 1973, Francis Anscombe [@Anscombe:73] famously constructed a set of four data sets
+illustrate the importance of plotting the graphs before analyzing and model building, and the effect of unusual observations on fitted models.
+Now known as _Anscombe's Quartet_, these data sets had identical statistical properties: the same
+means, standard devitions, correlations and regression lines. 
+
+The data set `datasets::anscombe` has 11 observation, recorded in wide format,
+with variables `x1:x4` and `y1:y4`.
+```{r}
+data(anscombe) 
+head(anscombe)
+```
+
+The following code transforms this data to long format and calculates some summary statistics
+for each `dataset`.
+
+
+```{r}
+anscombe_long <- anscombe |> 
+  pivot_longer(everything(), 
+               names_to = c(".value", "dataset"), 
+               names_pattern = "(.)(.)"
+  ) |>
+  arrange(dataset)
+
+anscombe_long |>
+  group_by(dataset) |>
+  summarise(xbar      = mean(x),
+            ybar      = mean(y),
+            r         = cor(x, y),
+            intercept = coef(lm(y ~ x))[1],
+            slope     = coef(lm(y ~ x))[2]
+         )
+```
+As we can see, all four data sets have nearly identical univariate and bivariate statistical
+measures. You can only see how they differ in graphs, which show their true natures to be vastly
+different.
+
+@fig-ch02-anscombe1 is an enhanced version of Anscombe's plot of these data, adding
+helpful annotations to show visually the underlying statistical summaries.
+
+```{r}
+#| label: fig-ch02-anscombe1
+#| echo: false
+#| fig-align: center
+#| out-width: "90%"
+#| fig-cap: "Scatterplots of Anscombe's Quartet. Each plot shows the fitted regression line
+#|     and a 68% data ellipse representing the correlation between $x$ and $y$. "
+knitr::include_graphics("figs/ch02-anscombe1.png")
+```
+
+This figure is produced as follows, using a single call to `ggplot`, faceted by `dataset`.
+As we will see later (@sec-data-ellipse), the data ellipse (produced by `stat_ellipse()`)
+reflects the correlation between the variables.
+
+```{r}
+#| eval: false
+desc <- tibble(
+  dataset = 1:4,
+  label = c("Pure error", "Lack of fit", "Outlier", "Influence")
+)
+
+ggplot(anscombe_long, aes(x = x, y = y)) +
+  geom_point(color = "blue", size = 4) +
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE,
+              color = "red", linewidth = 1.5) +
+  scale_x_continuous(breaks = seq(0,20,2)) +
+  scale_y_continuous(breaks = seq(0,12,2)) +
+  stat_ellipse(level = 0.5, color=col, type="norm") +
+  geom_label(data=desc, aes(label = label), x=6, y=12) +
+  facet_wrap(~dataset, labeller = label_both) 
+```
+
+The subplots are labeled with the statistical idea they reflect:
+
+* dataset 1: **Pure error**. This is the typical case with well-behaved data. Variation of the points around the line reflect only measurement error or unreliability in the response, $y$.
+
+* dataset 2: **Lack of fit**. The data is clearly curvilinear, and would be very well described by a quadratic, `y ~ poly(x, 2)`. This violates the assumption of linear regression that the fitted model has the correct form.
+
+* dataset 3: **Outlier**. One point, second from the right, has a very large residual. Because this point is near the extreme of $x$, it pulls the regression line towards it, as you can see by imagining a line through the remaining points.
+
+* dataset 4: **Influence**. All but one of the points have the same $x$ value. The one unusual point has sufficient influence to force the regression line to fit it **exactly**.
+
+One moral from this example:
+
+> **Linear regression only "sees" a line. It does its' best when the data are really curvilinear. Because the line is fit by least squares, it pulls the line toward discrepant points to minimize the sum of squared residuals.**
+
+::: {.callout-note}
+## Quartets
+
+The essential idea of a statistical "quartet" is to illustrate four quite different data sets
+or circumstances that seem superficially the same, but yet are paradoxically very different
+when you look behind the scenes.
+For example, in the context of causal analysis @Gelman-etal:2023, illustrated
+sets of four graphs, within each of which 
+all four represent the same average (latent) causal effect but with
+much different patterns of individual effects.
+As an example of machine learning models, @Biecek-etal:2023, introduced the "Rashamon Quartet",
+a synthetic dataset for which four models from different classes 
+(linear model, regression tree, random forest, neural network)
+have practically identical predictive performance.
+In all cases, the paradox is solved when
+their visualization reveals the distinct ways
+of understanding structure in the data.
+:::
+
