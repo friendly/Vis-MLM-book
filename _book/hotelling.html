@@ -2,16 +2,21 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.0.37">
+<meta name="generator" content="quarto-1.1.189">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <title>Visualizing Multivariate Data and Models in R - 6&nbsp; Hotelling’s \(T^2\)</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
-span.underline{text-decoration: underline;}
-div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
 div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
 pre > code.sourceCode { white-space: pre; position: relative; }
 pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
@@ -50,7 +55,7 @@ code span.al { color: #ff0000; font-weight: bold; } /* Alert */
 code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
 code span.at { color: #7d9029; } /* Attribute */
 code span.bn { color: #40a070; } /* BaseN */
-code span.bu { } /* BuiltIn */
+code span.bu { color: #008000; } /* BuiltIn */
 code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
 code span.ch { color: #4070a0; } /* Char */
 code span.cn { color: #880000; } /* Constant */
@@ -63,7 +68,7 @@ code span.er { color: #ff0000; font-weight: bold; } /* Error */
 code span.ex { } /* Extension */
 code span.fl { color: #40a070; } /* Float */
 code span.fu { color: #06287e; } /* Function */
-code span.im { } /* Import */
+code span.im { color: #008000; font-weight: bold; } /* Import */
 code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
 code span.kw { color: #007020; font-weight: bold; } /* Keyword */
 code span.op { color: #666666; } /* Operator */
@@ -211,12 +216,16 @@ div.csl-indent {
     </ul>
 </div>
 </nav><!-- margin-sidebar --><div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc"><h2 id="toc-title">Table of contents</h2>
+        <nav id="TOC" role="doc-toc" class="toc-active"><h2 id="toc-title">Table of contents</h2>
    
   <ul>
-<li><a href="#t2-as-a-generalized-t-test" id="toc-t2-as-a-generalized-t-test" class="nav-link active" data-scroll-target="#t2-as-a-generalized-t-test"> <span class="header-section-number">6.1</span> <span class="math inline">\(T^2\)</span> as a generalized <span class="math inline">\(t\)</span>-test</a></li>
-  <li><a href="#t2-properties" id="toc-t2-properties" class="nav-link" data-scroll-target="#t2-properties"> <span class="header-section-number">6.2</span> <span class="math inline">\(T^2\)</span> properties</a></li>
-  <li><a href="#example" id="toc-example" class="nav-link" data-scroll-target="#example"> <span class="header-section-number">6.3</span> Example</a></li>
+<li><a href="#t2-as-a-generalized-t-test" id="toc-t2-as-a-generalized-t-test" class="nav-link active" data-scroll-target="#t2-as-a-generalized-t-test"><span class="toc-section-number">6.1</span>  <span class="math inline">\(T^2\)</span> as a generalized <span class="math inline">\(t\)</span>-test</a></li>
+  <li>
+<a href="#t2-properties" id="toc-t2-properties" class="nav-link" data-scroll-target="#t2-properties"><span class="toc-section-number">6.2</span>  <span class="math inline">\(T^2\)</span> properties</a>
+  <ul class="collapse">
+<li><a href="#example" id="toc-example" class="nav-link" data-scroll-target="#example">Example</a></li>
+  </ul>
+</li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul></nav>
     </div>
@@ -237,10 +246,16 @@ div.csl-indent {
   
 
 </header><p>Just as the one- and two- sample univariate <span class="math inline">\(t\)</span>-test is the gateway drug for understanding analysis of variance, so to Hotelling’s <span class="math inline">\(T^2\)</span> test provides an entry point to multivariate analysis of variance.</p>
+<p>The essential idea is that Hotelling’s <span class="math inline">\(T^2\)</span> provides a test of the difference in means between two groups on a collection of variables, <span class="math inline">\(\mathbf{x} = x_1, x_2, \dots x_p\)</span> <em>simultaneously</em>, rather than one by one. This has the advantages that it</p>
+<ul>
+<li>does not require correcting for multiple tests (e.g., Bonferroni)</li>
+<li>combines the evidence from the multiple response variables, and <em>pools strength</em>,</li>
+<li>shows how the multiple response are jointly related to the group effect along a single dimension, the <em>discriminant axis</em>.</li>
+</ul>
+<p>After describing it’s features, I use an example of a two-group <span class="math inline">\(T^2\)</span> test to illustrate the basic ideas behind multivariate tests and hypothesis error plots.</p>
 <section id="t2-as-a-generalized-t-test" class="level2" data-number="6.1"><h2 data-number="6.1" class="anchored" data-anchor-id="t2-as-a-generalized-t-test">
 <span class="header-section-number">6.1</span> <span class="math inline">\(T^2\)</span> as a generalized <span class="math inline">\(t\)</span>-test</h2>
-<p>Hotelling’s <span class="math inline">\(T^2\)</span> <span class="citation" data-cites="Hotelling:1931">(<a href="#ref-Hotelling:1931" role="doc-biblioref">Hotelling 1931</a>)</span> is like the square of a univariate <span class="math inline">\(t\)</span> statistic. Consider the basic one-sample <span class="math inline">\(t\)</span>-test, where we wish to test the hypothesis that the mean <span class="math inline">\(\bar{x}\)</span> of a set of <span class="math inline">\(N\)</span> measures on a test of basic math, with standard deviation <span class="math inline">\(s\)</span> does not differ from an assumed mean <span class="math inline">\(\mu_0 = 150\)</span> for a population. The <span class="math inline">\(t\)</span> statistic for testing <span class="math inline">\(H_0 : \mu = \mu_0\)</span> against the two-sided alternative, <span class="math inline">\(H_0 : \mu \ne \mu_0\)</span> is</p>
-<p><span class="math display">\[
+<p>Hotelling’s <span class="math inline">\(T^2\)</span> <span class="citation" data-cites="Hotelling:1931">(<a href="#ref-Hotelling:1931" role="doc-biblioref">Hotelling 1931</a>)</span> is like the square of a univariate <span class="math inline">\(t\)</span> statistic. Consider the basic one-sample <span class="math inline">\(t\)</span>-test, where we wish to test the hypothesis that the mean <span class="math inline">\(\bar{x}\)</span> of a set of <span class="math inline">\(N\)</span> measures on a test of basic math, with standard deviation <span class="math inline">\(s\)</span> does not differ from an assumed mean <span class="math inline">\(\mu_0 = 150\)</span> for a population. The <span class="math inline">\(t\)</span> statistic for testing <span class="math inline">\(H_0 : \mu = \mu_0\)</span> against the two-sided alternative, <span class="math inline">\(H_0 : \mu \ne \mu_0\)</span> is <span class="math display">\[
 t = \frac{(\bar{x} - \mu_0)}{s / \sqrt{N}} = \frac{(\bar{x} - \mu_0)\sqrt{N}}{s}
 \]</span></p>
 <p>Squaring this gives</p>
@@ -248,16 +263,16 @@ t = \frac{(\bar{x} - \mu_0)}{s / \sqrt{N}} = \frac{(\bar{x} - \mu_0)\sqrt{N}}{s}
 t^2 = \frac{N (\bar{x} - \mu_0)^2}{s} = N (\bar{x} - \mu_0)(s^2)^{-1} (\bar{x} - \mu_0)
 \]</span></p>
 <p>Now consider we also have measures on a test of solving word problems for the same sample. Then, a hypothesis test for the means on basic math (BM) and word problems (WP) is the test of the means of these two variables jointly equal their separate values, say, <span class="math inline">\((150, 100)\)</span>.</p>
-<!-- $$ -->
-<!-- H_0 : \mathbf{\mu} = \mathbf{\mu_0} =  -->
-<!--   \begin{pmatrix} -->
-<!--     \mu_{0,BM} \\ \mu_{0,WP} -->
-<!--   \end{pmatrix} -->
-<!--   = -->
-<!--   \begin{pmatrix} -->
-<!--     150 \\ 100 -->
-<!--   \end{pmatrix} -->
-<!-- $$ -->
+<p><span class="math display">\[
+H_0 : \mathbf{\mu} = \mathbf{\mu_0} =
+  \begin{pmatrix}
+    \mu_{0,BM} \\ \mu_{0,WP}
+  \end{pmatrix}
+  =
+  \begin{pmatrix}
+    150 \\ 100
+  \end{pmatrix}
+\]</span></p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure"><p><img src="equations/eqn-mathscore1.png" class="img-fluid figure-img" style="width:50.0%"></p>
 </figure>
@@ -271,54 +286,37 @@ T^2 &amp;= N (\bar{\mathbf{x}} - \mathbf{\mu}_0)^T \; \mathbf{S}^{-1} \; (\bar{\
 <div class="cell-output-display">
 <div id="fig-T2-diagram" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure"><p><img src="images/T2-diagram.png" class="img-fluid figure-img" style="width:50.0%"></p>
-<p></p><figcaption class="figure-caption">Figure 6.1: Hotelling’s T^2 statistic as the squared distance between the sample means and hypothesized means relative to the variance-covariance matrix. <em>Source</em>: Author</figcaption><p></p>
+<p></p><figcaption class="figure-caption">Figure&nbsp;6.1: Hotelling’s T^2 statistic as the squared distance between the sample means and hypothesized means relative to the variance-covariance matrix. <em>Source</em>: Author</figcaption><p></p>
 </figure>
 </div>
 </div>
 </div>
 </section><section id="t2-properties" class="level2" data-number="6.2"><h2 data-number="6.2" class="anchored" data-anchor-id="t2-properties">
 <span class="header-section-number">6.2</span> <span class="math inline">\(T^2\)</span> properties</h2>
-<p>Aside from it’s elegant geometric interpretation Hotelling’s $T^2 has simple properties that aid in understanding the extension to more complex multivariate tests.</p>
+<p>Aside from it’s elegant geometric interpretation Hotelling’s <span class="math inline">\(T^2\)</span> has simple properties that aid in understanding the extension to more complex multivariate tests.</p>
 <ul>
 <li>
 <strong>Maximum <span class="math inline">\(t^2\)</span></strong> : Consider a linear combination <span class="math inline">\(w\)</span> of the scores in a matrix <span class="math inline">\(\mathbf{X} = [ \mathbf{x_1}, \mathbf{x_2}, \dots, \mathbf{x_p}]\)</span> with weights <span class="math inline">\(\mathbf{a}\)</span>,</li>
 </ul>
 <p><span class="math display">\[
 w = a_1 \mathbf{x_1} + a_2 \mathbf{x_2} + \dots + a_p \mathbf{x_p} = \mathbf{X} \mathbf{a}
-\]</span></p>
-<p>Hotelling’s <span class="math inline">\(T^2\)</span> is then the maximum value of a univariate <span class="math inline">\(t^2 (\mathbf{a})\)</span> for all choices of the weights in <span class="math inline">\(\mathbf{a}\)</span>.</p>
+\]</span> Hotelling’s <span class="math inline">\(T^2\)</span> is then the maximum value of a univariate <span class="math inline">\(t^2 (\mathbf{a})\)</span> for all choices of the weights in <span class="math inline">\(\mathbf{a}\)</span>.</p>
 <ul>
-<li>
-<strong>Eigenvalue</strong> : Hotelling showed that <span class="math inline">\(T^2\)</span> is the one non-zero eigenvalue (latent root) <span class="math inline">\(\lambda\)</span> of the matrix <span class="math inline">\(\mathbf{Q}_H = N (\bar{\mathbf{x}} - \mathbf{\mu}_0)^T (\bar{\mathbf{x}} - \mathbf{\mu}_0)\)</span> relative to <span class="math inline">\(\mathbf{Q}_E = \mathbf{S}\)</span> that solves the equation</li>
-</ul>
-<p><span class="math display">\[
+<li><p><strong>Eigenvalue</strong> : Hotelling showed that <span class="math inline">\(T^2\)</span> is the one non-zero eigenvalue (latent root) <span class="math inline">\(\lambda\)</span> of the matrix <span class="math inline">\(\mathbf{Q}_H = N (\bar{\mathbf{x}} - \mathbf{\mu}_0)^T (\bar{\mathbf{x}} - \mathbf{\mu}_0)\)</span> relative to <span class="math inline">\(\mathbf{Q}_E = \mathbf{S}\)</span> that solves the equation <span class="math display">\[
 (\mathbf{Q}_H - \lambda \mathbf{Q}_E) \mathbf{a} = 0
-\]</span></p>
-<ul>
+\]</span></p></li>
 <li><p><strong>Eigenvector</strong> : The corresponding eigenvector is <span class="math inline">\(\mathbf{a} = \mathbf{S}^{-1} (\bar{\mathbf{x}} - \mathbf{\mu}_0)\)</span>. These are the (raw) discriminant coefficients, giving the relative contribution of each variable to <span class="math inline">\(T^2\)</span>.</p></li>
-<li><p><strong>Critical values</strong> : For a single response, the square of a <span class="math inline">\(t\)</span> statistic with <span class="math inline">\(N-1\)</span> degrees of freedom is an <span class="math inline">\(F (1, N-1)\)</span> statistic. Because we chose <span class="math inline">\(\mathbf{a}\)</span> to give the maximum <span class="math inline">\(t^2 (\mathbf{a})\)</span>, this can be taken into account with a transformation of <span class="math inline">\(T^2\)</span> to give a proper <span class="math inline">\(F\)</span> test,</p></li>
-</ul>
-<p><span class="math display">\[
+<li><p><strong>Critical values</strong> : For a single response, the square of a <span class="math inline">\(t\)</span> statistic with <span class="math inline">\(N-1\)</span> degrees of freedom is an <span class="math inline">\(F (1, N-1)\)</span> statistic. Because we chose <span class="math inline">\(\mathbf{a}\)</span> to give the maximum <span class="math inline">\(t^2 (\mathbf{a})\)</span>, this can be taken into account with a transformation of <span class="math inline">\(T^2\)</span> to give a proper <span class="math inline">\(F\)</span> test, <span class="math display">\[
 F^* = \frac{N - p}{n (N-1)} T^2 \; \sim \; F (p, N - p)
-\]</span></p>
-<ul>
-<li>
-<strong>Invariance under linear transformation</strong> : Just as a univariate <span class="math inline">\(t\)</span>-test is unchanged if we apply a linear transformation to the variable, <span class="math inline">\(x \rightarrow a x + b\)</span>, <span class="math inline">\(T^2\)</span> is invariant under all linear (affine) transformations,</li>
-</ul>
-<p><span class="math display">\[
+\]</span></p></li>
+<li><p><strong>Invariance under linear transformation</strong> : Just as a univariate <span class="math inline">\(t\)</span>-test is unchanged if we apply a linear transformation to the variable, <span class="math inline">\(x \rightarrow a x + b\)</span>, <span class="math inline">\(T^2\)</span> is invariant under all linear (affine) transformations, <span class="math display">\[
 \mathbf{x}_{p \times 1} \rightarrow \mathbf{C}_{p \times p} \mathbf{x} + \mathbf{b}
-\]</span></p>
-<p>The same is true for all MANOVA tests.</p>
-<ul>
-<li>
-<strong>Two-sample tests</strong> : With minor variations in notation, everything above applies to the more usual test of equality of multivariate means in a two sample test of <span class="math inline">\(H_0 : \mathbf{\mu}_1 = \mathbf{\mu}_2\)</span>.</li>
-</ul>
-<p><span class="math display">\[
+\]</span> The same is true for all MANOVA tests.</p></li>
+<li><p><strong>Two-sample tests</strong> : With minor variations in notation, everything above applies to the more usual test of equality of multivariate means in a two sample test of <span class="math inline">\(H_0 : \mathbf{\mu}_1 = \mathbf{\mu}_2\)</span>. <span class="math display">\[
 T^2 = N (\bar{\mathbf{x}}_1 - \bar{\mathbf{x}}_2)^T \; \mathbf{S}_p^{-1} \; (\bar{\mathbf{x}}_1 - \bar{\mathbf{x}}_2)
-\]</span></p>
-<p>where <span class="math inline">\(\mathbf{S}_p\)</span> is the pooled within-sample variance covariance matrix.</p>
-</section><section id="example" class="level2" data-number="6.3"><h2 data-number="6.3" class="anchored" data-anchor-id="example">
-<span class="header-section-number">6.3</span> Example</h2>
+\]</span> where <span class="math inline">\(\mathbf{S}_p\)</span> is the pooled within-sample variance covariance matrix.</p></li>
+</ul>
+<section id="example" class="level3 unnumbered"><h3 class="unnumbered anchored" data-anchor-id="example">Example</h3>
 <p>The data set <code>mathscore</code> gives scores on a test of basic math skills (BM) and solving word problems (WP) for two groups of <span class="math inline">\(N=6\)</span> students in an algebra course, each taught by different instructors.</p>
 <div class="cell">
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">mathscore</span>, package <span class="op">=</span> <span class="st">"heplots"</span><span class="op">)</span></span>
@@ -347,7 +345,59 @@ T^2 = N (\bar{\mathbf{x}}_1 - \bar{\mathbf{x}}_2)^T \; \mathbf{S}_p^{-1} \; (\ba
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-</section><section id="references" class="level2 unnumbered"><h2 class="unnumbered anchored" data-anchor-id="references">References</h2>
+<p>What’s wrong with just doing the two <span class="math inline">\(t\)</span>-tests (or equivalent <span class="math inline">\(F\)</span>-test with <code><a href="https://rdrr.io/r/stats/lm.html">lm()</a></code>)?</p>
+<div class="cell">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">car</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova</a></span><span class="op">(</span><span class="va">mod1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">BM</span> <span class="op">~</span> <span class="va">group</span>, data<span class="op">=</span><span class="va">mathscore</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Anova Table (Type II tests)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Response: BM</span></span>
+<span><span class="co">#&gt;           Sum Sq Df F value Pr(&gt;F)  </span></span>
+<span><span class="co">#&gt; group       1302  1    4.24  0.066 .</span></span>
+<span><span class="co">#&gt; Residuals   3071 10                 </span></span>
+<span><span class="co">#&gt; ---</span></span>
+<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
+<span><span class="fu">car</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova</a></span><span class="op">(</span><span class="va">mod2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">WP</span> <span class="op">~</span> <span class="va">group</span>, data<span class="op">=</span><span class="va">mathscore</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Anova Table (Type II tests)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Response: WP</span></span>
+<span><span class="co">#&gt;           Sum Sq Df F value Pr(&gt;F)   </span></span>
+<span><span class="co">#&gt; group       4408  1    10.4  0.009 **</span></span>
+<span><span class="co">#&gt; Residuals   4217 10                  </span></span>
+<span><span class="co">#&gt; ---</span></span>
+<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>From this, we might conclude that the two groups do not differ significantly on Basic Math but strongly differ on Word problems. But the two univariate tests do not take the correlation among the mean differences into account.</p>
+<p>To see the differences between the groups on both variables together, we draw their data ellipses, using <code>heplots::covEllpses()</code></p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="http://friendly.github.io/heplots/">heplots</a></span><span class="op">)</span></span>
+<span><span class="va">colors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"darkgreen"</span>, <span class="st">"blue"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="http://friendly.github.io/heplots/reference/covEllipses.html">covEllipses</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">BM</span>, <span class="va">WP</span><span class="op">)</span> <span class="op">~</span> <span class="va">group</span>, data <span class="op">=</span> <span class="va">mathscore</span>,</span>
+<span>            pooled<span class="op">=</span><span class="cn">FALSE</span>, </span>
+<span>            col <span class="op">=</span> <span class="va">colors</span>,</span>
+<span>            fill <span class="op">=</span> <span class="cn">TRUE</span>, fill.alpha <span class="op">=</span> <span class="fl">0.05</span>,</span>
+<span>            cex<span class="op">=</span><span class="fl">2</span>, cex.lab<span class="op">=</span><span class="fl">1.5</span>,</span>
+<span>            asp <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>            xlab<span class="op">=</span><span class="st">"Basic math"</span>, ylab<span class="op">=</span><span class="st">"Word problems"</span><span class="op">)</span></span>
+<span><span class="co"># plot points</span></span>
+<span><span class="va">pch</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">mathscore</span><span class="op">$</span><span class="va">group</span><span class="op">==</span><span class="fl">1</span>, <span class="fl">15</span>, <span class="fl">16</span><span class="op">)</span></span>
+<span><span class="va">col</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">mathscore</span><span class="op">$</span><span class="va">group</span><span class="op">==</span><span class="fl">1</span>, <span class="va">colors</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="va">colors</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/points.html">points</a></span><span class="op">(</span><span class="va">mathscore</span><span class="op">[</span>,<span class="fl">2</span><span class="op">:</span><span class="fl">3</span><span class="op">]</span>, pch<span class="op">=</span><span class="va">pch</span>, col<span class="op">=</span><span class="va">col</span>, cex<span class="op">=</span><span class="fl">1.25</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure"><p><img src="figs/mathscore-cov1-1.png" class="img-fluid figure-img" style="width:60.0%"></p>
+<p></p><figcaption class="figure-caption">Data ellipses for the <code>mathscore</code> data.</figcaption><p></p>
+</figure>
+</div>
+</div>
+</div>
+<p>We can see that:</p>
+<ul>
+<li>Group 1 &gt; Group 2 on Basic Math, but worse on Word Problems</li>
+<li>Group 2 &gt; Group 1 on Word Problems, but worse on Basic Math</li>
+<li>Within each group, those who do better on Basic Math also do better on Word Problems</li>
+</ul>
+<p>In Hotelling’s <span class="math inline">\(T^2\)</span>, the “size” of the difference between the means (labeled “1” and “2”) is assessed relative to the pooled within-group covariance matrix <span class="math inline">\(\mathbf{S}_p\)</span></p>
+</section></section><section id="references" class="level2 unnumbered"><h2 class="unnumbered anchored" data-anchor-id="references">References</h2>
 
 
 <div id="refs" class="references csl-bib-body hanging-indent" role="doc-bibliography">
@@ -424,7 +474,8 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   for (var i=0; i<noterefs.length; i++) {
     const ref = noterefs[i];
     tippyHover(ref, function() {
-      let href = ref.getAttribute('href');
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
       try { href = new URL(href).hash; } catch {}
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);

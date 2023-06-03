@@ -8,6 +8,17 @@ Just as the one- and two- sample univariate $t$-test is the gateway drug for und
 analysis of variance, so to Hotelling's $T^2$ test provides an entry point to multivariate
 analysis of variance.
 
+The essential idea is that Hotelling's $T^2$ provides a test of the difference in
+means between two groups on a collection of variables, $\mathbf{x} = x_1, x_2, \dots x_p$
+_simultaneously_, rather than one by one. This has the advantages that it
+
+* does not require correcting for multiple tests (e.g., Bonferroni)
+* combines the evidence from the multiple response variables, and _pools strength_,
+* shows how the multiple response are jointly related to the group effect along a single dimension, the _discriminant axis_.
+
+After describing it's features, I use an example of a two-group $T^2$ test to illustrate
+the basic ideas behind multivariate tests and hypothesis error plots.
+
 ## $T^2$ as a generalized $t$-test
 
 Hotelling's $T^2$ [@Hotelling:1931] is like the square of a univariate $t$ statistic.
@@ -32,16 +43,16 @@ is the test of the means of these two variables jointly equal their separate val
 say, $(150, 100)$.
 
 
-<!-- $$ -->
-<!-- H_0 : \mathbf{\mu} = \mathbf{\mu_0} =  -->
-<!--   \begin{pmatrix} -->
-<!--     \mu_{0,BM} \\ \mu_{0,WP} -->
-<!--   \end{pmatrix} -->
-<!--   = -->
-<!--   \begin{pmatrix} -->
-<!--     150 \\ 100 -->
-<!--   \end{pmatrix} -->
-<!-- $$ -->
+$$
+H_0 : \mathbf{\mu} = \mathbf{\mu_0} =
+  \begin{pmatrix}
+    \mu_{0,BM} \\ \mu_{0,WP}
+  \end{pmatrix}
+  =
+  \begin{pmatrix}
+    150 \\ 100
+  \end{pmatrix}
+$$
 
 ![](equations/eqn-mathscore1.png){width=50% fig-align="center"}
 
@@ -67,7 +78,7 @@ knitr::include_graphics("images/T2-diagram.png")
 
 ## $T^2$ properties
 
-Aside from it's elegant geometric interpretation Hotelling's $T^2 has simple properties that aid in understanding the extension to more complex multivariate tests.
+Aside from it's elegant geometric interpretation Hotelling's $T^2$ has simple properties that aid in understanding the extension to more complex multivariate tests.
 
 * **Maximum $t^2$** : 
 Consider a linear combination $w$ of the scores in a matrix 
@@ -114,7 +125,7 @@ T^2 = N (\bar{\mathbf{x}}_1 - \bar{\mathbf{x}}_2)^T \; \mathbf{S}_p^{-1} \; (\ba
 $$
 where $\mathbf{S}_p$ is the pooled within-sample variance covariance matrix.
 
-## Example
+### Example {.unnumbered}
 
 The data set `mathscore` gives scores on a test of basic math skills (BM) and solving word problems (WP) for two groups of $N=6$ students in an algebra course, each taught by different instructors.
 
@@ -132,6 +143,49 @@ DescTools::HotellingsT2Test(cbind(BM, WP) ~ group, data=mathscore)
 mod <- lm(cbind(BM, WP) ~ group, data=mathscore)
 car::Anova(mod)
 ```
+
+What's wrong with just doing the two $t$-tests (or equivalent $F$-test with `lm()`)?
+
+```{r}
+car::Anova(mod1 <- lm(BM ~ group, data=mathscore))
+car::Anova(mod2 <- lm(WP ~ group, data=mathscore))
+```
+
+From this, we might conclude that the two groups do not differ significantly on Basic Math
+but strongly differ on Word problems. But the two univariate tests do not take the correlation
+among the mean differences into account.
+
+To see the differences between the groups on both variables together, we draw their data
+ellipses, using `heplots::covEllpses()`
+
+```{r}
+#| label: mathscore-cov1
+#| fig-align: center
+#| out-width: "60%"
+#| fig-cap: "Data ellipses for the `mathscore` data."
+library(heplots)
+colors <- c("darkgreen", "blue")
+covEllipses(cbind(BM, WP) ~ group, data = mathscore,
+            pooled=FALSE, 
+            col = colors,
+            fill = TRUE, fill.alpha = 0.05,
+            cex=2, cex.lab=1.5,
+            asp = 1,
+            xlab="Basic math", ylab="Word problems")
+# plot points
+pch <- ifelse(mathscore$group==1, 15, 16)
+col <- ifelse(mathscore$group==1, colors[1], colors[2])
+points(mathscore[,2:3], pch=pch, col=col, cex=1.25)
+```
+
+We can see that: 
+
+* Group 1 > Group 2 on Basic Math, but worse on Word Problems
+* Group 2 > Group 1 on Word Problems, but worse on Basic Math
+* Within each group, those who do better on Basic Math also do better on Word Problems
+
+In Hotelling's $T^2$, the "size" of the difference between the means (labeled "1" and "2")
+is assessed relative to the pooled within-group covariance matrix $\mathbf{S}_p$
 
 ## References {.unnumbered}
 

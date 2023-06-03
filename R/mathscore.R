@@ -3,15 +3,6 @@ library(heplots)
 library(DescTools)
 library(dplyr)
 
-# mathscore <- read.table(here::here("data", "mathscore.dat"), header=TRUE)
-# mathscore$group <- factor(mathscore$group)
-# str(mathscore)
-# 
-# save(mathscore, file = here::here("data", "mathscore.RData"))
-
-# ----------------------------------
-# load(here::here("data", "mathscore.RData"))
-# str(mathscore)
 
 data(mathscore, package = "heplots")
 
@@ -42,29 +33,40 @@ print(summary(Anova(mod)), SSP=FALSE)
 means <-  aggregate(cbind(BM, WP)~group, mean, data=mathscore)[,-1]
 
 
-covEllipses(mathscore[,2:3], mathscore$group, 
-            cex=2,
-            asp = 1, 
-            fill = c(TRUE, TRUE, FALSE), fill.alpha = 0.1,
-            cex.lab=1.5,
-            xlab="Basic math", ylab="Word problems"
-            )
 
+# covEllipses(mathscore[,2:3], mathscore$group, 
+#             pooled=FALSE, 
+#             fill = TRUE, fill.alpha = 0.05,
+#             cex=2, cex.lab=1.5,
+#             xlab="Basic math", ylab="Word problems")
+# 
+# pch <- ifelse(mathscore$group==1, 15, 16)
+# col <- ifelse(mathscore$group==1, "red", "blue")
+# points(mathscore[,2:3], pch=pch, col=col, cex=1.25)
 
-covEllipses(mathscore[,2:3], mathscore$group, 
+# use formula method for covEllipses
+
+colors <- c("darkgreen", "blue")
+covEllipses(cbind(BM, WP) ~ group, data = mathscore,
             pooled=FALSE, 
+            col = colors,
+            fill = TRUE, fill.alpha = 0.05,
             cex=2, cex.lab=1.5,
+            asp = 1,
             xlab="Basic math", ylab="Word problems")
-
+# plot points
 pch <- ifelse(mathscore$group==1, 15, 16)
-col <- ifelse(mathscore$group==1, "red", "blue")
+col <- ifelse(mathscore$group==1, colors[1], colors[2])
 points(mathscore[,2:3], pch=pch, col=col, cex=1.25)
 
-#scatterplot(WP ~ BM | group, data=mathscore, ellipse=TRUE, levels=0.68, smooth=FALSE, pch=c(15,16))
+
 
 car::scatterplot(WP ~ BM | group, data=mathscore, 
-	ellipse=list(levels=0.68), smooth=FALSE, pch=c(15,16), 
-	asp = 1, cex.lab = 1.5,
+	ellipse=list(levels=0.68), 
+	smooth=FALSE, 
+	pch=c(15,16), 
+	asp = 1, 
+	cex.lab = 1.5,
 	legend=list(coords = "topright"),
 	xlab="Basic math", ylab="Word problems"
 )
@@ -85,10 +87,11 @@ plot(mod.can, var.lwd=3)
  t.test(Can1 ~ group, data=mod.can$scores)
 
 # overlay with HEplot
-covEllipses(mathscore[,2:3], mathscore$group, pooled=FALSE, cex=2,
-	xlab="Basic math", ylab="Word problems",
-	asp=1,
-	main = "Methods of teaching algebra", cex.lab=1.5)
+covEllipses(cbind(BM, WP) ~ group, data = mathscore,
+            pooled=FALSE, cex=2, 
+            xlab="Basic math", ylab="Word problems",
+            asp=1, 
+            cex.lab=1.5)
 
 pch <- ifelse(mathscore$group==1, 15, 16)
 col <- ifelse(mathscore$group==1, "red", "blue")

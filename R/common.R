@@ -8,6 +8,8 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   dpi = 300,
   width = 68,
+  message = FALSE,
+  warning = FALSE,
   fig.path = "figs/"
   # fig.retina = 0.8, # figures are either vectors or 300 dpi diagrams
   # out.width = "70%",
