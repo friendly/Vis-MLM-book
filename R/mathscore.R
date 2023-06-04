@@ -144,3 +144,21 @@ for(i in 1:nrow(mathscore)) {
 #	print(pt)
 	segments(mathscore[i, "BM"], mathscore[i, "WP"], pt[1], pt[2])
 }
+
+# discriminant analysis
+
+(math.lda <- MASS::lda(group ~ ., data=mathscore))
+
+math.lda$scaling
+
+as.matrix(mathscore[, 2:3]) %*% math.lda$scaling
+
+scores <- cbind(group = mathscore$group,
+                as.matrix(mathscore[, 2:3]) %*% math.lda$scaling)
+
+t.test(LD1 ~ group, data=scores)$statistic
+
+
+
+
+

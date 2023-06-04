@@ -118,7 +118,7 @@ to give the maximum $t^2 (\mathbf{a})$, this can be taken into account with a
 transformation of $T^2$ to give a proper $F$ test,
 $$
 F^* = \frac{N - p}{p (N-1)} T^2 \; \sim \; F (p, N - p)
-$$
+$$ {#eq-Fstat}
 
 * **Invariance under linear transformation** : Just as a univariate $t$-test is unchanged if
 we apply a linear transformation to the variable, $x \rightarrow a x + b$, $T^2$ is invariant
@@ -245,8 +245,31 @@ group means on the two variables, $\bar{\mathbf{x}}$, corresponding to $\mathbf{
 in @eq-eigen. In case of $T^2$, the $\mathbf{H}$ matrix is of rank 1, so the
 "ellipse" plots as a line.
 
+```{r Hcalc}
+# calculate H directly
+fit <- fitted(math.mod)
+xbar <- colMeans(mathscore[,2:3])
+N <- nrow(mathscore)
+crossprod(fit) - N * outer(xbar, xbar)
+
+# same as: SSP for group effect from Anova
+math.aov <- Anova(math.mod)
+(H <- math.aov$SSP)
+```
+
 * $\mathbf{E}$: the data ellipse of the _residuals_, the deviations of the scores
 from the group means, $\mathbf{x} - \bar{\mathbf{x}}$, corresponding to $\mathbf{Q}_E$.
+
+```{r Ecalc}
+# calculate E directly
+resids <- residuals(math.mod)
+crossprod(resids)
+
+# same as: SSPE from Anova
+(E <- math.aov$SSPE)
+```
+
+### `heplot()`
 
 `heplots::heplot()` takes the model object, extracts the $\mathbf{H}$ and $\mathbf{E}$
 matrices (from `summary(Anova(math.mod))`) and plots them. There are many options to control the details.
@@ -323,7 +346,45 @@ for(i in 1:nrow(mathscore)) {
 }
 ```
 
+## Discriminant analysis
+
+Discriminant analysis **CIT?** for two-group designs or for one-way MANOVA
+essentially turns the problem around: Instead of asking whether the mean
+vectors for two or more groups are equal, discriminant analysis tries to find
+the linear combination $w$ of the response variables that has the greatest
+separation among the groups ...
+
+```{r lda}
+(math.lda <- MASS::lda(group ~ ., data=mathscore))
+```
+
+The coefficients give $w = -0.84 \text{BM} + 0.75 \text{WP}$.  This is exactly the direction given by the line for the $mathbf{H}$ ellipse in the figure REF
+
+To round this out, we can calculate the discriminant scores by multiplying the matrix $\mathbf{X}$
+by the vector ??? of the discriminant weights.
+
+```{r}
+math.lda$scaling
+
+scores <- cbind(group = mathscore$group,
+                as.matrix(mathscore[, 2:3]) %*% math.lda$scaling)
+```
+
+Then a $t$-test on these scores gives Hotelling's $T$
+
+```{r}
+t <- t.test(LD1 ~ group, data=scores)$statistic
+t^2
+```
+
+
 ## Exercises
+
+1. The value of Hotelling's $T^2$ found by `hotelling.test()` is 64.17. The value of
+the equivalent $F$ statistic found by `Anova()` is 28.9. Verify that @eq-Fstat gives this
+result.
+
+
 
 ## References {.unnumbered}
 

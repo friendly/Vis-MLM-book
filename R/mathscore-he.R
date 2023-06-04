@@ -25,9 +25,9 @@ resids <- residuals(math.mod)
 crossprod(resids)
 
 fit <- fitted(math.mod)
-ybar <- colMeans(mathscore[,2:3])
-n <- nrow(mathscore)
-crossprod(fit) - n * outer(ybar, ybar)
+xbar <- colMeans(mathscore[,2:3])
+N <- nrow(mathscore)
+crossprod(fit) - N * outer(xbar, xbar)
 
 cols <- c("darkgreen", "blue", "red")
 pch <- ifelse(mathscore$group==1, 15, 16)
