@@ -2,6 +2,16 @@
 source("R/common.R")
 ```
 
+**Packages**
+In this chapter we use the following packages. Load them now
+```{r pkgs-hotel}
+library(car)
+library(dplyr)
+library(heplots)
+library(Hotelling)
+```
+
+
 # Hotelling's $T^2$
 
 Just as the one- and two- sample univariate $t$-test is the gateway drug for understanding
@@ -54,7 +64,7 @@ H_0 : \mathbf{\mu} = \mathbf{\mu_0} =
   \end{pmatrix}
 $$
 
-![](equations/eqn-mathscore1.png){width=50% fig-align="center"}
+<!-- ![](equations/eqn-mathscore1.png){width=50% fig-align="center"} -->
 
 Hotelling's $T^2$ is then the analog of $t^2$, with the variance-covariance matrix $\mathbf{S}$ of the scores
 on (BM, WP) replacing the variance of a single score.  This is nothing more than the 
@@ -95,7 +105,7 @@ of the matrix $\mathbf{Q}_H = N (\bar{\mathbf{x}} - \mathbf{\mu}_0)^T  (\bar{\ma
 that solves the equation
 $$
 (\mathbf{Q}_H - \lambda \mathbf{Q}_E) \mathbf{a} = 0
-$$
+$$ {#eq-eigen}
 
 * **Eigenvector** : The corresponding eigenvector is 
 $\mathbf{a} = \mathbf{S}^{-1} (\bar{\mathbf{x}} - \mathbf{\mu}_0)$. These are the 
@@ -107,7 +117,7 @@ $N-1$ degrees of freedom is an $F (1, N-1)$ statistic. Because we chose $\mathbf
 to give the maximum $t^2 (\mathbf{a})$, this can be taken into account with a
 transformation of $T^2$ to give a proper $F$ test,
 $$
-F^* = \frac{N - p}{n (N-1)} T^2 \; \sim \; F (p, N - p)
+F^* = \frac{N - p}{p (N-1)} T^2 \; \sim \; F (p, N - p)
 $$
 
 * **Invariance under linear transformation** : Just as a univariate $t$-test is unchanged if
@@ -127,7 +137,7 @@ where $\mathbf{S}_p$ is the pooled within-sample variance covariance matrix.
 
 ### Example {.unnumbered}
 
-The data set `mathscore` gives scores on a test of basic math skills (BM) and solving word problems (WP) for two groups of $N=6$ students in an algebra course, each taught by different instructors.
+The data set `mathscore` gives (fictitious) scores on a test of basic math skills (BM) and solving word problems (WP) for two groups of $N=6$ students in an algebra course, each taught by different instructors.
 
 ```{r}
 data(mathscore, package = "heplots")
@@ -135,20 +145,20 @@ str(mathscore)
 ```
 
 You can carry out the test that the means for both variables are equal using either
-`DescTools::HotellingsT2Test()` or `car::Anova()`,
+`Hotelling::hotelling.test` [@R-Hotelling] or `car::Anova()`,
 
-```{r}
-DescTools::HotellingsT2Test(cbind(BM, WP) ~ group, data=mathscore)
+```{r mathscore1}
+hotelling.test(cbind(BM, WP) ~ group, data=mathscore) |> print()
 
-mod <- lm(cbind(BM, WP) ~ group, data=mathscore)
-car::Anova(mod)
+math.mod <- lm(cbind(BM, WP) ~ group, data=mathscore)
+Anova(math.mod)
 ```
 
 What's wrong with just doing the two $t$-tests (or equivalent $F$-test with `lm()`)?
 
-```{r}
-car::Anova(mod1 <- lm(BM ~ group, data=mathscore))
-car::Anova(mod2 <- lm(WP ~ group, data=mathscore))
+```{r mathscore2}
+Anova(mod1 <- lm(BM ~ group, data=mathscore))
+Anova(mod2 <- lm(WP ~ group, data=mathscore))
 ```
 
 From this, we might conclude that the two groups do not differ significantly on Basic Math
@@ -159,17 +169,17 @@ To see the differences between the groups on both variables together, we draw th
 ellipses, using `heplots::covEllpses()`
 
 ```{r}
-#| label: mathscore-cov1
+#| label: fig-mathscore-cov1
 #| fig-align: center
-#| out-width: "60%"
+#| out-width: "70%"
 #| fig-cap: "Data ellipses for the `mathscore` data."
-library(heplots)
 colors <- c("darkgreen", "blue")
 covEllipses(cbind(BM, WP) ~ group, data = mathscore,
             pooled=FALSE, 
             col = colors,
-            fill = TRUE, fill.alpha = 0.05,
-            cex=2, cex.lab=1.5,
+            fill = TRUE, 
+            fill.alpha = 0.05,
+            cex = 2, cex.lab = 1.5,
             asp = 1,
             xlab="Basic math", ylab="Word problems")
 # plot points
@@ -184,8 +194,136 @@ We can see that:
 * Group 2 > Group 1 on Word Problems, but worse on Basic Math
 * Within each group, those who do better on Basic Math also do better on Word Problems
 
+A relatively simple interpretation is that the groups don't really differ in overall
+math ability, but perhaps the instructor in Group 1 put more focus on basic math skills,
+while the instructore for Group 2 placed greater emphasis on solving word problems.
+
 In Hotelling's $T^2$, the "size" of the difference between the means (labeled "1" and "2")
-is assessed relative to the pooled within-group covariance matrix $\mathbf{S}_p$
+is assessed relative to the pooled within-group covariance matrix $\mathbf{S}_p$, which is just a weighted average to the two within-sample matrices, $\mathbf{S}_1$ and $\mathbf{S}_2$,
+
+$$
+\mathbf{S}_p = [ (n_1 - 1) \mathbf{S}_1 + (n_2 - 1) \mathbf{S}_2 ] / (n_1 + n_2 - 2)
+$$
+
+Visually, imagine sliding the the separate data ellipses to the grand mean,
+$(\bar{x}_{\text{BM}}, \bar{x}_{\text{WP}})$ and finding their combined data ellipse.
+This is just the data ellipse of the sample of deviations of the scores from their
+group means, or that of the residuals from the model `lm(cbind(BM, WP) ~ group, data=mathscore)`
+
+To see this, we plot $\mathbf{S}_1$, $\mathbf{S}_2$ and $\mathbf{S}_p$ together,
+
+```{r}
+#| label: fig-mathscore-cov2
+#| fig-align: center
+#| out-width: "70%"
+#| fig-cap: "Data ellipses and the pooled covariance matrix `mathscore` data."
+covEllipses(cbind(BM, WP) ~ group, data = mathscore,
+            col = c(colors, "red"),
+            fill = c(FALSE, FALSE, TRUE), 
+            fill.alpha = 0.3,
+            cex = 2, cex.lab = 1.5,
+            asp = 1,
+            xlab="Basic math", ylab="Word problems")
+```
+
+One of the assumptions of the $T^2$ test (and of MANOVA) is that the within-group variance covariance matrices, $\mathbf{S}_1$ and $\mathbf{S}_2$, are the same.
+In @fig-mathscore-cov2, you can see how the shapes of $\mathbf{S}_1$ and $\mathbf{S}_2$ are very
+similar, differing in that the variance of word Problems is slightly greater for group 2.
+In Chapter XX we take of the topic of visualizing tests of this assumption, based on 
+Box's $M$-test.
+
+
+
+## HE plot and discriminant axis
+
+As we describe in detail in Chapter XX, all the information relevant to the 
+$T^2$ test and MANOVA can be captured in the remarkably simple
+_Hypothesis Error_ plot, which shows the relative size of two data ellipses,
+
+* $\mathbf{H}$: the data ellipse of the _fitted_ values, which are just the 
+group means on the two variables, $\bar{\mathbf{x}}$, corresponding to $\mathbf{Q}_H$
+in @eq-eigen. In case of $T^2$, the $\mathbf{H}$ matrix is of rank 1, so the
+"ellipse" plots as a line.
+
+* $\mathbf{E}$: the data ellipse of the _residuals_, the deviations of the scores
+from the group means, $\mathbf{x} - \bar{\mathbf{x}}$, corresponding to $\mathbf{Q}_E$.
+
+`heplots::heplot()` takes the model object, extracts the $\mathbf{H}$ and $\mathbf{E}$
+matrices (from `summary(Anova(math.mod))`) and plots them. There are many options to control the details.
+```{r}
+#| label: fig-mathscore-HE
+#| fig-align: center
+#| out-width: "70%"
+#| fig-cap: "Hypothesis error plot of the `mathscore` data. The line through the group means is the H ellipse, which plots as a line here. The red ellipse labeled 'Error' represents the pooled within-group covariance matrix."
+heplot(math.mod, 
+       fill=TRUE, lwd = 3,
+       asp = 1,
+       cex=2, cex.lab=1.8,
+       xlab="Basic math", ylab="Word problems")
+```
+
+But the HE plot offers more:
+
+* A visual test of significance: the $\mathbf{H}$ ellipse is scaled so that it projects _anywhere_ outside the $\mathbf{E}$ ellipse, if and only if the test is significant at a given $\alpha$ level ($\alpha = 0.05$ by default)
+
+* The $\mathbf{H}$ ellipse, which appears as a line, goes through the means of the two groups.
+This is also the _discriminant axis_, the direction in the space of the variables which maximally
+discriminates between the groups. That is, if we project the data points onto this line, we get the
+linear combination $w$ which has the maximum possible univariate $t^2$.
+
+You can see how the HE plot relates to the plots of the separate data ellipses by overlaying them
+in a single figure. We also plot the scores on the discriminant axis, by using this small function
+to find the projection of a point `A` on the line joining two points, `L1` and `L2`:
+
+```{r project-on}
+project_on <- function(A, L1, L2) {
+	A <- as.numeric(A)
+	L1 <- as.numeric(L1)
+	L2 <- as.numeric(L2)
+	dot <- function(x,y) sum( x * y)	
+	t <- dot(L2-L1, A-L1) / dot(L2-L1, L2-L1)
+	C <- L1 + t*(L2-L1)
+	C
+}
+```
+
+```{r}
+#| label: fig-mathscore-HE-overlay
+#| fig-align: center
+#| out-width: "70%"
+#| fig-cap: "HE plot overlaid on top of the within-group data ellipses, with lines showing the projection of each point on the discriminant axis."
+covEllipses(cbind(BM, WP) ~ group, data = mathscore,
+            pooled=FALSE, 
+            col = colors,
+            cex=2, cex.lab=1.5,
+            asp=1, 
+            xlab="Basic math", ylab="Word problems"
+            )
+pch <- ifelse(mathscore$group==1, 15, 16)
+col <- ifelse(mathscore$group==1, "red", "blue")
+points(mathscore[,2:3], pch=pch, col=col, cex=1.25)
+
+# overlay with HEplot (add = TRUE)
+heplot(math.mod, 
+       fill=TRUE, 
+       cex=2, cex.lab=1.8, 
+  	   fill.alpha=0.2, lwd=c(1,3),
+	     add = TRUE, 
+       error.ellipse=TRUE)
+
+# find group means
+means <- mathscore |>
+  group_by(group) |>
+  summarize(BM = mean(BM), WP = mean(WP))
+
+for(i in 1:nrow(mathscore)) {
+	gp <- mathscore$group[i]
+	pt <- project_on( mathscore[i, 2:3], means[1, 2:3], means[2, 2:3]) 
+	segments(mathscore[i, "BM"], mathscore[i, "WP"], pt[1], pt[2])
+}
+```
+
+## Exercises
 
 ## References {.unnumbered}
 
