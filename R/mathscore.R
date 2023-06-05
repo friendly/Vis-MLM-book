@@ -37,9 +37,9 @@ p <- 2
 math.mod <- lm(cbind(BM, WP) ~ group, data=mathscore)
 car::Anova(mod)
 
-summary(Anova(mod))
+summary(Anova(math.mod))
 
-print(summary(Anova(mod)), SSP=FALSE)
+print(summary(Anova(math.mod)), SSP=FALSE)
 
 
 means <-  aggregate(cbind(BM, WP)~group, mean, data=mathscore)[,-1]
@@ -83,7 +83,7 @@ covEllipses(cbind(BM, WP) ~ group, data = mathscore,
 
 
 op <- par(mar=c(4,5,1,1)+.2)
-heplot(mod, 
+heplot(math.mod, 
        fill=TRUE, lwd = 3,
        asp = 1,
        cex=2, cex.lab=1.8,
@@ -91,13 +91,14 @@ heplot(mod,
 par(op)
 
 library(candisc)
-mod.can <- candisc(mod)
-mod.can
+math.can <- candisc(math.mod)
+math.can
 
-plot(mod.can, var.lwd=3)
+plot(math.can, var.lwd=3)
 
 # t-test of canonical scores.
- t.test(Can1 ~ group, data=mod.can$scores)
+t.test(Can1 ~ group, data=math.can$scores)
+t.test(Can1 ~ group, data=math.can$scores)$statistic
 
 # overlay with HEplot
 covEllipses(cbind(BM, WP) ~ group, data = mathscore,
@@ -122,15 +123,26 @@ heplot(math.mod,
 
 
 # find projection of point A on line between L1 and L2
-project_on <- function(A, L1, L2) {
-	A <- as.numeric(A)
-	L1 <- as.numeric(L1)
-	L2 <- as.numeric(L2)
-	dot <- function(x,y) sum( x * y)	
-	t <- dot(L2-L1, A-L1) / dot(L2-L1, L2-L1)
-	C <- L1 + t*(L2-L1)
-	C
-}
+# project_on <- function(A, L1, L2) {
+# 	A <- as.numeric(A)
+# 	L1 <- as.numeric(L1)
+# 	L2 <- as.numeric(L2)
+# 	dot <- function(x,y) sum( x * y)	
+# 	t <- dot(L2-L1, A-L1) / dot(L2-L1, L2-L1)
+# 	C <- L1 + t*(L2-L1)
+# 	C
+# }
+# viz. geometry::dot
+dot <- function(x, y) sum(x*y)
+project_on <- function(a, p1, p2) {
+  a <- as.numeric(a)
+  p1 <- as.numeric(p1)
+  p2 <- as.numeric(p2)
+  dot <- function(x,y) sum( x * y)	
+  d <- dot(p2-p1, a-p1) / dot(p2-p1, p2-p1)
+  C <- p1 + t*(p2-p1)
+  C
+} 
 
 # find group means
 means <- mathscore |>
@@ -155,10 +167,24 @@ as.matrix(mathscore[, 2:3]) %*% math.lda$scaling
 
 scores <- cbind(group = mathscore$group,
                 as.matrix(mathscore[, 2:3]) %*% math.lda$scaling)
+scores <- cbind(group = mathscore$group,
+                as.matrix(mathscore[, 2:3]) %*% math.lda$scaling) |>
+  as.data.frame()
+
+scores |>
+  group_by(group) |>
+  slice(1:3)
+
 
 t.test(LD1 ~ group, data=scores)$statistic
 
 
+# boxplots of scores
 
+scores <- mathscore |>
+  bind_cols(LD1 = scores[, "LD1"]) 
+
+scores |>
+  tidyr::gather(key = "measure", BM:LD1)
 
 
