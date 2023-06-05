@@ -15,8 +15,7 @@ library(Hotelling)
 # Hotelling's $T^2$
 
 Just as the one- and two- sample univariate $t$-test is the gateway drug for understanding
-analysis of variance, so to Hotelling's $T^2$ test provides an entry point to multivariate
-analysis of variance.
+analysis of variance, so to Hotelling's $T^2$ test provides an entry point to multivariate analysis of variance.
 
 The essential idea is that Hotelling's $T^2$ provides a test of the difference in
 means between two groups on a collection of variables, $\mathbf{x} = x_1, x_2, \dots x_p$
@@ -91,13 +90,13 @@ knitr::include_graphics("images/T2-diagram.png")
 Aside from it's elegant geometric interpretation Hotelling's $T^2$ has simple properties that aid in understanding the extension to more complex multivariate tests.
 
 * **Maximum $t^2$** : 
-Consider a linear combination $w$ of the scores in a matrix 
+Consider constructing a new variable $w$ as a linear combination of the scores in a matrix 
 $\mathbf{X} = [ \mathbf{x_1}, \mathbf{x_2}, \dots, \mathbf{x_p}]$ with weights $\mathbf{a}$,
 
 $$
 w = a_1 \mathbf{x_1} + a_2 \mathbf{x_2} + \dots + a_p \mathbf{x_p} = \mathbf{X} \mathbf{a}
 $$
-Hotelling's $T^2$ is then the maximum value of a univariate $t^2 (\mathbf{a})$ for all choices of the weights in $\mathbf{a}$.
+Hotelling's $T^2$ is then the maximum value of a univariate $t^2 (\mathbf{a})$ over all possible choices of the weights in $\mathbf{a}$. In this way, Hotellings test reduces a multivariate problem to a univariate one.
 
 * **Eigenvalue** : Hotelling showed that $T^2$ is the one non-zero eigenvalue (latent root)
 $\lambda$
@@ -106,26 +105,33 @@ that solves the equation
 $$
 (\mathbf{Q}_H - \lambda \mathbf{Q}_E) \mathbf{a} = 0
 $$ {#eq-eigen}
+In more complex MANOVA problems, there are more than one non-zero latent
+roots, $\lambda_1, \lambda_2, \dots \lambda_s$, and test statistics
+are functions of these.
+
 
 * **Eigenvector** : The corresponding eigenvector is 
 $\mathbf{a} = \mathbf{S}^{-1} (\bar{\mathbf{x}} - \mathbf{\mu}_0)$. These are the 
-(raw) discriminant coefficients, giving the relative contribution of each variable
-to $T^2$.
+(raw) _discriminant coefficients_, giving the relative contribution of each variable to $T^2$.
 
 * **Critical values** : For a single response, the square of a $t$ statistic with
-$N-1$ degrees of freedom is an $F (1, N-1)$ statistic. Because we chose $\mathbf{a}$
-to give the maximum $t^2 (\mathbf{a})$, this can be taken into account with a
-transformation of $T^2$ to give a proper $F$ test,
+$N-1$ degrees of freedom is an $F (1, N-1)$ statistic. But we chose $\mathbf{a}$
+to give the _maximum_ $t^2 (\mathbf{a})$; this can be taken into account with a
+transformation of $T^2$ to give an **exact** $F$ test with the correct
+sampling distribution:
 $$
 F^* = \frac{N - p}{p (N-1)} T^2 \; \sim \; F (p, N - p)
 $$ {#eq-Fstat}
+ 
 
 * **Invariance under linear transformation** : Just as a univariate $t$-test is unchanged if
 we apply a linear transformation to the variable, $x \rightarrow a x + b$, $T^2$ is invariant
-under all linear (affine) transformations,
+under all linear (_affine_) transformations,
 $$
 \mathbf{x}_{p \times 1} \rightarrow \mathbf{C}_{p \times p} \mathbf{x} + \mathbf{b}
 $$
+So, you get the same results if you convert penguins flipper lengths from
+millimeters to centimeters or inches.
 The same is true for all MANOVA tests.
 
 * **Two-sample tests** : With minor variations in notation, everything above applies to the more usual test of equality of multivariate means in a two sample test of
@@ -144,7 +150,7 @@ data(mathscore, package = "heplots")
 str(mathscore)
 ```
 
-You can carry out the test that the means for both variables are equal using either
+You can carry out the test that the means for both variables are jointly equal using either
 `Hotelling::hotelling.test` [@R-Hotelling] or `car::Anova()`,
 
 ```{r mathscore1}
@@ -193,6 +199,8 @@ We can see that:
 * Group 1 > Group 2 on Basic Math, but worse on Word Problems
 * Group 2 > Group 1 on Word Problems, but worse on Basic Math
 * Within each group, those who do better on Basic Math also do better on Word Problems
+
+We can also see why the univariate test, at least for
 
 A relatively simple interpretation is that the groups don't really differ in overall
 math ability, but perhaps the instructor in Group 1 put more focus on basic math skills,
@@ -361,16 +369,19 @@ separation among the groups ...
 The coefficients give $w = -0.84 \text{BM} + 0.75 \text{WP}$.  This is exactly the direction given by the line for the $mathbf{H}$ ellipse in the figure REF
 
 To round this out, we can calculate the discriminant scores by multiplying the matrix $\mathbf{X}$
-by the vector ??? of the discriminant weights.
+by the vector $\mathbf{a} = \mathbf{S}^{-1} (\bar{\mathbf{x}}_1 - \bar{\mathbf{x}}_2)$ of the discriminant weights.
 
 ```{r}
 math.lda$scaling
 
 scores <- cbind(group = mathscore$group,
                 as.matrix(mathscore[, 2:3]) %*% math.lda$scaling)
+scores |>
+  group_by(group) |>
+  slice(c(1, 2, n()))
 ```
 
-Then a $t$-test on these scores gives Hotelling's $T$
+Then a $t$-test on these scores gives Hotelling's $T$, accessed via the `statistic` component of `t.test()`
 
 ```{r}
 t <- t.test(LD1 ~ group, data=scores)$statistic
@@ -381,8 +392,7 @@ t^2
 ## Exercises
 
 1. The value of Hotelling's $T^2$ found by `hotelling.test()` is 64.17. The value of
-the equivalent $F$ statistic found by `Anova()` is 28.9. Verify that @eq-Fstat gives this
-result.
+the equivalent $F$ statistic found by `Anova()` is 28.9. Verify that @eq-Fstat gives this result.
 
 
 
