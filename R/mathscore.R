@@ -2,6 +2,7 @@ library(car)
 library(heplots)
 #library(DescTools)
 library(dplyr)
+library(ggplot2)
 
 
 data(mathscore, package = "heplots")
@@ -185,6 +186,18 @@ scores <- mathscore |>
   bind_cols(LD1 = scores[, "LD1"]) 
 
 scores |>
-  tidyr::gather(key = "measure", BM:LD1)
+  tidyr::gather(key = "measure", value ="Score", BM:LD1) |>
+  mutate(measure = factor(measure, levels = c("BM", "WP", "LD1"))) |>
+  ggplot(aes(x = group, y = Score, color = group, fill = group)) +
+    geom_violin(alpha = 0.2) +
+    geom_jitter(width = .2, size = 2) +
+    facet_grid( ~ measure, 
+#                levels = c("BM", "WP", "LD1"),
+                scales = "free", labeller = label_both) +
+    scale_fill_manual(values = c("darkgreen", "blue")) +
+    scale_color_manual(values = c("darkgreen", "blue")) +
+    theme_bw(base_size = 14)
+  
 
 
+  

@@ -6,9 +6,11 @@ source("R/common.R")
 In this chapter we use the following packages. Load them now
 ```{r pkgs-hotel}
 library(car)
-library(dplyr)
 library(heplots)
 library(Hotelling)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
 ```
 
 
@@ -99,7 +101,6 @@ Aside from it's elegant geometric interpretation Hotelling's $T^2$ has simple pr
 * **Maximum $t^2$** : 
 Consider constructing a new variable $w$ as a linear combination of the scores in a matrix 
 $\mathbf{X} = [ \mathbf{x_1}, \mathbf{x_2}, \dots, \mathbf{x_p}]$ with weights $\mathbf{a}$,
-
 $$
 w = a_1 \mathbf{x_1} + a_2 \mathbf{x_2} + \dots + a_p \mathbf{x_p} = \mathbf{X} \mathbf{a}
 $$
@@ -147,7 +148,6 @@ $$
 T^2 = N (\bar{\mathbf{x}}_1 - \bar{\mathbf{x}}_2)^T \; \mathbf{S}_p^{-1} \; (\bar{\mathbf{x}}_1 - \bar{\mathbf{x}}_2)
 $$
 where $\mathbf{S}_p$ is the pooled within-sample variance covariance matrix.
-The null hypothesis in this case is $H_0 : \mathbf{\mu}_1 = \mathbf{\mu}_2$.
 
 ### Example {.unnumbered}
 
@@ -328,7 +328,7 @@ project_on <- function(a, p1, p2) {
 	p1 <- as.numeric(p1)
 	p2 <- as.numeric(p2)
 	dot <- function(x,y) sum( x * y)	
-	d <- dot(p2-p1, a-p1) / dot(p2-p1, p2-p1)
+	t <- dot(p2-p1, a-p1) / dot(p2-p1, p2-p1)
 	C <- p1 + t*(p2-p1)
 	C
 }
@@ -369,7 +369,7 @@ means <- mathscore |>
 for(i in 1:nrow(mathscore)) {
 	gp <- mathscore$group[i]
 	pt <- project_on( mathscore[i, 2:3], means[1, 2:3], means[2, 2:3]) 
-	segments(mathscore[i, "BM"], mathscore[i, "WP"], pt[1], pt[2])
+	segments(mathscore[i, "BM"], mathscore[i, "WP"], pt[1], pt[2], lwd = 1.2)
 }
 ```
 
@@ -388,7 +388,7 @@ of developing a rule to classify instances of flowers---in his famous case, Iris
 (math.lda <- MASS::lda(group ~ ., data=mathscore))
 ```
 
-The coefficients give $w = -0.84 \text{BM} + 0.75 \text{WP}$.  This is exactly the direction given by the line for the $mathbf{H}$ ellipse in the figure REF
+The coefficients give $w = -0.84 \text{BM} + 0.75 \text{WP}$.  This is exactly the direction given by the line for the $\mathbf{H}$ ellipse in @fig-mathscore-HE-overlay.
 
 To round this out, we can calculate the discriminant scores by multiplying the matrix $\mathbf{X}$
 by the vector $\mathbf{a} = \mathbf{S}^{-1} (\bar{\mathbf{x}}_1 - \bar{\mathbf{x}}_2)$ of the discriminant weights.
@@ -408,8 +408,36 @@ Then a $t$-test on these scores gives Hotelling's $T$, accessed via the `statist
 
 ```{r}
 t <- t.test(LD1 ~ group, data=scores)$statistic
-t^2
+c(t, T2 =t^2)
 ```
+
+Finally, it is instructive to compare violin plots for the three measures,
+`BM`, `WP` and `LD1`. To do this with `ggplot2` requires reshaping the
+data from wide to long format so the plots can be faceted.
+
+```{r}
+#| label: fig-mathscore-violins
+#| fig-align: center
+#| out-width: "90%"
+#| fig-cap: "Violin plots comparing group 1 and 2 for the two observed measures and the linear discriminant score."
+scores <- mathscore |>
+  bind_cols(LD1 = scores[, "LD1"]) 
+
+scores |>
+  tidyr::gather(key = "measure", value ="Score", BM:LD1) |>
+  mutate(measure = factor(measure, levels = c("BM", "WP", "LD1"))) |>
+  ggplot(aes(x = group, y = Score, color = group, fill = group)) +
+    geom_violin(alpha = 0.2) +
+    geom_jitter(width = .2, size = 2) +
+    facet_wrap( ~ measure, scales = "free", labeller = label_both) +
+    scale_fill_manual(values = c("darkgreen", "blue")) +
+    scale_color_manual(values = c("darkgreen", "blue")) +
+    theme_bw(base_size = 14) +
+    theme(legend.position = "none")
+```
+
+You can readily see how well the groups are separated on the discriminant axes,
+relative to the two individual variables.
 
 
 <!-- ## Canonical analysis  -->
