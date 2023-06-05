@@ -38,6 +38,8 @@
     - diagnostic plots
     - visualizing multicolinearity
 
+## Hotelling's T^2
+
 ## Brief review of the MLM
 
 -   ANOVA -\> MANOVA
@@ -55,16 +57,22 @@
 -   data ellipses (maybe earlier??)
 -   evidence vs. effect scaling
 
+## Case study: one of the following
 ## MANOVA Examples
 
--   iris data \[maybe use this earlier?\]
--   parenting data \[from TQMP tutorial\]
--   diabetes data \[from candisc vignette\]
--   Neuro-Cog & Social-Cog \[from TQMP tutorial\]
+-   iris data [maybe use this earlier?]
+-   parenting data [from TQMP tutorial]
+-   diabetes data [from candisc vignette]
+-   Neuro-Cog & Social-Cog [from TQMP tutorial]
 
 ## MMRA Examples
 
--   Rohwer data \[from HE-plot-examples vignette & TQMP tutorial\]
+-   Rohwer data from [HE-plot-examples vignette & TQMP tutorial]
 -   
 
 ## Model diagnostic plots
+
+  - univariate influence
+  - multivariate influence
+
+## Visualizing equality of covariance matrices
