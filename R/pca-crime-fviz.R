@@ -12,7 +12,7 @@ crime.pca <- crime2 |>
   PCA(graph = FALSE)
   
 fviz_pca_biplot(crime.pca, label = c("var", "id"), 
-                habillage=crime$region,
+                habillage=crime2$region,
                 addEllipses=TRUE, ellipse.level=0.68,
                 ggtheme = theme_minimal()) 
 

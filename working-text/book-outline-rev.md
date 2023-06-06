@@ -57,7 +57,10 @@
 -   data ellipses (maybe earlier??)
 -   evidence vs. effect scaling
 
-## Case study: one of the following
+## Case studies
+
+- NeuroCog and SocialCog
+
 ## MANOVA Examples
 
 -   iris data [maybe use this earlier?]
