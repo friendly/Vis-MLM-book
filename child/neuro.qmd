@@ -89,6 +89,7 @@ are used to give these greater visual prominence.
 #| label: fig-NC-boxplot
 #| fig-align: center
 #| out-width: "120%"
+#| code-fold: show
 #| fig-cap: "Boxplots and violin plots of the `NeuroCog` data."
 ggplot(NC_long, aes(x=Dx, y=value, fill=Dx)) +
   geom_jitter(shape=16, alpha=0.8, size=1, width=0.2) +
@@ -295,5 +296,189 @@ This analysis gives a very simple description of the data, in relation to the re
 
 * All cognitive domains distinguish the groups in the same direction, with the greatest differences shown for the variables most closely aligned with the horizontal axis in @fig-NC-candisc.
 
+## Social cognitive measures
+
+The social cognitive measures were designed to tap various aspects of the perception and cognitive
+processing of emotions of others.  Emotion perception was assessed using a Managing Emotions
+score from the MCCB.  A "theory of mind" (`ToM`) score assessed ability to read the emotions of
+others from photographs of the eye region of male and female faces. Two other measures,
+externalizing bias (`ExtBias`) and personalizing bias (`PersBias`) were
+calculated from a scale measuring the degree to which individuals attribute internal, personal
+or situational causal attributions to positive and negative social events.
+
+The analysis of the `SocialCog` data proceeds in a similar way: first we fit the MANOVA model,
+then test the overall differences among groups using `Anova()`.  We find that the overall multivariate test is again significant, 
+
+
+```{r SC-mlm}
+data(SocialCog, package="heplots")
+SC.mlm <-  lm(cbind(MgeEmotions,ToM, ExtBias, PersBias) ~ Dx,
+               data=SocialCog)
+Anova(SC.mlm)
+```
+
+Testing the same
+two contrasts using `linearHypothesis()` (results not shown), w
+e find that the overall multivariate test is again significant, but now _both_ contrasts
+are significant (Dx1: $F(4, 133)=5.21, p < 0.001$; Dx2: $F(4, 133)=2.49, p = 0.0461$),
+the test for `Dx2` just barely.
+
+```{r SC-mlm1}
+#| results: hide
+# control vs. patients
+print(linearHypothesis(SC.mlm, "Dx1"), SSP=FALSE)
+# Schizo vs. SchizAff
+print(linearHypothesis(SC.mlm, "Dx2"), SSP=FALSE)
+```
+
+These results are important, because, if they are reliable and make sense
+substantively, they imply that patients with
+schizophrenia and schizoaffective diagnoses _can_ be distinguished by their performance
+on tasks assessing social perception and cognition. This was potentially a new finding in the
+literature on schizophrenia.
+
+
+As we did above, it is useful to visualize the nature of these differences among groups
+with HE plots for the `SC.mlm` model.
+Each contrast has a corresponding $\mathbf{H}$ ellipse, which we can show in the plot
+using the `hypotheses` argument. With a single degree of freedom, these degenerate
+ellipses plot as lines.
+
+```{r}
+#| label: fig-SC-HEplot
+#| fig-align: center
+#| out-width: "70%"
+#| fig-cap: "HE plot of Speed and Attention in the MLM for the `SocialCog` data. The labeled points show the means of the groups on the two variables. The lines for Dx1 and Dx2 show the tests of the contrasts among groups."
+#| fig-show: hold
+op <- par(mar=c(5,4,1,1)+.1)
+heplot(SC.mlm, 
+       hypotheses=list("Dx1"="Dx1", "Dx2"="Dx2"),
+       fill=TRUE, fill.alpha=.1,
+       cex.lab=1.5, cex=1.2)
+par(op)
+```
+
+It can be seen that the three group
+means are approximately equally spaced on the `ToM` measure, whereas for
+`MgeEmotions`, the control and schizoaffective groups are quite similar, and
+both are higher than the schizophrenic group.  This ordering of the three
+groups was somewhat similar for the other responses, as we could see in a
+`pairs(SC.mlm)` plot.
+
+
+### Model checking
+
+Normally, we would continue this analysis, and consider other HE and canonical
+discriminant plots to further interpret the results, in particular the
+relations of the cognitive measures to group differences, or perhaps an
+analysis of the relationships between the neuro- and social-cognitive measures.
+We don't pursue this here for reasons of length, but this example actually has a more important lesson to demonstrate.
+
+Before beginning the MANOVA analyses, extensive data screening was done by the client
+using SPSS, in which all the response _and_ predictor variables were checked for univariate normality
+and multivariate normality (MVN) for both sets.
+This traditional approach yielded a huge amount of tabular output and no
+graphs, and did not indicate any major violation of assumptions.[^mvn]
+
+[^mvn]: Actually, multivariate normality of the predictors in $\mathbf{X}$ is not required in the MLM.
+This assumption applies only to the conditional values $\mathbf{Y} |; \mathbf{X}$, i.e., that the
+errors $\mathbf{u}_{i}' \sim \mathcal{N}_{p}(\mathbf{0},\boldsymbol{\Sigma})$
+with constant covariance matrix.  Moreover, the widely used MVN test statistics, such as 
+Mardia's [-@Mardia:1970:MMS] test based on multivariate skewness and kurtosis are known to be quite
+sensitive to mild departures in kurtosis [@Mardia:1974] which do not threaten the validity of the multivariate tests.
+
+A simple visual test of MVN and the possible presence of multivariate outliers is related to
+the theory of the data ellipse: Under MVN, the squared Mahalanobis distances
+$D^2_M (\mathbf{y}) = (\mathbf{y} - \bar{\mathbf{y}})' \, \mathbf{S}^{-1} \, (\mathbf{y} - \bar{\mathbf{y}})$
+should follow a $\chi^2_p$ distribution. Thus, a quantile-quantile plot of the
+ordered $D^2_M$ values vs. corresponding quantiles of the $\chi^2$ distribution
+should approximate a straight line [@Cox:1968; @Healy:1968:MNP]. 
+Note that this should be applied to the _residuals_
+from the model -- `residuals(SC.mlm)` -- and not to the response variables directly.
+
+`heplots::cqplot()` implements this for `"mlm"` objects
+Calling this function for the model `SC.mlm` produces \figref{fig:SC-cqplot}.
+It is immediately apparent that there is one extreme multivariate outlier; three other
+points are identified, but the remaining observations
+are nearly within the 95% confidence envelope (using a robust MVE estimate of $\mathbf{S}$).
+
+```{r}
+#| label: fig-SC-cqplot
+#| fig-align: center
+#| out-width: "70%"
+#| fig-cap: "Chi-square quantile-quantile plot for residuals from the model `SC.mlm`. The confidence band gives a point-wise 95% envelope, providing information about uncertainty. One extreme multivariate outlier is highlighted."
+#| fig-show: hold
+op <- par(mar=c(5,4,1,1)+.1)
+cqplot(SC.mlm, method="mve", 
+       id.n=4, 
+       main="", 
+       cex.lab=1.25)
+par(op)
+```
+
+Further checking revealed that this was a data entry error where one case (15) in the
+schizophrenia group had a score of -33
+recorded on the `ExtBias` measure, whose valid range was (-10, +10). In R, it is very easy to
+re-fit a model to a subset of observations (rather than modifying the data set itself) using
+`update()`.  The result of the overall Anova and the test of `Dx1` were unchanged;
+however, the multivariate test for the most interesting contrast `Dx2` comparing the
+schizophrenia and schizoaffective groups became non-significant at the $\alpha=0.05$ level
+($F(4, 133)=2.18, p = 0.0742$).
+```{r SC-update, results='hide'}
+SC.mlm1 <- update(SC.mlm, 
+                  subset=rownames(SocialCog)!="15")
+
+Anova(SC.mlm1)
+print(linearHypothesis(SC.mlm1, "Dx1"), SSP=FALSE)
+print(linearHypothesis(SC.mlm1, "Dx2"), SSP=FALSE)
+```
+
+
+### Canonical HE plot
+
+This outcome creates a bit of a quandry for further analysis 
+(do univariate follow-up tests? try a robust model?) and reporting (what to claim about the `Dx2` contrast?) that we don't explore here.
+Rather,We proceed to attempt to interpret the MLM with the aid of canonical analysis and
+a canonical HE plot.  The canonical analysis of the model `SC.mlm1` now shows that
+both canonical dimensions are significant, and account for 83.9% and 16.1% of between
+group mean differences respectively.
+
+```{r SC-can1}
+SC.can1 <- candisc(SC.mlm1)
+SC.can1
+```
+
+```{r}
+#| label: figSC1-hecan
+#| fig-align: center
+#| out-width: "70%"
+#| fig-cap: "Canonical HE plot for the corrected `SocialCog` MANOVA. The variable vectors show the correlations of the responses with the canonical variables. The embedded green lines show the projections of the **H** ellipses for the contrasts `Dx1` and `Dx2` in canonical space."
+op <- par(mar=c(5,4,1,1)+.1)
+heplot(SC.can1, 
+	fill=TRUE, fill.alpha=.1,
+	hypotheses=list("Dx1"="Dx1", "Dx2"="Dx2"),
+	lwd = c(1, 2, 3, 3),
+	col=c("red", "blue", "darkgreen", "darkgreen"),
+	var.lwd=2, 
+	var.col="black", 
+	label.pos=c(3,1), 
+	var.cex=1.2, 
+	cex=1.25, cex.lab=1.2, 
+	scale=2.8,
+	prefix="Canonical dimension ")
+par(op)
+```
+
+The HE plot version of this canonical plot is shown in @fig-SC1-hecan. Because the
+`heplot()` method for a `"candisc"` object refits the original model to the
+$\mathbf{Z}$ canonical scores, it is easy to also project other linear hypotheses into
+this space.  Note that in this view, both the `Dx1` and `Dx2` contrasts project outside
+$\mathbf{E}$ ellipse.
+
+This canonical HE plot has a very simple description:
+
+* Dimension 1 orders the groups from control to schizoaffective to schizophrenia, while dimension 2 separates the schizoaffective group from the others;
+* Externalizing bias and theory of mind contributes most to the first dimension, while personal bias and managing emotions are more aligned with the second; and,
+* The relations of the two contrasts to group differences and to the response variables can be easily read from this plot.
 
 
