@@ -135,8 +135,12 @@ heplot(SC.can1,
 	hypotheses=list("Dx1"="Dx1", "Dx2"="Dx2"),
 	lwd = c(1, 2, 3, 3),
 	col=c("red", "blue", "darkgreen", "darkgreen"),
-	var.lwd=2, var.col="black", label.pos=c(3,1), var.cex=1.2, 
-	cex=1.25, cex.lab=1.2, scale=2.8,
+	var.lwd=2, 
+	var.col="black", 
+	label.pos=c(3,1), 
+	var.cex=1.2, 
+	cex=1.25, cex.lab=1.2, 
+	scale=2.8,
 	prefix="Canonical dimension ")
 par(op)
 
