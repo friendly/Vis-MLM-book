@@ -33,10 +33,10 @@ This example is concerned with the following substantitive questions:
 
 * If the groups differ, do any of the cognitive domains show particularly larger or smaller differences among these groups? 
 
-* Do the neurocognitive discriminate among the in the same or different ways?
+* Do the neurocognitive measures discriminate among the in the same or different ways?
 If different, how many separate aspects or dimensions are distinguished?
 
-It could aid diagnosis and treatment if these similar mental disorders could be distinguished by tests in the cognitive domain.
+Apart from the research interest, it could aid diagnosis and treatment if these similar mental disorders could be distinguished by tests in the cognitive domain.
 
 
 ### Data
@@ -67,7 +67,7 @@ As always, plot the data first! We want an overview of the distributions of the 
 the centers, spread,  shape and possible outliers for each group on each variable.
 
 The plot below combines the use of boxplots and violin plots to give an informative display.
-As we saw earlier (Chapter XXX), doing this with `ggplot2 requires reshaping the data to
+As we saw earlier (Chapter XXX), doing this with `ggplot2` requires reshaping the data to
 long format.
 
 ```{r NC-long}
@@ -84,6 +84,7 @@ NC_long |>
 In the plot, we take care to adjust the transparency (`alpha`) values for the points,
 violin plots and boxplots so that all can be seen. Options for `geom_boxplot()`
 are used to give these greater visual prominence.
+
 ```{r}
 #| label: fig-NC-boxplot
 #| fig-align: center
@@ -109,9 +110,12 @@ about the relations among variables.
 
 ### Bivariate views
 
-A corrgram [@Friendly:02:corrgram] provides a useful reconnaisance plot of the bivariate correlations in the data set.It suppresses details, and allows focus on the overall pattern.
+#### Corrgram {.unnumbered}
+
+A corrgram [@Friendly:02:corrgram] provides a useful reconnaisance plot of the bivariate correlations in the data set. It suppresses details, and allows focus on the overall pattern.
 The `corrgram::corrgram()` function has the ability to enhance perception by
-permuting the variables in the order of their variable vectors in a biplot.
+permuting the variables in the order of their variable vectors in a biplot, so more highly correlated variables are adjacent in the plot, and example of _effect ordering_ for
+data displays [@FriendlyKwan:02:effect].
 
 The plot below includes all variables except for `Dx` group.
 There are a number of `panel.*` functions for choosing how the correlation for each pair is
@@ -122,7 +126,7 @@ rendered.
 #| fig-align: center
 #| fig-asp: 1
 #| out-width: "90%"
-#| fig-cap: "Scatterplot matrix of the `NeuroCog` data. Points are suppressed here, focusing on the data ellipses and regression lines"
+#| fig-cap: "corrgram of the `NeuroCog` data. The upper and lower triangles use two different ways of encoding the value of the correlation for each pair of variables."
 NeuroCog |>
   select(-Dx) |>
   corrgram(order = TRUE,
@@ -130,19 +134,30 @@ NeuroCog |>
            upper.panel = panel.pie)
 ```
 
+In this plot you can see that adjacent variables are more highly correlated than those
+more widely separated.  The diagonal panels show that most variables are reasonably
+symmetric in their distributions. `Age`, not included in this analysis is negatively
+correlated with the others: older participants tend to do less well on these tests.
+
+#### Scatterplot matrix {.unnumbered}
 
 A scatterplot matrix gives a more detailed overview of all pairwise relations.
-The plot below suppresses the data points and summarises the relation using
+The plot below suppresses the data points and summarizes the relation using
 data ellipses and regression lines.
-The model syntax, `~ Speed + ... |Dx`, treats `Dx` as a conditioning variable,
+The model syntax, `~ Speed + ... |Dx`, treats `Dx` as a conditioning variable
+(similar to the use of the `color` aestheic in `ggplot2`)
 giving a separate data ellipse and regression line for each group.
+(The legend is suppressed here. The groups are 
+`r colorize("Schizophrenic", "red")`,
+`r colorize("SchizoAffective", "green")`,
+`r colorize("Normal", "blue")`.)
 
 ```{r}
 #| label: fig-NC-scatmat
 #| fig-align: center
 #| fig-asp: 1
 #| out-width: "100%"
-#| fig-cap: "Scatterplot matrix of the `NeuroCog` data. Points are suppressed here, focusing on the data ellipses and regression lines"
+#| fig-cap: "Scatterplot matrix of the `NeuroCog` data. Points are suppressed here, focusing on the data ellipses and regression lines. Colors for the groups: Schizophrenic (red), SchizoAffective (green), Normal (blue)"
 scatterplotMatrix(~ Speed + Attention + Memory + Verbal + Visual + ProbSolv | Dx,
   data=NeuroCog,
   plot.points = FALSE,
@@ -152,16 +167,16 @@ scatterplotMatrix(~ Speed + Attention + Memory + Verbal + Visual + ProbSolv | Dx
   ellipse=list(levels=0.68))
 ```
 
+In this figure, we can see that the regression lines have similar slopes and similar data ellipses
+for the groups, though with a few exceptions. 
+
 **TODO**: Should we add biplot here?
 
 ## Fitting the MLM
 
-We proceed to fit the model ...
-```{r}
-# abbreviate levels for plots
-NeuroCog$Dx <- factor(NeuroCog$Dx, 
-                      labels = c("Schiz", "SchAff", "Contr"))
+We proceed to fit the one-way MANOVA model.
 
+```{r NC-lm}
 NC.mlm <- lm(cbind(Speed, Attention, Memory, Verbal, Visual, ProbSolv) ~ Dx,
              data=NeuroCog)
 Anova(NC.mlm)
@@ -169,30 +184,116 @@ Anova(NC.mlm)
 
 The first research question is captured by the contrasts for the `Dx` factor shown above.
 We can test these with `car::linearHypothesis()`.
-The contrast `Dx1` for control vs. diagnosed is highly significant, 
+The contrast `Dx1` for control vs. the diagnosed groups is highly significant, 
+
 ```{r NC-linhyp}
 # control vs. patients
 print(linearHypothesis(NC.mlm, "Dx1"), SSP=FALSE)
 ```
+
 but the second
-contrast `Dx2` comparing the schizophrenic and schizoaffective group is not.
+contrast, `Dx2`, comparing the schizophrenic and schizoaffective group, is not.
 
 ```{r NC-linhyp2}
 # Schizo vs SchizAff
 print(linearHypothesis(NC.mlm, "Dx2"), SSP=FALSE)
-
 ```
 
 ### HE plot
+So the question becomes: how to understand these results.  
+`heplot()` shows the visualization of the multivariate model in the space
+of two response variables (the first two by default).
+The result (@fig-NC-HEplot) tells a very simple story:
+The control group performs higher on higher measures than the diagnosed groups, which do
+not differ between themselves. 
+
+(For technical reasons, to abbreviate the group labels in the plot, we need to `update()` the MLM model after the labels are reassigned.)
+
+```{r}
+# abbreviate levels for plots
+NeuroCog$Dx <- factor(NeuroCog$Dx, 
+                      labels = c("Schiz", "SchAff", "Contr"))
+NC.mlm <- update(NC.mlm)
+```
+ 
 
 ```{r}
 #| label: fig-NC-HEplot
 #| fig-align: center
-#| out-width: "100%"
-#| fig-cap: "HE plot of the `NeuroCog` data."
+#| out-width: "70%"
+#| fig-cap: "HE plot of Speed and Attention in the MLM for the `NeuroCog` data. The labeled points show the means of the groups on the two variables. The blue H ellipse for groups indicates the strong positive correlation of the group means."
 #| fig-show: hold
 op <- par(mar=c(5,4,1,1)+.1)
-heplot(NC.mlm, fill=TRUE, fill.alpha=0.1,
-	cex.lab=1.3, cex=1.25)
+heplot(NC.mlm, 
+       fill=TRUE, fill.alpha=0.1,
+       cex.lab=1.3, cex=1.25)
 par(op)
 ```
+
+This pattern is consistent across all of the response variables,
+as we see from a plot of `pairs(NC.mlm)`:
+
+```{r}
+#| label: fig-NC-HE-pairs
+#| fig-align: center
+#| out-width: "100%"
+#| fig-cap: "HE plot matrix of the MLM for `NeuroCog` data."
+#| fig-show: hold
+pairs(NC.mlm, 
+      fill=TRUE, fill.alpha=0.1,
+      var.cex=2)
+```
+
+### Canonical space
+
+We can gain further insight, and a simplified plot showing all the response variables by projecting the MANOVA into the canonical space, which is entirely 2-dimensional (because $df_h=2$).
+However, the output from \func{candisc} shows that 98.5% of the mean differences among groups
+can be accounted for in one canonical dimension.
+```{r NC-can}
+NC.can <- candisc(NC.mlm)
+NC.can
+```
+
+@fig-NC-candisc is the result of the `plot()` method for class `"candisc"` objects,
+that is, the result of calling `plot(NC.can, ...)`.
+It plots the two canonical scores, $\mathbf{Z}_{n \times 2}$ for the subjects,
+together with data ellipses for each of the three groups.
+
+```{r}
+#| label: fig-NC-candisc
+#| fig-align: center
+#| out-width: "100%"
+#| fig-cap: "Canonical discriminant plot for the `NeuroCog` data MANOVA. Scores on the two canonical dimensions are plotted, together with 68% data ellipses for each group."
+#| fig-show: hold
+pos <- c(4, 1, 4, 4, 1, 3)
+col <- c("red", "darkgreen", "blue")
+op <- par(mar=c(5,4,1,1)+.1)
+plot(NC.can, 
+     ellipse=TRUE, 
+     rev.axes=c(TRUE,FALSE), 
+     pch=c(7,9,10),
+     var.cex=1.2, cex.lab=1.5, var.lwd=2,  scale=4.5, 
+     col=col,
+	   var.col="black", var.pos=pos,
+     prefix="Canonical dimension ")
+par(op)
+```
+
+The interpretation of @fig-NC-candisc is again fairly straightforward.
+As noted earlier (REF???), the projections of the variable vectors in this plot on the coordinate axes are proportional to the correlations of the responses with the canonical scores.
+From this, we see that the normal group differs from the two patient groups, having higher scores on all the neurocognitive variables, most of which are highyl correlated. The problem solving measure is slightly different, and this, compared to the cluster of memory, verbal and attention, is what distinguishes the schizophrenic group from the schizoaffectives.
+
+The separation of the groups is essentially one-dimensional, with the control group higher on all measures. Moreover, the variables processing speed and visual memory are the purest measures of this dimension, but all variables contribute positively.
+The second canonical dimension accounts for only 1.5% of group mean differences and is non-significant
+(by a likelihood ratio test).  Yet, if we were to interpret it, we would note that the schizophrenia group is slightly higher on this dimension, scoring better in problem solving and slightly worse on working memory, attention, and verbal learning tasks.
+
+**Summary**
+
+This analysis gives a very simple description of the data, in relation to the research questions posed earlier:
+
+* On the basis of these neurocognitive tests, the schizophrenic and schizoaffective groups do not differ significantly overall, but these groups differ greatly from the normal controls.
+
+* All cognitive domains distinguish the groups in the same direction, with the greatest differences shown for the variables most closely aligned with the horizontal axis in @fig-NC-candisc.
+
+
+

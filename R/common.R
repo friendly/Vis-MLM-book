@@ -10,10 +10,10 @@ knitr::opts_chunk$set(
   width = 68,
   message = FALSE,
   warning = FALSE,
+  fig.align = 'center',
   fig.path = "figs/"
   # fig.retina = 0.8, # figures are either vectors or 300 dpi diagrams
   # out.width = "70%",
-  # fig.align = 'center',
   # fig.width = 6,
   # fig.asp = 0.618,  # 1 / phi
   # fig.show = "hold"
@@ -35,6 +35,20 @@ options(
   # str = strOptions(strict.width = "cut"),
   # crayon.enabled = FALSE
 )
+
+# colorize text: use inline as `r colorize(text, color)`
+colorize <- function(x, color) {
+  if (knitr::is_latex_output()) {
+    sprintf("\\textcolor{%s}{%s}", color, x)
+  } else if (knitr::is_html_output()) {
+    sprintf("<span style='color: %s;'>%s</span>", color,
+            x)
+  } else x
+}
+
+# set a seed for all chapters
+set.seed(47)
+
 
 if (knitr::is_latex_output()) {
   # options(crayon.enabled = FALSE)

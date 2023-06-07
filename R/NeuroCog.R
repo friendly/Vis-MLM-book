@@ -39,10 +39,14 @@ NC.can
 pos <- c(4, 1, 4, 4, 1, 3)
 col <- c("red", "darkgreen", "blue")
 op <- par(mar=c(5,4,1,1)+.1)
-plot(NC.can, ellipse=TRUE, rev.axes=c(TRUE,FALSE), pch=c(7,9,10),
-	var.cex=1.2, cex.lab=1.5, var.lwd=2,  scale=4.5, col=col,
-	var.col="black", var.pos=pos,
-	prefix="Canonical dimension ")
+plot(NC.can, 
+     ellipse=TRUE, 
+     rev.axes=c(TRUE,FALSE), 
+     pch=c(7,9,10),
+     var.cex=1.2, cex.lab=1.5, var.lwd=2,  scale=4.5, 
+     col=col,
+	   var.col="black", var.pos=pos,
+     prefix="Canonical dimension ")
 par(op)
 dev.copy2pdf(file="NC-candisc.pdf")
 
