@@ -1,10 +1,14 @@
 
 library(here)
-
-
 library(heplots)
 library(candisc)
+library(dplyr)
+
 data(NeuroCog, package="heplots")
+
+# abbreviate levels for plots
+NeuroCog$Dx <- factor(NeuroCog$Dx, 
+                      labels = c("Schiz", "SchAff", "Contr"))
 
 NC.mlm <- lm(cbind( Speed, Attention, Memory, Verbal, Visual, ProbSolv) ~ Dx,
                data=NeuroCog)
