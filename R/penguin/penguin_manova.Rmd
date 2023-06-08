@@ -1,0 +1,323 @@
+---
+title: 'Penguins: MANOVA and HE plots'
+author: "Michael Friendly"
+date: "6/14/2020"
+output: html_document
+bibliography:
+  - "`r system('kpsewhich graphics.bib', intern=TRUE)`"
+  - "`r system('kpsewhich statistics.bib', intern=TRUE)`"
+  - "`r system('kpsewhich Rpackages.bib', intern=TRUE)`"
+---
+
+```{r setup, include=FALSE}
+library(palmerpenguins)
+ignore <- suppressMessages(library(dplyr))
+# load packages
+ignore <- suppressMessages(library(car))
+ignore <- suppressMessages(library(rgl))
+ignore <- suppressMessages(library(heplots))
+ignore <- suppressMessages(library(candisc))
+options(digits = 5)
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,   # avoid warnings and messages in the output
+  message = FALSE,
+  fig.width = 6,
+  fig.height = 6,
+  tidy.opts=list(width.cutoff = 120),  # For code
+  options(width = 90, digits=5) # for output
+)
+knitr::knit_hooks$set(webgl = hook_webgl)
+options(rgl.useNULL = TRUE)
+```
+
+## Introduction
+
+The [multivariate EDA](https://rpubs.com/friendly/penguin-biplots) of the `penguins` data brought some simplicity to
+understanding the quantitative variables of body mass, flipper length
+and the two culmen variables. One main virtue of the graphical methods used
+there was that `species` could be represented visually in the plot
+and annotated with separate data ellipses and regression lines, even though
+the principal component analysis and biplot did not include species in the
+analysis.
+
+An obvious next step, and the one that brought the `iris` data to prominence is to ask two related multivariate model questions:
+
+* **MANOVA**: To what extent can we be confident that the means of species on these variables reliably differ significantly in multivariate space? A multivariate
+analysis of variance (MANOVA) tests group mean differences simultaneously, without appeal to univariate tests or correction for multiple testing.
+
+* **Discriminant analysis**: What weighted sums of the variables best discriminates among the penguin species?  The answer to this question is that the discriminant weights are found in the MANOVA, and are the weights that maximize the multivariate test statistics.
+
+These ideas are implemented in the `heplots` [@heplots] and 
+`candisc` [@candisc] packages and described in more detail in other articles [@Friendly:07:manova; @Friendly-etal:ellipses:2013].
+
+### Multivariate visualization
+
+But there is more:
+
+* **HE plots**: Hypothesis-Error plots use ellipses to show the strength of evidence for any multivariate hypothesis
+
+* **Canonical views**: Project the data and ellipses into the low-dimensional space that shows the largest multivariate effects.
+
+### Getting started
+
+```{r}
+data(penguins, package="palmerpenguins")
+```
+As before, we clean the data: abbreviating variable names, making
+some character variables factors, and removing missing data.
+```{r}
+peng <- penguins %>%
+	rename(
+         culmen_length = culmen_length_mm, 
+         culmen_depth = culmen_depth_mm, 
+         flipper_length = flipper_length_mm, 
+         body_mass = body_mass_g
+         ) %>%
+  mutate(species = as.factor(species),
+         island = as.factor(island),
+         sex = as.factor(substr(sex,1,1))) %>%
+  filter(!is.na(culmen_depth),
+         !is.na(sex))
+```
+
+### Load our packages
+
+```{r load-pkgs, eval=FALSE}
+library(car)
+library(heplots)
+library(candisc)
+```
+
+## MANOVA
+
+Let's assume that the goal of an analysis is to determine whether and how the penguin species differ in terms of the four quantitative variables.
+A naive multivariate linear model is the following, with species as the only
+predictor.
+
+```{r mod0}
+peng.mod0 <-lm(cbind(culmen_length, culmen_depth, flipper_length, body_mass) ~
+                 species, data=peng)
+Anova(peng.mod0)
+```
+
+## HE plots
+
+In a univariate ANOVA, the $F$-test is based on the variability **between** groups relative to the variability **within** groups
+$$
+F = \frac{SS_H/df_h}{SS_E / df_e}
+$$
+The analogous multivariate tests are based on the same idea, applied to the between-group sum of squares and cross-products (SSP) matrix, $\mathbf{H}$,
+relative to the within-group SSP matrix, $\mathbf{E}$.
+
+To see this visually, consider a plot of the two `culmen` beak variables
+where we show only the data ellipses for each species and the pooled
+data ellipse of the residuals.
+
+```{r covellipses, echo=-1}
+op <- par(mar=c(4,4,1,1)+0.1)
+cols = c(scales::hue_pal()(3), "black")
+covEllipses(peng[,3:4], peng$species, 
+            col=cols,
+            fill=c(rep(FALSE,3), TRUE), fill.alpha=.1)
+```
+
+In the HE plot below,
+
+* the differences **between** species means are shown by what we call the $\mathbf{H}$ ellipsoid, the data ellipsoid
+of the fitted (predicted) values under the model.
+In 2D, with a two degree-of-freedom test, $\mathbf{H}$ has two dimensions
+and appears as a simple ellipse.
+
+* the variation **within** species is reflected in the $\mathbf{E}$ ellipse, which is just 
+the pooled data ellipses of the groups, translated to the grand means, or equivalently,
+the data ellipse of the residuals.
+By default, the size of the ellipse is set to cover 68% of the observations in a bivariate normal sample, an analog of a $\bar{y} \pm 1 s$ univariate
+interval. With this 68% interval, you can "read" the residual standard deviation as the half-length of the shadow of the $\mathbf{E}$ ellipse on any axis.
+Translating this ellipse to the grand means allows us to show the group centroids on the same scale,
+facilitating interpretation.
+
+The orientation of the $\mathbf{H}$ ellipse reflects the negative correlation of the species means:
+in general species with larger culmen depth have smaller culmen length. 
+
+```{r heplot0, echo=-1}
+op <- par(mar=c(4,4,1,1)+0.1)
+heplot(peng.mod0, fill=TRUE, fill.alpha=0.1, 
+       size="effect",
+       xlim=c(35,52), ylim=c(14,20))
+```
+
+
+But the overall size of the $\mathbf{H}$ ellipse relative to that of $\mathbf{E}$ is crucial:
+
+* One simple choice, **effect size** scaling, uses $\mathbf{H}/df_e$ to put this on the same scale
+as the $\mathbf{E}$ ellipse. This is analogous to an effect size index used in univariate models,
+e.g., $ES = (\bar{y}_1 - \bar{y}_2) / s$ in a two-group design.
+
+In the plot above, a visual estimate is that variation of the species means is about ES = 1.5 times that of within-species (residual) variance.  This is a large effect!
+
+* The default used in `heplot` is what we call **significance** (or "evidence") scaling.
+That is the relative size of the $\mathbf{H}$ ellipse is set so that in the full p-dimensional
+space of all $p$ response variables, the $\mathbf{H}$ ellipse will protrude somewhere
+outside the $\mathbf{E}$ ellipse *if and only if* the test for some effect is significant
+(by Roy's largest root test)
+at a prescribed $\alpha$-level (0.05 by default). This scaling uses $\mathbf{H}/\lambda_\alpha \: df_e$,
+where $\lambda_\alpha$ is the critical $\alpha$ value of Roy's test statistic.
+
+```{r heplot1}
+heplot(peng.mod0, fill=TRUE, fill.alpha=0.1)
+```
+
+The MANOVA test is so overwhelmingly significant that I will stick to effect-size scaling to preserve resolution.
+
+### Contrasts
+
+One lovely virtue of the standard linear model fit with `lm()` is that any ANOVA effect
+of $df_h \ge 2$ degrees of freedom can be partitioned into $df_h$ separate 1 df
+tests of "linear hypotheses". If these use *orthogonal* contrasts, then the separate $\mathbf{H}$ matrices are additive.
+
+\begin{equation*}
+\mathbf{H} = \mathbf{H}_1 + \mathbf{H}_2 + \cdots + \mathbf{H}_{\textrm{df}_h}
+\end{equation*}
+
+
+Let's also assume that in addition to the overall question, the researchers
+are interested in two sub-hypotheses:
+
+* Do Gentoo penguins differ from the other two?
+* Do Adelie differ from Chinstrap?
+
+These questions can be formulated in terms of two orthogonal contrasts for the species factor. The columns give weights indicating differences between group means.
+
+```{r contrasts}
+contrasts(peng$species)<-matrix(c(1,-1,0, -1, -1, -2), 3,2)
+contrasts(peng$species)
+```
+
+In the `heplots` package, contrasts are specified as a list of tests evaluated by
+`car::linearHypothesis`. Each of these generate an $\mathbf{H}$ matrix of rank 1, so these will appear as lines in an HE plot.
+
+```{r refit, echo=-1}
+op <- par(mar=c(4,4,1,1)+0.1)
+peng.mod0 <-lm(cbind(culmen_length, culmen_depth, flipper_length, body_mass) ~ species, data=peng)
+
+hyp <- list("A:C"="species1","AC:G"="species2")
+heplot(peng.mod0, fill=TRUE, fill.alpha=0.2, 
+       hypotheses=hyp, size="effect")
+```
+
+This is quite a nice result.  It is clear that Adelie & Chinstrap differ
+only in the length of the culmen. Gentoo penguins differ from the other two
+in having longer, but less deep culmen.
+
+### Other plots
+`heplot` gives 2D plots for any pair of response variables. For `flipper_length` and `body_mass` we get the plot below.  It is readily seen that these two variables are highly correlated in their species means. We can interpret the major axis of this **H** ellipse as
+a measure of pengiun size, with Gentoo being the largest.
+
+```{r heplot34, echo=-1}
+op <- par(mar=c(4,4,1,1)+0.1)
+heplot(peng.mod0, variables=3:4, 
+       size="effect",
+       fill=TRUE, fill.alpha=0.2)
+```
+
+#### Pairs plots
+The `pairs.mlm` method for `mlm` objects gives a all pairwise heplots
+in a scatterplot matrix format.
+```{r hepairs}
+pairs(peng.mod0, size="effect", fill=c(TRUE, FALSE))
+```
+
+In these pairwise views, we see some new things:
+
+* The within-group residuals are positively correlated for all pairs. This makes sense to me.
+
+* As we saw above, group means for flipper length and body mass are positively correlated, but
+
+* There are negative correlations of culmen depth with the two size variables, and
+
+* Between species culmen depth has a correlation $\approx 1$ with body size.  Time to call in the biologists!
+
+#### 3D plots
+
+Finally, there is an `heplot3d()` fundtion that shows the **H** and **E** ellipsoids in 3D space.  This plot should be interactive in an HTML document (drag to rotate, zoom in/out with mouse wheel).
+
+```{r heplot3d, webgl=TRUE}
+next3d()
+heplot3d(peng.mod0, fill=TRUE, fill.alpha=0.2, size="effect")
+```
+
+If you rotate the plot, you will see that the **H** ellipsoid is actually 2-dimensional, because there are $g-1 = 2$ df.
+
+## Other models
+
+A careful researcher would also
+wonder, from a modeling perspective, whether differences among species could be accounted for by possible confounders: `island` and `sex`.
+
+```{r mod1}
+peng.mod1 <-lm(cbind(culmen_length, culmen_depth, flipper_length, body_mass) ~
+                 species + island + sex, data=peng)
+Anova(peng.mod1)
+```
+`island` seems not to be important, so we delete this
+
+```{r mod2}
+peng.mod2 <-lm(cbind(culmen_length, culmen_depth, flipper_length, body_mass) ~
+                 species + sex, data=peng)
+Anova(peng.mod2)
+```
+
+```{r peng.mod2, echo=-1}
+op <- par(mar=c(4,4,1,1)+0.1)
+heplot(peng.mod2, size="effect", 
+       fill=TRUE, fill.alpha=0.2)
+```
+
+So, in addition to the means among species, we also see that male
+penguins have both larger and deeper culmens.
+We could go further to test for an interaction of species with sex, using `cbind( ...) ~ species:sex` for the model.
+
+
+## Canonical views
+
+The `heplot()`, `pairs.mlm()`, and `heplot3d()` functions provide 2D and 3D views of all effects in a MLM in **variable** space. Alternatively, canonical discriminant analysis (CDA) provides a low-D visualization of between-group variation and vectors reflecting the weights of the response variables on these dimensions in **canonical space**. 
+
+You can imagine this as rotating the 4D space of all four variables,
+and projecting the observations on the plane that shows the largest variation in the species means.
+
+In this space, the response variables can be shown as vectors,
+whose angles relative to the canonical dimensions reflect their
+correlations. The relative lengths of these vectors indicates their contribution to discrimination among species.
+
+This is analogous to a biplot often used in conjunction with a principal component analysis. See: [penguins_biplots](https://rpubs.com/friendly/penguin-biplots)
+
+
+The printed output of the result of `candisc()` shows that 
+70% of the between-species mean differences can be accounted for by one linear combination of the size variables. The second canonical variable accounts for the remaining 13.4%.
+
+```{r}
+(peng.can <- candisc(peng.mod0))
+```
+
+The `plot()` method for `candisc` objects plots the
+canonical discriminant scores in 2D space, with the data ellipses for each group. The variable
+vectors reflect the correlations of each variable with the two canonical dimensions.
+
+```{r peng-can-plot, fig.width=8, fig.height=4, out.width="75%", fig.align="center", echo=-1}
+op <- par(mar=c(4,4,1,1)+0.1)
+col <- scales::hue_pal()(3)
+plot(peng.can, col=col, pch=15:17, 
+     ellipse=TRUE, scale=9, 
+     var.lwd = 2, var.col = "black")
+```
+
+From this we can see:
+
+* The first dimension (Can1) separates Gentoo from the other two species. Can2 largely separates Adelie from Chinstrap.
+
+* Can1 is positively correlated with flipper length and body mass,
+our penguin "size" variables. But culmen depth also separates Gentoo from the others, in the opposite direction 
+
+* Can2 here largely reflects culmen length, with Chintrap having longer beaks than the other two.
+
+## References

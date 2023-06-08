@@ -9,6 +9,7 @@
 * Penguins: MANOVA and HE plots: https://rpubs.com/friendly/penguin-manova
 * See also: https://www.r-bloggers.com/2020/07/basic-data-analysis-with-palmerpenguins/
 * Penguins go parallel: https://www.tandfonline.com/doi/epdf/10.1080/10618600.2023.2195462
+* https://cameronpatrick.com/post/2023/06/dplyr-fitting-multiple-models-at-once/
 
 ## Guerry
 
