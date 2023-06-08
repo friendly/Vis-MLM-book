@@ -11,6 +11,9 @@
 * Penguins go parallel: https://www.tandfonline.com/doi/epdf/10.1080/10618600.2023.2195462
 * https://cameronpatrick.com/post/2023/06/dplyr-fitting-multiple-models-at-once/
 
+* Uncertainty:
+https://github.com/mjskay/uncertainty-examples/blob/master/penguins.qmd
+
 ## Guerry
 
 *	Bivariate: personal & property crime
