@@ -10,6 +10,9 @@
 * See also: https://www.r-bloggers.com/2020/07/basic-data-analysis-with-palmerpenguins/
 * Penguins go parallel: https://www.tandfonline.com/doi/epdf/10.1080/10618600.2023.2195462
 
+* Uncertainty:
+https://github.com/mjskay/uncertainty-examples/blob/master/penguins.qmd
+
 ## Guerry
 
 *	Bivariate: personal & property crime
