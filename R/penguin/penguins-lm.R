@@ -19,8 +19,7 @@ peng <- penguins |>
   mutate(species = as.factor(species),
          island = as.factor(island),
          sex = as.factor(substr(sex,1,1))) |>
-  filter(!is.na(bill_depth),
-         !is.na(sex))
+   tidyr::drop_na()
 
 str(peng)
 #View(peng)
