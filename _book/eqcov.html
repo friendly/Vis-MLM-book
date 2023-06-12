@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.361">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>Visualizing Multivariate Data and Models in R - 10&nbsp; Visualizing Tests for Equality of Covariance Matrices</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./summary.html" rel="next">
+<link href="./case-studies.html" rel="prev">
+<link href="./images/favicon/favicon.ico" rel="icon">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light"><script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script><script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script><script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+</head>
+<body class="nav-sidebar floating">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top"><nav class="quarto-secondary-nav"><div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./eqcov.html"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Visualizing Tests for Equality of Covariance Matrices</span></a></li></ol></nav>
+      <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+      </a>
+      <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav></header><!-- content --><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation floating overflow-auto"><div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Visualizing Multivariate Data and Models in R</a> 
+        <div class="sidebar-tools-main">
+    <a href="https://github.com/friendly/vis-MLM-quarto" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./intro.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./getting_started.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Getting Started</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./multivariate_plots.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Plots of Multivariate Data</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./linear_models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Overview of Linear models</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./linear_models-plots.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Plots for univariate response models</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./hotelling.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Hotelling’s <span class="math inline">\(T^2\)</span></span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./mlm-viz.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Visualizing Multivariate Models</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./mlm-review.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Brief review of the multivariate linear model</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./case-studies.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Case studies</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./eqcov.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Visualizing Tests for Equality of Covariance Matrices</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./summary.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Summary</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">References</span></a>
+  </div>
+</li>
+    </ul>
+</div>
+</nav><div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active"><h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+<li><a href="#homogeneity-of-variance-in-univariate-anova" id="toc-homogeneity-of-variance-in-univariate-anova" class="nav-link active" data-scroll-target="#homogeneity-of-variance-in-univariate-anova"><span class="header-section-number">10.1</span> Homogeneity of Variance in Univariate ANOVA</a></li>
+  <li><a href="#homogeneity-of-variance-in-manova" id="toc-homogeneity-of-variance-in-manova" class="nav-link" data-scroll-target="#homogeneity-of-variance-in-manova"><span class="header-section-number">10.2</span> Homogeneity of variance in MANOVA</a></li>
+  <li><a href="#assessing-heterogeneity-of-covariance-matrices-boxs-m-test" id="toc-assessing-heterogeneity-of-covariance-matrices-boxs-m-test" class="nav-link" data-scroll-target="#assessing-heterogeneity-of-covariance-matrices-boxs-m-test"><span class="header-section-number">10.3</span> Assessing heterogeneity of covariance matrices: Box’s M test</a></li>
+  <li><a href="#visualizing-heterogeneity" id="toc-visualizing-heterogeneity" class="nav-link" data-scroll-target="#visualizing-heterogeneity"><span class="header-section-number">10.4</span> Visualizing heterogeneity</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references"><span class="header-section-number">10.5</span> References</a></li>
+  </ul></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block default"><div class="quarto-title">
+<h1 class="title">
+<span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Visualizing Tests for Equality of Covariance Matrices</span>
+</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header><p><strong>Packages</strong></p>
+<p>In this chapter we use the following packages. Load them now</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://r-forge.r-project.org/projects/car/">car</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="http://friendly.github.io/heplots/">heplots</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">candisc</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org">ggplot2</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org">dplyr</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyr.tidyverse.org">tidyr</a></span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<blockquote class="blockquote">
+<p><em>To make the preliminary test on variances is rather like putting to sea in a rowing boat to find out whether conditions are sufficiently calm for an ocean liner to leave port.</em> — G. E. P. Box <span class="citation" data-cites="Box:1953">(<a href="references.html#ref-Box:1953" role="doc-biblioref">1953</a>)</span></p>
+</blockquote>
+<p>This chapter concerns the extension of tests of homogeneity of variance from the classical univariate ANOVA setting to the analogous multivariate (MANOVA) setting. Such tests are a routine but important aspect of data analysis, as particular violations can drastically impact model estimates <span class="citation" data-cites="Lix:1996">(<a href="references.html#ref-Lix:1996" role="doc-biblioref">Lix and Keselman 1996</a>)</span>.</p>
+<p>We provide some answers to the following questions:</p>
+<ul>
+<li><p><strong>Visualization</strong>: How can we visualize differences among group variances and covariance matrices, perhaps in a way that is analogous to what is done to visualize differences among group means? As will be illustrated, differences among covariance matrices can be comprised of spread in overall size (“scatter”) and shape (“orientation”). These can be seen in data space with data ellipses, particularly if the data is centered by shifting all groups to the grand mean,</p></li>
+<li><p><strong>Low-D views</strong>: When there are more than a few response variables, what low-dimensional views can show the most interesting properties related to the equality of covariance matrices? Projecting the data into the space of the principal components serves well again here. Surprisingly, we will see that the small dimensions contain useful information about differences among the group covariance matrices.</p></li>
+<li><p><strong>Other statistics</strong>: Box’s <span class="math inline">\(M\)</span>-test is most widely used. Are there other worthwhile test statistics? We will see that graphics methods suggest alternatives.</p></li>
+</ul>
+<p>The following subsections provide a capsule summary of the issues in this topic. Most of the discussion is couched in terms of a one-way design for simplicity, but the same ideas can apply to two-way (and higher) designs, where a “group” factor is defined as the product combination (interaction) of two or more factor variables. When there are also numeric covariates, this topic can also be extended to the multivariate analysis of covaraiance (MANCOVA) setting. This can be accomplished by applying these techniques to the residuals from predictions by the covariates alone.</p>
+<section id="homogeneity-of-variance-in-univariate-anova" class="level2" data-number="10.1"><h2 data-number="10.1" class="anchored" data-anchor-id="homogeneity-of-variance-in-univariate-anova">
+<span class="header-section-number">10.1</span> Homogeneity of Variance in Univariate ANOVA</h2>
+<p>In classical (Gaussian) univariate ANOVA models, the main interest is typically on tests of mean differences in a response <span class="math inline">\(y\)</span> according to one or more factors. The validity of the typical <span class="math inline">\(F\)</span> test, however, relies on the assumption of <em>homogeneity of variance</em>: all groups have the same (or similar) variance, <span class="math display">\[
+\sigma_1^2 = \sigma_2^2 = \cdots = \sigma_g^2 \; .
+\]</span></p>
+<p>It turns out that the <span class="math inline">\(F\)</span> test for differences in means is relatively robust to violation of this assumption <span class="citation" data-cites="Harwell:1992">(<a href="references.html#ref-Harwell:1992" role="doc-biblioref">Harwell et al. 1992</a>)</span>, as long as the group sizes are roughly equal.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+<p>A variety of classical test statistics for homogeneity of variance are available, including Hartley’s <span class="math inline">\(F_{max}\)</span> <span class="citation" data-cites="Hartley:1950">(<a href="references.html#ref-Hartley:1950" role="doc-biblioref">Hartley 1950</a>)</span>, Cochran’s <em>C</em> <span class="citation" data-cites="Cochran:1941">(<a href="references.html#ref-Cochran:1941" role="doc-biblioref">Cochran 1941</a>)</span>,and Bartlett’s test <span class="citation" data-cites="Bartlett:1937">(<a href="references.html#ref-Bartlett:1937" role="doc-biblioref">Bartlett 1937</a>)</span>, but these have been found to have terrible statistical properties <span class="citation" data-cites="Rogan:1977">(<a href="references.html#ref-Rogan:1977" role="doc-biblioref">Rogan and Keselman 1977</a>)</span>, which prompted Box’s famous quote.</p>
+<p>Levene <span class="citation" data-cites="Levene:1960">(<a href="references.html#ref-Levene:1960" role="doc-biblioref">1960</a>)</span> introduced a different form of test, based on the simple idea that when variances are equal across groups, the average absolute values of differences between the observations and group means will also be equal, i.e., substituting an <span class="math inline">\(L_1\)</span> norm for the <span class="math inline">\(L_2\)</span> norm of variance. In a one-way design, this is equivalent to a test of group differences in the means of the auxilliary variable <span class="math inline">\(z_{ij} = | y_{ij} - \bar{y}_i |\)</span>.</p>
+<p>More robust versions of this test were proposed by <span class="citation" data-cites="BrownForsythe:1974">Brown and Forsythe (<a href="references.html#ref-BrownForsythe:1974" role="doc-biblioref">1974</a>)</span>. These tests substitute the group mean by either the group median or a trimmed mean in the ANOVA of the absolute deviations, and should be almost always preferred to Levene’s version. See <span class="citation" data-cites="Conover-etal:1981">Conover, Johnson, and Johnson (<a href="references.html#ref-Conover-etal:1981" role="doc-biblioref">1981</a>)</span> for an early review and <span class="citation" data-cites="Gastwirth-etal:2009">Gastwirth, Gel, and Miao (<a href="references.html#ref-Gastwirth-etal:2009" role="doc-biblioref">2009</a>)</span> for a general discussion of these tests. In what follows, we refer to this class of tests as “Levene-type” tests and suggest a multivariate extension described below (<span class="quarto-unresolved-ref">?sec-mlevene</span>).</p>
+</section><section id="homogeneity-of-variance-in-manova" class="level2" data-number="10.2"><h2 data-number="10.2" class="anchored" data-anchor-id="homogeneity-of-variance-in-manova">
+<span class="header-section-number">10.2</span> Homogeneity of variance in MANOVA</h2>
+<p>In the MANOVA context, the main emphasis, of course, is on differences among mean vectors, testing <span class="math display">\[
+H_0 : \mathbf{\mu}_1 = \mathbf{\mu}_2 = \cdots = \mathbf{\mu}_g \; .
+\]</span> However, the standard test statistics (Wilks’ Lambda, Hotelling-Lawley trace, Pillai-Bartlett trace, Roy’s maximum root) rely upon the analogous assumption that the within-group covariance matrices for all groups are equal, <span class="math display">\[
+\mathbf{\Sigma}_1 = \mathbf{\Sigma}_2 = \cdots = \mathbf{\Sigma}_g \; .
+\]</span></p>
+<p><strong>Insert</strong> pairs covEllipses for penguins data</p>
+<p>To preview the main example, <a href="#fig-peng-covEllipse0">Figure&nbsp;<span>10.1</span></a> shows data ellipses for the main size variables in the <code><a href="https://allisonhorst.github.io/palmerpenguins/reference/penguins.html">palmerpenguins::penguins</a></code> data.</p>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div id="fig-peng-covEllipse0" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="figs/fig-peng-covEllipse0-1.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption class="figure-caption">Figure&nbsp;10.1: Data ellipses for the penguins data.</figcaption></figure>
+</div>
+</div>
+</div>
+<p>They covariance ellipses look pretty similar in size, shape and orientation. But what does Box’s M test (described below) say? As you can see, it concludes strongly against the null hypothesis.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="http://friendly.github.io/heplots/reference/boxM.html">boxM</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">bill_length</span>, <span class="va">bill_depth</span>, <span class="va">flipper_length</span>, <span class="va">body_mass</span><span class="op">)</span> <span class="op">~</span> <span class="va">species</span>, data<span class="op">=</span><span class="va">peng</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Box's M-test for Homogeneity of Covariance Matrices</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; data:  Y</span></span>
+<span><span class="co">#&gt; Chi-Sq (approx.) = 75, df = 20, p-value = 3e-08</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section><section id="assessing-heterogeneity-of-covariance-matrices-boxs-m-test" class="level2" data-number="10.3"><h2 data-number="10.3" class="anchored" data-anchor-id="assessing-heterogeneity-of-covariance-matrices-boxs-m-test">
+<span class="header-section-number">10.3</span> Assessing heterogeneity of covariance matrices: Box’s M test</h2>
+<p><span class="citation" data-cites="Box:1949">Box (<a href="references.html#ref-Box:1949" role="doc-biblioref">1949</a>)</span> proposed the following likelihood-ratio test (LRT) statistic for testing the hypothesis of equal covariance matrices, <span class="math display">\[
+M = (N -g) \ln \;|\; \mathbf{S}_p \;|\; - \sum_{i=1}^g (n_i -1) \ln \;|\; \mathbf{S}_i \;|\; \; ,
+\]</span> {eq-boxm}</p>
+<p>where <span class="math inline">\(N = \sum n_i\)</span> is the total sample size and <span class="math inline">\(\mathbf{S}_p = (N-g)^{-1} \sum_{i=1}^g (n_i - 1) \mathbf{S}_i\)</span> is the pooled covariance matrix. <span class="math inline">\(M\)</span> can thus be thought of as a ratio of the determinant of the pooled <span class="math inline">\(\mathbf{S}_p\)</span> to the geometric mean of the determinants of the separate <span class="math inline">\(\mathbf{S}_i\)</span>.</p>
+<p>In practice, there are various transformations of the value of <span class="math inline">\(M\)</span> to yield a test statistic with an approximately known distribution <span class="citation" data-cites="Timm:75">(<a href="references.html#ref-Timm:75" role="doc-biblioref">Timm 1975</a>)</span>. Roughly speaking, when each <span class="math inline">\(n_i &gt; 20\)</span>, a <span class="math inline">\(\chi^2\)</span> approximation is often used; otherwise an <span class="math inline">\(F\)</span> approximation is known to be more accurate.</p>
+<p>Asymptotically, <span class="math inline">\(-2 \ln (M)\)</span> has a <span class="math inline">\(\chi^2\)</span> distribution. The <span class="math inline">\(\chi^2\)</span> approximation due to Box <span class="citation" data-cites="Box:1949 Box:1950">(<a href="references.html#ref-Box:1949" role="doc-biblioref">1949</a>, <a href="references.html#ref-Box:1950" role="doc-biblioref">1950</a>)</span> is that <span class="math display">\[
+X^2 = -2 (1-c_1) \ln (M) \quad \sim \quad \chi^2_{df}
+\]</span> with <span class="math inline">\(df = (g-1) p (p+1)/2\)</span> degrees of freedom, and a bias correction constant: <span class="math display">\[
+c_1 = \left(
+\sum_i \frac{1}{n_i -1}
+- \frac{1}{N-g}
+\right)
+\frac{2p^2 +3p -1}{6 (p+1)(g-1)} \; .
+\]</span></p>
+<p>In this form, Bartlett’s test for equality of variances in the univariate case is the special case of Box’s M when there is only one response variable, so Bartlett’s test is sometimes used as univariate follow-up to determine which response variables show heterogeneity of variance.</p>
+<p>Yet, like its univariate counterpart, Box’s test is well-known to be highly sensitive to violation of (multivariate) normality and the presence of outliers. For example, <span class="citation" data-cites="TikuBalakrishnan:1984">Tiku and Balakrishnan (<a href="references.html#ref-TikuBalakrishnan:1984" role="doc-biblioref">1984</a>)</span> concluded from simulation studies that the normal-theory LRT provides poor control of Type I error under even modest departures from normality. <span class="citation" data-cites="OBrien:1992">O’Brien (<a href="references.html#ref-OBrien:1992" role="doc-biblioref">1992</a>)</span> proposed some robust alternatives, and showed that Box’s normal theory approximation suffered both in controlling the null size of the test and in power. <span class="citation" data-cites="ZhangBoos:1992:BCV">Zhang and Boos (<a href="references.html#ref-ZhangBoos:1992:BCV" role="doc-biblioref">1992</a>)</span> also carried out simulation studies with similar conclusions and used bootstrap methods to obtain corrected critical values.</p>
+</section><section id="visualizing-heterogeneity" class="level2" data-number="10.4"><h2 data-number="10.4" class="anchored" data-anchor-id="visualizing-heterogeneity">
+<span class="header-section-number">10.4</span> Visualizing heterogeneity</h2>
+<p>The goal of this chapter is to use the above background as a platform for discussing approaches to visualizing and testing the heterogeneity of covariance matrices in multivariate designs. While researchers often rely on a single number to determine if their data have met a particular threshold, such compression will often obscure interesting information, particularly when a test concludes that differences exist, and one is left to wonder ``why?’’. It is within this context where, again, visualizations often reign supreme. In fact, we find it somewhat surprising that this issue has not been addressed before graphically in any systematic way. <strong>TODO: cut this down</strong></p>
+<p>In what follows, we propose three visualization-based approaches to questions of heterogeneity of covariance in MANOVA designs:</p>
+<ol type="a">
+<li><p>direct visualization of the information in the <span class="math inline">\(\mathbf{S}_i\)</span> and <span class="math inline">\(\mathbf{S}_p\)</span> using <em>data ellipsoids</em> to show size and shape as minimal schematic summaries;</p></li>
+<li><p>a simple dotplot of the components of Box’s M test: the log determinants of the <span class="math inline">\(\mathbf{S}_i\)</span> together with that of the pooled <span class="math inline">\(\mathbf{S}_p\)</span>. Extensions of these simple plots raise the question of whether measures of heterogeneity other than that captured in Box’s test might also be useful; and,</p></li>
+<li><p>the connection between Levene-type tests and an ANOVA (of centered absolute differences) suggests a parallel with a multivariate extension of Levene-type tests and a MANOVA. We explore this with a version of Hypothesis-Error (HE) plots we have found useful for visualizing mean differences in MANOVA designs.</p></li>
+</ol></section><section id="references" class="level2" data-number="10.5"><h2 data-number="10.5" class="anchored" data-anchor-id="references">
+<span class="header-section-number">10.5</span> References</h2>
+
+
+<div id="refs" class="references csl-bib-body hanging-indent" role="list" style="display: none">
+<div id="ref-Bartlett:1937" class="csl-entry" role="listitem">
+Bartlett, M. S. 1937. <span>“Properties of Sufficiency and Statistical Tests.”</span> <em>Proceedings of the Royal Society of London. Series A</em> 160 (901): 268–82. <a href="https://doi.org/10.2307/96803">https://doi.org/10.2307/96803</a>.
+</div>
+<div id="ref-Box:1949" class="csl-entry" role="listitem">
+Box, G. E. P. 1949. <span>“A General Distribution Theory for a Class of Likelihood Criteria.”</span> <em>Biometrika</em> 36 (3-4): 317–46. <a href="https://doi.org/10.1093/biomet/36.3-4.317">https://doi.org/10.1093/biomet/36.3-4.317</a>.
+</div>
+<div id="ref-Box:1950" class="csl-entry" role="listitem">
+———. 1950. <span>“<a href="">Problems in the Analysis of Growth and Wear Curves</a>.”</span> <em>Biometrics</em> 6: 362–89.
+</div>
+<div id="ref-Box:1953" class="csl-entry" role="listitem">
+———. 1953. <span>“Non-Normality and Tests on Variances.”</span> <em>Biometrika</em> 40 (3/4): 318–35. <a href="https://doi.org/10.2307/2333350">https://doi.org/10.2307/2333350</a>.
+</div>
+<div id="ref-BrownForsythe:1974" class="csl-entry" role="listitem">
+Brown, Morton B., and Alan B. Forsythe. 1974. <span>“Robust Tests for Equality of Variances.”</span> <em>Journal of the American Statistical Association</em> 69 (346): 364–67. <a href="https://doi.org/10.1080/01621459.1974.10482955">https://doi.org/10.1080/01621459.1974.10482955</a>.
+</div>
+<div id="ref-Cochran:1941" class="csl-entry" role="listitem">
+Cochran, W. G. 1941. <span>“The Distribution of the Largest of a Set of Estimated Variances as a Fraction of Their Total.”</span> <em>Annals of Eugenics</em> 11 (1): 47–52. <a href="https://doi.org/10.1111/j.1469-1809.1941.tb02271.x">https://doi.org/10.1111/j.1469-1809.1941.tb02271.x</a>.
+</div>
+<div id="ref-Conover-etal:1981" class="csl-entry" role="listitem">
+Conover, W. J., Mark E. Johnson, and Myrle M. Johnson. 1981. <span>“A Comparative Study of Tests for Homogeneity of Variances, with Applications to the Outer Continental Shelf Bidding Data.”</span> <em>Technometrics</em> 23 (4): 351–61. <a href="https://doi.org/10.1080/00401706.1981.10487680">https://doi.org/10.1080/00401706.1981.10487680</a>.
+</div>
+<div id="ref-Gastwirth-etal:2009" class="csl-entry" role="listitem">
+Gastwirth, Joseph L., Yulia R. Gel, and Weiwen Miao. 2009. <span>“The Impact of <span class="nocase">Levene’s</span> Test of Equality of Variances on Statistical Theory and Practice.”</span> <em>Statistical Science</em> 24 (3): 343–60. <a href="https://doi.org/10.1214/09-STS301">https://doi.org/10.1214/09-STS301</a>.
+</div>
+<div id="ref-Hartley:1950" class="csl-entry" role="listitem">
+Hartley, H. O. 1950. <span>“The Use of Range in Analysis of Variance.”</span> <em>Biometrika</em> 37 (3–4): 271–80. <a href="https://doi.org/10.1093/biomet/37.3-4.271">https://doi.org/10.1093/biomet/37.3-4.271</a>.
+</div>
+<div id="ref-Harwell:1992" class="csl-entry" role="listitem">
+Harwell, M. R., E. N. Rubinstein, W. S. Hayes, and C. C. Olds. 1992. <span>“Summarizing Monte Carlo Results in Methodological Research: The One- and Two-Factor Fixed Effects <span>ANOVA</span> Cases.”</span> <em>Journal of Educational and Behavioral Statistics</em> 17 (4): 315–39. <a href="https://doi.org/10.3102/10769986017004315">https://doi.org/10.3102/10769986017004315</a>.
+</div>
+<div id="ref-Levene:1960" class="csl-entry" role="listitem">
+Levene, Howard. 1960. <span>“Robust Tests for Equality of Variances.”</span> In <em>Contributions to Probability and Statistics: Essays in Honor of <span>Harold Hotelling</span></em>, edited by Ingram Olkin, S. G. Ghurye, W. Hoeffding, W. G. Madow, and H. B. Mann, 278–92. Stanford, Calif: Stanford University Press.
+</div>
+<div id="ref-Lix:1996" class="csl-entry" role="listitem">
+Lix, J. M., L. M. Keselman, and H. J. Keselman. 1996. <span>“Consequences of Assumption Violations Revisited: A Quantitative Review of Alternatives to the One-Way Analysis of Variance <span>F</span> Test.”</span> <em>Review of Educational Research</em> 66 (4): 579–619. <a href="https://doi.org/10.3102/00346543066004579">https://doi.org/10.3102/00346543066004579</a>.
+</div>
+<div id="ref-OBrien:1992" class="csl-entry" role="listitem">
+O’Brien, Peter C. 1992. <span>“Robust Procedures for Testing Equality of Covariance Matrices.”</span> <em>Biometrics</em> 48 (3): 819–27. <a href="http://www.jstor.org/stable/2532347">http://www.jstor.org/stable/2532347</a>.
+</div>
+<div id="ref-Rogan:1977" class="csl-entry" role="listitem">
+Rogan, J. C., and H. J. Keselman. 1977. <span>“Is the <span>ANOVA</span> f-Test Robust to Variance Heterogeneity When Sample Sizes Are Equal?: An Investigation via a Coefficient of Variation.”</span> <em>American Educational Research Journal</em> 14 (4): 493–98. <a href="https://doi.org/10.3102/00028312014004493">https://doi.org/10.3102/00028312014004493</a>.
+</div>
+<div id="ref-TikuBalakrishnan:1984" class="csl-entry" role="listitem">
+Tiku, M. L., and N. Balakrishnan. 1984. <span>“Testing Equality of Population Variances the Robust Way.”</span> <em>Communications in Statistics - Theory and Methods</em> 13 (17): 2143–59. <a href="https://doi.org/10.1080/03610928408828818">https://doi.org/10.1080/03610928408828818</a>.
+</div>
+<div id="ref-Timm:75" class="csl-entry" role="listitem">
+Timm, N. H. 1975. <em>Multivariate Analysis with Applications in Education and Psychology</em>. Belmont, CA: Wadsworth (Brooks/Cole).
+</div>
+<div id="ref-ZhangBoos:1992:BCV" class="csl-entry" role="listitem">
+Zhang, Ji, and Dennis D. Boos. 1992. <span>“Bootstrap Critical Values for Testing Homogeneity of Covariance Matrices.”</span> <em>Journal of the American Statistical Association</em> 87 (418): 425–29. <a href="http://www.jstor.org/stable/2290273">http://www.jstor.org/stable/2290273</a>.
+</div>
+</div>
+</section><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><hr>
+<ol>
+<li id="fn1"><p>If group sizes are greatly unequal <strong>and</strong> homogeneity of variance is violated, then the <span class="math inline">\(F\)</span> statistic is too liberal (<span class="math inline">\(p\)</span> values too large) when large sample variances are associated with small group sizes. Conversely, the <span class="math inline">\(F\)</span> statistic is too conservative if large variances are associated with large group sizes.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol></section></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script><nav class="page-navigation"><div class="nav-page nav-page-previous">
+      <a href="./case-studies.html" class="pagination-link">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Case studies</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./summary.html" class="pagination-link">
+        <span class="nav-page-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Summary</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+</body></html>

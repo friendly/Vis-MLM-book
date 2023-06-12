@@ -74,3 +74,10 @@ $\\newcommand*{\\diag}[1]{\\ensuremath{\\mathrm{diag}\\, #1}}$
   "ggplot2", 
   "equatiomatic", 
   "geomtextpath")
+
+# write list of packages used at end of every chapter
+.pkg_file <- here::here("bib", "pkgs.txt")
+write_pkgs <- function(file="") {
+  pkgs <- .packages() |> sort() |> unique()
+  if(length(pkgs) > 0) cat(pkgs, file, append=TRUE, sep = "\n")
+}
