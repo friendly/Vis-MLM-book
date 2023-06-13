@@ -10,6 +10,7 @@ knitr::opts_chunk$set(
   width = 68,
   message = FALSE,
   warning = FALSE,
+  error = FALSE,
   fig.align = 'center',
   fig.path = "figs/"
   # fig.retina = 0.8, # figures are either vectors or 300 dpi diagrams
@@ -79,5 +80,22 @@ $\\newcommand*{\\diag}[1]{\\ensuremath{\\mathrm{diag}\\, #1}}$
 .pkg_file <- here::here("bib", "pkgs.txt")
 write_pkgs <- function(file="") {
   pkgs <- .packages() |> sort() |> unique()
-  if(length(pkgs) > 0) cat(pkgs, file, append=TRUE, sep = "\n")
+  np <- length(pkgs)
+  cat(np, " packages used here:\n", paste(pkgs, collapse = ", ")  )
+  if(np > 0) cat(pkgs, file = .pkg_file, append=TRUE, sep = "\n")
+}
+
+read_pkgs <- function() {
+  pkgs <- read.csv(.pkg_file, header = FALSE)
+  pkgs <- pkgs[, 1] |> as.vector() |> sort() |> unique()
+  np <- length(pkgs)
+#  message(np, " unique packages read from ", .pkg_file)
+  pkgs
+}
+
+clean_pkgs <- function() {
+  if (file.exists(.pkg_file)) {
+    #Delete file if it exists
+    file.remove(.pkg_file)
+  }
 }
