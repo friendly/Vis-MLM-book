@@ -1,0 +1,72 @@
+# Accumulating R package references in a Quarto book
+
+In writing a book using Quarto, I was looking for a way to automatically
+accumulate the packages used in each chapter and write them out to a `pkgs.bib`
+file at the end.  (I posted this as a Posit Community question, 
+https://community.rstudio.com/t/how-to-accumulate-packages-bib-used-in-a-quarto-book/167619 )
+
+I can easily do this with a `knitr` vignette, where the essence
+is to include a chunk at the end,
+
+```
+pkgs <- c(.to.cite, .packages()) |> unique()
+knitr::write_bib(pkgs, file = "bib/pkgs.bib")
+```
+
+But Quarto processes each chapter ceparately, so this cannot work.  A solution involves
+
+* use `.packages()` to get the packages used in each chapter, and append their names
+to a text file.
+
+* in the final (References) chapter, read the text file and call `knitr::write_bib()`
+
+The following functions are included in a file, `common.R` which is `source()`ed at the start of every
+chapter
+
+```
+# write list of packages used at end of every chapter
+.pkg_file <- here::here("bib", "pkgs.txt")
+write_pkgs <- function() {
+  pkgs <- .packages() |> sort() |> unique()
+  np <- length(pkgs)
+  cat(np, " packages used here:\n", paste(pkgs, collapse = ", ")  )
+  if(np > 0) cat(pkgs, file = .pkg_file, append=TRUE, sep = "\n")
+}
+
+# read in the list of packages, convert to a vector
+read_pkgs <- function() {
+  pkgs <- read.csv(.pkg_file, header = FALSE)
+  pkgs <- pkgs[, 1] |> as.vector() |> sort() |> unique()
+  np <- length(pkgs)
+  pkgs
+}
+
+# use this in Chapter 1 to start with a clean slate.
+clean_pkgs <- function() {
+  if (file.exists(.pkg_file)) {
+    #Delete file if it exists
+    file.remove(.pkg_file)
+  }
+}
+
+# packages to be cited here, but not actually loaded. 
+.to.cite <- c(
+  "rgl",
+  "nnet", 
+	"equatiomatic", 
+  "geomtextpath")
+
+```
+
+Then, in the final chapter, I have the following chunk to write out
+the `.bib` entries:
+
+
+```{r}
+if(!exists(".to.cite")) .to.cite <- NULL
+pkgs <- read_pkgs()
+pkgs <- c(.to.cite, pkgs) |> unique()
+knitr::write_bib(pkgs, file = "bib/pkgs.bib")
+```
+
+Voila!
