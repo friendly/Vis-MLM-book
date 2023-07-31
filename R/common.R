@@ -74,7 +74,8 @@ $\\newcommand*{\\diag}[1]{\\ensuremath{\\mathrm{diag}\\, #1}}$
   "broom", 
   "ggplot2", 
   "equatiomatic", 
-  "geomtextpath")
+  "geomtextpath",
+  "datasauRus")
 
 # write list of packages used at end of every chapter
 .pkg_file <- here::here("bib", "pkgs.txt")
