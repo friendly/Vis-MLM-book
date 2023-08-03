@@ -2,10 +2,11 @@
 #' title: Penguins data with 3D ellipsoids
 #' ---
 
-library(ggplot2)
+#library(ggplot2)
 library(dplyr)
 library(tidyr)
 library(rgl)
+library(car)
 
 data(penguins, package = "palmerpenguins")
 
@@ -26,15 +27,20 @@ names(colors) <- levels(peng$species)
 
 colMax <- function(data) sapply(data, max, na.rm = TRUE)
 
+
 open3d()
-par3d(windowRect = c(0, 0, 800, 800) + 50)
+par3d(windowRect = c(0, 0, 800, 800) + 80)
 rgl.bringtotop()
 
-plot3d(peng[,-1], type = "n")
-pch3d(peng[,-1],
-      pch = shapes,
-      col = adjustcolor(colors[peng$species], alpha=0.4),
-      cex = 0.2)
+plot3d(peng[,-1], 
+       type = "n", axes = FALSE
+       
+       )
+
+# pch3d(peng[,-1],
+#       pch = shapes,
+#       col = adjustcolor(colors[peng$species], alpha=0.4),
+#       cex = 0.2)
 
 offset <- 0.01
 for (sp in levels(peng$species)) {
@@ -55,16 +61,41 @@ for (sp in levels(peng$species)) {
   texts3d(mu, adj = 0, text = sp, color = colors[sp], cex = 1.5)
 }
 
-grid3d('z')
+box3d()
+#grid3d('z')
 
 # https://stackoverflow.com/questions/50027798/in-r-rgl-how-to-print-shadows-of-points-in-plot3d
 show2d({
   par(mar=c(0,0,0,0))
-  plot(# x = df$x, y = df$y, 
-    peng[, 1:2],
-       col = colors)
-})
+  dataEllipse(x=peng$bill_length, y=peng$bill_depth, 
+              groups = peng$species, group.labels = NULL,
+              plot.points = FALSE, add = FALSE,
+              levels = 0.68,
+              col = colors,
+              fill = TRUE, fill.alpha = 0.2,
+              xlab = "", ylab= "", yaxt = "n", xaxt = "n")
+  
+  }, face = "z-")
+show2d({
+  par(mar=c(0,0,0,0))
+  boxplot(bill_depth ~ species, data = peng, 
+          col = adjustcolor(colors, alpha = 0.5),
+          at = 3:1)
+  }, face = "x-")
 
-rgl::decorate3d( # xlim=xlim, ylim=ylim, zlim=zlim, 
-                box=FALSE, axes=FALSE, 
-                xlab=NULL, ylab=NULL, zlab=NULL, top=FALSE)
+# rgl::decorate3d( # xlim=xlim, ylim=ylim, zlim=zlim, 
+#                 box=FALSE, axes=FALSE, 
+#                 xlab=NULL, ylab=NULL, zlab=NULL, top=FALSE)
+
+
+# test data ellipses
+library(car)
+op <- par(mar=c(0,0,0,0))
+dataEllipse(x=peng$bill_length, y=peng$bill_depth, 
+            groups = peng$species, group.labels = NULL,
+            plot.points = FALSE, add = FALSE,
+            levels = 0.68,
+            col = colors,
+            fill = TRUE, fill.alpha = 0.2,
+            xlab = "", ylab= "", yaxt = "n", xaxt = "n")
+par(op)

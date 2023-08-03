@@ -37,6 +37,7 @@
     - marginal plots
     - diagnostic plots
     - visualizing multicolinearity
+    - ridge regression -- generalized ridge trace plots
 
 ## Hotelling's T^2
 

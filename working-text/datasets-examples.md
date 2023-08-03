@@ -28,8 +28,11 @@ https://github.com/mjskay/uncertainty-examples/blob/master/penguins.qmd
 
 ## gapminder
 
-
-## car:Salaries
+## car::prestige
+  + Examples from Vis-MLM-Course, Lecture 1
+    C:\Dropbox\Documents\SCS\VisMLM-course\R\{prestige.R, prestige-ggplot.R}
+    
+## car::Salaries
 	+ https://rkabacoff.github.io/datavis/Multivariate.html
 	
 ## Others
