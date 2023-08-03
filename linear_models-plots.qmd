@@ -21,6 +21,10 @@ over other variables not shown in a given plot.
 * when there are highly correlated predictors, some specialized plots are useful to
 understand the nature of _multicolinearity_.
 
+The classic reference on regression diagnostics is @Belsley-etal:80.
+My favorite modern texts are the brief @Fox2020 and @FoxWeisberg:2018,
+which is supported by the **car** package [@R-car].
+
 ## The "regression quartet"
 
 For a fitted model, plotting the model object with `plot(model)` provides for any of six basic plots,
@@ -42,6 +46,51 @@ the predictor values $\mathbf{x}_i$ from the means, and measure the potential of
 change the fitted coefficients if that observation was deleted. Actual influence is measured by Cooks's distance
 (`cooks.distance(model)`) and is proportional to the product of residual times leverage. Contours of constant
 Cook's $D$ are added to the plot.
+
+One key feature of these plots is providing **reference** lines or smoothed curves for ease of judging the
+extent to which a plot conforms to the expected pattern; another is the **labeling** of observations which
+deviate from an assumption.
+
+The base-R `plot(model)` plots are done much better in a variety of packages.
+I illustrate some versions from the **car** and **performance** packages.
+
+#### **Example: Occupational prestige**{.unnumbered}
+
+These examples use the data on the prestige of 102 occupational categories and other measures from the
+1971 Canadian Census, recorded in `carData::Prestige`.
+Our interest is in understanding how `prestige` (the Pineo-Ported prestige score, from a social survey)
+is related to census measures of the average education, income, percent women of incumbents in those
+occupations.
+Occupation type is a factor with levels `"bc"` (blue collar), `"wc"` (white collar) and `"prof"` (professional).
+**TODO**: These data should be introduced earlier with descriptive plots, scatterplots, ...
+
+```{r prestige}
+data(Prestige, package="carData")
+# `type` is really an ordered factor. Make it so.
+Prestige$type <- ordered(Prestige$type,
+                         levels=c("bc", "wc", "prof"))
+str(Prestige)
+```
+
+We fit a main-effects model using all predictors (ignoring `census`, the Canadian Census occupational code):
+
+```{r prestige-mod}
+prestige.mod <- lm(prestige ~ education + income + women + type,
+                   data=Prestige)
+```
+
+`plot(model)` produces four separate plots. For a quick look, I like to arrange them in a single 2x2 figure.
+
+```{r plot-prestige-mod}
+#| out-width: "100%"
+#| fig-show: hold
+#| fig-cap: "Regression quartet of diagnostic plots for the `Prestige` data. Several possibly unusual observations are labeled."
+op <- par(mfrow = c(2,2), 
+          mar=c(4,4,3,1)+.1)
+plot(prestige.mod, lwd=2, cex.lab=1.4)
+par(op)
+```
+
 
 ## Other Diagnostic plots
 
