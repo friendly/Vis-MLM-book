@@ -13,8 +13,8 @@ There were 366 blue plastic capsules containing birth dates placed in a transpar
 #| fig-align: center
 #| out-width: "100%"
 #| echo: false
-#| fig-cap: "Congressman Alexander Pirnie (R-NY) drawing the first capsule for the Selective Service draft, Dec 1, 1969"
-knitr::include_graphics("https://en.wikipedia.org/wiki/Draft_lottery_(1969)#/media/File:1969_draft_lottery_photo.jpg")
+#| fig-cap: "Congressman Alexander Pirnie (R-NY) drawing the first capsule for the Selective Service draft, Dec 1, 1969. Source: https://en.wikipedia.org/wiki/Draft_lottery_(1969)#/media/File:1969_draft_lottery_photo.jpg"
+knitr::include_graphics("images/1969_draft_lottery_photo.jpg")
 ```
 
 In an attempt to make the selection process also transparent, the proceeding was
@@ -47,8 +47,7 @@ upper right corner and lower left corner compared to the opposite corners.
 #| code-fold: show
 #| echo: FALSE
 #| fig-cap: "Basic scatterplot of 1970 Draft Lottery data plotting rank order of selection against birthdates in the year. Points are colored by month. The horizontal line is at the average rank."
-#' 
-# markers for months
+# make markers for months at their mid points
 months <- data.frame(
   month =unique(Draft1970$Month),
   mid = seq(15, 365-15, by = 30))
@@ -70,6 +69,59 @@ gg <- ggplot(Draft1970, aes(x = Day, y = Rank)) +
 gg
 ```
 
-Fitting a line or smoothed (loess) curve ...
+But, fitting a line or smoothed (loess) curve shows a definite trend to lower 
+ranks for birthdays toward the end of the year:
+
+```{r}
+#| label: draft-gg2
+#| fig-align: center
+#| out-width: "100%"
+#| code-fold: show
+#| echo: FALSE
+#| fig-cap: "Enhanced scatterplot of 1970 Draft Lottery data adding a linear regression line and loess smooth."
+ggplot(Draft1970, aes(x = Day, y = Rank)) +
+  geom_point(size = 2.5, shape = 21, 
+             alpha = 0.3, 
+             color = "black", 
+             fill = "brown") +
+  geom_smooth(method = "lm", formula = y~1,
+              se = FALSE,
+              col = "black", fill="grey", alpha=0.6) +
+  geom_smooth(method = "loess", formula = y~x,
+              color = "blue", se = FALSE,
+              alpha=0.25) +
+  geom_smooth(method = "lm", formula = y~x,
+              color = "darkgreen",
+              fill = "darkgreen", 
+              alpha=0.25) +
+  labs(x = "Day of the year",
+       y = "Lottery rank")
+
+```
+
+Is this a real effect? 
+<!-- The Spearman $\rho$ rank correlation between -->
+<!-- `Rank` and `Day` is significantly negative: -->
+
+<!-- ```{r spearman} -->
+<!-- stats::cor.test(~ Rank + Day, data=Draft1970, method="spearman") |>  -->
+<!--   purrr::pluck("estimate") -->
+<!-- ``` -->
+ 
+Even though the points seem to be random over the year, linear regression of `Rank` on `Day` shows a highly significant negative effect even though the 
+correlation is small ($R^2 = 0.051$) The slope, -0.226,
+means that for each additional day in the year decreases about 1/4 rank toward
+the front of the draft line, nearly 7 ranks per month.
+On average,
+```{r draft-mod}
+draft.mod <- lm(Rank ~ Day, data=Draft1970)
+summary(draft.mod)
+```
 
 
+### What happened here?
+
+Previous draft lotteries carried out by drawing capsules from a container had occasionally suffered the embarrassment of an empty capsule being selected 
+because of vigorous mixing [@Fienberg:71] So for the 1970 lottery, the birthdate capsules were
+put in cardboard boxes, one for each month and these were carefully emptied into the glass container in order of month: Jan., Feb., ... Dec., gently shaken in atop the pile already there.  All might have been well had the persons drawing the capsules
+put their hand in in a random fashion, but generally picked from toward the top.

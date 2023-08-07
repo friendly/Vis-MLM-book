@@ -53,32 +53,34 @@ gg +
                   color="darkgreen", alpha=0.25) 
 
 # start over; make the points uncolored
-gg2 <- ggplot(Draft1970, aes(x = Day, y = Rank)) +
+ggplot(Draft1970, aes(x = Day, y = Rank)) +
   geom_point(size = 2.5, shape = 21, 
              alpha = 0.3, 
              color = "black", 
-             fill = "brown"
-  ) +
-#  geom_text(data=months, aes(x=mid, y=0, label=month)) +
+             fill = "brown") +
   geom_smooth(method = "lm", formula = y~1,
               se = FALSE,
               col = "black", fill="grey", alpha=0.6) +
-  labs(x = "Day of the year",
-       y = "Lottery rank") +
-  theme(legend.position = "none") 
-#gg2
-gg2 +  
   geom_smooth(method = "loess", formula = y~x,
               color = "blue", se = FALSE,
               alpha=0.25) +
   geom_smooth(method = "lm", formula = y~x,
               color = "darkgreen",
               fill = "darkgreen", 
-              alpha=0.25) 
+              alpha=0.25) +
+  labs(x = "Day of the year",
+       y = "Lottery rank")
+
+# Spearman's Rho
 
 
+stats::cor.test(~ Rank + Day, data=Draft1970, method="spearman")$estimate
+
+stats::cor.test(~ Rank + Day, data=Draft1970, method="spearman") |> 
+  purrr::pluck("estimate")
 
 draft.mod <- lm(Rank ~ Day, data=Draft1970)
+summary(draft.mod)
 anova(draft.mod)
 
 # make the table version
