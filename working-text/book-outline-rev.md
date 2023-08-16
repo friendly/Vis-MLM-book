@@ -69,7 +69,7 @@ Some of these can be considerably enhanced using other packages.
 - marginal plots
 - diagnostic plots
 
-## Other topics: Multicollinearity & ridge regression
+## Collinearity & Ridge Regression
 
 This chapter focuses on the problems associated with high correlations among predictors in linear models,
 which can lead to numerical instability and paradoxical findings that, while a linear model can be highly
@@ -79,6 +79,7 @@ predictive, few or none of the independent variables appear to be significant.
   - collinearity diagnostics
   - tableplots
   - collinearity biplots
+
 - ridge regression -- generalized ridge trace plots
 
 ## Hotelling's T^2
