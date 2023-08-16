@@ -11,12 +11,18 @@ Not quite sure what should go here ...
 
 ### Preliminaries
 
+Maybe not a separate chapter, but list the main packages used here and datasets for examples.
+
 - R packages
 - Datasets
 
 ## Getting Started
 
+File: `getting_started.qmd`
+
 - Why plot your data?
+  - Anscombe data
+  - Davis data
 - data plots
 - model plots
 - diagnostic plots
@@ -52,6 +58,11 @@ response using a linear model composed of quantitative and/or categorical predic
 -	Regression trees
 
 ## Plots for univariate response models
+
+For a univariate linear model fit using `lm()`, `glm()` and similar functions, the standard `plot()`
+method gives basic versions of _diagnostic_ plots of residuals and other calculated quantities for assessing
+possible violations of the model assumptions.
+Some of these can be considerably enhanced using other packages.
 
 - the "regression quartet"
 - coefficient plots
