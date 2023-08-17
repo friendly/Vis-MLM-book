@@ -24,14 +24,19 @@ Recall the standard classical linear model for a response variable $y$ with a co
 in $\mathbf{X} = (\mathbf{x}_1, \mathbf{x}_2, ..., \mathbf{x}_p)$
 
 $$
-\mathbf{y} = \beta_0 + \beta_1 \mathbf{x}_1 + \beta_2 \mathbf{x}_2 + \cdots + \beta_p \mathbf{x}_p + \mathbf{\epsilon}
-           = \mathbf{X} \mathbf{\beta} + \mathbf{\epsilon}
+\begin{eqnarray*}
+\mathbf{y} & =&  \beta_0 + \beta_1 \mathbf{x}_1 + \beta_2 \mathbf{x}_2 + \cdots + \beta_p \mathbf{x}_p + \mathbf{\epsilon} \\
+         & = & \mathbf{X} \mathbf{\beta} + \mathbf{\epsilon} \; ,
+\end{eqnarray*}
 $$
-for which the ordinary least squares solution is
+for which the ordinary least squares solution is:
 
 $$
-\widehat{\mathbf{b}} = (\mathbf{X}^T \mathbf{X})^{-1} \; \mathbf{X}^T \mathbf{y}
+\widehat{\mathbf{b}} = (\mathbf{X}^T \mathbf{X})^{-1} \; \mathbf{X}^T \mathbf{y} \; ,
 $$
+with sampling variances and covariances $\text{Var} (\widehat{\mathbf{b}}) = \sigma^2 \times (\mathbf{X}^T \mathbf{X})^{-1}$ and $\sigma^2$ is the variance of the residuals $\mathbf{\epsilon}$, estimated by the
+mean squared error (MSE).
+
 In the limiting case, when one $x_i$ is _perfectly_
 predictable from the other $x$s, i.e., $R^2 (x_i | \text{other }x) = 1$, 
 
@@ -40,12 +45,112 @@ $\mathbf{b} = (\mathbf{X}^T \mathbf{X})^{-1} \mathbf{X} \mathbf{y}$;
 * the standard errors $s (b_i)$ of the estimated coefficients are infinite and _t_ statistics $t_i = b_i / s (b_i)$
 are 0.
 
-This extreme case reflects a situation when one or more predictors are effectively redundant
+This extreme case reflects a situation when one or more predictors are effectively redundant, for example
+when you include two variables $x$ and $y$ and their sum $z = x + y$ in a model, or use _ipsatized_
+scores that sum to a constant. More generally, collinearity refers to the case when there are very high
+**multiple correlations** among the predictors, such as $R^2 (x_i | \text{other }x) \ge 0.9$. 
+Note that you can't tell simply by looking at the simple correlations. A large correlation
+$r_{ij}$ is _sufficient_ for collinearity, but not _necessary_ --- you can have variables
+$x_1, x_2, x_3$ for which the pairwise correlation are low, but the multiple correlation is high.
 
-## Visualizing collinearity
+The consequences are:
+
+* The estimated coefficients have large standard errors, $s(\hat{b_j})$. They are multiplied by
+the square root of the variance inflation factor, $\sqrt{\text{VIF}}$, discussed below.
+* This deflates the $t$-statistics, $t = \hat{b_j} / s(\hat{b_j})$ by the same factor.
+* Thus you may find a situation where an overall model is highly significant (large $F$-statistic), while
+no (or few) of the individual predictors are. This is a puzzlement!
+* Beyond this, the least squares solution may have poor numerical accurracy [@Longley:1967], because
+the solution depends on the determinant $|\,\mathbf{X}^T \mathbf{X}\,|$, which approaches 0
+as multiple correlations increase.
+* As well, recall that the coefficients $\hat{b}$ are **partial coefficients**, meaning the estimated
+change $\Delta y$ in $y$ when $x$ changes by one unit $\Delta x$, but **holding all other variables
+constant**. Then, the model may be trying to estimate something that does not occur in the data.
+
+### Visualizing collinearity
+
+Collinearity can be illustrated in data space for two predictors in terms of the stability of the
+regression plane for a linear model `Y = X1 + X2`. In @fig-collin-demo (adapted from @Fox:2016:ARA, Fig. 13.2):
+
+(a) shows a case where
+$X_1$ and $X_2$ are uncorrelated as can be seen in their scatter in the horizontal plane (`+` symbols).
+The regression plane is well-supported; a small change in Y for one observation won't make much difference.
+
+(b) In panel (b), $X_1$ and $X_2$ have a perfect correlation, $r (x_1, x_2) = 1.0$. The regression plane
+is not unique; in fact there are an infinite number of planes that fit the data equally well. Note that,
+if all we care about is prediction (not the coefficients), we could use $X_1$ or $X_2$, or both, or
+any weighted sum of them in a model and get the same predicted values.
+
+(c) Shows a typical case where there is a strong correlation between $X_1$ and $X_2$. The regression plane
+here is unique, but is not well determined. A small change in Y **can** make quite a difference
+in the fitted value or coefficients, depending on the values of $X_1$ and $X_2$.
+Where $X_1$ and $X_2$ are far from their near linear relation in the botom plane,
+you can imagine that it is easy to tilt the plane substantially by a small change in $Y$.
+
+```{r}
+#| label: fig-collin-demo,
+#| echo: no
+#| out-width: 100%
+#| fig.cap: "Effect of collinearity on the least squares regression plane. 
+#|      (a) Small correlation between predictors;
+#|      (b) Perfect correlation ;
+#|      (c) Very strong correlation.
+#|      The black points show the data Y values, white points are the fitted values in the regression plane,
+#|      and + signs represent the values of X1 and X2.
+#|      _Source_: Adapted from @Fox:2016:ARA, Fig. 13.2"
+knitr::include_graphics("images/collin-demo.png")
+```
 
 
-## Generalized ridge trace plots
+### Measuring collinearity: Variance inflation factors
+
+How can we measure the effect of collinearity? The essential idea is to compare, for each predictor the variance
+$s^2 (\widehat{b_j})$ that the coefficient that $x_j$ would have if it was totally unrelated to the other
+predictors to the actual variance it has in the given model.
+
+For two predictors such as shown in @fig-collin-demo the sampling variance of $x_1$ can be expressed
+as
+
+$$
+s^2 (\widehat{b_1}) = \frac{MSE}{(n-1) \; s^2(x_1)} \; \times \; [ \frac{1}{1-r^2_{12}} ]
+$$
+The first term here is the variance of $b_1$ when the two predictors are uncorrelated.
+The term in brackets represents the **variance inflation factor**, the amount by which the 
+variance of the coefficent is multiplied as a consequence of the correlation $r_{12}$ of
+the predictors.  As $r_{12} \rightarrow 1$, the variances approach infinity.
+
+More generally, with any number of predictors, this relation has a similar form, replacing
+the simple correlation $r_{12}$ with the multiple correlation predicting $x_j$ from all others,
+
+$$
+s^2 (\widehat{b_j}) = \frac{MSE}{(n-1) \; s^2(x_j)} \; \times \; [ \frac{1}{1-R^2_{j | \text{others}}} ]
+$$
+So, we have that the variance inflation factors are:
+
+$$
+\text{VIF}_j = \frac{1}{1-R^2_{j \,|\, \text{others}}} 
+$$
+In practice, it is often easier to think in terms of the square root, $\sqrt{\text{VIF}_j}$ as the
+multiplier of the standard errors. The denominator, $1-R^2_{j | \text{others}}$ is sometimes called
+**tolerance**, a term I don't find particularly useful.
+
+### Collinearity diagnostics
+
+### Tableplots
+
+### Collinearity biplots
+
+### Remedies
+
+
+## Ridge regression
+
+### What is ridge regression?
+
+### Univariate ridge trace plots
+
+### Bivariate ridge trace plots
+
 
 
 

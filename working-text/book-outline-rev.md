@@ -47,6 +47,11 @@ to show multiple variables along a set of parallel axes.
 - Generalized pair plots
 - Heatmaps
 
+## PCA and Biplots
+
+- PCA, the multivariate juicer
+- Biplot, a low-dimensional view
+
 ## Overview of Linear Models
 
 In this chapter, I review the standard statistical methods for explaining or predicting a quantitative
@@ -67,7 +72,7 @@ Some of these can be considerably enhanced using other packages.
 
 - the "regression quartet"
 - coefficient plots
-- marginal plots
+- marginal (effect) plots
 - diagnostic plots
 
 ## Collinearity & Ridge Regression
@@ -115,7 +120,7 @@ The general multivariate linear model (MLM) can be understood as a simple extens
 
 - NeuroCog and SocialCog
 
-## MANOVA Examples
+### MANOVA Examples
 
 This is a collection of examples of multivariate analysis of variance (MANOVA), listed here with the sources
 from other publications I may draw on as case studies or use in earlier chapters
@@ -125,7 +130,7 @@ from other publications I may draw on as case studies or use in earlier chapters
 - diabetes data [from candisc vignette]
 - Neuro-Cog & Social-Cog [from TQMP tutorial]
 
-## MMRA Examples
+### MMRA Examples
 
 - Rohwer data from [HE-plot-examples vignette & TQMP tutorial]
 -   

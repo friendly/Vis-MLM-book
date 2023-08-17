@@ -17,7 +17,26 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 <script src="site_libs/quarto-nav/quarto-nav.js"></script>
 <script src="site_libs/quarto-nav/headroom.min.js"></script>
@@ -181,9 +200,25 @@ ul.task-list li input[type="checkbox"] {
         <nav id="TOC" role="doc-toc" class="toc-active"><h2 id="toc-title">Table of contents</h2>
    
   <ul>
-<li><a href="#what-is-collinearity" id="toc-what-is-collinearity" class="nav-link active" data-scroll-target="#what-is-collinearity"><span class="header-section-number">6.1</span> What is collinearity?</a></li>
-  <li><a href="#visualizing-collinearity" id="toc-visualizing-collinearity" class="nav-link" data-scroll-target="#visualizing-collinearity"><span class="header-section-number">6.2</span> Visualizing collinearity</a></li>
-  <li><a href="#generalized-ridge-trace-plots" id="toc-generalized-ridge-trace-plots" class="nav-link" data-scroll-target="#generalized-ridge-trace-plots"><span class="header-section-number">6.3</span> Generalized ridge trace plots</a></li>
+<li>
+<a href="#what-is-collinearity" id="toc-what-is-collinearity" class="nav-link active" data-scroll-target="#what-is-collinearity"><span class="header-section-number">6.1</span> What is collinearity?</a>
+  <ul class="collapse">
+<li><a href="#visualizing-collinearity" id="toc-visualizing-collinearity" class="nav-link" data-scroll-target="#visualizing-collinearity"><span class="header-section-number">6.1.1</span> Visualizing collinearity</a></li>
+  <li><a href="#measuring-collinearity-variance-inflation-factors" id="toc-measuring-collinearity-variance-inflation-factors" class="nav-link" data-scroll-target="#measuring-collinearity-variance-inflation-factors"><span class="header-section-number">6.1.2</span> Measuring collinearity: Variance inflation factors</a></li>
+  <li><a href="#collinearity-diagnostics" id="toc-collinearity-diagnostics" class="nav-link" data-scroll-target="#collinearity-diagnostics"><span class="header-section-number">6.1.3</span> Collinearity diagnostics</a></li>
+  <li><a href="#tableplots" id="toc-tableplots" class="nav-link" data-scroll-target="#tableplots"><span class="header-section-number">6.1.4</span> Tableplots</a></li>
+  <li><a href="#collinearity-biplots" id="toc-collinearity-biplots" class="nav-link" data-scroll-target="#collinearity-biplots"><span class="header-section-number">6.1.5</span> Collinearity biplots</a></li>
+  <li><a href="#remedies" id="toc-remedies" class="nav-link" data-scroll-target="#remedies"><span class="header-section-number">6.1.6</span> Remedies</a></li>
+  </ul>
+</li>
+  <li>
+<a href="#ridge-regression" id="toc-ridge-regression" class="nav-link" data-scroll-target="#ridge-regression"><span class="header-section-number">6.2</span> Ridge regression</a>
+  <ul class="collapse">
+<li><a href="#what-is-ridge-regression" id="toc-what-is-ridge-regression" class="nav-link" data-scroll-target="#what-is-ridge-regression"><span class="header-section-number">6.2.1</span> What is ridge regression?</a></li>
+  <li><a href="#univariate-ridge-trace-plots" id="toc-univariate-ridge-trace-plots" class="nav-link" data-scroll-target="#univariate-ridge-trace-plots"><span class="header-section-number">6.2.2</span> Univariate ridge trace plots</a></li>
+  <li><a href="#bivariate-ridge-trace-plots" id="toc-bivariate-ridge-trace-plots" class="nav-link" data-scroll-target="#bivariate-ridge-trace-plots"><span class="header-section-number">6.2.3</span> Bivariate ridge trace plots</a></li>
+  </ul>
+</li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul></nav>
     </div>
@@ -211,29 +246,85 @@ ul.task-list li input[type="checkbox"] {
 <span class="header-section-number">6.1</span> What is collinearity?</h2>
 <p>Recall the standard classical linear model for a response variable <span class="math inline">\(y\)</span> with a collection of predictors in <span class="math inline">\(\mathbf{X} = (\mathbf{x}_1, \mathbf{x}_2, ..., \mathbf{x}_p)\)</span></p>
 <p><span class="math display">\[
-\mathbf{y} = \beta_0 + \beta_1 \mathbf{x}_1 + \beta_2 \mathbf{x}_2 + \cdots + \beta_p \mathbf{x}_p + \mathbf{\epsilon}
-           = \mathbf{X} \mathbf{\beta} + \mathbf{\epsilon}
-\]</span> for which the ordinary least squares solution is</p>
+\begin{eqnarray*}
+\mathbf{y} &amp; =&amp;  \beta_0 + \beta_1 \mathbf{x}_1 + \beta_2 \mathbf{x}_2 + \cdots + \beta_p \mathbf{x}_p + \mathbf{\epsilon} \\
+         &amp; = &amp; \mathbf{X} \mathbf{\beta} + \mathbf{\epsilon} \; ,
+\end{eqnarray*}
+\]</span> for which the ordinary least squares solution is:</p>
 <p><span class="math display">\[
-\widehat{\mathbf{b}} = (\mathbf{X}^T \mathbf{X})^{-1} \; \mathbf{X}^T \mathbf{y}
-\]</span> In the limiting case, when one <span class="math inline">\(x_i\)</span> is <em>perfectly</em> predictable from the other <span class="math inline">\(x\)</span>s, i.e., <span class="math inline">\(R^2 (x_i | \text{other }x) = 1\)</span>,</p>
+\widehat{\mathbf{b}} = (\mathbf{X}^T \mathbf{X})^{-1} \; \mathbf{X}^T \mathbf{y} \; ,
+\]</span> with sampling variances and covariances <span class="math inline">\(\text{Var} (\widehat{\mathbf{b}}) = \sigma^2 \times (\mathbf{X}^T \mathbf{X})^{-1}\)</span> and <span class="math inline">\(\sigma^2\)</span> is the variance of the residuals <span class="math inline">\(\mathbf{\epsilon}\)</span>, estimated by the mean squared error (MSE).</p>
+<p>In the limiting case, when one <span class="math inline">\(x_i\)</span> is <em>perfectly</em> predictable from the other <span class="math inline">\(x\)</span>s, i.e., <span class="math inline">\(R^2 (x_i | \text{other }x) = 1\)</span>,</p>
 <ul>
 <li>there is no <em>unique</em> solution for the regression coefficients <span class="math inline">\(\mathbf{b} = (\mathbf{X}^T \mathbf{X})^{-1} \mathbf{X} \mathbf{y}\)</span>;</li>
 <li>the standard errors <span class="math inline">\(s (b_i)\)</span> of the estimated coefficients are infinite and <em>t</em> statistics <span class="math inline">\(t_i = b_i / s (b_i)\)</span> are 0.</li>
 </ul>
-<p>This extreme case reflects a situation when one or more predictors are effectively redundant</p>
-</section><section id="visualizing-collinearity" class="level2" data-number="6.2"><h2 data-number="6.2" class="anchored" data-anchor-id="visualizing-collinearity">
-<span class="header-section-number">6.2</span> Visualizing collinearity</h2>
-</section><section id="generalized-ridge-trace-plots" class="level2" data-number="6.3"><h2 data-number="6.3" class="anchored" data-anchor-id="generalized-ridge-trace-plots">
-<span class="header-section-number">6.3</span> Generalized ridge trace plots</h2>
+<p>This extreme case reflects a situation when one or more predictors are effectively redundant, for example when you include two variables <span class="math inline">\(x\)</span> and <span class="math inline">\(y\)</span> and their sum <span class="math inline">\(z = x + y\)</span> in a model, or use <em>ipsatized</em> scores that sum to a constant. More generally, collinearity refers to the case when there are very high <strong>multiple correlations</strong> among the predictors, such as <span class="math inline">\(R^2 (x_i | \text{other }x) \ge 0.9\)</span>. Note that you can’t tell simply by looking at the simple correlations. A large correlation <span class="math inline">\(r_{ij}\)</span> is <em>sufficient</em> for collinearity, but not <em>necessary</em> — you can have variables <span class="math inline">\(x_1, x_2, x_3\)</span> for which the pairwise correlation are low, but the multiple correlation is high.</p>
+<p>The consequences are:</p>
+<ul>
+<li>The estimated coefficients have large standard errors, <span class="math inline">\(s(\hat{b_j})\)</span>. They are multiplied by the square root of the variance inflation factor, <span class="math inline">\(\sqrt{\text{VIF}}\)</span>, discussed below.</li>
+<li>This deflates the <span class="math inline">\(t\)</span>-statistics, <span class="math inline">\(t = \hat{b_j} / s(\hat{b_j})\)</span> by the same factor.</li>
+<li>Thus you may find a situation where an overall model is highly significant (large <span class="math inline">\(F\)</span>-statistic), while no (or few) of the individual predictors are. This is a puzzlement!</li>
+<li>Beyond this, the least squares solution may have poor numerical accurracy <span class="citation" data-cites="Longley:1967">(<a href="references.html#ref-Longley:1967" role="doc-biblioref">Longley 1967</a>)</span>, because the solution depends on the determinant <span class="math inline">\(|\,\mathbf{X}^T \mathbf{X}\,|\)</span>, which approaches 0 as multiple correlations increase.</li>
+<li>As well, recall that the coefficients <span class="math inline">\(\hat{b}\)</span> are <strong>partial coefficients</strong>, meaning the estimated change <span class="math inline">\(\Delta y\)</span> in <span class="math inline">\(y\)</span> when <span class="math inline">\(x\)</span> changes by one unit <span class="math inline">\(\Delta x\)</span>, but <strong>holding all other variables constant</strong>. Then, the model may be trying to estimate something that does not occur in the data.</li>
+</ul>
+<section id="visualizing-collinearity" class="level3" data-number="6.1.1"><h3 data-number="6.1.1" class="anchored" data-anchor-id="visualizing-collinearity">
+<span class="header-section-number">6.1.1</span> Visualizing collinearity</h3>
+<p>Collinearity can be illustrated in data space for two predictors in terms of the stability of the regression plane for a linear model <code>Y = X1 + X2</code>. In <span class="quarto-unresolved-ref">?fig-collin-demo</span> (adapted from <span class="citation" data-cites="Fox:2016:ARA">Fox (<a href="references.html#ref-Fox:2016:ARA" role="doc-biblioref">2016</a>)</span>, Fig. 13.2):</p>
+<ol type="a">
+<li><p>shows a case where <span class="math inline">\(X_1\)</span> and <span class="math inline">\(X_2\)</span> are uncorrelated as can be seen in their scatter in the horizontal plane (<code>+</code> symbols). The regression plane is well-supported; a small change in Y for one observation won’t make much difference.</p></li>
+<li><p>In panel (b), <span class="math inline">\(X_1\)</span> and <span class="math inline">\(X_2\)</span> have a perfect correlation, <span class="math inline">\(r (x_1, x_2) = 1.0\)</span>. The regression plane is not unique; in fact there are an infinite number of planes that fit the data equally well. Note that, if all we care about is prediction (not the coefficients), we could use <span class="math inline">\(X_1\)</span> or <span class="math inline">\(X_2\)</span>, or both, or any weighted sum of them in a model and get the same predicted values.</p></li>
+<li><p>Shows a typical case where there is a strong correlation between <span class="math inline">\(X_1\)</span> and <span class="math inline">\(X_2\)</span>. The regression plane here is unique, but is not well determined. A small change in Y <strong>can</strong> make quite a difference in the fitted value or coefficients, depending on the values of <span class="math inline">\(X_1\)</span> and <span class="math inline">\(X_2\)</span>. Where <span class="math inline">\(X_1\)</span> and <span class="math inline">\(X_2\)</span> are far from their near linear relation in the botom plane, you can imagine that it is easy to tilt the plane substantially by a small change in <span class="math inline">\(Y\)</span>.</p></li>
+</ol>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<p><img src="images/collin-demo.png" class="img-fluid" alt="Effect of collinearity on the least squares regression plane. (a) Small correlation between predictors; (b) Perfect correlation ; (c) Very strong correlation. The black points show the data Y values, white points are the fitted values in the regression plane, and + signs represent the values of X1 and X2. Source: Adapted from Fox (2016), Fig. 13.2">{#fig-collin-demo, fig-align=‘center’ width=100%}</p>
+</div>
+</div>
+</section><section id="measuring-collinearity-variance-inflation-factors" class="level3" data-number="6.1.2"><h3 data-number="6.1.2" class="anchored" data-anchor-id="measuring-collinearity-variance-inflation-factors">
+<span class="header-section-number">6.1.2</span> Measuring collinearity: Variance inflation factors</h3>
+<p>How can we measure the effect of collinearity? The essential idea is to compare, for each predictor the variance <span class="math inline">\(s^2 (\widehat{b_j})\)</span> that the coefficient that <span class="math inline">\(x_j\)</span> would have if it was totally unrelated to the other predictors to the actual variance it has in the given model.</p>
+<p>For two predictors such as shown in <span class="quarto-unresolved-ref">?fig-collin-demo</span> the sampling variance of <span class="math inline">\(x_1\)</span> can be expressed as</p>
+<p><span class="math display">\[
+s^2 (\widehat{b_1}) = \frac{MSE}{(n-1) \; s^2(x_1)} \; \times \; [ \frac{1}{1-r^2_{12}} ]
+\]</span> The first term here is the variance of <span class="math inline">\(b_1\)</span> when the two predictors are uncorrelated. The term in brackets represents the <strong>variance inflation factor</strong>, the amount by which the variance of the coefficent is multiplied as a consequence of the correlation <span class="math inline">\(r_{12}\)</span> of the predictors. As <span class="math inline">\(r_{12} \rightarrow 1\)</span>, the variances approach infinity.</p>
+<p>More generally, with any number of predictors, this relation has a similar form, replacing the simple correlation <span class="math inline">\(r_{12}\)</span> with the multiple correlation predicting <span class="math inline">\(x_j\)</span> from all others,</p>
+<p>$$ s^2 () = ; ; [ ]</p>
+<p><span class="math display">\[
+So, we have that
+\]</span> _j = $$ In practice, it is often easier to think in terms of the square root, <span class="math inline">\(\sqrt{\text{VIF}_j}\)</span> as the multiplier of the standard errors. The denominator, <span class="math inline">\(1-R^2_{j | \text{others}}\)</span> is sometimes called <strong>tolerance</strong>, a term I don’t find particularly useful.</p>
+</section><section id="collinearity-diagnostics" class="level3" data-number="6.1.3"><h3 data-number="6.1.3" class="anchored" data-anchor-id="collinearity-diagnostics">
+<span class="header-section-number">6.1.3</span> Collinearity diagnostics</h3>
+</section><section id="tableplots" class="level3" data-number="6.1.4"><h3 data-number="6.1.4" class="anchored" data-anchor-id="tableplots">
+<span class="header-section-number">6.1.4</span> Tableplots</h3>
+</section><section id="collinearity-biplots" class="level3" data-number="6.1.5"><h3 data-number="6.1.5" class="anchored" data-anchor-id="collinearity-biplots">
+<span class="header-section-number">6.1.5</span> Collinearity biplots</h3>
+</section><section id="remedies" class="level3" data-number="6.1.6"><h3 data-number="6.1.6" class="anchored" data-anchor-id="remedies">
+<span class="header-section-number">6.1.6</span> Remedies</h3>
+</section></section><section id="ridge-regression" class="level2" data-number="6.2"><h2 data-number="6.2" class="anchored" data-anchor-id="ridge-regression">
+<span class="header-section-number">6.2</span> Ridge regression</h2>
+<section id="what-is-ridge-regression" class="level3" data-number="6.2.1"><h3 data-number="6.2.1" class="anchored" data-anchor-id="what-is-ridge-regression">
+<span class="header-section-number">6.2.1</span> What is ridge regression?</h3>
+</section><section id="univariate-ridge-trace-plots" class="level3" data-number="6.2.2"><h3 data-number="6.2.2" class="anchored" data-anchor-id="univariate-ridge-trace-plots">
+<span class="header-section-number">6.2.2</span> Univariate ridge trace plots</h3>
+</section><section id="bivariate-ridge-trace-plots" class="level3" data-number="6.2.3"><h3 data-number="6.2.3" class="anchored" data-anchor-id="bivariate-ridge-trace-plots">
+<span class="header-section-number">6.2.3</span> Bivariate ridge trace plots</h3>
 <div class="cell" data-layout-align="center">
 <pre><code>#&gt; Writing packages to  C:/R/Projects/Vis-MLM-quarto/bib/pkgs.txt
 #&gt; 7  packages used here:
 #&gt;  base, datasets, graphics, grDevices, methods, stats, utils</code></pre>
 </div>
-</section><section id="references" class="level2 unnumbered"><h2 class="unnumbered anchored" data-anchor-id="references">References</h2>
+</section></section><section id="references" class="level2 unnumbered"><h2 class="unnumbered anchored" data-anchor-id="references">References</h2>
 
 
+<div id="refs" class="references csl-bib-body hanging-indent" role="list" style="display: none">
+<div id="ref-Fox:2016:ARA" class="csl-entry" role="listitem">
+Fox, John. 2016. <em>Applied Regression Analysis and Generalized Linear Models</em>. Third edition. Los Angeles: SAGE.
+</div>
+<div id="ref-Longley:1967" class="csl-entry" role="listitem">
+Longley, James W. 1967. <span>“An Appraisal of Least Squares Programs for the Electronic Computer from the Point of View of the User.”</span> <em>Journal of the American Statistical Association</em> 62: 819–41. https://doi.org/<a href="https://www.tandfonline.com/doi/abs/10.1080/01621459.1967.10500896">https://www.tandfonline.com/doi/abs/10.1080/01621459.1967.10500896</a>.
+</div>
+</div>
 </section></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
