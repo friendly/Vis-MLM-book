@@ -40,6 +40,7 @@ to show multiple variables along a set of parallel axes.
     - data ellipses
 - Quantitative data:
     - scatterplot matrices
+    - corrplots
     - parallel coordinate plots
 - Categorical data:
     - mosaic plots
