@@ -14,10 +14,6 @@ data(Animals, package = "MASS")
 # check data structure.
 head(Animals)
 
-# Log transformation.
-# Y <- data.frame(body = log(Animals$body), 
-#                 brain = log(Animals$brain))
-
 Y <- Animals |>
   mutate(
     body = log10(body),

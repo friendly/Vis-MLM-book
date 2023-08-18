@@ -1,6 +1,18 @@
 ```{r include=FALSE}
 source("R/common.R")
 ```
+
+**Packages**
+In this chapter we use the following packages. Load them now.
+```{r}
+library(car)
+library(VisCollin)
+library(genridge)
+# library(ggplot2)
+# library(dplyr)
+# library(tidyr)
+```
+
 # Collinearity & Ridge Regression {#sec-collin}
 
 > Some of my collinearity diagnostics have large values, or small values, or whatever they are not supposed to be
@@ -101,6 +113,12 @@ you can imagine that it is easy to tilt the plane substantially by a small chang
 knitr::include_graphics("images/collin-demo.png")
 ```
 
+It is also useful to visualize collinearity by comparing the representation in data space with the
+anologous view of the confidence ellipses for coefficients in beta space. To do so, we generate
+data from a known model $y = 2 x_1 + 2 x_2 + \epsilon$ with $\epsilon ~ \mathcal{N} (0, 100)$
+and various correlations between $x_1$ and $x_2$.
+
+Working file: `R/collin-data-beta.R`
 
 ### Measuring collinearity: Variance inflation factors
 
@@ -112,18 +130,18 @@ For two predictors such as shown in @fig-collin-demo the sampling variance of $x
 as
 
 $$
-s^2 (\widehat{b_1}) = \frac{MSE}{(n-1) \; s^2(x_1)} \; \times \; [ \frac{1}{1-r^2_{12}} ]
+s^2 (\widehat{b_1}) = \frac{MSE}{(n-1) \; s^2(x_1)} \; \times \; \left[ \frac{1}{1-r^2_{12}} \right]
 $$
 The first term here is the variance of $b_1$ when the two predictors are uncorrelated.
 The term in brackets represents the **variance inflation factor**, the amount by which the 
 variance of the coefficent is multiplied as a consequence of the correlation $r_{12}$ of
-the predictors.  As $r_{12} \rightarrow 1$, the variances approach infinity.
+the predictors.  As $r_{12} \rightarrow 1$, the variances approaches infinity.
 
 More generally, with any number of predictors, this relation has a similar form, replacing
 the simple correlation $r_{12}$ with the multiple correlation predicting $x_j$ from all others,
 
 $$
-s^2 (\widehat{b_j}) = \frac{MSE}{(n-1) \; s^2(x_j)} \; \times \; [ \frac{1}{1-R^2_{j | \text{others}}} ]
+s^2 (\widehat{b_j}) = \frac{MSE}{(n-1) \; s^2(x_j)} \; \times \; \left[ \frac{1}{1-R^2_{j | \text{others}}} \right]
 $$
 So, we have that the variance inflation factors are:
 
@@ -133,6 +151,14 @@ $$
 In practice, it is often easier to think in terms of the square root, $\sqrt{\text{VIF}_j}$ as the
 multiplier of the standard errors. The denominator, $1-R^2_{j | \text{others}}$ is sometimes called
 **tolerance**, a term I don't find particularly useful.
+
+Note that when there are terms in the model with more than one df, such as education with four levels
+(and hence 3 df) or a polynomial term spaecified as `poly(x, 3)`, the standard VIF calculation
+gives results that vary with how those terms are coded in the model. @FoxMonette:92 define
+_generalized_, GVIFs as the inflation in the squared area of the confidence ellipse for the coefficients
+of such terms, relative to what would be obtained with uncorrelated data. 
+
+**Example**:
 
 ### Collinearity diagnostics
 
