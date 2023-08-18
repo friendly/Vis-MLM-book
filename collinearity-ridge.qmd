@@ -25,10 +25,11 @@ in estimating and testing their effects. The quote above shows the a typical qua
 do understand these problems and and take steps to resolve them.
 This chapter illustrates the problems of collinearity,
 describes diagnostic measures to asses its effects, 
-and presents some novel visual tools for these purposes.
+and presents some novel visual tools for these purposes using the **VisCollin** package.
 
-One class of solutions for collinearity involves _regularization methods_ such as ridge regression. Another collection
-of graphical methods, generalized ridge trace plots, sheds further light on what is accomplished by this technique.
+One class of solutions for collinearity involves _regularization methods_ such as ridge regression. 
+Another collection of graphical methods, generalized ridge trace plots, implemented in the **genridge** package,
+sheds further light on what is accomplished by this technique.
 
 ## What is collinearity?
 
@@ -133,7 +134,7 @@ $$
 s^2 (\widehat{b_1}) = \frac{MSE}{(n-1) \; s^2(x_1)} \; \times \; \left[ \frac{1}{1-r^2_{12}} \right]
 $$
 The first term here is the variance of $b_1$ when the two predictors are uncorrelated.
-The term in brackets represents the **variance inflation factor**, the amount by which the 
+The term in brackets represents the **variance inflation factor** @Marquandt:70, the amount by which the 
 variance of the coefficent is multiplied as a consequence of the correlation $r_{12}$ of
 the predictors.  As $r_{12} \rightarrow 1$, the variances approaches infinity.
 
@@ -158,9 +159,137 @@ gives results that vary with how those terms are coded in the model. @FoxMonette
 _generalized_, GVIFs as the inflation in the squared area of the confidence ellipse for the coefficients
 of such terms, relative to what would be obtained with uncorrelated data. 
 
-**Example**:
+**Example**: This example uses the `cars` data set in the `VisCollin` package
+containing various measures of size and performance on 406 models of automobiles from 1982. Interest is focused on predicting gas mileage, `mpg`.
+```{r cars}
+data(cars, package = "VisCollin")
+str(cars)
+```
+
+We fit a model predicting gas mileage (`mpg`) from the number of cylinders, engine displacement, horsepower, weight,
+time to
+accelerate from 0 -- 60 mph and model year (1970--1982). Perhaps surprisingly, only `weight` and `year` appear to
+significantly predict gas mileage. What's going on here?
+
+```{r cars-mod}
+cars.mod <- lm (mpg ~ cylinder + engine + horse + weight + accel + year, 
+                data=cars)
+Anova(cars.mod)
+```
+
+We check the variance inflation factors, using `car::vif()`. We see that most predictors have very high
+VIFs, indicating moderately severe multicollinearity.
+
+```{r cars-vif}
+vif(cars.mod)
+
+sqrt(vif(cars.mod))
+```
+
+According to $\sqrt{\text{VIF}}$, the standard error of `cylinder` has been
+multiplied by 3.26 and it's $t$-value divided by this number,
+compared with the case when all predictors are
+uncorrelated. `engine`, `horse` and `weight` suffer a similar fate.
+
+::: {.callout-tip}
+## Connection with inverse of correlation matrix
+
+In the linear regression model with standardized predictors,
+the covariance matrix of the estimated intercept-excluding
+parameter vector $\mathbf{b}^\star$  has the
+simpler form,
+$$
+\mathcal{V} (\mathbf{b}^\star) = \frac{\sigma^2}{n-1} \mathbf{R}^{-1}_{X} \; .
+$$
+where 
+$\mathbf{R}_{X}$ is the correlation matrix among the predictors.
+ It
+can then be seen that the VIF$_j$ are just the diagonal entries of
+$\mathbf{R}^{-1}_{X}$.
+
+More generally, the matrix $\mathbf{R}^{-1}_{X} = (r^{ij})$, when standardized to a correlation matrix
+as $-r^{ij} / \sqrt{r^{ii}  r^{jj}} $ gives the matrix of all partial correlations,
+$r_{ij \given \textrm{others}}$.
+}
+
+:::
 
 ### Collinearity diagnostics
+
+Large VIF$_j$ indicate predictor coefficients whose estimation 
+is degraded due to large $R^2_{j \,|\, \text{others}}$.
+To go further, we need to determine: 
+
+* how many dimensions in the space of the predictors are associated with nearly collinear relations?
+* which predictors are most strongly implicated in each of these?
+
+Answsers to these questions are provided using measures developed by Belsley and colleagues
+[@Belsley-etal:80; @Belsley:91a].
+These measures are based on the eigenvalues $\lambda_1, \lambda_2, \dots \lambda_p$
+of the correlation matrix $R_{X}$ of the predictors (preferably centered and scaled, and not including the constant term
+for the intercept), and the corresponding eigenvectors in the columns of $\mathbf{V}_{p \times p}$, given by
+the the eigen decomposition
+$$
+\mathbf{R}_{X} = \mathbf{V} \mathbf{\Lambda} \mathbf{V}^T
+$$
+By elementary matrix algebra, the eigen decomposition of $\mathbf{R}_{XX}^{-1}$ is then 
+$$
+\mathbf{R}_{X}^{-1} = \mathbf{V} \mathbf{\Lambda}^{-1} \mathbf{V}^T \; ,
+$$ {#eq-rxinv-eigen}
+so, $\mathbf{R}_{X}$ and $\mathbf{R}_{XX}^{-1}$ have the same eigenvectors, and the eigenvalues
+of $\mathbf{R}_{X}^{-1}$ are just $\lambda_i^{-1}$.
+Using @eq-rxinv-eigen, the variance inflation factors may be expressed as
+$$
+\text{VIF}_j = \sum_{k=1}^p \frac{V^2_{jk}}{\lambda_k} \; ,
+$$
+which shows that only the _small_ eigenvalues contribute to variance inflation,
+but only for those predictors that have large eigenvector coefficients on those small components.
+These facts lead to the following diagnostic statistics for collinearity:
+
+* **Condition indices**: 
+The smallest of the eigenvalues, those for which $\lambda_j \approx 0$,
+indicate collinearity and the number of small values indicates the number of near collinear relations.
+Because the sum of the eigenvalues, $\Sigma \lambda_i = p$ increases with the number
+of predictors $p$, it is useful to scale them
+all in relation to the largest.  This leads to _condition indices_, defined as
+$\kappa_j = \sqrt{ \lambda_1 / \lambda_j}$. These have the property that the resulting numbers
+have common interpretations regardless of the number of predictors.
+
+  + For completely uncorrelated predictors, all $\kappa_j = 1$.
+  + $\kappa_j \rightarrow \infty$ as any $\lambda_k \rightarrow 0$.
+
+* **Variance decomposition proportions**:
+Large VIFs indicate variables that are involved in _some_ nearly collinear
+relations, but they don't indicate _which_ other variable(s) each is involved with.
+For this purpose, Belsley et. al. (1980) and Belsley (1991) proposed calculation of
+the proportions of variance of each variable associated with each principal component
+as a decomposition of the coefficient variance for each dimension.
+
+These measures can be calculated using `VisCollin::colldiag()`.
+For the current model, the usual display contains both the condition indices and
+variance proportions. However, even for a small example, it is often difficult to know
+what numbers to pay attention to.
+```{r colldiag1}
+(cd <- colldiag(cars.mod, center=TRUE))
+```
+@Belsley:91a recommends that the sources of collinearity be diagnosed 
+(a) only for those components with large $\kappa_j$, and
+(b) for those components for which the variance proportion is large (say, $\ge 0.5$) on _two_ or more predictors.
+The print method for `"colldiag"` objects has a `fuzz` argument controlling this.
+
+```{r colldiag2}
+print(cd, fuzz = 0.5)
+```
+
+The mystery is solved: There are two nearly collinear relations among the predictors, corresponding to the two
+smallest dimensions. 
+
+* Dimension 5 reflects the high correlation between horsepower and weight,
+* Dimension 6 reflects the high correlation between number of cylinders and engine displacement.
+
+Note that the high variance proportion for `year` (0.787) on the second component creates no problem and
+should be ignored because (a) the condition index is low and (b) it shares nothing with other predictors.
+
 
 ### Tableplots
 
