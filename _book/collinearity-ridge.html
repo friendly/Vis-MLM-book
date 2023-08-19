@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.450">
+<meta name="generator" content="quarto-1.3.361">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <title>Visualizing Multivariate Data and Models in R - 6&nbsp; Collinearity &amp; Ridge Regression</title>
 <style>
@@ -16,6 +16,40 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 /* CSS for citations */
 div.csl-bib-body { }
@@ -97,7 +131,7 @@ div.csl-indent {
     <div class="sidebar-title mb-0 py-0">
       <a href="./">Visualizing Multivariate Data and Models in R</a> 
         <div class="sidebar-tools-main">
-    <a href="https://github.com/friendly/vis-MLM-quarto" rel="" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+    <a href="https://github.com/friendly/vis-MLM-quarto" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
 </div>
     </div>
       </div>
@@ -204,19 +238,23 @@ div.csl-indent {
 <a href="#what-is-collinearity" id="toc-what-is-collinearity" class="nav-link active" data-scroll-target="#what-is-collinearity"><span class="header-section-number">6.1</span> What is collinearity?</a>
   <ul class="collapse">
 <li><a href="#visualizing-collinearity" id="toc-visualizing-collinearity" class="nav-link" data-scroll-target="#visualizing-collinearity"><span class="header-section-number">6.1.1</span> Visualizing collinearity</a></li>
-  <li><a href="#measuring-collinearity-variance-inflation-factors" id="toc-measuring-collinearity-variance-inflation-factors" class="nav-link" data-scroll-target="#measuring-collinearity-variance-inflation-factors"><span class="header-section-number">6.1.2</span> Measuring collinearity: Variance inflation factors</a></li>
-  <li><a href="#collinearity-diagnostics" id="toc-collinearity-diagnostics" class="nav-link" data-scroll-target="#collinearity-diagnostics"><span class="header-section-number">6.1.3</span> Collinearity diagnostics</a></li>
-  <li><a href="#tableplots" id="toc-tableplots" class="nav-link" data-scroll-target="#tableplots"><span class="header-section-number">6.1.4</span> Tableplots</a></li>
-  <li><a href="#collinearity-biplots" id="toc-collinearity-biplots" class="nav-link" data-scroll-target="#collinearity-biplots"><span class="header-section-number">6.1.5</span> Collinearity biplots</a></li>
-  <li><a href="#remedies" id="toc-remedies" class="nav-link" data-scroll-target="#remedies"><span class="header-section-number">6.1.6</span> Remedies</a></li>
   </ul>
 </li>
   <li>
-<a href="#ridge-regression" id="toc-ridge-regression" class="nav-link" data-scroll-target="#ridge-regression"><span class="header-section-number">6.2</span> Ridge regression</a>
+<a href="#measuring-collinearity-variance-inflation-factors" id="toc-measuring-collinearity-variance-inflation-factors" class="nav-link" data-scroll-target="#measuring-collinearity-variance-inflation-factors"><span class="header-section-number">6.2</span> Measuring collinearity: Variance inflation factors</a>
   <ul class="collapse">
-<li><a href="#what-is-ridge-regression" id="toc-what-is-ridge-regression" class="nav-link" data-scroll-target="#what-is-ridge-regression"><span class="header-section-number">6.2.1</span> What is ridge regression?</a></li>
-  <li><a href="#univariate-ridge-trace-plots" id="toc-univariate-ridge-trace-plots" class="nav-link" data-scroll-target="#univariate-ridge-trace-plots"><span class="header-section-number">6.2.2</span> Univariate ridge trace plots</a></li>
-  <li><a href="#bivariate-ridge-trace-plots" id="toc-bivariate-ridge-trace-plots" class="nav-link" data-scroll-target="#bivariate-ridge-trace-plots"><span class="header-section-number">6.2.3</span> Bivariate ridge trace plots</a></li>
+<li><a href="#collinearity-diagnostics" id="toc-collinearity-diagnostics" class="nav-link" data-scroll-target="#collinearity-diagnostics"><span class="header-section-number">6.2.1</span> Collinearity diagnostics</a></li>
+  <li><a href="#tableplots" id="toc-tableplots" class="nav-link" data-scroll-target="#tableplots"><span class="header-section-number">6.2.2</span> Tableplots</a></li>
+  <li><a href="#collinearity-biplots" id="toc-collinearity-biplots" class="nav-link" data-scroll-target="#collinearity-biplots"><span class="header-section-number">6.2.3</span> Collinearity biplots</a></li>
+  </ul>
+</li>
+  <li><a href="#remedies-for-collinearity" id="toc-remedies-for-collinearity" class="nav-link" data-scroll-target="#remedies-for-collinearity"><span class="header-section-number">6.3</span> Remedies for collinearity</a></li>
+  <li>
+<a href="#ridge-regression" id="toc-ridge-regression" class="nav-link" data-scroll-target="#ridge-regression"><span class="header-section-number">6.4</span> Ridge regression</a>
+  <ul class="collapse">
+<li><a href="#what-is-ridge-regression" id="toc-what-is-ridge-regression" class="nav-link" data-scroll-target="#what-is-ridge-regression"><span class="header-section-number">6.4.1</span> What is ridge regression?</a></li>
+  <li><a href="#univariate-ridge-trace-plots" id="toc-univariate-ridge-trace-plots" class="nav-link" data-scroll-target="#univariate-ridge-trace-plots"><span class="header-section-number">6.4.2</span> Univariate ridge trace plots</a></li>
+  <li><a href="#bivariate-ridge-trace-plots" id="toc-bivariate-ridge-trace-plots" class="nav-link" data-scroll-target="#bivariate-ridge-trace-plots"><span class="header-section-number">6.4.3</span> Bivariate ridge trace plots</a></li>
   </ul>
 </li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
@@ -237,11 +275,17 @@ div.csl-indent {
   </div>
   
 
-</header><blockquote class="blockquote">
+</header><p><strong>Packages</strong> In this chapter we use the following packages. Load them now.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://r-forge.r-project.org/projects/car/">car</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/friendly/VisCollin">VisCollin</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://friendly.github.io/genridge/">genridge</a></span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<blockquote class="blockquote">
 <p>Some of my collinearity diagnostics have large values, or small values, or whatever they are not supposed to be * What is bad? * If bad, what can I do about it?</p>
 </blockquote>
-<p>In univariate multiple regression models, we usually hope to have high correlations between the outcome <span class="math inline">\(y\)</span> and each of the predictors, <span class="math inline">\(x_1, x_2, \dots\)</span>, but high correlations <em>among</em> the predictors can cause problems in estimating and testing their effects. The quote above shows the a typical quandary of some researchers in trying do understand these problems and and take steps to resolve them. This chapter illustrates the problems of collinearity, describes diagnostic measures to asses its effects, and presents some novel visual tools for these purposes.</p>
-<p>One class of solutions for collinearity involves <em>regularization methods</em> such as ridge regression. Another collection of graphical methods, generalized ridge trace plots, sheds further light on what is accomplished by this technique.</p>
+<p>In univariate multiple regression models, we usually hope to have high correlations between the outcome <span class="math inline">\(y\)</span> and each of the predictors, <span class="math inline">\(x_1, x_2, \dots\)</span>, but high correlations <em>among</em> the predictors can cause problems in estimating and testing their effects. The quote above shows the a typical quandary of some researchers in trying do understand these problems and and take steps to resolve them. This chapter illustrates the problems of collinearity, describes diagnostic measures to asses its effects, and presents some novel visual tools for these purposes using the <strong>VisCollin</strong> package.</p>
+<p>One class of solutions for collinearity involves <em>regularization methods</em> such as ridge regression. Another collection of graphical methods, generalized ridge trace plots, implemented in the <strong>genridge</strong> package, sheds further light on what is accomplished by this technique.</p>
 <section id="what-is-collinearity" class="level2" data-number="6.1"><h2 data-number="6.1" class="anchored" data-anchor-id="what-is-collinearity">
 <span class="header-section-number">6.1</span> What is collinearity?</h2>
 <p>Recall the standard classical linear model for a response variable <span class="math inline">\(y\)</span> with a collection of predictors in <span class="math inline">\(\mathbf{X} = (\mathbf{x}_1, \mathbf{x}_2, ..., \mathbf{x}_p)\)</span></p>
@@ -277,47 +321,174 @@ div.csl-indent {
 <li><p>Shows a typical case where there is a strong correlation between <span class="math inline">\(X_1\)</span> and <span class="math inline">\(X_2\)</span>. The regression plane here is unique, but is not well determined. A small change in Y <strong>can</strong> make quite a difference in the fitted value or coefficients, depending on the values of <span class="math inline">\(X_1\)</span> and <span class="math inline">\(X_2\)</span>. Where <span class="math inline">\(X_1\)</span> and <span class="math inline">\(X_2\)</span> are far from their near linear relation in the botom plane, you can imagine that it is easy to tilt the plane substantially by a small change in <span class="math inline">\(Y\)</span>.</p></li>
 </ol>
 <div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/include_graphics.html">include_graphics</a></span><span class="op">(</span><span class="st">"images/collin-demo.png"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <p><img src="images/collin-demo.png" class="img-fluid" alt="Effect of collinearity on the least squares regression plane. (a) Small correlation between predictors; (b) Perfect correlation ; (c) Very strong correlation. The black points show the data Y values, white points are the fitted values in the regression plane, and + signs represent the values of X1 and X2. Source: Adapted from Fox (2016), Fig. 13.2">{#fig-collin-demo, fig-align=‘center’ width=100%}</p>
 </div>
 </div>
-</section><section id="measuring-collinearity-variance-inflation-factors" class="level3" data-number="6.1.2"><h3 data-number="6.1.2" class="anchored" data-anchor-id="measuring-collinearity-variance-inflation-factors">
-<span class="header-section-number">6.1.2</span> Measuring collinearity: Variance inflation factors</h3>
+<p>It is also useful to visualize collinearity by comparing the representation in data space with the anologous view of the confidence ellipses for coefficients in beta space. To do so, we generate data from a known model <span class="math inline">\(y = 2 x_1 + 2 x_2 + \epsilon\)</span> with <span class="math inline">\(\epsilon \tilde \mathcal{N} (0, 100)\)</span> and various correlations between <span class="math inline">\(x_1\)</span> and <span class="math inline">\(x_2\)</span>.</p>
+<p>Working file: <code>R/collin-data-beta.R</code></p>
+</section></section><section id="measuring-collinearity-variance-inflation-factors" class="level2" data-number="6.2"><h2 data-number="6.2" class="anchored" data-anchor-id="measuring-collinearity-variance-inflation-factors">
+<span class="header-section-number">6.2</span> Measuring collinearity: Variance inflation factors</h2>
 <p>How can we measure the effect of collinearity? The essential idea is to compare, for each predictor the variance <span class="math inline">\(s^2 (\widehat{b_j})\)</span> that the coefficient that <span class="math inline">\(x_j\)</span> would have if it was totally unrelated to the other predictors to the actual variance it has in the given model.</p>
 <p>For two predictors such as shown in <span class="quarto-unresolved-ref">?fig-collin-demo</span> the sampling variance of <span class="math inline">\(x_1\)</span> can be expressed as</p>
 <p><span class="math display">\[
-s^2 (\widehat{b_1}) = \frac{MSE}{(n-1) \; s^2(x_1)} \; \times \; [ \frac{1}{1-r^2_{12}} ]
-\]</span> The first term here is the variance of <span class="math inline">\(b_1\)</span> when the two predictors are uncorrelated. The term in brackets represents the <strong>variance inflation factor</strong>, the amount by which the variance of the coefficent is multiplied as a consequence of the correlation <span class="math inline">\(r_{12}\)</span> of the predictors. As <span class="math inline">\(r_{12} \rightarrow 1\)</span>, the variances approach infinity.</p>
+s^2 (\widehat{b_1}) = \frac{MSE}{(n-1) \; s^2(x_1)} \; \times \; \left[ \frac{1}{1-r^2_{12}} \right]
+\]</span> The first term here is the variance of <span class="math inline">\(b_1\)</span> when the two predictors are uncorrelated. The term in brackets represents the <strong>variance inflation factor</strong> <span class="citation" data-cites="Marquandt:70">(<a href="references.html#ref-Marquandt:70" role="doc-biblioref"><strong>Marquandt:70?</strong></a>)</span>, the amount by which the variance of the coefficent is multiplied as a consequence of the correlation <span class="math inline">\(r_{12}\)</span> of the predictors. As <span class="math inline">\(r_{12} \rightarrow 1\)</span>, the variances approaches infinity.</p>
 <p>More generally, with any number of predictors, this relation has a similar form, replacing the simple correlation <span class="math inline">\(r_{12}\)</span> with the multiple correlation predicting <span class="math inline">\(x_j\)</span> from all others,</p>
-<p>$$ s^2 () = ; ; [ ]</p>
 <p><span class="math display">\[
-So, we have that
-\]</span> _j = $$ In practice, it is often easier to think in terms of the square root, <span class="math inline">\(\sqrt{\text{VIF}_j}\)</span> as the multiplier of the standard errors. The denominator, <span class="math inline">\(1-R^2_{j | \text{others}}\)</span> is sometimes called <strong>tolerance</strong>, a term I don’t find particularly useful.</p>
-</section><section id="collinearity-diagnostics" class="level3" data-number="6.1.3"><h3 data-number="6.1.3" class="anchored" data-anchor-id="collinearity-diagnostics">
-<span class="header-section-number">6.1.3</span> Collinearity diagnostics</h3>
-</section><section id="tableplots" class="level3" data-number="6.1.4"><h3 data-number="6.1.4" class="anchored" data-anchor-id="tableplots">
-<span class="header-section-number">6.1.4</span> Tableplots</h3>
-</section><section id="collinearity-biplots" class="level3" data-number="6.1.5"><h3 data-number="6.1.5" class="anchored" data-anchor-id="collinearity-biplots">
-<span class="header-section-number">6.1.5</span> Collinearity biplots</h3>
-</section><section id="remedies" class="level3" data-number="6.1.6"><h3 data-number="6.1.6" class="anchored" data-anchor-id="remedies">
-<span class="header-section-number">6.1.6</span> Remedies</h3>
-</section></section><section id="ridge-regression" class="level2" data-number="6.2"><h2 data-number="6.2" class="anchored" data-anchor-id="ridge-regression">
-<span class="header-section-number">6.2</span> Ridge regression</h2>
-<section id="what-is-ridge-regression" class="level3" data-number="6.2.1"><h3 data-number="6.2.1" class="anchored" data-anchor-id="what-is-ridge-regression">
-<span class="header-section-number">6.2.1</span> What is ridge regression?</h3>
-</section><section id="univariate-ridge-trace-plots" class="level3" data-number="6.2.2"><h3 data-number="6.2.2" class="anchored" data-anchor-id="univariate-ridge-trace-plots">
-<span class="header-section-number">6.2.2</span> Univariate ridge trace plots</h3>
-</section><section id="bivariate-ridge-trace-plots" class="level3" data-number="6.2.3"><h3 data-number="6.2.3" class="anchored" data-anchor-id="bivariate-ridge-trace-plots">
-<span class="header-section-number">6.2.3</span> Bivariate ridge trace plots</h3>
+s^2 (\widehat{b_j}) = \frac{MSE}{(n-1) \; s^2(x_j)} \; \times \; \left[ \frac{1}{1-R^2_{j | \text{others}}} \right]
+\]</span> So, we have that the variance inflation factors are:</p>
+<p><span class="math display">\[
+\text{VIF}_j = \frac{1}{1-R^2_{j \,|\, \text{others}}}
+\]</span> In practice, it is often easier to think in terms of the square root, <span class="math inline">\(\sqrt{\text{VIF}_j}\)</span> as the multiplier of the standard errors. The denominator, <span class="math inline">\(1-R^2_{j | \text{others}}\)</span> is sometimes called <strong>tolerance</strong>, a term I don’t find particularly useful.</p>
+<p>Note that when there are terms in the model with more than one df, such as education with four levels (and hence 3 df) or a polynomial term spaecified as <code>poly(x, 3)</code>, the standard VIF calculation gives results that vary with how those terms are coded in the model. <span class="citation" data-cites="FoxMonette:92">(<a href="references.html#ref-FoxMonette:92" role="doc-biblioref"><strong>FoxMonette:92?</strong></a>)</span> define <em>generalized</em>, GVIFs as the inflation in the squared area of the confidence ellipse for the coefficients of such terms, relative to what would be obtained with uncorrelated data.</p>
+<p><strong>Example</strong>: This example uses the <code>cars</code> data set in the <code>VisCollin</code> package containing various measures of size and performance on 406 models of automobiles from 1982. Interest is focused on predicting gas mileage, <code>mpg</code>.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">cars</span>, package <span class="op">=</span> <span class="st">"VisCollin"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span><span class="op">(</span><span class="va">cars</span><span class="op">)</span></span>
+<span><span class="co">#&gt; 'data.frame':    406 obs. of  10 variables:</span></span>
+<span><span class="co">#&gt;  $ make    : Factor w/ 30 levels "amc","audi","bmw",..: 6 4 22 1 12 12 6 22 23 1 ...</span></span>
+<span><span class="co">#&gt;  $ model   : chr  "chevelle" "skylark" "satellite" "rebel" ...</span></span>
+<span><span class="co">#&gt;  $ mpg     : num  18 15 18 16 17 15 14 14 14 15 ...</span></span>
+<span><span class="co">#&gt;  $ cylinder: int  8 8 8 8 8 8 8 8 8 8 ...</span></span>
+<span><span class="co">#&gt;  $ engine  : num  307 350 318 304 302 429 454 440 455 390 ...</span></span>
+<span><span class="co">#&gt;  $ horse   : int  130 165 150 150 140 198 220 215 225 190 ...</span></span>
+<span><span class="co">#&gt;  $ weight  : int  3504 3693 3436 3433 3449 4341 4354 4312 4425 3850 ...</span></span>
+<span><span class="co">#&gt;  $ accel   : num  12 11.5 11 12 10.5 10 9 8.5 10 8.5 ...</span></span>
+<span><span class="co">#&gt;  $ year    : int  70 70 70 70 70 70 70 70 70 70 ...</span></span>
+<span><span class="co">#&gt;  $ origin  : Factor w/ 3 levels "Amer","Eur","Japan": 1 1 1 1 1 1 1 1 1 1 ...</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We fit a model predicting gas mileage (<code>mpg</code>) from the number of cylinders, engine displacement, horsepower, weight, time to accelerate from 0 – 60 mph and model year (1970–1982). Perhaps surprisingly, only <code>weight</code> and <code>year</code> appear to significantly predict gas mileage. What’s going on here?</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cars.mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span> <span class="op">(</span><span class="va">mpg</span> <span class="op">~</span> <span class="va">cylinder</span> <span class="op">+</span> <span class="va">engine</span> <span class="op">+</span> <span class="va">horse</span> <span class="op">+</span> <span class="va">weight</span> <span class="op">+</span> <span class="va">accel</span> <span class="op">+</span> <span class="va">year</span>, </span>
+<span>                data<span class="op">=</span><span class="va">cars</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova</a></span><span class="op">(</span><span class="va">cars.mod</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Anova Table (Type II tests)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Response: mpg</span></span>
+<span><span class="co">#&gt;           Sum Sq  Df F value Pr(&gt;F)    </span></span>
+<span><span class="co">#&gt; cylinder      12   1    0.99   0.32    </span></span>
+<span><span class="co">#&gt; engine        13   1    1.09   0.30    </span></span>
+<span><span class="co">#&gt; horse          0   1    0.00   0.98    </span></span>
+<span><span class="co">#&gt; weight      1214   1  102.84 &lt;2e-16 ***</span></span>
+<span><span class="co">#&gt; accel          8   1    0.70   0.40    </span></span>
+<span><span class="co">#&gt; year        2419   1  204.99 &lt;2e-16 ***</span></span>
+<span><span class="co">#&gt; Residuals   4543 385                   </span></span>
+<span><span class="co">#&gt; ---</span></span>
+<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We check the variance inflation factors, using <code><a href="https://rdrr.io/pkg/car/man/vif.html">car::vif()</a></code>. We see that most predictors have very high VIFs, indicating moderately severe multicollinearity.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/car/man/vif.html">vif</a></span><span class="op">(</span><span class="va">cars.mod</span><span class="op">)</span></span>
+<span><span class="co">#&gt; cylinder   engine    horse   weight    accel     year </span></span>
+<span><span class="co">#&gt;    10.63    19.64     9.40    10.73     2.63     1.24</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">sqrt</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/car/man/vif.html">vif</a></span><span class="op">(</span><span class="va">cars.mod</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; cylinder   engine    horse   weight    accel     year </span></span>
+<span><span class="co">#&gt;     3.26     4.43     3.07     3.28     1.62     1.12</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>According to <span class="math inline">\(\sqrt{\text{VIF}}\)</span>, the standard error of <code>cylinder</code> has been multiplied by 3.26 and it’s <span class="math inline">\(t\)</span>-value divided by this number, compared with the case when all predictors are uncorrelated. <code>engine</code>, <code>horse</code> and <code>weight</code> suffer a similar fate.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Tip
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Connection with inverse of correlation matrix</strong></p>
+<p>In the linear regression model with standardized predictors, the covariance matrix of the estimated intercept-excluding parameter vector <span class="math inline">\(\mathbf{b}^\star\)</span> has the simpler form, <span class="math display">\[
+\mathcal{V} (\mathbf{b}^\star) = \frac{\sigma^2}{n-1} \mathbf{R}^{-1}_{X} \; .
+\]</span> where <span class="math inline">\(\mathbf{R}_{X}\)</span> is the correlation matrix among the predictors. It can then be seen that the VIF<span class="math inline">\(_j\)</span> are just the diagonal entries of <span class="math inline">\(\mathbf{R}^{-1}_{X}\)</span>.</p>
+<p>More generally, the matrix <span class="math inline">\(\mathbf{R}^{-1}_{X} = (r^{ij})\)</span>, when standardized to a correlation matrix as <span class="math inline">\(-r^{ij} / \sqrt{r^{ii} \; r^{jj}}\)</span> gives the matrix of all partial correlations, <span class="math inline">\(r_{ij \,|\, \textrm{others}}\)</span>. }</p>
+</div>
+</div>
+<section id="collinearity-diagnostics" class="level3" data-number="6.2.1"><h3 data-number="6.2.1" class="anchored" data-anchor-id="collinearity-diagnostics">
+<span class="header-section-number">6.2.1</span> Collinearity diagnostics</h3>
+<p>OK, large VIF<span class="math inline">\(_j\)</span> indicate predictor coefficients whose estimation is degraded due to large <span class="math inline">\(R^2_{j \,|\, \text{others}}\)</span>. But To go further, we need to determine:</p>
+<ul>
+<li>how many dimensions in the space of the predictors are associated with nearly collinear relations?</li>
+<li>which predictors are most strongly implicated in each of these?</li>
+</ul>
+<p>Answsers to these questions are provided using measures developed by Belsley and colleagues <span class="citation" data-cites="Belsley-etal:80 Belsley:91a">(<a href="references.html#ref-Belsley-etal:80" role="doc-biblioref">Belsley, Kuh, and Welsch 1980</a>; <a href="references.html#ref-Belsley:91a" role="doc-biblioref"><strong>Belsley:91a?</strong></a>)</span>. These measures are based on the eigenvalues <span class="math inline">\(\lambda_1, \lambda_2, \dots \lambda_p\)</span> of the correlation matrix <span class="math inline">\(R_{X}\)</span> of the predictors (preferably centered and scaled, and not including the constant term for the intercept), and the corresponding eigenvectors in the columns of <span class="math inline">\(\mathbf{V}_{p \times p}\)</span>, given by the the eigen decomposition <span class="math display">\[
+\mathbf{R}_{X} = \mathbf{V} \mathbf{\Lambda} \mathbf{V}^T
+\]</span> By elementary matrix algebra, the eigen decomposition of <span class="math inline">\(\mathbf{R}_{XX}^{-1}\)</span> is then <span id="eq-rxinv-eigen"><span class="math display">\[
+\mathbf{R}_{X}^{-1} = \mathbf{V} \mathbf{\Lambda}^{-1} \mathbf{V}^T \; ,
+\tag{6.1}\]</span></span> so, <span class="math inline">\(\mathbf{R}_{X}\)</span> and <span class="math inline">\(\mathbf{R}_{XX}^{-1}\)</span> have the same eigenvectors, and the eigenvalues of <span class="math inline">\(\mathbf{R}_{X}^{-1}\)</span> are just <span class="math inline">\(\lambda_i^{-1}\)</span>. Using <a href="#eq-rxinv-eigen">Equation&nbsp;<span>6.1</span></a>, the variance inflation factors may be expressed as <span class="math display">\[
+\text{VIF}_j = \sum_{k=1}^p \frac{V^2_{jk}}{\lambda_k} \; ,
+\]</span> which shows that only the <em>small</em> eigenvalues contribute to variance inflation, but only for those predictors that have large eigenvector coefficients on those small components. These facts lead to the following diagnostic statistics for collinearity:</p>
+<ul>
+<li>
+<p><strong>Condition indices</strong>: The smallest of the eigenvalues, those for which <span class="math inline">\(\lambda_j \approx 0\)</span>, indicate collinearity and the number of small values indicates the number of near collinear relations. Because the sum of the eigenvalues, <span class="math inline">\(\Sigma \lambda_i = p\)</span> increases with the number of predictors <span class="math inline">\(p\)</span>, it is useful to scale them all in relation to the largest. This leads to <em>condition indices</em>, defined as <span class="math inline">\(\kappa_j = \sqrt{ \lambda_1 / \lambda_j}\)</span>. These have the property that the resulting numbers have common interpretations regardless of the number of predictors.</p>
+<ul>
+<li>For completely uncorrelated predictors, all <span class="math inline">\(\kappa_j = 1\)</span>.</li>
+<li>
+<span class="math inline">\(\kappa_j \rightarrow \infty\)</span> as any <span class="math inline">\(\lambda_k \rightarrow 0\)</span>.</li>
+</ul>
+</li>
+<li><p><strong>Variance decomposition proportions</strong>: Large VIFs indicate variables that are involved in <em>some</em> nearly collinear relations, but they don’t indicate <em>which</em> other variable(s) each is involved with. For this purpose, Belsley et. al.&nbsp;(1980) and Belsley (1991) proposed calculation of the proportions of variance of each variable associated with each principal component as a decomposition of the coefficient variance for each dimension.</p></li>
+</ul>
+<p>These measures can be calculated using <code><a href="https://rdrr.io/pkg/VisCollin/man/colldiag.html">VisCollin::colldiag()</a></code>. For the current model, the usual display contains both the condition indices and variance proportions. However, even for a small example, it is often difficult to know what numbers to pay attention to.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="op">(</span><span class="va">cd</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/VisCollin/man/colldiag.html">colldiag</a></span><span class="op">(</span><span class="va">cars.mod</span>, center<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Condition</span></span>
+<span><span class="co">#&gt; Index    Variance Decomposition Proportions</span></span>
+<span><span class="co">#&gt;           cylinder engine horse weight accel year </span></span>
+<span><span class="co">#&gt; 1   1.000 0.005    0.003  0.005 0.004  0.009 0.010</span></span>
+<span><span class="co">#&gt; 2   2.252 0.004    0.002  0.000 0.007  0.022 0.787</span></span>
+<span><span class="co">#&gt; 3   2.515 0.004    0.001  0.002 0.010  0.423 0.142</span></span>
+<span><span class="co">#&gt; 4   5.660 0.309    0.014  0.306 0.087  0.063 0.005</span></span>
+<span><span class="co">#&gt; 5   8.342 0.115    0.000  0.654 0.715  0.469 0.052</span></span>
+<span><span class="co">#&gt; 6  10.818 0.563    0.981  0.032 0.176  0.013 0.004</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><span class="citation" data-cites="Belsley:91a">(<a href="references.html#ref-Belsley:91a" role="doc-biblioref"><strong>Belsley:91a?</strong></a>)</span> recommends that the sources of collinearity be diagnosed (a) only for those components with large <span class="math inline">\(\kappa_j\)</span>, and (b) for those components for which the variance proportion is large (say, <span class="math inline">\(\ge 0.5\)</span>) on <em>two</em> or more predictors. The print method for <code>"colldiag"</code> objects has a <code>fuzz</code> argument controlling this.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">cd</span>, fuzz <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Condition</span></span>
+<span><span class="co">#&gt; Index    Variance Decomposition Proportions</span></span>
+<span><span class="co">#&gt;           cylinder engine horse weight accel year </span></span>
+<span><span class="co">#&gt; 1   1.000  .        .      .     .      .     .   </span></span>
+<span><span class="co">#&gt; 2   2.252  .        .      .     .      .    0.787</span></span>
+<span><span class="co">#&gt; 3   2.515  .        .      .     .      .     .   </span></span>
+<span><span class="co">#&gt; 4   5.660  .        .      .     .      .     .   </span></span>
+<span><span class="co">#&gt; 5   8.342  .        .     0.654 0.715   .     .   </span></span>
+<span><span class="co">#&gt; 6  10.818 0.563    0.981   .     .      .     .</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The mystery is solved: There are two nearly collinear relations among the predictors, corresponding to the two smallest dimensions.</p>
+<ul>
+<li>Dimension 5 reflects the high correlation between horsepower and weight,</li>
+<li>Dimension 6 reflects the high correlation between number of cylinders and engine displacement.</li>
+</ul>
+<p>Note that the high variance proportion for <code>year</code> (0.787) on the second component creates no problem and should be ignored because (a) the condition index is low and (b) it shares nothing with other predictors.</p>
+</section><section id="tableplots" class="level3" data-number="6.2.2"><h3 data-number="6.2.2" class="anchored" data-anchor-id="tableplots">
+<span class="header-section-number">6.2.2</span> Tableplots</h3>
+</section><section id="collinearity-biplots" class="level3" data-number="6.2.3"><h3 data-number="6.2.3" class="anchored" data-anchor-id="collinearity-biplots">
+<span class="header-section-number">6.2.3</span> Collinearity biplots</h3>
+</section></section><section id="remedies-for-collinearity" class="level2" data-number="6.3"><h2 data-number="6.3" class="anchored" data-anchor-id="remedies-for-collinearity">
+<span class="header-section-number">6.3</span> Remedies for collinearity</h2>
+</section><section id="ridge-regression" class="level2" data-number="6.4"><h2 data-number="6.4" class="anchored" data-anchor-id="ridge-regression">
+<span class="header-section-number">6.4</span> Ridge regression</h2>
+<section id="what-is-ridge-regression" class="level3" data-number="6.4.1"><h3 data-number="6.4.1" class="anchored" data-anchor-id="what-is-ridge-regression">
+<span class="header-section-number">6.4.1</span> What is ridge regression?</h3>
+</section><section id="univariate-ridge-trace-plots" class="level3" data-number="6.4.2"><h3 data-number="6.4.2" class="anchored" data-anchor-id="univariate-ridge-trace-plots">
+<span class="header-section-number">6.4.2</span> Univariate ridge trace plots</h3>
+</section><section id="bivariate-ridge-trace-plots" class="level3" data-number="6.4.3"><h3 data-number="6.4.3" class="anchored" data-anchor-id="bivariate-ridge-trace-plots">
+<span class="header-section-number">6.4.3</span> Bivariate ridge trace plots</h3>
 <div class="cell" data-layout-align="center">
 <pre><code>#&gt; Writing packages to  C:/R/Projects/Vis-MLM-quarto/bib/pkgs.txt
-#&gt; 7  packages used here:
-#&gt;  base, datasets, graphics, grDevices, methods, stats, utils</code></pre>
+#&gt; 11  packages used here:
+#&gt;  base, car, carData, datasets, genridge, graphics, grDevices, methods, stats, utils, VisCollin</code></pre>
 </div>
 </section></section><section id="references" class="level2 unnumbered"><h2 class="unnumbered anchored" data-anchor-id="references">References</h2>
 
 
 <div id="refs" class="references csl-bib-body hanging-indent" role="list" style="display: none">
+<div id="ref-Belsley-etal:80" class="csl-entry" role="listitem">
+Belsley, D. A., E. Kuh, and R. E. Welsch. 1980. <em>Regression Diagnostics: Identifying Influential Data and Sources of Collinearity</em>. New York: John Wiley; Sons.
+</div>
 <div id="ref-Fox:2016:ARA" class="csl-entry" role="listitem">
 Fox, John. 2016. <em>Applied Regression Analysis and Generalized Linear Models</em>. Third edition. Los Angeles: SAGE.
 </div>
