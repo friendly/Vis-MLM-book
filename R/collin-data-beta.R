@@ -7,7 +7,7 @@ library(car)
 library(dplyr)
 library(tibble)
 
-set.seed{42}
+set.seed(42)
 N <- 100
 mu <- c(0, 0)
 s <- c(1, 1)
@@ -55,6 +55,8 @@ confidenceEllipse(mod,
                   fill = TRUE, fill.alpha = 0.1,
                   xlab = "x1 coefficient",
                   ylab = "x2 coefficient",
+                  xlim = c(-5, 10),
+                  ylim = c(-5, 10),
                   asp = 1)
 abline(v=0, h=0, lwd=2)
 
