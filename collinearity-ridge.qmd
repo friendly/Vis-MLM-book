@@ -4,15 +4,6 @@ source("R/common.R")
 
 # Collinearity & Ridge Regression {#sec-collin}
 
-**Packages**
-In this chapter we use the following packages. Load them now.
-```{r}
-library(car)
-library(VisCollin)
-library(genridge)
-library(MASS)
-```
-
 
 > Some of my collinearity diagnostics have large values, or small values, or whatever they are not supposed to be
 > * What is bad?
@@ -29,6 +20,20 @@ and presents some novel visual tools for these purposes using the **VisCollin** 
 One class of solutions for collinearity involves _regularization methods_ such as ridge regression. 
 Another collection of graphical methods, generalized ridge trace plots, implemented in the **genridge** package,
 sheds further light on what is accomplished by this technique.
+
+**Packages**
+
+In this chapter we use the following packages. Load them now.
+```{r}
+library(car)
+library(VisCollin)
+library(genridge)
+library(MASS)
+library(dplyr)
+library(factoextra)
+library(ggrepel)
+library(patchwork)
+```
 
 ## What is collinearity?
 
@@ -113,7 +118,7 @@ Where $X_1$ and $X_2$ are far from their near linear relation in the botom plane
 you can imagine that it is easy to tilt the plane substantially by a small change in $Y$.
 
 ```{r}
-#| label: fig-collin-demo,
+#| label: fig-collin-demo
 #| echo: false
 #| out-width: 100%
 #| fig.cap: "Effect of collinearity on the least squares regression plane. 
@@ -188,7 +193,7 @@ Then, we define a function to plot the data ellipse (`car::dataEllipse()`) for e
 so that the relative sizes of these ellipses are comparable, so that variance inflation can be assesed visually.
 
 ```{r}
-#| label: collin-data-beta
+#| label: fig-collin-data-beta
 #| code-fold: show
 #| out-width: "100%"
 #| fig-show: "hold"
@@ -238,7 +243,9 @@ inflation, described in the following section.
 
 
 
-## Measuring collinearity: Variance inflation factors
+## Measuring collinearity {#sec-measure-collin}
+
+### Variance inflation factors {#sec-vif}
 
 How can we measure the effect of collinearity? The essential idea is to compare, for each predictor the variance
 $s^2 (\widehat{b_j})$ that the coefficient that $x_j$ would have if it was totally unrelated to the other
@@ -251,7 +258,7 @@ $$
 s^2 (\widehat{b_1}) = \frac{MSE}{(n-1) \; s^2(x_1)} \; \times \; \left[ \frac{1}{1-r^2_{12}} \right]
 $$
 The first term here is the variance of $b_1$ when the two predictors are uncorrelated.
-The term in brackets represents the **variance inflation factor** [@Marquandt:1970], the amount by which the 
+The term in brackets represents the **variance inflation factor** [@Marquardt:1970], the amount by which the 
 variance of the coefficient is multiplied as a consequence of the correlation $r_{12}$ of
 the predictors.  As $r_{12} \rightarrow 1$, the variances approaches infinity.
 
@@ -287,6 +294,9 @@ gives results that vary with how those terms are coded in the model. @FoxMonette
 _generalized_, GVIFs as the inflation in the squared area of the confidence ellipse for the coefficients
 of such terms, relative to what would be obtained with uncorrelated data. Visually, this can be seen
 by comparing the areas of the ellipses in the bottom row of @fig-collin-data-beta.
+Because the magnitude of the GVIF increases with the number of degrees of freedom for the set of parameters, 
+Fox & Monette suggest the analog $\sqrt{\text{GVIF}^{1/2 \text{df}}}$ as the measure of impact on standard
+errors.
 
 **Example**: This example uses the `cars` data set in the `VisCollin` package
 containing various measures of size and performance on 406 models of automobiles from 1982. Interest is focused on predicting gas mileage, `mpg`.
@@ -343,7 +353,7 @@ $r_{ij \,|\, \textrm{others}}$.
 
 :::
 
-### Collinearity diagnostics
+### Collinearity diagnostics {#sec-colldiag}
 
 OK, we now know that large VIF$_j$ indicate predictor coefficients whose estimation 
 is degraded due to large $R^2_{j \,|\, \text{others}}$.
@@ -390,7 +400,7 @@ have common interpretations regardless of the number of predictors.
 * **Variance decomposition proportions**:
 Large VIFs indicate variables that are involved in _some_ nearly collinear
 relations, but they don't indicate _which_ other variable(s) each is involved with.
-For this purpose, Belsley et. al. (1980) and Belsley (1991) proposed calculation of
+For this purpose, @Belsley-etal:80 and @Belsley:91a  proposed calculation of
 the proportions of variance of each variable associated with each principal component
 as a decomposition of the coefficient variance for each dimension.
 
@@ -426,15 +436,290 @@ The default tabular display of condition indices and variance proportions from `
 the comparison to "Where's Waldo". It suffers from the fact that the important information ---
 (a) how many Waldos? (b) where are they hiding --- is disguised by being embedded in a sea of mostly irrelevant numbers. The simple option of using a principled `fuzz` factor helps considerably, but not entirely.
 
+The simplified tabular display above can be improved to make the patterns of collinearity more 
+visually apparent and to signify warnings directly to the eyes.
+A **tableplot** [@Kwan-etal:2009] is a semi-graphic display that presents numerical information in a table
+using shapes proportional to the value in a cell and other visual attributes (shape type, color fill, and so forth)
+to encode other information. 
 
+For collinearity diagnostics, these show: 
+
+* the condition indices,
+using using _squares_ whose background color is red for condition indices > 10,
+green for values > 5 and green otherwise, reflecting danger, warning and OK respectively.
+The value of the condition index is encoded within this using a white square whose side is proportional to the value
+(up to some maximum value, `cond.max` that fills the cell).
+
+* Variance decomposition proportions are shown by filled _circles_ whose radius is proportional to those values
+and are filled (by default) with shades ranging from white through pink to red. Rounded values of those diagnostics
+are printed in the cells.
+
+
+The tableplot below (@fig-cars-tableplot) encodes all the information from the values of `colldiag()` printed above
+(but using `prop.col` color breaks such that variance proportions < 0.3 are shaded white).
+The visual message is that one should attend to collinearities with large condition indices **and**
+large variance proportions implicating two or more predictors.
+
+```{r}
+#| label: fig-cars-tableplot
+#| fig-keep: "last"
+#| out-width: 90%
+#| fig.cap: "Tableplot of condition indices and variance proportions for the Cars data. In column 1, the square   
+#|     symbols are scaled relative
+#|     to a maximum condition index of 30. In the remaining columns, variance
+#|     proportions (times 100) are shown as circles
+#|     scaled relative to a maximum of 100."
+tableplot(cd, title = "Tableplot of cars data", cond.max = 30 )
+```
 
 
 ### Collinearity biplots
 
-## Remedies for collinearity
+As we have seen, the collinearity diagnostics are all functions of the eigenvalues
+and eigenvectors of the correlation matrix of the predictors in the regression model,
+or alternatively, the SVD of the $\mathbf{X}$ matrix in the linear model (excluding the
+constant).
+The standard biplot [@Gabriel:71; @GowerHand:96] (see: @sec:biplot)
+can be regarded as
+a multivariate analog of a scatterplot,
+obtained by projecting a
+multivariate sample into a low-dimensional space
+(typically of 2 or 3 dimensions)
+accounting for the greatest variance in the data.
+
+However the standard biplot is less useful for visualizing the relations among the
+predictors that lead to nearly collinear relations.  Instead, biplots of
+the **smallest dimensions** show these relations directly, and can show other
+features of the data as well, such as outliers and leverage points.
+We use `prcomp(X, scale.=TRUE)` to obtain the PCA of the correlation matrix
+of the predictors:
+
+```{r cars-pca}
+cars.X <- cars |>
+  select(where(is.numeric)) |>
+  select(-mpg) |>
+  tidyr::drop_na()
+cars.pca <- prcomp(cars.X, scale. = TRUE)
+cars.pca
+```
+
+The standard deviations above are the square roots $\sqrt{\lambda_j}$ of the eigenvalues of the
+correlation matrix, and are returned in the `sdev` component of the `"prcomp"` object.
+The eigenvectors are returned in the `rotation` component, whose directions are arbitrary.
+Because we are interested in seeing the relative magnitude of variable vectors,
+we are free to multiply them by any constant to make them more visible in relation to the
+scores for the cars.
+
+```{r}
+#| label: fig-cars-collin-biplot
+#| out-width: 100%
+#| fig.cap: "Collinearity biplot of the Cars data, showing the last two dimensions.
+#|  The projections of the variable vectors on the coordinate axes are proportional to
+#|  their variance proportions. To reduce graphic clutter, only the most outlying observations in predictor
+#|  space are identified by case labels.
+#|  An extreme outlier (case 20) appears in the lower left corner."
+cars.pca$rotation <- -2.5 * cars.pca$rotation    # reflect & scale the variable vectors
+
+ggp <- fviz_pca_biplot(
+  cars.pca,
+  axes = 6:5,
+  geom = "point",
+  col.var = "blue",
+  labelsize = 5,
+  pointsize = 1.5,
+  arrowsize = 1.5,
+  addEllipses = TRUE,
+  ggtheme = ggplot2::theme_bw(base_size = 14),
+  title = "Collinearity biplot for cars data")
+
+# add point labels for outlying points
+dsq <- heplots::Mahalanobis(cars.pca$x[, 6:5])
+scores <- as.data.frame(cars.pca$x[, 6:5])
+scores$name <- rownames(scores)
+
+ggp + geom_text_repel(data = scores[dsq > qchisq(0.95, df = 6),],
+                aes(x = PC6,
+                    y = PC5,
+                    label = name),
+                vjust = -0.5,
+                size = 5)
+```
+
+As with the tabular display of variance proportions, Waldo is hiding
+in the dimensions associated with the smallest eigenvalues
+(largest condition indices).  
+As well, it turns out that outliers in the predictor space  (also high
+leverage observations) can often be seen as observations far
+from the centroid in the space of the smallest principal components.
+
+The projections of the variable vectors in @fig-cars-collin-biplot
+on the Dimension 5 and Dimension 6 axes are proportional to 
+their variance proportions shown above.
+The relative lengths of these variable vectors can be considered
+to indicate the extent to which each variable contributes to collinearity
+for these two near-singular dimensions.
+
+Thus, we see again that Dimension 6
+is largely determined by `engine` size, with a substantial (negative) relation
+to `cylinder`.  Dimension 5 has its' strongest relations to `weight`
+and `horse`. 
+
+Moreover, there is one observation, #20, that stands out as
+an outlier in predictor space, far from the centroid.
+It turns out that this vehicle, a Buick Estate wagon, is an early-year (1970) American behemoth,
+with an 8-cylinder, 455 cu. in, 225 horse-power engine, and able to go from 0 to 60 mph
+in 10 sec.
+(Its MPG is only slightly under-predicted from the regression model, however.)
+
+## Remedies for collinearity: What can I do? {#sec-remedies}
+
+Collinearity is often a **data** problem, for which there is no magic cure. Nevertheless there are some
+general guidelines and useful techniques to address this problem.
+
+* **Pure prediction**: If we are only interested in predicting / explaining an outcome, 
+and not the model coefficients or which are "significant", collinearity can be largely ignored.
+The fitted values are unaffected by collinearity, even in the case of perfect collinearity
+as shown in @fig-collin-demo (b). 
+
+* **structural collinearity**: Sometimes collinearity results from structural relations among the variables that relate to how they have been defined.
+
+  + For example, polynomial terms, like $x, x^2, x^3$ or interaction terms like $x_1, x_2, x_1 * x_2$
+are necessarily correlated. A simple cure is to _center_ the predictors at their means, using
+$x - \bar{x}, (x - \bar{x})^2, (x - \bar{x})^3$ or 
+$(x_1 - \bar{x}_1), (x_2 - \bar{x}_2), (x_1 - \bar{x}_1) * (x_2 - \bar{x}_2)$. Centering removes the spurious ill-conditioning, thus reducing the VIFs.
+Note that in polynomial models,
+using `y ~ poly(x, 3)` to specify a cubic model generates _orthogonal_ (uncorrelated) regressors, whereas in
+`y ~ x + I(x^2) + I(x^3)` the terms have built-in correlations.
+
+  + When some predictors share a common cause, as in GNP or population in time-series or cross-national data,
+  you can reduce collinearity by re-defining predictors to reflect _per capita measures_. In a related example with
+  sports data, when you have cumulative totals (e.g., runs, hits, homeruns in baseball) for players over years,
+  expressing these measures as _per year_ will reduce the common effect of longevity on these measures.
+
+* **Model re-specification**:
+  + Drop one or more regressors that have a high VIF if they are not deemed to be essential
+
+  + Replace highly correlated regressors with linear combination(s) of them. For example, two related variables,
+$x_1$ and $x_2$ can be replaced without any loss of information by replacing them with their sum and
+difference, $z_1 = x_1 + x_2$ and $z_2 = x_1 - x_2$. For example, in a data set on fitness, we may have
+correlated predictors of resting pulse rate and pulse rate while running. Transforming these to 
+average pulse rate and their difference gives new variables which are interpretable and less correlated.
+
+* **Statistical remedies**:
+  + Transform the predictors $\mathbf{X}$ to uncorrelated principal component scores 
+  $\mathbf{Z} = \mathbf{X} \mathbf{V}$,
+  and regress $\mathbf{y}$ on $\mathbf{Z}$. These will have the identical overall model
+  fit without loss of information. A related technique is _incomplete_ principal components regression, where
+  some of the smallest dimensions (those causing collinearity) are omitted from the model. 
+  The trade-off is that it may be more difficult to interpret what the model means, but this can be countered
+  with a biplot, showing the projections of the original variables into the reduced space of the principal
+  components.
+  
+  + use **regularization methods** such as ridge regression and lasso, which correct for collinearity by 
+  introducing shrinking coefficients towards 0, introducing
+a small amount of bias, . See the [genridge](https://CRAN.R-project.org/package=genridge) package and its [`pkgdown` documentation](https://friendly.github.io/genridge/) for visualization methods.
+
+  + use Bayesian regression; if multicollinearity prevents a regression coefficient from being estimated precisely, then a prior on that coefficient will help to reduce its posterior variance.
+
+**Example**: Centering
+
+To illustrate the effect of centering a predictor in a polynomial model, we generate a perfect
+quadratic relationship, $y = x^2$ and consider the correlations of $y$ with $x$ and with
+$(x - \bar{x})^2$. The correlation of $y$ with $x$ is 0.97, while the correlation of
+$y$ with $(x - \bar{x})^2$ is zero.
+```{r centering}
+x <- 1:20
+y1 <- x^2
+y2 <- (x - mean(x))^2
+XY <- data.frame(x, y1, y2)
+
+(R <- cor(XY))
+```
+
+The effect of centering here is remove the linear association in what is a purely quadratic relationship,
+as can be seen by plotting `y1` and `y2` against `x`.
+```{r}
+#| label: fig-collin-centering
+#| out-width: "100%"
+#| fig.cap: "Centering a predictor removes the nessessary correlation in a quadratic regression"
+r1 <- R[1, 2]
+r2 <- R[1, 3]
+
+gg1 <-
+ggplot(XY, aes(x = x, y = y1)) +
+  geom_point(size = 3) +
+  geom_smooth(method = "lm", formula = y~x, linewidth = 2, se = FALSE) +
+  labs(x = "X", y = "Y") +
+  theme_bw(base_size = 16) +
+  annotate("text", x = 5, y = 350, size = 6,
+           label = paste("X Uncentered\nr =", round(r1, 3)))
+
+gg2 <-
+  ggplot(XY, aes(x = x, y = y2)) +
+  geom_point(size = 3) +
+  geom_smooth(method = "lm", formula = y~x, linewidth = 2, se = FALSE) +
+  labs(x = "X", y = "Y") +
+  theme_bw(base_size = 16) +
+  annotate("text", x = 5, y = 80, size = 6,
+           label = paste("X Centered\nr =", round(r2, 3)))
+
+gg1 + gg2         # show plots side-by-side
+```
+
+**Example**: Interactions
+
+The data set `genridge::Acetylene` gives data from @MarquardtSnee1975 on the `yield` of a chemical
+manufacturing process to produce acetylene in relation to reactor temperature (`temp`), the
+`ratio` of two components and the contact `time` in the reactor. A naive response surface model
+might suggest that yield is quadratic in time and there are potential interactions among all pairs of predictors.
+
+```{r acetyl-mod0}
+data(Acetylene, package = "genridge")
+acetyl.mod0 <- lm(yield ~ temp + ratio + time + I(time^2) + 
+                          temp:time + temp:ratio + time:ratio,
+                  data=Acetylene)
+
+(acetyl.vif0 <- vif(acetyl.mod0))
+```
+
+These results are horrible! How much does centering help? I first center all three predictors and then
+use `update()` to re-fit the same model using the centered data.
+
+```{r acetyl-mod1}
+Acetylene.centered <-
+  Acetylene |>
+  mutate(temp = temp - mean(temp),
+         time = time - mean(time),
+         ratio = ratio - mean(ratio))
+
+acetyl.mod1 <- update(acetyl.mod0, data=Acetylene.centered)
+(acetyl.vif1 <- vif(acetyl.mod1))
+```
+
+This is far better, although
+still not great in terms of VIF. But, how much have we improved the situation by the simple
+act of centering the predictors? The square roots of the ratios of VIFs tell us the impact
+of centering on the standard errors.
+
+```{r acetyl-ratio}
+sqrt(acetyl.vif0 / acetyl.vif1)
+```
+
+Finally, we use `poly(time, 2)` in the model for the centered data. Because there are multiple
+degree of freedom terms in the model, `car::vif()` calculates GVIFs here.
+The final column gives $\sqrt{\text{GVIF}^{1/2 \text{df}}}$, the remaining effect of
+collinearity on the standard errors of terms in this model.
+
+```{r acetyl-mod2}
+acetyl.mod2 <- lm(yield ~ temp + ratio + poly(time, 2) + 
+                          temp:time + temp:ratio + time:ratio,
+                  data=Acetylene.centered)
+
+vif(acetyl.mod2, type = "term")
+```
 
 
-## Ridge regression
+## Ridge regression {#sec:ridge}
 
 ### What is ridge regression?
 
