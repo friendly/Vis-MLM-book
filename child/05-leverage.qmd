@@ -1,0 +1,176 @@
+## Outliers, leverage and influence {#sec-leverage}
+
+In small to moderate samples, "unusual" observations can have dramatic effects on a fitted
+regression model, as we saw in the analysis of Davis's data on
+reported and measured weight (@sec-davis) where one erroneous observations hugely
+altered the fitted line.
+
+An observation can be unusual in three archetypal ways, with different consequences:
+
+* Unusual in the response $y$, but typical in the predictor(s), $\mathbf{x}$ --- a badly fitted case with a large absolute residual, but with $x$ not far from the mean, as in @fig-ch02-davis-reg2. This case does not do much harm to the fitted model.
+
+* Unusual in the predictor(s) $\mathbf{x}$, but typical in $y$ --- an otherwise well-fitted point. This case also does litle
+harm, and in fact can be considered to improve precision, a "good leverage" point.
+
+* Unusual in **both** $\mathbf{x}$ and $y$ --- This is the case, a "bad leverage" point, revealed in the analysis of Davis's data, @fig-ch02-davis-reg1, where the one erroneous point for women was highly influential, pulling the regression line towards it and affecting the estimated coefficient as well as all the fitted values.
+
+Influential cases are the ones that matter most. As suggested above, to be influential an observation must be
+unusual in **both** $\mathbf{x}$ and $y$, and affects the estimated coefficients, thereby also altering the
+predicted values for all observations.
+A heuristic formula capturing the relations among leverage, "outlyingness" on $y$ and influence is
+
+$$
+\text{Influence}_{\text{coefficients}} \;=\; X_\text{leverage} \;\times\; Y_\text{residual}
+$$
+As described below, leverage is proportional to the squared distance $(x_i - \bar{x})^2$ of an observation $x_i$
+from its mean in simple regression and to the squared Mahalanobis distance
+in the general case. The $Y_\text{residual}$ is best measured by a _studentized_ residual,
+obtained by omitting each case $i$ in turn and calculating its residual from the coefficients obtained
+from the remaining cases.
+
+### The leverage-influence quartet
+
+These ideas can be illustrated in the "leverage-influence quartet" by considering a standard simple linear regression
+for a sample and then adding one additional point reflecting the three situations described above.
+Below, I generate a sample of $N = 15$ points with $x$ uniformly distributed between (40, 60)
+and $y \sim 10 + 0.75 x + \mathcal{N}(0, 1.25^2)$, duplicated four times.
+
+```{r levdemo1}
+library(tidyverse)
+set.seed(42)
+N <- 15
+case_labels <- paste(1:4, c("OK", "Outlier", "Leverage", "Influence"))
+levdemo <- tibble(
+	case = rep(case_labels, 
+	           each = N),
+	x = rep(round(40 + 20 * runif(N), 1), 4),
+	y = rep(round(10 + .75 * x + rnorm(N, 0, 1.25), 4)),
+	id = " "
+)
+
+mod <- lm(y ~ x, data=levdemo)
+coef(mod)
+```
+
+The additional points, one for each situation are set to the values below.
+
+* `Outlier`: (52, 60) a low leverage point, but an outlier (`O`) with a large residual
+* `Leverage`: (75, 65) a "good" high leverage point (`L`) that fits well with the regression line
+* `Influence`: (70, 40) a "bad" high leverage point (`OL`) with a large residual.
+
+```{r levdemo2}
+extra <- tibble(
+  case = case_labels,
+  x  = c(65, 52, 75, 70),
+  y  = c(NA, 65, 65, 40),
+  id = c("  ", "O", "L", "OL")
+)
+
+#' Join these to the data
+both <- bind_rows(levdemo, extra) |>
+  mutate(case = factor(case))
+```
+
+We can plot these four situations with `ggplot2` in panels faceted by `case` as shown below.
+The standard version of this plot shows the regression line for the 
+`r colorize("original data", "blue")` and that for the `r colorize("ammended data", "red")`
+with the additional point. Note that we use the `levdemo` dataset in `geom_smooth()` for the
+regression line with the original data, but specify `data = both` for that with the additional point.
+
+```{r}
+#| label: fig-levdemo
+#| out-width: 100%
+#| fig-cap: 'Leverage influence quartet with data 50% ellipses. Case (1) original data; (2) adding one low-leverage outlier, "O"; (3) adding one "good" leverage point, "L"; (4) adding one "bad" leverage point, "OL". The dashed line is the fitted line for the original data, while the solid line reflects the additional point. The data ellipses show the effect of the additional point on precision.'
+ggplot(levdemo, aes(x = x, y = y)) +
+  geom_point(color = "blue", size = 2) +
+  geom_smooth(data = both, 
+              method = "lm", formula = y ~ x, se = FALSE,
+              color = "red", linewidth = 1.3, linetype = 1) +
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE,
+              color = "blue", linewidth = 1, linetype = "longdash" ) +
+  stat_ellipse(data = both, level = 0.5, color="blue", type="norm", linewidth = 1.4) +
+  geom_point(data=extra, color = "red", size = 4) +
+  geom_text(data=extra, aes(label = id), nudge_x = -2, size = 5) +
+  facet_wrap(~case, labeller = label_both) +
+  theme_bw(base_size = 14)
+```
+
+The standard version of this graph shows only the fitted regression lines in each panel.
+As can be seen, the fitted line doesn't change very much in panels (2) and (3); only
+the bad leverage point, "OL" in panel (4) is harmful.
+Adding data ellipses to each panel immediately makes it clear that there is another
+part to this story--- the effect of the unusual point on _precision_ (standard errors)
+of our estimates of the coefficients.
+
+Now, we see _directly_ that there is a big difference in impact between
+the low-leverage outlier [panel (2)] and the high-leverage, small-residual case [panel (3)],
+even though their effect on coefficient estimates is negligible.
+In panel (2), the single outlier inflates the estimate of residual variance (the size of the
+vertical slice of the data ellipse at $\bar{x}$), while in panel (3) this is decreased.
+
+To allow direct comparison and make the added value of the data ellipse more apparent, we overlay the data ellipses from
+@fig-levdemo in a single graph, shown in
+@fig-levdemo2.  
+Here, we can also see why the high-leverage
+point ``L'' [added in panel (c) of @fig-levdemo] is called a "good leverage" point.
+By increasing the standard deviation of $x$, it makes the data ellipse somewhat more elongated,
+giving increased precision of our estimates of $\vec{\beta}$. 
+
+```{r}
+#| label: fig-levdemo2
+#| out-width: 80%
+#| code-fold: true
+#| fig.cap: "Data ellipses in the Leverage-influence quartet. This graph overlays the data ellipses
+#|     and additional points from the four panels of @fig-levdemo2. It can be seen that only the
+#|     OL point affects the slope, while the O and L points affect precision of the estimates in opposite
+#|     directions."
+colors <- c("black", "blue", "darkgreen", "red")
+with(both,
+     {dataEllipse(x, y, groups = case, 
+          levels = 0.68,
+          plot.points = FALSE, add = FALSE,
+          center.pch = "+",
+          col = colors,
+          fill = TRUE, fill.alpha = 0.1)
+     })
+
+case1 <- both |> filter(case == "1 OK")
+points(case1[, c("x", "y")], cex=1)
+
+points(extra[, c("x", "y")], 
+       col = colors,
+       pch = 16, cex = 2)
+
+text(extra[, c("x", "y")],
+     labels = extra$id,
+     col = colors, pos = 2, offset = 0.5)
+```
+
+### Measuring leverage
+
+Leverage is thus an index of the _potential_ impact of an observation on the model due to its'
+atypical value in the X space of the predictor(s). It is commonly by the "hat" value, $h_i$,
+so called because the vector of fitted values can be expressed as
+
+$$
+\begin{eqnarray*}
+\hat{\mathbf{y}} & = & \mathbf{H} \mathbf{y} \\
+                 & = & [(\mathbf{X}^T \mathbf{X})^{-1} \mathbf{X}^T] \; \mathbf{y} \; ,
+\end{eqnarray*}
+$$
+where $h_i \equiv h_{ii}$ are the diagonal elements of the Hat matrix $\mathbf{H}$. In simple regression,
+hat values are proportional to the squared distance of the observation $x_i$ from the mean,
+$h_i \propto (x_i - \bar{x})^2$,
+$$
+h_i = \frac{1}{n} + \frac{(x_i - \bar{x})^2}{\Sigma_i (x_i - \bar{x})^2} \,
+$$
+and range from $1/n$ to 1, with an average value $\bar{h} = 2/n$. 
+
+With $p$ predictors, it can be shown that $h_i \propto D^2 (\mathbf{x} - \bar{\mathbf{x}})$.
+
+### Measuring residuals
+
+### Measuring influence
+
+
+

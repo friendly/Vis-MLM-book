@@ -1,6 +1,7 @@
 ---
 title: Visualizing Multivariate Data/Models in R
-output: github_document
+output: 
+  word_document
 ---
 
 This document is the working outline for the book
