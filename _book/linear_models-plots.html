@@ -348,8 +348,10 @@ div.csl-indent {
 \]</span> As described below, leverage is proportional to the squared distance <span class="math inline">\((x_i - \bar{x})^2\)</span> of an observation <span class="math inline">\(x_i\)</span> from its mean in simple regression and to the squared Mahalanobis distance in the general case. The <span class="math inline">\(Y_\text{residual}\)</span> is best measured by a <em>studentized</em> residual, obtained by omitting each case <span class="math inline">\(i\)</span> in turn and calculating its residual from the coefficients obtained from the remaining cases.</p>
 <section id="the-leverage-influence-quartet" class="level3" data-number="6.6.1"><h3 data-number="6.6.1" class="anchored" data-anchor-id="the-leverage-influence-quartet">
 <span class="header-section-number">6.6.1</span> The leverage-influence quartet</h3>
-<p>These ideas can be illustrated in the “leverage-influence quartet” by considering a standard simple linear regression for a sample and then adding one additional point reflecting the three situations described above. Below, I generate a sample of <span class="math inline">\(N = 15\)</span> points with <span class="math inline">\(x\)</span> uniformly distributed between (40, 60) and <span class="math inline">\(y \sim 10 + 0.75 x + \mathcal{N}(0, 1.25^2)\)</span>, duplicated four times. ::: {.cell layout-align=“center”}</p>
+<p>These ideas can be illustrated in the “leverage-influence quartet” by considering a standard simple linear regression for a sample and then adding one additional point reflecting the three situations described above. Below, I generate a sample of <span class="math inline">\(N = 15\)</span> points with <span class="math inline">\(x\)</span> uniformly distributed between (40, 60) and <span class="math inline">\(y \sim 10 + 0.75 x + \mathcal{N}(0, 1.25^2)\)</span>, duplicated four times.</p>
+<div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://r-forge.r-project.org/projects/car/">car</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
 <span><span class="va">N</span> <span class="op">&lt;-</span> <span class="fl">15</span></span>
 <span><span class="va">case_labels</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">4</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"OK"</span>, <span class="st">"Outlier"</span>, <span class="st">"Leverage"</span>, <span class="st">"Influence"</span><span class="op">)</span><span class="op">)</span></span>
@@ -365,7 +367,7 @@ div.csl-indent {
 <span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">mod</span><span class="op">)</span></span>
 <span><span class="co">#&gt; (Intercept)           x </span></span>
 <span><span class="co">#&gt;      13.332       0.697</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>:::</p>
+</div>
 <p>The additional points, one for each situation are set to the values below.</p>
 <ul>
 <li>
@@ -408,17 +410,58 @@ div.csl-indent {
 </div>
 </div>
 </div>
-<p>The standard version of this graph shows only the fitted regression lines in each panel.</p>
+<p>The standard version of this graph shows only the fitted regression lines in each panel. As can be seen, the fitted line doesn’t change very much in panels (2) and (3); only the bad leverage point, “OL” in panel (4) is harmful. Adding data ellipses to each panel immediately makes it clear that there is another part to this story— the effect of the unusual point on <em>precision</em> (standard errors) of our estimates of the coefficients.</p>
+<p>Now, we see <em>directly</em> that there is a big difference in impact between the low-leverage outlier [panel (2)] and the high-leverage, small-residual case [panel (3)], even though their effect on coefficient estimates is negligible. In panel (2), the single outlier inflates the estimate of residual variance (the size of the vertical slice of the data ellipse at <span class="math inline">\(\bar{x}\)</span>), while in panel (3) this is decreased.</p>
+<p>To allow direct comparison and make the added value of the data ellipse more apparent, we overlay the data ellipses from <a href="#fig-levdemo">Figure&nbsp;<span>6.2</span></a> in a single graph, shown in <a href="#fig-levdemo2">Figure&nbsp;<span>6.3</span></a>.<br>
+Here, we can also see why the high-leverage point ``L’’ <a href="#fig-levdemo">added in panel (c) of&nbsp;<span>6.2</span></a> is called a “good leverage” point. By increasing the standard deviation of <span class="math inline">\(x\)</span>, it makes the data ellipse somewhat more elongated, giving increased precision of our estimates of <span class="math inline">\(\vec{\beta}\)</span>.</p>
+<div class="cell" data-layout-align="center">
+<details><summary>Code</summary><div class="sourceCode" id="cb7"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">colors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"black"</span>, <span class="st">"blue"</span>, <span class="st">"darkgreen"</span>, <span class="st">"red"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/with.html">with</a></span><span class="op">(</span><span class="va">both</span>,</span>
+<span>     <span class="op">{</span><span class="fu"><a href="https://rdrr.io/pkg/car/man/Ellipses.html">dataEllipse</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span>, groups <span class="op">=</span> <span class="va">case</span>, </span>
+<span>          levels <span class="op">=</span> <span class="fl">0.68</span>,</span>
+<span>          plot.points <span class="op">=</span> <span class="cn">FALSE</span>, add <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>          center.pch <span class="op">=</span> <span class="st">"+"</span>,</span>
+<span>          col <span class="op">=</span> <span class="va">colors</span>,</span>
+<span>          fill <span class="op">=</span> <span class="cn">TRUE</span>, fill.alpha <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span></span>
+<span>     <span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">case1</span> <span class="op">&lt;-</span> <span class="va">both</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">case</span> <span class="op">==</span> <span class="st">"1 OK"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/points.html">points</a></span><span class="op">(</span><span class="va">case1</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span><span class="op">)</span><span class="op">]</span>, cex<span class="op">=</span><span class="fl">1</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/points.html">points</a></span><span class="op">(</span><span class="va">extra</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span><span class="op">)</span><span class="op">]</span>, </span>
+<span>       col <span class="op">=</span> <span class="va">colors</span>,</span>
+<span>       pch <span class="op">=</span> <span class="fl">16</span>, cex <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/text.html">text</a></span><span class="op">(</span><span class="va">extra</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span><span class="op">)</span><span class="op">]</span>,</span>
+<span>     labels <span class="op">=</span> <span class="va">extra</span><span class="op">$</span><span class="va">id</span>,</span>
+<span>     col <span class="op">=</span> <span class="va">colors</span>, pos <span class="op">=</span> <span class="fl">2</span>, offset <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details><div class="cell-output-display">
+<div id="fig-levdemo2" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="figs/fig-levdemo2-1.png" class="img-fluid figure-img" style="width:80.0%"></p>
+<figcaption class="figure-caption">Figure&nbsp;6.3: Data ellipses in the Leverage-influence quartet. This graph overlays the data ellipses and additional points from the four panels of <a href="#fig-levdemo2">Figure&nbsp;<span>6.3</span></a>. It can be seen that only the OL point affects the slope, while the O and L points affect precision of the estimates in opposite directions.</figcaption></figure>
+</div>
+</div>
+</div>
 </section><section id="measuring-leverage" class="level3" data-number="6.6.2"><h3 data-number="6.6.2" class="anchored" data-anchor-id="measuring-leverage">
 <span class="header-section-number">6.6.2</span> Measuring leverage</h3>
+<p>Leverage is thus an index of the <em>potential</em> impact of an observation on the model due to its’ atypical value in the X space of the predictor(s). It is commonly by the “hat” value, <span class="math inline">\(h_i\)</span>, so called because the vector of fitted values can be expressed as</p>
+<p><span class="math display">\[
+\begin{eqnarray*}
+\hat{\mathbf{y}} &amp; = &amp; \mathbf{H} \mathbf{y} \\
+                 &amp; = &amp; [(\mathbf{X}^T \mathbf{X})^{-1} \mathbf{X}^T] \; \mathbf{y} \; ,
+\end{eqnarray*}
+\]</span> where <span class="math inline">\(h_i \equiv h_{ii}\)</span> are the diagonal elements of the Hat matrix <span class="math inline">\(\mathbf{H}\)</span>. In simple regression, hat values are proportional to the squared distance of the observation <span class="math inline">\(x_i\)</span> from the mean, <span class="math inline">\(h_i \propto (x_i - \bar{x})^2\)</span>, <span class="math display">\[
+h_i = \frac{1}{n} + \frac{(x_i - \bar{x})^2}{\Sigma_i (x_i - \bar{x})^2} \,
+\]</span> and range from <span class="math inline">\(1/n\)</span> to 1, with an average value <span class="math inline">\(\bar{h} = 2/n\)</span>.</p>
+<p>With <span class="math inline">\(p\)</span> predictors, it can be shown that <span class="math inline">\(h_i \propto D^2 (\mathbf{x} - \bar{\mathbf{x}})\)</span>.</p>
 </section><section id="measuring-residuals" class="level3" data-number="6.6.3"><h3 data-number="6.6.3" class="anchored" data-anchor-id="measuring-residuals">
 <span class="header-section-number">6.6.3</span> Measuring residuals</h3>
 </section><section id="measuring-influence" class="level3" data-number="6.6.4"><h3 data-number="6.6.4" class="anchored" data-anchor-id="measuring-influence">
 <span class="header-section-number">6.6.4</span> Measuring influence</h3>
 <div class="cell" data-layout-align="center">
 <pre><code>#&gt; Writing packages to  C:/R/Projects/Vis-MLM-quarto/bib/pkgs.txt
-#&gt; 17  packages used here:
-#&gt;  base, datasets, dplyr, forcats, ggplot2, graphics, grDevices, lubridate, methods, purrr, readr, stats, stringr, tibble, tidyr, tidyverse, utils</code></pre>
+#&gt; 19  packages used here:
+#&gt;  base, car, carData, datasets, dplyr, forcats, ggplot2, graphics, grDevices, lubridate, methods, purrr, readr, stats, stringr, tibble, tidyr, tidyverse, utils</code></pre>
 </div>
 </section></section><section id="references" class="level2 unnumbered"><h2 class="unnumbered anchored" data-anchor-id="references">References</h2>
 
