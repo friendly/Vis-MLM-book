@@ -1,6 +1,7 @@
 ---
 title: Visualizing Multivariate Data/Models in R
-output: github_document
+output: 
+  word_document
 ---
 
 This document is the working outline for the book
@@ -47,7 +48,14 @@ to show multiple variables along a set of parallel axes.
 - Generalized pair plots
 - Heatmaps
 
-## PCA and Biplots
+## Dimension reduction techniques: PCA and Biplots
+
+Beyond a few variables, the limitations of 2D (or even 3D) graphs become quickly apparent.
+In such cases, it is often profitable to view the data in a low-D space that extracts the 
+most "juice" -- the important information within the data. This chapter describes
+the simplest multivariate juicer, principal components analysis and 
+its visualization in the related biplot,
+which shows the data and the original variables projected into a space of small dimension.
 
 - PCA, the multivariate juicer
 - Biplot, a low-dimensional view
