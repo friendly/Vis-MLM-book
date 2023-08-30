@@ -169,7 +169,7 @@ div.csl-indent {
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./pca-biplot.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Dimension reduction techniques: PCA and Biplots</span></span></a>
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">PCA and Biplots</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
@@ -250,7 +250,7 @@ div.csl-indent {
   <ul class="collapse">
 <li><a href="#the-leverage-influence-quartet" id="toc-the-leverage-influence-quartet" class="nav-link" data-scroll-target="#the-leverage-influence-quartet"><span class="header-section-number">6.6.1</span> The leverage-influence quartet</a></li>
   <li><a href="#measuring-leverage" id="toc-measuring-leverage" class="nav-link" data-scroll-target="#measuring-leverage"><span class="header-section-number">6.6.2</span> Measuring leverage</a></li>
-  <li><a href="#measuring-residuals" id="toc-measuring-residuals" class="nav-link" data-scroll-target="#measuring-residuals"><span class="header-section-number">6.6.3</span> Measuring residuals</a></li>
+  <li><a href="#outliers-measuring-residuals" id="toc-outliers-measuring-residuals" class="nav-link" data-scroll-target="#outliers-measuring-residuals"><span class="header-section-number">6.6.3</span> Outliers: Measuring residuals</a></li>
   <li><a href="#measuring-influence" id="toc-measuring-influence" class="nav-link" data-scroll-target="#measuring-influence"><span class="header-section-number">6.6.4</span> Measuring influence</a></li>
   </ul>
 </li>
@@ -413,7 +413,7 @@ div.csl-indent {
 <p>The standard version of this graph shows only the fitted regression lines in each panel. As can be seen, the fitted line doesn’t change very much in panels (2) and (3); only the bad leverage point, “OL” in panel (4) is harmful. Adding data ellipses to each panel immediately makes it clear that there is another part to this story— the effect of the unusual point on <em>precision</em> (standard errors) of our estimates of the coefficients.</p>
 <p>Now, we see <em>directly</em> that there is a big difference in impact between the low-leverage outlier [panel (2)] and the high-leverage, small-residual case [panel (3)], even though their effect on coefficient estimates is negligible. In panel (2), the single outlier inflates the estimate of residual variance (the size of the vertical slice of the data ellipse at <span class="math inline">\(\bar{x}\)</span>), while in panel (3) this is decreased.</p>
 <p>To allow direct comparison and make the added value of the data ellipse more apparent, we overlay the data ellipses from <a href="#fig-levdemo">Figure&nbsp;<span>6.2</span></a> in a single graph, shown in <a href="#fig-levdemo2">Figure&nbsp;<span>6.3</span></a>.<br>
-Here, we can also see why the high-leverage point ``L’’ <a href="#fig-levdemo">added in panel (c) of&nbsp;<span>6.2</span></a> is called a “good leverage” point. By increasing the standard deviation of <span class="math inline">\(x\)</span>, it makes the data ellipse somewhat more elongated, giving increased precision of our estimates of <span class="math inline">\(\vec{\beta}\)</span>.</p>
+Here, we can also see why the high-leverage point “L” <a href="#fig-levdemo">added in panel (c) of&nbsp;<span>6.2</span></a> is called a “good leverage” point. By increasing the standard deviation of <span class="math inline">\(x\)</span>, it makes the data ellipse somewhat more elongated, giving increased precision of our estimates of <span class="math inline">\(\vec{\beta}\)</span>.</p>
 <div class="cell" data-layout-align="center">
 <details><summary>Code</summary><div class="sourceCode" id="cb7"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">colors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"black"</span>, <span class="st">"blue"</span>, <span class="st">"darkgreen"</span>, <span class="st">"red"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/with.html">with</a></span><span class="op">(</span><span class="va">both</span>,</span>
@@ -444,20 +444,96 @@ Here, we can also see why the high-leverage point ``L’’ <a href="#fig-levdem
 </div>
 </section><section id="measuring-leverage" class="level3" data-number="6.6.2"><h3 data-number="6.6.2" class="anchored" data-anchor-id="measuring-leverage">
 <span class="header-section-number">6.6.2</span> Measuring leverage</h3>
-<p>Leverage is thus an index of the <em>potential</em> impact of an observation on the model due to its’ atypical value in the X space of the predictor(s). It is commonly by the “hat” value, <span class="math inline">\(h_i\)</span>, so called because the vector of fitted values can be expressed as</p>
+<p>Leverage is thus an index of the <em>potential</em> impact of an observation on the model due to its’ atypical value in the X space of the predictor(s). It is commonly measured by the “hat” value, <span class="math inline">\(h_i\)</span>, so called because it puts the hat <span class="math inline">\(\hat{(\bullet)}\)</span> on <span class="math inline">\(\mathbf{y}\)</span>, i.e., the vector of fitted values can be expressed as</p>
 <p><span class="math display">\[
 \begin{eqnarray*}
 \hat{\mathbf{y}} &amp; = &amp; \mathbf{H} \mathbf{y} \\
-                 &amp; = &amp; [(\mathbf{X}^T \mathbf{X})^{-1} \mathbf{X}^T] \; \mathbf{y} \; ,
+                 &amp; = &amp; [\mathbf{X} (\mathbf{X}^T \mathbf{X})^{-1} \mathbf{X}^T] \; \mathbf{y} \; ,
 \end{eqnarray*}
 \]</span> where <span class="math inline">\(h_i \equiv h_{ii}\)</span> are the diagonal elements of the Hat matrix <span class="math inline">\(\mathbf{H}\)</span>. In simple regression, hat values are proportional to the squared distance of the observation <span class="math inline">\(x_i\)</span> from the mean, <span class="math inline">\(h_i \propto (x_i - \bar{x})^2\)</span>, <span class="math display">\[
-h_i = \frac{1}{n} + \frac{(x_i - \bar{x})^2}{\Sigma_i (x_i - \bar{x})^2} \,
-\]</span> and range from <span class="math inline">\(1/n\)</span> to 1, with an average value <span class="math inline">\(\bar{h} = 2/n\)</span>.</p>
-<p>With <span class="math inline">\(p\)</span> predictors, it can be shown that <span class="math inline">\(h_i \propto D^2 (\mathbf{x} - \bar{\mathbf{x}})\)</span>.</p>
-</section><section id="measuring-residuals" class="level3" data-number="6.6.3"><h3 data-number="6.6.3" class="anchored" data-anchor-id="measuring-residuals">
-<span class="header-section-number">6.6.3</span> Measuring residuals</h3>
+h_i = \frac{1}{n} + \frac{(x_i - \bar{x})^2}{\Sigma_i (x_i - \bar{x})^2} \; ,
+\]</span> and range from <span class="math inline">\(1/n\)</span> to 1, with an average value <span class="math inline">\(\bar{h} = 2/n\)</span>. Consequently, observations with <span class="math inline">\(h_i\)</span> greater than <span class="math inline">\(2 \bar{h}\)</span> or <span class="math inline">\(3 \bar{h}\)</span> are commonly considered to be of high leverage.</p>
+<p>With <span class="math inline">\(p \ge 2\)</span> predictors, it is demonstrated below that <span class="math inline">\(h_i \propto D^2 (\mathbf{x} - \bar{\mathbf{x}})\)</span>, the squared distance of <span class="math inline">\(\mathbf{x}\)</span> from the centroid <span class="math inline">\(\bar{\mathbf{x}}\)</span>[^1]. [^1]: See <a href="https://bit.ly/45x2T0Q">this Stats StackExchange discussion</a> for a proof. The analogous formula is</p>
+<p><span class="math display">\[
+h_i = \frac{1}{n} + \frac{1}{n-1} D^2 (\mathbf{x} - \bar{\mathbf{x}}) \; ,
+\]</span> where <span class="math inline">\(D^2 (\mathbf{x} - \bar{\mathbf{x}}) = (\mathbf{x} - \bar{\mathbf{x}})^T \mathbf{S}_X^{-1} (\mathbf{x} - \bar{\mathbf{x}})\)</span>. From <a href="multivariate_plots.html#sec-data-ellipse"><span>Section&nbsp;3.1.1</span></a>, it follows that contours of constant leverage correspond to data ellipses or ellipsoids of the predictors in <span class="math inline">\(\mathbf{x}\)</span>, whose boundaries, assuming normality, correspond to quantiles of the <span class="math inline">\(\chi^2_p\)</span> distribution</p>
+<p><strong>Example</strong>:</p>
+<p>To illustrate, I generate <span class="math inline">\(N = 100\)</span> points from a bivariate normal distribution with means <span class="math inline">\(\mu = (30, 30)\)</span>, variances = 10, and a correlation <span class="math inline">\(\rho = 0.7\)</span> and add two noteworthy points that show an apparently paradoxical result.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">421</span><span class="op">)</span></span>
+<span><span class="va">N</span> <span class="op">&lt;-</span> <span class="fl">100</span></span>
+<span><span class="va">r</span> <span class="op">&lt;-</span> <span class="fl">0.7</span></span>
+<span><span class="va">mu</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">30</span>, <span class="fl">30</span><span class="op">)</span></span>
+<span><span class="va">cov</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">10</span>,   <span class="fl">10</span><span class="op">*</span><span class="va">r</span>,</span>
+<span>                <span class="fl">10</span><span class="op">*</span><span class="va">r</span>, <span class="fl">10</span><span class="op">)</span>, ncol<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">X</span> <span class="op">&lt;-</span> <span class="fu">MASS</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/MASS/man/mvrnorm.html">mvrnorm</a></span><span class="op">(</span><span class="va">N</span>, <span class="va">mu</span>, <span class="va">cov</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"x1"</span>, <span class="st">"x2"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># add 2 points</span></span>
+<span><span class="va">X</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html">rbind</a></span><span class="op">(</span><span class="va">X</span>,</span>
+<span>           <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span>x1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">28</span>, <span class="fl">38</span><span class="op">)</span>,</span>
+<span>                      x2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">42</span>, <span class="fl">35</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The Mahalanobis squared distances of these points can be calculated using <code><a href="https://friendly.github.io/heplots/reference/Mahalanobis.html">heplots::Mahalanobis()</a></code>, and their corresponding hatvalues found using <code><a href="https://rdrr.io/r/stats/influence.measures.html">hatvalues()</a></code> for any linear model using both <code>x1</code> and <code>x2</code>.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">X</span> <span class="op">&lt;-</span> <span class="va">X</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>Dsq <span class="op">=</span> <span class="fu">heplots</span><span class="fu">::</span><span class="fu"><a href="https://friendly.github.io/heplots/reference/Mahalanobis.html">Mahalanobis</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>y <span class="op">=</span> <span class="fl">2</span><span class="op">*</span><span class="va">x1</span> <span class="op">+</span> <span class="fl">3</span><span class="op">*</span><span class="va">x2</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span>, <span class="fl">0</span>, <span class="fl">5</span><span class="op">)</span>,</span>
+<span>         hat <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/influence.measures.html">hatvalues</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">x1</span> <span class="op">+</span> <span class="va">x2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Plotting <code>x1</code> and <code>x2</code> with data ellipses shows the relation of leverage to squared distance from the mean. The <span style="color: blue;">blue</span> point looks to be farther from the <span style="color: green;">mean</span>, but the <span style="color: red;">red</span> point is actually very much further by Mahalanobis squared distance, which takes the correlation into account; it thus has much greater leverage.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html">par</a></span><span class="op">(</span>mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">4</span>, <span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span> <span class="op">+</span> <span class="fl">0.1</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/car/man/Ellipses.html">dataEllipse</a></span><span class="op">(</span><span class="va">X</span><span class="op">$</span><span class="va">x1</span>, <span class="va">X</span><span class="op">$</span><span class="va">x2</span>, </span>
+<span>            levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.40</span>, <span class="fl">0.68</span>, <span class="fl">0.95</span><span class="op">)</span>,</span>
+<span>            fill <span class="op">=</span> <span class="cn">TRUE</span>, fill.alpha <span class="op">=</span> <span class="fl">0.05</span>,</span>
+<span>            col <span class="op">=</span> <span class="st">"darkgreen"</span>,</span>
+<span>            xlab <span class="op">=</span> <span class="st">"X1"</span>, ylab <span class="op">=</span> <span class="st">"X2"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/points.html">points</a></span><span class="op">(</span><span class="va">X</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span> <span class="op">&gt;</span> <span class="va">N</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>, pch <span class="op">=</span> <span class="fl">16</span>, col<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"red"</span>, <span class="st">"blue"</span><span class="op">)</span>, cex <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="va">X</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html">slice_tail</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="op">|&gt;</span>      <span class="co"># last two rows</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/graphics/points.html">points</a></span><span class="op">(</span>pch <span class="op">=</span> <span class="fl">16</span>, col<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"red"</span>, <span class="st">"blue"</span><span class="op">)</span>, cex <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-hatvalues-demo1" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="figs/fig-hatvalues-demo1-1.png" class="img-fluid figure-img" width="2100"></p>
+<figcaption class="figure-caption">Figure&nbsp;6.4: Data ellipses for a bivariate normal sample with correlation 0.7, and two additional noteworthy points. The blue point looks to be farther from the mean, but the red point is actually more than 5 times further by Mahalanobis squared distance, and thus has much greater leverage.</figcaption></figure>
+</div>
+</div>
+</div>
+<p>The fact that hatvalues are proportional to leverage can be seen by plotting one against the other. I highlight the two noteworthy points in their colors from <a href="#fig-hatvalues-demo1">Figure&nbsp;<span>6.4</span></a> to illustrate how much greater leverage the <span style="color: red;">red</span> point has compared to the <span style="color: blue;">blue</span> point.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">hat</span> <span class="op">~</span> <span class="va">Dsq</span>, data <span class="op">=</span> <span class="va">X</span>,</span>
+<span>     cex <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fl">1</span>, <span class="va">N</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span>, </span>
+<span>     col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"black"</span>, <span class="va">N</span><span class="op">)</span>, <span class="st">"red"</span>, <span class="st">"blue"</span><span class="op">)</span>,</span>
+<span>     pch <span class="op">=</span> <span class="fl">16</span>,</span>
+<span>     ylab <span class="op">=</span> <span class="st">"Hatvalue"</span>,</span>
+<span>     xlab <span class="op">=</span> <span class="st">"Mahalanobis Dsq"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-hatvalues-demo2" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="figs/fig-hatvalues-demo2-1.png" class="img-fluid figure-img" width="2100"></p>
+<figcaption class="figure-caption">Figure&nbsp;6.5: Hat values are proportional to squared Mahalanobis distances from the mean.</figcaption></figure>
+</div>
+</div>
+</div>
+<p>Look back at these two points in <a href="#fig-hatvalues-demo1">Figure&nbsp;<span>6.4</span></a>. Can you guess how much further the <span style="color: red;">red</span> point is from the mean than the <span style="color: blue;">blue</span> point? You might be surprised that its’ <span class="math inline">\(D^2\)</span> and leverage are about five times as great!</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">X</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html">slice_tail</a></span><span class="op">(</span>n<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   x1 x2   Dsq   y    hat</span></span>
+<span><span class="co">#&gt; 1 28 42 25.65 179 0.2638</span></span>
+<span><span class="co">#&gt; 2 38 35  4.95 175 0.0588</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section><section id="outliers-measuring-residuals" class="level3" data-number="6.6.3"><h3 data-number="6.6.3" class="anchored" data-anchor-id="outliers-measuring-residuals">
+<span class="header-section-number">6.6.3</span> Outliers: Measuring residuals</h3>
+<p>From the discussion in <a href="#sec-leverage"><span>Section&nbsp;6.6</span></a>, outliers for the response <span class="math inline">\(y\)</span> are those observations for which the residual <span class="math inline">\(e_i = y_i - \hat{y}_i\)</span> are unusually large in magnitude. However, as demonstrated in <a href="#fig-levdemo">Figure&nbsp;<span>6.2</span></a>, a high-leverage point will pull the fitted line towards it, reducing its’ residual and thus making them look less unusual.</p>
+<p>The standard approach <span class="citation" data-cites="CookWeisberg:82 HoaglinWelsch1978">(<a href="references.html#ref-CookWeisberg:82" role="doc-biblioref">Cook and Weisberg 1982</a>; <a href="references.html#ref-HoaglinWelsch1978" role="doc-biblioref">Hoaglin and Welsch 1978</a>)</span> is to consider a <em>deleted residual</em> <span class="math inline">\(e_{(-i)}\)</span>, conceptually as that obtained by re-fitting the model with observation <span class="math inline">\(i\)</span> omitted and obtaining the fitted value <span class="math inline">\(\hat{y}_{(-i)}\)</span> from the remaining <span class="math inline">\(n-1\)</span> observations, <span class="math display">\[
+e_{(-i)} = y_i - \hat{y}_{(-i)} \; .
+\]</span> The (externally) <em>studentized residual</em> is then obtained by dividing <span class="math inline">\(e_{(-i)}\)</span> by it’s estimated standard error, giving <span class="math display">\[
+e^\star_{(-i)} = \frac{e_{(-i)}}{\text{sd}(e_{(-i)})} = \frac{e_i}{\sqrt{\text{MSE}_{(-i)}\; (1 - h_i)}} \; .
+\]</span></p>
+<p>This is just the ordinary residual <span class="math inline">\(e_i\)</span> divided by a factor that increases with the residual variance but decreases with leverage. It can be shown that these studentized residuals follow a <span class="math inline">\(t\)</span> distribution with <span class="math inline">\(n - p -2\)</span> degrees of freedom, so a value <span class="math inline">\(|e^\star_{(-i)}| &gt; 2\)</span> can be considered large enough to pay attention to.</p>
 </section><section id="measuring-influence" class="level3" data-number="6.6.4"><h3 data-number="6.6.4" class="anchored" data-anchor-id="measuring-influence">
 <span class="header-section-number">6.6.4</span> Measuring influence</h3>
+<p>As described at the start of this section, the actual influence of a given case depends multiplicatively on its’ leverage and residual.</p>
 <div class="cell" data-layout-align="center">
 <pre><code>#&gt; Writing packages to  C:/R/Projects/Vis-MLM-quarto/bib/pkgs.txt
 #&gt; 19  packages used here:
@@ -470,6 +546,9 @@ h_i = \frac{1}{n} + \frac{(x_i - \bar{x})^2}{\Sigma_i (x_i - \bar{x})^2} \,
 <div id="ref-Belsley-etal:80" class="csl-entry" role="listitem">
 Belsley, David A., E. Kuh, and Roy E. Welsch. 1980. <em>Regression Diagnostics: Identifying Influential Data and Sources of Collinearity</em>. New York: John Wiley; Sons.
 </div>
+<div id="ref-CookWeisberg:82" class="csl-entry" role="listitem">
+Cook, R. D., and S. Weisberg. 1982. <em>Residuals and Influence in Regression</em>. New York: Chapman; Hall.
+</div>
 <div id="ref-Fox2020" class="csl-entry" role="listitem">
 Fox, John. 2020. <em>Regression Diagnostics</em>. 2nd ed. <span>SAGE</span> Publications, Inc. <a href="https://doi.org/10.4135/9781071878651">https://doi.org/10.4135/9781071878651</a>.
 </div>
@@ -478,6 +557,9 @@ Fox, John, and Sandford Weisberg. 2018. <em>An r Companion to Applied Regression
 </div>
 <div id="ref-R-car" class="csl-entry" role="listitem">
 Fox, John, Sanford Weisberg, and Brad Price. 2023. <em>Car: Companion to Applied Regression</em>. <a href="https://CRAN.R-project.org/package=car">https://CRAN.R-project.org/package=car</a>.
+</div>
+<div id="ref-HoaglinWelsch1978" class="csl-entry" role="listitem">
+Hoaglin, David C., and Roy E. Welsch. 1978. <span>“The Hat Matrix in Regression and <span>ANOVA</span>.”</span> <em>The American Statistician</em> 32 (1): 17–22. <a href="https://doi.org/10.1080/00031305.1978.10479237">https://doi.org/10.1080/00031305.1978.10479237</a>.
 </div>
 </div>
 </section></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">

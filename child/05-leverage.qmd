@@ -113,7 +113,7 @@ To allow direct comparison and make the added value of the data ellipse more app
 @fig-levdemo in a single graph, shown in
 @fig-levdemo2.  
 Here, we can also see why the high-leverage
-point ``L'' [added in panel (c) of @fig-levdemo] is called a "good leverage" point.
+point "L" [added in panel (c) of @fig-levdemo] is called a "good leverage" point.
 By increasing the standard deviation of $x$, it makes the data ellipse somewhat more elongated,
 giving increased precision of our estimates of $\vec{\beta}$. 
 
@@ -150,28 +150,162 @@ text(extra[, c("x", "y")],
 ### Measuring leverage
 
 Leverage is thus an index of the _potential_ impact of an observation on the model due to its'
-atypical value in the X space of the predictor(s). It is commonly by the "hat" value, $h_i$,
-so called because the vector of fitted values can be expressed as
+atypical value in the X space of the predictor(s). It is commonly measured by the "hat" value, $h_i$,
+so called because it puts the hat $\hat{(\bullet)}$ on $\mathbf{y}$, i.e., the vector of fitted values can 
+be expressed as
 
 $$
 \begin{eqnarray*}
 \hat{\mathbf{y}} & = & \mathbf{H} \mathbf{y} \\
-                 & = & [(\mathbf{X}^T \mathbf{X})^{-1} \mathbf{X}^T] \; \mathbf{y} \; ,
+                 & = & [\mathbf{X} (\mathbf{X}^T \mathbf{X})^{-1} \mathbf{X}^T] \; \mathbf{y} \; ,
 \end{eqnarray*}
 $$
 where $h_i \equiv h_{ii}$ are the diagonal elements of the Hat matrix $\mathbf{H}$. In simple regression,
 hat values are proportional to the squared distance of the observation $x_i$ from the mean,
 $h_i \propto (x_i - \bar{x})^2$,
 $$
-h_i = \frac{1}{n} + \frac{(x_i - \bar{x})^2}{\Sigma_i (x_i - \bar{x})^2} \,
+h_i = \frac{1}{n} + \frac{(x_i - \bar{x})^2}{\Sigma_i (x_i - \bar{x})^2} \; ,
 $$
-and range from $1/n$ to 1, with an average value $\bar{h} = 2/n$. 
+and range from $1/n$ to 1, with an average value $\bar{h} = 2/n$. Consequently, observations with
+$h_i$ greater than $2 \bar{h}$ or $3 \bar{h}$ are commonly considered to be of high leverage.
 
-With $p$ predictors, it can be shown that $h_i \propto D^2 (\mathbf{x} - \bar{\mathbf{x}})$.
+With $p \ge 2$ predictors, it is demonstrated below that $h_i \propto D^2 (\mathbf{x} - \bar{\mathbf{x}})$,
+the squared distance of $\mathbf{x}$ from the centroid $\bar{\mathbf{x}}$[^1].
+[^1]: See [this Stats StackExchange discussion](https://bit.ly/45x2T0Q) for a proof.
+The analogous formula is
 
-### Measuring residuals
+$$
+h_i = \frac{1}{n} + \frac{1}{n-1} D^2 (\mathbf{x} - \bar{\mathbf{x}}) \; ,
+$$ 
+where $D^2 (\mathbf{x} - \bar{\mathbf{x}}) = (\mathbf{x} - \bar{\mathbf{x}})^T \mathbf{S}_X^{-1} (\mathbf{x} - \bar{\mathbf{x}})$. From @sec-data-ellipse, it follows that contours of constant leverage correspond to
+data ellipses or ellipsoids of the predictors in $\mathbf{x}$, whose boundaries, assuming normality, correspond to quantiles of the $\chi^2_p$ distribution
+
+
+**Example**:
+
+To illustrate, I generate $N = 100$ points from a bivariate normal distribution with means
+$\mu = (30, 30)$, variances = 10, and a correlation $\rho = 0.7$ and add two noteworthy points
+that show an apparently paradoxical result.
+
+```{r hatval1}
+set.seed(421)
+N <- 100
+r <- 0.7
+mu <- c(30, 30)
+cov <- matrix(c(10,   10*r,
+                10*r, 10), ncol=2)
+
+X <- MASS::mvrnorm(N, mu, cov) |> as.data.frame()
+colnames(X) <- c("x1", "x2")
+
+# add 2 points
+X <- rbind(X,
+           data.frame(x1 = c(28, 38),
+                      x2 = c(42, 35)))
+```
+
+The Mahalanobis squared distances of these points can be calculated using `heplots::Mahalanobis()`,
+and their corresponding hatvalues found using `hatvalues()`
+for any linear model using both `x1` and `x2`.
+
+```{r hatval2}
+X <- X |>
+  mutate(Dsq = heplots::Mahalanobis(X)) |>
+  mutate(y = 2*x1 + 3*x2 + rnorm(nrow(X), 0, 5),
+         hat = hatvalues(lm(y ~ x1 + x2))) 
+
+```
+
+Plotting `x1` and `x2` with data ellipses shows the relation of leverage to squared distance from the mean.
+The `r colorize("blue", "blue")` point looks to be farther from the `r colorize("mean", "green")`, but 
+the `r colorize("red", "red")` point is actually very much further by Mahalanobis squared distance, which takes the
+correlation into account; it thus has much greater leverage.
+
+```{r}
+#| label: fig-hatvalues-demo1
+#| fig-show: "hold"
+#| fig-cap: 'Data ellipses for a bivariate normal sample with correlation 0.7, and two additional noteworthy points. The blue point looks to be farther from the mean, but the red point is actually more than 5 times further by Mahalanobis squared distance, and thus has much greater leverage.'
+par(mar = c(4, 4, 1, 1) + 0.1)
+dataEllipse(X$x1, X$x2, 
+            levels = c(0.40, 0.68, 0.95),
+            fill = TRUE, fill.alpha = 0.05,
+            col = "darkgreen",
+            xlab = "X1", ylab = "X2")
+points(X[1:nrow(X) > N, 1:2], pch = 16, col=c("red", "blue"), cex = 2)
+X |> slice_tail(n = 2) |>      # last two rows
+  points(pch = 16, col=c("red", "blue"), cex = 2)
+```
+
+The fact that hatvalues are proportional to leverage can be seen by plotting one against the other.
+I highlight the two noteworthy points in their colors from @fig-hatvalues-demo1 to illustrate
+how much greater leverage the `r colorize("red", "red")` point has compared to the `r colorize("blue", "blue")`
+point.
+
+```{r}
+#| label: fig-hatvalues-demo2
+#| fig-cap: "Hat values are proportional to squared Mahalanobis distances from the mean."
+plot(hat ~ Dsq, data = X,
+     cex = c(rep(1, N), rep(2, 2)), 
+     col = c(rep("black", N), "red", "blue"),
+     pch = 16,
+     ylab = "Hatvalue",
+     xlab = "Mahalanobis Dsq")
+```
+
+Look back at these two points in @fig-hatvalues-demo1. Can you guess how much further the `r colorize("red", "red")`
+point is from the mean than the `r colorize("blue", "blue")` point? You might be surprised that its'
+$D^2$ and leverage are about five times as great!
+
+```{r hatval3}
+X |> slice_tail(n=2)
+```
+
+### Outliers: Measuring residuals
+
+From the discussion in @sec-leverage, outliers for the response $y$ are those observations for which the
+residual $e_i = y_i - \hat{y}_i$ are unusually large in magnitude. However, as demonstrated in @fig-levdemo,
+a high-leverage point will pull the fitted line towards it, reducing its' residual and thus making them
+look less unusual.
+
+The standard approach [@CookWeisberg:82; @HoaglinWelsch1978] is to consider a _deleted residual_ $e_{(-i)}$, conceptually as that
+obtained by re-fitting the model with observation $i$ omitted and obtaining the fitted value $\hat{y}_{(-i)}$
+from the remaining $n-1$ observations,
+$$
+e_{(-i)} = y_i - \hat{y}_{(-i)} \; .
+$$
+The (externally) _studentized residual_ is then obtained by dividing $e_{(-i)}$ by it's estimated standard error, giving
+$$
+e^\star_{(-i)} = \frac{e_{(-i)}}{\text{sd}(e_{(-i)})} = \frac{e_i}{\sqrt{\text{MSE}_{(-i)}\; (1 - h_i)}} \; .
+$$
+
+This is just the ordinary residual $e_i$ divided by a factor that increases with the residual variance
+but decreases with leverage.  It can be shown that these studentized residuals follow a $t$ distribution
+with $n - p -2$ degrees of freedom, so a value $|e^\star_{(-i)}| > 2$ can be considered large enough to
+pay attention to.  
+In practice for classical linear models, it is unnecessary to actually re-fit the model $n$ times ...
+
 
 ### Measuring influence
+
+As described at the start of this section, the actual influence of a given case depends multiplicatively
+on its' leverage and residual. But how can we measure it?
+
+The essential idea introduced above, is to 
+delete the observations one at a time, each time refitting the regression model on the remaining $n–1$ observations.
+Then, for observation $i$ compare the results using all $n$ observations to those with the $i^{th}$ observation deleted to see how much influence the observation has on the analysis. 
+
+The simplest such measure, called DFFITS, compares the predicted value for case $i$ with what would be obtained
+when that observation is excluded.
+
+$$
+\begin{eqnarray*}
+\text{DFFITS}_i & = & \frac{\hat{y}_i - \hat{y}_{(-i)}}{\sqrt{\text{MSE}_{(-i)}\; h_i}} \\
+   & = & e^\star_{(-i)} \times \sqrt{\frac{h_i}{1-h_i}} \;\; .
+\end{eqnarray*}
+$$
+The first equation gives the signed difference in fitted values in units of the standard deviation of that difference weighted by leverage;
+the second version [@Belsley-etal:80] represents that as a product of residual and leverage.
+A rule of thumb is that an observation is deemed to be influential if $| \text{DFFITS}_i | > 2 \sqrt{(p+1) / n}$.
 
 
 
