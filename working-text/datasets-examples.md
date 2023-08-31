@@ -28,7 +28,10 @@ https://github.com/mjskay/uncertainty-examples/blob/master/penguins.qmd
 
 ## gapminder
 
-## car::prestige
+## carData::Duncan
+  + See 6140, [Regression diagnostics](http://euclid.psych.yorku.ca/www/psy6140/lectures/RegDiagnostics2x2.pdf)
+
+## carData::prestige
   + Examples from Vis-MLM-Course, Lecture 1
     C:\Dropbox\Documents\SCS\VisMLM-course\R\{prestige.R, prestige-ggplot.R}
   + Regression Model for the Prestige Level of Occupations,       http://rstudio-pubs-static.s3.amazonaws.com/425420_448c3a57871f4ac3a98f7b7781ffc91e.html
@@ -39,4 +42,10 @@ https://github.com/mjskay/uncertainty-examples/blob/master/penguins.qmd
 ## Others
   + https://www.r-bloggers.com/2021/11/manovamultivariate-analysis-of-variance-using-r/
 
-	
+
+## Spread-level plots & transformations to symmetry
+
+  + https://mgimond.github.io/ES218/sl_plot.html
+  + https://mgimond.github.io/ES218/re_express.html
+  + https://book.stat420.org/transformations.html
+  

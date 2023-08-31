@@ -54,11 +54,18 @@ ggplot(levdemo, aes(x = x, y = y, color = case)) +
   stat_ellipse(data = both, level = 0.5)
 
 
-library(car)
+library(car) # needs: car 3.1.4
 
 # Try to override car internal label.ellipse -- doesn't work
 # label.ellipse <- heplots::label.ellipse
 #fixInNamespace(label.ellipse, "car")
+
+#source("C:/Dropbox/R/functions/Ellipse.R")
+# rlang::env_unlock(env = asNamespace('car'))
+# rlang::env_binding_unlock(env = asNamespace('car'))
+# assign('dataEllipse', dataEllipse, envir = asNamespace('car'))
+# rlang::env_binding_lock(env = asNamespace('car'))
+# rlang::env_lock(asNamespace('car'))
 
 colors <- c("black", "blue", "darkgreen", "red")
 with(both,
@@ -68,7 +75,7 @@ with(both,
           center.pch = "+",
           col = colors,
           fill = TRUE, fill.alpha = 0.1
-#                  label.pos = c(0, 4, 4, 1)  # would like to specify these
+ #         label.pos = c(0, 4, 4, 1)  # would like to specify these
           )
      })
 
