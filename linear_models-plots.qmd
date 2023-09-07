@@ -22,8 +22,8 @@ over other variables not shown in a given plot.
 understand the nature of _multicolinearity_.
 
 The classic reference on regression diagnostics is @Belsley-etal:80.
-My favorite modern texts are the brief @Fox2020 and @FoxWeisberg:2018,
-which is supported by the **car** package [@R-car].
+My favorite modern texts are the brief @Fox2020 and the more complete @FoxWeisberg:2018,
+both of which are supported by the **car** package [@R-car].
 
 ## The "regression quartet"
 
@@ -52,9 +52,80 @@ extent to which a plot conforms to the expected pattern; another is the **labeli
 deviate from an assumption.
 
 The base-R `plot(model)` plots are done much better in a variety of packages.
-I illustrate some versions from the **car** and **performance** packages.
+I illustrate some versions from the **car** [@R-car] and **performance** [@Ludecke-etal-performance] packages,
+part of the **easystats** [@R-easystats] suite of packages.
 
-#### **Example: Occupational prestige**{.unnumbered}
+**Packages**:
+```{r}
+library(car)
+library(easystats)
+```
+
+
+#### Example: Duncan's occupational prestige {.unnumbered}
+
+In a classic study in sociology, @Duncan:61 used data from the U.S. Census in 1950 to study how one could
+predict the prestige of occupational categories --- which is hard to measure ---
+from available information in the census for those occupations. His data is available in `carData:Duncan`, and contains
+
+* `type`: the category of occupation, one of `prof` (professional), `wc` (white collar) or `bc` (blue collar);
+* `income`: the percentage of occupational incumbents with a reported income > $3500 (about $40,000 in current dollars);
+* `education`: the percentage of occupational incumbents who were high school graduates;
+* `prestige`: the percentage of respondents in a social survey who rated the occupation as “good” or better in prestige.
+
+These variables are a bit quirky in they are measured in percents, 0-100, rather dollars for `income` and
+years for `education`, but this common scale permitted Duncan to ask an interesting sociological question:
+Assuming that both income and education predict prestige, are they equally important, as might be
+assessed by testing the hypothesis $H_0: \beta_{\text{income}} = \beta_{\text{education}}$.
+
+A quick look at the data shows the variables and a selection of the occupational categories, which are
+the `row.names()` of the dataset.
+```{r duncan}
+data(Duncan, package = "carData")
+set.seed(42)
+car::some(Duncan)
+```
+
+Let's start by fitting a simple model using just income and education as predictors. The results look very good!
+Both `income` and `education` are highly significant and the $R^2 = 0.828$ for the model indicates
+that `prestige` is very well predicted by just these variables.
+
+```{r duncan-mod}
+duncan.mod <- lm(prestige ~ income + education, data=Duncan)
+summary(duncan.mod)
+```
+
+Beyond this, Duncan was interested in the coefficients and whether income and education could be said
+to have equal impacts on predicting occupational prestige. A nice display of model coefficients with
+confidence intervals is provided by `parameters::model_parameters()` and we can test Duncan's hypothesis
+with `car::linearHypothesis()`. The latter is constructed as a test of a restricted model in which
+the two coefficients are forced to be equal against the unrestricted model. Duncan was very happy with
+this result.
+
+```{r duncan-coef}
+parameters::model_parameters(duncan.mod)
+
+car::linearHypothesis(duncan.mod, "income = education")
+```
+
+But, should Duncan be **so** happy? It is unlikely that he ran any model diagnostics or plotted
+his model; we do so now. Here is the regression quartet for this model. Each plot shows
+some trend lines, and importantly, labels some observations that stand out and might deserve attention.
+
+```{r}
+#| label: fig-duncan-plot-model
+#| out-width: "100%"
+#| fig-cap: "Regression quartet of diagnostic plots for the `Duncan` data. Several possibly unusual observations are labeled."
+op <- par(mfrow = c(2,2), 
+          mar = c(4,4,3,1)+.1)
+plot(duncan.mod, lwd=2, pch=16)
+par(op)
+```
+
+
+#### Example: Occupational prestige{.unnumbered}
+
+**CUT THIS EXAMPLE**
 
 These examples use the data on the prestige of 102 occupational categories and other measures from the
 1971 Canadian Census, recorded in `carData::Prestige`.
@@ -113,4 +184,4 @@ cat("Writing packages to ", .pkg_file, "\n")
 write_pkgs(file = .pkg_file)
 ```
 
-## References {.unnumbered}
+<!-- ## References {.unnumbered} -->

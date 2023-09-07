@@ -241,7 +241,12 @@ div.csl-indent {
    
   <ul>
 <li><a href="#the-regression-quartet" id="toc-the-regression-quartet" class="nav-link active" data-scroll-target="#the-regression-quartet"><span class="header-section-number">6.1</span> The “regression quartet”</a></li>
-  <li><a href="#other-diagnostic-plots" id="toc-other-diagnostic-plots" class="nav-link" data-scroll-target="#other-diagnostic-plots"><span class="header-section-number">6.2</span> Other Diagnostic plots</a></li>
+  <li>
+<a href="#other-diagnostic-plots" id="toc-other-diagnostic-plots" class="nav-link" data-scroll-target="#other-diagnostic-plots"><span class="header-section-number">6.2</span> Other Diagnostic plots</a>
+  <ul class="collapse">
+<li><a href="#spread-level-plot" id="toc-spread-level-plot" class="nav-link" data-scroll-target="#spread-level-plot"><span class="header-section-number">6.2.1</span> Spread-level plot</a></li>
+  </ul>
+</li>
   <li><a href="#coefficient-plots" id="toc-coefficient-plots" class="nav-link" data-scroll-target="#coefficient-plots"><span class="header-section-number">6.3</span> Coefficient plots</a></li>
   <li><a href="#added-variable-plots" id="toc-added-variable-plots" class="nav-link" data-scroll-target="#added-variable-plots"><span class="header-section-number">6.4</span> Added-variable plots</a></li>
   <li><a href="#marginal-plots" id="toc-marginal-plots" class="nav-link" data-scroll-target="#marginal-plots"><span class="header-section-number">6.5</span> Marginal plots</a></li>
@@ -254,7 +259,6 @@ div.csl-indent {
   <li><a href="#measuring-influence" id="toc-measuring-influence" class="nav-link" data-scroll-target="#measuring-influence"><span class="header-section-number">6.6.4</span> Measuring influence</a></li>
   </ul>
 </li>
-  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul></nav>
     </div>
 <!-- main -->
@@ -279,7 +283,7 @@ div.csl-indent {
 <li><p>when there are two or more predictors, you can more easily understand their separate impact on the response by plotting the <em>marginal</em> effects of one or more focal variables, averaging over other variables not shown in a given plot.</p></li>
 <li><p>when there are highly correlated predictors, some specialized plots are useful to understand the nature of <em>multicolinearity</em>.</p></li>
 </ul>
-<p>The classic reference on regression diagnostics is <span class="citation" data-cites="Belsley-etal:80">Belsley, Kuh, and Welsch (<a href="references.html#ref-Belsley-etal:80" role="doc-biblioref">1980</a>)</span>. My favorite modern texts are the brief <span class="citation" data-cites="Fox2020">Fox (<a href="references.html#ref-Fox2020" role="doc-biblioref">2020</a>)</span> and <span class="citation" data-cites="FoxWeisberg:2018">Fox and Weisberg (<a href="references.html#ref-FoxWeisberg:2018" role="doc-biblioref">2018</a>)</span>, which is supported by the <strong>car</strong> package <span class="citation" data-cites="R-car">(<a href="references.html#ref-R-car" role="doc-biblioref">Fox, Weisberg, and Price 2023</a>)</span>.</p>
+<p>The classic reference on regression diagnostics is <span class="citation" data-cites="Belsley-etal:80">Belsley, Kuh, and Welsch (<a href="references.html#ref-Belsley-etal:80" role="doc-biblioref">1980</a>)</span>. My favorite modern texts are the brief <span class="citation" data-cites="Fox2020">Fox (<a href="references.html#ref-Fox2020" role="doc-biblioref">2020</a>)</span> and the more complete <span class="citation" data-cites="FoxWeisberg:2018">Fox and Weisberg (<a href="references.html#ref-FoxWeisberg:2018" role="doc-biblioref">2018</a>)</span>, both of which are supported by the <strong>car</strong> package <span class="citation" data-cites="R-car">(<a href="references.html#ref-R-car" role="doc-biblioref">Fox, Weisberg, and Price 2023</a>)</span>.</p>
 <section id="the-regression-quartet" class="level2" data-number="6.1"><h2 data-number="6.1" class="anchored" data-anchor-id="the-regression-quartet">
 <span class="header-section-number">6.1</span> The “regression quartet”</h2>
 <p>For a fitted model, plotting the model object with <code>plot(model)</code> provides for any of six basic plots, of which four are produced by default, giving rise to the term <em>regression quartet</em> for this collection. These are:</p>
@@ -290,11 +294,106 @@ div.csl-indent {
 <li><p><strong>Residuals vs.&nbsp;Leverage</strong>: Plots standardized residuals against leverage to help identify possibly influential observations. Leverage, or “hat” values (given by <code>hat(model)</code>) are proportional to the squared Mahalanobis distances of the predictor values <span class="math inline">\(\mathbf{x}_i\)</span> from the means, and measure the potential of an observation to change the fitted coefficients if that observation was deleted. Actual influence is measured by Cooks’s distance (<code>cooks.distance(model)</code>) and is proportional to the product of residual times leverage. Contours of constant Cook’s <span class="math inline">\(D\)</span> are added to the plot.</p></li>
 </ul>
 <p>One key feature of these plots is providing <strong>reference</strong> lines or smoothed curves for ease of judging the extent to which a plot conforms to the expected pattern; another is the <strong>labeling</strong> of observations which deviate from an assumption.</p>
-<p>The base-R <code>plot(model)</code> plots are done much better in a variety of packages. I illustrate some versions from the <strong>car</strong> and <strong>performance</strong> packages.</p>
-<section id="example-occupational-prestige" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="example-occupational-prestige"><strong>Example: Occupational prestige</strong></h4>
+<p>The base-R <code>plot(model)</code> plots are done much better in a variety of packages. I illustrate some versions from the <strong>car</strong> <span class="citation" data-cites="R-car">(<a href="references.html#ref-R-car" role="doc-biblioref">Fox, Weisberg, and Price 2023</a>)</span> and <strong>performance</strong> <span class="citation" data-cites="Ludecke-etal-performance">(<a href="references.html#ref-Ludecke-etal-performance" role="doc-biblioref">Lüdecke et al. 2021</a>)</span> packages, part of the <strong>easystats</strong> <span class="citation" data-cites="R-easystats">(<a href="references.html#ref-R-easystats" role="doc-biblioref">Lüdecke et al. 2022</a>)</span> suite of packages.</p>
+<p><strong>Packages</strong>:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://r-forge.r-project.org/projects/car/">car</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://easystats.github.io/easystats/">easystats</a></span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="example-duncans-occupational-prestige" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="example-duncans-occupational-prestige">Example: Duncan’s occupational prestige</h4>
+<p>In a classic study in sociology, <span class="citation" data-cites="Duncan:61">Duncan (<a href="references.html#ref-Duncan:61" role="doc-biblioref">1961</a>)</span> used data from the U.S. Census in 1950 to study how one could predict the prestige of occupational categories — which is hard to measure — from available information in the census for those occupations. His data is available in <code>carData:Duncan</code>, and contains</p>
+<ul>
+<li>
+<code>type</code>: the category of occupation, one of <code>prof</code> (professional), <code>wc</code> (white collar) or <code>bc</code> (blue collar);</li>
+<li>
+<code>income</code>: the percentage of occupational incumbents with a reported income &gt; $3500 (about $40,000 in current dollars);</li>
+<li>
+<code>education</code>: the percentage of occupational incumbents who were high school graduates;</li>
+<li>
+<code>prestige</code>: the percentage of respondents in a social survey who rated the occupation as “good” or better in prestige.</li>
+</ul>
+<p>These variables are a bit quirky in they are measured in percents, 0-100, rather dollars for <code>income</code> and years for <code>education</code>, but this common scale permitted Duncan to ask an interesting sociological question: Assuming that both income and education predict prestige, are they equally important, as might be assessed by testing the hypothesis <span class="math inline">\(H_0: \beta_{\text{income}} = \beta_{\text{education}}\)</span>.</p>
+<p>A quick look at the data shows the variables and a selection of the occupational categories, which are the <code><a href="https://rdrr.io/r/base/row.names.html">row.names()</a></code> of the dataset.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">Duncan</span>, package <span class="op">=</span> <span class="st">"carData"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
+<span><span class="fu">car</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/car/man/some.html">some</a></span><span class="op">(</span><span class="va">Duncan</span><span class="op">)</span></span>
+<span><span class="co">#&gt;                  type income education prestige</span></span>
+<span><span class="co">#&gt; accountant       prof     62        86       82</span></span>
+<span><span class="co">#&gt; professor        prof     64        93       93</span></span>
+<span><span class="co">#&gt; engineer         prof     72        86       88</span></span>
+<span><span class="co">#&gt; factory.owner    prof     60        56       81</span></span>
+<span><span class="co">#&gt; store.clerk        wc     29        50       16</span></span>
+<span><span class="co">#&gt; carpenter          bc     21        23       33</span></span>
+<span><span class="co">#&gt; machine.operator   bc     21        20       24</span></span>
+<span><span class="co">#&gt; barber             bc     16        26       20</span></span>
+<span><span class="co">#&gt; soda.clerk         bc     12        30        6</span></span>
+<span><span class="co">#&gt; janitor            bc      7        20        8</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Let’s start by fitting a simple model using just income and education as predictors.The results look very good! Both <code>income</code> and <code>education</code> are highly significant and the <span class="math inline">\(R^2 = 0.828\)</span> for the model indicates that <code>prestige</code> is very well predicted by just these variables.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">duncan.mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">prestige</span> <span class="op">~</span> <span class="va">income</span> <span class="op">+</span> <span class="va">education</span>, data<span class="op">=</span><span class="va">Duncan</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">duncan.mod</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Call:</span></span>
+<span><span class="co">#&gt; lm(formula = prestige ~ income + education, data = Duncan)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Residuals:</span></span>
+<span><span class="co">#&gt;    Min     1Q Median     3Q    Max </span></span>
+<span><span class="co">#&gt; -29.54  -6.42   0.65   6.61  34.64 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Coefficients:</span></span>
+<span><span class="co">#&gt;             Estimate Std. Error t value Pr(&gt;|t|)    </span></span>
+<span><span class="co">#&gt; (Intercept)  -6.0647     4.2719   -1.42     0.16    </span></span>
+<span><span class="co">#&gt; income        0.5987     0.1197    5.00  1.1e-05 ***</span></span>
+<span><span class="co">#&gt; education     0.5458     0.0983    5.56  1.7e-06 ***</span></span>
+<span><span class="co">#&gt; ---</span></span>
+<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Residual standard error: 13.4 on 42 degrees of freedom</span></span>
+<span><span class="co">#&gt; Multiple R-squared:  0.828,  Adjusted R-squared:  0.82 </span></span>
+<span><span class="co">#&gt; F-statistic:  101 on 2 and 42 DF,  p-value: &lt;2e-16</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Beyond this, Duncan was interested in the coefficients and whether income and education could be said to have equal impacts on predicting occupational prestige. A nice display of model coefficients with confidence intervals is provided by <code><a href="https://easystats.github.io/parameters/reference/model_parameters.html">parameters::model_parameters()</a></code> and we can test Duncan’s hypothesis with <code><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">car::linearHypothesis()</a></code>. The latter is constructed as a test of a restricted model in which the two coefficients are forced to be equal against the unrestricted model. Duncan was very happy with this result.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">parameters</span><span class="fu">::</span><span class="fu"><a href="https://easystats.github.io/parameters/reference/model_parameters.html">model_parameters</a></span><span class="op">(</span><span class="va">duncan.mod</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Parameter   | Coefficient |   SE |         95% CI | t(42) |      p</span></span>
+<span><span class="co">#&gt; ------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; (Intercept) |       -6.06 | 4.27 | [-14.69, 2.56] | -1.42 | 0.163 </span></span>
+<span><span class="co">#&gt; income      |        0.60 | 0.12 | [  0.36, 0.84] |  5.00 | &lt; .001</span></span>
+<span><span class="co">#&gt; education   |        0.55 | 0.10 | [  0.35, 0.74] |  5.56 | &lt; .001</span></span>
+<span></span>
+<span><span class="fu">car</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">linearHypothesis</a></span><span class="op">(</span><span class="va">duncan.mod</span>, <span class="st">"income = education"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Linear hypothesis test</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Hypothesis:</span></span>
+<span><span class="co">#&gt; income - education = 0</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Model 1: restricted model</span></span>
+<span><span class="co">#&gt; Model 2: prestige ~ income + education</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;   Res.Df  RSS Df Sum of Sq    F Pr(&gt;F)</span></span>
+<span><span class="co">#&gt; 1     43 7519                         </span></span>
+<span><span class="co">#&gt; 2     42 7507  1      12.2 0.07    0.8</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>But, should Duncan be <strong>so</strong> happy? It is unlikely that he ran any model diagnostics or plotted his model; we do so now. Here is the regression quartet for this model. Each plot shows some trend lines, and importantly, labels some observations that stand out and might deserve attention.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">op</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/par.html">par</a></span><span class="op">(</span>mfrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">2</span>,<span class="fl">2</span><span class="op">)</span>, </span>
+<span>          mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">4</span>,<span class="fl">4</span>,<span class="fl">3</span>,<span class="fl">1</span><span class="op">)</span><span class="op">+</span><span class="fl">.1</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">duncan.mod</span>, lwd<span class="op">=</span><span class="fl">2</span>, pch<span class="op">=</span><span class="fl">16</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html">par</a></span><span class="op">(</span><span class="va">op</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-duncan-plot-model" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="figs/fig-duncan-plot-model-1.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption class="figure-caption">Figure&nbsp;6.1: Regression quartet of diagnostic plots for the <code>Duncan</code> data. Several possibly unusual observations are labeled.</figcaption></figure>
+</div>
+</div>
+</div>
+</section><section id="example-occupational-prestige" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="example-occupational-prestige">Example: Occupational prestige</h4>
+<p><strong>CUT THIS EXAMPLE</strong></p>
 <p>These examples use the data on the prestige of 102 occupational categories and other measures from the 1971 Canadian Census, recorded in <code><a href="https://rdrr.io/pkg/carData/man/Prestige.html">carData::Prestige</a></code>. Our interest is in understanding how <code>prestige</code> (the Pineo-Ported prestige score, from a social survey) is related to census measures of the average education, income, percent women of incumbents in those occupations. Occupation type is a factor with levels <code>"bc"</code> (blue collar), <code>"wc"</code> (white collar) and <code>"prof"</code> (professional). <strong>TODO</strong>: These data should be introduced earlier with descriptive plots, scatterplots, …</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">Prestige</span>, package<span class="op">=</span><span class="st">"carData"</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">Prestige</span>, package<span class="op">=</span><span class="st">"carData"</span><span class="op">)</span></span>
 <span><span class="co"># `type` is really an ordered factor. Make it so.</span></span>
 <span><span class="va">Prestige</span><span class="op">$</span><span class="va">type</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">ordered</a></span><span class="op">(</span><span class="va">Prestige</span><span class="op">$</span><span class="va">type</span>,</span>
 <span>                         levels<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"bc"</span>, <span class="st">"wc"</span>, <span class="st">"prof"</span><span class="op">)</span><span class="op">)</span></span>
@@ -309,25 +408,27 @@ div.csl-indent {
 </div>
 <p>We fit a main-effects model using all predictors (ignoring <code>census</code>, the Canadian Census occupational code):</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">prestige.mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">prestige</span> <span class="op">~</span> <span class="va">education</span> <span class="op">+</span> <span class="va">income</span> <span class="op">+</span> <span class="va">women</span> <span class="op">+</span> <span class="va">type</span>,</span>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">prestige.mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">prestige</span> <span class="op">~</span> <span class="va">education</span> <span class="op">+</span> <span class="va">income</span> <span class="op">+</span> <span class="va">women</span> <span class="op">+</span> <span class="va">type</span>,</span>
 <span>                   data<span class="op">=</span><span class="va">Prestige</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p><code>plot(model)</code> produces four separate plots. For a quick look, I like to arrange them in a single 2x2 figure.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">op</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/par.html">par</a></span><span class="op">(</span>mfrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">2</span>,<span class="fl">2</span><span class="op">)</span>, </span>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">op</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/par.html">par</a></span><span class="op">(</span>mfrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">2</span>,<span class="fl">2</span><span class="op">)</span>, </span>
 <span>          mar<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">4</span>,<span class="fl">4</span>,<span class="fl">3</span>,<span class="fl">1</span><span class="op">)</span><span class="op">+</span><span class="fl">.1</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">prestige.mod</span>, lwd<span class="op">=</span><span class="fl">2</span>, cex.lab<span class="op">=</span><span class="fl">1.4</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html">par</a></span><span class="op">(</span><span class="va">op</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div id="fig-plot-prestige-mod" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure"><p><img src="figs/fig-plot-prestige-mod-1.png" class="img-fluid figure-img" style="width:100.0%"></p>
-<figcaption class="figure-caption">Figure&nbsp;6.1: Regression quartet of diagnostic plots for the <code>Prestige</code> data. Several possibly unusual observations are labeled.</figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;6.2: Regression quartet of diagnostic plots for the <code>Prestige</code> data. Several possibly unusual observations are labeled.</figcaption></figure>
 </div>
 </div>
 </div>
 </section></section><section id="other-diagnostic-plots" class="level2" data-number="6.2"><h2 data-number="6.2" class="anchored" data-anchor-id="other-diagnostic-plots">
 <span class="header-section-number">6.2</span> Other Diagnostic plots</h2>
-</section><section id="coefficient-plots" class="level2" data-number="6.3"><h2 data-number="6.3" class="anchored" data-anchor-id="coefficient-plots">
+<section id="spread-level-plot" class="level3" data-number="6.2.1"><h3 data-number="6.2.1" class="anchored" data-anchor-id="spread-level-plot">
+<span class="header-section-number">6.2.1</span> Spread-level plot</h3>
+</section></section><section id="coefficient-plots" class="level2" data-number="6.3"><h2 data-number="6.3" class="anchored" data-anchor-id="coefficient-plots">
 <span class="header-section-number">6.3</span> Coefficient plots</h2>
 </section><section id="added-variable-plots" class="level2" data-number="6.4"><h2 data-number="6.4" class="anchored" data-anchor-id="added-variable-plots">
 <span class="header-section-number">6.4</span> Added-variable plots</h2>
@@ -350,7 +451,7 @@ div.csl-indent {
 <span class="header-section-number">6.6.1</span> The leverage-influence quartet</h3>
 <p>These ideas can be illustrated in the “leverage-influence quartet” by considering a standard simple linear regression for a sample and then adding one additional point reflecting the three situations described above. Below, I generate a sample of <span class="math inline">\(N = 15\)</span> points with <span class="math inline">\(x\)</span> uniformly distributed between (40, 60) and <span class="math inline">\(y \sim 10 + 0.75 x + \mathcal{N}(0, 1.25^2)\)</span>, duplicated four times.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://r-forge.r-project.org/projects/car/">car</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
 <span><span class="va">N</span> <span class="op">&lt;-</span> <span class="fl">15</span></span>
@@ -378,7 +479,7 @@ div.csl-indent {
 <code>Influence</code>: (70, 40) a “bad” high leverage point (<code>OL</code>) with a large residual.</li>
 </ul>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">extra</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">extra</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
 <span>  case <span class="op">=</span> <span class="va">case_labels</span>,</span>
 <span>  x  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">65</span>, <span class="fl">52</span>, <span class="fl">75</span>, <span class="fl">70</span><span class="op">)</span>,</span>
 <span>  y  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="fl">65</span>, <span class="fl">65</span>, <span class="fl">40</span><span class="op">)</span>,</span>
@@ -391,7 +492,7 @@ div.csl-indent {
 </div>
 <p>We can plot these four situations with <code>ggplot2</code> in panels faceted by <code>case</code> as shown below. The standard version of this plot shows the regression line for the <span style="color: blue;">original data</span> and that for the <span style="color: red;">ammended data</span> with the additional point. Note that we use the <code>levdemo</code> dataset in <code><a href="https://ggplot2.tidyverse.org/reference/geom_smooth.html">geom_smooth()</a></code> for the regression line with the original data, but specify <code>data = both</code> for that with the additional point.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">levdemo</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">x</span>, y <span class="op">=</span> <span class="va">y</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">levdemo</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">x</span>, y <span class="op">=</span> <span class="va">y</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"blue"</span>, size <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_smooth.html">geom_smooth</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">both</span>, </span>
 <span>              method <span class="op">=</span> <span class="st">"lm"</span>, formula <span class="op">=</span> <span class="va">y</span> <span class="op">~</span> <span class="va">x</span>, se <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -406,16 +507,16 @@ div.csl-indent {
 <div class="cell-output-display">
 <div id="fig-levdemo" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure"><p><img src="figs/fig-levdemo-1.png" class="img-fluid figure-img" style="width:100.0%"></p>
-<figcaption class="figure-caption">Figure&nbsp;6.2: Leverage influence quartet with data 50% ellipses. Case (1) original data; (2) adding one low-leverage outlier, “O”; (3) adding one “good” leverage point, “L”; (4) adding one “bad” leverage point, “OL”. The dashed line is the fitted line for the original data, while the solid line reflects the additional point. The data ellipses show the effect of the additional point on precision.</figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;6.3: Leverage influence quartet with data 50% ellipses. Case (1) original data; (2) adding one low-leverage outlier, “O”; (3) adding one “good” leverage point, “L”; (4) adding one “bad” leverage point, “OL”. The dashed line is the fitted line for the original data, while the solid line reflects the additional point. The data ellipses show the effect of the additional point on precision.</figcaption></figure>
 </div>
 </div>
 </div>
 <p>The standard version of this graph shows only the fitted regression lines in each panel. As can be seen, the fitted line doesn’t change very much in panels (2) and (3); only the bad leverage point, “OL” in panel (4) is harmful. Adding data ellipses to each panel immediately makes it clear that there is another part to this story— the effect of the unusual point on <em>precision</em> (standard errors) of our estimates of the coefficients.</p>
 <p>Now, we see <em>directly</em> that there is a big difference in impact between the low-leverage outlier [panel (2)] and the high-leverage, small-residual case [panel (3)], even though their effect on coefficient estimates is negligible. In panel (2), the single outlier inflates the estimate of residual variance (the size of the vertical slice of the data ellipse at <span class="math inline">\(\bar{x}\)</span>), while in panel (3) this is decreased.</p>
-<p>To allow direct comparison and make the added value of the data ellipse more apparent, we overlay the data ellipses from <a href="#fig-levdemo">Figure&nbsp;<span>6.2</span></a> in a single graph, shown in <a href="#fig-levdemo2">Figure&nbsp;<span>6.3</span></a>.<br>
-Here, we can also see why the high-leverage point “L” <a href="#fig-levdemo">added in panel (c) of&nbsp;<span>6.2</span></a> is called a “good leverage” point. By increasing the standard deviation of <span class="math inline">\(x\)</span>, it makes the data ellipse somewhat more elongated, giving increased precision of our estimates of <span class="math inline">\(\vec{\beta}\)</span>.</p>
+<p>To allow direct comparison and make the added value of the data ellipse more apparent, we overlay the data ellipses from <a href="#fig-levdemo">Figure&nbsp;<span>6.3</span></a> in a single graph, shown in <a href="#fig-levdemo2">Figure&nbsp;<span>6.4</span></a>.<br>
+Here, we can also see why the high-leverage point “L” <a href="#fig-levdemo">added in panel (c) of&nbsp;<span>6.3</span></a> is called a “good leverage” point. By increasing the standard deviation of <span class="math inline">\(x\)</span>, it makes the data ellipse somewhat more elongated, giving increased precision of our estimates of <span class="math inline">\(\vec{\beta}\)</span>.</p>
 <div class="cell" data-layout-align="center">
-<details><summary>Code</summary><div class="sourceCode" id="cb7"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">colors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"black"</span>, <span class="st">"blue"</span>, <span class="st">"darkgreen"</span>, <span class="st">"red"</span><span class="op">)</span></span>
+<details><summary>Code</summary><div class="sourceCode" id="cb12"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">colors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"black"</span>, <span class="st">"blue"</span>, <span class="st">"darkgreen"</span>, <span class="st">"red"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/with.html">with</a></span><span class="op">(</span><span class="va">both</span>,</span>
 <span>     <span class="op">{</span><span class="fu"><a href="https://rdrr.io/pkg/car/man/Ellipses.html">dataEllipse</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span>, groups <span class="op">=</span> <span class="va">case</span>, </span>
 <span>          levels <span class="op">=</span> <span class="fl">0.68</span>,</span>
@@ -438,7 +539,7 @@ Here, we can also see why the high-leverage point “L” <a href="#fig-levdemo"
 </details><div class="cell-output-display">
 <div id="fig-levdemo2" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure"><p><img src="figs/fig-levdemo2-1.png" class="img-fluid figure-img" style="width:80.0%"></p>
-<figcaption class="figure-caption">Figure&nbsp;6.3: Data ellipses in the Leverage-influence quartet. This graph overlays the data ellipses and additional points from the four panels of <a href="#fig-levdemo2">Figure&nbsp;<span>6.3</span></a>. It can be seen that only the OL point affects the slope, while the O and L points affect precision of the estimates in opposite directions.</figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;6.4: Data ellipses in the Leverage-influence quartet. This graph overlays the data ellipses and additional points from the four panels of <a href="#fig-levdemo2">Figure&nbsp;<span>6.4</span></a>. It can be seen that only the OL point affects the slope, while the O and L points affect precision of the estimates in opposite directions.</figcaption></figure>
 </div>
 </div>
 </div>
@@ -460,7 +561,7 @@ h_i = \frac{1}{n} + \frac{1}{n-1} D^2 (\mathbf{x} - \bar{\mathbf{x}}) \; ,
 <p><strong>Example</strong>:</p>
 <p>To illustrate, I generate <span class="math inline">\(N = 100\)</span> points from a bivariate normal distribution with means <span class="math inline">\(\mu = (30, 30)\)</span>, variances = 10, and a correlation <span class="math inline">\(\rho = 0.7\)</span> and add two noteworthy points that show an apparently paradoxical result.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">421</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">421</span><span class="op">)</span></span>
 <span><span class="va">N</span> <span class="op">&lt;-</span> <span class="fl">100</span></span>
 <span><span class="va">r</span> <span class="op">&lt;-</span> <span class="fl">0.7</span></span>
 <span><span class="va">mu</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">30</span>, <span class="fl">30</span><span class="op">)</span></span>
@@ -477,14 +578,14 @@ h_i = \frac{1}{n} + \frac{1}{n-1} D^2 (\mathbf{x} - \bar{\mathbf{x}}) \; ,
 </div>
 <p>The Mahalanobis squared distances of these points can be calculated using <code><a href="https://friendly.github.io/heplots/reference/Mahalanobis.html">heplots::Mahalanobis()</a></code>, and their corresponding hatvalues found using <code><a href="https://rdrr.io/r/stats/influence.measures.html">hatvalues()</a></code> for any linear model using both <code>x1</code> and <code>x2</code>.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">X</span> <span class="op">&lt;-</span> <span class="va">X</span> <span class="op">|&gt;</span></span>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">X</span> <span class="op">&lt;-</span> <span class="va">X</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>Dsq <span class="op">=</span> <span class="fu">heplots</span><span class="fu">::</span><span class="fu"><a href="https://friendly.github.io/heplots/reference/Mahalanobis.html">Mahalanobis</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>y <span class="op">=</span> <span class="fl">2</span><span class="op">*</span><span class="va">x1</span> <span class="op">+</span> <span class="fl">3</span><span class="op">*</span><span class="va">x2</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span>, <span class="fl">0</span>, <span class="fl">5</span><span class="op">)</span>,</span>
 <span>         hat <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/influence.measures.html">hatvalues</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">x1</span> <span class="op">+</span> <span class="va">x2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Plotting <code>x1</code> and <code>x2</code> with data ellipses shows the relation of leverage to squared distance from the mean. The <span style="color: blue;">blue</span> point looks to be farther from the <span style="color: green;">mean</span>, but the <span style="color: red;">red</span> point is actually very much further by Mahalanobis squared distance, which takes the correlation into account; it thus has much greater leverage.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html">par</a></span><span class="op">(</span>mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">4</span>, <span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span> <span class="op">+</span> <span class="fl">0.1</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html">par</a></span><span class="op">(</span>mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">4</span>, <span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span> <span class="op">+</span> <span class="fl">0.1</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/car/man/Ellipses.html">dataEllipse</a></span><span class="op">(</span><span class="va">X</span><span class="op">$</span><span class="va">x1</span>, <span class="va">X</span><span class="op">$</span><span class="va">x2</span>, </span>
 <span>            levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.40</span>, <span class="fl">0.68</span>, <span class="fl">0.95</span><span class="op">)</span>,</span>
 <span>            fill <span class="op">=</span> <span class="cn">TRUE</span>, fill.alpha <span class="op">=</span> <span class="fl">0.05</span>,</span>
@@ -496,13 +597,13 @@ h_i = \frac{1}{n} + \frac{1}{n-1} D^2 (\mathbf{x} - \bar{\mathbf{x}}) \; ,
 <div class="cell-output-display">
 <div id="fig-hatvalues-demo1" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure"><p><img src="figs/fig-hatvalues-demo1-1.png" class="img-fluid figure-img" width="2100"></p>
-<figcaption class="figure-caption">Figure&nbsp;6.4: Data ellipses for a bivariate normal sample with correlation 0.7, and two additional noteworthy points. The blue point looks to be farther from the mean, but the red point is actually more than 5 times further by Mahalanobis squared distance, and thus has much greater leverage.</figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;6.5: Data ellipses for a bivariate normal sample with correlation 0.7, and two additional noteworthy points. The blue point looks to be farther from the mean, but the red point is actually more than 5 times further by Mahalanobis squared distance, and thus has much greater leverage.</figcaption></figure>
 </div>
 </div>
 </div>
-<p>The fact that hatvalues are proportional to leverage can be seen by plotting one against the other. I highlight the two noteworthy points in their colors from <a href="#fig-hatvalues-demo1">Figure&nbsp;<span>6.4</span></a> to illustrate how much greater leverage the <span style="color: red;">red</span> point has compared to the <span style="color: blue;">blue</span> point.</p>
+<p>The fact that hatvalues are proportional to leverage can be seen by plotting one against the other. I highlight the two noteworthy points in their colors from <a href="#fig-hatvalues-demo1">Figure&nbsp;<span>6.5</span></a> to illustrate how much greater leverage the <span style="color: red;">red</span> point has compared to the <span style="color: blue;">blue</span> point.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">hat</span> <span class="op">~</span> <span class="va">Dsq</span>, data <span class="op">=</span> <span class="va">X</span>,</span>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">hat</span> <span class="op">~</span> <span class="va">Dsq</span>, data <span class="op">=</span> <span class="va">X</span>,</span>
 <span>     cex <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fl">1</span>, <span class="va">N</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span>, </span>
 <span>     col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"black"</span>, <span class="va">N</span><span class="op">)</span>, <span class="st">"red"</span>, <span class="st">"blue"</span><span class="op">)</span>,</span>
 <span>     pch <span class="op">=</span> <span class="fl">16</span>,</span>
@@ -511,35 +612,44 @@ h_i = \frac{1}{n} + \frac{1}{n-1} D^2 (\mathbf{x} - \bar{\mathbf{x}}) \; ,
 <div class="cell-output-display">
 <div id="fig-hatvalues-demo2" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure"><p><img src="figs/fig-hatvalues-demo2-1.png" class="img-fluid figure-img" width="2100"></p>
-<figcaption class="figure-caption">Figure&nbsp;6.5: Hat values are proportional to squared Mahalanobis distances from the mean.</figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;6.6: Hat values are proportional to squared Mahalanobis distances from the mean.</figcaption></figure>
 </div>
 </div>
 </div>
-<p>Look back at these two points in <a href="#fig-hatvalues-demo1">Figure&nbsp;<span>6.4</span></a>. Can you guess how much further the <span style="color: red;">red</span> point is from the mean than the <span style="color: blue;">blue</span> point? You might be surprised that its’ <span class="math inline">\(D^2\)</span> and leverage are about five times as great!</p>
+<p>Look back at these two points in <a href="#fig-hatvalues-demo1">Figure&nbsp;<span>6.5</span></a>. Can you guess how much further the <span style="color: red;">red</span> point is from the mean than the <span style="color: blue;">blue</span> point? You might be surprised that its’ <span class="math inline">\(D^2\)</span> and leverage are about five times as great!</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">X</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html">slice_tail</a></span><span class="op">(</span>n<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">X</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html">slice_tail</a></span><span class="op">(</span>n<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   x1 x2   Dsq   y    hat</span></span>
 <span><span class="co">#&gt; 1 28 42 25.65 179 0.2638</span></span>
 <span><span class="co">#&gt; 2 38 35  4.95 175 0.0588</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section><section id="outliers-measuring-residuals" class="level3" data-number="6.6.3"><h3 data-number="6.6.3" class="anchored" data-anchor-id="outliers-measuring-residuals">
 <span class="header-section-number">6.6.3</span> Outliers: Measuring residuals</h3>
-<p>From the discussion in <a href="#sec-leverage"><span>Section&nbsp;6.6</span></a>, outliers for the response <span class="math inline">\(y\)</span> are those observations for which the residual <span class="math inline">\(e_i = y_i - \hat{y}_i\)</span> are unusually large in magnitude. However, as demonstrated in <a href="#fig-levdemo">Figure&nbsp;<span>6.2</span></a>, a high-leverage point will pull the fitted line towards it, reducing its’ residual and thus making them look less unusual.</p>
+<p>From the discussion in <a href="#sec-leverage"><span>Section&nbsp;6.6</span></a>, outliers for the response <span class="math inline">\(y\)</span> are those observations for which the residual <span class="math inline">\(e_i = y_i - \hat{y}_i\)</span> are unusually large in magnitude. However, as demonstrated in <a href="#fig-levdemo">Figure&nbsp;<span>6.3</span></a>, a high-leverage point will pull the fitted line towards it, reducing its’ residual and thus making them look less unusual.</p>
 <p>The standard approach <span class="citation" data-cites="CookWeisberg:82 HoaglinWelsch1978">(<a href="references.html#ref-CookWeisberg:82" role="doc-biblioref">Cook and Weisberg 1982</a>; <a href="references.html#ref-HoaglinWelsch1978" role="doc-biblioref">Hoaglin and Welsch 1978</a>)</span> is to consider a <em>deleted residual</em> <span class="math inline">\(e_{(-i)}\)</span>, conceptually as that obtained by re-fitting the model with observation <span class="math inline">\(i\)</span> omitted and obtaining the fitted value <span class="math inline">\(\hat{y}_{(-i)}\)</span> from the remaining <span class="math inline">\(n-1\)</span> observations, <span class="math display">\[
 e_{(-i)} = y_i - \hat{y}_{(-i)} \; .
 \]</span> The (externally) <em>studentized residual</em> is then obtained by dividing <span class="math inline">\(e_{(-i)}\)</span> by it’s estimated standard error, giving <span class="math display">\[
 e^\star_{(-i)} = \frac{e_{(-i)}}{\text{sd}(e_{(-i)})} = \frac{e_i}{\sqrt{\text{MSE}_{(-i)}\; (1 - h_i)}} \; .
 \]</span></p>
-<p>This is just the ordinary residual <span class="math inline">\(e_i\)</span> divided by a factor that increases with the residual variance but decreases with leverage. It can be shown that these studentized residuals follow a <span class="math inline">\(t\)</span> distribution with <span class="math inline">\(n - p -2\)</span> degrees of freedom, so a value <span class="math inline">\(|e^\star_{(-i)}| &gt; 2\)</span> can be considered large enough to pay attention to.</p>
+<p>This is just the ordinary residual <span class="math inline">\(e_i\)</span> divided by a factor that increases with the residual variance but decreases with leverage. It can be shown that these studentized residuals follow a <span class="math inline">\(t\)</span> distribution with <span class="math inline">\(n - p -2\)</span> degrees of freedom, so a value <span class="math inline">\(|e^\star_{(-i)}| &gt; 2\)</span> can be considered large enough to pay attention to.<br>
+In practice for classical linear models, it is unnecessary to actually re-fit the model <span class="math inline">\(n\)</span> times …</p>
 </section><section id="measuring-influence" class="level3" data-number="6.6.4"><h3 data-number="6.6.4" class="anchored" data-anchor-id="measuring-influence">
 <span class="header-section-number">6.6.4</span> Measuring influence</h3>
-<p>As described at the start of this section, the actual influence of a given case depends multiplicatively on its’ leverage and residual.</p>
+<p>As described at the start of this section, the actual influence of a given case depends multiplicatively on its’ leverage and residual. But how can we measure it?</p>
+<p>The essential idea introduced above, is to delete the observations one at a time, each time refitting the regression model on the remaining <span class="math inline">\(n–1\)</span> observations. Then, for observation <span class="math inline">\(i\)</span> compare the results using all <span class="math inline">\(n\)</span> observations to those with the <span class="math inline">\(i^{th}\)</span> observation deleted to see how much influence the observation has on the analysis.</p>
+<p>The simplest such measure, called DFFITS, compares the predicted value for case <span class="math inline">\(i\)</span> with what would be obtained when that observation is excluded.</p>
+<p><span class="math display">\[
+\begin{eqnarray*}
+\text{DFFITS}_i &amp; = &amp; \frac{\hat{y}_i - \hat{y}_{(-i)}}{\sqrt{\text{MSE}_{(-i)}\; h_i}} \\
+   &amp; = &amp; e^\star_{(-i)} \times \sqrt{\frac{h_i}{1-h_i}} \;\; .
+\end{eqnarray*}
+\]</span> The first equation gives the signed difference in fitted values in units of the standard deviation of that difference weighted by leverage; the second version <span class="citation" data-cites="Belsley-etal:80">(<a href="references.html#ref-Belsley-etal:80" role="doc-biblioref">Belsley, Kuh, and Welsch 1980</a>)</span> represents that as a product of residual and leverage. A rule of thumb is that an observation is deemed to be influential if <span class="math inline">\(| \text{DFFITS}_i | &gt; 2 \sqrt{(p+1) / n}\)</span>.</p>
 <div class="cell" data-layout-align="center">
 <pre><code>#&gt; Writing packages to  C:/R/Projects/Vis-MLM-quarto/bib/pkgs.txt
-#&gt; 19  packages used here:
-#&gt;  base, car, carData, datasets, dplyr, forcats, ggplot2, graphics, grDevices, lubridate, methods, purrr, readr, stats, stringr, tibble, tidyr, tidyverse, utils</code></pre>
+#&gt; 30  packages used here:
+#&gt;  base, bayestestR, car, carData, correlation, datasets, datawizard, dplyr, easystats, effectsize, forcats, ggplot2, graphics, grDevices, insight, lubridate, methods, modelbased, parameters, performance, purrr, readr, report, see, stats, stringr, tibble, tidyr, tidyverse, utils</code></pre>
 </div>
-</section></section><section id="references" class="level2 unnumbered"><h2 class="unnumbered anchored" data-anchor-id="references">References</h2>
+<!-- ## References {.unnumbered} -->
 
 
 <div id="refs" class="references csl-bib-body hanging-indent" role="list" style="display: none">
@@ -548,6 +658,9 @@ Belsley, David A., E. Kuh, and Roy E. Welsch. 1980. <em>Regression Diagnostics: 
 </div>
 <div id="ref-CookWeisberg:82" class="csl-entry" role="listitem">
 Cook, R. D., and S. Weisberg. 1982. <em>Residuals and Influence in Regression</em>. New York: Chapman; Hall.
+</div>
+<div id="ref-Duncan:61" class="csl-entry" role="listitem">
+Duncan, O. D. 1961. <span>“A Socioeconomic Index for All Occupations.”</span> In <em>Occupations and Social Status</em>, edited by Jr. A. J. Reiss, P. K. Hatt O. D. Duncan, and C. C. North. New York: The Free Press.
 </div>
 <div id="ref-Fox2020" class="csl-entry" role="listitem">
 Fox, John. 2020. <em>Regression Diagnostics</em>. 2nd ed. <span>SAGE</span> Publications, Inc. <a href="https://doi.org/10.4135/9781071878651">https://doi.org/10.4135/9781071878651</a>.
@@ -561,8 +674,14 @@ Fox, John, Sanford Weisberg, and Brad Price. 2023. <em>Car: Companion to Applied
 <div id="ref-HoaglinWelsch1978" class="csl-entry" role="listitem">
 Hoaglin, David C., and Roy E. Welsch. 1978. <span>“The Hat Matrix in Regression and <span>ANOVA</span>.”</span> <em>The American Statistician</em> 32 (1): 17–22. <a href="https://doi.org/10.1080/00031305.1978.10479237">https://doi.org/10.1080/00031305.1978.10479237</a>.
 </div>
+<div id="ref-Ludecke-etal-performance" class="csl-entry" role="listitem">
+Lüdecke, Daniel, Mattan S. Ben-Shachar, Indrajeet Patil, Philip Waggoner, and Dominique Makowski. 2021. <span>“<span class="nocase">performance</span>: An <span>R</span> Package for Assessment, Comparison and Testing of Statistical Models.”</span> <em>Journal of Open Source Software</em> 6 (60): 3139. <a href="https://doi.org/10.21105/joss.03139">https://doi.org/10.21105/joss.03139</a>.
 </div>
-</section></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
+<div id="ref-R-easystats" class="csl-entry" role="listitem">
+Lüdecke, Daniel, Mattan S. Ben-Shachar, Indrajeet Patil, Brenton M. Wiernik, and Dominique Makowski. 2022. <em>Easystats: Framework for Easy Statistical Modeling, Visualization, and Reporting</em>. <em>CRAN</em>. <a href="https://easystats.github.io/easystats/">https://easystats.github.io/easystats/</a>.
+</div>
+</div>
+</section></section></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
     const mode = bsSheetEl.getAttribute("data-mode");
