@@ -20,6 +20,7 @@ Here are just a few topics
     to friendly.github.io/VisMLM-quarto.
 	+ netlify is another possibility, and allows me, I think, to specify a custom domain name.
     I created an account for my username 'friendly' with a team 'datavisFriendly' and can add you to it.
+  + Look for buying a new domain ?
 
 ## Styles & organization
 
