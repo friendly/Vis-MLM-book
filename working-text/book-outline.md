@@ -1,25 +1,36 @@
 ---
-title: Visualizing Multivariate Data/Models in R
+title: Visualizing Multivariate Data and Models in R
 output: 
   word_document
 ---
 
-This document is the working outline for the book
+This document is the working outline for the book. It gives some brief descriptions
+of the topics to be included and the framework to be explained.
 
 ## Introduction
 
-Not quite sure what should go here ...
+The main idea here is to explain what can be accomplished with visualizing data from
+a multivariate perspective. I exploit the story of Edwin Abbot's _Flatland_
+and give other useful perspectives.
 
 ### Preliminaries
 
 Maybe not a separate chapter, but list the main packages used here and datasets for examples.
 
-- R packages
+- R packages: The main substantive packages for multivariate analysis introduced here are `heplots`, `candisc`, `mvinfluence`, `VisCollin` and `matlib`. A wide variety of other packages are used for data processing and graphical display. One goal is to widely present analysis and data display using the `tidyverse` and `ggplot2` framework.
 - Datasets
 
 ## Getting Started
 
 File: `getting_started.qmd`
+
+This chapter explains why data visualization is essential in statistical analysis, giving
+a classical, contrived example and then a real data example.
+It then explains various types of graphical methods useful in data analysis,
+distinguishing plots of raw data ("data plots"), overlaid with informative graphical
+summaries, "model plots" showing predicted/fitted values according to some statistical
+model, and "diagnostic plots" designed to show whether/how the assumptions of the
+model may be violated.
 
 - Why plot your data?
   - Anscombe data
@@ -111,6 +122,11 @@ are a main focus of this book.
 
 The general multivariate linear model (MLM) can be understood as a simple extension of the univariate linear model, with the main difference being that there are multiple response variables instead of just one.
 
+This chapter explains the extensions from univariate to multivariate models, focusing
+on how familiar univariate statistics and methods are translated into their
+multivariate counterparts. Conceptual and geometric diagrams help to make this
+understandable.
+
 - ANOVA -> MANOVA
 - MRA -> MMRA
 - ANCOVA -> MANCOVA
@@ -118,22 +134,45 @@ The general multivariate linear model (MLM) can be understood as a simple extens
 
 ## Visualizing Multivariate Models
 
+Tests of multivariate models, including MANOVA for group differences and
+multivariate multiple regression (MMRA) can be easily visualized by plots
+of a hypothesis ("H") data ellipse for the fitted values relative to
+the corresponding plot of the ("E") error ellipse of the residuals,
+which I call the HE plot framework.
+
+For more than a few response variables, these result can be projected into a
+lower-dimensional "canonical discriminant" space providing an
+even simpler description.
+
 - HEplot framework
 - Toy example
 - HE plot details
   - evidence vs. effect scaling
 - Canonical discriminant analysis
 
+## Visualizing equality of covariance matrices
+
+Just as univariate ANOVA depends on the assumption that within-group variances
+are equal, MANOVA tests for group differences depend the analogous assumption
+that covariance matrices are all the same.
+
+This chapter explains how to visualize this situation using data ellipses
+for the groups and ilustrates a visualization of Box's M test that is commonly
+used in this situaution.
+
+- Homogeneity of Variance in Univariate ANOVA
+- Homogeneity of variance in MANOVA
+- Box's M test
+
 ## Case studies
 
-- NeuroCog and SocialCog
+This is a collection of examples of multivariate analysis of variance (MANOVA), listed here with the sources
+from other publications I may draw on as case studies or use these in earlier chapters.
 
 ### MANOVA Examples
 
-This is a collection of examples of multivariate analysis of variance (MANOVA), listed here with the sources
-from other publications I may draw on as case studies or use in earlier chapters
-
-- iris data [maybe use this earlier?]
+- iris data [or is this too tired to use?]
+- penguins data
 - parenting data [from TQMP tutorial]
 - diabetes data [from candisc vignette]
 - Neuro-Cog & Social-Cog [from TQMP tutorial]
@@ -150,9 +189,4 @@ This material should go earlier ...
 - univariate influence
 - multivariate influence
 
-## Visualizing equality of covariance matrices
-
-- Homogeneity of Variance in Univariate ANOVA
-- Homogeneity of variance in MANOVA
-- Box's M test
 

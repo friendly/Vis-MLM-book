@@ -35,18 +35,20 @@ load(here::here("data", "peng.RData"))
 
 # use ggplot colors
 col <- scales::hue_pal()(3)
+pch <- 15:17
 
 op <- par(mfcol=c(1,2), mar=c(5,4,1,1)+.1)
 scatterplot(bill_length ~ body_mass | species, data=peng,
             ellipse=list(levels=0.68), 
-            smooth=FALSE, regLine=FALSE, grid=FALSE,
+            smooth=FALSE, # regLine=FALSE, 
+            grid=FALSE,
             legend=list(coords = "bottomright"), 
             col = col
             )	
 
 scatterplot(bill_length ~ body_mass | species, data=peng,
             ellipse=list(levels=0.68), 
-            smooth=FALSE, grid=FALSE, regLine=FALSE, 
+            smooth=FALSE, grid=FALSE, # regLine=FALSE, 
             cex=0, 
             legend=list(coords = "bottomright"), 
             col = col)

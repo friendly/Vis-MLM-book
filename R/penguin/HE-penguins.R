@@ -13,24 +13,27 @@ library(palmerpenguins)
 #
 #penguins <-read_csv(url)
 
-peng <- penguins %>%
-	rename(
-         bill_length = bill_length_mm, 
-         bill_depth = bill_depth_mm, 
-         flipper_length = flipper_length_mm, 
-         body_mass = body_mass_g
-         ) %>%
-  mutate(species = as.factor(species),
-         island = as.factor(island),
-         sex = as.factor(substr(sex,1,1))) %>%
-  filter(!is.na(bill_depth),
-         !is.na(sex))
+# peng <- penguins %>%
+# 	rename(
+#          bill_length = bill_length_mm, 
+#          bill_depth = bill_depth_mm, 
+#          flipper_length = flipper_length_mm, 
+#          body_mass = body_mass_g
+#          ) %>%
+#   mutate(species = as.factor(species),
+#          island = as.factor(island),
+#          sex = as.factor(substr(sex,1,1))) %>%
+#   filter(!is.na(bill_depth),
+#          !is.na(sex))
+# 
+# str(peng)
+# View(peng)
 
-str(peng)
-View(peng)
+load(here::here("data", "peng.RData"))
 
-vars <- paste(names(peng)[-1], collapse="\n")
-cat(vars)
+
+# vars <- paste(names(peng)[-1], collapse="\n")
+# cat(vars)
 
 # island
 # bill_length
@@ -39,12 +42,6 @@ cat(vars)
 # body_mass
 # sex
 
-# data(wine)
-# wine.pca <- prcomp(wine, scale. = TRUE)
-# ggbiplot(wine.pca, obs.scale = 1, var.scale = 1,
-#          groups = wine.class, ellipse = TRUE, circle = TRUE) +
-#   scale_color_discrete(name = '') +
-#   theme(legend.direction = 'horizontal', legend.position = 'top')
 
 #peng.pca <- prcomp(peng[,3:6], scale=TRUE, na.action=na.omit)
 peng.pca <- prcomp (~ bill_length + bill_depth + flipper_length + body_mass,
@@ -62,9 +59,16 @@ ggbiplot(peng.pca, obs.scale = 1, var.scale = 1,
          groups = peng$species, 
          ellipse = TRUE, circle = TRUE) +
   scale_color_discrete(name = 'Penguin Species') +
-  theme(legend.direction = 'horizontal', legend.position = 'top') +
-  theme_minimal()
+  theme_minimal() +
+  theme(legend.direction = 'horizontal', legend.position = 'top') 
 
+# outliers appear on the last dimensions
+ggbiplot(peng.pca, obs.scale = 1, var.scale = 1, choices = 3:4,
+         groups = peng$species, 
+         ellipse = TRUE, labels.size=5) +
+  scale_color_discrete(name = 'Penguin Species') +
+  theme_minimal() +
+  theme(legend.direction = 'horizontal', legend.position = 'top') 
 
 # island, bill_length_mm, bill_depth_mm, flipper_length_mm, body_mass_g, sex"
 scatterplotMatrix(peng[,3:5], groups=peng[,1] ) 
