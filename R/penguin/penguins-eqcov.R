@@ -70,13 +70,13 @@ covEllipses(cbind(bill_length, bill_depth) ~ species, data=peng,
 
 #' All pairs when more than two variables are specified
 #' They look pretty similar
-covEllipses(peng[3:6], peng$species, 
+covEllipses(peng[,3:6], peng$species, 
             variables=1:4, 
             fill=c(rep(FALSE,3), TRUE), 
             fill.alpha=.1)
 
 #' See diffs better by overlay at grand mean
-covEllipses(peng[3:6], peng$species, 
+covEllipses(peng[,3:6], peng$species, 
             variables=1:4, 
             center=TRUE,
             fill=c(rep(FALSE,3), TRUE), 
