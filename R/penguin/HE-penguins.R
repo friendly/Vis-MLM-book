@@ -65,7 +65,7 @@ ggbiplot(peng.pca, obs.scale = 1, var.scale = 1,
 # outliers appear on the last dimensions
 ggbiplot(peng.pca, obs.scale = 1, var.scale = 1, choices = 3:4,
          groups = peng$species, 
-         ellipse = TRUE, labels.size=5) +
+         ellipse = TRUE, varname.size=5) +
   scale_color_discrete(name = 'Penguin Species') +
   theme_minimal() +
   theme(legend.direction = 'horizontal', legend.position = 'top') 
