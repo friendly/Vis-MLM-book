@@ -20,6 +20,9 @@
 -   Categorical data:
     -   mosaic plots
 -   Generalized pair plots
+-   Correlations
+    -   corrgrams
+    -   graphical models (partial correlations)
 
 ## Overview of Linear models
 

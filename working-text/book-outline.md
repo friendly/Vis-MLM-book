@@ -13,10 +13,10 @@ The main idea here is to explain what can be accomplished with visualizing data 
 
 ### Preliminaries
 
-Maybe not a separate chapter, but list the main packages used here and datasets for examples.
+Maybe not a separate chapter, but list the main packages used here and data sets for examples.
 
 - R packages: The main substantive packages for multivariate analysis introduced here are `heplots`, `candisc`, `mvinfluence`, `VisCollin` and `matlib`. A wide variety of other packages are used for data processing and graphical display. One goal is to widely present analysis and data display using the `tidyverse` and `ggplot2` framework.
-- Datasets
+- Datasets: I've created a sweparate working document, _Vis-MLM data sets, analyses & plots_ listing the main data sets their uses
 
 ## Getting Started
 
