@@ -1,7 +1,8 @@
 ---
 title: "Visualizing Multivariate Data and Models in R"
 output:
-  word_document: default
+  word_document: 
+    reference_docx: "../custom-reference-doc.docx"
   html_document: default
 ---
 

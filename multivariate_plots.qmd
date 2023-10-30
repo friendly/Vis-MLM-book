@@ -4,6 +4,17 @@ source("R/common.R")
 
 # Plots of Multivariate Data {#sec-multivariate_plots}
 
+> There is no excuse for failing to plot and look.
+--- J. W.Tukey (1997), _Exploratory Data Analysis_, p. 157
+
+
+The quote above from John Tukey reminds us that data analysis should rightly start with
+graphs to help us understand the main features of our data, to see patterns, trends
+and anomalies. 
+This chapter introduces a toolbox of basic graphical methods for visualizing multivariate datasets. It starts with some simple techniques to enhance the basic scatterplot with annotations to
+summarize the relation between two variables. To visualize more than two variables, we can view all pairs of variables in a scatterplot matrix or shift gears entirely to show multiple variables along a set of parallel axes.
+
+
 -   Bivariate summaries
     -   smoothers
     -   data ellipses
@@ -17,8 +28,109 @@ source("R/common.R")
 ## Bivariate summaries {#sec-bivariate_summaries}
 
 
-    + smoothers
-    + data ellipses
+The basic scatterplot is the workhorse of multivariate data visualization, showing
+how one variable, $y$, often an outcome to be explained varies with another, $x$.
+It is a building block for many useful techniques, so it is helpful to understand
+how it can be used as a tool for thinking in a wider, multivariate context.
+
+An essential idea is that we can start with a simple version and add plot annotations
+to show interesting features more clearly. We consider the following here:
+
+  + smoothers: showing some overall trend
+  + stratifiers: using color, shape or other features to identify subgroups
+  + data ellipses: a visual summary of linear relations 
+
+Let's start with data on the nine-month academic salaries of faculty members
+collected at a U.S. college for the purpose of assessing salary differences
+between male and female faculty members. The dataset `carData::Salaries`
+gives data for 397 faculty members in the 2008-2009 academic year.
+
+```{r Salaries}
+data(Salaries, package = "carData")
+str(Salaries)
+```
+
+The most obvious predictor of `salary` is `years.since.phd`; for simplicity, I'll refer to
+this as years of "experience".
+Before looking at differences
+between males and females, we would want consider faculty `rank` (related also to `yrs.service`)
+and `discipline`, recorded here as `A` (“theoretical” departments) or `B` (“applied” departments).
+
+```{r}
+#| label: fig-Salaries-scat
+#| out-width: "80%"
+#| fig-cap: "Scatterplot of Salary vs. years since PhD."
+library(ggplot2)
+gg1 <-ggplot(Salaries, 
+       aes(x = yrs.since.phd, y = salary)) +
+  geom_jitter(size = 2) +
+  scale_y_continuous(labels = scales::dollar_format(
+    prefix="$", scale = 0.001, suffix = "K")) +
+  labs(x = "Years since PhD",
+       y = "Salary") +
+  theme_bw(base_size = 14) 
+gg1
+```
+
+There is quite a lot we can see "just by looking" at this simple plot, but the main things are:
+
+* salary increases generally from 0 - 40 years since the PhD; 
+* variability in salary increases among those with the same experience, a "fan-shaped" pattern;
+* data beyond 50 years is thin, but there are some quite low salaries there.
+
+### Smoothers
+
+Smoothers are among the most useful graphical annotations you can add to such plots,
+giving a visual summary of how $y$ changes with $x$.
+The most common is to add a line showing the linear regression predictor for
+$y$ given $x$, expressed in math notation as $\mathbb{E} (y | x) = b_0 + b_1 x$.
+If there is doubt that a linear relation is an adequate summary,
+you can try a quadratic or other polynomial smoother.
+In **ggplot2**, these are easily added to a plot using `geom_smooth()` with
+`method = "lm"`, and a model `formula`.
+
+```{r}
+#| label: fig-Salaries-lm
+#| out-width: "80%"
+#| fig-cap: "Scatterplot of Salary vs. years since PhD, showing linear and quadratic smooths with 95% confidence bands."
+gg1 + 
+  geom_smooth(method = "lm", formula = "y ~ x", 
+              color = "red", fill= "red",
+              linewidth = 2) +
+  geom_smooth(method = "lm", formula = "y ~ poly(x,2)", 
+              color = "darkgreen", fill = "darkgreen",
+              linewidth = 2) 
+```
+
+This serves to highlight some of our impressions from the basic scatterplot shown in
+@fig-Salaries-scat, making them more apparent.
+
+The most generally useful idea is a smoother that tracks an average value of
+$y$ as $x$ varies across its' range, called a "non-parametric" smoother, of
+which the `loess` method [@Cleveland:79] ...
+
+```{r}
+#| label: fig-Salaries-loess
+#| out-width: "80%"
+#| fig-cap: "Scatterplot of Salary vs. years since PhD, showing the loess smooth."
+gg1 + 
+  geom_smooth(method = "loess", formula = "y ~ x", 
+              color = "blue", fill = "blue",
+              linewidth = 2) +
+  geom_smooth(method = "lm", formula = "y ~ x", se = FALSE,
+              color = "red",
+              linewidth = 2) +
+  geom_smooth(method = "lm", formula = "y ~ poly(x,2)", se = FALSE,
+              color = "darkgreen",
+              linewidth = 2) 
+```
+
+
+
+### Stratifiers
+
+Often, we have a main relationship of interest, but various groups in the data are identified
+by factors (like faculty `rank` and `sex`, their type of `discipline`) ...
         
 ```{r child="data-ellipse.qmd"}
 ```

@@ -30,17 +30,20 @@ crime |>
 
 crime |> 
   correlation(partial = TRUE) |>
-  plot()
+  plot() +
+  scale_edge_color_gradient2(low = "red", mid="white", high = "blue")
 
-crime.cor <- crime |> correlation()
+# filter out correlations with p > .10
+crime.pcor <- crime |> correlation(partial = TRUE)
+crime.pcor |>
+  mutate(r = ifelse(p < .10, r, 0)) |>
+  plot() +
+    scale_edge_color_gradient2(low = "red", mid="white", high = "blue")
+
+
 summary(crime.cor)
-plot(crime.cor) 
-plot(crime.cor,
-     show_data = "tile",
-     scale_fill = list(
-       high = "blue",
-       low = "red"
-     ))
+plot(crime.cor) +
+  scale_edge_color_gradient2(low = "red", mid="white", high = "blue")
 
 layers <- visualisation_recipe(crime.cor)
 plot(layers)

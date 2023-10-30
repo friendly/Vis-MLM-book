@@ -3,6 +3,25 @@
 ## deleted bits that seem irrelevant
 ## commented out bits that look like they may become relevant
 
+
+# --------------
+# general options
+# --------------
+
+# set a seed for all chapters
+set.seed(47)
+
+options(
+  digits = 3,
+  width = 68
+  # str = strOptions(strict.width = "cut"),
+  # crayon.enabled = FALSE
+)
+
+# --------------
+# knitr related
+# --------------
+
 knitr::opts_chunk$set(
   comment = "#>",
   collapse = TRUE,
@@ -29,13 +48,16 @@ knitr::opts_knit$set(
             scap='fig.scap'),
             eval.after = c('fig.cap','fig.scap'))
 
+# --------------
+# ggplot options
+# --------------
 
-options(
-  digits = 3,
-  width = 68
-  # str = strOptions(strict.width = "cut"),
-  # crayon.enabled = FALSE
-)
+ggplot2::theme_set(ggplot2::theme_bw(base_size = 14))
+
+
+# ------------
+# Extra stuff
+# ------------
 
 # colorize text: use inline as `r colorize(text, color)`
 colorize <- function(x, color) {
@@ -47,8 +69,6 @@ colorize <- function(x, color) {
   } else x
 }
 
-# set a seed for all chapters
-set.seed(47)
 
 
 if (knitr::is_latex_output()) {
@@ -63,6 +83,10 @@ $\\newcommand{\\trans}{\\ensuremath{^\\mathsf{T}}}$
 $\\newcommand*{\\diag}[1]{\\ensuremath{\\mathrm{diag}\\, #1}}$
 '
 }
+
+# -------------
+# packages
+# -------------
 
 # packages to be cited here. Code at the end automatically updates packages.bib
 # These should be packages not used in actual code.
