@@ -22,16 +22,16 @@ gg1 +
               color = "darkgreen", fill = "darkgreen",
               linewidth = 2) 
 
-# show loess, ditch se bands for linear & quadratic
+# show loess, ditch se bands for linear 
 gg1 + 
   geom_smooth(method = "loess", formula = "y ~ x", 
-              color = "blue", fill = "blue",
+              color = "blue", fill = scales::muted("blue"),
               linewidth = 2) +
   geom_smooth(method = "lm", formula = "y ~ x", se = FALSE,
               color = "red",
               linewidth = 2) +
-  geom_smooth(method = "lm", formula = "y ~ poly(x,2)", se = FALSE,
-              color = "darkgreen",
+  geom_smooth(method = "lm", formula = "y ~ poly(x,2)", 
+              color = "darkgreen", fill = "lightgreen",
               linewidth = 2) 
 
 
@@ -57,26 +57,27 @@ legend <- theme(legend.position = c(.1, 0.95),
                 legend.justification = c(0, 1))
 
 
+# short-hand to avoid repeating this
+scale_salary <-   scale_y_continuous(
+  labels = scales::dollar_format(prefix="$", 
+                                 scale = 0.001, 
+                                 suffix = "K")) 
+  
 
 # color by: rank
-gg2 <-ggplot(Salaries, 
+ggplot(Salaries, 
              aes(x = yrs.since.phd, y = salary, color = rank)) +
   geom_point() +
-  scale_y_continuous(labels = scales::dollar_format(
-    prefix="$", scale = 0.001, suffix = "K")) +
+  scale_salary +
   labs(x = "Years since PhD",
        y = "Salary") +
-  theme_bw(base_size = 14) +
-  theme(legend.position = "top")
-gg2
-
-gg2 + geom_smooth(aes(fill = rank),
-                  method = "lm", formula = "y ~ poly(x,2)", 
+  geom_smooth(aes(fill = rank),
+                  method = "loess", formula = "y ~ x", 
                   linewidth = 2) + 
-  legend
+  theme_bw(base_size = 14) +
+  theme(legend.position = c(.1, 0.95), 
+        legend.justification = c(0, 1))
 
-
-gg2 + legend
 
 gg3 <-ggplot(Salaries, 
              aes(x = yrs.since.phd, y = salary, color = discipline)) +
@@ -86,7 +87,10 @@ gg3 <-ggplot(Salaries,
   labs(x = "Years since PhD",
        y = "Salary") +
   theme_bw(base_size = 14) +
-  theme(legend.position = "top")
+  geom_smooth(aes(fill = discipline ),
+              method = "loess", formula = "y ~ x", 
+              linewidth = 2) + 
+  legend
 gg3
 
 

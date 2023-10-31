@@ -11,8 +11,9 @@ source("R/common.R")
 The quote above from John Tukey reminds us that data analysis should rightly start with
 graphs to help us understand the main features of our data, to see patterns, trends
 and anomalies. 
-This chapter introduces a toolbox of basic graphical methods for visualizing multivariate datasets. It starts with some simple techniques to enhance the basic scatterplot with annotations to
-summarize the relation between two variables. To visualize more than two variables, we can view all pairs of variables in a scatterplot matrix or shift gears entirely to show multiple variables along a set of parallel axes.
+This chapter introduces a toolbox of basic graphical methods for visualizing multivariate datasets. It starts with some simple techniques to enhance the basic scatterplot with annotations such as fitted lines, curves and data ellipses to summarize the relation between two variables. 
+
+To visualize more than two variables, we can view all pairs of variables in a scatterplot matrix or shift gears entirely to show multiple variables along a set of parallel axes. As the number of variables increase, we may need to suppress details with stronger summaries for a high-level reconnaissance of our data terrain, as we do by zooming out on a map.
 
 
 -   Bivariate summaries
@@ -21,8 +22,8 @@ summarize the relation between two variables. To visualize more than two variabl
 -   Quantitative data:
     -   scatterplot matrices
     -   parallel coordinate plots
--   Categorical data:
-    -   mosaic plots
+-   ~~Categorical data:~~
+    -   ~~mosaic plots~~
 -   Generalized pair plots
 
 ## Bivariate summaries {#sec-bivariate_summaries}
@@ -36,14 +37,14 @@ how it can be used as a tool for thinking in a wider, multivariate context.
 An essential idea is that we can start with a simple version and add plot annotations
 to show interesting features more clearly. We consider the following here:
 
-  + smoothers: showing some overall trend
-  + stratifiers: using color, shape or other features to identify subgroups
-  + data ellipses: a visual summary of linear relations 
+  + **smoothers**: showing overall trends, perhaps several, as visual summaries
+  + **stratifiers**: using color, shape or other features to identify subgroups; more generally, _conditioning_ on other variables;
+  + **data ellipses**: a compact visual summary of linear relations and uncertainty.
 
-Let's start with data on the nine-month academic salaries of faculty members
+Let's start with data on the academic salaries of faculty members
 collected at a U.S. college for the purpose of assessing salary differences
 between male and female faculty members. The dataset `carData::Salaries`
-gives data for 397 faculty members in the 2008-2009 academic year.
+gives data on nine-month salaries and other variables for 397 faculty members in the 2008-2009 academic year.
 
 ```{r Salaries}
 data(Salaries, package = "carData")
@@ -75,7 +76,7 @@ gg1
 There is quite a lot we can see "just by looking" at this simple plot, but the main things are:
 
 * salary increases generally from 0 - 40 years since the PhD; 
-* variability in salary increases among those with the same experience, a "fan-shaped" pattern;
+* variability in salary increases among those with the same experience, a "fan-shaped" pattern that signals a violation of homogeneity of variance in simple regression;
 * data beyond 50 years is thin, but there are some quite low salaries there.
 
 ### Smoothers
@@ -87,7 +88,8 @@ $y$ given $x$, expressed in math notation as $\mathbb{E} (y | x) = b_0 + b_1 x$.
 If there is doubt that a linear relation is an adequate summary,
 you can try a quadratic or other polynomial smoother.
 In **ggplot2**, these are easily added to a plot using `geom_smooth()` with
-`method = "lm"`, and a model `formula`.
+`method = "lm"`, and a model `formula`, which is `y ~ x` for a linear relation
+or `y ~ poly(x, k)` for a polynomial of degree $k$.
 
 ```{r}
 #| label: fig-Salaries-lm
@@ -103,34 +105,102 @@ gg1 +
 ```
 
 This serves to highlight some of our impressions from the basic scatterplot shown in
-@fig-Salaries-scat, making them more apparent.
+@fig-Salaries-scat, making them more apparent. And that's precisely the point: The regression smoother draws attention to a possible pattern that we can consider as a visual summary of the data. You can think of this as showing what a linear (or quadratic) regression "sees" in the data.
+Statistical tests (secref?) can help you decide if there is more evidence for a quadratic fit compared to the simpler linear relation.
 
-The most generally useful idea is a smoother that tracks an average value of
-$y$ as $x$ varies across its' range, called a "non-parametric" smoother, of
+It is useful to also show some indication of _uncertainty_ (or inversely, _precision_)
+associated with with the predicted values.
+Both the linear and quadratic trends are shown in @fig-Salaries-lm with 95% pointwise
+confidence bands. These are necessarily narrower in the center of the range of $x$ where
+there is typically more data; they get wider toward the highest values of experience
+where the data are thin.
+
+#### Non-parametric smoothers {.nonumber}
+
+The most generally useful idea is a smoother that tracks an average value, $\mathbb{E} (y | x)$,
+of $y$ as $x$ varies across its' range without assuming any particular functional form,
+and so avoiding the necessity to choose among 
+`y ~ poly(x, 1)`, or `y ~ poly(x, 2)`, or `y ~ poly(x, 3)` ...
+Non-parametric smoothers attempt to estimate $\mathbb{E} (y | x) = f(x)$
+where $f(x)$ is some smooth function, and typically use a collection of
+_local regressions_ for each $x_i$ within a window centered at that value
+
+called a _non-parametric_ smoother, of
 which the `loess` method [@Cleveland:79] ...
 
+@fig-Salaries-loess shows the addition of a loess smooth to the plot in @fig-Salaries-lm,
+suppressing the confidence band for the linear regression. The loess fit is nearly coincident
+with the quadratic fit, but has a slightly wider confidence band.
 ```{r}
 #| label: fig-Salaries-loess
 #| out-width: "80%"
-#| fig-cap: "Scatterplot of Salary vs. years since PhD, showing the loess smooth."
+#| fig-cap: "Scatterplot of Salary vs. years since PhD, adding the loess smooth."
 gg1 + 
   geom_smooth(method = "loess", formula = "y ~ x", 
-              color = "blue", fill = "blue",
+              color = "blue", fill = scales::muted("blue"),
               linewidth = 2) +
   geom_smooth(method = "lm", formula = "y ~ x", se = FALSE,
               color = "red",
               linewidth = 2) +
-  geom_smooth(method = "lm", formula = "y ~ poly(x,2)", se = FALSE,
-              color = "darkgreen",
+  geom_smooth(method = "lm", formula = "y ~ poly(x,2)", 
+              color = "darkgreen", fill = "lightgreen",
               linewidth = 2) 
 ```
 
-
+But now comes an important question: Is it reasonable that academic salary should increase up to about 40 years since the PhD degree and then decline? The predicted salary for someone 
+still working 50 years after earning their degree is about the same as a person at 15 years.
+What else is going on here?
 
 ### Stratifiers
 
-Often, we have a main relationship of interest, but various groups in the data are identified
-by factors (like faculty `rank` and `sex`, their type of `discipline`) ...
+Very often, we have a main relationship of interest, but various groups in the data are identified
+by discrete factors (like faculty `rank` and `sex`, their type of `discipline` here), or there are
+quantitative predictors (_moderators_) for which the main relation might vary. I call these
+_stratifiers_, recognizing that we should consider breaking down the overall relation
+to see whether and how it changes over such "other" variables.  There are two general
+graphical techniques:
+
+* **grouping**: Identify subgroups in the data by assigning different visual attributes, such as color, shape, line style, etc. within a single plot. This is quite natural for factors; quantitative predictors can be accommodated by cutting their range into ordered intervals.
+Grouping has the advantage that the levels of a grouping variable can be shown within the
+same plot, facilitating direct comparison.
+
+* **conditioning**: Showing subgroups in different plot panels. This has the advantages that
+relations for the individual groups more easily discerned and
+one can easily stratify by two (or more) other variables jointly, but visual comparison
+is more difficult because the eye must scan from one panel to another.
+
+**TODO:** Mention development in `lattice`, plot formulas, `y ~ x | g`. Describe faceting ...
+
+The most obvious variable that affects academic salary is `rank`, because faculty typically get an increase in salary with a promotion that carries through in their future salary. What can we see if we group by `rank` and fit a separate smoothed curve for each?
+
+```{r}
+#| label: fig-Salaries-rank
+#| out-width: "80%"
+#| fig-cap: "Scatterplot of Salary vs. years since PhD, grouped by rank."
+# short-hand to avoid repeating this
+scale_salary <-   scale_y_continuous(
+  labels = scales::dollar_format(prefix="$", 
+                                 scale = 0.001, 
+                                 suffix = "K")) 
+
+ggplot(Salaries, 
+             aes(x = yrs.since.phd, y = salary, color = rank)) +
+  geom_point() +
+  scale_salary +
+  labs(x = "Years since PhD",
+       y = "Salary") +
+  geom_smooth(aes(fill = rank),
+                  method = "loess", formula = "y ~ x", 
+                  linewidth = 2) + 
+  theme_bw(base_size = 14) +
+  theme(legend.position = c(.1, 0.95), 
+        legend.justification = c(0, 1))
+
+```
+
+Well, there is a different story here. Salaries generally occupy separate levels, increasing with academic rank. The horizontal extents of the smoothed curves show their ranges. Within each rank
+there is some initial increase after promotion, 
+
         
 ```{r child="data-ellipse.qmd"}
 ```
