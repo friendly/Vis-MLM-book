@@ -53,18 +53,20 @@ sm2 <- geom_smooth(method = "lm", formula = "y ~ x",
 sm3 <- geom_smooth(method = "lm", formula = "y ~ poly(x,2)", 
                    color = "darkgreen", se = FALSE,
                    linewidth = 2) 
-legend <- theme(legend.position = c(.1, 0.95), 
-                legend.justification = c(0, 1))
 
 
-# short-hand to avoid repeating this
+# make some re-useable pieces to avoid repetitions
 scale_salary <-   scale_y_continuous(
   labels = scales::dollar_format(prefix="$", 
                                  scale = 0.001, 
                                  suffix = "K")) 
-  
+# position the legend inside the plot
+legend_pos <- theme(legend.position = c(.1, 0.95), 
+                    legend.justification = c(0, 1))
+
 
 # color by: rank
+gg2 <-
 ggplot(Salaries, 
              aes(x = yrs.since.phd, y = salary, color = rank)) +
   geom_point() +
@@ -75,23 +77,41 @@ ggplot(Salaries,
                   method = "loess", formula = "y ~ x", 
                   linewidth = 2) + 
   theme_bw(base_size = 14) +
-  theme(legend.position = c(.1, 0.95), 
-        legend.justification = c(0, 1))
+  legend_pos
 
+gg2
 
-gg3 <-ggplot(Salaries, 
-             aes(x = yrs.since.phd, y = salary, color = discipline)) +
-  geom_point() +
-  scale_y_continuous(labels = scales::dollar_format(
-    prefix="$", scale = 0.001, suffix = "K")) +
+Salaries |>
+  mutate(discipline = factor(discipline, 
+                             labels = c("Theoretical", "Applied"))) |>
+  ggplot(aes(x = yrs.since.phd, y = salary, color = discipline)) +
+    geom_point() +
+  scale_salary +
+  geom_smooth(aes(fill = discipline ),
+                method = "loess", formula = "y ~ x", 
+                linewidth = 2) + 
   labs(x = "Years since PhD",
        y = "Salary") +
+  
   theme_bw(base_size = 14) +
-  geom_smooth(aes(fill = discipline ),
-              method = "loess", formula = "y ~ x", 
-              linewidth = 2) + 
-  legend
-gg3
+  legend_pos 
 
+# avoid labels?
+
+# faceting
+Salaries |>
+  mutate(discipline = factor(discipline, 
+                             labels = c("Theoretical", "Applied"))) |>
+  ggplot(aes(x = yrs.since.phd, y = salary, color = rank)) +
+  geom_point() +
+  scale_salary +
+  labs(x = "Years since PhD",
+       y = "Salary") +
+  geom_smooth(aes(fill = rank),
+              method = "loess", formula = "y ~ x", 
+              linewidth = 2) +
+  facet_wrap(~ discipline) +
+  theme_bw(base_size = 14) + legend_pos
+  
 
 

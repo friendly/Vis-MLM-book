@@ -117,16 +117,20 @@ where the data are thin.
 
 #### Non-parametric smoothers {.nonumber}
 
-The most generally useful idea is a smoother that tracks an average value, $\mathbb{E} (y | x)$,
-of $y$ as $x$ varies across its' range without assuming any particular functional form,
-and so avoiding the necessity to choose among 
+The most generally useful idea is a smoother that tracks an average value, $\mathbb{E} (y | x)$, of $y$ as $x$ varies across its' range without assuming any particular functional form, and so avoiding the necessity to choose among 
 `y ~ poly(x, 1)`, or `y ~ poly(x, 2)`, or `y ~ poly(x, 3)` ...
-Non-parametric smoothers attempt to estimate $\mathbb{E} (y | x) = f(x)$
-where $f(x)$ is some smooth function, and typically use a collection of
-_local regressions_ for each $x_i$ within a window centered at that value
 
-called a _non-parametric_ smoother, of
-which the `loess` method [@Cleveland:79] ...
+Non-parametric smoothers attempt to estimate $\mathbb{E} (y | x) = f(x)$
+where $f(x)$ is some smooth function, and typically use a collection of weighted
+_local regressions_ for each $x_i$ within a window centered at that value.
+In the method called _lowess_ or _loess_ [@Cleveland:79; @ClevelandDevlin:88],
+a weight function is applied, giving greatest weight to $x_i$ and weights of
+0 outside a window containing a fraction $s$ of the nearest neighbors of $x_i$.
+The fraction, $s$, usually within the range $1/3 \le s \le 2/3$,
+called the _span_, determines the smoothness of the
+resulting curve, with larger values giving a smoother fit.
+Non-parametric regression is broad topic;
+see @Fox:2016:ARA, Ch. 18 for a more general treatment.
 
 @fig-Salaries-loess shows the addition of a loess smooth to the plot in @fig-Salaries-lm,
 suppressing the confidence band for the linear regression. The loess fit is nearly coincident
@@ -164,12 +168,11 @@ graphical techniques:
 Grouping has the advantage that the levels of a grouping variable can be shown within the
 same plot, facilitating direct comparison.
 
-* **conditioning**: Showing subgroups in different plot panels. This has the advantages that
-relations for the individual groups more easily discerned and
+* **conditioning**: Showing subgroups in different plot panels. This has the advantages that relations for the individual groups more easily discerned and
 one can easily stratify by two (or more) other variables jointly, but visual comparison
 is more difficult because the eye must scan from one panel to another.
 
-**TODO:** Mention development in `lattice`, plot formulas, `y ~ x | g`. Describe faceting ...
+**TODO:** Callout: Mention development in `lattice`, plot formulas, `y ~ x | g`. Describe faceting ...
 
 The most obvious variable that affects academic salary is `rank`, because faculty typically get an increase in salary with a promotion that carries through in their future salary. What can we see if we group by `rank` and fit a separate smoothed curve for each?
 
@@ -177,11 +180,14 @@ The most obvious variable that affects academic salary is `rank`, because facult
 #| label: fig-Salaries-rank
 #| out-width: "80%"
 #| fig-cap: "Scatterplot of Salary vs. years since PhD, grouped by rank."
-# short-hand to avoid repeating this
+# make some re-useable pieces to avoid repetitions
 scale_salary <-   scale_y_continuous(
   labels = scales::dollar_format(prefix="$", 
                                  scale = 0.001, 
                                  suffix = "K")) 
+# position the legend inside the plot
+legend_pos <- theme(legend.position = c(.1, 0.95), 
+                    legend.justification = c(0, 1))
 
 ggplot(Salaries, 
              aes(x = yrs.since.phd, y = salary, color = rank)) +
@@ -193,13 +199,39 @@ ggplot(Salaries,
                   method = "loess", formula = "y ~ x", 
                   linewidth = 2) + 
   theme_bw(base_size = 14) +
-  theme(legend.position = c(.1, 0.95), 
-        legend.justification = c(0, 1))
-
+  legend_pos
 ```
 
-Well, there is a different story here. Salaries generally occupy separate levels, increasing with academic rank. The horizontal extents of the smoothed curves show their ranges. Within each rank
-there is some initial increase after promotion, 
+Well, there is a different story here. Salaries generally occupy separate levels, increasing with academic rank. The horizontal extents of the smoothed curves show their ranges. Within each rank there is some initial increase after promotion, and then
+some tendency to decline with increasing years.
+
+What about the `discipline`, classified, perhaps peculiarly as "theoretical"
+vs. "applied", here? The values are just `"A"` and `"B"`, so I map these to
+more meaningful labels before making the plot.
+
+```{r}
+#| label: fig-Salaries-discipline
+#| out-width: "80%"
+#| fig-cap: "Scatterplot of Salary vs. years since PhD, grouped by discipline."
+Salaries |>
+  mutate(discipline = factor(discipline, 
+                             labels = c("Theoretical", "Applied"))) |>
+  ggplot(aes(x = yrs.since.phd, y = salary, color = discipline)) +
+    geom_point() +
+  scale_salary +
+  geom_smooth(aes(fill = discipline ),
+                method = "loess", formula = "y ~ x", 
+                linewidth = 2) + 
+  labs(x = "Years since PhD",
+       y = "Salary") +
+  
+  theme_bw(base_size = 14) +
+  legend_pos 
+```
+
+The story is again different. Faculty in theoretical disciplines on average, earn about
+10,000$ more per year.
+
 
         
 ```{r child="data-ellipse.qmd"}
