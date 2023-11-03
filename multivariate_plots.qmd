@@ -15,6 +15,7 @@ This chapter introduces a toolbox of basic graphical methods for visualizing mul
 
 To visualize more than two variables, we can view all pairs of variables in a scatterplot matrix or shift gears entirely to show multiple variables along a set of parallel axes. As the number of variables increase, we may need to suppress details with stronger summaries for a high-level reconnaissance of our data terrain, as we do by zooming out on a map.
 
+Topics (just for reference)
 
 -   Bivariate summaries
     -   smoothers
@@ -25,6 +26,17 @@ To visualize more than two variables, we can view all pairs of variables in a sc
 -   ~~Categorical data:~~
     -   ~~mosaic plots~~
 -   Generalized pair plots
+
+**Packages**
+
+In this chapter we use the following packages. Load them now:
+```{r load-pkgs}
+library(car)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(corrgram)
+```
 
 ## Bivariate summaries {#sec-bivariate_summaries}
 
@@ -176,6 +188,11 @@ is more difficult because the eye must scan from one panel to another.
 
 The most obvious variable that affects academic salary is `rank`, because faculty typically get an increase in salary with a promotion that carries through in their future salary. What can we see if we group by `rank` and fit a separate smoothed curve for each?
 
+In `ggplot2` thinking, grouping is accomplished simply by adding an aesthetic, such as `color = rank`. 
+what happens then is that points, lines, smooths and other `geom_*()` inherit the feature that they
+are differentiated by color. In the case of `geom_smooth()`, we get a separate fit for each subset of
+the data, according to `rank`.
+
 ```{r}
 #| label: fig-Salaries-rank
 #| out-width: "80%"
@@ -190,7 +207,8 @@ legend_pos <- theme(legend.position = c(.1, 0.95),
                     legend.justification = c(0, 1))
 
 ggplot(Salaries, 
-             aes(x = yrs.since.phd, y = salary, color = rank)) +
+       aes(x = yrs.since.phd, y = salary, 
+           color = rank)) +
   geom_point() +
   scale_salary +
   labs(x = "Years since PhD",
@@ -198,12 +216,12 @@ ggplot(Salaries,
   geom_smooth(aes(fill = rank),
                   method = "loess", formula = "y ~ x", 
                   linewidth = 2) + 
-  theme_bw(base_size = 14) +
+#  theme_bw(base_size = 14) +
   legend_pos
 ```
 
 Well, there is a different story here. Salaries generally occupy separate levels, increasing with academic rank. The horizontal extents of the smoothed curves show their ranges. Within each rank there is some initial increase after promotion, and then
-some tendency to decline with increasing years.
+some tendency to decline with increasing years. But by and large, years since the PhD doesn't make that much difference, once we've taken academic rank into account
 
 What about the `discipline`, classified, perhaps peculiarly as "theoretical"
 vs. "applied", here? The values are just `"A"` and `"B"`, so I map these to
@@ -215,7 +233,7 @@ more meaningful labels before making the plot.
 #| fig-cap: "Scatterplot of Salary vs. years since PhD, grouped by discipline."
 Salaries |>
   mutate(discipline = factor(discipline, 
-                             labels = c("Theoretical", "Applied"))) |>
+                             labels = c("A: Theoretical", "B: Applied"))) |>
   ggplot(aes(x = yrs.since.phd, y = salary, color = discipline)) +
     geom_point() +
   scale_salary +
@@ -224,14 +242,49 @@ Salaries |>
                 linewidth = 2) + 
   labs(x = "Years since PhD",
        y = "Salary") +
-  
-  theme_bw(base_size = 14) +
   legend_pos 
 ```
 
 The story is again different. Faculty in theoretical disciplines on average, earn about
-10,000$ more per year.
+10,000$ more per year on average. 
+```{r discipline-means}
+Salaries |>
+  group_by(discipline) |>
+  summarize(mean = mean(salary)) 
+```
 
+For both groups, there is an approximately linear relation up to about 30--40 years, but the smoothed curves
+then diverge, into the region where the data is thin.
+
+### Conditioning
+
+The previous plots use grouping by color to plot the data for different subsets inside the same plot window,
+making comparison among groups easier, because they can be directly compared along a common vertical scale [^1].
+This gets messy however when there are more than just a few levels, or worse---when there are two (or more)
+variables we want to show separate effects for. In such cases, we can plot separate panels using the `ggplot2`
+concept of _faceting_.
+
+[^1]: The classic study by @ClevelandMcGill:84b;@ClevelandMcGill:85 shows that judgements of magnitude along a common scale are more accurate than those along separate, aligned scales.
+
+```{r}
+#| label: fig-Salaries-faceted
+#| out-width: "80%"
+#| fig-cap: "Scatterplot of Salary vs. years since PhD, grouped by rank, with separate panels for discipline."
+Salaries |>
+  mutate(discipline = factor(discipline, 
+                             labels = c("A: Theoretical", "B: Applied"))) |>
+  ggplot(aes(x = yrs.since.phd, y = salary, color = rank)) +
+  geom_point() +
+  scale_salary +
+  labs(x = "Years since PhD",
+       y = "Salary") +
+  geom_smooth(aes(fill = rank),
+              method = "loess", formula = "y ~ x", 
+              linewidth = 2) +
+  facet_wrap(~ discipline) +
+#  theme_bw(base_size = 14) + 
+  legend_pos
+```
 
         
 ```{r child="data-ellipse.qmd"}

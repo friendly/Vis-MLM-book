@@ -57,6 +57,7 @@ graphical methods and regression diagnostics.
   + Regression Model for the Prestige Level of Occupations,       http://rstudio-pubs-static.s3.amazonaws.com/425420_448c3a57871f4ac3a98f7b7781ffc91e.html
     
 ### `Salaries`
+  + see Fox & Weisberg, \S 4.7.7
 	+ https://rkabacoff.github.io/datavis/Multivariate.html
 	
 ## Others

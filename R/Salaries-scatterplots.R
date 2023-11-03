@@ -1,5 +1,6 @@
 library(ggplot2)
 library(car)
+library(dplyr)
 data(Salaries, package="carData")
 
 # simple scatterplot
@@ -83,7 +84,7 @@ gg2
 
 Salaries |>
   mutate(discipline = factor(discipline, 
-                             labels = c("Theoretical", "Applied"))) |>
+                             labels = c("A: Theoretical", "B: Applied"))) |>
   ggplot(aes(x = yrs.since.phd, y = salary, color = discipline)) +
     geom_point() +
   scale_salary +
@@ -101,7 +102,7 @@ Salaries |>
 # faceting
 Salaries |>
   mutate(discipline = factor(discipline, 
-                             labels = c("Theoretical", "Applied"))) |>
+                             labels = c("A: Theoretical", "B: Applied"))) |>
   ggplot(aes(x = yrs.since.phd, y = salary, color = rank)) +
   geom_point() +
   scale_salary +
@@ -111,7 +112,11 @@ Salaries |>
               method = "loess", formula = "y ~ x", 
               linewidth = 2) +
   facet_wrap(~ discipline) +
-  theme_bw(base_size = 14) + legend_pos
+  theme_bw(base_size = 14) + 
+  legend_pos
   
+Salaries |>
+  group_by(discipline) |>
+  summarize(mean = mean(salary)) 
 
 
