@@ -99,24 +99,58 @@ Salaries |>
 
 # avoid labels?
 
-# faceting
 Salaries |>
+  group_by(discipline) |>
+  summarize(mean = mean(salary)) 
+
+Salaries |>
+  group_by(discipline, rank) |>
+  summarize(mean = mean(salary)) |>
+  spread()
+
+
+# faceting
+Salaries <- Salaries |>
   mutate(discipline = factor(discipline, 
-                             labels = c("A: Theoretical", "B: Applied"))) |>
+                             labels = c("A: Theoretical", "B: Applied")))
+
+Salaries |>
   ggplot(aes(x = yrs.since.phd, y = salary, color = rank)) +
   geom_point() +
   scale_salary +
   labs(x = "Years since PhD",
        y = "Salary") +
   geom_smooth(aes(fill = rank),
-              method = "loess", formula = "y ~ x", 
+              method = "lm", formula = "y ~ x", 
               linewidth = 2) +
   facet_wrap(~ discipline) +
   theme_bw(base_size = 14) + 
   legend_pos
   
+# rank x discipline x sex
+
 Salaries |>
-  group_by(discipline) |>
-  summarize(mean = mean(salary)) 
+  ggplot(aes(x = yrs.since.phd, y = salary, color = sex)) +
+  geom_point() +
+  scale_salary +
+  labs(x = "Years since PhD",
+       y = "Salary") +
+  geom_smooth(aes(fill = sex),
+              method = "lm", formula = "y ~ x", se=FALSE,
+              linewidth = 2) +
+  facet_grid(rank ~ discipline) +
+  theme_bw(base_size = 14) + 
+  theme(legend.position = "top")
 
-
+Salaries |>
+  ggplot(aes(x = yrs.since.phd, y = salary, color = sex)) +
+  geom_point() +
+  scale_salary +
+  labs(x = "Years since PhD",
+       y = "Salary") +
+  geom_smooth(aes(fill = sex),
+              method = "lm", formula = "y ~ x", se=FALSE,
+              linewidth = 2) +
+  facet_grid(discipline ~ rank) +
+  theme_bw(base_size = 14) + 
+  theme(legend.position = "top")

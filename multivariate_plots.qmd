@@ -169,22 +169,29 @@ What else is going on here?
 
 ### Stratifiers
 
-Very often, we have a main relationship of interest, but various groups in the data are identified
-by discrete factors (like faculty `rank` and `sex`, their type of `discipline` here), or there are
-quantitative predictors (_moderators_) for which the main relation might vary. I call these
-_stratifiers_, recognizing that we should consider breaking down the overall relation
-to see whether and how it changes over such "other" variables.  There are two general
-graphical techniques:
+Very often, we have a main relationship of interest, but various groups in the data are identified by discrete factors (like faculty `rank` and `sex`, their type of `discipline` here), or there are
+quantitative predictors (_moderators_) for which the main relation might vary. 
 
-* **grouping**: Identify subgroups in the data by assigning different visual attributes, such as color, shape, line style, etc. within a single plot. This is quite natural for factors; quantitative predictors can be accommodated by cutting their range into ordered intervals.
-Grouping has the advantage that the levels of a grouping variable can be shown within the
-same plot, facilitating direct comparison.
+I call these _stratifiers_, recognizing that we should consider breaking down the overall relation
+to see whether and how it changes over such "other" variables.  Such variables are most
+often factors, but we can cut a continuous variable into ranges (_shingles_) and do the same.
+There are two general stratifying graphical techniques:
+
+* **grouping**: Identify subgroups in the data by assigning different visual attributes, such as color, shape, line style, etc. within a single plot. This is quite natural for factors; quantitative predictors can be accommodated by cutting their range into ordered intervals. Two such grouping variables can be 
+Grouping has the advantage that the levels of a grouping variable can be shown within the same plot, facilitating direct comparison.
 
 * **conditioning**: Showing subgroups in different plot panels. This has the advantages that relations for the individual groups more easily discerned and
 one can easily stratify by two (or more) other variables jointly, but visual comparison
 is more difficult because the eye must scan from one panel to another.
 
-**TODO:** Callout: Mention development in `lattice`, plot formulas, `y ~ x | g`. Describe faceting ...
+::: {.callout-note}
+<!-- **TODO:** Callout: Mention development in `lattice`, plot formulas, `y ~ x | g`. Describe faceting ... -->
+## A bit of history
+Recognition of the important roles of visual grouping by factors within a panel and conditioning by one or more factors in multi-panel displays was an important
+advance in the development of modern statistical graphics. It began at 
+A.T.&T. Bell Labs in Murray Hill, NJ in conjunction with the **S** language,
+the mother of R.
+:::
 
 The most obvious variable that affects academic salary is `rank`, because faculty typically get an increase in salary with a promotion that carries through in their future salary. What can we see if we group by `rank` and fit a separate smoothed curve for each?
 
@@ -231,9 +238,11 @@ more meaningful labels before making the plot.
 #| label: fig-Salaries-discipline
 #| out-width: "80%"
 #| fig-cap: "Scatterplot of Salary vs. years since PhD, grouped by discipline."
-Salaries |>
+Salaries <- Salaries |>
   mutate(discipline = factor(discipline, 
-                             labels = c("A: Theoretical", "B: Applied"))) |>
+                             labels = c("A: Theoretical", "B: Applied")))
+
+Salaries |>
   ggplot(aes(x = yrs.since.phd, y = salary, color = discipline)) +
     geom_point() +
   scale_salary +
@@ -245,8 +254,8 @@ Salaries |>
   legend_pos 
 ```
 
-The story is again different. Faculty in theoretical disciplines on average, earn about
-10,000$ more per year on average. 
+The story is again different. Faculty in applied disciplines on average, earn about
+10,000$ more per year on average than their theoretical colleagues. 
 ```{r discipline-means}
 Salaries |>
   group_by(discipline) |>
@@ -261,10 +270,16 @@ then diverge, into the region where the data is thin.
 The previous plots use grouping by color to plot the data for different subsets inside the same plot window,
 making comparison among groups easier, because they can be directly compared along a common vertical scale [^1].
 This gets messy however when there are more than just a few levels, or worse---when there are two (or more)
-variables we want to show separate effects for. In such cases, we can plot separate panels using the `ggplot2`
-concept of _faceting_.
+variables for which we want to show separate effects. In such cases, we can plot separate panels using the `ggplot2`
+concept of _faceting_. There are two options: `facet_wrap()` takes one or more
+conditioning variables, produces plots for each combination of levels
 
 [^1]: The classic study by @ClevelandMcGill:84b;@ClevelandMcGill:85 shows that judgements of magnitude along a common scale are more accurate than those along separate, aligned scales.
+
+Let's look at salary broken down by the combinations of discipline and
+rank. Here, I chose to stratify using color by rank within each of panels
+faceting by discipline. Because there is more going on in this plot,
+a linear smooth is used to represent the trend. 
 
 ```{r}
 #| label: fig-Salaries-faceted
@@ -285,7 +300,14 @@ Salaries |>
 #  theme_bw(base_size = 14) + 
   legend_pos
 ```
+Once both of
+these factors are taken into account, there does not seem to be much impact
+of years of service.
+Salaries in theoretical disciplines are noticeably greater than those in applied
+disciplines at all ranks, and there are even greater differences among ranks.
 
+
+Finally
         
 ```{r child="data-ellipse.qmd"}
 ```
