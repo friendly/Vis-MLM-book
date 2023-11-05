@@ -3,6 +3,8 @@ library(car)
 library(dplyr)
 data(Salaries, package="carData")
 
+theme_set(theme_bw(base_size = 14))
+
 # simple scatterplot
 gg1 <-ggplot(Salaries, 
        aes(x = yrs.since.phd, y = salary)) +
@@ -87,15 +89,51 @@ Salaries |>
                              labels = c("A: Theoretical", "B: Applied"))) |>
   ggplot(aes(x = yrs.since.phd, y = salary, color = discipline)) +
     geom_point() +
+    scale_salary +
+    geom_smooth(aes(fill = discipline ),
+                  method = "loess", formula = "y ~ x", 
+                  linewidth = 2) + 
+    labs(x = "Years since PhD",
+         y = "Salary") +
+    theme_bw(base_size = 14) +
+    legend_pos 
+
+# label at right
+Salaries |>
+  mutate(discipline = factor(discipline, 
+                             labels = c("A: Theoretical", "B: Applied"))) |>
+  ggplot(aes(x = yrs.since.phd, y = salary, color = discipline)) +
+  geom_point() +
   scale_salary +
   geom_smooth(aes(fill = discipline ),
-                method = "loess", formula = "y ~ x", 
-                linewidth = 2) + 
+              method = "loess", formula = "y ~ x", 
+              linewidth = 2) + 
+  geom_label(
+    data = data.frame(x = 40, 
+                      y = c(75000, 150000),
+                      label = levels(Salaries$discipline)), 
+    mapping = aes(x = x, y = y, label = label)
+    ) +
+  labs(x = "Years since PhD",
+       y = "Salary") 
+  
+
+# direct labels
+library(geomtextpath)
+Salaries |>
+  mutate(discipline = factor(discipline, 
+                             labels = c("A: Theoretical", "B: Applied"))) |>
+  ggplot(aes(x = yrs.since.phd, y = salary, 
+             color = discipline, fill=discipline)) +
+  geom_point() +
+  scale_salary +
+  geom_textsmooth(aes(label=discipline),
+              method = "loess", formula = "y ~ x", 
+              linewidth = 2) + 
   labs(x = "Years since PhD",
        y = "Salary") +
+  theme(legend.position = "none")
   
-  theme_bw(base_size = 14) +
-  legend_pos 
 
 # avoid labels?
 
@@ -109,6 +147,7 @@ Salaries |>
   spread()
 
 
+# -------------
 # faceting
 Salaries <- Salaries |>
   mutate(discipline = factor(discipline, 
@@ -136,21 +175,36 @@ Salaries |>
   labs(x = "Years since PhD",
        y = "Salary") +
   geom_smooth(aes(fill = sex),
-              method = "lm", formula = "y ~ x", se=FALSE,
-              linewidth = 2) +
-  facet_grid(rank ~ discipline) +
-  theme_bw(base_size = 14) + 
-  theme(legend.position = "top")
-
-Salaries |>
-  ggplot(aes(x = yrs.since.phd, y = salary, color = sex)) +
-  geom_point() +
-  scale_salary +
-  labs(x = "Years since PhD",
-       y = "Salary") +
-  geom_smooth(aes(fill = sex),
-              method = "lm", formula = "y ~ x", se=FALSE,
+              method = "lm", formula = "y ~ x",
               linewidth = 2) +
   facet_grid(discipline ~ rank) +
-  theme_bw(base_size = 14) + 
-  theme(legend.position = "top")
+  theme_bw(base_size = 14) + legend_pos
+
+# ------------------
+# lattice plot
+
+library(lattice)
+xyplot(salary ~ yrs.since.phd | rank, 
+       data = Salaries,
+       smooth = c("lm", "loess"),
+       lwd = 2, pch = 16) 
+
+xyplot(salary ~ yrs.since.phd, groups = rank, 
+       data = Salaries,
+       smooth = c("lm", "loess"),
+       lwd = 2, pch = 16) 
+
+
+xyplot(salary ~ yrs.since.phd | discipline:rank, groups = sex,
+       data = Salaries,
+       type = c("p", "r"))
+
+
+
+library(latticeExtra)
+
+
+xyplot(salary ~ yrs.since.phd | rank, 
+       data = Salaries, type = "p") +
+  layer(panel.smoother(...))
+

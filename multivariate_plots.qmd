@@ -55,7 +55,9 @@ to show interesting features more clearly. We consider the following here:
 
 Let's start with data on the academic salaries of faculty members
 collected at a U.S. college for the purpose of assessing salary differences
-between male and female faculty members. The dataset `carData::Salaries`
+between male and female faculty members, and perhaps address anomalies
+in compensation.
+The dataset `carData::Salaries`
 gives data on nine-month salaries and other variables for 397 faculty members in the 2008-2009 academic year.
 
 ```{r Salaries}
@@ -185,12 +187,25 @@ one can easily stratify by two (or more) other variables jointly, but visual com
 is more difficult because the eye must scan from one panel to another.
 
 ::: {.callout-note}
-<!-- **TODO:** Callout: Mention development in `lattice`, plot formulas, `y ~ x | g`. Describe faceting ... -->
 ## A bit of history
-Recognition of the important roles of visual grouping by factors within a panel and conditioning by one or more factors in multi-panel displays was an important
+Recognition of the roles of visual grouping by factors within a panel and conditioning in multi-panel displays was an important
 advance in the development of modern statistical graphics. It began at 
 A.T.&T. Bell Labs in Murray Hill, NJ in conjunction with the **S** language,
 the mother of R.
+
+Conditioning displays (originally called _coplots_ [@ChambersHastie1991]) are
+simply a collection of 1D, 2D or 3D plots separate panels for subsets of the data broken down by one or more factors, or, for quantitative variables,
+subdivided into a factor with several overlapping intervals (_shingles_).
+The first implementation was in _Trellis_ plots
+@Becker:1996:VDC; Cleveland:85.
+
+Trellis displays were extended in the **lattice** package [@R-lattice], which offered:
+
+* a **graphing syntax** similar to that used in statistical model formulas:
+`y ~ x | g` conditions the data by the levels of `g`, with `|` read as "given";
+two or more conditioning are specified as `y ~ x | g1 + g2 + ...`, with `+` read as "and".
+* **panel functions** define what is plotted in a given panel. `panel.xyplot()` is the default for scatterplots, plotting points, but you can add `panel.lmline()` for regression lines, `latticeExtra::panel.smoother()` for loess smooths and a
+wide variety of others.
 :::
 
 The most obvious variable that affects academic salary is `rank`, because faculty typically get an increase in salary with a promotion that carries through in their future salary. What can we see if we group by `rank` and fit a separate smoothed curve for each?
@@ -307,7 +322,35 @@ Salaries in theoretical disciplines are noticeably greater than those in applied
 disciplines at all ranks, and there are even greater differences among ranks.
 
 
-Finally
+Finally, to shed light on the question that motivated this example---
+are there anomalous differences in salary for men and women---
+we can look at differences in salary according to sex, when discipline
+and rank are taken into account. To do this graphically, condition by both 
+variables, but use `facet_grid(discipline ~ rank)` to arrange their combinations
+in a grid whose rows are the levels of `discipline` and whose columns are
+those of `rank`. I want to make the comparison of males and females most
+direct, so I use `color = sex` to stratify the panels. 
+The smoothed regression lines and error banks are calculated separately
+for each combination of discipline, rank and sex.
+
+```{r}
+#| label: fig-Salaries-facet-sex
+#| out-width: "100%"
+#| fig-cap: "Scatterplot of Salary vs. years since PhD, grouped by sex, faceted by discipline and rank."
+Salaries |>
+  ggplot(aes(x = yrs.since.phd, y = salary, color = sex)) +
+  geom_point() +
+  scale_salary +
+  labs(x = "Years since PhD",
+       y = "Salary") +
+  geom_smooth(aes(fill = sex),
+              method = "lm", formula = "y ~ x",
+              linewidth = 2) +
+  facet_grid(discipline ~ rank) +
+  theme_bw(base_size = 14) + 
+  legend_pos
+```
+
         
 ```{r child="data-ellipse.qmd"}
 ```

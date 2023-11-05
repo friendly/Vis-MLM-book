@@ -99,6 +99,7 @@ $\\newcommand*{\\diag}[1]{\\ensuremath{\\mathrm{diag}\\, #1}}$
   "ggplot2", 
   "equatiomatic", 
   "geomtextpath",
+  "lattice",
   "datasauRus")
 
 # write list of packages used at end of every chapter
