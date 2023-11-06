@@ -51,7 +51,7 @@ graphical methods and regression diagnostics.
 ### `Duncan` data
   + See 6140, [Regression diagnostics](http://euclid.psych.yorku.ca/www/psy6140/lectures/RegDiagnostics2x2.pdf)
 
-### `prestige` data
+### `Prestige` data
   + Examples from Vis-MLM-Course, Lecture 1
     C:\Dropbox\Documents\SCS\VisMLM-course\R\{prestige.R, prestige-ggplot.R}
   + Regression Model for the Prestige Level of Occupations,       http://rstudio-pubs-static.s3.amazonaws.com/425420_448c3a57871f4ac3a98f7b7781ffc91e.html

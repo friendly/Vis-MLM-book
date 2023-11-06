@@ -117,11 +117,12 @@ the standard intervals $\bar{x} \pm 1 s_x$ and $\bar{y} \pm 1 s_y$.
 give any standard interval, 
   $\bar{x} \pm k s_x$ and $\bar{y} \pm k s_y$.
   Those with $k=1, 1.5, 2.45$, have
-  bivariate coverage 40%, 68% and 95%, corresponding to these quantiles of the $\chi^2$ distribution
+  bivariate coverage 40%, 68% and 95% respectively, corresponding to these quantiles of the $\chi^2$ distribution
   with 2 degrees of freedom, i.e., 
   $\chi^2_2 (.40) \approx 1^2$, 
   $\chi^2_2 (.68) \approx 1.5^2$, and
   $\chi^2_2 (.95) \approx 2.45$.
+  The shadows of the 68% ellipse are the bivariate analog of a univariate  $\bar{x} \pm 1 s_x$ interval.
   <!-- and univariate coverage 68\%, 87\% and 98.6\% respectively. -->
 
 * The regression line predicting $y$ from $x$ goes through the points where the ellipses have vertical tangents. The _other_ regression line, predicting $x$ from $y$ goes through the points of horizontal
@@ -138,7 +139,7 @@ is the half-length of the ellipse at the mean $\bar{x}$
 Because Galton's values of `parent` and `child` height were recorded in class intervals of 1 in.,
 they are shown as sunflower symbols in @fig-galton-ellipse-r,
 with multiple 'petals' reflecting the number of observations
-at each location. This plot is constructed using `sunflowerplot()` and
+at each location. This plot (except for annotations) is constructed using `sunflowerplot()` and
 `car::dataEllipse()` for the ellipses.
 
 ```{r}
@@ -166,13 +167,55 @@ with(Galton,
     )
 ```
 
-## R functions for data ellipses
+### R functions for data ellipses
 
 A number of packages provide functions for drawing data ellipses in a scatterplot, with various features.
 
 * `car::scatterplot()`: uses base R graphics to draw 2D scatterplots, with a wide variety of plot enhancements including linear and non-parametric smoothers (loess, gam), a formula method, e.g., `y ~ x | group`, and marking points and lines using symbol shape,
 color, etc. Importantly, the **car** package generally allows automatic identification of points by their labels in the plot using a variety of methods, e.g., `method = "mahal"` labels cases with the most extreme Mahalanobis distances.
-* `car::dataEllipse()`: 
-* `heplots::covEllipses()`: draws classical and robust data ellipses for one or more groups in a one-way design and optionally for the pooled total sample
-* `ggplot2::stat_ellipse()`
+* `car::dataEllipse()`: plots  classical or robust data (`MASS::cov/trob()`) ellipses for one or more groups, with the same facilities for point identification.
+* `heplots::covEllipses()`: draws classical or robust data ellipses for one or more groups in a one-way design and optionally for the pooled total sample
+* `ggplot2::stat_ellipse()`: uses the calculation methods of `car::dataEllipse()` to add unfilled (`geom = "path"`) or filled (`geom = polygon"`) data ellipses in a `ggplot` scatterplot, using inherited aesthetics.
+
+### Examples: Canadian occupational prestige {#sec-prestige}
+
+These examples use the data on the prestige of 102 occupational categories and other measures from the
+1971 Canadian Census, recorded in `carData::Prestige`.
+Our interest is in understanding how `prestige` (the Pineo-Porter [@PineoPorter2008] prestige score for an occupational category, derived from a social survey)
+is related to census measures of the average education, income, percent women of incumbents in those
+occupations.
+Occupation `type` is a factor with levels `"bc"` (blue collar), `"wc"` (white collar) and `"prof"` (professional).
+
+```{r prestige}
+data(Prestige, package="carData")
+# `type` is really an ordered factor. Make it so.
+Prestige$type <- ordered(Prestige$type,
+                         levels=c("bc", "wc", "prof"))
+str(Prestige)
+```
+
+I first illustrate the relation between `income` and `prestige` using `car::scatterplot()`
+with many of its bells and whistles, including marginal boxplots for the variables,
+the linear regression line, loess smooth and the 68% data ellipse.
+
+```{r}
+#| label: fig-Prestige-scatterplot1
+#| out-width: "100%"
+#| fig-cap: "Scatterplot of Salary vs. years since PhD, grouped by sex, faceted by discipline and rank."
+scatterplot(prestige ~ income, data=Prestige,
+  pch = 16, cex.lab = 1.25,
+  regLine = list(col = "red", lwd=3),
+  smooth = list(smoother=loessLine,
+                lty.smooth = 1, col.smooth = "black", lwd.smooth=3,
+                col.var = "darkgreen"),
+  ellipse = list(levels = 0.68),
+  id = list(n=4, col="black", cex=1.2))
+```
+
+There is a lot that can be seen here:
+
+* `income` is positively skewed, as is often the case
+* the loess smooth, on the scale of income, shows `prestige` increasing up to $15,000 (these are 1971 incomes), and then leveling off.
+* the data ellipse, centered at the means encloses approximately 68% of the data points. It adds visual information about the correlation and precision of the linear regression; but here, the non-linear trend for higher incomes strongly suggests a different approach.
+* the four points identified by their labels are those with the largest Mahalanobis distances. 
 

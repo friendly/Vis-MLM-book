@@ -9,7 +9,7 @@
 
 
 library("car") 
-data(Prestige)
+data(Prestige, package = "carData")
 Prestige$type <- factor(Prestige$type, levels=c("bc", "wc", "prof")) # reorder levels
 head(Prestige)
 
@@ -23,14 +23,15 @@ head(Prestige)
 
 # car: fancy scatterplots
 
+
 scatterplot(prestige ~ income, data=Prestige,
-            pch = 16,
-            regLine = list(col = "red", lwd=3),
-            smooth = list(smoother=loessLine,
-                          lty.smooth = 1, col.smooth = "black", lwd.smooth=3,
-                          col.var = "darkgreen"),
-            ellipse = list(levels = 0.68),
-            id = list(n=4, col="black", cex=1.2))
+  pch = 16, cex.lab = 1.25,
+  regLine = list(col = "red", lwd=3),
+  smooth = list(smoother=loessLine, method = "mahal",
+                lty.smooth = 1, col.smooth = "black", lwd.smooth=3,
+                col.var = "darkgreen"),
+  ellipse = list(levels = 0.68),
+  id = list(n=4, col="black", cex=1.2))
 
 # what would log(income) look like
 scatterplot(prestige ~ income, data=Prestige, 
