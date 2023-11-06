@@ -6,7 +6,7 @@ bivariate relationships in multivariate data.
 The data ellipse is typically used to add a visual summary to a scatterplot,
 that shows all together the means, standard deviations, correlation,
 and slope of the regression line for
-two variables. 
+two variables, perhaps stratified by another variable.
 Under the classical assumption that the data are bivariate normally distributed,
 the data ellipse is also a **sufficient** visual summary, in the sense that
 it captures **all** relevant features of the data.
@@ -18,14 +18,15 @@ of equal probability form a series of concentric ellipses. If the variables were
 uncorrelated and had the same variances, these would be circles, and Euclidean
 distance would measure the distance of each observation from the mean.
 When the variables are correlated, a different measure, _Mahalanobis distance_
-is the proper measure of how far a point is from the mean.
+is the proper measure of how far a point is from the mean, taking the correlation
+into account.
 
 ```{r}
 #| label: fig-mahalanobis
 #| echo: false
 #| fig-align: center
-#| out-width: "50%"
-#| fig-cap: "2D data with curves of constant distance from the centroid. Which of the points A and B is further from the mean (X)? _Source_: [Ou Zhang](https://ouzhang.rbind.io/2020/11/16/outliers-part4/)"
+#| out-width: "70%"
+#| fig-cap: "2D data with curves of constant distance from the centroid. The blue solid ellipse shows a contour of constant Mahalanobis distance, taking the correlation into account; the dashed red circle is a contour of equal Euclidean distance. Given the data points,  Which of the points **A** and **B** is further from the mean (X)? _Source_: [Ou Zhang](https://ouzhang.rbind.io/2020/11/16/outliers-part4/)"
 knitr::include_graphics("images/mahalanobis.png")
 ```
 
@@ -77,11 +78,11 @@ He made a semi-graphic table of the frequencies of 928 observations of the avera
 height of father and mother versus the height of their child, shown in @fig-galton-corr.
 He then drew smoothed contour lines of equal frequencies and had the wonderful
 visual insight that these formed concentric shapes that were tolerably close to ellipses.
-He then calculated summaries,  $\mathrm{Ave}(Y | X)$,  and, for  symmetry, $\mathrm{Ave}(X | Y)$, and plotted these as lines of means on his  diagram.  Lo and behold, he had a  second visual
+He then calculated summaries,  $\text{Ave}(Y | X)$,  and, for  symmetry, $\text{Ave}(X | Y)$, and plotted these as lines of means on his  diagram.  Lo and behold, he had a  second visual
 insight:  the lines  of means of  ($Y | X$) and ($X | Y$)  corresponded approximately to
 the loci of  horizontal and vertical  tangents to the  concentric ellipses. 
 To complete the picture,  he added lines  showing the major  and minor axes  of the
-family of ellipses, with the result shown in @fig-galton-corr.
+family of ellipses (which turned out to be the principal components) with the result shown in @fig-galton-corr.
 
 ```{r}
 #| label: fig-galton-corr
@@ -100,7 +101,7 @@ For two variables, $x$ and $y$, the remarkable properties of the data ellipse ar
 #| label: fig-galton-ellipse-r
 #| echo: false
 #| fig-align: center
-#| out-width: "80%"
+#| out-width: "100%"
 #| fig-cap: "Sunflower plot of Galton's data on heights of parents and their children (in.), with
 #|   40%, 68% and 95% data ellipses and the regression lines of $y$ on $x$ (black) and
 #|   $x$ on $y$ (grey)."
@@ -167,9 +168,11 @@ with(Galton,
 
 ## R functions for data ellipses
 
-A number of packages provide functions for drawing data ellipses of data, with various features.
+A number of packages provide functions for drawing data ellipses in a scatterplot, with various features.
 
-* `car::scatterplot()`
-* `car::dataEllipse()`
-* `heplots::covEllipses()`
+* `car::scatterplot()`: uses base R graphics to draw 2D scatterplots, with a wide variety of plot enhancements including linear and non-parametric smoothers (loess, gam), a formula method, e.g., `y ~ x | group`, and marking points and lines using symbol shape,
+color, etc. Importantly, the **car** package generally allows automatic identification of points by their labels in the plot using a variety of methods, e.g., `method = "mahal" labels cases with the most extreme Mahalanobis distances.
+* `car::dataEllipse()`: 
+* `heplots::covEllipses()`: draws classical and robust data ellipses for one or more groups in a one-way design and optionally for the pooled total sample
 * `ggplot2::stat_ellipse()`
+

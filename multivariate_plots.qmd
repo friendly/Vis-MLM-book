@@ -101,8 +101,9 @@ The most common is to add a line showing the linear regression predictor for
 $y$ given $x$, expressed in math notation as $\mathbb{E} (y | x) = b_0 + b_1 x$.
 If there is doubt that a linear relation is an adequate summary,
 you can try a quadratic or other polynomial smoother.
+
 In **ggplot2**, these are easily added to a plot using `geom_smooth()` with
-`method = "lm"`, and a model `formula`, which is `y ~ x` for a linear relation
+`method = "lm"`, and a model `formula`, which (by default) is `y ~ x` for a linear relation
 or `y ~ poly(x, k)` for a polynomial of degree $k$.
 
 ```{r}
@@ -131,20 +132,25 @@ where the data are thin.
 
 #### Non-parametric smoothers {.nonumber}
 
-The most generally useful idea is a smoother that tracks an average value, $\mathbb{E} (y | x)$, of $y$ as $x$ varies across its' range without assuming any particular functional form, and so avoiding the necessity to choose among 
+The most generally useful idea is a smoother that tracks an average value, $\mathbb{E} (y | x)$, of $y$ as $x$ varies across its' range _without_ assuming any particular functional form, and so avoiding the necessity to choose among 
 `y ~ poly(x, 1)`, or `y ~ poly(x, 2)`, or `y ~ poly(x, 3)` ...
 
 Non-parametric smoothers attempt to estimate $\mathbb{E} (y | x) = f(x)$
-where $f(x)$ is some smooth function, and typically use a collection of weighted
+where $f(x)$ is some smooth function. These typically use a collection of weighted
 _local regressions_ for each $x_i$ within a window centered at that value.
 In the method called _lowess_ or _loess_ [@Cleveland:79; @ClevelandDevlin:88],
 a weight function is applied, giving greatest weight to $x_i$ and weights of
 0 outside a window containing a fraction $s$ of the nearest neighbors of $x_i$.
 The fraction, $s$, usually within the range $1/3 \le s \le 2/3$,
 called the _span_, determines the smoothness of the
-resulting curve, with larger values giving a smoother fit.
+resulting curve; smaller values produce a wigglier curve and
+larger values giving a smoother fit. If desired, an optimal span can be determined
+by $k$-fold cross-validation to minimize a measure of overall error of approximation.
+
 Non-parametric regression is broad topic;
-see @Fox:2016:ARA, Ch. 18 for a more general treatment.
+see @Fox:2016:ARA, Ch. 18 for a more general treatment and @Wood:2006 for generalized
+additive models, fit using `method = "gam"` in ggplot2, which is the default when
+the largest group has more than 1,000 observations.
 
 @fig-Salaries-loess shows the addition of a loess smooth to the plot in @fig-Salaries-lm,
 suppressing the confidence band for the linear regression. The loess fit is nearly coincident
@@ -172,11 +178,14 @@ What else is going on here?
 ### Stratifiers
 
 Very often, we have a main relationship of interest, but various groups in the data are identified by discrete factors (like faculty `rank` and `sex`, their type of `discipline` here), or there are
-quantitative predictors (_moderators_) for which the main relation might vary. 
+quantitative predictors for which the main relation might vary. In the language of statistical models such
+effects are _interaction_ terms, as in `y ~ group + x + group:x`, where the term `g:x` fits a different slope for each group and the grouping variable is often called a _moderator_ variable. 
+Common moderator variables are ethnicity, health status, social class and level of education.
+Moderators can also be continuous variables as in `y ~ x1 + x2 + x1:x2`.
 
 I call these _stratifiers_, recognizing that we should consider breaking down the overall relation
 to see whether and how it changes over such "other" variables.  Such variables are most
-often factors, but we can cut a continuous variable into ranges (_shingles_) and do the same.
+often factors, but we can cut a continuous variable into ranges (_shingles_) and do the same graphically.
 There are two general stratifying graphical techniques:
 
 * **grouping**: Identify subgroups in the data by assigning different visual attributes, such as color, shape, line style, etc. within a single plot. This is quite natural for factors; quantitative predictors can be accommodated by cutting their range into ordered intervals. Two such grouping variables can be 
@@ -269,7 +278,7 @@ Salaries |>
   legend_pos 
 ```
 
-The story is again different. Faculty in applied disciplines on average, earn about
+The story in @fig-Salaries-discipline is again different. Faculty in applied disciplines on average earn about
 10,000$ more per year on average than their theoretical colleagues. 
 ```{r discipline-means}
 Salaries |>
@@ -287,7 +296,9 @@ making comparison among groups easier, because they can be directly compared alo
 This gets messy however when there are more than just a few levels, or worse---when there are two (or more)
 variables for which we want to show separate effects. In such cases, we can plot separate panels using the `ggplot2`
 concept of _faceting_. There are two options: `facet_wrap()` takes one or more
-conditioning variables, produces plots for each combination of levels
+conditioning variables and produces a ribbon of plots for each combination of levels; 
+`facet_grid(row ~ col)` takes two or more conditioning variables and arranges the plots in a 2D array identified
+by the `row` and `col` variables.
 
 [^1]: The classic study by @ClevelandMcGill:84b;@ClevelandMcGill:85 shows that judgements of magnitude along a common scale are more accurate than those along separate, aligned scales.
 
@@ -298,18 +309,16 @@ a linear smooth is used to represent the trend.
 
 ```{r}
 #| label: fig-Salaries-faceted
-#| out-width: "80%"
+#| out-width: "100%"
 #| fig-cap: "Scatterplot of Salary vs. years since PhD, grouped by rank, with separate panels for discipline."
 Salaries |>
-  mutate(discipline = factor(discipline, 
-                             labels = c("A: Theoretical", "B: Applied"))) |>
   ggplot(aes(x = yrs.since.phd, y = salary, color = rank)) +
   geom_point() +
   scale_salary +
   labs(x = "Years since PhD",
        y = "Salary") +
   geom_smooth(aes(fill = rank),
-              method = "loess", formula = "y ~ x", 
+              method = "lm", formula = "y ~ x", 
               linewidth = 2) +
   facet_wrap(~ discipline) +
 #  theme_bw(base_size = 14) + 
@@ -330,7 +339,7 @@ variables, but use `facet_grid(discipline ~ rank)` to arrange their combinations
 in a grid whose rows are the levels of `discipline` and whose columns are
 those of `rank`. I want to make the comparison of males and females most
 direct, so I use `color = sex` to stratify the panels. 
-The smoothed regression lines and error banks are calculated separately
+The smoothed regression lines and error bands are calculated separately
 for each combination of discipline, rank and sex.
 
 ```{r}
@@ -356,7 +365,7 @@ Salaries |>
 ```
 
 
-## Quantitative data: {#sec-quantitative_data}
+## Multivariate, quantitative data: {#sec-quantitative_data}
 
     + scatterplot matrices
     + parallel coordinate plots
