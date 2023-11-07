@@ -5,8 +5,6 @@
 # coefplot(m1, vertical=FALSE, mar=c(5.5,2.5,2,2))
 # coefplot(m1, mar=c(5.5,2.5,2,2))
 
-# highlight prestige.R --out-format rtf --no-trailing-nl --encoding=UTF-8 --style seashell --font 'Courier Regular' --font-size 16 > prestige.rtf
-
 
 library("car") 
 data(Prestige, package = "carData")
@@ -27,32 +25,62 @@ head(Prestige)
 scatterplot(prestige ~ income, data=Prestige,
   pch = 16, cex.lab = 1.25,
   regLine = list(col = "red", lwd=3),
-  smooth = list(smoother=loessLine, method = "mahal",
-                lty.smooth = 1, col.smooth = "black", lwd.smooth=3,
-                col.var = "darkgreen"),
+  smooth = list(smoother=loessLine, 
+                lty.smooth = 1, lwd.smooth=3,
+                col.smooth = "darkgreen", col.var = "darkgreen"),
   ellipse = list(levels = 0.68),
-  id = list(n=4, col="black", cex=1.2))
+  id = list(n=4, method = "mahal", col="black", cex=1.2))
 
 # what would log(income) look like
 scatterplot(prestige ~ income, data=Prestige, 
-            log = "x",
-            pch = 16,
-            regLine = list(col = "red", lwd=3),
-            smooth = list(smoother=loessLine,
-                          lty.smooth = 1, col.smooth = "black", lwd.smooth=3,
-                          col.var = "darkgreen"),
-            ellipse = list(levels = 0.68), 
-            id = list(n=4, col="black", cex=1.2))
+  log = "x",
+  pch = 16,  cex.lab = 1.25,
+  regLine = list(col = "red", lwd=3),
+  smooth = list(smoother=loessLine,
+                lty.smooth = 1, lwd.smooth=3,
+                col.smooth = "darkgreen", col.var = "darkgreen"),
+  ellipse = list(levels = 0.68), 
+  id = list(n=4, method = "mahal", col="black", cex=1.2))
+
+# slopes for linear and log income
+coef(lm(prestige ~ income, data=Prestige))
+1000 * coef(lm(prestige ~ income, data=Prestige))[2]
+
+coef(lm(prestige ~ log(income), data=Prestige))[2]
+exp(coef(lm(prestige ~ log(income), data=Prestige))[2])
+exp(10*coef(lm(prestige ~ log(income), data=Prestige))[2])
 
 
 # stratify by type
 scatterplot(prestige ~ income | type, data=Prestige,
-            col = c("blue", "red", "darkgreen"),
-            pch = 15:17,
-            legend = list(coords="bottomright"),
-            smooth=list(smoother=loessLine, 
-                        var=FALSE, span=1, lwd=4))
+  col = c("blue", "red", "darkgreen"),
+  pch = 15:17,
+  grid = FALSE,
+  legend = list(coords="bottomright"),
+  regLine = list(lwd=3),
+  smooth=list(smoother=loessLine, 
+              var=FALSE, lwd.smooth=2, lty.smooth=1))
 
+# education
+scatterplot(prestige ~ education, data=Prestige,
+  pch = 16, cex.lab = 1.25,
+  regLine = list(col = "red", lwd=3),
+  smooth = list(smoother=loessLine, 
+                lty.smooth = 1, lwd.smooth=3,
+                col.smooth = "darkgreen", col.var = "darkgreen"),
+  ellipse = list(levels = 0.68),
+  id = list(n=4, method = "mahal", col="black", cex=1.2))
+
+# identify by residuals -- doesn't work
+m <- lm(prestige ~ education, data=Prestige)
+scatterplot(prestige ~ education, data=Prestige,
+            pch = 16, cex.lab = 1.25,
+            regLine = list(col = "red", lwd=3),
+            smooth = list(smoother=loessLine,
+                          lty.smooth = 1, col.smooth = "black", lwd.smooth=3,
+                          col.var = "darkgreen"),
+            ellipse = list(levels = 0.68),
+            id = list(n=4, method = "which(abs(residuals(m)))>1", col="black", cex=1.2))
 
 scatterplotMatrix(~ prestige + education + income + women ,
                   data=Prestige,
