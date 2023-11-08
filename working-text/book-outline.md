@@ -1,15 +1,13 @@
 ---
 title: "Visualizing Multivariate Data and Models in R"
 output:
-  word_document: 
-    reference_docx: "../custom-reference-doc.docx"
-  html_document: default
+  word_document: default
 ---
 
 This document is the working outline for the book. It gives some brief descriptions of the topics to be included and the framework to be explained. Currently it is organized in some broad
 chapters, which might be split into chapters within parts. 
 
-## Introduction
+## Preface
 
 The main idea here is to explain what can be accomplished with visualizing data from a multivariate lens. I exploit the story of Edwin Abbot's _Flatland_ and give other useful perspectives.
 
@@ -17,8 +15,18 @@ The main idea here is to explain what can be accomplished with visualizing data 
 
 Maybe not a separate chapter, but list the main packages used here and data sets for examples.
 
-- R packages: The main substantive packages for multivariate analysis introduced here are `heplots`, `candisc`, `mvinfluence`, `VisCollin` and `matlib`. A wide variety of other packages are used for data processing and graphical display. One goal is to widely present analysis and data display using the `tidyverse` and `ggplot2` framework.
-- Datasets: I've created a sweparate working document, _Vis-MLM data sets, analyses & plots_ listing the main data sets their uses
+- R packages: The main substantive packages for multivariate analysis introduced here are `heplots`, `candisc`, `mvinfluence`, `VisCollin` and `matlib`. A wide variety of other packages are used for data processing and graphical display. One goal is to present analysis and data display using the `tidyverse` and `ggplot2` framework, but other
+modern packages are used for informative displays.
+- Datasets: I've created a separate working document, _Vis-MLM data sets, analyses & plots_ listing the main data sets their uses
+
+## Introduction
+
+This chapter attempts to motivate a multivariate approach to data visualization and statistical models
+
+- why use a multivariate design?
+- Linear models: Univariate to multivariate
+- visualization is harder
+- Problems in understanding and communicating MLM results
 
 ## Getting Started
 

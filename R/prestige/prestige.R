@@ -71,16 +71,22 @@ scatterplot(prestige ~ education, data=Prestige,
   ellipse = list(levels = 0.68),
   id = list(n=4, method = "mahal", col="black", cex=1.2))
 
-# identify by residuals -- doesn't work
+# identify by residuals
 m <- lm(prestige ~ education, data=Prestige)
 scatterplot(prestige ~ education, data=Prestige,
             pch = 16, cex.lab = 1.25,
+            boxplots = FALSE,
             regLine = list(col = "red", lwd=3),
             smooth = list(smoother=loessLine,
                           lty.smooth = 1, col.smooth = "black", lwd.smooth=3,
                           col.var = "darkgreen"),
             ellipse = list(levels = 0.68),
-            id = list(n=4, method = "which(abs(residuals(m)))>1", col="black", cex=1.2))
+            id = list(method = which(abs(rstandard(m))>2), col="black", cex=1.2))
+
+# scatterplot matrices
+
+pairs(~ prestige + education + income + women,
+      data=Prestige)
 
 scatterplotMatrix(~ prestige + education + income + women ,
                   data=Prestige,
@@ -88,6 +94,21 @@ scatterplotMatrix(~ prestige + education + income + women ,
                   smooth=list(smoother=loessLine, spread=FALSE,
                               lty.smooth=1, lwd.smooth=3, col.smooth="red"),
                   ellipse=list(levels=0.68, fill.alpha=0.1))
+
+library(GGally)
+ggpairs(Prestige, columns = c(4, 1:3))
+my_plot <- function(data, mapping, ...){
+  p <- ggplot(data = data, mapping = mapping) + 
+    geom_point() + 
+    geom_smooth(method=loess, fill="red", color="red", ...) +
+    geom_smooth(method=lm, fill="blue", color="blue", ...)
+  p
+}
+ggpairs(Prestige, columns = c(4, 1:3),
+        lower = list(continuous = my_plot),
+        upper = list(continuous = my_plot)
+)
+
 
 # simple model
 data(Prestige, package="carData")

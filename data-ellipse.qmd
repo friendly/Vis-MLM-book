@@ -167,7 +167,7 @@ with(Galton,
     )
 ```
 
-### R functions for data ellipses
+#### R functions for data ellipses
 
 A number of packages provide functions for drawing data ellipses in a scatterplot, with various features.
 
@@ -175,11 +175,11 @@ A number of packages provide functions for drawing data ellipses in a scatterplo
 color, etc. Importantly, the **car** package generally allows automatic identification of "noteworthy" points by their labels in the plot using a variety of methods. For example, `method = "mahal"` labels cases with the most extreme Mahalanobis distances;
 `method = "r"` selects points according to their value of `abs(y)`, which is
 appropriate in residual plots.
-* `car::dataEllipse()`: plots  classical or robust data (`MASS::cov/trob()`) ellipses for one or more groups, with the same facilities for point identification.
-* `heplots::covEllipses()`: draws classical or robust data ellipses for one or more groups in a one-way design and optionally for the pooled total sample
+* `car::dataEllipse()`: plots  classical or robust data (using `MASS::cov/trob()`) ellipses for one or more groups, with the same facilities for point identification.
+* `heplots::covEllipses()`: draws classical or robust data ellipses for one or more groups in a one-way design and optionally for the pooled total sample, where the focus is on homogeneity of within-group covariance matrices.
 * `ggplot2::stat_ellipse()`: uses the calculation methods of `car::dataEllipse()` to add unfilled (`geom = "path"`) or filled (`geom = polygon"`) data ellipses in a `ggplot` scatterplot, using inherited aesthetics.
 
-### Example: Canadian occupational prestige {#sec-prestige}
+#### Example: Canadian occupational prestige {#sec-prestige}
 
 These examples use the data on the prestige of 102 occupational categories and other measures from the
 1971 Canadian Census, recorded in `carData::Prestige`.
@@ -226,6 +226,7 @@ close to the linear regression, according to which `prestige` increases
 on average 
 `coef(lm(prestige ~ education, data=Prestige))[2]` =
 `r coef(lm(prestige ~ education, data=Prestige))[2]` with each year of education.
+
 ```{r}
 #| label: fig-Prestige-scatterplot-educ1
 #| out-width: "100%"
@@ -245,6 +246,30 @@ noteworthy, for being furthest from the mean by Mahalanobis distance.
 In relation to their typical level of education, these are mostly
 understandable, but it is nice that farmers are rated of higher prestige
 than their level of education would predict.
+
+Note that the `method` argument for point identification can take a vector
+of case numbers indicating the points to be labeled. So, to
+label the observations with large absolute standardized residuals
+in the linear model `m`, you can use `method = which(abs(rstandard(m)) > 2)`.
+
+```{r}
+#| label: fig-Prestige-scatterplot-educ2
+#| out-width: "100%"
+#| echo: -1
+#| fig-cap: "Scatterplot of prestige vs. education, labeling points whose absolute stanardized residual is > 2."
+par(mar = c(4,4,1,1)+.1)
+m <- lm(prestige ~ education, data=Prestige)
+scatterplot(prestige ~ education, data=Prestige,
+            pch = 16, cex.lab = 1.25,
+            boxplots = FALSE,
+            regLine = list(col = "red", lwd=3),
+            smooth = list(smoother=loessLine,
+                          lty.smooth = 1, col.smooth = "black", lwd.smooth=3,
+                          col.var = "darkgreen"),
+            ellipse = list(levels = 0.68),
+            id = list(n=4, method = which(abs(rstandard(m))>2), col="black", cex=1.2))
+```
+
 
 #### Plotting on a log scale
 A typical remedy for the non-linear relationship of income to prestige is to plot income on a log scale. This usually makes sense, and expresses a belief that a **multiple** of
@@ -297,7 +322,7 @@ color and point shapes specified by the `col` and `pch` arguments.
 ```{r}
 #| label: fig-Prestige-scatterplot3
 #| out-width: "100%"
-#| fig-cap: "Scatterplot of prestige vs. income, stratified by occupational type."
+#| fig-cap: "Scatterplot of prestige vs. income, stratified by occupational type. This implies a different interpretation, where occupation type is a moderator variable."
 scatterplot(prestige ~ income | type, data=Prestige,
   col = c("blue", "red", "darkgreen"),
   pch = 15:17,
@@ -310,13 +335,22 @@ scatterplot(prestige ~ income | type, data=Prestige,
 
 This visual analysis offers a different interpretation of the dependence of prestige
 on income, which appeared to be non-linear when occupation type was ignored.
-Instead, @fig-Prestige-scatterplot3 suggests an interaction of income by type,
-which in a model formula would be expressed as one of:
+Instead, @fig-Prestige-scatterplot3 suggests an interaction of income by type.
+In a model formula this would be expressed as one of:
+
 ```r
 lm(prestige ~ income + type + income:type, data = Prestige)
 lm(prestige ~ income * type, data = Prestige)
 ```
-and signify that there are different intercepts and slopes for the three
-occupational types.
+
+It signifies that there are different slopes (and intercepts) for the three
+occupational types. In this interpretation, `type` is a moderator variable, with a different story.
+The slopes of the fitted lines suggest that among blue collar workers, prestige
+increases sharply with their income. For white collar and professional workers, there is still
+an increasing relation of prestige with income, but the effect of income (slope) diminishes with
+higher occupational category. A different plot entails a different story.
+
+
+#### Example: Penguins data
 
 

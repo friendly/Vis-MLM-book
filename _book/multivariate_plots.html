@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.361">
+<meta name="generator" content="quarto-1.3.450">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <title>Visualizing Multivariate Data and Models in R - 3&nbsp; Plots of Multivariate Data</title>
 <style>
@@ -132,7 +132,7 @@ div.csl-indent {
     <div class="sidebar-title mb-0 py-0">
       <a href="./">Visualizing Multivariate Data and Models in R</a> 
         <div class="sidebar-tools-main">
-    <a href="https://github.com/friendly/vis-MLM-quarto" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+    <a href="https://github.com/friendly/vis-MLM-quarto" rel="" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
 </div>
     </div>
       </div>
@@ -248,13 +248,12 @@ div.csl-indent {
   <li><a href="#stratifiers" id="toc-stratifiers" class="nav-link" data-scroll-target="#stratifiers"><span class="header-section-number">3.1.2</span> Stratifiers</a></li>
   <li><a href="#conditioning" id="toc-conditioning" class="nav-link" data-scroll-target="#conditioning"><span class="header-section-number">3.1.3</span> Conditioning</a></li>
   <li><a href="#sec-data-ellipse" id="toc-sec-data-ellipse" class="nav-link" data-scroll-target="#sec-data-ellipse"><span class="header-section-number">3.1.4</span> The Data Ellipse</a></li>
-  <li><a href="#r-functions-for-data-ellipses" id="toc-r-functions-for-data-ellipses" class="nav-link" data-scroll-target="#r-functions-for-data-ellipses"><span class="header-section-number">3.1.5</span> R functions for data ellipses</a></li>
-  <li><a href="#sec-prestige" id="toc-sec-prestige" class="nav-link" data-scroll-target="#sec-prestige"><span class="header-section-number">3.1.6</span> Example: Canadian occupational prestige</a></li>
   </ul>
 </li>
-  <li><a href="#sec-quantitative_data" id="toc-sec-quantitative_data" class="nav-link" data-scroll-target="#sec-quantitative_data"><span class="header-section-number">3.2</span> Multivariate, quantitative data:</a></li>
-  <li><a href="#categorical-data" id="toc-categorical-data" class="nav-link" data-scroll-target="#categorical-data"><span class="header-section-number">3.3</span> Categorical data:</a></li>
-  <li><a href="#generalized-pair-plots" id="toc-generalized-pair-plots" class="nav-link" data-scroll-target="#generalized-pair-plots"><span class="header-section-number">3.4</span> Generalized pair plots</a></li>
+  <li><a href="#sec-scatmat" id="toc-sec-scatmat" class="nav-link" data-scroll-target="#sec-scatmat"><span class="header-section-number">3.2</span> Scatterplot matrices</a></li>
+  <li><a href="#sec-parcoord" id="toc-sec-parcoord" class="nav-link" data-scroll-target="#sec-parcoord"><span class="header-section-number">3.3</span> Parallel coordinate plots</a></li>
+  <li><a href="#categorical-data" id="toc-categorical-data" class="nav-link" data-scroll-target="#categorical-data"><span class="header-section-number">3.4</span> Categorical data:</a></li>
+  <li><a href="#generalized-pair-plots" id="toc-generalized-pair-plots" class="nav-link" data-scroll-target="#generalized-pair-plots"><span class="header-section-number">3.5</span> Generalized pair plots</a></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul></nav>
     </div>
@@ -278,28 +277,16 @@ div.csl-indent {
 </blockquote>
 <p>The quote above from John Tukey reminds us that data analysis should rightly start with graphs to help us understand the main features of our data, to see patterns, trends and anomalies. This chapter introduces a toolbox of basic graphical methods for visualizing multivariate datasets. It starts with some simple techniques to enhance the basic scatterplot with annotations such as fitted lines, curves and data ellipses to summarize the relation between two variables.</p>
 <p>To visualize more than two variables, we can view all pairs of variables in a scatterplot matrix or shift gears entirely to show multiple variables along a set of parallel axes. As the number of variables increase, we may need to suppress details with stronger summaries for a high-level reconnaissance of our data terrain, as we do by zooming out on a map.</p>
-<p>Topics (just for reference)</p>
-<ul>
-<li>Bivariate summaries
-<ul>
-<li>smoothers</li>
-<li>data ellipses</li>
-</ul>
-</li>
-<li>Quantitative data:
-<ul>
-<li>scatterplot matrices</li>
-<li>parallel coordinate plots</li>
-</ul>
-</li>
-<li>
-<del>Categorical data:</del>
-<ul>
-<li><del>mosaic plots</del></li>
-</ul>
-</li>
-<li>Generalized pair plots</li>
-</ul>
+<!-- Topics (just for reference) -->
+<!-- -   Bivariate summaries -->
+<!--     -   smoothers -->
+<!--     -   data ellipses -->
+<!-- -   Quantitative data: -->
+<!--     -   scatterplot matrices -->
+<!--     -   parallel coordinate plots -->
+<!-- -   ~~Categorical data:~~ -->
+<!--     -   ~~mosaic plots~~ -->
+<!-- -   Generalized pair plots -->
 <p><strong>Packages</strong></p>
 <p>In this chapter we use the following packages. Load them now:</p>
 <div class="cell" data-layout-align="center">
@@ -311,11 +298,11 @@ div.csl-indent {
 </div>
 <section id="sec-bivariate_summaries" class="level2" data-number="3.1"><h2 data-number="3.1" class="anchored" data-anchor-id="sec-bivariate_summaries">
 <span class="header-section-number">3.1</span> Bivariate summaries</h2>
-<p>The basic scatterplot is the workhorse of multivariate data visualization, showing how one variable, <span class="math inline">\(y\)</span>, often an outcome to be explained varies with another, <span class="math inline">\(x\)</span>. It is a building block for many useful techniques, so it is helpful to understand how it can be used as a tool for thinking in a wider, multivariate context.</p>
+<p>The basic scatterplot is the workhorse of multivariate data visualization, showing how one variable, <span class="math inline">\(y\)</span>, often an outcome to be explained by or varies with another, <span class="math inline">\(x\)</span>. It is a building block for many useful techniques, so it is helpful to understand how it can be used as a tool for thinking in a wider, multivariate context.</p>
 <p>An essential idea is that we can start with a simple version and add plot annotations to show interesting features more clearly. We consider the following here:</p>
 <ul>
 <li>
-<strong>smoothers</strong>: showing overall trends, perhaps several, as visual summaries</li>
+<strong>smoothers</strong>: showing overall trends, perhaps in several forms, as visual summaries;</li>
 <li>
 <strong>stratifiers</strong>: using color, shape or other features to identify subgroups; more generally, <em>conditioning</em> on other variables;</li>
 <li>
@@ -617,20 +604,20 @@ D_M^2 (\mathbf{y}) = (\mathbf{y} - \bar{\mathbf{y}})^T S^{-1} (\mathbf{y} - \bar
 <span>         lty<span class="op">=</span><span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">)</span></span>
 <span>    <span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-</section></section><section id="r-functions-for-data-ellipses" class="level3" data-number="3.1.5"><h3 data-number="3.1.5" class="anchored" data-anchor-id="r-functions-for-data-ellipses">
-<span class="header-section-number">3.1.5</span> R functions for data ellipses</h3>
+</section><section id="r-functions-for-data-ellipses" class="level4" data-number="3.1.4.1"><h4 data-number="3.1.4.1" class="anchored" data-anchor-id="r-functions-for-data-ellipses">
+<span class="header-section-number">3.1.4.1</span> R functions for data ellipses</h4>
 <p>A number of packages provide functions for drawing data ellipses in a scatterplot, with various features.</p>
 <ul>
 <li>
 <code><a href="https://rdrr.io/pkg/car/man/scatterplot.html">car::scatterplot()</a></code>: uses base R graphics to draw 2D scatterplots, with a wide variety of plot enhancements including linear and non-parametric smoothers (loess, gam), a formula method, e.g., <code>y ~ x | group</code>, and marking points and lines using symbol shape, color, etc. Importantly, the <strong>car</strong> package generally allows automatic identification of “noteworthy” points by their labels in the plot using a variety of methods. For example, <code>method = "mahal"</code> labels cases with the most extreme Mahalanobis distances; <code>method = "r"</code> selects points according to their value of <code>abs(y)</code>, which is appropriate in residual plots.</li>
 <li>
-<code><a href="https://rdrr.io/pkg/car/man/Ellipses.html">car::dataEllipse()</a></code>: plots classical or robust data (<code>MASS::cov/trob()</code>) ellipses for one or more groups, with the same facilities for point identification.</li>
+<code><a href="https://rdrr.io/pkg/car/man/Ellipses.html">car::dataEllipse()</a></code>: plots classical or robust data (using <code>MASS::cov/trob()</code>) ellipses for one or more groups, with the same facilities for point identification.</li>
 <li>
-<code><a href="https://friendly.github.io/heplots/reference/covEllipses.html">heplots::covEllipses()</a></code>: draws classical or robust data ellipses for one or more groups in a one-way design and optionally for the pooled total sample</li>
+<code><a href="https://friendly.github.io/heplots/reference/covEllipses.html">heplots::covEllipses()</a></code>: draws classical or robust data ellipses for one or more groups in a one-way design and optionally for the pooled total sample, where the focus is on homogeneity of within-group covariance matrices.</li>
 <li>
 <code><a href="https://ggplot2.tidyverse.org/reference/stat_ellipse.html">ggplot2::stat_ellipse()</a></code>: uses the calculation methods of <code><a href="https://rdrr.io/pkg/car/man/Ellipses.html">car::dataEllipse()</a></code> to add unfilled (<code>geom = "path"</code>) or filled (<code>geom = polygon"</code>) data ellipses in a <code>ggplot</code> scatterplot, using inherited aesthetics.</li>
-</ul></section><section id="sec-prestige" class="level3" data-number="3.1.6"><h3 data-number="3.1.6" class="anchored" data-anchor-id="sec-prestige">
-<span class="header-section-number">3.1.6</span> Example: Canadian occupational prestige</h3>
+</ul></section><section id="sec-prestige" class="level4" data-number="3.1.4.2"><h4 data-number="3.1.4.2" class="anchored" data-anchor-id="sec-prestige">
+<span class="header-section-number">3.1.4.2</span> Example: Canadian occupational prestige</h4>
 <p>These examples use the data on the prestige of 102 occupational categories and other measures from the 1971 Canadian Census, recorded in <code><a href="https://rdrr.io/pkg/carData/man/Prestige.html">carData::Prestige</a></code>. Our interest is in understanding how <code>prestige</code> (the Pineo-Porter <span class="citation" data-cites="PineoPorter2008">(<a href="references.html#ref-PineoPorter2008" role="doc-biblioref">Pineo and Porter 2008</a>)</span> prestige score for an occupational category, derived from a social survey) is related to census measures of the average education, income, percent women of incumbents in those occupations. Occupation <code>type</code> is a factor with levels <code>"bc"</code> (blue collar), <code>"wc"</code> (white collar) and <code>"prof"</code> (professional).</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb12" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">Prestige</span>, package<span class="op">=</span><span class="st">"carData"</span><span class="op">)</span></span>
@@ -673,8 +660,9 @@ D_M^2 (\mathbf{y}) = (\mathbf{y} - \bar{\mathbf{y}})^T S^{-1} (\mathbf{y} - \bar
 <li>the data ellipse, centered at the means encloses approximately 68% of the data points. It adds visual information about the correlation and precision of the linear regression; but here, the non-linear trend for higher incomes strongly suggests a different approach.</li>
 <li>the four points identified by their labels are those with the largest Mahalanobis distances. <code><a href="https://rdrr.io/pkg/car/man/scatterplot.html">scatterplot()</a></code> prints their labels to the console.</li>
 </ul>
-<p><a href="#fig-Prestige-scatterplot-educ1">Figure&nbsp;<span>3.12</span></a> shows a similar plot for education, which from the boxplot appears to be reasonably symmetric. The smoothed curve is quite close to the linear regression, according to which <code>prestige</code> increases on average <code>coef(lm(prestige ~ education, data=Prestige))[2]</code> = 5.361 with each year of education. ::: {.cell layout-align=“center”}</p>
-<div class="sourceCode" id="cb14" data-code-line-numbers=""><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/car/man/scatterplot.html">scatterplot</a></span><span class="op">(</span><span class="va">prestige</span> <span class="op">~</span> <span class="va">education</span>, data<span class="op">=</span><span class="va">Prestige</span>,</span>
+<p><a href="#fig-Prestige-scatterplot-educ1">Figure&nbsp;<span>3.12</span></a> shows a similar plot for education, which from the boxplot appears to be reasonably symmetric. The smoothed curve is quite close to the linear regression, according to which <code>prestige</code> increases on average <code>coef(lm(prestige ~ education, data=Prestige))[2]</code> = 5.361 with each year of education.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb14" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/car/man/scatterplot.html">scatterplot</a></span><span class="op">(</span><span class="va">prestige</span> <span class="op">~</span> <span class="va">education</span>, data<span class="op">=</span><span class="va">Prestige</span>,</span>
 <span>  pch <span class="op">=</span> <span class="fl">16</span>, cex.lab <span class="op">=</span> <span class="fl">1.25</span>,</span>
 <span>  regLine <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>col <span class="op">=</span> <span class="st">"red"</span>, lwd<span class="op">=</span><span class="fl">3</span><span class="op">)</span>,</span>
 <span>  smooth <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>smoother<span class="op">=</span><span class="va">loessLine</span>, </span>
@@ -690,15 +678,40 @@ D_M^2 (\mathbf{y}) = (\mathbf{y} - \bar{\mathbf{y}})^T S^{-1} (\mathbf{y} - \bar
 <figcaption class="figure-caption">Figure&nbsp;3.12: Scatterplot of prestige vs.&nbsp;education, showing the linear regression line (red), the loess smooth with a confidence envelope (darkgreen) and a 68% data ellipse.</figcaption></figure>
 </div>
 </div>
-<p>:::</p>
+</div>
 <p>In this plot, farmers, newsboys, file.clerks and physicians are identified as noteworthy, for being furthest from the mean by Mahalanobis distance. In relation to their typical level of education, these are mostly understandable, but it is nice that farmers are rated of higher prestige than their level of education would predict.</p>
-<section id="plotting-on-a-log-scale" class="level4" data-number="3.1.6.1"><h4 data-number="3.1.6.1" class="anchored" data-anchor-id="plotting-on-a-log-scale">
-<span class="header-section-number">3.1.6.1</span> Plotting on a log scale</h4>
+<p>Note that the <code>method</code> argument for point identification can take a vector of case numbers indicating the points to be labeled. So, to label the observations with large absolute standardized residuals in the linear model <code>m</code>, you can use <code>method = which(abs(rstandard(m)) &gt; 2)</code>.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb15" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">m</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">prestige</span> <span class="op">~</span> <span class="va">education</span>, data<span class="op">=</span><span class="va">Prestige</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/car/man/scatterplot.html">scatterplot</a></span><span class="op">(</span><span class="va">prestige</span> <span class="op">~</span> <span class="va">education</span>, data<span class="op">=</span><span class="va">Prestige</span>,</span>
+<span>            pch <span class="op">=</span> <span class="fl">16</span>, cex.lab <span class="op">=</span> <span class="fl">1.25</span>,</span>
+<span>            boxplots <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>            regLine <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>col <span class="op">=</span> <span class="st">"red"</span>, lwd<span class="op">=</span><span class="fl">3</span><span class="op">)</span>,</span>
+<span>            smooth <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>smoother<span class="op">=</span><span class="va">loessLine</span>,</span>
+<span>                          lty.smooth <span class="op">=</span> <span class="fl">1</span>, col.smooth <span class="op">=</span> <span class="st">"black"</span>, lwd.smooth<span class="op">=</span><span class="fl">3</span>,</span>
+<span>                          col.var <span class="op">=</span> <span class="st">"darkgreen"</span><span class="op">)</span>,</span>
+<span>            ellipse <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>levels <span class="op">=</span> <span class="fl">0.68</span><span class="op">)</span>,</span>
+<span>            id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>n<span class="op">=</span><span class="fl">4</span>, method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html">which</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">abs</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/influence.measures.html">rstandard</a></span><span class="op">(</span><span class="va">m</span><span class="op">)</span><span class="op">)</span><span class="op">&gt;</span><span class="fl">2</span><span class="op">)</span>, col<span class="op">=</span><span class="st">"black"</span>, cex<span class="op">=</span><span class="fl">1.2</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;               file.clerks                collectors </span></span>
+<span><span class="co">#&gt;                        41                        46 </span></span>
+<span><span class="co">#&gt;                  newsboys service.station.attendant </span></span>
+<span><span class="co">#&gt;                        53                        54 </span></span>
+<span><span class="co">#&gt;                   farmers </span></span>
+<span><span class="co">#&gt;                        67</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-Prestige-scatterplot-educ2" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="figs/fig-Prestige-scatterplot-educ2-1.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption class="figure-caption">Figure&nbsp;3.13: Scatterplot of prestige vs.&nbsp;education, labeling points whose absolute stanardized residual is &gt; 2.</figcaption></figure>
+</div>
+</div>
+</div>
+</section><section id="plotting-on-a-log-scale" class="level4" data-number="3.1.4.3"><h4 data-number="3.1.4.3" class="anchored" data-anchor-id="plotting-on-a-log-scale">
+<span class="header-section-number">3.1.4.3</span> Plotting on a log scale</h4>
 <p>A typical remedy for the non-linear relationship of income to prestige is to plot income on a log scale. This usually makes sense, and expresses a belief that a <strong>multiple</strong> of or <strong>percentage increase</strong> in income has a constant impact on prestige, as opposed to the <strong>additive</strong> interpretation for income itself.</p>
 <p>For example, the slope of the linear regression line in <a href="#fig-Prestige-scatterplot-income1">Figure&nbsp;<span>3.11</span></a> is given by <code>coef(lm(prestige ~ income, data=Prestige))[2]</code> = 0.003. Multiplying this by 1000 says that a $1000 increase in <code>income</code> is associated with with an average increase of <code>prestige</code> of 2.9.</p>
 <p>In the plot below, <code>scatterplot(..., log = "x")</code> re-scales the x-axis to the <span class="math inline">\(\log_e()\)</span> scale. The slope, <code>coef(lm(prestige ~ log(income), data=Prestige))[2]</code> = 21.556 says that a 1% increase in salary is associated with an average change of 21.55 / 100 in prestige.</p>
 <div class="cell" data-layout-align="center" data-source-line-numbers="2">
-<div class="sourceCode" id="cb15" data-source-line-numbers="2" data-code-line-numbers="2"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/car/man/scatterplot.html">scatterplot</a></span><span class="op">(</span><span class="va">prestige</span> <span class="op">~</span> <span class="va">income</span>, data<span class="op">=</span><span class="va">Prestige</span>,</span>
+<div class="sourceCode" id="cb16" data-source-line-numbers="2" data-code-line-numbers="2"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/car/man/scatterplot.html">scatterplot</a></span><span class="op">(</span><span class="va">prestige</span> <span class="op">~</span> <span class="va">income</span>, data<span class="op">=</span><span class="va">Prestige</span>,</span>
 <span>  log <span class="op">=</span> <span class="st">"x"</span>,</span>
 <span>  pch <span class="op">=</span> <span class="fl">16</span>, cex.lab <span class="op">=</span> <span class="fl">1.25</span>,</span>
 <span>  regLine <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>col <span class="op">=</span> <span class="st">"red"</span>, lwd<span class="op">=</span><span class="fl">3</span><span class="op">)</span>,</span>
@@ -712,17 +725,17 @@ D_M^2 (\mathbf{y}) = (\mathbf{y} - \bar{\mathbf{y}})^T S^{-1} (\mathbf{y} - \bar
 <div class="cell-output-display">
 <div id="fig-Prestige-scatterplot2" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure"><p><img src="figs/fig-Prestige-scatterplot2-1.png" class="img-fluid figure-img" style="width:100.0%"></p>
-<figcaption class="figure-caption">Figure&nbsp;3.13: Scatterplot of prestige vs.&nbsp;log(income).</figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;3.14: Scatterplot of prestige vs.&nbsp;log(income).</figcaption></figure>
 </div>
 </div>
 </div>
-<p>The smoothed curve in <a href="#fig-Prestige-scatterplot2">Figure&nbsp;<span>3.13</span></a> exhibits a slight tendency to bend upwards, but a linear relation is a reasonable approximation.</p>
-</section><section id="stratifying" class="level4" data-number="3.1.6.2"><h4 data-number="3.1.6.2" class="anchored" data-anchor-id="stratifying">
-<span class="header-section-number">3.1.6.2</span> Stratifying</h4>
+<p>The smoothed curve in <a href="#fig-Prestige-scatterplot2">Figure&nbsp;<span>3.14</span></a> exhibits a slight tendency to bend upwards, but a linear relation is a reasonable approximation.</p>
+</section><section id="stratifying" class="level4" data-number="3.1.4.4"><h4 data-number="3.1.4.4" class="anchored" data-anchor-id="stratifying">
+<span class="header-section-number">3.1.4.4</span> Stratifying</h4>
 <p>Before going further, it is instructive to ask what we could see in the relationship between income and prestige if we stratified by type of occupation, fitting separate regressions and smooths for blue collar, white collar and professional incumbents in these occupations.</p>
 <p>The formula <code>prestige ~ income | type</code> is a natural way to specify grouping by <code>type</code>; separate linear regressions and smooths are calculated for each group, applying the color and point shapes specified by the <code>col</code> and <code>pch</code> arguments.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb16" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/car/man/scatterplot.html">scatterplot</a></span><span class="op">(</span><span class="va">prestige</span> <span class="op">~</span> <span class="va">income</span> <span class="op">|</span> <span class="va">type</span>, data<span class="op">=</span><span class="va">Prestige</span>,</span>
+<div class="sourceCode" id="cb17" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/car/man/scatterplot.html">scatterplot</a></span><span class="op">(</span><span class="va">prestige</span> <span class="op">~</span> <span class="va">income</span> <span class="op">|</span> <span class="va">type</span>, data<span class="op">=</span><span class="va">Prestige</span>,</span>
 <span>  col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"blue"</span>, <span class="st">"red"</span>, <span class="st">"darkgreen"</span><span class="op">)</span>,</span>
 <span>  pch <span class="op">=</span> <span class="fl">15</span><span class="op">:</span><span class="fl">17</span>,</span>
 <span>  grid <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -733,23 +746,38 @@ D_M^2 (\mathbf{y}) = (\mathbf{y} - \bar{\mathbf{y}})^T S^{-1} (\mathbf{y} - \bar
 <div class="cell-output-display">
 <div id="fig-Prestige-scatterplot3" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure"><p><img src="figs/fig-Prestige-scatterplot3-1.png" class="img-fluid figure-img" style="width:100.0%"></p>
-<figcaption class="figure-caption">Figure&nbsp;3.14: Scatterplot of prestige vs.&nbsp;income, stratified by occupational type.</figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;3.15: Scatterplot of prestige vs.&nbsp;income, stratified by occupational type. This implies a different interpretation, where occupation type is a moderator variable.</figcaption></figure>
 </div>
 </div>
 </div>
-<p>This visual analysis offers a different interpretation of the dependence of prestige on income, which appeared to be non-linear when occupation type was ignored. Instead, <a href="#fig-Prestige-scatterplot3">Figure&nbsp;<span>3.14</span></a> suggests an interaction of income by type, which in a model formula would be expressed as one of:</p>
-<div class="sourceCode" id="cb17" data-code-line-numbers=""><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">prestige</span> <span class="op">~</span> <span class="va">income</span> <span class="op">+</span> <span class="va">type</span> <span class="op">+</span> <span class="va">income</span><span class="op">:</span><span class="va">type</span>, data <span class="op">=</span> <span class="va">Prestige</span><span class="op">)</span></span>
+<p>This visual analysis offers a different interpretation of the dependence of prestige on income, which appeared to be non-linear when occupation type was ignored. Instead, <a href="#fig-Prestige-scatterplot3">Figure&nbsp;<span>3.15</span></a> suggests an interaction of income by type. In a model formula this would be expressed as one of:</p>
+<div class="sourceCode" id="cb18" data-code-line-numbers=""><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">prestige</span> <span class="op">~</span> <span class="va">income</span> <span class="op">+</span> <span class="va">type</span> <span class="op">+</span> <span class="va">income</span><span class="op">:</span><span class="va">type</span>, data <span class="op">=</span> <span class="va">Prestige</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">prestige</span> <span class="op">~</span> <span class="va">income</span> <span class="op">*</span> <span class="va">type</span>, data <span class="op">=</span> <span class="va">Prestige</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>and signify that there are different intercepts and slopes for the three occupational types.</p>
-</section></section></section><section id="sec-quantitative_data" class="level2" data-number="3.2"><h2 data-number="3.2" class="anchored" data-anchor-id="sec-quantitative_data">
-<span class="header-section-number">3.2</span> Multivariate, quantitative data:</h2>
-<pre data-code-line-numbers=""><code>+ scatterplot matrices
-+ parallel coordinate plots</code></pre>
-</section><section id="categorical-data" class="level2" data-number="3.3"><h2 data-number="3.3" class="anchored" data-anchor-id="categorical-data">
-<span class="header-section-number">3.3</span> Categorical data:</h2>
+<p>It signifies that there are different slopes (and intercepts) for the three occupational types. In this interpretation, <code>type</code> is a moderator variable, with a different story. The slopes of the fitted lines suggest that among blue collar workers, prestige increases sharply with their income. For white collar and professional workers, there is still an increasing relation of prestige with income, but the effect of income (slope) diminishes with higher occupational category. A different plot entails a different story.</p>
+</section><section id="example-penguins-data" class="level4" data-number="3.1.4.5"><h4 data-number="3.1.4.5" class="anchored" data-anchor-id="example-penguins-data">
+<span class="header-section-number">3.1.4.5</span> Example: Penguins data</h4>
+</section></section></section><section id="sec-scatmat" class="level2" data-number="3.2"><h2 data-number="3.2" class="anchored" data-anchor-id="sec-scatmat">
+<span class="header-section-number">3.2</span> Scatterplot matrices</h2>
+<p>Going beyond bivariate scatterplots, a <em>pairs</em> plot (or <em>scatterplot matrix</em>) displays all possible <span class="math inline">\(p \times p\)</span> pairs of <span class="math inline">\(p\)</span> variables in a matrix-like display where variables <span class="math inline">\((x_i, x_j)\)</span> are shown in a plot for row <span class="math inline">\(i\)</span>, column <span class="math inline">\(j\)</span>. This idea, due to <span class="citation" data-cites="Hartigan:75b">Hartigan (<a href="references.html#ref-Hartigan:75b" role="doc-biblioref">1975</a>)</span>, uses small multiple plots, so that the eye can easily scan across a row or down a column to see how a given variable is related to all the others.</p>
+<p>The most basic version is provided by <code><a href="https://rdrr.io/r/graphics/pairs.html">pairs()</a></code> in base R. When one variable is considered as an outcome or response, it is usually helpful to put this in the first row and column. For the <code>Prestige</code> data, in addition to income and education, we also have a measure of % women in each occupational category. Plotting these together gives <a href="#fig-prestige-pairs">Figure&nbsp;<span>3.16</span></a>.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb19" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/pairs.html">pairs</a></span><span class="op">(</span><span class="op">~</span> <span class="va">prestige</span> <span class="op">+</span> <span class="va">income</span> <span class="op">+</span> <span class="va">education</span> <span class="op">+</span> <span class="va">women</span>,</span>
+<span>      data<span class="op">=</span><span class="va">Prestige</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-prestige-pairs" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="figs/fig-prestige-pairs-1.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption class="figure-caption">Figure&nbsp;3.16: Scatterplot matrix of the variables in the Prestige dataset.</figcaption></figure>
+</div>
+</div>
+</div>
+<p>The plots in the first row show what we have seen before for the relations between prestige and income and education, adding to those the plot of prestige vs.&nbsp;women. Plots in the first column show the same data, but with <span class="math inline">\(x\)</span> and <span class="math inline">\(y\)</span> interchanged.</p>
+</section><section id="sec-parcoord" class="level2" data-number="3.3"><h2 data-number="3.3" class="anchored" data-anchor-id="sec-parcoord">
+<span class="header-section-number">3.3</span> Parallel coordinate plots</h2>
+</section><section id="categorical-data" class="level2" data-number="3.4"><h2 data-number="3.4" class="anchored" data-anchor-id="categorical-data">
+<span class="header-section-number">3.4</span> Categorical data:</h2>
 <pre data-code-line-numbers=""><code>+ mosaic plots</code></pre>
-</section><section id="generalized-pair-plots" class="level2" data-number="3.4"><h2 data-number="3.4" class="anchored" data-anchor-id="generalized-pair-plots">
-<span class="header-section-number">3.4</span> Generalized pair plots</h2>
+</section><section id="generalized-pair-plots" class="level2" data-number="3.5"><h2 data-number="3.5" class="anchored" data-anchor-id="generalized-pair-plots">
+<span class="header-section-number">3.5</span> Generalized pair plots</h2>
 <div class="cell" data-layout-align="center">
 <pre data-code-line-numbers=""><code>#&gt; 13  packages used here:
 #&gt;  base, car, carData, corrgram, datasets, dplyr, ggplot2, graphics, grDevices, methods, stats, tidyr, utils</code></pre>
@@ -787,6 +815,9 @@ Friendly, Michael, Georges Monette, and John Fox. 2013. <span>“Elliptical Insi
 </div>
 <div id="ref-Galton:1886" class="csl-entry" role="listitem">
 Galton, Francis. 1886. <span>“Regression Towards Mediocrity in Hereditary Stature.”</span> <em>Journal of the Anthropological Institute</em> 15: 246–63. <a href="http://www.jstor.org/cgi-bin/jstor/viewitem/09595295/dm995266/99p0374f/0">http://www.jstor.org/cgi-bin/jstor/viewitem/09595295/dm995266/99p0374f/0</a>.
+</div>
+<div id="ref-Hartigan:75b" class="csl-entry" role="listitem">
+Hartigan, J. A. 1975. <span>“Printer Graphics for Clustering.”</span> <em>Journal of Statistical Computing and Simulation</em> 4: 187–213.
 </div>
 <div id="ref-Monette:90" class="csl-entry" role="listitem">
 Monette, Georges. 1990. <span>“Geometry of Multiple Regression and Interactive 3-<span>D</span> Graphics.”</span> In <em>Modern Methods of Data Analysis</em>, edited by J. Fox and S. Long, 209–56. Beverly Hills, CA: SAGE Publications.
