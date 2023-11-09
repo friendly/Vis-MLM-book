@@ -11,8 +11,6 @@ data(Prestige, package = "carData")
 Prestige$type <- factor(Prestige$type, levels=c("bc", "wc", "prof")) # reorder levels
 head(Prestige)
 
-# prex_rtf()
-
 
 # ggplotColours <- function(n = 6, h = c(0, 360) + 15){
 #   if ((diff(h) %% 360) < 1) h[2] <- h[2] - 360/n
@@ -83,31 +81,85 @@ scatterplot(prestige ~ education, data=Prestige,
             ellipse = list(levels = 0.68),
             id = list(method = which(abs(rstandard(m))>2), col="black", cex=1.2))
 
+# ---------------------------
 # scatterplot matrices
+# ---------------------------
 
-pairs(~ prestige + education + income + women,
+pairs(~ prestige + income + education + women,
       data=Prestige)
 
-scatterplotMatrix(~ prestige + education + income + women ,
-                  data=Prestige,
-                  regLine = list(method=lm, lty=1, lwd=2, col="black"),
-                  smooth=list(smoother=loessLine, spread=FALSE,
-                              lty.smooth=1, lwd.smooth=3, col.smooth="red"),
-                  ellipse=list(levels=0.68, fill.alpha=0.1))
+scatterplotMatrix(~ prestige + income + education + women,
+  data = Prestige,
+  smooth=list(smoother=loessLine, spread=FALSE,
+              lty.smooth=1, lwd.smooth=3, col.smooth="red"),
+  ellipse=list(levels=0.68, fill.alpha=0.1))
+
+scatterplotMatrix(~ prestige income + education + women,
+  data=Prestige,
+  id = list(n=1, col="black"),    # why are labels not black?
+  regLine = list(method=lm, lty=1, lwd=2, col="black"),
+  smooth=list(smoother=loessLine, spread=FALSE,
+              lty.smooth=1, lwd.smooth=3, col.smooth="red"),
+  ellipse=list(levels=0.68, fill.alpha=0.1))
+
+# try log(income)
+scatterplotMatrix(~ prestige + log(income) + education + women,
+  data=Prestige,
+  id = list(n=1, col="black"),    # why are labels not black?
+  regLine = list(method=lm, lty=1, lwd=2, col="black"),
+  smooth=list(smoother=loessLine, spread=FALSE,
+              lty.smooth=1, lwd.smooth=3, col.smooth="red"),
+  ellipse=list(levels=0.68, col = "blue", fill.alpha=0.1))
+
+# stratify by type
+scatterplotMatrix(~ prestige + income + education + women | type,
+  data = Prestige,
+  col = scales::hue_pal()(3),
+  pch = 15:17,
+  smooth=list(smoother=loessLine, spread=FALSE,
+              lty.smooth=1, lwd.smooth=3, col.smooth="black"),
+  ellipse=list(levels=0.68, fill.alpha=0.1))
+
+# ---------------------------
 
 library(GGally)
-ggpairs(Prestige, columns = c(4, 1:3))
+ggpairs(Prestige, columns = c(4, 2, 1, 3))
+
+
+# custom function to plot points, linear regressions, and loess smooths
 my_plot <- function(data, mapping, ...){
   p <- ggplot(data = data, mapping = mapping) + 
     geom_point() + 
-    geom_smooth(method=loess, fill="red", color="red", ...) +
-    geom_smooth(method=lm, fill="blue", color="blue", ...)
+    geom_smooth(method=loess, formula = y ~ x, 
+                fill="red", color="red", ...) +
+    geom_smooth(method=lm, formula = y ~ x, 
+                fill="blue", color="blue", ...)
   p
 }
-ggpairs(Prestige, columns = c(4, 1:3),
+
+ggpairs(Prestige, 
+        columns = c(4, 2, 1, 3),
         lower = list(continuous = my_plot),
-        upper = list(continuous = my_plot)
-)
+        upper = list(continuous = my_plot),
+        progress = FALSE) +
+  theme_bw(base_size = 14)
+
+# stratify by type
+
+my_dens <- function(data, mapping, ..., alpha = 0.3) {
+  ggplot(data = data, mapping=mapping) +
+    geom_density(..., alpha = alpha) 
+}
+
+Prestige |>
+  tidyr::drop_na() |>
+  ggpairs(columns = c(4, 2, 1, 3, 6),
+        mapping = ggplot2::aes(color = type, fill = type),
+        lower = list(continuous = my_plot),
+        upper = list(continuous = my_plot),
+        diag = list(continuous = my_dens),
+        progress = FALSE) +
+  theme_bw(base_size = 14)
 
 
 # simple model

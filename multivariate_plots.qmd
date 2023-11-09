@@ -36,6 +36,7 @@ library(ggplot2)
 library(dplyr)
 library(tidyr)
 library(corrgram)
+library(GGally)
 ```
 
 ## Bivariate summaries {#sec-bivariate_summaries}
@@ -329,6 +330,7 @@ Salaries |>
 #  theme_bw(base_size = 14) + 
   legend_pos
 ```
+
 Once both of
 these factors are taken into account, there does not seem to be much impact
 of years of service.
@@ -367,7 +369,7 @@ Salaries |>
 ```
 
         
-```{r child="data-ellipse.qmd"}
+```{r child="child/data-ellipse.qmd"}
 ```
 
 
@@ -391,24 +393,91 @@ Plotting these together gives @fig-prestige-pairs.
 ```{r}
 #| label: fig-prestige-pairs
 #| out-width: "100%"
-#| fig-cap: "Scatterplot matrix of the variables in the Prestige dataset."
+#| fig-cap: "Scatterplot matrix of the variables in the Prestige dataset produced by `pairs()`"
 pairs(~ prestige + income + education + women,
       data=Prestige)
 ```
 
-The plots in the first row show what we have seen before for the relations between prestige and
-income and education, adding to those the plot of prestige vs. women. Plots in the first column
-show the same data, but with $x$ and $y$ interchanged. 
+The plots in the first row show what we have seen before for the relations between prestige and income and education, adding to those the plot of prestige vs. % women. Plots in the first column show the same data, but with $x$ and $y$ interchanged. 
+
+A more feature-rich version is provided by `car::scatterplotMatrix()` which
+can add the regression lines, loess smooths and data ellipses for each
+pair. The diagonal panels show density curves for the distribution of each
+variable; for example, the distribution of education appears to be multi-modal
+and that of `women` shows that most of the occupations have a low percentage
+of women. The combination of the regression line with the loess smoothed
+curve, but without their confidence envelopes, provides about the right
+amount of detail to take in at a glance where the relations are non-linear.
+
+```{r}
+#| label: fig-prestige-spm1
+#| out-width: "100%"
+#| fig-cap: "Scatterplot matrix of the variables in the Prestige dataset from `car::scatterplotMatrix()`."
+scatterplotMatrix(~ prestige + income + education + women,
+  data=Prestige,
+  regLine = list(method=lm, lty=1, lwd=2, col="black"),
+  smooth=list(smoother=loessLine, spread=FALSE,
+              lty.smooth=1, lwd.smooth=3, col.smooth="red"),
+  ellipse=list(levels=0.68, fill.alpha=0.1))
+```
+
+`scatterplotMatrix()` can also label points using the `id =` argument
+(though this can get messy)
+and can stratify the observations by a grouping variable with different
+symbols and colors.  For example @fig-prestige-spm2 uses the
+syntax `~ prestige + education + income + women | type` to provide
+separate regression lines, smoothed curves and data ellipses for
+the three types of occupations. (The default colors are somewhat garish,
+so I use `scales::hue_pal()` to mimic the discrete color scale used in `ggplot2`).
+
+```{r}
+#| label: fig-prestige-spm2
+#| out-width: "100%"
+#| fig-cap: "Scatterplot matrix of the variables in the Prestige dataset from `car::scatterplotMatrix()`, stratified by type of occupation."
+scatterplotMatrix(~ prestige + income + education + women | type,
+  data = Prestige,
+  col = scales::hue_pal()(3),
+  pch = 15:17,
+  smooth=list(smoother=loessLine, spread=FALSE,
+              lty.smooth=1, lwd.smooth=3, col.smooth="black"),
+  ellipse=list(levels=0.68, fill.alpha=0.1))
+```
+
+It is now easy to see why education is multi-modal: blue collar, white collar and
+professional occupations have largely non-overlapping years of education.
+As well, the distribution of % women is much higher in the white collar category.
+
+### Generalized pairs plots
+
+When a dataset contains one or more discrete variables, the traditional pairs plot 
+provides cannot cope, using only color and/or point symbols to represent
+categorical variables. In the context of mosaic displays and loglinear models, representing $n$-way frequency tables by rectangular tiles depicting cell frequencies,
+I [@Friendly:94a] proposed an analog of the scatterplot matrix using 
+mosaic plots for each pair of variables. The **vcd** package [@R-vcd] implements
+very general `pairs()` methods for `"table"` objects. See my book
+_Discrete Data Analysis with R_ [@FriendlyMeyer:2016:DDAR] ...
+
+The next step, by John Emerson and others [@Emerson-etal:2013] was to recognize
+that combinations of continuous and discrete, categorical variables could be plotted
+in different ways. 
+
+* a pair of continuous variables ...
+* a pair of one continuous and one categorical variable ...
+* two categorical variables could be shown in a mosaic plot or by grouped bar plots.
+
+In the `ggplot2` framework, these displays are implemented in the 
+**GGally** package [@R-GGally] ...
+
 
 
 ## Parallel coordinate plots {#sec-parcoord}
 
 
-## Categorical data:
+<!-- ## Categorical data: -->
 
-    + mosaic plots
+<!--     + mosaic plots -->
 
-## Generalized pair plots
+<!-- ## Generalized pair plots -->
 
 
 ```{r}
@@ -417,4 +486,4 @@ show the same data, but with $x$ and $y$ interchanged.
 write_pkgs(file = .pkg_file)
 ```
 
-## References {.unnumbered}
+<!-- ## References {.unnumbered} -->
