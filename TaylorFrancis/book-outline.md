@@ -30,9 +30,9 @@ This chapter attempts to motivate a multivariate approach to data visualization 
 
 ## Getting Started
 
-File: `getting_started.qmd`
+File: `02-getting_started.qmd`
 
-This chapter explains why data visualization is essential in statistical analysis, giving a classical, contrived example and then a real data example. Next, this chapter explains various types of graphical methods useful in data analysis: we distinguish plots of raw data ("data plots") overlaid with informative graphical summaries showing predicted/fitted values according to some statistical model ("model plots"), and "diagnostic plots" designed to show whether and how the assumptions of the model may be violated.
+This chapter explains why data visualization is essential in statistical analysis, giving a classical, contrived example and then a real data example. Next, this chapter explains various types of graphical methods useful in data analysis: we distinguish plots of raw data ("data plots") overlaid with informative graphical summaries showing predicted/fitted values according to some statistical model ("model plots"), and "diagnostic plots" designed to show whether and how the assumptions of the model may be violated. A final section discusses principles for effective graphic display.
 
 - Why plot your data?
   - Anscombe data
@@ -40,8 +40,15 @@ This chapter explains why data visualization is essential in statistical analysi
 - Data plots
 - Model plots
 - Diagnostic plots
+- Principles of graphic display
+  - Criteria for assessing graphs: communication goals
+  - Graphic comparison: make important comparisons easy
+  - Effect ordering: arrange factors/variable according to what is to be seen
+  - visual thinning: remove detail to focus on the main comparisons
 
 ## Plots of Multivariate Data
+
+File: `03-multivariate-plots.qmd`
 
 This chapter introduces a toolbox of basic graphical methods for visualizing multivariate datasets. It starts with some simple techniques to enhance the basic scatterplot with annotations such as fitted lines, curves and data ellipses to summarize the relation between two variables. 
 
@@ -50,16 +57,17 @@ To visualize more than two variables, we can view all pairs of variables in a sc
 - Bivariate summaries:
     - Smoothers
     - Data ellipses
-- Quantitative data:
-    - Scatterplot matrices
+- Scatterplot matrices
     - Corrplots
-    - Parallel coordinate plots
+- Parallel coordinate plots
 - Categorical data:
     - Mosaic plots
 - Generalized pair plots
 - Heatmaps
 
 ## Dimension Reduction Techniques: PCA and Biplots
+
+File: `04-pca-biplot.qmd`
 
 Beyond a few variables, the limitations of 2D (or even 3D) graphs become quickly apparent. In such cases, it is often profitable to view the data in a low-D space that extracts the most "juice" -- the important information within the data. This chapter describes
 the simplest multivariate juicer, principal components analysis (PCA) and its visualization in the related biplot,

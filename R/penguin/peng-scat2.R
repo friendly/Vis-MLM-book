@@ -1,10 +1,11 @@
 #' ---
 #' title: Penguins data, scatterplot matrix & data ellipses
+#' ---
 
 library(dplyr)
 library(ggplot2)
 library(car)
-library(effects)
+#library(effects)
 library(heplots)
 library(candisc)
 

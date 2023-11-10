@@ -52,7 +52,7 @@ knitr::opts_knit$set(
 # ggplot options
 # --------------
 
-ggplot2::theme_set(ggplot2::theme_bw(base_size = 14))
+ggplot2::theme_set(ggplot2::theme_bw(base_size = 16))
 
 
 # ------------
@@ -89,7 +89,8 @@ $\\newcommand*{\\diag}[1]{\\ensuremath{\\mathrm{diag}\\, #1}}$
 # -------------
 
 # packages to be cited here. Code at the end automatically updates packages.bib
-# These should be packages not used in actual code.
+# These should be packages not used in actual code via `library()` or
+# `require()`. Packages only referenced via `data()` need to be listed here.
 .to.cite <- c(
   "rgl",
   "animation",
@@ -100,7 +101,9 @@ $\\newcommand*{\\diag}[1]{\\ensuremath{\\mathrm{diag}\\, #1}}$
   "equatiomatic", 
   "geomtextpath",
   "lattice",
-  "datasauRus")
+  "datasauRus",
+  "vcd",
+  "palmerpenguins")
 
 # write list of packages used at end of every chapter
 .pkg_file <- here::here("bib", "pkgs.txt")
