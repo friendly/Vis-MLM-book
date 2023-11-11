@@ -50,7 +50,7 @@ scatterplotMatrix(~ bill_length + bill_depth + flipper_length + body_mass | spec
                   smooth = FALSE)
 
 scatterplotMatrix(~ bill_length + bill_depth + flipper_length + body_mass | species,
-                  data = peng, col = col, legend=FALSE,
+                  data = peng, col = col, legend=FALSE, cex.labels = 2.5,
                   ellipse = list(levels = 0.68),
                   smooth = FALSE,
                   plot.points = FALSE)
@@ -66,3 +66,5 @@ covEllipses(peng[3:6], peng$species,
             col = col,
             fill=TRUE, 
             fill.alpha=.1)
+
+

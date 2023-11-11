@@ -420,6 +420,9 @@ as shown in @fig-peng-ggplot2.
 This idea, of **visual thinning** a graph to focus on what should be seen,
 becomes increasingly useful as the data becomes more complex. The `ggplot2` framework encourages this,
 because we can think of various components as layers, to be included or not.
+Here I chose to include only the regression line and
+add data ellipses of 40%, 68% and 95% coverage to highlight the increasing bivariate 
+density around the group means.
 
 ```{r}
 #| label: fig-peng-ggplot2
@@ -434,4 +437,43 @@ ggplot(peng,
   stat_ellipse(geom = "polygon", level = 0.40, alpha = 0.2) +
   theme(legend.position = c(0.85, 0.15))
 ```
+
+While I emphasize data ellipses (because I like their beautiful geometry), other visual
+summaries of the bivariate density are possible and often useful. 
+
+For a single variable, `stats::density()` and `ggplot2::geom_density()`
+calculate a smoothed estimate of the density using kernel methods whose smoothness
+is controlled by a bandwidth parameter, analogous to the span in a loess smoother.
+This idea extends to two (and more) variables ...
+
+`ggplot2` provides `geom_density_2d()` which takes horizontal slices of the 3d surface at equally-spaced heights ...
+The **ggdensity** package [@R-ggdensity] extends this ...
+
+```{r}
+#| label: fig-peng-ggdensity
+#| out-width: "100%"
+#| fig-cap: "**Bivariate density**: ."
+library(ggdensity)
+library(patchwork)
+p1 <- ggplot(peng, 
+       aes(x = bill_length, y = bill_depth,
+           color = species)) +
+  geom_smooth(method = "lm",  se=FALSE, linewidth=2) +
+  geom_density_2d(linewidth = 1.2, bins = 8) +
+  ggtitle("geom_density_2d") +
+  theme(legend.position = c(0.85, 0.15))
+
+p2 <- ggplot(peng, 
+       aes(x = bill_length, y = bill_depth,
+           color = species, fill = species)) +
+  geom_smooth(method = "lm",  se=FALSE, linewidth=2) +
+  geom_hdr(probs = c(0.95, 0.68, 0.4), show.legend = FALSE) +
+  ggtitle("ggdensity::geom_hdr") +
+  theme(legend.position = c(0.85, 0.15))
+
+p1 + p2
+```
+
+
+
 

@@ -9,17 +9,23 @@ library(effects)
 library(palmerpenguins)
 
 # clean up variable names, etc.
-peng <- penguins |>
-	rename(
-         bill_length = bill_length_mm, 
-         bill_depth = bill_depth_mm, 
-         flipper_length = flipper_length_mm, 
-         body_mass = body_mass_g
-         ) |>
-  mutate(species = as.factor(species),
-         island = as.factor(island),
-         sex = as.factor(substr(sex,1,1))) |>
-   tidyr::drop_na()
+# peng <- penguins |>
+# 	rename(
+#          bill_length = bill_length_mm, 
+#          bill_depth = bill_depth_mm, 
+#          flipper_length = flipper_length_mm, 
+#          body_mass = body_mass_g
+#          ) |>
+#   mutate(species = as.factor(species),
+#          island = as.factor(island),
+#          sex = as.factor(substr(sex,1,1))) |>
+#    tidyr::drop_na()
+
+load(here::here("data", "peng.RData"))
+str(peng)
+
+theme_set(theme_bw(base_size = 16))
+
 
 str(peng)
 #View(peng)
@@ -34,7 +40,7 @@ ggplotColours <- function(n = 6, h = c(0, 360) + 15){
 # scatterplot matrix
 scatterplotMatrix(~ bill_length + bill_depth + flipper_length + body_mass | species,
                   data=peng,
-                  col = ggplotColours(3),
+                  col = scales::hue_pal()(3),
                   ellipse=list(levels=0.68))
 
 # same, with GGally
