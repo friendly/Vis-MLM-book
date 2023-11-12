@@ -35,7 +35,7 @@ options(rgl.useNULL = TRUE)
 
 The [multivariate EDA](https://rpubs.com/friendly/penguin-biplots) of the `penguins` data brought some simplicity to
 understanding the quantitative variables of body mass, flipper length
-and the two culmen variables. One main virtue of the graphical methods used
+and the two bill variables. One main virtue of the graphical methods used
 there was that `species` could be represented visually in the plot
 and annotated with separate data ellipses and regression lines, even though
 the principal component analysis and biplot did not include species in the
@@ -69,15 +69,15 @@ some character variables factors, and removing missing data.
 ```{r}
 peng <- penguins %>%
 	rename(
-         culmen_length = culmen_length_mm, 
-         culmen_depth = culmen_depth_mm, 
+         bill_length = bill_length_mm, 
+         bill_depth = bill_depth_mm, 
          flipper_length = flipper_length_mm, 
          body_mass = body_mass_g
          ) %>%
   mutate(species = as.factor(species),
          island = as.factor(island),
          sex = as.factor(substr(sex,1,1))) %>%
-  filter(!is.na(culmen_depth),
+  filter(!is.na(bill_depth),
          !is.na(sex))
 ```
 
@@ -96,7 +96,7 @@ A naive multivariate linear model is the following, with species as the only
 predictor.
 
 ```{r mod0}
-peng.mod0 <-lm(cbind(culmen_length, culmen_depth, flipper_length, body_mass) ~
+peng.mod0 <-lm(cbind(bill_length, bill_depth, flipper_length, body_mass) ~
                  species, data=peng)
 Anova(peng.mod0)
 ```
@@ -110,7 +110,7 @@ $$
 The analogous multivariate tests are based on the same idea, applied to the between-group sum of squares and cross-products (SSP) matrix, $\mathbf{H}$,
 relative to the within-group SSP matrix, $\mathbf{E}$.
 
-To see this visually, consider a plot of the two `culmen` beak variables
+To see this visually, consider a plot of the two `bill` beak variables
 where we show only the data ellipses for each species and the pooled
 data ellipse of the residuals.
 
@@ -138,7 +138,7 @@ Translating this ellipse to the grand means allows us to show the group centroid
 facilitating interpretation.
 
 The orientation of the $\mathbf{H}$ ellipse reflects the negative correlation of the species means:
-in general species with larger culmen depth have smaller culmen length. 
+in general species with larger bill depth have smaller bill length. 
 
 ```{r heplot0, echo=-1}
 op <- par(mar=c(4,4,1,1)+0.1)
@@ -199,7 +199,7 @@ In the `heplots` package, contrasts are specified as a list of tests evaluated b
 
 ```{r refit, echo=-1}
 op <- par(mar=c(4,4,1,1)+0.1)
-peng.mod0 <-lm(cbind(culmen_length, culmen_depth, flipper_length, body_mass) ~ species, data=peng)
+peng.mod0 <-lm(cbind(bill_length, bill_depth, flipper_length, body_mass) ~ species, data=peng)
 
 hyp <- list("A:C"="species1","AC:G"="species2")
 heplot(peng.mod0, fill=TRUE, fill.alpha=0.2, 
@@ -207,8 +207,8 @@ heplot(peng.mod0, fill=TRUE, fill.alpha=0.2,
 ```
 
 This is quite a nice result.  It is clear that Adelie & Chinstrap differ
-only in the length of the culmen. Gentoo penguins differ from the other two
-in having longer, but less deep culmen.
+only in the length of the bill. Gentoo penguins differ from the other two
+in having longer, but less deep bill.
 
 ### Other plots
 `heplot` gives 2D plots for any pair of response variables. For `flipper_length` and `body_mass` we get the plot below.  It is readily seen that these two variables are highly correlated in their species means. We can interpret the major axis of this **H** ellipse as
@@ -234,9 +234,9 @@ In these pairwise views, we see some new things:
 
 * As we saw above, group means for flipper length and body mass are positively correlated, but
 
-* There are negative correlations of culmen depth with the two size variables, and
+* There are negative correlations of bill depth with the two size variables, and
 
-* Between species culmen depth has a correlation $\approx 1$ with body size.  Time to call in the biologists!
+* Between species bill depth has a correlation $\approx 1$ with body size.  Time to call in the biologists!
 
 #### 3D plots
 
@@ -255,14 +255,14 @@ A careful researcher would also
 wonder, from a modeling perspective, whether differences among species could be accounted for by possible confounders: `island` and `sex`.
 
 ```{r mod1}
-peng.mod1 <-lm(cbind(culmen_length, culmen_depth, flipper_length, body_mass) ~
+peng.mod1 <-lm(cbind(bill_length, bill_depth, flipper_length, body_mass) ~
                  species + island + sex, data=peng)
 Anova(peng.mod1)
 ```
 `island` seems not to be important, so we delete this
 
 ```{r mod2}
-peng.mod2 <-lm(cbind(culmen_length, culmen_depth, flipper_length, body_mass) ~
+peng.mod2 <-lm(cbind(bill_length, bill_depth, flipper_length, body_mass) ~
                  species + sex, data=peng)
 Anova(peng.mod2)
 ```
@@ -274,7 +274,7 @@ heplot(peng.mod2, size="effect",
 ```
 
 So, in addition to the means among species, we also see that male
-penguins have both larger and deeper culmens.
+penguins have both larger and deeper bills.
 We could go further to test for an interaction of species with sex, using `cbind( ...) ~ species:sex` for the model.
 
 
@@ -316,8 +316,8 @@ From this we can see:
 * The first dimension (Can1) separates Gentoo from the other two species. Can2 largely separates Adelie from Chinstrap.
 
 * Can1 is positively correlated with flipper length and body mass,
-our penguin "size" variables. But culmen depth also separates Gentoo from the others, in the opposite direction 
+our penguin "size" variables. But bill depth also separates Gentoo from the others, in the opposite direction 
 
-* Can2 here largely reflects culmen length, with Chintrap having longer beaks than the other two.
+* Can2 here largely reflects bill length, with Chintrap having longer beaks than the other two.
 
 ## References

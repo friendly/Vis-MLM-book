@@ -44,15 +44,17 @@ scatterplot(bill_length ~ body_mass | species, data=peng,
 
 
 scatterplotMatrix(~ bill_length + bill_depth + flipper_length + body_mass | species,
-                  data = peng, col = col, legend=FALSE,
-                  ellipse = list(levels = 0.68),
-                  smooth = FALSE)
+  data = peng, col = col, legend=FALSE,
+  ellipse = list(levels = 0.68),
+  smooth = FALSE)
 
 scatterplotMatrix(~ bill_length + bill_depth + flipper_length + body_mass | species,
-                  data = peng, col = col, legend=FALSE,
-                  ellipse = list(levels = 0.68),
-                  smooth = FALSE,
-                  plot.points = FALSE)
+  data = peng, col = col, legend=FALSE,
+  ellipse = list(levels = c(0.68, 0.95), fill.alpha = 0.1),
+  regLine = list(lwd=3),
+  diagonal = list(method = "boxplot"),
+  smooth = FALSE,
+  plot.points = FALSE)
 
 covEllipses(peng[3:6], peng$species, 
             variables=1:4, 

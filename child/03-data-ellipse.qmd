@@ -25,7 +25,7 @@ into account.
 #| label: fig-mahalanobis
 #| echo: false
 #| fig-align: center
-#| out-width: "70%"
+#| out-width: "60%"
 #| fig-cap: "2D data with curves of constant distance from the centroid. The blue solid ellipse shows a contour of constant Mahalanobis distance, taking the correlation into account; the dashed red circle is a contour of equal Euclidean distance. Given the data points,  Which of the points **A** and **B** is further from the mean (X)? _Source_: Re-drawn from [Ou Zhang](https://ouzhang.rbind.io/2020/11/16/outliers-part4/)"
 knitr::include_graphics("images/mahalanobis.png")
 ```
@@ -201,7 +201,7 @@ the linear regression line, loess smooth and the 68% data ellipse.
 
 ```{r}
 #| label: fig-Prestige-scatterplot-income1
-#| out-width: "100%"
+#| out-width: "800%"
 #| fig-cap: "Scatterplot of prestige vs. income, showing the linear regression line (red), the loess smooth with a confidence envelope (darkgreen) and a 68% data ellipse."
 scatterplot(prestige ~ income, data=Prestige,
   pch = 16, cex.lab = 1.25,
@@ -229,7 +229,7 @@ on average
 
 ```{r}
 #| label: fig-Prestige-scatterplot-educ1
-#| out-width: "100%"
+#| out-width: "80%"
 #| fig-cap: "Scatterplot of prestige vs. education, showing the linear regression line (red), the loess smooth with a confidence envelope (darkgreen) and a 68% data ellipse."
 scatterplot(prestige ~ education, data=Prestige,
   pch = 16, cex.lab = 1.25,
@@ -254,8 +254,7 @@ in the linear model `m`, you can use `method = which(abs(rstandard(m)) > 2)`.
 
 ```{r}
 #| label: fig-Prestige-scatterplot-educ2
-#| out-width: "100%"
-#| echo: -1
+#| out-width: "800%"
 #| fig-cap: "Scatterplot of prestige vs. education, labeling points whose absolute stanardized residual is > 2."
 par(mar = c(4,4,1,1)+.1)
 m <- lm(prestige ~ education, data=Prestige)
@@ -290,7 +289,7 @@ in prestige.
 
 ```{r}
 #| label: fig-Prestige-scatterplot2
-#| out-width: "100%"
+#| out-width: "80%"
 #| source-line-numbers: "2"
 #| fig-cap: "Scatterplot of prestige vs. log(income)."
 scatterplot(prestige ~ income, data=Prestige,
@@ -321,7 +320,7 @@ color and point shapes specified by the `col` and `pch` arguments.
 
 ```{r}
 #| label: fig-Prestige-scatterplot3
-#| out-width: "100%"
+#| out-width: "80%"
 #| fig-cap: "Scatterplot of prestige vs. income, stratified by occupational type. This implies a different interpretation, where occupation type is a moderator variable."
 scatterplot(prestige ~ income | type, data=Prestige,
   col = c("blue", "red", "darkgreen"),
@@ -357,7 +356,7 @@ higher occupational category. A different plot entails a different story.
 #| label: fig-penguin-species
 #| echo: false
 #| fig-align: center
-#| out-width: "90%"
+#| out-width: "80%"
 #| fig-cap: "Penguin species observed in the Palmer Archipelago"
 knitr::include_graphics("images/penguin-species.jpg")
 ```
@@ -371,7 +370,7 @@ between 2007--2009 [@Gorman2014]. The purpose was to examine differences in size
 particularly differences among the sexes (sexual dimorphism) in relation to foraging and habitat.
 
 Here I use a slightly altered version of the dataset, `peng`, renaming variables to remove the units,
-making factors of character variables and deleting two cases with missing data.
+making factors of character variables and deleting a few cases with missing data.
 
 ```{r}
 data(penguins, package = "palmerpenguins")
@@ -399,7 +398,8 @@ and 95% data ellipses to show precision of the linear relation.
 
 ```{r}
 #| label: fig-peng-ggplot1
-#| out-width: "100%"
+#| out-width: "80%"
+#| code-fold: show
 #| fig-cap: "Penguin bill length and bill depth according to species."
 ggplot(peng, 
        aes(x = bill_length, y = bill_depth,
@@ -426,7 +426,8 @@ density around the group means.
 
 ```{r}
 #| label: fig-peng-ggplot2
-#| out-width: "100%"
+#| out-width: "80%"
+#| code-fold: show
 #| fig-cap: "**Visual thinning**: Suppressing the data points gives a visual summary of the relation between bill length and bill depth using the regression line and data ellipses."
 ggplot(peng, 
        aes(x = bill_length, y = bill_depth,
@@ -442,24 +443,41 @@ While I emphasize data ellipses (because I like their beautiful geometry), other
 summaries of the bivariate density are possible and often useful. 
 
 For a single variable, `stats::density()` and `ggplot2::geom_density()`
-calculate a smoothed estimate of the density using kernel methods whose smoothness
+calculate a smoothed estimate of the density using nonparametric kernel methods [@Silverman:86]
+whose smoothness
 is controlled by a bandwidth parameter, analogous to the span in a loess smoother.
-This idea extends to two (and more) variables ...
+This idea extends to two (and more) variables [@Scott1992]. 
+For bivariate data,
+`MASS::kde2d()` estimates the density on a square $n \times n$ grid over the
+ranges of the variables.
 
-`ggplot2` provides `geom_density_2d()` which takes horizontal slices of the 3d surface at equally-spaced heights ...
-The **ggdensity** package [@R-ggdensity] extends this ...
+`ggplot2` provides `geom_density_2d()` which uses `MASS::kde2d()` and displays these as contours---
+horizontal slices of the 3D surface at equally-spaced heights and projects these onto the 2D plane.
+The **ggdensity** package [@R-ggdensity] extends this with `geom_hdr()`,
+computing the high density regions that bound given levels of probability
+and maps these to the `alpha` transparency aesthetic. 
+A `method` argument allows you to specify various nonparametric (`method ="kde"` is the default)
+and parametric (`method ="mvnorm"` gives normal data ellipses) ways  to estimate the underlying bivariate distribution.
+
+@fig-peng-ggdensity shows these side-by-side for comparison.
+With `geom_density_2d()` you can specify either the number of contour `bins` or the
+width of these bins (`binwidth`). For `geom_hdr()`, the `probs` argument gives a result that
+is easier to understand.
 
 ```{r}
 #| label: fig-peng-ggdensity
-#| out-width: "100%"
-#| fig-cap: "**Bivariate density**: ."
+#| fig-width: 10
+#| fig-height: 5
+#| out-width: "120%"
+#| code-fold: show
+#| fig-cap: "**Bivariate densities** show the contours of the 3D surface representing the frequency in the joint distribution of bill length and bill depth."
 library(ggdensity)
 library(patchwork)
 p1 <- ggplot(peng, 
        aes(x = bill_length, y = bill_depth,
            color = species)) +
   geom_smooth(method = "lm",  se=FALSE, linewidth=2) +
-  geom_density_2d(linewidth = 1.2, bins = 8) +
+  geom_density_2d(linewidth = 1.1, bins = 8) +
   ggtitle("geom_density_2d") +
   theme_bw(base_size = 14) + 
   theme(legend.position = c(0.85, 0.15))
@@ -471,7 +489,6 @@ p2 <- ggplot(peng,
   geom_hdr(probs = c(0.95, 0.68, 0.4), show.legend = FALSE) +
   ggtitle("ggdensity::geom_hdr") +
   theme_bw(base_size = 14) + 
-  theme(legend.position = c(0.85, 0.15))
 
 p1 + p2
 ```

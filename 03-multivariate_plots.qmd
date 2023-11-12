@@ -209,7 +209,7 @@ Conditioning displays (originally called _coplots_ [@ChambersHastie1991]) are
 simply a collection of 1D, 2D or 3D plots separate panels for subsets of the data broken down by one or more factors, or, for quantitative variables,
 subdivided into a factor with several overlapping intervals (_shingles_).
 The first implementation was in _Trellis_ plots
-@Becker:1996:VDC; Cleveland:85.
+@Becker:1996:VDC;@Cleveland:85.
 
 Trellis displays were extended in the **lattice** package [@R-lattice], which offered:
 
@@ -218,6 +218,10 @@ Trellis displays were extended in the **lattice** package [@R-lattice], which of
 two or more conditioning are specified as `y ~ x | g1 + g2 + ...`, with `+` read as "and".
 * **panel functions** define what is plotted in a given panel. `panel.xyplot()` is the default for scatterplots, plotting points, but you can add `panel.lmline()` for regression lines, `latticeExtra::panel.smoother()` for loess smooths and a
 wide variety of others.
+
+The **car** package [@R-car] supports this graphing syntax in many of its functions.
+**ggplot2** does not; it uses aesthetics (`aes()`), which map variables in the data to
+visual characteristics in displays. ...
 :::
 
 The most obvious variable that affects academic salary is `rank`, because faculty typically get an increase in salary with a promotion that carries through in their future salary. What can we see if we group by `rank` and fit a separate smoothed curve for each?
@@ -392,6 +396,8 @@ Plotting these together gives @fig-prestige-pairs.
 
 ```{r}
 #| label: fig-prestige-pairs
+#| fig-width: 7
+#| fig-height: 7
 #| out-width: "100%"
 #| fig-cap: "Scatterplot matrix of the variables in the Prestige dataset produced by `pairs()`"
 pairs(~ prestige + income + education + women,
@@ -411,6 +417,8 @@ amount of detail to take in at a glance where the relations are non-linear.
 
 ```{r}
 #| label: fig-prestige-spm1
+#| fig-width: 7
+#| fig-height: 7
 #| out-width: "100%"
 #| fig-cap: "Scatterplot matrix of the variables in the Prestige dataset from `car::scatterplotMatrix()`."
 scatterplotMatrix(~ prestige + income + education + women,
@@ -432,6 +440,8 @@ so I use `scales::hue_pal()` to mimic the discrete color scale used in `ggplot2`
 
 ```{r}
 #| label: fig-prestige-spm2
+#| fig-width: 7
+#| fig-height: 7
 #| out-width: "100%"
 #| fig-cap: "Scatterplot matrix of the variables in the Prestige dataset from `car::scatterplotMatrix()`, stratified by type of occupation."
 scatterplotMatrix(~ prestige + income + education + women | type,
@@ -446,6 +456,58 @@ scatterplotMatrix(~ prestige + income + education + women | type,
 It is now easy to see why education is multi-modal: blue collar, white collar and
 professional occupations have largely non-overlapping years of education.
 As well, the distribution of % women is much higher in the white collar category.
+
+For the `penguins` data, given what we've seen before in @fig-peng-ggplot1;@fig-peng-ggplot2,
+we may wish to suppress details of the points (`plot.points = FALSE`)
+and loess smooths (`smooth = FALSE`)
+to focus attention 
+on the similarity of regression lines and data ellipses for the three penguin species.
+In @fig-peng-spm, I've chosen to show boxplots rather than density curves in the diagonal panels
+in order to highlight differences in the means and interquartile ranges of the species,
+and to show 68% and 95% data ellipses in the off-diagonal panels.
+
+```{r}
+#| label: fig-peng-spm
+#| fig-width: 7
+#| fig-height: 7
+#| out-width: "100%"
+#| fig-cap: "Scatterplot matrix of the variables in the penguins dataset, stratified by species."
+scatterplotMatrix(~ bill_length + bill_depth + flipper_length + body_mass | species,
+  data = peng, 
+  col = scales::hue_pal()(3), 
+  legend=FALSE,
+  ellipse = list(levels = c(0.68, 0.95), 
+                 fill.alpha = 0.1),
+  regLine = list(lwd=3),
+  diagonal = list(method = "boxplot"),
+  smooth = FALSE,
+  plot.points = FALSE)
+```
+
+It can be seen that the species are widely separated in most of the bivariate plots.
+
+::: {.callout-note}
+## Looking ahead
+
+@fig-peng-spm provides a reasonably complete visual summary of the data in relation to multivariate
+models that ask "do the species differ on in their means on these body size measures?
+This corresponds to the MANOVA model,
+
+```{r}
+#| eval: false
+peng.mod <- lm(cbind(bill_length, bill_depth, flipper_length, body_mass) ~ species, 
+               data=peng)
+```
+
+A related question is "how well are the penguin species distinguished by these body size measures?" 
+```{r}
+#| eval: false
+peng.lda <- MASS:lda( species ~ cbind(bill_length, bill_depth, flipper_length, body_mass), 
+               data=peng)
+```
+
+:::
+
 
 ### Generalized pairs plots
 
