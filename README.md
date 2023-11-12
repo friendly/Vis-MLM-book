@@ -1,5 +1,4 @@
-# *Visualizing Multivariate Data and Models in R*
-<img src="images/Viz-MLM-logo.jpg" style="float:right; height:200px;" />
+# *Visualizing Multivariate Data and Models in R* <img src="images/Viz-MLM-logo.jpg" style="float:right; height:200px;" />
 
 This book is about graphical methods for multivariate data, and their uses in understanding relationships
 particularly when there are several aspects to be considered together in multiple response models
