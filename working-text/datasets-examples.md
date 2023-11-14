@@ -69,4 +69,9 @@ graphical methods and regression diagnostics.
   + https://mgimond.github.io/ES218/sl_plot.html
   + https://mgimond.github.io/ES218/re_express.html
   + https://book.stat420.org/transformations.html
+
+## Parallel coordinate plots
+
+  + https://rpubs.com/subasish/1032235
+  + https://r-charts.com/ranking/parallel-coordinates-ggplot2/
   
