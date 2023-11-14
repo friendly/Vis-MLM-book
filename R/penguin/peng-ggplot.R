@@ -12,7 +12,14 @@ library(patchwork)
 load(here::here("data", "peng.RData"))
 str(peng)
 
+source("R/penguin-colors.R")
+
 theme_set(theme_bw(base_size = 16))
+#options(ggplot2.discrete.colour = peng.colors("dark")) 
+theme_penguins <- list(
+  scale_color_penguins(shade="dark"),
+  scale_fill_penguins(shade="dark")
+)
 
 ggplot(peng, 
        aes(x = bill_length, y = bill_depth,
@@ -22,7 +29,8 @@ ggplot(peng,
               se=FALSE, linewidth=2) +
   geom_smooth(method = "loess",  formula = y ~ x,
               linewidth = 1.5, se = FALSE, alpha=0.1) +
-  stat_ellipse(geom = "polygon", level = 0.95, alpha = 0.2) +
+  stat_ellipse(geom = "polygon", level = 0.95, alpha = 0.4) +
+  theme_penguins +
   theme(legend.position = c(0.85, 0.15))
       
 # remove points

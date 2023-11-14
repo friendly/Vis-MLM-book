@@ -29,7 +29,7 @@ To visualize more than two variables, we can view all pairs of variables in a sc
 
 **Packages**
 
-In this chapter we use the following packages. Load them now:
+In this chapter I use the following packages. Load them now:
 ```{r load-pkgs}
 library(car)
 library(ggplot2)
@@ -37,6 +37,8 @@ library(dplyr)
 library(tidyr)
 library(corrgram)
 library(GGally)
+library(ggdensity)
+library(patchwork)
 ```
 
 ## Bivariate summaries {#sec-bivariate_summaries}
@@ -457,7 +459,7 @@ It is now easy to see why education is multi-modal: blue collar, white collar an
 professional occupations have largely non-overlapping years of education.
 As well, the distribution of % women is much higher in the white collar category.
 
-For the `penguins` data, given what we've seen before in @fig-peng-ggplot1;@fig-peng-ggplot2,
+For the `penguins` data, given what we've seen before in @fig-peng-ggplot1 and @fig-peng-ggplot2,
 we may wish to suppress details of the points (`plot.points = FALSE`)
 and loess smooths (`smooth = FALSE`)
 to focus attention 
@@ -474,7 +476,7 @@ and to show 68% and 95% data ellipses in the off-diagonal panels.
 #| fig-cap: "Scatterplot matrix of the variables in the penguins dataset, stratified by species."
 scatterplotMatrix(~ bill_length + bill_depth + flipper_length + body_mass | species,
   data = peng, 
-  col = scales::hue_pal()(3), 
+  col = peng.colors("medium"), 
   legend=FALSE,
   ellipse = list(levels = c(0.68, 0.95), 
                  fill.alpha = 0.1),
@@ -485,6 +487,8 @@ scatterplotMatrix(~ bill_length + bill_depth + flipper_length + body_mass | spec
 ```
 
 It can be seen that the species are widely separated in most of the bivariate plots.
+As well, the regression lines for species have similar slopes and the data ellipses
+have similar size and shape in most of the plots.
 
 ::: {.callout-note}
 ## Looking ahead
@@ -499,12 +503,22 @@ peng.mod <- lm(cbind(bill_length, bill_depth, flipper_length, body_mass) ~ speci
                data=peng)
 ```
 
-A related question is "how well are the penguin species distinguished by these body size measures?" 
+Hypothesis-error (HE) plots, described in @sec-vis-mlm provide a better summary of the evidence for the MANOVA test of differences among means on all variables together. These give an 
+$\mathbf{H}$ ellipse reflecting the differences among means, to be compared with
+an $\mathbf{E}$ ellipse reflecting within-group variation.
+
+A related question is "how well are the penguin species distinguished by these body size measures?"
+Here, the relevant model is linear discriminant analysis (LDA), where `species` plays the role of the response in the model,
+
 ```{r}
 #| eval: false
 peng.lda <- MASS:lda( species ~ cbind(bill_length, bill_depth, flipper_length, body_mass), 
                data=peng)
 ```
+
+Both MANOVA and LDA depend on the assumption that the variances and correlations of the
+are the same for all groups. This assumption can be tested and visualized using the methods
+in @sec-eqcov.
 
 :::
 
@@ -533,6 +547,16 @@ In the `ggplot2` framework, these displays are implemented in the
 
 
 ## Parallel coordinate plots {#sec-parcoord}
+
+As we have seen above, scatterplot matrices and generalized pairs plots
+extend data visualization to multivariate data, but these variables share one 2D space, and resolution decreases as the number of variable increase.
+You need a very large screen or sheet of paper to see more than, say 5-6 variables with any
+clarity.
+
+Parallel coordinate plots are an attractive alternative, with which we can visualize an arbitrary number of variables to get a visual summary of a potentially high-dimensional dataset.
+In these plots, each variable is shown on a separate, parallel axis.
+A multivariate observation is then plotted by connecting their respective
+values on each axis with lines across all the axes.
 
 
 <!-- ## Categorical data: -->

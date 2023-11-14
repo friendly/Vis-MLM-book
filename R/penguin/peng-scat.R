@@ -9,11 +9,13 @@ library(heplots)
 library(candisc)
 
 load(here::here("data", "peng.RData"))
+source("R/penguin-colors.R")
 
 # use ggplot colors
-col <- scales::hue_pal()(3)
+#col <- scales::hue_pal()(3)
 pch <- 15:17
 
+col <- peng.colors("medium")
 # basic scatterplot
 scatterplot(bill_length ~ body_mass | species, data=peng,
             smooth=FALSE, regLine=FALSE, 
@@ -48,9 +50,13 @@ scatterplotMatrix(~ bill_length + bill_depth + flipper_length + body_mass | spec
   ellipse = list(levels = 0.68),
   smooth = FALSE)
 
+# Fig 2.23
 scatterplotMatrix(~ bill_length + bill_depth + flipper_length + body_mass | species,
-  data = peng, col = col, legend=FALSE,
-  ellipse = list(levels = c(0.68, 0.95), fill.alpha = 0.1),
+  data = peng, 
+  col = peng.colors("medium"), 
+  legend=FALSE,
+  ellipse = list(levels = c(0.68, 0.95), 
+                 fill.alpha = 0.1),
   regLine = list(lwd=3),
   diagonal = list(method = "boxplot"),
   smooth = FALSE,

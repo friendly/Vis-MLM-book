@@ -59,13 +59,14 @@ ggplot2::theme_set(ggplot2::theme_bw(base_size = 16))
 # Extra stuff
 # ------------
 
-# colorize text: use inline as `r colorize(text, color)`
-colorize <- function(x, color) {
+# colorize text: use inline as `r colorize(text, color)` to print `text` in a given `color`
+# can also be used to color a color name, as in r colorize("red")`
+colorize <- function(text, color) {
+  if (missing(color)) color <- text
   if (knitr::is_latex_output()) {
-    sprintf("\\textcolor{%s}{%s}", color, x)
+    sprintf("\\textcolor{%s}{%s}", color, text)
   } else if (knitr::is_html_output()) {
-    sprintf("<span style='color: %s;'>%s</span>", color,
-            x)
+    sprintf("<span style='color: %s;'>%s</span>", color, text)
   } else x
 }
 
