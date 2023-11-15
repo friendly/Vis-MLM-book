@@ -45,7 +45,7 @@ theme_penguins <- function(shade=c("medium", "light", "dark"), ...) {
   shade = match.arg(shade)
   list(scale_color_penguins(shade=shade),
        scale_fill_penguins(shade=shade)
-  )
+      )
 }
 
 

@@ -399,7 +399,11 @@ The most basic version is provided by `pairs()` in base R. When one variable
 is considered as an outcome or response, it is usually helpful to put this
 in the first row and column. For the `Prestige` data, in addition to
 income and education, we also have a measure of % women in each occupational category.
-Plotting these together gives @fig-prestige-pairs.
+
+Plotting these together gives @fig-prestige-pairs. In such plots, the diagonal cells
+give labels for the variables, but they are also a guide to interpreting what is shown.
+In each row, say row 2 for `income`, income is the vertical $y$ variable in plots against other
+variables. In each column, say column 3 for `education`, education is the horizonal $x$ variable.
 
 ```{r}
 #| label: fig-prestige-pairs
@@ -413,14 +417,23 @@ pairs(~ prestige + income + education + women,
 
 The plots in the first row show what we have seen before for the relations between prestige and income and education, adding to those the plot of prestige vs. % women. Plots in the first column show the same data, but with $x$ and $y$ interchanged. 
 
-A more feature-rich version is provided by `car::scatterplotMatrix()` which
+But this basic `pairs()` plot is very limited. A more feature-rich version is provided by `car::scatterplotMatrix()` which
 can add the regression lines, loess smooths and data ellipses for each
-pair. The diagonal panels show density curves for the distribution of each
-variable; for example, the distribution of education appears to be multi-modal
+pair, as shown in @fig-prestige-spm1.
+
+The diagonal panels show density curves for the distribution of each
+variable; for example, the distribution of `education` appears to be multi-modal
 and that of `women` shows that most of the occupations have a low percentage
-of women. The combination of the regression line with the loess smoothed
+of women. 
+
+The combination of the regression line with the loess smoothed
 curve, but without their confidence envelopes, provides about the right
 amount of detail to take in at a glance where the relations are non-linear.
+We've already seen (@fig-Prestige-scatterplot-income1)
+the non-linear relation between prestige and income
+(row 1, column 2) when occupational type is ignored. 
+But all relations with income in column 2 are non-linear, reinforcing
+our idea (@sec-log-scale) that effects of income should be assessed on a log scale.
 
 ```{r}
 #| label: fig-prestige-spm1
@@ -497,7 +510,7 @@ have similar size and shape in most of the plots.
 From the boxplots, we can also see that `r colorize("Adelie", "orange")` penguins
 have shorter bill lengths than the others, while `r colorize("Gentoo", "green")`
 penguins have smaller bill depth, but longer flippers and are heavier
-than r colorize("Chinstrap", "purple")` and `r colorize("Adelie", "orange")`
+than `r colorize("Chinstrap", "purple")` and `r colorize("Adelie", "orange")`
 penguins. 
 
 
@@ -517,7 +530,7 @@ peng.mod <- lm(cbind(bill_length, bill_depth, flipper_length, body_mass) ~ speci
 
 Hypothesis-error (HE) plots, described in @sec-vis-mlm provide a better summary of the evidence for the MANOVA test of differences among means on all variables together. These give an 
 $\mathbf{H}$ ellipse reflecting the differences among means, to be compared with
-an $\mathbf{E}$ ellipse reflecting within-group variation.
+an $\mathbf{E}$ ellipse reflecting within-group variation and a visual test of significance
 
 A related question is "how well are the penguin species distinguished by these body size measures?"
 Here, the relevant model is linear discriminant analysis (LDA), where `species` plays the role of the response in the model,
@@ -547,6 +560,47 @@ _Discrete Data Analysis with R_ [@FriendlyMeyer:2016:DDAR] and the **vcdExtra** 
 package for mosaic plots and mosaic matrices.
 
 **TODO** Mosaic matrix of species, island & sex.
+For example, we can tabulate the distributions of penguin species by sex and the island
+where they were observed using `xtabs()`. `ftable()` prints this three-way table more compactly.
+
+```{r peng-table}
+# use better labels for sex
+peng <- peng |>
+  mutate(sex = factor(sex, labels = c("Female", "Male")))
+peng.table <- xtabs(~ species + sex + island, data = peng)
+
+ftable(peng.table)
+```
+
+We can see immediately that the penguin species differ by island:
+only Adelie were observed on all three islands; Biscoe Island had no Chinstraps
+and Dream Island had no Gentoos.
+
+`vcd::pairs()` produces all pairwise mosaic plots, as shown in @fig-peng-mosaic.
+The diagonal panels show the one-way
+frequencies by width of the divided bars. Each off-diagonal panel shows the bivariate
+counts, breaking down each column variable by splitting the bars in proportion to a
+second variable. Consequently, the frequency of each cell is represented by its' area.
+The purpose is to show the pattern of association between each pair,
+and so, the tiles in the mosaic are shaded according to the signed residual
+in a simple $\chi^2$ test for association--- `r colorize("blue", "blue")`
+where the observed frequency is greater than expected under independence, and
+`r colorize("red", "red")` where it is less than expected.
+
+
+```{r}
+#| label: fig-peng-mosaic
+#| fig-width: 7
+#| fig-height: 7
+#| out-width: "100%"
+#| fig-cap: "Mosaic pairs plot for the combinations of species, sex and island. ..."
+library(vcd)
+pairs(peng.table, shade = TRUE)
+```
+
+The shading patterns in cells (1,3) and (3,1) of @fig-peng-mosaic show what we've seen before in the table of frequencies: The distribution of species varies across island. Row 2 and column 2
+show that there is sex is roughly proportional among species and islands.
+
 
 The next step, by John Emerson and others [@Emerson-etal:2013] was to recognize
 that combinations of continuous and discrete, categorical variables could be plotted

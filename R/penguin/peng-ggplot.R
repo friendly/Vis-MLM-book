@@ -10,7 +10,7 @@ library(ggdensity)
 library(patchwork)
 
 load(here::here("data", "peng.RData"))
-str(peng)
+#str(peng)
 
 source("R/penguin-colors.R")
 

@@ -104,6 +104,7 @@ $\\newcommand*{\\diag}[1]{\\ensuremath{\\mathrm{diag}\\, #1}}$
   "lattice",
   "datasauRus",
   "vcd",
+  "vcdExtra", 
   "palmerpenguins")
 
 # write list of packages used at end of every chapter
