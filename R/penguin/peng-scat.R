@@ -9,7 +9,7 @@ library(heplots)
 library(candisc)
 
 load(here::here("data", "peng.RData"))
-source("R/penguin-colors.R")
+source("R/penguin/penguin-colors.R")
 
 # use ggplot colors
 #col <- scales::hue_pal()(3)

@@ -41,6 +41,14 @@ scale_colour_penguins <- function(shade=c("medium", "light", "dark"), ...){
 }
 scale_color_penguins <- scale_colour_penguins
 
+theme_penguins <- function(shade=c("medium", "light", "dark"), ...) {
+  shade = match.arg(shade)
+  list(scale_color_penguins(shade=shade),
+       scale_fill_penguins(shade=shade)
+  )
+}
+
+
 
 if(FALSE){
 #             light      medium     dark

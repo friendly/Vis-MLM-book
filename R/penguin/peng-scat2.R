@@ -10,10 +10,12 @@ library(heplots)
 library(candisc)
 
 load(here::here("data", "peng.RData"))
+source("R/penguin/penguin-colors.R")
 
-# use ggplot colors
-col <- scales::hue_pal()(3)
+# use penguin colors
+col <- peng.colors("medium")
 pch <- 15:17
+
 
 # basic scatterplot
 scatterplot(bill_length ~ body_mass | species, data=peng,

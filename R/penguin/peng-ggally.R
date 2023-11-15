@@ -7,13 +7,18 @@ library(ggplot2)
 library(GGally)
 
 load(here::here("data", "peng.RData"))
-str(peng)
+source("R/penguin/penguin-colors.R")
 
-theme_set(theme_bw(base_size = 16))
+# use penguin colors
+col <- peng.colors("medium")
+pch <- 15:17
+theme_set(theme_bw(base_size = 14))
 
 # basic plot
-ggpairs(peng, columns=3:6,
-        aes(color=species, alpha=0.5))
+ggpairs(peng, columns=c(3:6, 7),
+        aes(color=species, alpha=0.5),
+        progress = FALSE) +
+  theme_penguins()
 
 
 # use panel functions
@@ -42,7 +47,9 @@ ggpairs(peng, columns=3:6,
   mapping = aes(color=species, alpha=0.2),
   lower = list(continuous = my_panel),
   upper = list(continuous = my_panel),
-  progress = FALSE) 
+  progress = FALSE) +
+  theme_penguins()
+
 
 # only regression line & data ellipse
 my_panel1 <- function(data, mapping, ...){
@@ -57,6 +64,17 @@ ggpairs(peng, columns=3:6,
         lower = list(continuous = my_panel1),
         upper = list(continuous = my_panel1),
         progress = FALSE) +
+  theme_penguins() +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank())
+
+# show catgegorical variables
+ggpairs(peng, columns=c(3:6, 1, 2, 7),
+        mapping = aes(color=species, fill = species, alpha=0.2),
+        lower = list(continuous = my_panel1),
+        upper = list(continuous = my_panel1),
+        progress = FALSE) +
+  theme_penguins() +
   theme(panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank())
 

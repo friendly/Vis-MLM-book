@@ -494,6 +494,13 @@ scatterplotMatrix(~ bill_length + bill_depth + flipper_length + body_mass | spec
 It can be seen that the species are widely separated in most of the bivariate plots.
 As well, the regression lines for species have similar slopes and the data ellipses
 have similar size and shape in most of the plots.
+From the boxplots, we can also see that `r colorize("Adelie", "orange")` penguins
+have shorter bill lengths than the others, while `r colorize("Gentoo", "green")`
+penguins have smaller bill depth, but longer flippers and are heavier
+than r colorize("Chinstrap", "purple")` and `r colorize("Adelie", "orange")`
+penguins. 
+
+
 
 ::: {.callout-note}
 ## Looking ahead
@@ -531,12 +538,15 @@ in @sec-eqcov.
 ### Generalized pairs plots
 
 When a dataset contains one or more discrete variables, the traditional pairs plot 
-provides cannot cope, using only color and/or point symbols to represent
+cannot cope, using only color and/or point symbols to represent
 categorical variables. In the context of mosaic displays and loglinear models, representing $n$-way frequency tables by rectangular tiles depicting cell frequencies,
 I [@Friendly:94a] proposed an analog of the scatterplot matrix using 
 mosaic plots for each pair of variables. The **vcd** package [@R-vcd] implements
 very general `pairs()` methods for `"table"` objects. See my book
-_Discrete Data Analysis with R_ [@FriendlyMeyer:2016:DDAR] ...
+_Discrete Data Analysis with R_ [@FriendlyMeyer:2016:DDAR] and the **vcdExtra** [@R-vcdExtra]
+package for mosaic plots and mosaic matrices.
+
+**TODO** Mosaic matrix of species, island & sex.
 
 The next step, by John Emerson and others [@Emerson-etal:2013] was to recognize
 that combinations of continuous and discrete, categorical variables could be plotted
@@ -547,9 +557,41 @@ in different ways.
 * two categorical variables could be shown in a mosaic plot or by grouped bar plots.
 
 In the `ggplot2` framework, these displays are implemented in the 
-**GGally** package [@R-GGally] ...
+**GGally** package [@R-GGally] in the `ggpairs()` function. This allows different plot types to be shown in the lower and upper triangles and in the diagonal cells of the plot matrix.
+As well, aesthetics such as color and shape can be used within the plots to distinguish groups directly. As illustrated below, you can define custom functions to control exactly what is plotted
+in any panel.
 
+The basic, default plot shows scatterplots for pairs of continuous variables in the
+lower triangle and the values of correlations in the upper triangle. 
+A combination of a discrete and continuous variable
+is plotted as histograms in the lower triangle and boxplots in the upper triangle.
+@fig-peng-ggpairs1 includes `sex` to illustrate the combinations.
 
+```{r}
+#| label: fig-peng-ggpairs1
+#| fig-width: 7
+#| fig-height: 7
+#| out-width: "100%"
+#| fig-cap: "Basic `ggpairs()` plot of penguin size variables and sex, stratified by species."
+ggpairs(peng, columns=c(3:6, 7),
+        aes(color=species, alpha=0.5),
+        progress = FALSE) +
+  theme_penguins()
+```
+
+To my eye, printing the values of correlations in the upper triangle is often a waste of
+graphic space. But this example shows something peculiar and interesting if you look closely:
+In all pairs among the penguin size measurements, there are positive correlations within each
+species, as we can see in @fig-peng-spm. Yet in three of these panels,
+the overall correlation ignoring species is negative. For example the overall correlation
+between bill depth and flipper length is $r = -0.579$ in row 2, column 3;
+the scatterplot in the diagonally opposite cell, row 3, column 2 shows the data.
+These cases, of differing signs for an overall correlation, ignoring a group variable
+and the within group correlations are examples of **Simpson's Paradox**, explored later
+in Chapter XX.
+
+The last row and column, for `sex` in @fig-peng-ggpairs1, provides an initial glance at the
+issue of sex differences among pengiun species that motivated the collection of these data. ...
 
 ## Parallel coordinate plots {#sec-parcoord}
 
