@@ -33,7 +33,7 @@ ggplot(peng,
   theme_penguins +
   theme(legend.position = c(0.85, 0.15))
       
-# remove points
+# show ellipses, reg lines, no points
 ggplot(peng, 
        aes(x = bill_length, y = bill_depth,
            color = species, fill=species)) +
