@@ -681,6 +681,56 @@ a smoother, `_lm` or `_loess`.
 ls(getNamespace("GGally")) |> stringr::str_subset("^ggally_smooth_")
 ```
 
+A customized display for scatterplots of continuous variables can be any function that 
+takes `data` and `mapping` arguments and returns a `"ggplot"` object. The `mapping`
+argument supplies the aesthetics, e.g.,  `aes(color=species, alpha=0.5)`
+
+Here is a function, `my_panel()` that plots the data points and regression line and loess smooth
+
+```{r}
+#| label: my-panel
+my_panel <- function(data, mapping, ...){
+  p <- ggplot(data = data, mapping = mapping) + 
+    geom_point() + 
+    geom_smooth(method=lm, formula = y ~ x, se = FALSE, ...) +
+    geom_smooth(method=loess, formula = y ~ x, se = FALSE, ...)
+  p
+}
+```
+
+For this example, I want to summarize 
+don't want to plot the data points, but do want to add the regression line
+and a data ellipse. 
+
+```{r}
+#| label: my-panel1
+my_panel1 <- function(data, mapping, ...){
+  p <- ggplot(data = data, mapping = mapping) + 
+     geom_smooth(method=lm, formula = y ~ x, se = FALSE, ...) +
+     stat_ellipse(geom = "polygon", level = 0.68, ...)
+  p
+}
+
+```
+
+Then, to show what can be done, @fig-peng-ggpairs7 uses `my_panel1()` for the scatterplots in the 
+4 x 4 block of plots in the upper left. ...
+
+```{r}
+#| label: fig-peng-ggpairs7
+#| fig-width: 9
+#| fig-height: 9
+#| out-width: "100%"
+#| fig-cap: "Customized `ggpairs()` plot of penguin size variables, together with species, island and sex."
+ggpairs(peng, columns=c(3:6, 1, 2, 7),
+        mapping = aes(color=species, fill = species, alpha=0.2),
+        lower = list(continuous = my_panel1),
+        upper = list(continuous = my_panel1),
+        progress = FALSE) +
+  theme_penguins() +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank())
+```
 
 
 
