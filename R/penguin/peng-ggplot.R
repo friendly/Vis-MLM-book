@@ -12,7 +12,7 @@ library(patchwork)
 load(here::here("data", "peng.RData"))
 #str(peng)
 
-source("R/penguin-colors.R")
+source("R/penguin/penguin-colors.R")
 
 theme_set(theme_bw(base_size = 16))
 #options(ggplot2.discrete.colour = peng.colors("dark")) 
