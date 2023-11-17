@@ -91,7 +91,10 @@ ggplot(anscombe_long, aes(x = x, y = y)) +
   scale_y_continuous(breaks = seq(0,12,2)) +
   stat_ellipse(level = 0.5, color=col, type="norm") +
   geom_label(data=desc, aes(label = label), x=6, y=12) +
-  facet_wrap(~dataset, labeller = label_both) 
+  facet_wrap(~dataset, labeller = label_both) +
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank())
+
 
 
 

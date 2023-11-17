@@ -12,7 +12,7 @@ library(patchwork)
 load(here::here("data", "peng.RData"))
 #str(peng)
 
-source("R/penguin-colors.R")
+source("R/penguin/penguin-colors.R")
 
 theme_set(theme_bw(base_size = 16))
 #options(ggplot2.discrete.colour = peng.colors("dark")) 
@@ -33,7 +33,7 @@ ggplot(peng,
   theme_penguins +
   theme(legend.position = c(0.85, 0.15))
       
-# remove points
+# show ellipses, reg lines, no points
 ggplot(peng, 
        aes(x = bill_length, y = bill_depth,
            color = species, fill=species)) +
