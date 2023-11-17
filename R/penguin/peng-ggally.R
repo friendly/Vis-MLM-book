@@ -20,6 +20,15 @@ ggpairs(peng, columns=c(3:6, 7),
         progress = FALSE) +
   theme_penguins()
 
+# use ggally_ functions
+ggpairs(peng, columns=c(3:6, 7),
+        aes(color=species, alpha=0.5),
+        lower = list(continuous = "smooth"),
+        upper = list(continuous = "smooth"),
+        diag  = list(continuous = "boxDiag"),
+        progress = FALSE) +
+  theme_penguins()
+
 
 # use panel functions
 

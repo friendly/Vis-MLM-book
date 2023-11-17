@@ -548,7 +548,7 @@ in @sec-eqcov.
 :::
 
 
-### Generalized pairs plots
+## Generalized pairs plots {#sec-ggpairs}
 
 When a dataset contains one or more discrete variables, the traditional pairs plot 
 cannot cope, using only color and/or point symbols to represent
@@ -559,7 +559,6 @@ very general `pairs()` methods for `"table"` objects. See my book
 _Discrete Data Analysis with R_ [@FriendlyMeyer:2016:DDAR] and the **vcdExtra** [@R-vcdExtra]
 package for mosaic plots and mosaic matrices.
 
-**TODO** Mosaic matrix of species, island & sex.
 For example, we can tabulate the distributions of penguin species by sex and the island
 where they were observed using `xtabs()`. `ftable()` prints this three-way table more compactly.
 
@@ -645,7 +644,46 @@ and the within group correlations are examples of **Simpson's Paradox**, explore
 in Chapter XX.
 
 The last row and column, for `sex` in @fig-peng-ggpairs1, provides an initial glance at the
-issue of sex differences among pengiun species that motivated the collection of these data. ...
+issue of sex differences among pengiun species that motivated the collection of these data.
+We can go further by also examining differences among species and island, but first we need
+to understand how to display exactly what we want for each pairwise plot.
+
+`ggpairs()` is extremely general, in that for each of the `lower`, `upper` and `diag` sections you
+can assign any of a large number of built-in functions (of the form `ggally_NAME`),
+or you own custom function for what is plotted, depending on the types of variables in each plot.
+
+
+*  `continuous`: both X and Y are continuous variables; supply as the `NAME` part of a `ggally_NAME()` function or name of a custom function.
+*  `combo`: one X of and Y variable is discrete while the other is continuous;
+*  `discrete`: both X and Y are discrete variables.
+
+
+The defaults, which were used in @fig-peng-ggpairs1, are:
+
+```
+upper = list(continuous = "cor", combo = "box_no_facet", discrete = "count")
+lower = list(continuous = "points", combo = "facethist", discrete = "facetbar")
+diag  = list(continuous = "densityDiag", discrete = "barDiag")
+```
+
+Thus, `ggpairs()` uses `ggally_cor()` to print the correlation values for pairs of continuous
+variables in the upper triangle, and uses `ggally_points()` to plot scatterplots of points
+in the lower triangle. The diagonal panels as shown as density plots (`ggally_densityDiag()`)
+for continuous variables but as par plots (`ggally_densityDiag()`).
+
+See the vignette, [ggally_plots](https://ggobi.github.io/ggally/articles/ggally_plots.html)
+for an illustrated list of available high-level plots.
+For my purpose here, which is to illustrate enhanced displays, note that for scatterplots
+of continuous variables, there are two functions which plot the points and also add
+a smoother, `_lm` or `_loess`.
+
+```{r ggally-smooth-fns}
+ls(getNamespace("GGally")) |> stringr::str_subset("^ggally_smooth_")
+```
+
+
+
+
 
 ## Parallel coordinate plots {#sec-parcoord}
 
