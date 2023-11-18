@@ -5,6 +5,7 @@
 
 library(ggplot2)
 library(ggpcp)
+library(dplyr)
 
 load(here::here("data", "peng.RData"))
 source("R/penguin/penguin-colors.R")
@@ -27,24 +28,24 @@ peng <- peng |>
 #   labs(x = "", y = "") +
 #   theme_penguins()
 
+# Use this for first ggpcp plot, Fig. 3-xx
 peng |>
-  pcp_select(4, 3, 5:6, sex, species) |>
+  pcp_select(bill_length:body_mass, sex, species) |>
   pcp_scale(method = "uniminmax") |>
   pcp_arrange() |>
   ggplot(aes_pcp()) +
   geom_pcp_axes() +
   geom_pcp(aes(colour = species), alpha = 0.8, overplot = "none") +
   geom_pcp_labels() +
-  scale_color_manual("Species", values = cols) +
-  theme_bw(base_size = 14) +
-  scale_x_discrete(
-    expand = expansion(add = 0.3),
-    labels = c(
-      "Bill Depth", "Bill Length",
-      "Flipper Length", "Body Mass",
-      "Sex", "Species"
-    )
-  ) +
+  scale_colour_manual(values = peng.colors("dark")) +
+  theme_bw(base_size = 16) +
+  # scale_x_discrete(
+  #   expand = expansion(add = 0.3),
+  #   labels = c(
+  #     "Bill Depth", "Bill Length",
+  #     "Flipper Length", "Body Mass",
+  #     "Sex", "Species")
+  #   ) +
   labs(x = "", y = "") +
   theme(axis.title.y = element_blank(), axis.text.y = element_blank(), 
         axis.ticks.y = element_blank(), legend.position = "none")
@@ -69,6 +70,6 @@ peng1 %>%
     axis.text.y = element_blank(), axis.ticks.y = element_blank(),
     legend.position = "none"
   ) +
-  scale_colour_manual(values = c(cols[2], cols[1], cols[3])) 
+  scale_colour_manual(values = peng.colors("dark")[c(2,1,3)]) 
   
 

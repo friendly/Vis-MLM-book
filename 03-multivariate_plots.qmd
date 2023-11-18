@@ -39,6 +39,7 @@ library(corrgram)
 library(GGally)
 library(ggdensity)
 library(patchwork)
+library(ggpcp)
 ```
 
 ## Bivariate summaries {#sec-bivariate_summaries}
@@ -206,7 +207,7 @@ one can easily stratify by two (or more) other variables jointly, but visual com
 is more difficult because the eye must scan from one panel to another.
 
 ::: {.callout-note}
-## A bit of history
+## History Corner
 Recognition of the roles of visual grouping by factors within a panel and conditioning in multi-panel displays was an important
 advance in the development of modern statistical graphics. It began at 
 A.T.&T. Bell Labs in Murray Hill, NJ in conjunction with the **S** language,
@@ -561,6 +562,7 @@ package for mosaic plots and mosaic matrices.
 
 For example, we can tabulate the distributions of penguin species by sex and the island
 where they were observed using `xtabs()`. `ftable()` prints this three-way table more compactly.
+(In this example, and what follows in the chapter, I've changed the labels for sex from ("f", "m") to ("Female", "Male"))
 
 ```{r peng-table}
 # use better labels for sex
@@ -580,26 +582,34 @@ The diagonal panels show the one-way
 frequencies by width of the divided bars. Each off-diagonal panel shows the bivariate
 counts, breaking down each column variable by splitting the bars in proportion to a
 second variable. Consequently, the frequency of each cell is represented by its' area.
-The purpose is to show the pattern of association between each pair,
-and so, the tiles in the mosaic are shaded according to the signed residual
-in a simple $\chi^2$ test for association--- `r colorize("blue", "blue")`
-where the observed frequency is greater than expected under independence, and
-`r colorize("red", "red")` where it is less than expected.
+The purpose is to show the **pattern of association** between each pair,
+and so, the tiles in the mosaic are shaded according to the signed standardized residual,
+$d_{ij} = (n_{ij} - \hat{n}_{ij}) / \sqrt{\hat{n}_{ij}}$
+in a simple $\chi^2 = \Sigma_{ij} \; d_{ij}^2$ test for association--- `r colorize("blue", "blue")`
+where the observed frequency $n_{ij}$ is significantly
+greater than expected $\hat{n}_{ij}$ under independence, and
+`r colorize("red", "red")` where it is less than expected. The tiles are unshaded when
+$| d_{ij} | < 2$.
 
 
 ```{r}
 #| label: fig-peng-mosaic
-#| fig-width: 7
-#| fig-height: 7
+#| fig-width: 9
+#| fig-height: 9
 #| out-width: "100%"
-#| fig-cap: "Mosaic pairs plot for the combinations of species, sex and island. ..."
+#| fig-cap: "Mosaic pairs plot for the combinations of species, sex and island. Diagnonal plots show the marginal frequency of each variable by the width of each rectangle. Off-diagonal mosaic plots subdivide by the conditional frequency of the second variable, shown numerically in the tiles. "
 library(vcd)
-pairs(peng.table, shade = TRUE)
+pairs(peng.table, shade = TRUE,
+      lower_panel_args = list(labeling = labeling_values()),
+      upper_panel_args = list(labeling = labeling_values()))
 ```
 
-The shading patterns in cells (1,3) and (3,1) of @fig-peng-mosaic show what we've seen before in the table of frequencies: The distribution of species varies across island. Row 2 and column 2
-show that there is sex is roughly proportional among species and islands.
-
+The shading patterns in cells (1,3) and (3,1) of @fig-peng-mosaic show what we've seen before in the table of frequencies: The distribution of species varies across island because on each island one or more
+species did not occur.
+Row 2 and column 2
+show that sex is nearly exactly proportional among species and islands, indicating independence,
+$\text{sex} \perp \{\text{species}, \text{island}\}$. More importantly, mosaic pairs plots
+can show, at a glance all (bivariate) associations among multivariate categorical variables.
 
 The next step, by John Emerson and others [@Emerson-etal:2013] was to recognize
 that combinations of continuous and discrete, categorical variables could be plotted
@@ -653,23 +663,28 @@ can assign any of a large number of built-in functions (of the form `ggally_NAME
 or you own custom function for what is plotted, depending on the types of variables in each plot.
 
 
-*  `continuous`: both X and Y are continuous variables; supply as the `NAME` part of a `ggally_NAME()` function or name of a custom function.
-*  `combo`: one X of and Y variable is discrete while the other is continuous;
+*  `continuous`: both X and Y are continuous variables; supply this as the `NAME` part of a `ggally_NAME()` function or the name of a custom function.
+*  `combo`: one X of and Y variable is discrete while the other is continuous, using the same convention;
 *  `discrete`: both X and Y are discrete variables.
 
 
 The defaults, which were used in @fig-peng-ggpairs1, are:
 
-```
-upper = list(continuous = "cor", combo = "box_no_facet", discrete = "count")
-lower = list(continuous = "points", combo = "facethist", discrete = "facetbar")
-diag  = list(continuous = "densityDiag", discrete = "barDiag")
+```{r eval=FALSE}
+upper = list(continuous = "cor",          # correlation values
+             combo = "box_no_facet",      # boxplots 
+             discrete = "count")          # rectangles ~ count
+lower = list(continuous = "points",       # just data points
+             combo = "facethist",         # faceted histograms
+             discrete = "facetbar")       # faceted bar plots
+diag  = list(continuous = "densityDiag",  # density plots
+             discrete = "barDiag")        # bar plots
 ```
 
 Thus, `ggpairs()` uses `ggally_cor()` to print the correlation values for pairs of continuous
 variables in the upper triangle, and uses `ggally_points()` to plot scatterplots of points
-in the lower triangle. The diagonal panels as shown as density plots (`ggally_densityDiag()`)
-for continuous variables but as par plots (`ggally_densityDiag()`).
+in the lower portion. The diagonal panels as shown as density plots (`ggally_densityDiag()`)
+for continuous variables but as bar plots (`ggally_barDiag()`) for discrete factors.
 
 See the vignette, [ggally_plots](https://ggobi.github.io/ggally/articles/ggally_plots.html)
 for an illustrated list of available high-level plots.
@@ -683,7 +698,8 @@ ls(getNamespace("GGally")) |> stringr::str_subset("^ggally_smooth_")
 
 A customized display for scatterplots of continuous variables can be any function that 
 takes `data` and `mapping` arguments and returns a `"ggplot"` object. The `mapping`
-argument supplies the aesthetics, e.g.,  `aes(color=species, alpha=0.5)`
+argument supplies the aesthetics, e.g.,  `aes(color=species, alpha=0.5)`, but only if you wish
+to override what is supplied in the `ggpairs()` call.
 
 Here is a function, `my_panel()` that plots the data points and regression line and loess smooth
 
@@ -698,7 +714,7 @@ my_panel <- function(data, mapping, ...){
 }
 ```
 
-For this example, I want to summarize 
+For this example, I want to simple summaries of for the scatterplots, so I
 don't want to plot the data points, but do want to add the regression line
 and a data ellipse. 
 
@@ -714,7 +730,11 @@ my_panel1 <- function(data, mapping, ...){
 ```
 
 Then, to show what can be done, @fig-peng-ggpairs7 uses `my_panel1()` for the scatterplots in the 
-4 x 4 block of plots in the upper left. ...
+4 x 4 block of plots in the upper left. The combination of the continuous body size measures
+and the discrete factors `species`, `island` and `sex` are shown in upper triangle by boxplots
+but by faceted histograms in the lower portion. The factors are shown as 
+rectangles with area proportional to count (poor-man's mosaic plots) above the diagonal and
+as faceted bar plots below.
 
 ```{r}
 #| label: fig-peng-ggpairs7
@@ -732,13 +752,14 @@ ggpairs(peng, columns=c(3:6, 1, 2, 7),
         panel.grid.minor = element_blank())
 ```
 
-
+There is certainly a lot going on in @fig-peng-ggpairs7, but it does show a high-level overview
+of all the variables (except `year`) in the penguins dataset. 
 
 
 ## Parallel coordinate plots {#sec-parcoord}
 
 As we have seen above, scatterplot matrices and generalized pairs plots
-extend data visualization to multivariate data, but these variables share one 2D space, and resolution decreases as the number of variable increase.
+extend data visualization to multivariate data, but these variables share one 2D space, so resolution decreases as the number of variable increase.
 You need a very large screen or sheet of paper to see more than, say 5-6 variables with any
 clarity.
 
@@ -747,12 +768,66 @@ In these plots, each variable is shown on a separate, parallel axis.
 A multivariate observation is then plotted by connecting their respective
 values on each axis with lines across all the axes.
 
+The geometry of parallel coordinates is interesting, because what is a point in $n$-dimensional (Euclidean)
+_data_ space becomes a line in the _projective_ parallel coordinate space with $n$ axes, and vice-versa:
+lines in parallel coordinate space correspond to points in data space.
+Thus, a collection of points in data space map to lines that intersect in a point in projective space.
+What this does is to map $n$-dimensional relations into 2D patterns we can see in a parallel coordinates plot.
 
-<!-- ## Categorical data: -->
+::: {.callout-note}
+## History Corner
+The theory of projective geometry originated with the French mathematician Maurice d'Ocagne [-@Ocagne:1885] who sought a way to provide graphic calculation of mathematical functions
+with alignment diagrams or _nomograms_ using parallel axes with different scales.
+A three-variable equation, for example, could be solved using three parallel axes,
+where known values could be marked on their scales, a line drawn between them, and 
+an unknown read on its scale at the point where the line intersects that scale.
 
-<!--     + mosaic plots -->
+Henry Gannet (1880), in work preceding the _Statistical Atlas of the United States_
+for the 1890 Census [@Gannett:1898], is widely credited with being the first to use parallel coordinates
+plots to show data, in his case, to show changes in the rank ordering of US states over
+previous censuses from XXX to his present.
+However, both d'Ocagne and Gannet were far preceded in this by Andre-Michel Guerry [-@Guerry:1833]
+who used this method to show how the rank order of various crimes changed with age of the accused.
+**TODO**: Revise the _History_ section of the Wikipedia page for [Parallel coordinates](https://en.wikipedia.org/wiki/Parallel_coordinates).
 
-<!-- ## Generalized pair plots -->
+**TODO**: Mention Insleberg [-@Inselberg:1985] & Wegman [-@Wegman:1990]; Andrews plots [-@Andrews:72], ...
+:::
+
+Parallel coordinate plots present a challenge for graphic developers, in that they require a different
+way to think about plot construction for multiple variables, which can be quantitative,
+as in the original idea, or categorical factors ...
+
+Here, I use the **ggpcp** package [@R-ggpcp], best described in @VanderPlas2023. ...
+This takes some getting used to, because they develop `pcp_*()` extensions of the `ggplot2` grammar of graphics framework to allow: 
+
+* `pcp_select()`: selections of the variables to be plotted and their horizontal order on parallel axes,
+* `pcp_scale()`: methods for scaling of the variables to each axis,
+* `pcp_arrange()`: methods for breaking ties in factor variables to space them out
+
+Then, it provides `geom_pcp_*()` functions to control the display of axes with appropriate
+aesthetics, labels for categorical factors and so forth. @fig-peng-ggpcp1 illustrates this type of
+display, using sex and species in addition to the quantitative variables for the penguin data.
+
+```{r}
+#| label: fig-peng-ggpcp1
+#| fig-width: 9
+#| fig-height: 6
+#| out-width: "100%"
+#| fig-cap: "Parallel coordinates plot of penguin size variables, together with sex and species."
+peng |>
+  pcp_select(bill_length:body_mass, sex, species) |>
+  pcp_scale(method = "uniminmax") |>
+  pcp_arrange() |>
+  ggplot(aes_pcp()) +
+  geom_pcp_axes() +
+  geom_pcp(aes(colour = species), alpha = 0.8, overplot = "none") +
+  geom_pcp_labels() +
+  scale_colour_manual(values = peng.colors("dark")) +
+  theme_bw(base_size = 16) +
+  labs(x = "", y = "") +
+  theme(axis.title.y = element_blank(), axis.text.y = element_blank(), 
+        axis.ticks.y = element_blank(), legend.position = "none")
+```
 
 
 ```{r}
