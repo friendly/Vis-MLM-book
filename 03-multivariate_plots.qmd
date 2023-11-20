@@ -548,6 +548,59 @@ in @sec-eqcov.
 
 :::
 
+### Visual thinning
+
+What can you do if there are even more variables than in these examples?
+If what you want is a high-level, zoomed-out display summarizing the pairwise relations more strongly,
+you can apply the idea of visual thinning to show only the most important features.
+
+This example uses data on the rate of various crimes in the 50 U.S. states from the
+United States Statistical Abstracts, 1970, used by @Hartigan:75 and @Friendly:91.
+These are ordered in the dataset roughly by seriousness of crime or
+from crimes of violence to property crimes.
+
+```{r crime-data}
+load(here::here("data", "crime.RData"))
+str(crime)
+```
+
+@fig-crime-spm displays the scatterplot matrix for these seven variables, using only the regression line and data ellipse to show the linear relation and the loess smooth to show potential nonlinearity.
+To make this even more schematic, the axis tick marks and labels are also removed using
+the `par()` settings `xaxt = "n", yaxt = "n"`.
+```{r}
+#| label: fig-crime-spm
+#| fig-width: 8
+#| fig-height: 8
+#| out-width: "100%"
+#| fig-cap: "**Visual thinning**: Scatterplot matrix of the crime data, showing only high-level summaries of the linear and nonlinear relations betgween each pair of variables."
+crime |>
+  select(where(is.numeric)) |>
+  scatterplotMatrix(
+    plot.points = FALSE,
+    ellipse = list(levels = 0.68, fill=FALSE),
+    smooth = list(spread = FALSE, 
+                  lwd.smooth=2, lty.smooth = 1, col.smooth = "red"),
+    cex.labels = 2,
+    xaxt = "n", yaxt = "n")
+```
+
+We can see that all pairwise correlations are positive, pairs closer to the main diagonal tend to be
+more highly correlated and in most cases the nonparametric smooth doesn't differ much from the linear regression line. Exceptions to this appear mainly in the columns for `robbery` and `auto` (auto theft).
+
+### Corrgrams
+
+What if you want to summarize the data even further, for example to show only the value of the correlation for each pair of variables? A **corrgram** [@Friendly:02:corrgram] is a visual display of a correlation matrix, where the correlation can be rendered in a variety of ways to show the direction and magnitude
+(@fig-corrgram-renderings).
+
+```{r}
+#| label: fig-corrgram-renderings
+#| echo: false
+#| out-width: "100%"
+#| fig-cap: "**Corrgrams**: Some renderings for the value of a correlation."
+knitr::include_graphics("images/corrgram-renderings.png")
+```
+
+
 
 ## Generalized pairs plots {#sec-ggpairs}
 
@@ -632,6 +685,8 @@ is plotted as histograms in the lower triangle and boxplots in the upper triangl
 
 ```{r}
 #| label: fig-peng-ggpairs1
+#| code-fold: show
+#| cache: true
 #| fig-width: 7
 #| fig-height: 7
 #| out-width: "100%"
@@ -738,6 +793,8 @@ as faceted bar plots below.
 
 ```{r}
 #| label: fig-peng-ggpairs7
+#| code-fold: show
+#| cache: true
 #| fig-width: 9
 #| fig-height: 9
 #| out-width: "100%"
@@ -763,7 +820,8 @@ extend data visualization to multivariate data, but these variables share one 2D
 You need a very large screen or sheet of paper to see more than, say 5-6 variables with any
 clarity.
 
-Parallel coordinate plots are an attractive alternative, with which we can visualize an arbitrary number of variables to get a visual summary of a potentially high-dimensional dataset.
+Parallel coordinate plots are an attractive alternative, with which we can visualize an arbitrary number of variables to get a visual summary of a potentially high-dimensional dataset, and perhaps
+recognize outliers and clusters in the data in a different way.
 In these plots, each variable is shown on a separate, parallel axis.
 A multivariate observation is then plotted by connecting their respective
 values on each axis with lines across all the axes.
@@ -776,6 +834,8 @@ What this does is to map $n$-dimensional relations into 2D patterns we can see i
 
 ::: {.callout-note}
 ## History Corner
+> Those who don't know history are doomed to plagarize it ---The author
+
 The theory of projective geometry originated with the French mathematician Maurice d'Ocagne [-@Ocagne:1885] who sought a way to provide graphic calculation of mathematical functions
 with alignment diagrams or _nomograms_ using parallel axes with different scales.
 A three-variable equation, for example, could be solved using three parallel axes,
@@ -784,13 +844,22 @@ an unknown read on its scale at the point where the line intersects that scale.
 
 Henry Gannet (1880), in work preceding the _Statistical Atlas of the United States_
 for the 1890 Census [@Gannett:1898], is widely credited with being the first to use parallel coordinates
-plots to show data, in his case, to show changes in the rank ordering of US states over
-previous censuses from XXX to his present.
+plots to show data, in his case, to show the [rank ordering of US states](https://www.davidrumsey.com/luna/servlet/detail/RUMSEY~8~1~32803~1152181) 
+by 10 measures including population, occupations, wealth, manufacturing, agriculture and so on.
+
 However, both d'Ocagne and Gannet were far preceded in this by Andre-Michel Guerry [-@Guerry:1833]
 who used this method to show how the rank order of various crimes changed with age of the accused.
+
 **TODO**: Revise the _History_ section of the Wikipedia page for [Parallel coordinates](https://en.wikipedia.org/wiki/Parallel_coordinates).
 
-**TODO**: Mention Insleberg [-@Inselberg:1985] & Wegman [-@Wegman:1990]; Andrews plots [-@Andrews:72], ...
+<!-- **TODO**: Mention Insleberg [-@Inselberg:1985] & Wegman [-@Wegman:1990]; Andrews plots [-@Andrews:72], ... -->
+The use of parallel coordinates for display of multidimensional data was rediscovered
+by Alfred Inselberg [-@Inselberg:1985] and extended by Edward Wegman [-@Wegman:1990], neither of whom recognized the earlier history.
+Somewhat earlier, David Andrews [-@Andrews:1972] proposed mapping multivariate observations
+to smooth Fourrier functions composed of alternating $\sin()$ and $\cos()$ terms.
+And in my book, _SAS System for Statistical Graphics_ [@Friendly:91], I 
+implemented what I called [_profile plots_](https://blogs.sas.com/content/iml/2022/11/14/profile-plots-sas.html)
+without knowing their earlier history as parallel coordinate plots.
 :::
 
 Parallel coordinate plots present a challenge for graphic developers, in that they require a different
@@ -810,6 +879,8 @@ display, using sex and species in addition to the quantitative variables for the
 
 ```{r}
 #| label: fig-peng-ggpcp1
+#| code-fold: show
+#| cache: true
 #| fig-width: 9
 #| fig-height: 6
 #| out-width: "100%"
@@ -822,13 +893,45 @@ peng |>
   geom_pcp_axes() +
   geom_pcp(aes(colour = species), alpha = 0.8, overplot = "none") +
   geom_pcp_labels() +
-  scale_colour_manual(values = peng.colors("dark")) +
-  theme_bw(base_size = 16) +
+  scale_colour_manual(values = peng.colors()) +
+#  theme_bw(base_size = 16) +
   labs(x = "", y = "") +
   theme(axis.title.y = element_blank(), axis.text.y = element_blank(), 
         axis.ticks.y = element_blank(), legend.position = "none")
 ```
 
+Rearranging the order of variables and the ordering of factor levels can make a difference
+in what we can see in such plots. For a simple example (following @VanderPlas2023),
+we reorder the levels of species and islands to make it clearer which species occur
+on each island.
+
+```{r}
+#| label: fig-peng-ggpcp2
+#| code-fold: show
+#| cache: true
+#| fig-width: 9
+#| fig-height: 6
+#| out-width: "100%"
+#| fig-cap: "Parallel coordinates plot of penguin size variables, with the levels of species and island reordered."
+peng1 <- peng |>
+  mutate(species = factor(species, levels = c("Chinstrap", "Adelie", "Gentoo"))) |>
+  mutate(island = factor(island, levels = c("Dream", "Torgersen", "Biscoe")))
+
+peng1 |>
+  pcp_select(species, island, bill_length:body_mass) |>
+  pcp_scale() |>
+  pcp_arrange(method = "from-left") |>
+  ggplot(aes_pcp()) +
+  geom_pcp_axes() +
+  geom_pcp(aes(colour = species), alpha = 0.6, overplot = "none") +
+  geom_pcp_boxes(fill = "white", alpha = 0.5) +
+  geom_pcp_labels() +
+  scale_colour_manual(values = peng.colors()[c(2,1,3)]) +
+  theme_bw() +
+  labs(x = "", y = "") +
+  theme(axis.text.y = element_blank(), axis.ticks.y = element_blank(),
+        legend.position = "none") 
+```
 
 ```{r}
 #| echo: false

@@ -1,11 +1,11 @@
 library(correlation)
 library(see) # for plotting
 #library(ggraph) # needs to be loaded
-library(here)
+#library(here)
 library(corrplot)
 library(dplyr)
 
-load(here("data", "crime.RData"))
+load(here::here("data", "crime.RData"))
 
 crime |>
   select(where(is.numeric)) |>

@@ -37,7 +37,7 @@ peng |>
   geom_pcp_axes() +
   geom_pcp(aes(colour = species), alpha = 0.8, overplot = "none") +
   geom_pcp_labels() +
-  scale_colour_manual(values = peng.colors("dark")) +
+  scale_colour_manual(values = peng.colors()) +
   theme_bw(base_size = 16) +
   # scale_x_discrete(
   #   expand = expansion(add = 0.3),
@@ -51,25 +51,23 @@ peng |>
         axis.ticks.y = element_blank(), legend.position = "none")
 
 # reorder levels to put species and islands together
-peng1 <- peng %>%
-  mutate(species = factor(species, levels = c("Chinstrap", "Adelie", "Gentoo"))) %>%
+peng1 <- peng |>
+  mutate(species = factor(species, levels = c("Chinstrap", "Adelie", "Gentoo"))) |>
   mutate(island = factor(island, levels = c("Dream", "Torgersen", "Biscoe")))
 
-peng1 %>%
-  pcp_select(species, island, bill_length:body_mass) %>%
-  pcp_scale() %>%
-  pcp_arrange(method = "from-left") %>%
+peng1 |>
+  pcp_select(species, island, bill_length:body_mass) |>
+  pcp_scale() |>
+  pcp_arrange(method = "from-left") |>
   ggplot(aes_pcp()) +
   geom_pcp_axes() +
   geom_pcp(aes(colour = species), alpha = 0.6, overplot = "none") +
   geom_pcp_boxes(fill = "white", alpha = 0.5) +
   geom_pcp_labels() +
+  scale_colour_manual(values = peng.colors()[c(2,1,3)]) +
   theme_bw() +
   labs(x = "", y = "") +
-  theme(
-    axis.text.y = element_blank(), axis.ticks.y = element_blank(),
-    legend.position = "none"
-  ) +
-  scale_colour_manual(values = peng.colors("dark")[c(2,1,3)]) 
+  theme(axis.text.y = element_blank(), axis.ticks.y = element_blank(),
+        legend.position = "none") 
   
 
