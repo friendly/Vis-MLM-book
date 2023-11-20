@@ -15,18 +15,6 @@ This chapter introduces a toolbox of basic graphical methods for visualizing mul
 
 To visualize more than two variables, we can view all pairs of variables in a scatterplot matrix or shift gears entirely to show multiple variables along a set of parallel axes. As the number of variables increase, we may need to suppress details with stronger summaries for a high-level reconnaissance of our data terrain, as we do by zooming out on a map.
 
-<!-- Topics (just for reference) -->
-
-<!-- -   Bivariate summaries -->
-<!--     -   smoothers -->
-<!--     -   data ellipses -->
-<!-- -   Quantitative data: -->
-<!--     -   scatterplot matrices -->
-<!--     -   parallel coordinate plots -->
-<!-- -   ~~Categorical data:~~ -->
-<!--     -   ~~mosaic plots~~ -->
-<!-- -   Generalized pair plots -->
-
 **Packages**
 
 In this chapter I use the following packages. Load them now:
@@ -35,6 +23,7 @@ library(car)
 library(ggplot2)
 library(dplyr)
 library(tidyr)
+library(corrplot)
 library(corrgram)
 library(GGally)
 library(ggdensity)
@@ -589,15 +578,43 @@ more highly correlated and in most cases the nonparametric smooth doesn't differ
 
 ### Corrgrams
 
-What if you want to summarize the data even further, for example to show only the value of the correlation for each pair of variables? A **corrgram** [@Friendly:02:corrgram] is a visual display of a correlation matrix, where the correlation can be rendered in a variety of ways to show the direction and magnitude
-(@fig-corrgram-renderings).
+What if you want to summarize the data even further, for example to show only the value of the correlation for each pair of variables? A **corrgram** [@Friendly:02:corrgram] is a visual display of a correlation matrix, where the correlation can be rendered in a variety of ways to show the direction and magnitude: circular
+"pac-man" symbols, ellipses, colored vars or shaded rectangles, as shown in 
+@fig-corrgram-renderings.
+
+Another aspect is that of **effect ordering** [@FriendlyKwan:02:effect],
+ordering the levels of factors and variables in graphic displays to make important features
+most apparent.
+For variables, this means that we can arrange the
+variables in a matrix-like display in such a way as to make the pattern of relationships easiest to see. 
+Methods to achieve this include using principal components and cluster analysis to put the most
+related variables together as described in @#sec-pca-biplot.
 
 ```{r}
 #| label: fig-corrgram-renderings
 #| echo: false
 #| out-width: "100%"
-#| fig-cap: "**Corrgrams**: Some renderings for the value of a correlation."
+#| fig-cap: "**Corrgrams**: Some renderings for the value of a correlation in a corrgram display, conveying sign and magnitude in different ways."
 knitr::include_graphics("images/corrgram-renderings.png")
+```
+
+In R these diagrams can be created using the **corrgram** [@R-corrgram] and **corrplot** [R-corrplot] packages, with different features. `corrgram::corrgram()` is closest to @Friendly:02:corrgram ...
+
+```{r}
+#| label: fig-crime-corrplot
+#| fig-width: 8
+#| fig-height: 8
+#| out-width: "100%"
+#| fig-cap: "Corrplot of the `crime` data, showing each pair of variables with an ellipse and the rounded value of the correlation."
+crime |>
+  select(where(is.numeric)) |>
+  cor() |>
+  corrplot(diag = FALSE, 
+           method = "ellipse",
+           tl.col = "black",
+           tl.srt = 0,
+           addCoef.col = "black",
+           addCoefasPercent = TRUE)
 ```
 
 
@@ -855,7 +872,7 @@ who used this method to show how the rank order of various crimes changed with a
 <!-- **TODO**: Mention Insleberg [-@Inselberg:1985] & Wegman [-@Wegman:1990]; Andrews plots [-@Andrews:72], ... -->
 The use of parallel coordinates for display of multidimensional data was rediscovered
 by Alfred Inselberg [-@Inselberg:1985] and extended by Edward Wegman [-@Wegman:1990], neither of whom recognized the earlier history.
-Somewhat earlier, David Andrews [-@Andrews:1972] proposed mapping multivariate observations
+Somewhat earlier, David Andrews [-@Andrews:72] proposed mapping multivariate observations
 to smooth Fourrier functions composed of alternating $\sin()$ and $\cos()$ terms.
 And in my book, _SAS System for Statistical Graphics_ [@Friendly:91], I 
 implemented what I called [_profile plots_](https://blogs.sas.com/content/iml/2022/11/14/profile-plots-sas.html)

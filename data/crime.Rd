@@ -5,9 +5,10 @@
 Data on crimes in the U.S.
 }
 \description{
-This dataset gives rates of various crimes in each of the 50 U. S. states, 
-originally from the United States Statistical Abstracts (1970). The data
-were analyzed by John Hartigan (1975) in his book \emph{Clustering Algorithms} and were later reanalyzed by Friendly (1991). 
+This dataset gives rates of various crimes in each of the 50 U. S. states in 1977.
+originally from the United States Statistical Abstracts. The data
+were comes from the \emph{SAS User's Guide: Statistics}, "The PRINCOMP Procedure",
+and were later reanalyzed by Friendly (1991). 
 }
 \usage{data("crime")}
 \format{

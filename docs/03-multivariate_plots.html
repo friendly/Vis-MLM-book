@@ -254,6 +254,7 @@ div.csl-indent {
 <a href="#sec-scatmat" id="toc-sec-scatmat" class="nav-link" data-scroll-target="#sec-scatmat"><span class="header-section-number">3.2</span> Scatterplot matrices</a>
   <ul class="collapse">
 <li><a href="#visual-thinning" id="toc-visual-thinning" class="nav-link" data-scroll-target="#visual-thinning"><span class="header-section-number">3.2.1</span> Visual thinning</a></li>
+  <li><a href="#corrgrams" id="toc-corrgrams" class="nav-link" data-scroll-target="#corrgrams"><span class="header-section-number">3.2.2</span> Corrgrams</a></li>
   </ul>
 </li>
   <li><a href="#sec-ggpairs" id="toc-sec-ggpairs" class="nav-link" data-scroll-target="#sec-ggpairs"><span class="header-section-number">3.3</span> Generalized pairs plots</a></li>
@@ -280,16 +281,6 @@ div.csl-indent {
 </blockquote>
 <p>The quote above from John Tukey reminds us that data analysis should rightly start with graphs to help us understand the main features of our data, to see patterns, trends and anomalies. This chapter introduces a toolbox of basic graphical methods for visualizing multivariate datasets. It starts with some simple techniques to enhance the basic scatterplot with annotations such as fitted lines, curves and data ellipses to summarize the relation between two variables.</p>
 <p>To visualize more than two variables, we can view all pairs of variables in a scatterplot matrix or shift gears entirely to show multiple variables along a set of parallel axes. As the number of variables increase, we may need to suppress details with stronger summaries for a high-level reconnaissance of our data terrain, as we do by zooming out on a map.</p>
-<!-- Topics (just for reference) -->
-<!-- -   Bivariate summaries -->
-<!--     -   smoothers -->
-<!--     -   data ellipses -->
-<!-- -   Quantitative data: -->
-<!--     -   scatterplot matrices -->
-<!--     -   parallel coordinate plots -->
-<!-- -   ~~Categorical data:~~ -->
-<!--     -   ~~mosaic plots~~ -->
-<!-- -   Generalized pair plots -->
 <p><strong>Packages</strong></p>
 <p>In this chapter I use the following packages. Load them now:</p>
 <div class="cell" data-layout-align="center">
@@ -297,6 +288,7 @@ div.csl-indent {
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org">ggplot2</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org">dplyr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyr.tidyverse.org">tidyr</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/taiyun/corrplot">corrplot</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://kwstat.github.io/corrgram/">corrgram</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggobi.github.io/ggally/">GGally</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://jamesotto852.github.io/ggdensity/">ggdensity</a></span><span class="op">)</span></span>
@@ -798,7 +790,15 @@ D_M^2 (\mathbf{y}) = (\mathbf{y} - \bar{\mathbf{y}})^T S^{-1} (\mathbf{y} - \bar
 <span><span class="co">#&gt;  $ year          : int [1:333] 2007 2007 2007 2007 2007 2007 2007 2007 2007 2007 ...</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>There are quite a few variables to choose for illustrating data ellipses in scatterplots. Here I focus on the measures of their bills, <code>bill_length</code> and <code>bill_depth</code> (indicating curvature) and show how to use <code>ggplot2</code> for these plots.</p>
-<p>I’ll be using the penguins data quite a lot, so it is useful to set up custom colors like those used in <a href="#fig-penguin-species">Figure&nbsp;<span>3.16</span></a>. These are shades of: * <span style="color: orange;">Adelie</span>: <span style="color: orange;">orange</span>, * <span style="color: purple;">Chinstrap</span>: <span style="color: purple;">purple</span>, and * Gentoo: <span style="color: green;">green</span>.</p>
+<p>I’ll be using the penguins data quite a lot, so it is useful to set up custom colors like those used in <a href="#fig-penguin-species">Figure&nbsp;<span>3.16</span></a>. These are shades of:</p>
+<ul>
+<li>
+<span style="color: orange;">Adelie</span>: <span style="color: orange;">orange</span>,</li>
+<li>
+<span style="color: purple;">Chinstrap</span>: <span style="color: purple;">purple</span>, and</li>
+<li>
+<span style="color: green;">Gentoo</span>: <span style="color: green;">green</span>.</li>
+</ul>
 <p>To use these in <code>ggplot2</code> I define a function <code>peng.colors()</code> that allows shades of light, medium and dark and then functions <code>scale_*_penguins()</code> for color and fill.</p>
 <div class="cell" data-layout-align="center">
 <details><summary>Code</summary><div class="sourceCode" id="cb20" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">peng.colors</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">shade</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"medium"</span>, <span class="st">"light"</span>, <span class="st">"dark"</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
@@ -1035,13 +1035,15 @@ Looking ahead
 </div>
 <p><a href="#fig-crime-spm">Figure&nbsp;<span>3.24</span></a> displays the scatterplot matrix for these seven variables, using only the regression line and data ellipse to show the linear relation and the loess smooth to show potential nonlinearity. To make this even more schematic, the axis tick marks and labels are also removed using the <code><a href="https://rdrr.io/r/graphics/par.html">par()</a></code> settings <code>xaxt = "n", yaxt = "n"</code>.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb32" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/car/man/scatterplotMatrix.html">scatterplotMatrix</a></span><span class="op">(</span><span class="va">crime</span><span class="op">[</span>, <span class="fl">2</span><span class="op">:</span><span class="fl">8</span><span class="op">]</span>,</span>
-<span>  plot.points <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  ellipse <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>levels <span class="op">=</span> <span class="fl">0.68</span>, fill<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span>,</span>
-<span>  smooth <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>spread <span class="op">=</span> <span class="cn">FALSE</span>, </span>
-<span>                lwd.smooth<span class="op">=</span><span class="fl">2</span>, lty.smooth <span class="op">=</span> <span class="fl">1</span>, col.smooth <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span>,</span>
-<span>  cex.labels <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>  xaxt <span class="op">=</span> <span class="st">"n"</span>, yaxt <span class="op">=</span> <span class="st">"n"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb32" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">crime</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/where.html">where</a></span><span class="op">(</span><span class="va">is.numeric</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/car/man/scatterplotMatrix.html">scatterplotMatrix</a></span><span class="op">(</span></span>
+<span>    plot.points <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>    ellipse <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>levels <span class="op">=</span> <span class="fl">0.68</span>, fill<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span>,</span>
+<span>    smooth <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>spread <span class="op">=</span> <span class="cn">FALSE</span>, </span>
+<span>                  lwd.smooth<span class="op">=</span><span class="fl">2</span>, lty.smooth <span class="op">=</span> <span class="fl">1</span>, col.smooth <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span>,</span>
+<span>    cex.labels <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>    xaxt <span class="op">=</span> <span class="st">"n"</span>, yaxt <span class="op">=</span> <span class="st">"n"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div id="fig-crime-spm" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure"><p><img src="figs/fig-crime-spm-1.png" class="img-fluid figure-img" style="width:100.0%"></p>
@@ -1050,12 +1052,42 @@ Looking ahead
 </div>
 </div>
 <p>We can see that all pairwise correlations are positive, pairs closer to the main diagonal tend to be more highly correlated and in most cases the nonparametric smooth doesn’t differ much from the linear regression line. Exceptions to this appear mainly in the columns for <code>robbery</code> and <code>auto</code> (auto theft).</p>
+</section><section id="corrgrams" class="level3" data-number="3.2.2"><h3 data-number="3.2.2" class="anchored" data-anchor-id="corrgrams">
+<span class="header-section-number">3.2.2</span> Corrgrams</h3>
+<p>What if you want to summarize the data even further, for example to show only the value of the correlation for each pair of variables? A <strong>corrgram</strong> <span class="citation" data-cites="Friendly:02:corrgram">(<a href="90-references.html#ref-Friendly:02:corrgram" role="doc-biblioref">Friendly 2002</a>)</span> is a visual display of a correlation matrix, where the correlation can be rendered in a variety of ways to show the direction and magnitude: circular “pac-man” symbols, ellipses, colored vars or shaded rectangles, as shown in <a href="#fig-corrgram-renderings">Figure&nbsp;<span>3.25</span></a>.</p>
+<p>Another aspect is that of <strong>effect ordering</strong> <span class="citation" data-cites="FriendlyKwan:02:effect">(<a href="90-references.html#ref-FriendlyKwan:02:effect" role="doc-biblioref">Friendly and Kwan 2003</a>)</span>, ordering the levels of factors and variables in graphic displays to make important features most apparent. For variables, this means that we can arrange the variables in a matrix-like display in such a way as to make the pattern of relationships easiest to see. Methods to achieve this include using principal components and cluster analysis to put the most related variables together as described in @#sec-pca-biplot.</p>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div id="fig-corrgram-renderings" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="images/corrgram-renderings.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption class="figure-caption">Figure&nbsp;3.25: <strong>Corrgrams</strong>: Some renderings for the value of a correlation in a corrgram display, conveying sign and magnitude in different ways.</figcaption></figure>
+</div>
+</div>
+</div>
+<p>In R these diagrams can be created using the <strong>corrgram</strong> <span class="citation" data-cites="R-corrgram">(<a href="90-references.html#ref-R-corrgram" role="doc-biblioref">Wright 2021</a>)</span> and <strong>corrplot</strong> [R-corrplot] packages, with different features. <code><a href="https://kwstat.github.io/corrgram/reference/corrgram.html">corrgram::corrgram()</a></code> is closest to <span class="citation" data-cites="Friendly:02:corrgram">Friendly (<a href="90-references.html#ref-Friendly:02:corrgram" role="doc-biblioref">2002</a>)</span> …</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb33" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">crime</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/where.html">where</a></span><span class="op">(</span><span class="va">is.numeric</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/cor.html">cor</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/corrplot/man/corrplot.html">corrplot</a></span><span class="op">(</span>diag <span class="op">=</span> <span class="cn">FALSE</span>, </span>
+<span>           method <span class="op">=</span> <span class="st">"ellipse"</span>,</span>
+<span>           tl.col <span class="op">=</span> <span class="st">"black"</span>,</span>
+<span>           tl.srt <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>           addCoef.col <span class="op">=</span> <span class="st">"black"</span>,</span>
+<span>           addCoefasPercent <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-crime-corrplot" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="figs/fig-crime-corrplot-1.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption class="figure-caption">Figure&nbsp;3.26: Corrplot of the <code>crime</code> data, showing each pair of variables with an ellipse and the rounded value of the correlation.</figcaption></figure>
+</div>
+</div>
+</div>
 </section></section><section id="sec-ggpairs" class="level2" data-number="3.3"><h2 data-number="3.3" class="anchored" data-anchor-id="sec-ggpairs">
 <span class="header-section-number">3.3</span> Generalized pairs plots</h2>
 <p>When a dataset contains one or more discrete variables, the traditional pairs plot cannot cope, using only color and/or point symbols to represent categorical variables. In the context of mosaic displays and loglinear models, representing <span class="math inline">\(n\)</span>-way frequency tables by rectangular tiles depicting cell frequencies, I <span class="citation" data-cites="Friendly:94a">(<a href="90-references.html#ref-Friendly:94a" role="doc-biblioref">Friendly 1994</a>)</span> proposed an analog of the scatterplot matrix using mosaic plots for each pair of variables. The <strong>vcd</strong> package <span class="citation" data-cites="R-vcd">(<a href="90-references.html#ref-R-vcd" role="doc-biblioref">Meyer, Zeileis, and Hornik 2023</a>)</span> implements very general <code><a href="https://rdrr.io/r/graphics/pairs.html">pairs()</a></code> methods for <code>"table"</code> objects. See my book <em>Discrete Data Analysis with R</em> <span class="citation" data-cites="FriendlyMeyer:2016:DDAR">(<a href="90-references.html#ref-FriendlyMeyer:2016:DDAR" role="doc-biblioref">Friendly and Meyer 2016</a>)</span> and the <strong>vcdExtra</strong> <span class="citation" data-cites="R-vcdExtra">(<a href="90-references.html#ref-R-vcdExtra" role="doc-biblioref">Friendly 2023</a>)</span> package for mosaic plots and mosaic matrices.</p>
 <p>For example, we can tabulate the distributions of penguin species by sex and the island where they were observed using <code><a href="https://rdrr.io/r/stats/xtabs.html">xtabs()</a></code>. <code><a href="https://rdrr.io/r/stats/ftable.html">ftable()</a></code> prints this three-way table more compactly. (In this example, and what follows in the chapter, I’ve changed the labels for sex from (“f”, “m”) to (“Female”, “Male”))</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb33" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># use better labels for sex</span></span>
+<div class="sourceCode" id="cb34" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># use better labels for sex</span></span>
 <span><span class="va">peng</span> <span class="op">&lt;-</span> <span class="va">peng</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>sex <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">sex</span>, labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Female"</span>, <span class="st">"Male"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">peng.table</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/xtabs.html">xtabs</a></span><span class="op">(</span><span class="op">~</span> <span class="va">species</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">island</span>, data <span class="op">=</span> <span class="va">peng</span><span class="op">)</span></span>
@@ -1071,20 +1103,20 @@ Looking ahead
 <span><span class="co">#&gt;           Male              61     0         0</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We can see immediately that the penguin species differ by island: only Adelie were observed on all three islands; Biscoe Island had no Chinstraps and Dream Island had no Gentoos.</p>
-<p><code>vcd::pairs()</code> produces all pairwise mosaic plots, as shown in <a href="#fig-peng-mosaic">Figure&nbsp;<span>3.25</span></a>. The diagonal panels show the one-way frequencies by width of the divided bars. Each off-diagonal panel shows the bivariate counts, breaking down each column variable by splitting the bars in proportion to a second variable. Consequently, the frequency of each cell is represented by its’ area. The purpose is to show the <strong>pattern of association</strong> between each pair, and so, the tiles in the mosaic are shaded according to the signed standardized residual, <span class="math inline">\(d_{ij} = (n_{ij} - \hat{n}_{ij}) / \sqrt{\hat{n}_{ij}}\)</span> in a simple <span class="math inline">\(\chi^2 = \Sigma_{ij} \; d_{ij}^2\)</span> test for association— <span style="color: blue;">blue</span> where the observed frequency <span class="math inline">\(n_{ij}\)</span> is significantly greater than expected <span class="math inline">\(\hat{n}_{ij}\)</span> under independence, and <span style="color: red;">red</span> where it is less than expected. The tiles are unshaded when <span class="math inline">\(| d_{ij} | &lt; 2\)</span>.</p>
+<p><code>vcd::pairs()</code> produces all pairwise mosaic plots, as shown in <a href="#fig-peng-mosaic">Figure&nbsp;<span>3.27</span></a>. The diagonal panels show the one-way frequencies by width of the divided bars. Each off-diagonal panel shows the bivariate counts, breaking down each column variable by splitting the bars in proportion to a second variable. Consequently, the frequency of each cell is represented by its’ area. The purpose is to show the <strong>pattern of association</strong> between each pair, and so, the tiles in the mosaic are shaded according to the signed standardized residual, <span class="math inline">\(d_{ij} = (n_{ij} - \hat{n}_{ij}) / \sqrt{\hat{n}_{ij}}\)</span> in a simple <span class="math inline">\(\chi^2 = \Sigma_{ij} \; d_{ij}^2\)</span> test for association— <span style="color: blue;">blue</span> where the observed frequency <span class="math inline">\(n_{ij}\)</span> is significantly greater than expected <span class="math inline">\(\hat{n}_{ij}\)</span> under independence, and <span style="color: red;">red</span> where it is less than expected. The tiles are unshaded when <span class="math inline">\(| d_{ij} | &lt; 2\)</span>.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb34" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">vcd</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb35" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">vcd</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/pairs.html">pairs</a></span><span class="op">(</span><span class="va">peng.table</span>, shade <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>      lower_panel_args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>labeling <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/vcd/man/labeling_border.html">labeling_values</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>      upper_panel_args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>labeling <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/vcd/man/labeling_border.html">labeling_values</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div id="fig-peng-mosaic" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure"><p><img src="figs/fig-peng-mosaic-1.png" class="img-fluid figure-img" style="width:100.0%"></p>
-<figcaption class="figure-caption">Figure&nbsp;3.25: Mosaic pairs plot for the combinations of species, sex and island. Diagnonal plots show the marginal frequency of each variable by the width of each rectangle. Off-diagonal mosaic plots subdivide by the conditional frequency of the second variable, shown numerically in the tiles.</figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;3.27: Mosaic pairs plot for the combinations of species, sex and island. Diagnonal plots show the marginal frequency of each variable by the width of each rectangle. Off-diagonal mosaic plots subdivide by the conditional frequency of the second variable, shown numerically in the tiles.</figcaption></figure>
 </div>
 </div>
 </div>
-<p>The shading patterns in cells (1,3) and (3,1) of <a href="#fig-peng-mosaic">Figure&nbsp;<span>3.25</span></a> show what we’ve seen before in the table of frequencies: The distribution of species varies across island because on each island one or more species did not occur. Row 2 and column 2 show that sex is nearly exactly proportional among species and islands, indicating independence, <span class="math inline">\(\text{sex} \perp \{\text{species}, \text{island}\}\)</span>. More importantly, mosaic pairs plots can show, at a glance all (bivariate) associations among multivariate categorical variables.</p>
+<p>The shading patterns in cells (1,3) and (3,1) of <a href="#fig-peng-mosaic">Figure&nbsp;<span>3.27</span></a> show what we’ve seen before in the table of frequencies: The distribution of species varies across island because on each island one or more species did not occur. Row 2 and column 2 show that sex is nearly exactly proportional among species and islands, indicating independence, <span class="math inline">\(\text{sex} \perp \{\text{species}, \text{island}\}\)</span>. More importantly, mosaic pairs plots can show, at a glance all (bivariate) associations among multivariate categorical variables.</p>
 <p>The next step, by John Emerson and others <span class="citation" data-cites="Emerson-etal:2013">(<a href="90-references.html#ref-Emerson-etal:2013" role="doc-biblioref">Emerson et al. 2013</a>)</span> was to recognize that combinations of continuous and discrete, categorical variables could be plotted in different ways.</p>
 <ul>
 <li>two continuous variables can be shown as a standard scatterplot of points and/or bivariate density contours, or simply by numeric summaries such as a correlation value;</li>
@@ -1092,21 +1124,21 @@ Looking ahead
 <li>two categorical variables could be shown in a mosaic plot or by grouped bar plots.</li>
 </ul>
 <p>In the <code>ggplot2</code> framework, these displays are implemented in the <strong>GGally</strong> package <span class="citation" data-cites="R-GGally">(<a href="90-references.html#ref-R-GGally" role="doc-biblioref">Schloerke et al. 2021</a>)</span> in the <code><a href="https://ggobi.github.io/ggally/reference/ggpairs.html">ggpairs()</a></code> function. This allows different plot types to be shown in the lower and upper triangles and in the diagonal cells of the plot matrix. As well, aesthetics such as color and shape can be used within the plots to distinguish groups directly. As illustrated below, you can define custom functions to control exactly what is plotted in any panel.</p>
-<p>The basic, default plot shows scatterplots for pairs of continuous variables in the lower triangle and the values of correlations in the upper triangle. A combination of a discrete and continuous variable is plotted as histograms in the lower triangle and boxplots in the upper triangle. <a href="#fig-peng-ggpairs1">Figure&nbsp;<span>3.26</span></a> includes <code>sex</code> to illustrate the combinations.</p>
+<p>The basic, default plot shows scatterplots for pairs of continuous variables in the lower triangle and the values of correlations in the upper triangle. A combination of a discrete and continuous variable is plotted as histograms in the lower triangle and boxplots in the upper triangle. <a href="#fig-peng-ggpairs1">Figure&nbsp;<span>3.28</span></a> includes <code>sex</code> to illustrate the combinations.</p>
 <div class="cell" data-layout-align="center" data-hash="03-multivariate_plots_cache/html/fig-peng-ggpairs1_cf5f6c2fa254edc6f5bb67f54e064c70">
-<details open=""><summary>Code</summary><div class="sourceCode" id="cb35" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://ggobi.github.io/ggally/reference/ggpairs.html">ggpairs</a></span><span class="op">(</span><span class="va">peng</span>, columns<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">3</span><span class="op">:</span><span class="fl">6</span>, <span class="fl">7</span><span class="op">)</span>,</span>
+<details open=""><summary>Code</summary><div class="sourceCode" id="cb36" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://ggobi.github.io/ggally/reference/ggpairs.html">ggpairs</a></span><span class="op">(</span><span class="va">peng</span>, columns<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">3</span><span class="op">:</span><span class="fl">6</span>, <span class="fl">7</span><span class="op">)</span>,</span>
 <span>        <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>color<span class="op">=</span><span class="va">species</span>, alpha<span class="op">=</span><span class="fl">0.5</span><span class="op">)</span>,</span>
 <span>        progress <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_penguins</span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details><div class="cell-output-display">
 <div id="fig-peng-ggpairs1" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure"><p><img src="figs/fig-peng-ggpairs1-1.png" class="img-fluid figure-img" style="width:100.0%"></p>
-<figcaption class="figure-caption">Figure&nbsp;3.26: Basic <code><a href="https://ggobi.github.io/ggally/reference/ggpairs.html">ggpairs()</a></code> plot of penguin size variables and sex, stratified by species.</figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;3.28: Basic <code><a href="https://ggobi.github.io/ggally/reference/ggpairs.html">ggpairs()</a></code> plot of penguin size variables and sex, stratified by species.</figcaption></figure>
 </div>
 </div>
 </div>
 <p>To my eye, printing the values of correlations in the upper triangle is often a waste of graphic space. But this example shows something peculiar and interesting if you look closely: In all pairs among the penguin size measurements, there are positive correlations within each species, as we can see in <a href="#fig-peng-spm">Figure&nbsp;<span>3.23</span></a>. Yet in three of these panels, the overall correlation ignoring species is negative. For example the overall correlation between bill depth and flipper length is <span class="math inline">\(r = -0.579\)</span> in row 2, column 3; the scatterplot in the diagonally opposite cell, row 3, column 2 shows the data. These cases, of differing signs for an overall correlation, ignoring a group variable and the within group correlations are examples of <strong>Simpson’s Paradox</strong>, explored later in Chapter XX.</p>
-<p>The last row and column, for <code>sex</code> in <a href="#fig-peng-ggpairs1">Figure&nbsp;<span>3.26</span></a>, provides an initial glance at the issue of sex differences among pengiun species that motivated the collection of these data. We can go further by also examining differences among species and island, but first we need to understand how to display exactly what we want for each pairwise plot.</p>
+<p>The last row and column, for <code>sex</code> in <a href="#fig-peng-ggpairs1">Figure&nbsp;<span>3.28</span></a>, provides an initial glance at the issue of sex differences among pengiun species that motivated the collection of these data. We can go further by also examining differences among species and island, but first we need to understand how to display exactly what we want for each pairwise plot.</p>
 <p><code><a href="https://ggobi.github.io/ggally/reference/ggpairs.html">ggpairs()</a></code> is extremely general, in that for each of the <code>lower</code>, <code>upper</code> and <code>diag</code> sections you can assign any of a large number of built-in functions (of the form <code>ggally_NAME</code>), or you own custom function for what is plotted, depending on the types of variables in each plot.</p>
 <ul>
 <li>
@@ -1116,9 +1148,9 @@ Looking ahead
 <li>
 <code>discrete</code>: both X and Y are discrete variables.</li>
 </ul>
-<p>The defaults, which were used in <a href="#fig-peng-ggpairs1">Figure&nbsp;<span>3.26</span></a>, are:</p>
+<p>The defaults, which were used in <a href="#fig-peng-ggpairs1">Figure&nbsp;<span>3.28</span></a>, are:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb36" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">upper</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>continuous <span class="op">=</span> <span class="st">"cor"</span>,          <span class="co"># correlation values</span></span>
+<div class="sourceCode" id="cb37" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">upper</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>continuous <span class="op">=</span> <span class="st">"cor"</span>,          <span class="co"># correlation values</span></span>
 <span>             combo <span class="op">=</span> <span class="st">"box_no_facet"</span>,      <span class="co"># boxplots </span></span>
 <span>             discrete <span class="op">=</span> <span class="st">"count"</span><span class="op">)</span>          <span class="co"># rectangles ~ count</span></span>
 <span><span class="va">lower</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>continuous <span class="op">=</span> <span class="st">"points"</span>,       <span class="co"># just data points</span></span>
@@ -1130,13 +1162,13 @@ Looking ahead
 <p>Thus, <code><a href="https://ggobi.github.io/ggally/reference/ggpairs.html">ggpairs()</a></code> uses <code><a href="https://ggobi.github.io/ggally/reference/ggally_cor.html">ggally_cor()</a></code> to print the correlation values for pairs of continuous variables in the upper triangle, and uses <code><a href="https://ggobi.github.io/ggally/reference/ggally_points.html">ggally_points()</a></code> to plot scatterplots of points in the lower portion. The diagonal panels as shown as density plots (<code><a href="https://ggobi.github.io/ggally/reference/ggally_densityDiag.html">ggally_densityDiag()</a></code>) for continuous variables but as bar plots (<code><a href="https://ggobi.github.io/ggally/reference/ggally_barDiag.html">ggally_barDiag()</a></code>) for discrete factors.</p>
 <p>See the vignette, <a href="https://ggobi.github.io/ggally/articles/ggally_plots.html">ggally_plots</a> for an illustrated list of available high-level plots. For my purpose here, which is to illustrate enhanced displays, note that for scatterplots of continuous variables, there are two functions which plot the points and also add a smoother, <code>_lm</code> or <code>_loess</code>.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb37" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/ls.html">ls</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-reflect.html">getNamespace</a></span><span class="op">(</span><span class="st">"GGally"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">stringr</span><span class="fu">::</span><span class="fu"><a href="https://stringr.tidyverse.org/reference/str_subset.html">str_subset</a></span><span class="op">(</span><span class="st">"^ggally_smooth_"</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb38" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/ls.html">ls</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-reflect.html">getNamespace</a></span><span class="op">(</span><span class="st">"GGally"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">stringr</span><span class="fu">::</span><span class="fu"><a href="https://stringr.tidyverse.org/reference/str_subset.html">str_subset</a></span><span class="op">(</span><span class="st">"^ggally_smooth_"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "ggally_smooth_lm"    "ggally_smooth_loess"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>A customized display for scatterplots of continuous variables can be any function that takes <code>data</code> and <code>mapping</code> arguments and returns a <code>"ggplot"</code> object. The <code>mapping</code> argument supplies the aesthetics, e.g., <code>aes(color=species, alpha=0.5)</code>, but only if you wish to override what is supplied in the <code><a href="https://ggobi.github.io/ggally/reference/ggpairs.html">ggpairs()</a></code> call.</p>
 <p>Here is a function, <code>my_panel()</code> that plots the data points and regression line and loess smooth</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb38" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">my_panel</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">data</span>, <span class="va">mapping</span>, <span class="va">...</span><span class="op">)</span><span class="op">{</span></span>
+<div class="sourceCode" id="cb39" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">my_panel</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">data</span>, <span class="va">mapping</span>, <span class="va">...</span><span class="op">)</span><span class="op">{</span></span>
 <span>  <span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">data</span>, mapping <span class="op">=</span> <span class="va">mapping</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_smooth.html">geom_smooth</a></span><span class="op">(</span>method<span class="op">=</span><span class="va">lm</span>, formula <span class="op">=</span> <span class="va">y</span> <span class="op">~</span> <span class="va">x</span>, se <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span> <span class="op">+</span></span>
@@ -1146,16 +1178,16 @@ Looking ahead
 </div>
 <p>For this example, I want to simple summaries of for the scatterplots, so I don’t want to plot the data points, but do want to add the regression line and a data ellipse.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb39" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">my_panel1</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">data</span>, <span class="va">mapping</span>, <span class="va">...</span><span class="op">)</span><span class="op">{</span></span>
+<div class="sourceCode" id="cb40" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">my_panel1</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">data</span>, <span class="va">mapping</span>, <span class="va">...</span><span class="op">)</span><span class="op">{</span></span>
 <span>  <span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">data</span>, mapping <span class="op">=</span> <span class="va">mapping</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>     <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_smooth.html">geom_smooth</a></span><span class="op">(</span>method<span class="op">=</span><span class="va">lm</span>, formula <span class="op">=</span> <span class="va">y</span> <span class="op">~</span> <span class="va">x</span>, se <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span> <span class="op">+</span></span>
 <span>     <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/stat_ellipse.html">stat_ellipse</a></span><span class="op">(</span>geom <span class="op">=</span> <span class="st">"polygon"</span>, level <span class="op">=</span> <span class="fl">0.68</span>, <span class="va">...</span><span class="op">)</span></span>
 <span>  <span class="va">p</span></span>
 <span><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Then, to show what can be done, <a href="#fig-peng-ggpairs7">Figure&nbsp;<span>3.27</span></a> uses <code>my_panel1()</code> for the scatterplots in the 4 x 4 block of plots in the upper left. The combination of the continuous body size measures and the discrete factors <code>species</code>, <code>island</code> and <code>sex</code> are shown in upper triangle by boxplots but by faceted histograms in the lower portion. The factors are shown as rectangles with area proportional to count (poor-man’s mosaic plots) above the diagonal and as faceted bar plots below.</p>
+<p>Then, to show what can be done, <a href="#fig-peng-ggpairs7">Figure&nbsp;<span>3.29</span></a> uses <code>my_panel1()</code> for the scatterplots in the 4 x 4 block of plots in the upper left. The combination of the continuous body size measures and the discrete factors <code>species</code>, <code>island</code> and <code>sex</code> are shown in upper triangle by boxplots but by faceted histograms in the lower portion. The factors are shown as rectangles with area proportional to count (poor-man’s mosaic plots) above the diagonal and as faceted bar plots below.</p>
 <div class="cell" data-layout-align="center" data-hash="03-multivariate_plots_cache/html/fig-peng-ggpairs7_26eedf4758ad882c64cfbec55e8e44ff">
-<details open=""><summary>Code</summary><div class="sourceCode" id="cb40" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://ggobi.github.io/ggally/reference/ggpairs.html">ggpairs</a></span><span class="op">(</span><span class="va">peng</span>, columns<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">3</span><span class="op">:</span><span class="fl">6</span>, <span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">7</span><span class="op">)</span>,</span>
+<details open=""><summary>Code</summary><div class="sourceCode" id="cb41" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://ggobi.github.io/ggally/reference/ggpairs.html">ggpairs</a></span><span class="op">(</span><span class="va">peng</span>, columns<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">3</span><span class="op">:</span><span class="fl">6</span>, <span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">7</span><span class="op">)</span>,</span>
 <span>        mapping <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>color<span class="op">=</span><span class="va">species</span>, fill <span class="op">=</span> <span class="va">species</span>, alpha<span class="op">=</span><span class="fl">0.2</span><span class="op">)</span>,</span>
 <span>        lower <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>continuous <span class="op">=</span> <span class="va">my_panel1</span><span class="op">)</span>,</span>
 <span>        upper <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>continuous <span class="op">=</span> <span class="va">my_panel1</span><span class="op">)</span>,</span>
@@ -1166,11 +1198,11 @@ Looking ahead
 </details><div class="cell-output-display">
 <div id="fig-peng-ggpairs7" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure"><p><img src="figs/fig-peng-ggpairs7-1.png" class="img-fluid figure-img" style="width:100.0%"></p>
-<figcaption class="figure-caption">Figure&nbsp;3.27: Customized <code><a href="https://ggobi.github.io/ggally/reference/ggpairs.html">ggpairs()</a></code> plot of penguin size variables, together with species, island and sex.</figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;3.29: Customized <code><a href="https://ggobi.github.io/ggally/reference/ggpairs.html">ggpairs()</a></code> plot of penguin size variables, together with species, island and sex.</figcaption></figure>
 </div>
 </div>
 </div>
-<p>There is certainly a lot going on in <a href="#fig-peng-ggpairs7">Figure&nbsp;<span>3.27</span></a>, but it does show a high-level overview of all the variables (except <code>year</code>) in the penguins dataset.</p>
+<p>There is certainly a lot going on in <a href="#fig-peng-ggpairs7">Figure&nbsp;<span>3.29</span></a>, but it does show a high-level overview of all the variables (except <code>year</code>) in the penguins dataset.</p>
 </section><section id="sec-parcoord" class="level2" data-number="3.4"><h2 data-number="3.4" class="anchored" data-anchor-id="sec-parcoord">
 <span class="header-section-number">3.4</span> Parallel coordinate plots</h2>
 <p>As we have seen above, scatterplot matrices and generalized pairs plots extend data visualization to multivariate data, but these variables share one 2D space, so resolution decreases as the number of variable increase. You need a very large screen or sheet of paper to see more than, say 5-6 variables with any clarity.</p>
@@ -1190,11 +1222,11 @@ History Corner
 <p>Those who don’t know history are doomed to plagarize it —The author</p>
 </blockquote>
 <p>The theory of projective geometry originated with the French mathematician Maurice d’Ocagne <span class="citation" data-cites="Ocagne:1885">(<a href="90-references.html#ref-Ocagne:1885" role="doc-biblioref">1885</a>)</span> who sought a way to provide graphic calculation of mathematical functions with alignment diagrams or <em>nomograms</em> using parallel axes with different scales. A three-variable equation, for example, could be solved using three parallel axes, where known values could be marked on their scales, a line drawn between them, and an unknown read on its scale at the point where the line intersects that scale.</p>
-<p>Henry Gannet (1880), in work preceding the <em>Statistical Atlas of the United States</em> for the 1890 Census <span class="citation" data-cites="Gannett:1898">(<a href="90-references.html#ref-Gannett:1898" role="doc-biblioref"><strong>Gannett:1898?</strong></a>)</span>, is widely credited with being the first to use parallel coordinates plots to show data, in his case, to show the <a href="https://www.davidrumsey.com/luna/servlet/detail/RUMSEY~8~1~32803~1152181">rank ordering of US states</a> by 10 measures including population, occupations, wealth, manufacturing, agriculture and so on.</p>
+<p>Henry Gannet (1880), in work preceding the <em>Statistical Atlas of the United States</em> for the 1890 Census <span class="citation" data-cites="Gannett:1898">(<a href="90-references.html#ref-Gannett:1898" role="doc-biblioref">Gannett 1898</a>)</span>, is widely credited with being the first to use parallel coordinates plots to show data, in his case, to show the <a href="https://www.davidrumsey.com/luna/servlet/detail/RUMSEY~8~1~32803~1152181">rank ordering of US states</a> by 10 measures including population, occupations, wealth, manufacturing, agriculture and so on.</p>
 <p>However, both d’Ocagne and Gannet were far preceded in this by Andre-Michel Guerry <span class="citation" data-cites="Guerry:1833">(<a href="90-references.html#ref-Guerry:1833" role="doc-biblioref">1833</a>)</span> who used this method to show how the rank order of various crimes changed with age of the accused.</p>
 <p><strong>TODO</strong>: Revise the <em>History</em> section of the Wikipedia page for <a href="https://en.wikipedia.org/wiki/Parallel_coordinates">Parallel coordinates</a>.</p>
 <!-- **TODO**: Mention Insleberg [-@Inselberg:1985] & Wegman [-@Wegman:1990]; Andrews plots [-@Andrews:72], ... -->
-<p>The use of parallel coordinates for display of multidimensional data was rediscovered by Alfred Inselberg <span class="citation" data-cites="Inselberg:1985">(<a href="90-references.html#ref-Inselberg:1985" role="doc-biblioref">1985</a>)</span> and extended by Edward Wegman <span class="citation" data-cites="Wegman:1990">(<a href="90-references.html#ref-Wegman:1990" role="doc-biblioref">1990</a>)</span>, neither of whom recognized the earlier history. Somewhat earlier, David Andrews <span class="citation" data-cites="Andrews:1972">(<a href="90-references.html#ref-Andrews:1972" role="doc-biblioref"><strong>Andrews:1972?</strong></a>)</span> proposed mapping multivariate observations to smooth Fourrier functions composed of alternating <span class="math inline">\(\sin()\)</span> and <span class="math inline">\(\cos()\)</span> terms. And in my book, <em>SAS System for Statistical Graphics</em> <span class="citation" data-cites="Friendly:91">(<a href="90-references.html#ref-Friendly:91" role="doc-biblioref">Friendly 1991</a>)</span>, I implemented what I called <a href="https://blogs.sas.com/content/iml/2022/11/14/profile-plots-sas.html"><em>profile plots</em></a> without knowing their earlier history as parallel coordinate plots.</p>
+<p>The use of parallel coordinates for display of multidimensional data was rediscovered by Alfred Inselberg <span class="citation" data-cites="Inselberg:1985">(<a href="90-references.html#ref-Inselberg:1985" role="doc-biblioref">1985</a>)</span> and extended by Edward Wegman <span class="citation" data-cites="Wegman:1990">(<a href="90-references.html#ref-Wegman:1990" role="doc-biblioref">1990</a>)</span>, neither of whom recognized the earlier history. Somewhat earlier, David Andrews <span class="citation" data-cites="Andrews:72">(<a href="90-references.html#ref-Andrews:72" role="doc-biblioref">1972</a>)</span> proposed mapping multivariate observations to smooth Fourrier functions composed of alternating <span class="math inline">\(\sin()\)</span> and <span class="math inline">\(\cos()\)</span> terms. And in my book, <em>SAS System for Statistical Graphics</em> <span class="citation" data-cites="Friendly:91">(<a href="90-references.html#ref-Friendly:91" role="doc-biblioref">Friendly 1991</a>)</span>, I implemented what I called <a href="https://blogs.sas.com/content/iml/2022/11/14/profile-plots-sas.html"><em>profile plots</em></a> without knowing their earlier history as parallel coordinate plots.</p>
 </div>
 </div>
 <p>Parallel coordinate plots present a challenge for graphic developers, in that they require a different way to think about plot construction for multiple variables, which can be quantitative, as in the original idea, or categorical factors …</p>
@@ -1207,9 +1239,9 @@ History Corner
 <li>
 <code><a href="https://rdrr.io/pkg/ggpcp/man/pcp_arrange.html">pcp_arrange()</a></code>: methods for breaking ties in factor variables to space them out</li>
 </ul>
-<p>Then, it provides <code>geom_pcp_*()</code> functions to control the display of axes with appropriate aesthetics, labels for categorical factors and so forth. <a href="#fig-peng-ggpcp1">Figure&nbsp;<span>3.28</span></a> illustrates this type of display, using sex and species in addition to the quantitative variables for the penguin data.</p>
+<p>Then, it provides <code>geom_pcp_*()</code> functions to control the display of axes with appropriate aesthetics, labels for categorical factors and so forth. <a href="#fig-peng-ggpcp1">Figure&nbsp;<span>3.30</span></a> illustrates this type of display, using sex and species in addition to the quantitative variables for the penguin data.</p>
 <div class="cell" data-layout-align="center" data-hash="03-multivariate_plots_cache/html/fig-peng-ggpcp1_8e89b7434cb20f898845d43951ec5e0c">
-<details open=""><summary>Code</summary><div class="sourceCode" id="cb41" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">peng</span> <span class="op">|&gt;</span></span>
+<details open=""><summary>Code</summary><div class="sourceCode" id="cb42" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">peng</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/ggpcp/man/pcp_select.html">pcp_select</a></span><span class="op">(</span><span class="va">bill_length</span><span class="op">:</span><span class="va">body_mass</span>, <span class="va">sex</span>, <span class="va">species</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/ggpcp/man/pcp_scale.html">pcp_scale</a></span><span class="op">(</span>method <span class="op">=</span> <span class="st">"uniminmax"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/ggpcp/man/pcp_arrange.html">pcp_arrange</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -1225,13 +1257,13 @@ History Corner
 </details><div class="cell-output-display">
 <div id="fig-peng-ggpcp1" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure"><p><img src="figs/fig-peng-ggpcp1-1.png" class="img-fluid figure-img" style="width:100.0%"></p>
-<figcaption class="figure-caption">Figure&nbsp;3.28: Parallel coordinates plot of penguin size variables, together with sex and species.</figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;3.30: Parallel coordinates plot of penguin size variables, together with sex and species.</figcaption></figure>
 </div>
 </div>
 </div>
 <p>Rearranging the order of variables and the ordering of factor levels can make a difference in what we can see in such plots. For a simple example (following <span class="citation" data-cites="VanderPlas2023">VanderPlas et al. (<a href="90-references.html#ref-VanderPlas2023" role="doc-biblioref">2023</a>)</span>), we reorder the levels of species and islands to make it clearer which species occur on each island.</p>
 <div class="cell" data-layout-align="center" data-hash="03-multivariate_plots_cache/html/fig-peng-ggpcp2_d02754d2becda8ae606249c1f7daa7bc">
-<details open=""><summary>Code</summary><div class="sourceCode" id="cb42" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">peng1</span> <span class="op">&lt;-</span> <span class="va">peng</span> <span class="op">|&gt;</span></span>
+<details open=""><summary>Code</summary><div class="sourceCode" id="cb43" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">peng1</span> <span class="op">&lt;-</span> <span class="va">peng</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>species <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">species</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Chinstrap"</span>, <span class="st">"Adelie"</span>, <span class="st">"Gentoo"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>island <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">island</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Dream"</span>, <span class="st">"Torgersen"</span>, <span class="st">"Biscoe"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
@@ -1252,18 +1284,21 @@ History Corner
 </details><div class="cell-output-display">
 <div id="fig-peng-ggpcp2" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure"><p><img src="figs/fig-peng-ggpcp2-1.png" class="img-fluid figure-img" style="width:100.0%"></p>
-<figcaption class="figure-caption">Figure&nbsp;3.29: Parallel coordinates plot of penguin size variables, with the levels of species and island reordered.</figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;3.31: Parallel coordinates plot of penguin size variables, with the levels of species and island reordered.</figcaption></figure>
 </div>
 </div>
 </div>
 <div class="cell" data-layout-align="center">
-<pre data-code-line-numbers=""><code>#&gt; 19  packages used here:
-#&gt;  base, car, carData, corrgram, datasets, dplyr, GGally, ggdensity, ggpcp, ggplot2, graphics, grDevices, grid, methods, patchwork, stats, tidyr, utils, vcd</code></pre>
+<pre data-code-line-numbers=""><code>#&gt; 20  packages used here:
+#&gt;  base, car, carData, corrgram, corrplot, datasets, dplyr, GGally, ggdensity, ggpcp, ggplot2, graphics, grDevices, grid, methods, patchwork, stats, tidyr, utils, vcd</code></pre>
 </div>
 <!-- ## References {.unnumbered} -->
 
 
 <div id="refs" class="references csl-bib-body hanging-indent" role="list" style="display: none">
+<div id="ref-Andrews:72" class="csl-entry" role="listitem">
+Andrews, D. F. 1972. <span>“Plots of High Dimensional Data.”</span> <em>Biometrics</em> 28: 123–36.
+</div>
 <div id="ref-Becker:1996:VDC" class="csl-entry" role="listitem">
 Becker, R. A., W. S. Cleveland, and M.-J. Shyu. 1996. <span>“The Visual Design and Control of Trellis Display.”</span> <em>Journal of Computational and Graphical Statistics</em> 5 (2): 123–55.
 </div>
@@ -1306,8 +1341,14 @@ Friendly, Michael. 1991. <em><span>SAS System</span> for Statistical Graphics</e
 <div id="ref-Friendly:94a" class="csl-entry" role="listitem">
 ———. 1994. <span>“Mosaic Displays for Multi-Way Contingency Tables.”</span> <em>Journal of the American Statistical Association</em> 89: 190–200. <a href="http://www.jstor.org/stable/2291215">http://www.jstor.org/stable/2291215</a>.
 </div>
+<div id="ref-Friendly:02:corrgram" class="csl-entry" role="listitem">
+———. 2002. <span>“Corrgrams: Exploratory Displays for Correlation Matrices.”</span> <em>The American Statistician</em> 56 (4): 316–24. <a href="https://doi.org/10.1198/000313002533">https://doi.org/10.1198/000313002533</a>.
+</div>
 <div id="ref-R-vcdExtra" class="csl-entry" role="listitem">
 ———. 2023. <em>vcdExtra: Vcd Extensions and Additions</em>. <a href="https://friendly.github.io/vcdExtra/">https://friendly.github.io/vcdExtra/</a>.
+</div>
+<div id="ref-FriendlyKwan:02:effect" class="csl-entry" role="listitem">
+Friendly, Michael, and E. Kwan. 2003. <span>“Effect Ordering for Data Displays.”</span> <em>Computational Statistics and Data Analysis</em> 43 (4): 509–39. <a href="http://authors.elsevier.com/sd/article/S0167947302002906">http://authors.elsevier.com/sd/article/S0167947302002906</a>.
 </div>
 <div id="ref-FriendlyMeyer:2016:DDAR" class="csl-entry" role="listitem">
 Friendly, Michael, and David Meyer. 2016. <em>Discrete Data Analysis with <span>R</span>: Visualization and Modeling Techniques for Categorical and Count Data</em>. Boca Raton, FL: Chapman &amp; Hall/CRC.
@@ -1317,6 +1358,9 @@ Friendly, Michael, Georges Monette, and John Fox. 2013. <span>“Elliptical Insi
 </div>
 <div id="ref-Galton:1886" class="csl-entry" role="listitem">
 Galton, Francis. 1886. <span>“Regression Towards Mediocrity in Hereditary Stature.”</span> <em>Journal of the Anthropological Institute</em> 15: 246–63. <a href="http://www.jstor.org/cgi-bin/jstor/viewitem/09595295/dm995266/99p0374f/0">http://www.jstor.org/cgi-bin/jstor/viewitem/09595295/dm995266/99p0374f/0</a>.
+</div>
+<div id="ref-Gannett:1898" class="csl-entry" role="listitem">
+Gannett, Henry. 1898. <em>Statistical Atlas of the United States, Eleventh (1890) Census</em>. Washington, D.C.: U.S. Government Printing Office.
 </div>
 <div id="ref-Gorman2014" class="csl-entry" role="listitem">
 Gorman, Kristen B., Tony D. Williams, and William R. Fraser. 2014. <span>“Ecological Sexual Dimorphism and Environmental Variability Within a Community of Antarctic Penguins (Genus Pygoscelis).”</span> Edited by André Chiaradia. <em><span>PLoS</span> <span>ONE</span></em> 9 (3): e90081. <a href="https://doi.org/10.1371/journal.pone.0090081">https://doi.org/10.1371/journal.pone.0090081</a>.
@@ -1371,6 +1415,9 @@ Wegman, Edward J. 1990. <span>“Hyperdimensional Data Analysis Using Parallel C
 </div>
 <div id="ref-Wood:2006" class="csl-entry" role="listitem">
 Wood, Simon N. 2006. <em>Generalized Additive Models: An Introduction with r</em>. Chapman; Hall/CRC Press.
+</div>
+<div id="ref-R-corrgram" class="csl-entry" role="listitem">
+Wright, Kevin. 2021. <em>Corrgram: Plot a Correlogram</em>. <a href="https://kwstat.github.io/corrgram/">https://kwstat.github.io/corrgram/</a>.
 </div>
 </div>
 </section><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><hr>

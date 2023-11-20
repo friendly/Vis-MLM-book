@@ -3,10 +3,12 @@ library(see) # for plotting
 #library(ggraph) # needs to be loaded
 #library(here)
 library(corrplot)
+library(corrgram)
 library(dplyr)
 
 load(here::here("data", "crime.RData"))
 
+# show representation of ellipse and correlation value
 crime |>
   select(where(is.numeric)) |>
   cor() |>
@@ -14,8 +16,19 @@ crime |>
            method = "ellipse",
            tl.col = "black",
            tl.srt = 0,
-           addCoef.col = "red",
+           addCoef.col = "black",
            addCoefasPercent = TRUE)
+
+
+# similar to Fig 3.24
+crime |>
+  select(where(is.numeric)) |>
+  corrgram(lower.panel = panel.ellipse,
+           upper.panel = panel.ellipse,
+           diag.panel = panel.density)
+
+
+
 
 
 # ordinary correlations
