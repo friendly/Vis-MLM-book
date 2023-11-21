@@ -579,7 +579,7 @@ more highly correlated and in most cases the nonparametric smooth doesn't differ
 ### Corrgrams
 
 What if you want to summarize the data even further, for example to show only the value of the correlation for each pair of variables? A **corrgram** [@Friendly:02:corrgram] is a visual display of a correlation matrix, where the correlation can be rendered in a variety of ways to show the direction and magnitude: circular
-"pac-man" symbols, ellipses, colored vars or shaded rectangles, as shown in 
+"pac-man" (or pie) symbols, ellipses, colored vars or shaded rectangles, as shown in 
 @fig-corrgram-renderings.
 
 Another aspect is that of **effect ordering** [@FriendlyKwan:02:effect],
@@ -598,26 +598,51 @@ related variables together as described in @sec-pca-biplot.
 knitr::include_graphics("images/corrgram-renderings.png")
 ```
 
-In R these diagrams can be created using the **corrgram** [@R-corrgram] and **corrplot** [@R-corrplot] packages, with different features. `corrgram::corrgram()` is closest to @Friendly:02:corrgram ...
+In R these diagrams can be created using the **corrgram** [@R-corrgram] and **corrplot** [@R-corrplot] packages, with different features. `corrgram::corrgram()` is closest to @Friendly:02:corrgram,
+in that it allows different rendering functions for the lower, upper and diagonal panels
+as illustrated in @fig-corrgram-renderings. For example, a corrgram similar to @fig-crime-spm
+can be produced as follows (not shown here):
+
+```{r}
+#| eval: false
+crime |>
+  select(where(is.numeric)) |>
+  corrgram(lower.panel = panel.ellipse,
+           upper.panel = panel.ellipse,
+           diag.panel = panel.density)
+```
+
+`corrplot::corrplot()` provides the rendering methods `c("circle", "square", "ellipse", "number", "shade", "color", "pie")`, but only one can be used at a time.
+The function `corrplot::corrplot.mixed()` allows different options to be selected for the lower and 
+upper triangles. The iconic shape is colored with with a gradient in relation to the correlation value.
 
 ```{r}
 #| label: fig-crime-corrplot
 #| fig-width: 8
 #| fig-height: 8
 #| out-width: "100%"
-#| fig-cap: "Corrplot of the `crime` data, showing each pair of variables with an ellipse and the rounded value of the correlation."
+#| fig-cap: "Corrplot of the `crime` data, showing the correlation between each pair of variables with an ellipse (lower) and a pie chart symbol (upper), all shaded in proportion to the correlation value, also shown numerically."
 crime |>
   select(where(is.numeric)) |>
   cor() |>
-  corrplot(diag = FALSE, 
-           method = "ellipse",
+  corrplot.mixed(
+           lower = "ellipse",
+           upper = "pie",
            tl.col = "black",
            tl.srt = 0,
            addCoef.col = "black",
            addCoefasPercent = TRUE)
 ```
 
+The combination of renderings shown in @fig-crime-corrplot is instructive. Small differences
+among correlation values are easier to see with the pie symbols than with the ellipses;
+for example, compare the values for murder with larceny and auto theft in row 1, columns 6-7
+with those in column 1, rows 6-7, where the former are easier to distinguish. The shading
+color adds another visual cue.
 
+Variations of corrgrams are worthy replacements for a numeric table of correlations, which are often presented in publications only for archival value. Including the numeric value (rounded here, for presentation purposes), makes this an attractive alternative to boring tables of correlations.
+
+**TODO**: Add example showing correlation ordering -- e.g., `mtcars` data.
 
 ## Generalized pairs plots {#sec-ggpairs}
 
@@ -866,10 +891,11 @@ by 10 measures including population, occupations, wealth, manufacturing, agricul
 
 However, both d'Ocagne and Gannet were far preceded in this by Andre-Michel Guerry [-@Guerry:1833]
 who used this method to show how the rank order of various crimes changed with age of the accused.
+See @Friendly2022, Figure 7 for his version and for an appreciation of the remarkable contributions
+of this amateur statistican to the history of data visualization.
 
-**TODO**: Revise the _History_ section of the Wikipedia page for [Parallel coordinates](https://en.wikipedia.org/wiki/Parallel_coordinates).
+<!-- **TODO**: Revise the _History_ section of the Wikipedia page for [Parallel coordinates](https://en.wikipedia.org/wiki/Parallel_coordinates). -->
 
-<!-- **TODO**: Mention Insleberg [-@Inselberg:1985] & Wegman [-@Wegman:1990]; Andrews plots [-@Andrews:72], ... -->
 The use of parallel coordinates for display of multidimensional data was rediscovered
 by Alfred Inselberg [-@Inselberg:1985] and extended by Edward Wegman [-@Wegman:1990], neither of whom recognized the earlier history.
 Somewhat earlier, David Andrews [-@Andrews:72] proposed mapping multivariate observations
@@ -881,9 +907,11 @@ without knowing their earlier history as parallel coordinate plots.
 
 Parallel coordinate plots present a challenge for graphic developers, in that they require a different
 way to think about plot construction for multiple variables, which can be quantitative,
-as in the original idea, or categorical factors ...
+as in the original idea, or categorical factors, all to be shown along parallel axes.
 
-Here, I use the **ggpcp** package [@R-ggpcp], best described in @VanderPlas2023. ...
+
+Here, I use the **ggpcp** package [@R-ggpcp], best described in @VanderPlas2023, who also
+review the modern history.
 This takes some getting used to, because they develop `pcp_*()` extensions of the `ggplot2` grammar of graphics framework to allow: 
 
 * `pcp_select()`: selections of the variables to be plotted and their horizontal order on parallel axes,

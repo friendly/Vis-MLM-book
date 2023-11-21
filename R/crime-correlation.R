@@ -8,6 +8,13 @@ library(dplyr)
 
 load(here::here("data", "crime.RData"))
 
+# similar to Fig 3.24
+crime |>
+  select(where(is.numeric)) |>
+  corrgram(lower.panel = panel.ellipse,
+           upper.panel = panel.ellipse,
+           diag.panel = panel.density)
+
 # show representation of ellipse and correlation value
 crime |>
   select(where(is.numeric)) |>
@@ -19,17 +26,23 @@ crime |>
            addCoef.col = "black",
            addCoefasPercent = TRUE)
 
-
-# similar to Fig 3.24
 crime |>
   select(where(is.numeric)) |>
-  corrgram(lower.panel = panel.ellipse,
-           upper.panel = panel.ellipse,
-           diag.panel = panel.density)
+  cor() |>
+  corrplot.mixed(
+           lower = "ellipse",
+           upper = "pie",
+           tl.col = "black",
+           tl.srt = 0,
+           addCoef.col = "black",
+           addCoefasPercent = TRUE)
 
 
 
 
+
+
+#' ## Correlation package
 
 # ordinary correlations
 crime |> 
