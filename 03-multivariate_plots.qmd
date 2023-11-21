@@ -1,23 +1,40 @@
+---
+editor: 
+  markdown: 
+    wrap: 72
+---
+
 ```{r include=FALSE}
 source("R/common.R")
 ```
 
 # Plots of Multivariate Data {#sec-multivariate_plots}
 
-> There is no excuse for failing to plot and look.
---- J. W.Tukey (1997), _Exploratory Data Analysis_, p. 157
+> There is no excuse for failing to plot and look. --- J. W.Tukey
+> (1997), *Exploratory Data Analysis*, p. 157
 
+<!--# comment -->
 
-The quote above from John Tukey reminds us that data analysis should rightly start with
-graphs to help us understand the main features of our data, to see patterns, trends
-and anomalies. 
-This chapter introduces a toolbox of basic graphical methods for visualizing multivariate datasets. It starts with some simple techniques to enhance the basic scatterplot with annotations such as fitted lines, curves and data ellipses to summarize the relation between two variables. 
+The quote above from John Tukey reminds us that data analysis should
+rightly start with graphs to help us understand the main features of our
+data, to see patterns, trends and anomalies. This chapter introduces a
+toolbox of basic graphical methods for visualizing multivariate
+datasets. It starts with some simple techniques to enhance the basic
+scatterplot with annotations such as fitted lines, curves and data
+ellipses to summarize the relation between two variables.
 
-To visualize more than two variables, we can view all pairs of variables in a scatterplot matrix or shift gears entirely to show multiple variables along a set of parallel axes. As the number of variables increase, we may need to suppress details with stronger summaries for a high-level reconnaissance of our data terrain, as we do by zooming out on a map.
+To visualize more than two variables, we can view all pairs of variables
+in a scatterplot matrix or shift gears entirely to show multiple
+variables along a set of parallel axes. As the number of variables
+increases, we may need to suppress details with stronger summaries
+<!--# UA: I would add an example in brackets here or rephrase "suppress details with stronger summaries," it might be a little confusing or too abstract to some this early in the book  -->
+for a high-level reconnaissance of our data terrain, as we do by zooming
+out on a map.
 
 **Packages**
 
 In this chapter I use the following packages. Load them now:
+
 ```{r load-pkgs}
 library(car)
 library(ggplot2)
@@ -33,40 +50,47 @@ library(ggpcp)
 
 ## Bivariate summaries {#sec-bivariate_summaries}
 
+The basic scatterplot is the workhorse of multivariate data
+visualization, showing how one variable, $y$, often an outcome to be
+explained by or varies with another, $x$. It is a building block for
+many useful techniques, so it is helpful to understand how it can be
+used as a tool for thinking in a wider, multivariate context.
 
-The basic scatterplot is the workhorse of multivariate data visualization, showing
-how one variable, $y$, often an outcome to be explained by or varies with another, $x$.
-It is a building block for many useful techniques, so it is helpful to understand
-how it can be used as a tool for thinking in a wider, multivariate context.
+The essential idea is that we can start with a simple version of the
+scatterplot and add annotations to show interesting features more
+clearly. We consider the following here:
 
-An essential idea is that we can start with a simple version and add plot annotations
-to show interesting features more clearly. We consider the following here:
+-   **Smoothers**: Showing overall trends, perhaps in several forms, as
+    visual summaries such as fitted regression lines or curves and
+    nonparametric smoothers.
+-   **Stratifiers**: Using color, shape or other features to identify
+    subgroups; more generally, *conditioning* on other variables in
+    multi-panel displays;
+-   **Data ellipses**: A compact 2D visual summary of bivariate linear
+    relations and uncertainty assuming normality; more generally,
+    contour plots of bivariate density.
 
-  + **smoothers**: showing overall trends, perhaps in several forms, as visual summaries such as fitted regression lines or curves and nonparametric smoothers.
-  + **stratifiers**: using color, shape or other features to identify subgroups; more generally, _conditioning_ on other variables in multi-panel displays;
-  + **data ellipses**: a compact 2D visual summary of bivariate linear relations and uncertainty assuming normality; more generally, contour plots of bivariate density.
-
-**Example**: Academic salaries
+**Example: Academic salaries**
 
 Let's start with data on the academic salaries of faculty members
-collected at a U.S. college for the purpose of assessing salary differences
-between male and female faculty members, and perhaps address anomalies
-in compensation.
-The dataset `carData::Salaries`
-gives data on nine-month salaries and other variables for 397 faculty members in the 2008-2009 academic year.
+collected at a U.S. college for the purpose of assessing salary
+differences between male and female faculty members, and perhaps address
+anomalies in compensation. The dataset `carData::Salaries` gives data on
+nine-month salaries and other variables for 397 faculty members in the
+2008-2009 academic year.
 
 ```{r Salaries}
 data(Salaries, package = "carData")
 str(Salaries)
 ```
 
-The most obvious, but perhaps naive,
-predictor of `salary` is `years.since.phd`. For simplicity, I'll refer to
-this as years of "experience".
-Before looking at differences
-between males and females, we would want consider faculty `rank` (related also to `yrs.service`)
-and `discipline`, recorded here as `A` (“theoretical” departments) or `B` (“applied” departments).
-But a basic plot ignores these for now, to focus on what can be learned from plot annotations.
+The most obvious, but perhaps naive, predictor of `salary` is
+`years.since.phd`. For simplicity, I'll refer to this as years of
+"experience." Before looking at differences between males and females,
+we would want consider faculty `rank` (related also to `yrs.service`)
+and `discipline`, recorded here as `A` ("theoretical" departments) or
+`B` ("applied" departments). But, for a basic plot, we will ignore these
+for now to focus on what can be learned from plot annotations.
 
 ```{r}
 #| label: fig-Salaries-scat
@@ -80,29 +104,34 @@ gg1 <- ggplot(Salaries,
     prefix="$", scale = 0.001, suffix = "K")) +
   labs(x = "Years since PhD",
        y = "Salary") 
-#  theme_bw(base_size = 14) -- set globally; remove this line
+
 gg1
 ```
 
+There is quite a lot we can see "just by looking" at this simple plot,
+but the main things are:
 
-There is quite a lot we can see "just by looking" at this simple plot, but the main things are:
-
-* salary increases generally from 0 - 40 years since the PhD; 
-* variability in salary increases among those with the same experience, a "fan-shaped" pattern that signals a violation of homogeneity of variance in simple regression;
-* data beyond 50 years is thin, but there are some quite low salaries there.
+-   Salary increases generally from 0 - 40 years since the PhD;
+-   Variability in salary increases among those with the same
+    experience, a "fan-shaped" pattern that signals a violation of
+    homogeneity of variance in simple regression;
+-   Data beyond 50 years is thin, but there are some quite low salaries
+    there.
 
 ### Smoothers
 
-Smoothers are among the most useful graphical annotations you can add to such plots,
-giving a visual summary of how $y$ changes with $x$.
-The most common is to add a line showing the linear regression predictor for
-$y$ given $x$, expressed in math notation as $\mathbb{E} (y | x) = b_0 + b_1 x$.
-If there is doubt that a linear relation is an adequate summary,
-you can try a quadratic or other polynomial smoother.
+Smoothers are among the most useful graphical annotations you can add to
+such plots, giving a visual summary of how $y$ changes with $x$. The
+most common smoother is a line showing the linear regression for $y$
+given $x$, expressed in math notation as
+$\mathbb{E} (y | x) = b_0 + b_1 x$. If there is doubt that a linear
+relation is an adequate summary, you can try a quadratic or other
+polynomial smoothers.
 
-In **ggplot2**, these are easily added to a plot using `geom_smooth()` with
-`method = "lm"`, and a model `formula`, which (by default) is `y ~ x` for a linear relation
-or `y ~ poly(x, k)` for a polynomial of degree $k$.
+In **ggplot2**, these are easily added to a plot using `geom_smooth()`
+with `method = "lm"`, and a model `formula`, which (by default) is
+`y ~ x` for a linear relation or `y ~ poly(x, k)` for a polynomial of
+degree $k$.
 
 ```{r}
 #| label: fig-Salaries-lm
@@ -118,42 +147,53 @@ gg1 +
               linewidth = 2) 
 ```
 
-This serves to highlight some of our impressions from the basic scatterplot shown in
-@fig-Salaries-scat, making them more apparent. And that's precisely the point: The regression smoother draws attention to a possible pattern that we can consider as a visual summary of the data. You can think of this as showing what a linear (or quadratic) regression "sees" in the data.
-Statistical tests (secref?) can help you decide if there is more evidence for a quadratic fit compared to the simpler linear relation.
+<!--# UA: This is a fantastic graph. My only (very minor) suggestion is to replace one of the colours because the most common type of colour vision deficiency makes it hard to tell the difference between red and green. So, maybe green and purple (purple would match the inline code highlight colour)-->
 
-It is useful to also show some indication of _uncertainty_ (or inversely, _precision_)
-associated with with the predicted values.
-Both the linear and quadratic trends are shown in @fig-Salaries-lm with 95% pointwise
-confidence bands. These are necessarily narrower in the center of the range of $x$ where
-there is typically more data; they get wider toward the highest values of experience
-where the data are thin.
+
+This serves to highlight some of our impressions from the basic
+scatterplot shown in @fig-Salaries-scat, making them more apparent. And
+that's precisely the point: the regression smoother draws attention to a
+possible pattern that we can consider as a visual summary of the data.
+You can think of this as showing what a linear (or quadratic) regression
+"sees" in the data. Statistical tests <!--# (secref?) --> can help you decide if there is more evidence for a quadratic fit compared to the simpler linear relation. <!--# UA: Great paragraph!-->
+
+
+It is useful to also show some indication of *uncertainty* (or
+inversely, *precision*) associated with the predicted values. Both
+the linear and quadratic trends are shown in @fig-Salaries-lm with 95%
+pointwise confidence bands. These are necessarily narrower in the center
+of the range of $x$ where there is typically more data; they get wider
+toward the highest values of experience where the data are thinner.
 
 #### Non-parametric smoothers {.nonumber}
 
-The most generally useful idea is a smoother that tracks an average value, $\mathbb{E} (y | x)$, of $y$ as $x$ varies across its' range _without_ assuming any particular functional form, and so avoiding the necessity to choose among 
-`y ~ poly(x, 1)`, or `y ~ poly(x, 2)`, or `y ~ poly(x, 3)` ...
+The most generally useful idea is a smoother that tracks an average
+value, $\mathbb{E} (y | x)$, of $y$ as $x$ varies across its' range
+*without* assuming any particular functional form, and so avoiding the
+necessity to choose among `y ~ poly(x, 1)`, or `y ~ poly(x, 2)`, or
+`y ~ poly(x, 3)` ...
 
 Non-parametric smoothers attempt to estimate $\mathbb{E} (y | x) = f(x)$
-where $f(x)$ is some smooth function. These typically use a collection of weighted
-_local regressions_ for each $x_i$ within a window centered at that value.
-In the method called _lowess_ or _loess_ [@Cleveland:79; @ClevelandDevlin:88],
-a weight function is applied, giving greatest weight to $x_i$ and weights of
-0 outside a window containing a fraction $s$ of the nearest neighbors of $x_i$.
-The fraction, $s$, usually within the range $1/3 \le s \le 2/3$,
-called the _span_, determines the smoothness of the
-resulting curve; smaller values produce a wigglier curve and
-larger values giving a smoother fit. If desired, an optimal span can be determined
-by $k$-fold cross-validation to minimize a measure of overall error of approximation.
+where $f(x)$ is some smooth function. These typically use a collection
+of weighted *local regressions* for each $x_i$ within a window centered
+at that value. In the method called *lowess* or *loess* [@Cleveland:79;
+@ClevelandDevlin:88], a weight function is applied, giving greatest
+weight to $x_i$ and a weight of 0 outside a window containing a certain fraction, $s$, called *span*, of the nearest neighbors of $x_i$. The fraction, $s$, is usually within the range $1/3 \le s \le 2/3$, and it determines the
+smoothness of the resulting curve; smaller values produce a wigglier
+curve and larger values giving a smoother fit (an optimal
+span can be determined by $k$-fold cross-validation to minimize a
+measure of overall error of approximation).
 
-Non-parametric regression is broad topic;
-see @Fox:2016:ARA, Ch. 18 for a more general treatment and @Wood:2006 for generalized
-additive models, fit using `method = "gam"` in ggplot2, which is the default when
-the largest group has more than 1,000 observations.
+Non-parametric regression is a broad topic; see @Fox:2016:ARA, Ch. 18 for
+a more general treatment and @Wood:2006 for generalized additive models,
+fit using `method = "gam"` in **ggplot2**, which is the default when the
+largest group has more than 1,000 observations.
 
-@fig-Salaries-loess shows the addition of a loess smooth to the plot in @fig-Salaries-lm,
-suppressing the confidence band for the linear regression. The loess fit is nearly coincident
-with the quadratic fit, but has a slightly wider confidence band.
+@fig-Salaries-loess shows the addition of a loess smooth to the plot in
+@fig-Salaries-lm, suppressing the confidence band for the linear
+regression. The loess fit is nearly coincident with the quadratic fit,
+but has a slightly wider confidence band.
+
 ```{r}
 #| label: fig-Salaries-loess
 #| out-width: "80%"
@@ -171,62 +211,93 @@ gg1 +
               linewidth = 2) 
 ```
 
-But now comes an important question: Is it reasonable that academic salary should increase up to about 40 years since the PhD degree and then decline? The predicted salary for someone 
-still working 50 years after earning their degree is about the same as a person at 15 years.
+But now comes an important question: is it reasonable that academic
+salary should increase up to about 40 years since the PhD degree and
+then decline? The predicted salary for someone still working 50 years
+after earning their degree is about the same as a person at 15 years.
 What else is going on here?
+
+
+<!--# UA: up to here Nov 21 -->
+
 
 ### Stratifiers
 
-Very often, we have a main relationship of interest, but various groups in the data are identified by discrete factors (like faculty `rank` and `sex`, their type of `discipline` here), or there are
-quantitative predictors for which the main relation might vary. In the language of statistical models such
-effects are _interaction_ terms, as in `y ~ group + x + group:x`, where the term `group:x` fits a different slope for each group and the grouping variable is often called a _moderator_ variable. 
-Common moderator variables are ethnicity, health status, social class and level of education.
-Moderators can also be continuous variables as in `y ~ x1 + x2 + x1:x2`.
+Very often, we have a main relationship of interest, but various groups
+in the data are identified by discrete factors (like faculty `rank` and
+`sex`, their type of `discipline` here), or there are quantitative
+predictors for which the main relation might vary. In the language of
+statistical models such effects are *interaction* terms, as in
+`y ~ group + x + group:x`, where the term `group:x` fits a different
+slope for each group and the grouping variable is often called a
+*moderator* variable. Common moderator variables are ethnicity, health
+status, social class and level of education. Moderators can also be
+continuous variables as in `y ~ x1 + x2 + x1:x2`.
 
-I call these _stratifiers_, recognizing that we should consider breaking down the overall relation
-to see whether and how it changes over such "other" variables.  Such variables are most
-often factors, but we can cut a continuous variable into ranges (_shingles_) and do the same graphically.
-There are two general stratifying graphical techniques:
+I call these *stratifiers*, recognizing that we should consider breaking
+down the overall relation to see whether and how it changes over such
+"other" variables. Such variables are most often factors, but we can cut
+a continuous variable into ranges (*shingles*) and do the same
+graphically. There are two general stratifying graphical techniques:
 
-* **grouping**: Identify subgroups in the data by assigning different visual attributes, such as color, shape, line style, etc. within a single plot. This is quite natural for factors; quantitative predictors can be accommodated by cutting their range into ordered intervals. Two such grouping variables can be 
-Grouping has the advantage that the levels of a grouping variable can be shown within the same plot, facilitating direct comparison.
+-   **grouping**: Identify subgroups in the data by assigning different
+    visual attributes, such as color, shape, line style, etc. within a
+    single plot. This is quite natural for factors; quantitative
+    predictors can be accommodated by cutting their range into ordered
+    intervals. Two such grouping variables can be Grouping has the
+    advantage that the levels of a grouping variable can be shown within
+    the same plot, facilitating direct comparison.
 
-* **conditioning**: Showing subgroups in different plot panels. This has the advantages that relations for the individual groups more easily discerned and
-one can easily stratify by two (or more) other variables jointly, but visual comparison
-is more difficult because the eye must scan from one panel to another.
+-   **conditioning**: Showing subgroups in different plot panels. This
+    has the advantages that relations for the individual groups more
+    easily discerned and one can easily stratify by two (or more) other
+    variables jointly, but visual comparison is more difficult because
+    the eye must scan from one panel to another.
 
-::: {.callout-note}
+::: callout-note
 ## History Corner
-Recognition of the roles of visual grouping by factors within a panel and conditioning in multi-panel displays was an important
-advance in the development of modern statistical graphics. It began at 
-A.T.&T. Bell Labs in Murray Hill, NJ in conjunction with the **S** language,
-the mother of R.
 
-Conditioning displays (originally called _coplots_ [@ChambersHastie1991]) are
-simply a collection of 1D, 2D or 3D plots separate panels for subsets of the data broken down by one or more factors, or, for quantitative variables,
-subdivided into a factor with several overlapping intervals (_shingles_).
-The first implementation was in _Trellis_ plots
-@Becker:1996:VDC;@Cleveland:85.
+Recognition of the roles of visual grouping by factors within a panel
+and conditioning in multi-panel displays was an important advance in the
+development of modern statistical graphics. It began at A.T.&T. Bell
+Labs in Murray Hill, NJ in conjunction with the **S** language, the
+mother of R.
 
-Trellis displays were extended in the **lattice** package [@R-lattice], which offered:
+Conditioning displays (originally called *coplots*
+[@ChambersHastie1991]) are simply a collection of 1D, 2D or 3D plots
+separate panels for subsets of the data broken down by one or more
+factors, or, for quantitative variables, subdivided into a factor with
+several overlapping intervals (*shingles*). The first implementation was
+in *Trellis* plots @Becker:1996:VDC;@Cleveland:85.
 
-* a **graphing syntax** similar to that used in statistical model formulas:
-`y ~ x | g` conditions the data by the levels of `g`, with `|` read as "given";
-two or more conditioning are specified as `y ~ x | g1 + g2 + ...`, with `+` read as "and".
-* **panel functions** define what is plotted in a given panel. `panel.xyplot()` is the default for scatterplots, plotting points, but you can add `panel.lmline()` for regression lines, `latticeExtra::panel.smoother()` for loess smooths and a
-wide variety of others.
+Trellis displays were extended in the **lattice** package [@R-lattice],
+which offered:
 
-The **car** package [@R-car] supports this graphing syntax in many of its functions.
-**ggplot2** does not; it uses aesthetics (`aes()`), which map variables in the data to
-visual characteristics in displays. ...
+-   a **graphing syntax** similar to that used in statistical model
+    formulas: `y ~ x | g` conditions the data by the levels of `g`, with
+    `|` read as "given"; two or more conditioning are specified as
+    `y ~ x | g1 + g2 + ...`, with `+` read as "and".
+-   **panel functions** define what is plotted in a given panel.
+    `panel.xyplot()` is the default for scatterplots, plotting points,
+    but you can add `panel.lmline()` for regression lines,
+    `latticeExtra::panel.smoother()` for loess smooths and a wide
+    variety of others.
+
+The **car** package [@R-car] supports this graphing syntax in many of
+its functions. **ggplot2** does not; it uses aesthetics (`aes()`), which
+map variables in the data to visual characteristics in displays. ...
 :::
 
-The most obvious variable that affects academic salary is `rank`, because faculty typically get an increase in salary with a promotion that carries through in their future salary. What can we see if we group by `rank` and fit a separate smoothed curve for each?
+The most obvious variable that affects academic salary is `rank`,
+because faculty typically get an increase in salary with a promotion
+that carries through in their future salary. What can we see if we group
+by `rank` and fit a separate smoothed curve for each?
 
-In `ggplot2` thinking, grouping is accomplished simply by adding an aesthetic, such as `color = rank`. 
-what happens then is that points, lines, smooths and other `geom_*()` inherit the feature that they
-are differentiated by color. In the case of `geom_smooth()`, we get a separate fit for each subset of
-the data, according to `rank`.
+In `ggplot2` thinking, grouping is accomplished simply by adding an
+aesthetic, such as `color = rank`. what happens then is that points,
+lines, smooths and other `geom_*()` inherit the feature that they are
+differentiated by color. In the case of `geom_smooth()`, we get a
+separate fit for each subset of the data, according to `rank`.
 
 ```{r}
 #| label: fig-Salaries-rank
@@ -256,12 +327,16 @@ ggplot(Salaries,
   legend_pos
 ```
 
-Well, there is a different story here. Salaries generally occupy separate levels, increasing with academic rank. The horizontal extents of the smoothed curves show their ranges. Within each rank there is some initial increase after promotion, and then
-some tendency to decline with increasing years. But by and large, years since the PhD doesn't make that much difference, once we've taken academic rank into account
+Well, there is a different story here. Salaries generally occupy
+separate levels, increasing with academic rank. The horizontal extents
+of the smoothed curves show their ranges. Within each rank there is some
+initial increase after promotion, and then some tendency to decline with
+increasing years. But by and large, years since the PhD doesn't make
+that much difference, once we've taken academic rank into account
 
-What about the `discipline`, classified, perhaps peculiarly as "theoretical"
-vs. "applied", here? The values are just `"A"` and `"B"`, so I map these to
-more meaningful labels before making the plot.
+What about the `discipline`, classified, perhaps peculiarly as
+"theoretical" vs. "applied", here? The values are just `"A"` and `"B"`,
+so I map these to more meaningful labels before making the plot.
 
 ```{r}
 #| label: fig-Salaries-discipline
@@ -284,34 +359,44 @@ Salaries |>
   legend_pos 
 ```
 
-The story in @fig-Salaries-discipline is again different. Faculty in applied disciplines on average earn about
-10,000$ more per year on average than their theoretical colleagues. 
+The story in @fig-Salaries-discipline is again different. Faculty in
+applied disciplines on average earn about 10,000\$ more per year on
+average than their theoretical colleagues.
+
 ```{r discipline-means}
 Salaries |>
   group_by(discipline) |>
   summarize(mean = mean(salary)) 
 ```
 
-For both groups, there is an approximately linear relation up to about 30--40 years, but the smoothed curves
-then diverge, into the region where the data is thin.
+For both groups, there is an approximately linear relation up to about
+30--40 years, but the smoothed curves then diverge, into the region
+where the data is thin.
 
 ### Conditioning
 
-The previous plots use grouping by color to plot the data for different subsets inside the same plot window,
-making comparison among groups easier, because they can be directly compared along a common vertical scale [^1].
-This gets messy however when there are more than just a few levels, or worse---when there are two (or more)
-variables for which we want to show separate effects. In such cases, we can plot separate panels using the `ggplot2`
-concept of _faceting_. There are two options: `facet_wrap()` takes one or more
-conditioning variables and produces a ribbon of plots for each combination of levels; 
-`facet_grid(row ~ col)` takes two or more conditioning variables and arranges the plots in a 2D array identified
-by the `row` and `col` variables.
+The previous plots use grouping by color to plot the data for different
+subsets inside the same plot window, making comparison among groups
+easier, because they can be directly compared along a common vertical
+scale [^03-multivariate_plots-1]. This gets messy however when there are
+more than just a few levels, or worse---when there are two (or more)
+variables for which we want to show separate effects. In such cases, we
+can plot separate panels using the `ggplot2` concept of *faceting*.
+There are two options: `facet_wrap()` takes one or more conditioning
+variables and produces a ribbon of plots for each combination of levels;
+`facet_grid(row ~ col)` takes two or more conditioning variables and
+arranges the plots in a 2D array identified by the `row` and `col`
+variables.
 
-[^1]: The classic study by @ClevelandMcGill:84b;@ClevelandMcGill:85 shows that judgements of magnitude along a common scale are more accurate than those along separate, aligned scales.
+[^03-multivariate_plots-1]: The classic study by
+    @ClevelandMcGill:84b;@ClevelandMcGill:85 shows that judgements of
+    magnitude along a common scale are more accurate than those along
+    separate, aligned scales.
 
 Let's look at salary broken down by the combinations of discipline and
-rank. Here, I chose to stratify using color by rank within each of panels
-faceting by discipline. Because there is more going on in this plot,
-a linear smooth is used to represent the trend. 
+rank. Here, I chose to stratify using color by rank within each of
+panels faceting by discipline. Because there is more going on in this
+plot, a linear smooth is used to represent the trend.
 
 ```{r}
 #| label: fig-Salaries-faceted
@@ -332,23 +417,21 @@ Salaries |>
   legend_pos
 ```
 
-Once both of
-these factors are taken into account, there does not seem to be much impact
-of years of service.
-Salaries in theoretical disciplines are noticeably greater than those in applied
-disciplines at all ranks, and there are even greater differences among ranks.
-
+Once both of these factors are taken into account, there does not seem
+to be much impact of years of service. Salaries in theoretical
+disciplines are noticeably greater than those in applied disciplines at
+all ranks, and there are even greater differences among ranks.
 
 Finally, to shed light on the question that motivated this example---
-are there anomalous differences in salary for men and women---
-we can look at differences in salary according to sex, when discipline
-and rank are taken into account. To do this graphically, condition by both 
-variables, but use `facet_grid(discipline ~ rank)` to arrange their combinations
-in a grid whose rows are the levels of `discipline` and whose columns are
-those of `rank`. I want to make the comparison of males and females most
-direct, so I use `color = sex` to stratify the panels. 
-The smoothed regression lines and error bands are calculated separately
-for each combination of discipline, rank and sex.
+are there anomalous differences in salary for men and women--- we can
+look at differences in salary according to sex, when discipline and rank
+are taken into account. To do this graphically, condition by both
+variables, but use `facet_grid(discipline ~ rank)` to arrange their
+combinations in a grid whose rows are the levels of `discipline` and
+whose columns are those of `rank`. I want to make the comparison of
+males and females most direct, so I use `color = sex` to stratify the
+panels. The smoothed regression lines and error bands are calculated
+separately for each combination of discipline, rank and sex.
 
 ```{r}
 #| label: fig-Salaries-facet-sex
@@ -369,31 +452,30 @@ Salaries |>
   legend_pos
 ```
 
-        
 ```{r child="child/03-data-ellipse.qmd"}
 ```
 
-
 ## Scatterplot matrices {#sec-scatmat}
 
-Going beyond bivariate scatterplots, a _pairs_ plot 
-(or _scatterplot matrix_) displays 
-all possible $p \times p$ pairs of $p$ variables in a matrix-like display
-where variables $(x_i, x_j)$ are shown in a plot for row $i$, column $j$.
-This idea, due to @Hartigan:75b, 
-uses small multiple plots, so that the eye can easily scan across
-a row or down a column to see how a given variable is related to
-all the others. 
+Going beyond bivariate scatterplots, a *pairs* plot (or *scatterplot
+matrix*) displays all possible $p \times p$ pairs of $p$ variables in a
+matrix-like display where variables $(x_i, x_j)$ are shown in a plot for
+row $i$, column $j$. This idea, due to @Hartigan:75b, uses small
+multiple plots, so that the eye can easily scan across a row or down a
+column to see how a given variable is related to all the others.
 
-The most basic version is provided by `pairs()` in base R. When one variable
-is considered as an outcome or response, it is usually helpful to put this
-in the first row and column. For the `Prestige` data, in addition to
-income and education, we also have a measure of % women in each occupational category.
+The most basic version is provided by `pairs()` in base R. When one
+variable is considered as an outcome or response, it is usually helpful
+to put this in the first row and column. For the `Prestige` data, in
+addition to income and education, we also have a measure of % women in
+each occupational category.
 
-Plotting these together gives @fig-prestige-pairs. In such plots, the diagonal cells
-give labels for the variables, but they are also a guide to interpreting what is shown.
-In each row, say row 2 for `income`, income is the vertical $y$ variable in plots against other
-variables. In each column, say column 3 for `education`, education is the horizonal $x$ variable.
+Plotting these together gives @fig-prestige-pairs. In such plots, the
+diagonal cells give labels for the variables, but they are also a guide
+to interpreting what is shown. In each row, say row 2 for `income`,
+income is the vertical $y$ variable in plots against other variables. In
+each column, say column 3 for `education`, education is the horizonal
+$x$ variable.
 
 ```{r}
 #| label: fig-prestige-pairs
@@ -405,25 +487,29 @@ pairs(~ prestige + income + education + women,
       data=Prestige)
 ```
 
-The plots in the first row show what we have seen before for the relations between prestige and income and education, adding to those the plot of prestige vs. % women. Plots in the first column show the same data, but with $x$ and $y$ interchanged. 
+The plots in the first row show what we have seen before for the
+relations between prestige and income and education, adding to those the
+plot of prestige vs. % women. Plots in the first column show the same
+data, but with $x$ and $y$ interchanged.
 
-But this basic `pairs()` plot is very limited. A more feature-rich version is provided by `car::scatterplotMatrix()` which
-can add the regression lines, loess smooths and data ellipses for each
-pair, as shown in @fig-prestige-spm1.
+But this basic `pairs()` plot is very limited. A more feature-rich
+version is provided by `car::scatterplotMatrix()` which can add the
+regression lines, loess smooths and data ellipses for each pair, as
+shown in @fig-prestige-spm1.
 
 The diagonal panels show density curves for the distribution of each
-variable; for example, the distribution of `education` appears to be multi-modal
-and that of `women` shows that most of the occupations have a low percentage
-of women. 
+variable; for example, the distribution of `education` appears to be
+multi-modal and that of `women` shows that most of the occupations have
+a low percentage of women.
 
-The combination of the regression line with the loess smoothed
-curve, but without their confidence envelopes, provides about the right
-amount of detail to take in at a glance where the relations are non-linear.
-We've already seen (@fig-Prestige-scatterplot-income1)
-the non-linear relation between prestige and income
-(row 1, column 2) when occupational type is ignored. 
-But all relations with income in column 2 are non-linear, reinforcing
-our idea (@sec-log-scale) that effects of income should be assessed on a log scale.
+The combination of the regression line with the loess smoothed curve,
+but without their confidence envelopes, provides about the right amount
+of detail to take in at a glance where the relations are non-linear.
+We've already seen (@fig-Prestige-scatterplot-income1) the non-linear
+relation between prestige and income (row 1, column 2) when occupational
+type is ignored. But all relations with income in column 2 are
+non-linear, reinforcing our idea (@sec-log-scale) that effects of income
+should be assessed on a log scale.
 
 ```{r}
 #| label: fig-prestige-spm1
@@ -440,13 +526,14 @@ scatterplotMatrix(~ prestige + income + education + women,
 ```
 
 `scatterplotMatrix()` can also label points using the `id =` argument
-(though this can get messy)
-and can stratify the observations by a grouping variable with different
-symbols and colors.  For example @fig-prestige-spm2 uses the
-syntax `~ prestige + education + income + women | type` to provide
-separate regression lines, smoothed curves and data ellipses for
-the three types of occupations. (The default colors are somewhat garish,
-so I use `scales::hue_pal()` to mimic the discrete color scale used in `ggplot2`).
+(though this can get messy) and can stratify the observations by a
+grouping variable with different symbols and colors. For example
+@fig-prestige-spm2 uses the syntax
+`~ prestige + education + income + women | type` to provide separate
+regression lines, smoothed curves and data ellipses for the three types
+of occupations. (The default colors are somewhat garish, so I use
+`scales::hue_pal()` to mimic the discrete color scale used in
+`ggplot2`).
 
 ```{r}
 #| label: fig-prestige-spm2
@@ -463,18 +550,20 @@ scatterplotMatrix(~ prestige + income + education + women | type,
   ellipse=list(levels=0.68, fill.alpha=0.1))
 ```
 
-It is now easy to see why education is multi-modal: blue collar, white collar and
-professional occupations have largely non-overlapping years of education.
-As well, the distribution of % women is much higher in the white collar category.
+It is now easy to see why education is multi-modal: blue collar, white
+collar and professional occupations have largely non-overlapping years
+of education. As well, the distribution of % women is much higher in the
+white collar category.
 
-For the `penguins` data, given what we've seen before in @fig-peng-ggplot1 and @fig-peng-ggplot2,
-we may wish to suppress details of the points (`plot.points = FALSE`)
-and loess smooths (`smooth = FALSE`)
-to focus attention 
-on the similarity of regression lines and data ellipses for the three penguin species.
-In @fig-peng-spm, I've chosen to show boxplots rather than density curves in the diagonal panels
-in order to highlight differences in the means and interquartile ranges of the species,
-and to show 68% and 95% data ellipses in the off-diagonal panels.
+For the `penguins` data, given what we've seen before in
+@fig-peng-ggplot1 and @fig-peng-ggplot2, we may wish to suppress details
+of the points (`plot.points = FALSE`) and loess smooths
+(`smooth = FALSE`) to focus attention on the similarity of regression
+lines and data ellipses for the three penguin species. In @fig-peng-spm,
+I've chosen to show boxplots rather than density curves in the diagonal
+panels in order to highlight differences in the means and interquartile
+ranges of the species, and to show 68% and 95% data ellipses in the
+off-diagonal panels.
 
 ```{r}
 #| label: fig-peng-spm
@@ -494,23 +583,23 @@ scatterplotMatrix(~ bill_length + bill_depth + flipper_length + body_mass | spec
   plot.points = FALSE)
 ```
 
-It can be seen that the species are widely separated in most of the bivariate plots.
-As well, the regression lines for species have similar slopes and the data ellipses
-have similar size and shape in most of the plots.
-From the boxplots, we can also see that `r colorize("Adelie", "orange")` penguins
-have shorter bill lengths than the others, while `r colorize("Gentoo", "green")`
-penguins have smaller bill depth, but longer flippers and are heavier
-than `r colorize("Chinstrap", "purple")` and `r colorize("Adelie", "orange")`
-penguins. 
+It can be seen that the species are widely separated in most of the
+bivariate plots. As well, the regression lines for species have similar
+slopes and the data ellipses have similar size and shape in most of the
+plots. From the boxplots, we can also see that
+`r colorize("Adelie", "orange")` penguins have shorter bill lengths than
+the others, while `r colorize("Gentoo", "green")` penguins have smaller
+bill depth, but longer flippers and are heavier than
+`r colorize("Chinstrap", "purple")` and `r colorize("Adelie", "orange")`
+penguins.
 
-
-
-::: {.callout-note}
+::: callout-note
 ## Looking ahead
 
-@fig-peng-spm provides a reasonably complete visual summary of the data in relation to multivariate
-models that ask "do the species differ on in their means on these body size measures?
-This corresponds to the MANOVA model,
+@fig-peng-spm provides a reasonably complete visual summary of the data
+in relation to multivariate models that ask "do the species differ on in
+their means on these body size measures? This corresponds to the MANOVA
+model,
 
 ```{r}
 #| eval: false
@@ -518,12 +607,16 @@ peng.mod <- lm(cbind(bill_length, bill_depth, flipper_length, body_mass) ~ speci
                data=peng)
 ```
 
-Hypothesis-error (HE) plots, described in @sec-vis-mlm provide a better summary of the evidence for the MANOVA test of differences among means on all variables together. These give an 
-$\mathbf{H}$ ellipse reflecting the differences among means, to be compared with
-an $\mathbf{E}$ ellipse reflecting within-group variation and a visual test of significance
+Hypothesis-error (HE) plots, described in @sec-vis-mlm provide a better
+summary of the evidence for the MANOVA test of differences among means
+on all variables together. These give an $\mathbf{H}$ ellipse reflecting
+the differences among means, to be compared with an $\mathbf{E}$ ellipse
+reflecting within-group variation and a visual test of significance
 
-A related question is "how well are the penguin species distinguished by these body size measures?"
-Here, the relevant model is linear discriminant analysis (LDA), where `species` plays the role of the response in the model,
+A related question is "how well are the penguin species distinguished by
+these body size measures?" Here, the relevant model is linear
+discriminant analysis (LDA), where `species` plays the role of the
+response in the model,
 
 ```{r}
 #| eval: false
@@ -531,31 +624,34 @@ peng.lda <- MASS:lda( species ~ cbind(bill_length, bill_depth, flipper_length, b
                data=peng)
 ```
 
-Both MANOVA and LDA depend on the assumption that the variances and correlations of the
-are the same for all groups. This assumption can be tested and visualized using the methods
-in @sec-eqcov.
-
+Both MANOVA and LDA depend on the assumption that the variances and
+correlations of the are the same for all groups. This assumption can be
+tested and visualized using the methods in @sec-eqcov.
 :::
 
 ### Visual thinning
 
 What can you do if there are even more variables than in these examples?
-If what you want is a high-level, zoomed-out display summarizing the pairwise relations more strongly,
-you can apply the idea of visual thinning to show only the most important features.
+If what you want is a high-level, zoomed-out display summarizing the
+pairwise relations more strongly, you can apply the idea of visual
+thinning to show only the most important features.
 
-This example uses data on the rate of various crimes in the 50 U.S. states from the
-United States Statistical Abstracts, 1970, used by @Hartigan:75 and @Friendly:91.
-These are ordered in the dataset roughly by seriousness of crime or
-from crimes of violence to property crimes.
+This example uses data on the rate of various crimes in the 50 U.S.
+states from the United States Statistical Abstracts, 1970, used by
+@Hartigan:75 and @Friendly:91. These are ordered in the dataset roughly
+by seriousness of crime or from crimes of violence to property crimes.
 
 ```{r crime-data}
 load(here::here("data", "crime.RData"))
 str(crime)
 ```
 
-@fig-crime-spm displays the scatterplot matrix for these seven variables, using only the regression line and data ellipse to show the linear relation and the loess smooth to show potential nonlinearity.
-To make this even more schematic, the axis tick marks and labels are also removed using
-the `par()` settings `xaxt = "n", yaxt = "n"`.
+@fig-crime-spm displays the scatterplot matrix for these seven
+variables, using only the regression line and data ellipse to show the
+linear relation and the loess smooth to show potential nonlinearity. To
+make this even more schematic, the axis tick marks and labels are also
+removed using the `par()` settings `xaxt = "n", yaxt = "n"`.
+
 ```{r}
 #| label: fig-crime-spm
 #| fig-width: 8
@@ -573,21 +669,28 @@ crime |>
     xaxt = "n", yaxt = "n")
 ```
 
-We can see that all pairwise correlations are positive, pairs closer to the main diagonal tend to be
-more highly correlated and in most cases the nonparametric smooth doesn't differ much from the linear regression line. Exceptions to this appear mainly in the columns for `robbery` and `auto` (auto theft).
+We can see that all pairwise correlations are positive, pairs closer to
+the main diagonal tend to be more highly correlated and in most cases
+the nonparametric smooth doesn't differ much from the linear regression
+line. Exceptions to this appear mainly in the columns for `robbery` and
+`auto` (auto theft).
 
 ### Corrgrams
 
-What if you want to summarize the data even further, for example to show only the value of the correlation for each pair of variables? A **corrgram** [@Friendly:02:corrgram] is a visual display of a correlation matrix, where the correlation can be rendered in a variety of ways to show the direction and magnitude: circular
-"pac-man" (or pie) symbols, ellipses, colored vars or shaded rectangles, as shown in 
+What if you want to summarize the data even further, for example to show
+only the value of the correlation for each pair of variables? A
+**corrgram** [@Friendly:02:corrgram] is a visual display of a
+correlation matrix, where the correlation can be rendered in a variety
+of ways to show the direction and magnitude: circular "pac-man" (or pie)
+symbols, ellipses, colored vars or shaded rectangles, as shown in
 @fig-corrgram-renderings.
 
 Another aspect is that of **effect ordering** [@FriendlyKwan:02:effect],
-ordering the levels of factors and variables in graphic displays to make important features
-most apparent.
-For variables, this means that we can arrange the
-variables in a matrix-like display in such a way as to make the pattern of relationships easiest to see. 
-Methods to achieve this include using principal components and cluster analysis to put the most
+ordering the levels of factors and variables in graphic displays to make
+important features most apparent. For variables, this means that we can
+arrange the variables in a matrix-like display in such a way as to make
+the pattern of relationships easiest to see. Methods to achieve this
+include using principal components and cluster analysis to put the most
 related variables together as described in @sec-pca-biplot.
 
 ```{r}
@@ -598,10 +701,13 @@ related variables together as described in @sec-pca-biplot.
 knitr::include_graphics("images/corrgram-renderings.png")
 ```
 
-In R these diagrams can be created using the **corrgram** [@R-corrgram] and **corrplot** [@R-corrplot] packages, with different features. `corrgram::corrgram()` is closest to @Friendly:02:corrgram,
-in that it allows different rendering functions for the lower, upper and diagonal panels
-as illustrated in @fig-corrgram-renderings. For example, a corrgram similar to @fig-crime-spm
-can be produced as follows (not shown here):
+In R these diagrams can be created using the **corrgram** [@R-corrgram]
+and **corrplot** [@R-corrplot] packages, with different features.
+`corrgram::corrgram()` is closest to @Friendly:02:corrgram, in that it
+allows different rendering functions for the lower, upper and diagonal
+panels as illustrated in @fig-corrgram-renderings. For example, a
+corrgram similar to @fig-crime-spm can be produced as follows (not shown
+here):
 
 ```{r}
 #| eval: false
@@ -612,9 +718,12 @@ crime |>
            diag.panel = panel.density)
 ```
 
-`corrplot::corrplot()` provides the rendering methods `c("circle", "square", "ellipse", "number", "shade", "color", "pie")`, but only one can be used at a time.
-The function `corrplot::corrplot.mixed()` allows different options to be selected for the lower and 
-upper triangles. The iconic shape is colored with with a gradient in relation to the correlation value.
+`corrplot::corrplot()` provides the rendering methods
+`c("circle", "square", "ellipse", "number", "shade", "color", "pie")`,
+but only one can be used at a time. The function
+`corrplot::corrplot.mixed()` allows different options to be selected for
+the lower and upper triangles. The iconic shape is colored with with a
+gradient in relation to the correlation value.
 
 ```{r}
 #| label: fig-crime-corrplot
@@ -634,30 +743,40 @@ crime |>
            addCoefasPercent = TRUE)
 ```
 
-The combination of renderings shown in @fig-crime-corrplot is instructive. Small differences
-among correlation values are easier to see with the pie symbols than with the ellipses;
-for example, compare the values for murder with larceny and auto theft in row 1, columns 6-7
-with those in column 1, rows 6-7, where the former are easier to distinguish. The shading
-color adds another visual cue.
+The combination of renderings shown in @fig-crime-corrplot is
+instructive. Small differences among correlation values are easier to
+see with the pie symbols than with the ellipses; for example, compare
+the values for murder with larceny and auto theft in row 1, columns 6-7
+with those in column 1, rows 6-7, where the former are easier to
+distinguish. The shading color adds another visual cue.
 
-Variations of corrgrams are worthy replacements for a numeric table of correlations, which are often presented in publications only for archival value. Including the numeric value (rounded here, for presentation purposes), makes this an attractive alternative to boring tables of correlations.
+Variations of corrgrams are worthy replacements for a numeric table of
+correlations, which are often presented in publications only for
+archival value. Including the numeric value (rounded here, for
+presentation purposes), makes this an attractive alternative to boring
+tables of correlations.
 
-**TODO**: Add example showing correlation ordering -- e.g., `mtcars` data.
+**TODO**: Add example showing correlation ordering -- e.g., `mtcars`
+data.
 
 ## Generalized pairs plots {#sec-ggpairs}
 
-When a dataset contains one or more discrete variables, the traditional pairs plot 
-cannot cope, using only color and/or point symbols to represent
-categorical variables. In the context of mosaic displays and loglinear models, representing $n$-way frequency tables by rectangular tiles depicting cell frequencies,
-I [@Friendly:94a] proposed an analog of the scatterplot matrix using 
-mosaic plots for each pair of variables. The **vcd** package [@R-vcd] implements
-very general `pairs()` methods for `"table"` objects. See my book
-_Discrete Data Analysis with R_ [@FriendlyMeyer:2016:DDAR] and the **vcdExtra** [@R-vcdExtra]
-package for mosaic plots and mosaic matrices.
+When a dataset contains one or more discrete variables, the traditional
+pairs plot cannot cope, using only color and/or point symbols to
+represent categorical variables. In the context of mosaic displays and
+loglinear models, representing $n$-way frequency tables by rectangular
+tiles depicting cell frequencies, I [@Friendly:94a] proposed an analog
+of the scatterplot matrix using mosaic plots for each pair of variables.
+The **vcd** package [@R-vcd] implements very general `pairs()` methods
+for `"table"` objects. See my book *Discrete Data Analysis with R*
+[@FriendlyMeyer:2016:DDAR] and the **vcdExtra** [@R-vcdExtra] package
+for mosaic plots and mosaic matrices.
 
-For example, we can tabulate the distributions of penguin species by sex and the island
-where they were observed using `xtabs()`. `ftable()` prints this three-way table more compactly.
-(In this example, and what follows in the chapter, I've changed the labels for sex from ("f", "m") to ("Female", "Male"))
+For example, we can tabulate the distributions of penguin species by sex
+and the island where they were observed using `xtabs()`. `ftable()`
+prints this three-way table more compactly. (In this example, and what
+follows in the chapter, I've changed the labels for sex from ("f", "m")
+to ("Female", "Male"))
 
 ```{r peng-table}
 # use better labels for sex
@@ -668,24 +787,24 @@ peng.table <- xtabs(~ species + sex + island, data = peng)
 ftable(peng.table)
 ```
 
-We can see immediately that the penguin species differ by island:
-only Adelie were observed on all three islands; Biscoe Island had no Chinstraps
-and Dream Island had no Gentoos.
+We can see immediately that the penguin species differ by island: only
+Adelie were observed on all three islands; Biscoe Island had no
+Chinstraps and Dream Island had no Gentoos.
 
-`vcd::pairs()` produces all pairwise mosaic plots, as shown in @fig-peng-mosaic.
-The diagonal panels show the one-way
-frequencies by width of the divided bars. Each off-diagonal panel shows the bivariate
-counts, breaking down each column variable by splitting the bars in proportion to a
-second variable. Consequently, the frequency of each cell is represented by its' area.
-The purpose is to show the **pattern of association** between each pair,
-and so, the tiles in the mosaic are shaded according to the signed standardized residual,
-$d_{ij} = (n_{ij} - \hat{n}_{ij}) / \sqrt{\hat{n}_{ij}}$
-in a simple $\chi^2 = \Sigma_{ij} \; d_{ij}^2$ test for association--- `r colorize("blue", "blue")`
-where the observed frequency $n_{ij}$ is significantly
-greater than expected $\hat{n}_{ij}$ under independence, and
-`r colorize("red", "red")` where it is less than expected. The tiles are unshaded when
-$| d_{ij} | < 2$.
-
+`vcd::pairs()` produces all pairwise mosaic plots, as shown in
+@fig-peng-mosaic. The diagonal panels show the one-way frequencies by
+width of the divided bars. Each off-diagonal panel shows the bivariate
+counts, breaking down each column variable by splitting the bars in
+proportion to a second variable. Consequently, the frequency of each
+cell is represented by its' area. The purpose is to show the **pattern
+of association** between each pair, and so, the tiles in the mosaic are
+shaded according to the signed standardized residual,
+$d_{ij} = (n_{ij} - \hat{n}_{ij}) / \sqrt{\hat{n}_{ij}}$ in a simple
+$\chi^2 = \Sigma_{ij} \; d_{ij}^2$ test for association---
+`r colorize("blue", "blue")` where the observed frequency $n_{ij}$ is
+significantly greater than expected $\hat{n}_{ij}$ under independence,
+and `r colorize("red", "red")` where it is less than expected. The tiles
+are unshaded when $| d_{ij} | < 2$.
 
 ```{r}
 #| label: fig-peng-mosaic
@@ -699,31 +818,42 @@ pairs(peng.table, shade = TRUE,
       upper_panel_args = list(labeling = labeling_values()))
 ```
 
-The shading patterns in cells (1,3) and (3,1) of @fig-peng-mosaic show what we've seen before in the table of frequencies: The distribution of species varies across island because on each island one or more
-species did not occur.
-Row 2 and column 2
-show that sex is nearly exactly proportional among species and islands, indicating independence,
-$\text{sex} \perp \{\text{species}, \text{island}\}$. More importantly, mosaic pairs plots
-can show, at a glance all (bivariate) associations among multivariate categorical variables.
+The shading patterns in cells (1,3) and (3,1) of @fig-peng-mosaic show
+what we've seen before in the table of frequencies: The distribution of
+species varies across island because on each island one or more species
+did not occur. Row 2 and column 2 show that sex is nearly exactly
+proportional among species and islands, indicating independence,
+$\text{sex} \perp \{\text{species}, \text{island}\}$. More importantly,
+mosaic pairs plots can show, at a glance all (bivariate) associations
+among multivariate categorical variables.
 
-The next step, by John Emerson and others [@Emerson-etal:2013] was to recognize
-that combinations of continuous and discrete, categorical variables could be plotted
-in different ways. 
+The next step, by John Emerson and others [@Emerson-etal:2013] was to
+recognize that combinations of continuous and discrete, categorical
+variables could be plotted in different ways.
 
-* two continuous variables can be shown as a standard scatterplot of points and/or bivariate density contours, or simply by numeric summaries such as a correlation value;
-* a pair of one continuous and one categorical variable can be shown as side-by-side boxplots or violin plots, histograms or density plots
-* two categorical variables could be shown in a mosaic plot or by grouped bar plots.
+-   two continuous variables can be shown as a standard scatterplot of
+    points and/or bivariate density contours, or simply by numeric
+    summaries such as a correlation value;
+-   a pair of one continuous and one categorical variable can be shown
+    as side-by-side boxplots or violin plots, histograms or density
+    plots
+-   two categorical variables could be shown in a mosaic plot or by
+    grouped bar plots.
 
-In the `ggplot2` framework, these displays are implemented in the 
-**GGally** package [@R-GGally] in the `ggpairs()` function. This allows different plot types to be shown in the lower and upper triangles and in the diagonal cells of the plot matrix.
-As well, aesthetics such as color and shape can be used within the plots to distinguish groups directly. As illustrated below, you can define custom functions to control exactly what is plotted
-in any panel.
+In the `ggplot2` framework, these displays are implemented in the
+**GGally** package [@R-GGally] in the `ggpairs()` function. This allows
+different plot types to be shown in the lower and upper triangles and in
+the diagonal cells of the plot matrix. As well, aesthetics such as color
+and shape can be used within the plots to distinguish groups directly.
+As illustrated below, you can define custom functions to control exactly
+what is plotted in any panel.
 
-The basic, default plot shows scatterplots for pairs of continuous variables in the
-lower triangle and the values of correlations in the upper triangle. 
-A combination of a discrete and continuous variable
-is plotted as histograms in the lower triangle and boxplots in the upper triangle.
-@fig-peng-ggpairs1 includes `sex` to illustrate the combinations.
+The basic, default plot shows scatterplots for pairs of continuous
+variables in the lower triangle and the values of correlations in the
+upper triangle. A combination of a discrete and continuous variable is
+plotted as histograms in the lower triangle and boxplots in the upper
+triangle. @fig-peng-ggpairs1 includes `sex` to illustrate the
+combinations.
 
 ```{r}
 #| label: fig-peng-ggpairs1
@@ -739,31 +869,37 @@ ggpairs(peng, columns=c(3:6, 7),
   theme_penguins()
 ```
 
-To my eye, printing the values of correlations in the upper triangle is often a waste of
-graphic space. But this example shows something peculiar and interesting if you look closely:
-In all pairs among the penguin size measurements, there are positive correlations within each
+To my eye, printing the values of correlations in the upper triangle is
+often a waste of graphic space. But this example shows something
+peculiar and interesting if you look closely: In all pairs among the
+penguin size measurements, there are positive correlations within each
 species, as we can see in @fig-peng-spm. Yet in three of these panels,
-the overall correlation ignoring species is negative. For example the overall correlation
-between bill depth and flipper length is $r = -0.579$ in row 2, column 3;
-the scatterplot in the diagonally opposite cell, row 3, column 2 shows the data.
-These cases, of differing signs for an overall correlation, ignoring a group variable
-and the within group correlations are examples of **Simpson's Paradox**, explored later
-in Chapter XX.
+the overall correlation ignoring species is negative. For example the
+overall correlation between bill depth and flipper length is
+$r = -0.579$ in row 2, column 3; the scatterplot in the diagonally
+opposite cell, row 3, column 2 shows the data. These cases, of differing
+signs for an overall correlation, ignoring a group variable and the
+within group correlations are examples of **Simpson's Paradox**,
+explored later in Chapter XX.
 
-The last row and column, for `sex` in @fig-peng-ggpairs1, provides an initial glance at the
-issue of sex differences among pengiun species that motivated the collection of these data.
-We can go further by also examining differences among species and island, but first we need
-to understand how to display exactly what we want for each pairwise plot.
+The last row and column, for `sex` in @fig-peng-ggpairs1, provides an
+initial glance at the issue of sex differences among pengiun species
+that motivated the collection of these data. We can go further by also
+examining differences among species and island, but first we need to
+understand how to display exactly what we want for each pairwise plot.
 
-`ggpairs()` is extremely general, in that for each of the `lower`, `upper` and `diag` sections you
-can assign any of a large number of built-in functions (of the form `ggally_NAME`),
-or you own custom function for what is plotted, depending on the types of variables in each plot.
+`ggpairs()` is extremely general, in that for each of the `lower`,
+`upper` and `diag` sections you can assign any of a large number of
+built-in functions (of the form `ggally_NAME`), or you own custom
+function for what is plotted, depending on the types of variables in
+each plot.
 
-
-*  `continuous`: both X and Y are continuous variables; supply this as the `NAME` part of a `ggally_NAME()` function or the name of a custom function.
-*  `combo`: one X of and Y variable is discrete while the other is continuous, using the same convention;
-*  `discrete`: both X and Y are discrete variables.
-
+-   `continuous`: both X and Y are continuous variables; supply this as
+    the `NAME` part of a `ggally_NAME()` function or the name of a
+    custom function.
+-   `combo`: one X of and Y variable is discrete while the other is
+    continuous, using the same convention;
+-   `discrete`: both X and Y are discrete variables.
 
 The defaults, which were used in @fig-peng-ggpairs1, are:
 
@@ -778,27 +914,32 @@ diag  = list(continuous = "densityDiag",  # density plots
              discrete = "barDiag")        # bar plots
 ```
 
-Thus, `ggpairs()` uses `ggally_cor()` to print the correlation values for pairs of continuous
-variables in the upper triangle, and uses `ggally_points()` to plot scatterplots of points
-in the lower portion. The diagonal panels as shown as density plots (`ggally_densityDiag()`)
-for continuous variables but as bar plots (`ggally_barDiag()`) for discrete factors.
+Thus, `ggpairs()` uses `ggally_cor()` to print the correlation values
+for pairs of continuous variables in the upper triangle, and uses
+`ggally_points()` to plot scatterplots of points in the lower portion.
+The diagonal panels as shown as density plots (`ggally_densityDiag()`)
+for continuous variables but as bar plots (`ggally_barDiag()`) for
+discrete factors.
 
-See the vignette, [ggally_plots](https://ggobi.github.io/ggally/articles/ggally_plots.html)
-for an illustrated list of available high-level plots.
-For my purpose here, which is to illustrate enhanced displays, note that for scatterplots
-of continuous variables, there are two functions which plot the points and also add
-a smoother, `_lm` or `_loess`.
+See the vignette,
+[ggally_plots](https://ggobi.github.io/ggally/articles/ggally_plots.html)
+for an illustrated list of available high-level plots. For my purpose
+here, which is to illustrate enhanced displays, note that for
+scatterplots of continuous variables, there are two functions which plot
+the points and also add a smoother, `_lm` or `_loess`.
 
 ```{r ggally-smooth-fns}
 ls(getNamespace("GGally")) |> stringr::str_subset("^ggally_smooth_")
 ```
 
-A customized display for scatterplots of continuous variables can be any function that 
-takes `data` and `mapping` arguments and returns a `"ggplot"` object. The `mapping`
-argument supplies the aesthetics, e.g.,  `aes(color=species, alpha=0.5)`, but only if you wish
-to override what is supplied in the `ggpairs()` call.
+A customized display for scatterplots of continuous variables can be any
+function that takes `data` and `mapping` arguments and returns a
+`"ggplot"` object. The `mapping` argument supplies the aesthetics, e.g.,
+`aes(color=species, alpha=0.5)`, but only if you wish to override what
+is supplied in the `ggpairs()` call.
 
-Here is a function, `my_panel()` that plots the data points and regression line and loess smooth
+Here is a function, `my_panel()` that plots the data points and
+regression line and loess smooth
 
 ```{r}
 #| label: my-panel
@@ -811,9 +952,9 @@ my_panel <- function(data, mapping, ...){
 }
 ```
 
-For this example, I want to simple summaries of for the scatterplots, so I
-don't want to plot the data points, but do want to add the regression line
-and a data ellipse. 
+For this example, I want to simple summaries of for the scatterplots, so
+I don't want to plot the data points, but do want to add the regression
+line and a data ellipse.
 
 ```{r}
 #| label: my-panel1
@@ -826,12 +967,13 @@ my_panel1 <- function(data, mapping, ...){
 
 ```
 
-Then, to show what can be done, @fig-peng-ggpairs7 uses `my_panel1()` for the scatterplots in the 
-4 x 4 block of plots in the upper left. The combination of the continuous body size measures
-and the discrete factors `species`, `island` and `sex` are shown in upper triangle by boxplots
-but by faceted histograms in the lower portion. The factors are shown as 
-rectangles with area proportional to count (poor-man's mosaic plots) above the diagonal and
-as faceted bar plots below.
+Then, to show what can be done, @fig-peng-ggpairs7 uses `my_panel1()`
+for the scatterplots in the 4 x 4 block of plots in the upper left. The
+combination of the continuous body size measures and the discrete
+factors `species`, `island` and `sex` are shown in upper triangle by
+boxplots but by faceted histograms in the lower portion. The factors are
+shown as rectangles with area proportional to count (poor-man's mosaic
+plots) above the diagonal and as faceted bar plots below.
 
 ```{r}
 #| label: fig-peng-ggpairs7
@@ -851,76 +993,97 @@ ggpairs(peng, columns=c(3:6, 1, 2, 7),
         panel.grid.minor = element_blank())
 ```
 
-There is certainly a lot going on in @fig-peng-ggpairs7, but it does show a high-level overview
-of all the variables (except `year`) in the penguins dataset. 
-
+There is certainly a lot going on in @fig-peng-ggpairs7, but it does
+show a high-level overview of all the variables (except `year`) in the
+penguins dataset.
 
 ## Parallel coordinate plots {#sec-parcoord}
 
 As we have seen above, scatterplot matrices and generalized pairs plots
-extend data visualization to multivariate data, but these variables share one 2D space, so resolution decreases as the number of variable increase.
-You need a very large screen or sheet of paper to see more than, say 5-6 variables with any
-clarity.
+extend data visualization to multivariate data, but these variables
+share one 2D space, so resolution decreases as the number of variable
+increase. You need a very large screen or sheet of paper to see more
+than, say 5-6 variables with any clarity.
 
-Parallel coordinate plots are an attractive alternative, with which we can visualize an arbitrary number of variables to get a visual summary of a potentially high-dimensional dataset, and perhaps
-recognize outliers and clusters in the data in a different way.
-In these plots, each variable is shown on a separate, parallel axis.
-A multivariate observation is then plotted by connecting their respective
-values on each axis with lines across all the axes.
+Parallel coordinate plots are an attractive alternative, with which we
+can visualize an arbitrary number of variables to get a visual summary
+of a potentially high-dimensional dataset, and perhaps recognize
+outliers and clusters in the data in a different way. In these plots,
+each variable is shown on a separate, parallel axis. A multivariate
+observation is then plotted by connecting their respective values on
+each axis with lines across all the axes.
 
-The geometry of parallel coordinates is interesting, because what is a point in $n$-dimensional (Euclidean)
-_data_ space becomes a line in the _projective_ parallel coordinate space with $n$ axes, and vice-versa:
+The geometry of parallel coordinates is interesting, because what is a
+point in $n$-dimensional (Euclidean) *data* space becomes a line in the
+*projective* parallel coordinate space with $n$ axes, and vice-versa:
 lines in parallel coordinate space correspond to points in data space.
-Thus, a collection of points in data space map to lines that intersect in a point in projective space.
-What this does is to map $n$-dimensional relations into 2D patterns we can see in a parallel coordinates plot.
+Thus, a collection of points in data space map to lines that intersect
+in a point in projective space. What this does is to map $n$-dimensional
+relations into 2D patterns we can see in a parallel coordinates plot.
 
-::: {.callout-note}
+::: callout-note
 ## History Corner
+
 > Those who don't know history are doomed to plagarize it ---The author
 
-The theory of projective geometry originated with the French mathematician Maurice d'Ocagne [-@Ocagne:1885] who sought a way to provide graphic calculation of mathematical functions
-with alignment diagrams or _nomograms_ using parallel axes with different scales.
-A three-variable equation, for example, could be solved using three parallel axes,
-where known values could be marked on their scales, a line drawn between them, and 
-an unknown read on its scale at the point where the line intersects that scale.
+The theory of projective geometry originated with the French
+mathematician Maurice d'Ocagne [-@Ocagne:1885] who sought a way to
+provide graphic calculation of mathematical functions with alignment
+diagrams or *nomograms* using parallel axes with different scales. A
+three-variable equation, for example, could be solved using three
+parallel axes, where known values could be marked on their scales, a
+line drawn between them, and an unknown read on its scale at the point
+where the line intersects that scale.
 
-Henry Gannet (1880), in work preceding the _Statistical Atlas of the United States_
-for the 1890 Census [@Gannett:1898], is widely credited with being the first to use parallel coordinates
-plots to show data, in his case, to show the [rank ordering of US states](https://www.davidrumsey.com/luna/servlet/detail/RUMSEY~8~1~32803~1152181) 
-by 10 measures including population, occupations, wealth, manufacturing, agriculture and so on.
+Henry Gannet (1880), in work preceding the *Statistical Atlas of the
+United States* for the 1890 Census [@Gannett:1898], is widely credited
+with being the first to use parallel coordinates plots to show data, in
+his case, to show the [rank ordering of US
+states](https://www.davidrumsey.com/luna/servlet/detail/RUMSEY~8~1~32803~1152181)
+by 10 measures including population, occupations, wealth, manufacturing,
+agriculture and so on.
 
-However, both d'Ocagne and Gannet were far preceded in this by Andre-Michel Guerry [-@Guerry:1833]
-who used this method to show how the rank order of various crimes changed with age of the accused.
-See @Friendly2022, Figure 7 for his version and for an appreciation of the remarkable contributions
-of this amateur statistican to the history of data visualization.
+However, both d'Ocagne and Gannet were far preceded in this by
+Andre-Michel Guerry [-@Guerry:1833] who used this method to show how the
+rank order of various crimes changed with age of the accused. See
+@Friendly2022, Figure 7 for his version and for an appreciation of the
+remarkable contributions of this amateur statistican to the history of
+data visualization.
 
 <!-- **TODO**: Revise the _History_ section of the Wikipedia page for [Parallel coordinates](https://en.wikipedia.org/wiki/Parallel_coordinates). -->
 
-The use of parallel coordinates for display of multidimensional data was rediscovered
-by Alfred Inselberg [-@Inselberg:1985] and extended by Edward Wegman [-@Wegman:1990], neither of whom recognized the earlier history.
-Somewhat earlier, David Andrews [-@Andrews:72] proposed mapping multivariate observations
-to smooth Fourrier functions composed of alternating $\sin()$ and $\cos()$ terms.
-And in my book, _SAS System for Statistical Graphics_ [@Friendly:91], I 
-implemented what I called [_profile plots_](https://blogs.sas.com/content/iml/2022/11/14/profile-plots-sas.html)
+The use of parallel coordinates for display of multidimensional data was
+rediscovered by Alfred Inselberg [-@Inselberg:1985] and extended by
+Edward Wegman [-@Wegman:1990], neither of whom recognized the earlier
+history. Somewhat earlier, David Andrews [-@Andrews:72] proposed mapping
+multivariate observations to smooth Fourrier functions composed of
+alternating $\sin()$ and $\cos()$ terms. And in my book, *SAS System for
+Statistical Graphics* [@Friendly:91], I implemented what I called
+[*profile
+plots*](https://blogs.sas.com/content/iml/2022/11/14/profile-plots-sas.html)
 without knowing their earlier history as parallel coordinate plots.
 :::
 
-Parallel coordinate plots present a challenge for graphic developers, in that they require a different
-way to think about plot construction for multiple variables, which can be quantitative,
-as in the original idea, or categorical factors, all to be shown along parallel axes.
+Parallel coordinate plots present a challenge for graphic developers, in
+that they require a different way to think about plot construction for
+multiple variables, which can be quantitative, as in the original idea,
+or categorical factors, all to be shown along parallel axes.
 
+Here, I use the **ggpcp** package [@R-ggpcp], best described in
+@VanderPlas2023, who also review the modern history. This takes some
+getting used to, because they develop `pcp_*()` extensions of the
+`ggplot2` grammar of graphics framework to allow:
 
-Here, I use the **ggpcp** package [@R-ggpcp], best described in @VanderPlas2023, who also
-review the modern history.
-This takes some getting used to, because they develop `pcp_*()` extensions of the `ggplot2` grammar of graphics framework to allow: 
+-   `pcp_select()`: selections of the variables to be plotted and their
+    horizontal order on parallel axes,
+-   `pcp_scale()`: methods for scaling of the variables to each axis,
+-   `pcp_arrange()`: methods for breaking ties in factor variables to
+    space them out
 
-* `pcp_select()`: selections of the variables to be plotted and their horizontal order on parallel axes,
-* `pcp_scale()`: methods for scaling of the variables to each axis,
-* `pcp_arrange()`: methods for breaking ties in factor variables to space them out
-
-Then, it provides `geom_pcp_*()` functions to control the display of axes with appropriate
-aesthetics, labels for categorical factors and so forth. @fig-peng-ggpcp1 illustrates this type of
-display, using sex and species in addition to the quantitative variables for the penguin data.
+Then, it provides `geom_pcp_*()` functions to control the display of
+axes with appropriate aesthetics, labels for categorical factors and so
+forth. @fig-peng-ggpcp1 illustrates this type of display, using sex and
+species in addition to the quantitative variables for the penguin data.
 
 ```{r}
 #| label: fig-peng-ggpcp1
@@ -945,10 +1108,10 @@ peng |>
         axis.ticks.y = element_blank(), legend.position = "none")
 ```
 
-Rearranging the order of variables and the ordering of factor levels can make a difference
-in what we can see in such plots. For a simple example (following @VanderPlas2023),
-we reorder the levels of species and islands to make it clearer which species occur
-on each island.
+Rearranging the order of variables and the ordering of factor levels can
+make a difference in what we can see in such plots. For a simple example
+(following @VanderPlas2023), we reorder the levels of species and
+islands to make it clearer which species occur on each island.
 
 ```{r}
 #| label: fig-peng-ggpcp2
@@ -978,8 +1141,9 @@ peng1 |>
         legend.position = "none") 
 ```
 
-This plot emphasizes the relation between penguin species and the island where they were observed
-and then shows the values of the quantitative body size measurements ...
+This plot emphasizes the relation between penguin species and the island
+where they were observed and then shows the values of the quantitative
+body size measurements ...
 
 **TODO**: Use `-bill_depth` to reverse that scale ....
 
