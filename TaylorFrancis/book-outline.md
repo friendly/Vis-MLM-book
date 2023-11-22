@@ -11,9 +11,12 @@ chapters, which might be split into chapters within parts.
 
 The main idea here is to explain what can be accomplished with visualizing data from a multivariate lens. I exploit the story of Edwin Abbot's _Flatland_ and give other useful perspectives.
 
-### Preliminaries
+- ONE, TWO, MANY
+- Flatland
+- EUREKA
+- Preliminaries
 
-Maybe not a separate chapter, but list the main packages used here and data sets for examples.
+In here, I also list the main packages used here and data sets for examples.
 
 - R packages: The main substantive packages for multivariate analysis introduced here are `heplots`, `candisc`, `mvinfluence`, `VisCollin` and `matlib`. A wide variety of other packages are used for data processing and graphical display. One goal is to present analysis and data display using the `tidyverse` and `ggplot2` framework, but other
 modern packages are used for informative displays.
@@ -21,7 +24,7 @@ modern packages are used for informative displays.
 
 ## Introduction
 
-This chapter attempts to motivate a multivariate approach to data visualization and statistical models
+This chapter attempts to motivate a multivariate approach to data visualization and statistical models.
 
 - why use a multivariate design?
 - Linear models: Univariate to multivariate
@@ -50,20 +53,24 @@ This chapter explains why data visualization is essential in statistical analysi
 
 File: `03-multivariate-plots.qmd`
 
-This chapter introduces a toolbox of basic graphical methods for visualizing multivariate datasets. It starts with some simple techniques to enhance the basic scatterplot with annotations such as fitted lines, curves and data ellipses to summarize the relation between two variables. 
+This chapter introduces a toolbox of basic graphical methods for visualizing multivariate datasets. It starts with some simple techniques to enhance the basic scatterplot with annotations such as fitted lines, curves and data ellipses to summarize the relation between two variables. These are described as _smoothers_, such as regression lines and nonparametric curves, _stratifiers_ to identify subgroups or conditioning in multi-panel displays and
+_data ellipses_ (or more generally bivariate densities).
 
-To visualize more than two variables, we can view all pairs of variables in a scatterplot matrix or shift gears entirely to show multiple variables along a set of parallel axes. As the number of variables increase, we may need to suppress details with stronger summaries for a high-level reconnaissance of our data terrain, as we do by zooming out on a map.
+To visualize more than two variables, we can view all pairs of variables in a scatterplot matrix or shift gears entirely to show multiple variables along a set of parallel axes. As the number of variables increase, we may need to suppress details with stronger summaries (_visual thinning_) for a high-level reconnaissance of our data terrain, as we do by zooming out on a map. 
+
+A first draft of this chapter is largely complete.
 
 - Bivariate summaries:
     - Smoothers
-    - Data ellipses
+    - Stratifiers
+    - Data ellipses & bivariate density displays
 - Scatterplot matrices
-    - Corrplots
-- Parallel coordinate plots
-- Categorical data:
-    - Mosaic plots
+    - Visual thinning
+    - Corrgrams
 - Generalized pair plots
-- Heatmaps
+    - Categorical data: mosaic pairs plots
+- Parallel coordinate plots
+
 
 ## Dimension Reduction Techniques: PCA and Biplots
 
@@ -128,7 +135,7 @@ This chapter explains the extensions from univariate to multivariate models, foc
 
 ## Visualizing Multivariate Models
 
-Tests of multivariate models, including multivariate analysis of variance (MANOVA) for group differences and multivariate multiple regression (MMRA) can be easily visualized by plots of a hypothesis ("H") data ellipse for the fitted values relative to the corresponding plot of the error ellipse ("E") of the residuals, which I call the HE plot framework.
+Tests of multivariate models, including multivariate analysis of variance (MANOVA) for group differences and multivariate multiple regression (MMRA) can be easily visualized by plots of a hypothesis ("H") data ellipse for the fitted values relative to the corresponding plot of the error ellipse ("E") of the residuals, which I call the _HE plot framework_.
 
 For more than a few response variables, these result can be projected onto a lower-dimensional "canonical discriminant" space providing an even simpler description.
 
@@ -167,7 +174,8 @@ This is a collection of MANOVA examples, listed here with the sources from other
 
 ## Multivariate Influence
 
-This material should go earlier ... 
+This material will most likely go earlier, as an extension of diagnostic plots to the multivariate response
+setting.  
 
 - Univariate influence
 - Multivariate influence
