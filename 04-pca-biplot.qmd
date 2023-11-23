@@ -15,20 +15,58 @@ Spaceland and therefore had an inkling of its majesty beyond the simple world of
 > "Oh, can I, in my imagination, rotate that cloud and squeeze its' juice so that it rains down on Flatland with greatest joy?"
 
 As it happened, our Square friend, although he could never really _see_ in three dimensions could now 
-at least _think_ of a world described by height as well as breadth and width. 
+at least _think_ of a world described by **height** as well as breadth and width. 
 
 And what a world it was, inhabited by
-Pryamids, Cubes and wondrous creatures called Polyhedrons with many corners, sides and faces. Indeed, even exalted Spheres,
-having so many faces that its surface became as smooth as a baby's bottom with no need for pointed corners, just as Circles were the smoothest occupants of his world;
-he also marveled at Ellipsoids, as smooth as Spheres, but having three natural axes of different extent
-and capable of being appearing fatter or slimmer when rotated from different views.
+Pryamids, Cubes and wondrous creatures called Polyhedrons with many $C$orners, $F$aces and $E$dges.
+Not only that, but all those Polyhedrons were forced in Spaceland to obey a magic formula:
+$C + F - E = 2$.[^1-euler]
 
-All of these now arose in his richer 3D imagination. 
-And all of this came from just one more dimension than life in Flatland.
+[^1-euler]: This is Euler's formula ...
+
+Indeed, even exalted Spheres,
+having so many faces that its surface became as smooth as a baby's bottom with no need for pointed corners or edges, just as Circles were the smoothest occupants of his world.
+
+He also marveled at Ellipsoids, as smooth as Spheres, but in Spaceland having three natural axes of different extent
+and capable of being appearing fatter or slimmer when rotated from different views. An Ellipsoid
+had magical properties: it could appear as so thin in one or more dimensions that it became a simple
+2D ellipse, or a 1D line, or even a 0D point [@Friendly-etal:ellipses:2013].
+<!-- **TODO**: somehow mention the `gellipsoid` package here. -->
+
+All of these now arose in Square's richer 3D imagination. 
+And, all of this came from just one more dimension than his life in Flatland.
+
+
+### Multivariate juicers
 
 Up to now, we have also been living in Flatland. We have been trying to understand data in
 **data space** of possibly many dimensions, but confined to the 2D plane of a graph window.
-Scatterplot matrices and parallel coordinate plots provided some relief ...
+Scatterplot matrices and parallel coordinate plots provided some relief. 
+The former did so by **projecting** the data into sets of 2D views in the coordinates of data
+space; the latter did so by providing multiple axes in a 2D space along which we could trace
+the paths of individual observations.
+
+This chapter is about seeing data in a different space, a low-dimensional, usually 2D, space
+that which squeezes out the most juice
+from multidimensional data for a particular purpose (@fig-MV-juicer), where what we want to
+understand can be more easily seen.
+
+```{r}
+#| label: fig-MV-juicer
+#| echo: false
+#| fig-align: center
+#| out-width: "90%"
+#| fig-cap: "A multivariate juicer takes data from possibly high-dimensional data space and transforms it to a lower-dimenional space in which important effects can be more easily seen."
+knitr::include_graphics("images/MV-juicer.png")
+```
+
+Here, I concentrate on **principal components analysis** (PCA), whose goal reflects A Square's desire to see that sparkly cloud of points 
+in $nD$ space in the plane showing the greatest variation among all other possible views.
+
+This appealed to his sense of geometry, but left him wondering how the variables in that 
+high-D cloud were related to the dimensions he could see in a best-fitting plane.
+The idea of a **biplot**, showing the data points in the plane, together with thick pointed
+arrows---variable vectors--- in one view is the other topic explained in this chapter.
 
 ## Principal components analysis {#sec-pca}
 
@@ -39,11 +77,87 @@ His friend, Karl Pearson [-@Pearson:1896] took that idea and developed it into a
 regression and a measure of correlation that would bear his name, Pearson's $r$.
 
 But then Pearson [-@Pearson:1901] had a further inspiration, akin to that of A Square. 
-If he also had a cloud of sparkly points in 2, 3, 4, ... dimensions, could he find a
-point (0D), or line (1D), or plane (2D), or even a hyperplane ($n$D) that best summarized ---
-squeezed out the most juice---from multivariate data?
-The best 0D point was easy--- it was simply the centroid, the means of each of the
-variables in the data, $(\bar{x}_1, \bar{x}_2, ...)$.
+If he also had a cloud of sparkly points in $2, 3, 4, ..., p$ dimensions, could he find a
+point ($0D$), or line ($1D$), or plane ($2D$), or even a hyperplane ($nD$) that best summarized ---
+squeezed out the most juice---from multivariate data? This was the first trully multivariate
+problem in the history of statistics [@FriendlyWainer:2021:TOGS, p. 186].
+
+The best $0D$ point was easy--- it was simply the centroid, the means of each of the
+variables in the data, $(\bar{x}_1, \bar{x}_2, ..., \bar{x}_p)$, because that was "closest"
+to the data in the sense of minimizing the sum of squared differences, $\Sigma_i\Sigma_j (x_{ij} - \bar{x}_j)^2$.
+In higher dimensions, his solution was also an application of the method of least squares, but he argued
+it geometrically and visually as shown in @fig-Pearson1901.
+
+```{r}
+#| label: fig-Pearson1901
+#| echo: false
+#| fig-align: center
+#| out-width: "70%"
+#| fig-cap: "Karl Pearson's (1901) geometric, visual argument for finding the line or plane of closest fit to a collection of points, P1, P2, P3, ... "
+knitr::include_graphics("images/Pearson1901.png")
+```
+
+For a $1D$ summary, the line of best fit to the points $P_1, P_2, \dots P_n$ is the line that goes through the
+centroid and made the average squared length of the _perpendicular_ segments from those points to a line as small
+as possible. This was different from the case in linear regression, for fitting $y$ from $x$,
+where the average squared length of the _vertical_ segments, $\Sigma_i (y_i - \hat{y}_i)^2$ was minimized by
+least squares.
+
+He went on to prove the visual insights from simple smoothing of @Galton:1886 (shown in @fig-galton-corr) 
+regarding the regression lines of
+`y ~ x` and `x ~ y`. More importantly, he proved that the cloud of points is captured,
+for the purpose of finding a best line, plane or hyperplane, by
+the ellipsoid that encloses it, as seen in his diagram, @fig-Pearson1901-2. The major axis of the 
+2D ellipse is the line of best fit, along which the data points have the smallest average squared
+distance from the line. The axis at right angles to that---the minor axis--- is labeled "line of worst fit"
+with the largest average squared distance.
+
+```{r}
+#| label: fig-Pearson1901-2
+#| echo: false
+#| fig-align: center
+#| out-width: "80%"
+#| fig-cap: "Karl Pearson's diagram showing the elliptical geometry of regression and principal components analysis ... _Source_: Pearson (1901), p. 566."
+knitr::include_graphics("images/Pearson1901_2.png")
+```
+
+Even more importantly--- and this is the basis for what we call **principal components analysis** (PCA)--- he recognized that the two orthogonal axes of the ellipse gave new coordinates for the data which were uncorrelated, whatever the correlation of $x$ and $y$.
+
+> Physically, the axes of the correlation type-ellipse are the directions of independent and uncorrelated variation. --- @Pearson:1901, p. 566.
+
+It was but a small step to recognize that for two variables, $x$ and $y$:
+
+* the line of best fit, the major axis (PC1) had the greatest variance of points projected onto it;
+* the line of worst fit, the minor axis (PC2), had the least variance;
+* these could be seen as a rotation of the data space of $(x, y)$ to a new space (PC1, PC2) with uncorrelated variables;
+* the total variation of the points in data space, $\text{Var}(x) + \text{Var}(y)$, being unchanged by rotation, was equally well expressed as the total variation $\text{Var}(PC1) + \text{Var}(PC2)$ of the scores on what are
+now called the principal component axes.
+
+
+
+### PCA by springs
+
+Before delving into the mathematics of PCA, it is useful to see how Pearson's problem, and fitting by least squares generally, could be solved in a physical realization. 
+
+From elementary statistics, you may be familiar with a
+physical demonstration that the mean, $\bar{x}$, of a sample is the value for which the sum of deviations,
+$\Sigma_i (x_i - \bar{x})$ is zero, so the mean can be visualized as the point of balance on a line where
+those differnces $(x_i - \bar{x})$ are placed. Equally well, there is a physical realization of the mean
+as the point along an axis where weights connected by springs will minimize the sum of squared differences,
+because springs with a constant stiffness, $k$, exert forces proportional to $k (x_i - \bar{x}) ^2$. ...
+
+In two dimensions, 
+
+::: {#fig-pca}
+<div align="center">
+<iframe width="412" height="364" src="images/pca-springs-cropped.gif"></iframe>
+</div>
+Animation of PCA fitted by springs. The blue data points are connected to their projections on the red line by springs, constrained to be perpendicular to that line. From an initial position, the springs pull that line in proportion to their squared distances, until the line finally settles down to the position where the forces are balanced and the minimum is achieved.
+
+:::
+
+
+### Elliptical insights: Outlier detection
 
 
 
