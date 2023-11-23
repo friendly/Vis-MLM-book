@@ -24,13 +24,20 @@ dataEllipse(Salary ~ Years, data=dat,
 # Salary  29.0   70.9
 
 # get names?
-install.packages("babynames")
+#install.packages("babynames")
 library(babynames)
+wanted <- LETTERS[1:n]
 bn <- babynames::babynames |>
-  filter(year > 2000) |>
+  filter(year > 2010) |>
+  filter(nchar(name) < 8) |>
   mutate(initial = substr(name, 1, 1)) |>
-  subset(initial %in% LETTERS[1:n])
-str(bn)
+  subset(initial %in% wanted) |>
+  group_by(initial, name) |>
+  summarize(N = sum(n)) |>
+  filter(N == max(N))
+glimpse(bn)
+
+name <- bn$name
 
 # Run PCA
 pca <- princomp(dat)

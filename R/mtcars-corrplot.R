@@ -13,7 +13,8 @@ M |>
     lower = "ellipse",
     upper = "pie",
     tl.col = "black",
-    title = "Dataset variable order"
+    title = "Dataset variable order",
+    mar = c(0,0,2,0)
   )
     
 M |>
@@ -26,4 +27,7 @@ M |>
     mar = c(0,0,2,0)
   )
 
-corrplot.mixed(M, lower = 'shade', upper = 'pie', order = 'hclust')
+corrplot.mixed(M, 
+               lower = 'shade', 
+               upper = 'pie', 
+               order = 'hclust')
