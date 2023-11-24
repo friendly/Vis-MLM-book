@@ -19,10 +19,11 @@ at least _think_ of a world described by **height** as well as breadth and width
 
 And what a world it was, inhabited by
 Pryamids, Cubes and wondrous creatures called Polyhedrons with many $C$orners, $F$aces and $E$dges.
-Not only that, but all those Polyhedrons were forced in Spaceland to obey a magic formula:
+Not only that, but all those Polyhedra were forced in Spaceland to obey a magic formula:
 $C + F - E = 2$.[^1-euler]
 
-[^1-euler]: This is Euler's formula ...
+[^1-euler]: This is Euler's formula, which states that any convex polyheron must obey the formula $V + F - E = 2$ where $V$ is the number of vertexes (corners), $F$ is the number of faces and $E$ is the number of edges.  For example, a tetrahedron
+or pyramid has $(V, F, E) = (4, 4, 6)$ and a cube has $(V, F, E) = (8, 6, 12)$.
 
 Indeed, even exalted Spheres,
 having so many faces that its surface became as smooth as a baby's bottom with no need for pointed corners or edges, just as Circles were the smoothest occupants of his world.
@@ -66,7 +67,7 @@ in $nD$ space in the plane showing the greatest variation among all other possib
 This appealed to his sense of geometry, but left him wondering how the variables in that 
 high-D cloud were related to the dimensions he could see in a best-fitting plane.
 The idea of a **biplot**, showing the data points in the plane, together with thick pointed
-arrows---variable vectors--- in one view is the other topic explained in this chapter.
+arrows---variable vectors--- in one view is the other topic explained in this chapter (@sec-biplot).
 
 ## Principal components analysis {#sec-pca}
 
@@ -142,25 +143,62 @@ Before delving into the mathematics of PCA, it is useful to see how Pearson's pr
 From elementary statistics, you may be familiar with a
 physical demonstration that the mean, $\bar{x}$, of a sample is the value for which the sum of deviations,
 $\Sigma_i (x_i - \bar{x})$ is zero, so the mean can be visualized as the point of balance on a line where
-those differnces $(x_i - \bar{x})$ are placed. Equally well, there is a physical realization of the mean
+those differences $(x_i - \bar{x})$ are placed. Equally well, there is a physical realization of the mean
 as the point along an axis where weights connected by springs will minimize the sum of squared differences,
-because springs with a constant stiffness, $k$, exert forces proportional to $k (x_i - \bar{x}) ^2$. ...
+because springs with a constant stiffness, $k$, exert forces proportional to $k (x_i - \bar{x}) ^2$. That's
+the reason is useful as a measure of central tendency: it minimizes the average squared error.
 
-In two dimensions, imagine that we have points, $(x_i, y_i)$
+In two dimensions, imagine that we have points, $(x_i, y_i)$ and these are attached by springs of equal stiffness $k$, to a line anchored at the centroid, $(\bar{x}, \bar{y})$ as shown in @fig-pca-springs. 
+If we rotate the line to some initial position and release it, the springs will pull the line clockwise or counterclockwise and the line will bounce around until the forces, proportional to the squares of the lengths of the springs, will eventually balance out at the position 
+(shown by the `r colorize("red")` of the fixed line segments at the ends). This is the position that minimizes the
+the sum of squared lengths of the connecting springs, and also minimizes the kinetic energy in the system.
 
-::: {#fig-pca}
+If you look closely at @fig-pca-springs you will see something else: When the line is at its' final position of minimum
+squared length and energy, the positions of the `r colorize("red")` points on this line are spread out furthest, i.e., have **maximum** variance. Conversely, when the line line is at right angles to its' final position (shown by the black line) the projected points have the smallest possible variance.
+
+::: {#fig-pca-springs}
 <div align="center">
 <iframe width="412" height="364" src="images/pca-springs-cropped.gif"></iframe>
 </div>
-Animation of PCA fitted by springs. The blue data points are connected to their projections on the red line by springs, constrained to be perpendicular to that line. From an initial position, the springs pull that line in proportion to their squared distances, until the line finally settles down to the position where the forces are balanced and the minimum is achieved.
+Animation of PCA fitted by springs. The blue data points are connected to their projections on the `r colorize("red")` line by springs perpendicular to that line. From an initial position, the springs pull that line in proportion to their squared distances, until the line finally settles down to the position where the forces are balanced and the minimum is achieved. _source_: https://bit.ly/46tAicu.
 
 :::
 
 <!-- See: https://joshualoftus.com/posts/2020-11-23-least-squares-as-springs/least-squares-as-springs.html -->
 
+**TODO**: Simple PCA example
+
+### Finding principal components
+
+In R, principal components analysis is most easily carried out using `stats::prcomp()` or `stats::princomp()`
+or similar functions in other packages. ...
 
 ### Elliptical insights: Outlier detection
 
+The data ellipse (@sec-data-ellipse), or ellipsoid in more than 2D is fundamental in regression, but also,
+as Pearson showed, in principal components analysis, where the principal component directions are simply
+the axes of the ellipsoid of the data. As such, observations that are unusual in data space may not stand out
+in univariate views of the variables, but will stand out in principal component space, but on the 
+_smallest_ dimension.
+
+As an illustration, I created a dataset with an linear relation, $y = x + \mathcal{N}(0, 1)$ and then
+added two discrepant points at (1.5, -1.5), (-1.5, 1.5) ...
+
+```{r}
+set.seed(123345)
+x <- c(rnorm(100),             1.5, -1.5)
+y <- c(x[1:100] + rnorm(100), -1.5, 1.5)
+```
+
+
+```{r}
+#| label: fig-outlier-demo
+#| layout-ncol: 2
+#| echo: false
+#| fig-cap: "**Outlier demonstration**:"
+knitr::include_graphics("figs/04-outlier-demo1.png")
+knitr::include_graphics("figs/04-outlier-demo2.png")
+```
 
 
 ## Biplots {#sec-biplot}
