@@ -3,18 +3,24 @@ library(bpca)
 #source("c:/R/functions/ellipse3d.axes.R")
 
 data(iris); 
+
+open3d()
+par3d(windowRect = c(0, 0, 800, 800) + 80)
+rgl.bringtotop()
+
 col <-c("blue", "green", "red")[iris$Species]
 plot3d(iris[, 1:3], type="s", 
        size=0.4, 
        col=col, cex=2, 
        box=FALSE, aspect="iso")
 
+
 cov <- cov(iris[, 1:3]) 
 mu <- colMeans(iris[,1:3])
 shade3d(ellipse3d(cov, centre=mu, level=0.68), 
        col="gray", alpha=0.2)
 
-axes <- heplots::ellipse3d.axes(cov, centre=mu, level=0.72, labels=TRUE)
+axes <- heplots::ellipse3d.axes(cov, centre=mu, level=0.72, labels=TRUE, cex=1.5)
 
 M1 <- par3d("userMatrix")
 
@@ -32,7 +38,7 @@ interp <-par3dinterp( userMatrix=list(M1, M2),
                       extrapolate="constant", method="linear")
 movie3d(interp, duration=4, fps=8, movie="biplot3d-iris")
 
-# View in PCA space: bpca package
+# View in PCA space: 
 
 interp3 <-par3dinterp(userMatrix=list(M1, M2, M3, M4, M3, M2, M1),  
                       extrapolate="constant", method="linear" )
