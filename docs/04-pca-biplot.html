@@ -251,8 +251,10 @@ div.csl-indent {
 <a href="#sec-pca" id="toc-sec-pca" class="nav-link" data-scroll-target="#sec-pca"><span class="header-section-number">4.2</span> Principal components analysis</a>
   <ul class="collapse">
 <li><a href="#pca-by-springs" id="toc-pca-by-springs" class="nav-link" data-scroll-target="#pca-by-springs"><span class="header-section-number">4.2.1</span> PCA by springs</a></li>
-  <li><a href="#finding-principal-components" id="toc-finding-principal-components" class="nav-link" data-scroll-target="#finding-principal-components"><span class="header-section-number">4.2.2</span> Finding principal components</a></li>
-  <li><a href="#elliptical-insights-outlier-detection" id="toc-elliptical-insights-outlier-detection" class="nav-link" data-scroll-target="#elliptical-insights-outlier-detection"><span class="header-section-number">4.2.3</span> Elliptical insights: Outlier detection</a></li>
+  <li><a href="#mathematics-and-geometry-of-pca" id="toc-mathematics-and-geometry-of-pca" class="nav-link" data-scroll-target="#mathematics-and-geometry-of-pca"><span class="header-section-number">4.2.2</span> Mathematics and geometry of PCA</a></li>
+  <li><a href="#finding-principal-components" id="toc-finding-principal-components" class="nav-link" data-scroll-target="#finding-principal-components"><span class="header-section-number">4.2.3</span> Finding principal components</a></li>
+  <li><a href="#visualizing-variance-proportions-screeplots" id="toc-visualizing-variance-proportions-screeplots" class="nav-link" data-scroll-target="#visualizing-variance-proportions-screeplots"><span class="header-section-number">4.2.4</span> Visualizing variance proportions: screeplots</a></li>
+  <li><a href="#elliptical-insights-outlier-detection" id="toc-elliptical-insights-outlier-detection" class="nav-link" data-scroll-target="#elliptical-insights-outlier-detection"><span class="header-section-number">4.2.5</span> Elliptical insights: Outlier detection</a></li>
   </ul>
 </li>
   <li><a href="#sec-biplot" id="toc-sec-biplot" class="nav-link" data-scroll-target="#sec-biplot"><span class="header-section-number">4.3</span> Biplots</a></li>
@@ -284,9 +286,9 @@ div.csl-indent {
 <blockquote class="blockquote">
 <p>“Oh, can I, in my imagination, rotate that cloud and squeeze its’ juice so that it rains down on Flatland with greatest joy?”</p>
 </blockquote>
-<p>As it happened, our Square friend, although he could never really <em>see</em> in three dimensions could now at least <em>think</em> of a world described by <strong>height</strong> as well as breadth and width.</p>
+<p>As it happened, our Square friend, although he could never really <em>see</em> in three dimensions he could now at least <em>think</em> of a world described by <strong>height</strong> as well as breadth and width.</p>
 <p>And what a world it was, inhabited by Pryamids, Cubes and wondrous creatures called Polyhedrons with many <span class="math inline">\(C\)</span>orners, <span class="math inline">\(F\)</span>aces and <span class="math inline">\(E\)</span>dges. Not only that, but all those Polyhedra were forced in Spaceland to obey a magic formula: <span class="math inline">\(C + F - E = 2\)</span>.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
-<p>Indeed, even exalted Spheres, having so many faces that its surface became as smooth as a baby’s bottom with no need for pointed corners or edges, just as Circles were the smoothest occupants of his world.</p>
+<p>Indeed, even exalted Spheres, having so many faces that its surface became as smooth as a baby’s bottom with no need for pointed corners or edges, just as Circles were the smoothest occupants of his world with far too many sides to count. It was his dream of a Sphere passing through Flatland <a href="index.html#fig-flatland-spheres">Figure&nbsp;<span>1</span></a> that first awakend him to a third dimension.</p>
 <p>He also marveled at Ellipsoids, as smooth as Spheres, but in Spaceland having three natural axes of different extent and capable of being appearing fatter or slimmer when rotated from different views. An Ellipsoid had magical properties: it could appear as so thin in one or more dimensions that it became a simple 2D ellipse, or a 1D line, or even a 0D point <span class="citation" data-cites="Friendly-etal:ellipses:2013">(<a href="90-references.html#ref-Friendly-etal:ellipses:2013" role="doc-biblioref">Friendly, Monette, and Fox 2013</a>)</span>. <!-- **TODO**: somehow mention the `gellipsoid` package here. --></p>
 <p>All of these now arose in Square’s richer 3D imagination. And, all of this came from just one more dimension than his life in Flatland.</p>
 <section id="multivariate-juicers" class="level3" data-number="4.1.1"><h3 data-number="4.1.1" class="anchored" data-anchor-id="multivariate-juicers">
@@ -303,6 +305,15 @@ div.csl-indent {
 </div>
 <p>Here, I concentrate on <strong>principal components analysis</strong> (PCA), whose goal reflects A Square’s desire to see that sparkly cloud of points in <span class="math inline">\(nD\)</span> space in the plane showing the greatest variation among all other possible views.</p>
 <p>This appealed to his sense of geometry, but left him wondering how the variables in that high-D cloud were related to the dimensions he could see in a best-fitting plane. The idea of a <strong>biplot</strong>, showing the data points in the plane, together with thick pointed arrows—variable vectors— in one view is the other topic explained in this chapter (<a href="#sec-biplot"><span>Section&nbsp;4.3</span></a>).</p>
+<p><strong>Packages</strong></p>
+<p>In this chapter I use the following packages. Load them now:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb1" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org">ggplot2</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org">dplyr</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyr.tidyverse.org">tidyr</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://patchwork.data-imaginist.com">patchwork</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/friendly/ggbiplot">ggbiplot</a></span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 </section></section><section id="sec-pca" class="level2" data-number="4.2"><h2 data-number="4.2" class="anchored" data-anchor-id="sec-pca">
 <span class="header-section-number">4.2</span> Principal components analysis</h2>
 <p>When Francis Galton <span class="citation" data-cites="Galton:1886">(<a href="90-references.html#ref-Galton:1886" role="doc-biblioref">1886</a>)</span> first discovered the idea of regression toward the mean and presented his famous diagram (<a href="03-multivariate_plots.html#fig-galton-corr">Figure&nbsp;<span>3.9</span></a>), he had little thought that he had provided a window to a higher-dimensional world, beyond what even A Square could imagine. His friend, Karl Pearson <span class="citation" data-cites="Pearson:1896">(<a href="90-references.html#ref-Pearson:1896" role="doc-biblioref">1896</a>)</span> took that idea and developed it into a theory of regression and a measure of correlation that would bear his name, Pearson’s <span class="math inline">\(r\)</span>.</p>
@@ -352,15 +363,80 @@ div.csl-indent {
 </div>
 <!-- See: https://joshualoftus.com/posts/2020-11-23-least-squares-as-springs/least-squares-as-springs.html -->
 <p><strong>TODO</strong>: Simple PCA example</p>
-</section><section id="finding-principal-components" class="level3" data-number="4.2.2"><h3 data-number="4.2.2" class="anchored" data-anchor-id="finding-principal-components">
-<span class="header-section-number">4.2.2</span> Finding principal components</h3>
-<p>In R, principal components analysis is most easily carried out using <code><a href="https://rdrr.io/r/stats/prcomp.html">stats::prcomp()</a></code> or <code><a href="https://rdrr.io/r/stats/princomp.html">stats::princomp()</a></code> or similar functions in other packages. …</p>
-</section><section id="elliptical-insights-outlier-detection" class="level3" data-number="4.2.3"><h3 data-number="4.2.3" class="anchored" data-anchor-id="elliptical-insights-outlier-detection">
-<span class="header-section-number">4.2.3</span> Elliptical insights: Outlier detection</h3>
+</section><section id="mathematics-and-geometry-of-pca" class="level3" data-number="4.2.2"><h3 data-number="4.2.2" class="anchored" data-anchor-id="mathematics-and-geometry-of-pca">
+<span class="header-section-number">4.2.2</span> Mathematics and geometry of PCA</h3>
+</section><section id="finding-principal-components" class="level3" data-number="4.2.3"><h3 data-number="4.2.3" class="anchored" data-anchor-id="finding-principal-components">
+<span class="header-section-number">4.2.3</span> Finding principal components</h3>
+<p>In R, principal components analysis is most easily carried out using <code><a href="https://rdrr.io/r/stats/prcomp.html">stats::prcomp()</a></code> or <code><a href="https://rdrr.io/r/stats/princomp.html">stats::princomp()</a></code> or similar functions in other packages such as <code>FactomineR::PCA()</code>. The <strong>FactoMineR</strong> package <span class="citation" data-cites="R-FactoMineR">(<a href="90-references.html#ref-R-FactoMineR" role="doc-biblioref"><strong>R-FactoMineR?</strong></a>)</span> has extensive capabilities for exploratory analysis of multivariate data (PCA, correspondence analysis, cluster analysis, …).</p>
+<p>Unfortunately, although all of these performing similar calculations, the options for analysis and the details of the result they return differ …</p>
+<p>The important options for analysis include:</p>
+<ul>
+<li>whether or not the data variables are <strong>centered</strong>, to a mean of 0</li>
+<li>whether or not the data variables are <strong>scaled</strong>, to a variance of 1.</li>
+</ul>
+<section id="example-crime-data" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="example-crime-data">Example: Crime data</h4>
+<p>The dataset <code>crime</code>, analysed in <a href="03-multivariate_plots.html#sec-corrgram"><span>Section&nbsp;3.2.2</span></a>, showed all positive correlations among the rates of various crimes in the corrgram, <a href="03-multivariate_plots.html#fig-crime-corrplot">Figure&nbsp;<span>3.27</span></a>. What can we see from a principal components analysis? Is it possible that a few dimensions can account for most of the juice in this data?</p>
+<p>In this example, you can easily find the PCA solution using <code><a href="https://rdrr.io/r/stats/prcomp.html">prcomp()</a></code> in a single line in base-R. You need to specify the numeric variables to analyze by their columns in the data frame. The most important option here is <code>scale. = TRUE</code> …</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb2" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">crime</span>, package <span class="op">=</span> <span class="st">"ggbiplot"</span><span class="op">)</span></span>
+<span><span class="va">crime.pca</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/prcomp.html">prcomp</a></span><span class="op">(</span><span class="va">crime</span><span class="op">[</span>, <span class="fl">2</span><span class="op">:</span><span class="fl">7</span><span class="op">]</span>, scale. <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The tidy equivalent is more verbose, but also more expressive about what is being done. It selects the variables to analyze by a function, <code><a href="https://rdrr.io/r/base/numeric.html">is.numeric()</a></code> applied to each of the columns and feeds the result to <code><a href="https://rdrr.io/r/stats/prcomp.html">prcomp()</a></code>.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb3" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">crime.pca</span> <span class="op">&lt;-</span> </span>
+<span>  <span class="va">crime</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/where.html">where</a></span><span class="op">(</span><span class="va">is.numeric</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/prcomp.html">prcomp</a></span><span class="op">(</span>scale. <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>As is typical with models in R, the result, <code>crime.pca</code> of <code><a href="https://rdrr.io/r/stats/prcomp.html">prcomp()</a></code> is an object of class <code>"prcomp"</code>, a list of components, and there are a variety of methods for <code>"prcomp"</code> objects. Among the simplest is <code><a href="https://rdrr.io/r/base/summary.html">summary()</a></code>, which gives the contributions of each component to the total variance in the dataset.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb4" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">crime.pca</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Importance of components:</span></span>
+<span><span class="co">#&gt;                          PC1   PC2   PC3    PC4    PC5    PC6</span></span>
+<span><span class="co">#&gt; Standard deviation     2.029 1.113 0.852 0.5625 0.5079 0.4712</span></span>
+<span><span class="co">#&gt; Proportion of Variance 0.588 0.177 0.104 0.0452 0.0369 0.0317</span></span>
+<span><span class="co">#&gt; Cumulative Proportion  0.588 0.765 0.869 0.9137 0.9506 0.9823</span></span>
+<span><span class="co">#&gt;                           PC7</span></span>
+<span><span class="co">#&gt; Standard deviation     0.3522</span></span>
+<span><span class="co">#&gt; Proportion of Variance 0.0177</span></span>
+<span><span class="co">#&gt; Cumulative Proportion  1.0000</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section></section><section id="visualizing-variance-proportions-screeplots" class="level3" data-number="4.2.4"><h3 data-number="4.2.4" class="anchored" data-anchor-id="visualizing-variance-proportions-screeplots">
+<span class="header-section-number">4.2.4</span> Visualizing variance proportions: screeplots</h3>
+<p>For a high-D dataset, such as the crime data in seven dimensions, a natural question is how much of the variation in the data can be captured in 1D, 2D, 3D, … summaries and views.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb5" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">crime.pca</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html">tidy</a></span><span class="op">(</span>matrix <span class="op">=</span> <span class="st">"eigenvalues"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 7 × 4</span></span>
+<span><span class="co">#&gt;      PC std.dev percent cumulative</span></span>
+<span><span class="co">#&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;      &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1     1   2.03   0.588       0.588</span></span>
+<span><span class="co">#&gt; 2     2   1.11   0.177       0.765</span></span>
+<span><span class="co">#&gt; 3     3   0.852  0.104       0.868</span></span>
+<span><span class="co">#&gt; 4     4   0.563  0.0452      0.914</span></span>
+<span><span class="co">#&gt; 5     5   0.508  0.0368      0.951</span></span>
+<span><span class="co">#&gt; 6     6   0.471  0.0317      0.982</span></span>
+<span><span class="co">#&gt; 7     7   0.352  0.0177      1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Then, a simple visualization is a plot of the proportion of variance for each component (or cummulative proportion) against the component number, usually called a <strong>screeplot</strong>.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb6" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ggbiplot/man/ggscreeplot.html">ggscreeplot</a></span><span class="op">(</span><span class="va">crime.pca</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">14</span><span class="op">)</span></span>
+<span><span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ggbiplot/man/ggscreeplot.html">ggscreeplot</a></span><span class="op">(</span><span class="va">crime.pca</span>, type <span class="op">=</span> <span class="st">"cev"</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">14</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p1</span> <span class="op">+</span> <span class="va">p2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure"><p><img src="figs/fig-crime-ggscreeplot-1.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption class="figure-caption">Screeplots for the PCA of the crime data</figcaption></figure>
+</div>
+</div>
+</div>
+</section><section id="elliptical-insights-outlier-detection" class="level3" data-number="4.2.5"><h3 data-number="4.2.5" class="anchored" data-anchor-id="elliptical-insights-outlier-detection">
+<span class="header-section-number">4.2.5</span> Elliptical insights: Outlier detection</h3>
 <p>The data ellipse (<a href="03-multivariate_plots.html#sec-data-ellipse"><span>Section&nbsp;3.1.4</span></a>), or ellipsoid in more than 2D is fundamental in regression. But also, as Pearson showed, it is key to understanding principal components analysis, where the principal component directions are simply the axes of the ellipsoid of the data. As such, observations that are unusual in data space may not stand out in univariate views of the variables, but will stand out in principal component space, usually on the <em>smallest</em> dimension.</p>
 <p>As an illustration, I created a dataset of <span class="math inline">\(n = 100\)</span> observations with a linear relation, <span class="math inline">\(y = x + \mathcal{N}(0, 1)\)</span> and then added two discrepant points at (1.5, -1.5), (-1.5, 1.5).</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb1" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">123345</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb7" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">123345</span><span class="op">)</span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,             <span class="fl">1.5</span>, <span class="op">-</span><span class="fl">1.5</span><span class="op">)</span></span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">x</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">100</span><span class="op">]</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>, <span class="op">-</span><span class="fl">1.5</span>, <span class="fl">1.5</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>

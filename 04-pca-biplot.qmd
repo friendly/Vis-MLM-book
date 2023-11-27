@@ -16,7 +16,7 @@ Spaceland and therefore had an inkling of its majesty beyond the simple world of
 
 > "Oh, can I, in my imagination, rotate that cloud and squeeze its' juice so that it rains down on Flatland with greatest joy?"
 
-As it happened, our Square friend, although he could never really _see_ in three dimensions could now 
+As it happened, our Square friend, although he could never really _see_ in three dimensions he could now 
 at least _think_ of a world described by **height** as well as breadth and width. 
 
 And what a world it was, inhabited by
@@ -28,7 +28,9 @@ $C + F - E = 2$.[^1-euler]
 or pyramid has $(V, F, E) = (4, 4, 6)$ and a cube has $(V, F, E) = (8, 6, 12)$.
 
 Indeed, even exalted Spheres,
-having so many faces that its surface became as smooth as a baby's bottom with no need for pointed corners or edges, just as Circles were the smoothest occupants of his world.
+having so many faces that its surface became as smooth as a baby's bottom with no need for pointed corners or edges, just as Circles were the smoothest occupants of his world with far too many sides to count.
+It was his dream of a Sphere passing through Flatland @fig-flatland-spheres that first awakend him to 
+a third dimension.
 
 He also marveled at Ellipsoids, as smooth as Spheres, but in Spaceland having three natural axes of different extent
 and capable of being appearing fatter or slimmer when rotated from different views. An Ellipsoid
@@ -70,6 +72,19 @@ This appealed to his sense of geometry, but left him wondering how the variables
 high-D cloud were related to the dimensions he could see in a best-fitting plane.
 The idea of a **biplot**, showing the data points in the plane, together with thick pointed
 arrows---variable vectors--- in one view is the other topic explained in this chapter (@sec-biplot).
+
+**Packages**
+
+In this chapter I use the following packages. Load them now:
+
+```{r load-pkgs}
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(patchwork)
+library(ggbiplot)
+```
+
 
 ## Principal components analysis {#sec-pca}
 
@@ -170,10 +185,79 @@ Animation of PCA fitted by springs. The blue data points are connected to their 
 
 **TODO**: Simple PCA example
 
+### Mathematics and geometry of PCA
+
 ### Finding principal components
 
 In R, principal components analysis is most easily carried out using `stats::prcomp()` or `stats::princomp()`
-or similar functions in other packages. ...
+or similar functions in other packages such as `FactomineR::PCA()`.
+The **FactoMineR** package [@R-FactoMineR] 
+has extensive capabilities for exploratory analysis of multivariate data (PCA, correspondence analysis, cluster analysis, ...). 
+
+Unfortunately, although all of these performing similar calculations, the options for
+analysis and the details of the result they return differ ...
+
+The important options for analysis include: 
+
+* whether or not the data variables are **centered**, to a mean of 0
+* whether or not the data variables are **scaled**, to a variance of 1.
+
+#### Example: Crime data {.unnumbered}
+
+The dataset `crime`, analysed in @sec-corrgram, showed all positive correlations among the rates of various
+crimes in the corrgram, @fig-crime-corrplot. What can we see from a principal components analysis?
+Is it possible that a few dimensions can account for most of the juice in this data?
+
+In this example, you can easily find the PCA solution using `prcomp()` in a single line in base-R.
+You need to specify the numeric variables to analyze by their columns in the data frame.
+The most important option here is `scale. = TRUE` ...
+
+```{r crime-pca0}
+data(crime, package = "ggbiplot")
+crime.pca <- prcomp(crime[, 2:7], scale. = TRUE)
+```
+
+The tidy equivalent is more verbose, but also more expressive about what is being done.
+It selects the variables to analyze by a function, `is.numeric()` applied to each of the columns and feeds
+the result to `prcomp()`.
+```{r crime-pca}
+crime.pca <- 
+  crime |> 
+  dplyr::select(where(is.numeric)) |>
+  prcomp(scale. = TRUE)
+```
+
+As is typical with models in R, the result, `crime.pca` of `prcomp()` is an object of class `"prcomp"`,
+a list of components, and there are a variety of methods for `"prcomp"` objects. Among the simplest
+is `summary()`, which gives the contributions of each component to the total variance in the dataset.
+
+```{r crime-pca-summary}
+summary(crime.pca)
+```
+
+### Visualizing variance proportions: screeplots
+
+For a high-D dataset, such as the crime data in seven dimensions, a natural question is how much of the
+variation in the data can be captured in 1D, 2D, 3D, ... summaries and views.
+
+```{r crime-pca-tidy}
+crime.pca |> 
+  broom::tidy(matrix = "eigenvalues")
+```
+
+Then, a simple visualization is a plot of the proportion of variance for each component (or cummulative proportion)
+against the component number, usually called a **screeplot**.
+
+```{r}
+#| label: fig:crime-ggscreeplot
+#| out-width: "100%"
+#| fig-cap: "Screeplots for the PCA of the crime data"
+p1 <- ggscreeplot(crime.pca) + theme_bw(base_size = 14)
+p2 <- ggscreeplot(crime.pca, type = "cev") + theme_bw(base_size = 14)
+
+p1 + p2
+```
+
 
 ### Elliptical insights: Outlier detection
 
