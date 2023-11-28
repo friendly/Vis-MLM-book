@@ -23,13 +23,19 @@ crime.pca <-
 summary(crime,pca)
 
 # show the eigenvalue decomposition
-crime.pca |> 
-  broom::tidy(matrix = "eigenvalues")
+(crime.eig <- crime.pca |> 
+  broom::tidy(matrix = "eigenvalues"))
 
+# add fitted line for smallest eigenvalues
 p1 <- ggscreeplot(crime.pca) +
-  theme_bw(base_size = 14)
+  stat_smooth(data = crime.eig |> filter(PC>=4), 
+              aes(x=PC, y=percent), method = "lm", 
+              se = FALSE,
+              fullrange = TRUE) +
+  theme_bw(base_line_size = 14)
 
 p2 <- ggscreeplot(crime.pca, type = "cev") +
+  geom_hline(yintercept = c(0.8, 0.9), color = "blue") +
   theme_bw(base_size = 14)
 
 p1 + p2

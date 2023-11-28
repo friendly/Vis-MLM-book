@@ -8,28 +8,29 @@ source(here::here("R", "common.R"))
 
 > It is high time that I should pass from these brief and discursive notes about Flatland to the central event of this book, my initiation into the mysteries of Space. THAT is my subject; all that has gone before is merely preface --- Edwin Abbott, _Flatland_, p. 57.
 
-There was a cloud in the sky above _Flatland_ one day. But it was a huge, multidimensional cloud of sparkly points that might contain some important message, perhaps like the hidden EUREKA (@fig-pollen-eureka-fig), and perhaps forecasting the upcoming harvest,
-if only Flatlanders could appreciate it. 
+There was a cloud in the sky above _Flatland_ one day. But it was a huge, multidimensional cloud of sparkly points that might contain some important message, perhaps like the hidden EUREKA (@fig-pollen-eureka-fig), or perhaps forecasting the upcoming harvest, if only Flatlanders could appreciate it. 
 
 A leading citizen, A SQUARE, who had traveled once to 
 Spaceland and therefore had an inkling of its majesty beyond the simple world of his life in the plane looked at that cloud and had a brilliant thought, an OMG moment:
 
 > "Oh, can I, in my imagination, rotate that cloud and squeeze its' juice so that it rains down on Flatland with greatest joy?"
 
-As it happened, our Square friend, although he could never really _see_ in three dimensions he could now 
-at least _think_ of a world described by **height** as well as breadth and width. 
+As it happened, our Square friend, although he could never really _see_ in three dimensions, he could now 
+at least _think_ of a world described by **height** as well as breadth and width, and think of the
+**shadow** cast by a cloud as something mutable, changing size and shape depending on its' orientation over Flatland.
 
 And what a world it was, inhabited by
 Pryamids, Cubes and wondrous creatures called Polyhedrons with many $C$orners, $F$aces and $E$dges.
 Not only that, but all those Polyhedra were forced in Spaceland to obey a magic formula:
-$C + F - E = 2$.[^1-euler]
+$C + F - E = 2$.[^1-euler] How cool was that!
 
-[^1-euler]: This is Euler's formula, which states that any convex polyheron must obey the formula $V + F - E = 2$ where $V$ is the number of vertexes (corners), $F$ is the number of faces and $E$ is the number of edges.  For example, a tetrahedron
-or pyramid has $(V, F, E) = (4, 4, 6)$ and a cube has $(V, F, E) = (8, 6, 12)$.
+[^1-euler]: This is Euler's [-@Euler:1758] formula, which states that any convex polyheron must obey the formula $V + F - E = 2$ where $V$ is the number of vertexes (corners), $F$ is the number of faces and $E$ is the number of edges.  For example, a tetrahedron
+or pyramid has $(V, F, E) = (4, 4, 6)$ and a cube has $(V, F, E) = (8, 6, 12)$. Stated in words,
+for all solid bodies confined by planes, the sum of the number of vertexes and the number of faces is two less than the number of edges.
 
-Indeed, even exalted Spheres,
+Indeed, there were even exalted Spheres,
 having so many faces that its surface became as smooth as a baby's bottom with no need for pointed corners or edges, just as Circles were the smoothest occupants of his world with far too many sides to count.
-It was his dream of a Sphere passing through Flatland @fig-flatland-spheres that first awakend him to 
+It was his dream of a Sphere passing through Flatland (@fig-flatland-spheres) that first awakened him to 
 a third dimension.
 
 He also marveled at Ellipsoids, as smooth as Spheres, but in Spaceland having three natural axes of different extent
@@ -177,7 +178,7 @@ squared length and energy, the positions of the `r colorize("red")` points on th
 <div align="center">
 <iframe width="412" height="364" src="images/pca-springs-cropped.gif"></iframe>
 </div>
-Animation of PCA fitted by springs. The blue data points are connected to their projections on the `r colorize("red")` line by springs perpendicular to that line. From an initial position, the springs pull that line in proportion to their squared distances, until the line finally settles down to the position where the forces are balanced and the minimum is achieved. _source_: https://bit.ly/46tAicu.
+Animation of PCA fitted by springs. The `r colorize("blue")` data points are connected to their projections on the `r colorize("red")` line by springs perpendicular to that line. From an initial position, the springs pull that line in proportion to their squared distances, until the line finally settles down to the position where the forces are balanced and the minimum is achieved. _Source_: https://bit.ly/46tAicu.
 
 :::
 
@@ -232,31 +233,54 @@ a list of components, and there are a variety of methods for `"prcomp"` objects.
 is `summary()`, which gives the contributions of each component to the total variance in the dataset.
 
 ```{r crime-pca-summary}
-summary(crime.pca)
+summary(crime.pca) |> print(digits=2)
 ```
 
 ### Visualizing variance proportions: screeplots
 
 For a high-D dataset, such as the crime data in seven dimensions, a natural question is how much of the
-variation in the data can be captured in 1D, 2D, 3D, ... summaries and views.
+variation in the data can be captured in 1D, 2D, 3D, ... summaries and views. This is answered by
+considering the proportions of variance accounted by each of the dimensions, or their cumulative values.
+The components returned by various PCA methods have (confusingly) different names, so
+`broom::tidy()` provides methods to unify extraction of these values.
 
 ```{r crime-pca-tidy}
-crime.pca |> 
-  broom::tidy(matrix = "eigenvalues")
+(crime.eig <- crime.pca |> 
+  broom::tidy(matrix = "eigenvalues"))
 ```
 
-Then, a simple visualization is a plot of the proportion of variance for each component (or cummulative proportion)
-against the component number, usually called a **screeplot**.
+Then, a simple visualization is a plot of the proportion of variance for each component (or cumulative proportion)
+against the component number, usually called a **screeplot**. The idea, introduced by @Cattell1966, is that
+after the largest, dominant components, the remainder should resemble the rubble, or scree formed by rocks falling
+from a cliff. From this plot, imagine
+drawing a straight line through the plotted eigenvalues, starting with the largest one. The typical rough guidance is that the last point to fall on this line represents the last component to extract, the idea being that beyond this, the amount of additional variance explained is non-meaningful. Another rule of thumb is to choose the number
+of components to extract a desired proportion of total variance, usually in the range of 80 - 90%.
+
+`stats::plot(crime.pca)` would give a bar plot of the variances of the components, however ggbiplot::ggscreeplot()` gives nicer and more flexible displays as shown in @fig-crime-ggscreeplot.
 
 ```{r}
-#| label: fig:crime-ggscreeplot
+#| label: fig-crime-ggscreeplot
 #| out-width: "100%"
-#| fig-cap: "Screeplots for the PCA of the crime data"
-p1 <- ggscreeplot(crime.pca) + theme_bw(base_size = 14)
-p2 <- ggscreeplot(crime.pca, type = "cev") + theme_bw(base_size = 14)
+#| fig-cap: "Screeplots for the PCA of the crime data. The left panel shows the traditional version, plotting variance proportions against component number, with linear guideline for the scree rule of thumb. The right panel plots cumulative proportions, showing cutoffs of 80%, 90%."
+p1 <- ggscreeplot(crime.pca) +
+  stat_smooth(data = crime.eig |> filter(PC>=4), 
+              aes(x=PC, y=percent), method = "lm", 
+              se = FALSE,
+              fullrange = TRUE) +
+  theme_bw(base_size = 14)
+
+p2 <- ggscreeplot(crime.pca, type = "cev") +
+  geom_hline(yintercept = c(0.8, 0.9), color = "blue") +
+  theme_bw(base_size = 14)
 
 p1 + p2
 ```
+
+From this we might conclude that four components are necessary to satisfy the scree criterion or to
+account for 90% of the total variation in these crime statistics. However two components, giving
+76.5%, might be enough juice to tell a reasonable story.
+
+### Visualizing PCA scores
 
 
 ### Elliptical insights: Outlier detection
