@@ -254,11 +254,11 @@ div.csl-indent {
   <li><a href="#mathematics-and-geometry-of-pca" id="toc-mathematics-and-geometry-of-pca" class="nav-link" data-scroll-target="#mathematics-and-geometry-of-pca"><span class="header-section-number">4.2.2</span> Mathematics and geometry of PCA</a></li>
   <li><a href="#finding-principal-components" id="toc-finding-principal-components" class="nav-link" data-scroll-target="#finding-principal-components"><span class="header-section-number">4.2.3</span> Finding principal components</a></li>
   <li><a href="#visualizing-variance-proportions-screeplots" id="toc-visualizing-variance-proportions-screeplots" class="nav-link" data-scroll-target="#visualizing-variance-proportions-screeplots"><span class="header-section-number">4.2.4</span> Visualizing variance proportions: screeplots</a></li>
-  <li><a href="#visualizing-pca-scores" id="toc-visualizing-pca-scores" class="nav-link" data-scroll-target="#visualizing-pca-scores"><span class="header-section-number">4.2.5</span> Visualizing PCA scores</a></li>
-  <li><a href="#elliptical-insights-outlier-detection" id="toc-elliptical-insights-outlier-detection" class="nav-link" data-scroll-target="#elliptical-insights-outlier-detection"><span class="header-section-number">4.2.6</span> Elliptical insights: Outlier detection</a></li>
+  <li><a href="#visualizing-pca-scores-and-variable-vectors" id="toc-visualizing-pca-scores-and-variable-vectors" class="nav-link" data-scroll-target="#visualizing-pca-scores-and-variable-vectors"><span class="header-section-number">4.2.5</span> Visualizing PCA scores and variable vectors</a></li>
   </ul>
 </li>
   <li><a href="#sec-biplot" id="toc-sec-biplot" class="nav-link" data-scroll-target="#sec-biplot"><span class="header-section-number">4.3</span> Biplots</a></li>
+  <li><a href="#elliptical-insights-outlier-detection" id="toc-elliptical-insights-outlier-detection" class="nav-link" data-scroll-target="#elliptical-insights-outlier-detection"><span class="header-section-number">4.4</span> Elliptical insights: Outlier detection</a></li>
   </ul></nav>
     </div>
 <!-- main -->
@@ -304,7 +304,7 @@ div.csl-indent {
 </div>
 </div>
 </div>
-<p>Here, I concentrate on <strong>principal components analysis</strong> (PCA), whose goal reflects A Square’s desire to see that sparkly cloud of points in <span class="math inline">\(nD\)</span> space in the plane showing the greatest variation among all other possible views.</p>
+<p>Here, I concentrate on <strong>principal components analysis</strong> (PCA), whose goal reflects A Square’s desire to see that sparkly cloud of points in <span class="math inline">\(nD\)</span> space in the plane showing the greatest variation (squeezing the most juice) among all other possible views.</p>
 <p>This appealed to his sense of geometry, but left him wondering how the variables in that high-D cloud were related to the dimensions he could see in a best-fitting plane. The idea of a <strong>biplot</strong>, showing the data points in the plane, together with thick pointed arrows—variable vectors— in one view is the other topic explained in this chapter (<a href="#sec-biplot"><span>Section&nbsp;4.3</span></a>).</p>
 <p><strong>Packages</strong></p>
 <p>In this chapter I use the following packages. Load them now:</p>
@@ -360,7 +360,7 @@ div.csl-indent {
 <iframe width="412" height="364" src="images/pca-springs-cropped.gif">
 </iframe>
 </div>
-<figcaption class="figure-caption">Figure&nbsp;4.4: Animation of PCA fitted by springs. The blue data points are connected to their projections on the <span style="color: red;">red</span> line by springs perpendicular to that line. From an initial position, the springs pull that line in proportion to their squared distances, until the line finally settles down to the position where the forces are balanced and the minimum is achieved. <em>source</em>: https://bit.ly/46tAicu.</figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;4.4: Animation of PCA fitted by springs. The <span style="color: blue;">blue</span> data points are connected to their projections on the <span style="color: red;">red</span> line by springs perpendicular to that line. From an initial position, the springs pull that line in proportion to their squared distances, until the line finally settles down to the position where the forces are balanced and the minimum is achieved. <em>Source</em>: https://bit.ly/46tAicu.</figcaption></figure>
 </div>
 <!-- See: https://joshualoftus.com/posts/2020-11-23-least-squares-as-springs/least-squares-as-springs.html -->
 <p><strong>TODO</strong>: Simple PCA example</p>
@@ -398,11 +398,24 @@ div.csl-indent {
 <span><span class="co">#&gt; Proportion of Variance 0.59 0.18 0.10 0.045 0.037 0.032 0.018</span></span>
 <span><span class="co">#&gt; Cumulative Proportion  0.59 0.76 0.87 0.914 0.951 0.982 1.000</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-</section></section><section id="visualizing-variance-proportions-screeplots" class="level3" data-number="4.2.4"><h3 data-number="4.2.4" class="anchored" data-anchor-id="visualizing-variance-proportions-screeplots">
+<p>The object, <code>crime.pca</code> returned by <code><a href="https://rdrr.io/r/stats/prcomp.html">prcomp()</a></code> is a list of the following the following elements:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb5" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">crime.pca</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "sdev"     "rotation" "center"   "scale"    "x"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Of these, for <span class="math inline">\(n\)</span> observations and <span class="math inline">\(p\)</span> variables,</p>
+<ul>
+<li>
+<code>sdev</code> is the length <span class="math inline">\(p\)</span> vector of the standard deviations of the principal components (i.e., the square roots <span class="math inline">\(\sqrt{\lambda_i}\)</span> of the eigenvalues of the covariance/correlation matrix);</li>
+<li>
+<code>rotation</code> is the <span class="math inline">\(p \times p\)</span> matrix of weights or <strong>loadings</strong> of the variables on the components; the columns are the eigenvectors of the covariance or correlation matrix of the data;</li>
+<li>
+<code>x</code> is the <span class="math inline">\(n \times p\)</span> matrix of <strong>scores</strong> for the observations on the components, the result of multiplying (rotating) the data matrix by the loadings. These are uncorrelated, so <code>cov(x)</code> is a <span class="math inline">\(p \times p\)</span> diagonal matrix whose diagonal elements are the eigenvalues <span class="math inline">\(\lambda_i\)</span> = <code>sdev^2</code>.</li>
+</ul></section></section><section id="visualizing-variance-proportions-screeplots" class="level3" data-number="4.2.4"><h3 data-number="4.2.4" class="anchored" data-anchor-id="visualizing-variance-proportions-screeplots">
 <span class="header-section-number">4.2.4</span> Visualizing variance proportions: screeplots</h3>
 <p>For a high-D dataset, such as the crime data in seven dimensions, a natural question is how much of the variation in the data can be captured in 1D, 2D, 3D, … summaries and views. This is answered by considering the proportions of variance accounted by each of the dimensions, or their cumulative values. The components returned by various PCA methods have (confusingly) different names, so <code><a href="https://generics.r-lib.org/reference/tidy.html">broom::tidy()</a></code> provides methods to unify extraction of these values.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb5" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="op">(</span><span class="va">crime.eig</span> <span class="op">&lt;-</span> <span class="va">crime.pca</span> <span class="op">|&gt;</span> </span>
+<div class="sourceCode" id="cb6" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="op">(</span><span class="va">crime.eig</span> <span class="op">&lt;-</span> <span class="va">crime.pca</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html">tidy</a></span><span class="op">(</span>matrix <span class="op">=</span> <span class="st">"eigenvalues"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 7 × 4</span></span>
 <span><span class="co">#&gt;      PC std.dev percent cumulative</span></span>
@@ -418,7 +431,7 @@ div.csl-indent {
 <p>Then, a simple visualization is a plot of the proportion of variance for each component (or cumulative proportion) against the component number, usually called a <strong>screeplot</strong>. The idea, introduced by <span class="citation" data-cites="Cattell1966">Cattell (<a href="90-references.html#ref-Cattell1966" role="doc-biblioref">1966</a>)</span>, is that after the largest, dominant components, the remainder should resemble the rubble, or scree formed by rocks falling from a cliff. From this plot, imagine drawing a straight line through the plotted eigenvalues, starting with the largest one. The typical rough guidance is that the last point to fall on this line represents the last component to extract, the idea being that beyond this, the amount of additional variance explained is non-meaningful. Another rule of thumb is to choose the number of components to extract a desired proportion of total variance, usually in the range of 80 - 90%.</p>
 <p><code>stats::plot(crime.pca)</code> would give a bar plot of the variances of the components, however ggbiplot::ggscreeplot()` gives nicer and more flexible displays as shown in <a href="#fig-crime-ggscreeplot">Figure&nbsp;<span>4.5</span></a>.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb6" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ggbiplot/man/ggscreeplot.html">ggscreeplot</a></span><span class="op">(</span><span class="va">crime.pca</span><span class="op">)</span> <span class="op">+</span></span>
+<div class="sourceCode" id="cb7" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ggbiplot/man/ggscreeplot.html">ggscreeplot</a></span><span class="op">(</span><span class="va">crime.pca</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_smooth.html">stat_smooth</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">crime.eig</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">PC</span><span class="op">&gt;=</span><span class="fl">4</span><span class="op">)</span>, </span>
 <span>              <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">PC</span>, y<span class="op">=</span><span class="va">percent</span><span class="op">)</span>, method <span class="op">=</span> <span class="st">"lm"</span>, </span>
 <span>              se <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -438,36 +451,161 @@ div.csl-indent {
 </div>
 </div>
 <p>From this we might conclude that four components are necessary to satisfy the scree criterion or to account for 90% of the total variation in these crime statistics. However two components, giving 76.5%, might be enough juice to tell a reasonable story.</p>
-</section><section id="visualizing-pca-scores" class="level3" data-number="4.2.5"><h3 data-number="4.2.5" class="anchored" data-anchor-id="visualizing-pca-scores">
-<span class="header-section-number">4.2.5</span> Visualizing PCA scores</h3>
-</section><section id="elliptical-insights-outlier-detection" class="level3" data-number="4.2.6"><h3 data-number="4.2.6" class="anchored" data-anchor-id="elliptical-insights-outlier-detection">
-<span class="header-section-number">4.2.6</span> Elliptical insights: Outlier detection</h3>
+</section><section id="visualizing-pca-scores-and-variable-vectors" class="level3" data-number="4.2.5"><h3 data-number="4.2.5" class="anchored" data-anchor-id="visualizing-pca-scores-and-variable-vectors">
+<span class="header-section-number">4.2.5</span> Visualizing PCA scores and variable vectors</h3>
+<p>To see and attempt to understand PCA results, it is useful to plot both the scores for the observations on a few of the largest components and also the loadings or variable vectors that give the weights for the variables in determining the principal components.</p>
+<p>In <a href="#sec-biplot"><span>Section&nbsp;4.3</span></a> I discuss the biplot technique that plots both in a single display. However, I do this directly here, using tidy processing to explain what is going on in PCA and in these graphical displays.</p>
+<section id="scores" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="scores">Scores</h4>
+<p>The (uncorrelated) principal component scores can be extracted as <code>crime.pca$x</code> or using <code>purrr::pluck("x")</code>. As noted above, these are uncorrelated and have variances equal to the eigenvalues of the correlation matrix.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb8" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">scores</span> <span class="op">&lt;-</span> <span class="va">crime.pca</span> <span class="op">|&gt;</span> <span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/pluck.html">pluck</a></span><span class="op">(</span><span class="st">"x"</span><span class="op">)</span> </span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/cor.html">cov</a></span><span class="op">(</span><span class="va">scores</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/zapsmall.html">zapsmall</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt;      PC1  PC2  PC3  PC4  PC5  PC6  PC7</span></span>
+<span><span class="co">#&gt; PC1 4.11 0.00 0.00 0.00 0.00 0.00 0.00</span></span>
+<span><span class="co">#&gt; PC2 0.00 1.24 0.00 0.00 0.00 0.00 0.00</span></span>
+<span><span class="co">#&gt; PC3 0.00 0.00 0.73 0.00 0.00 0.00 0.00</span></span>
+<span><span class="co">#&gt; PC4 0.00 0.00 0.00 0.32 0.00 0.00 0.00</span></span>
+<span><span class="co">#&gt; PC5 0.00 0.00 0.00 0.00 0.26 0.00 0.00</span></span>
+<span><span class="co">#&gt; PC6 0.00 0.00 0.00 0.00 0.00 0.22 0.00</span></span>
+<span><span class="co">#&gt; PC7 0.00 0.00 0.00 0.00 0.00 0.00 0.12</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>For plotting, it is more convenient to use <code><a href="https://generics.r-lib.org/reference/augment.html">broom::augment()</a></code> which extracts the scores (named <code>.fittedPC*</code>) and appends these to the variables in the dataset.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb9" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">crime.pca</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/augment.html">augment</a></span><span class="op">(</span><span class="va">crime</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 6 × 18</span></span>
+<span><span class="co">#&gt;   .rownames state      murder  rape robbery assault burglary larceny</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;     &lt;chr&gt;       &lt;dbl&gt; &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;   &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1 1         Alabama      14.2  25.2    96.8    278.    1136.   1882.</span></span>
+<span><span class="co">#&gt; 2 2         Alaska       10.8  51.6    96.8    284     1332.   3370.</span></span>
+<span><span class="co">#&gt; 3 3         Arizona       9.5  34.2   138.     312.    2346.   4467.</span></span>
+<span><span class="co">#&gt; 4 4         Arkansas      8.8  27.6    83.2    203.     973.   1862.</span></span>
+<span><span class="co">#&gt; 5 5         California   11.5  49.4   287      358     2139.   3500.</span></span>
+<span><span class="co">#&gt; 6 6         Colorado      6.3  42     171.     293.    1935.   3903.</span></span>
+<span><span class="co">#&gt; # ℹ 10 more variables: auto &lt;dbl&gt;, st &lt;chr&gt;, region &lt;fct&gt;,</span></span>
+<span><span class="co">#&gt; #   .fittedPC1 &lt;dbl&gt;, .fittedPC2 &lt;dbl&gt;, .fittedPC3 &lt;dbl&gt;,</span></span>
+<span><span class="co">#&gt; #   .fittedPC4 &lt;dbl&gt;, .fittedPC5 &lt;dbl&gt;, .fittedPC6 &lt;dbl&gt;,</span></span>
+<span><span class="co">#&gt; #   .fittedPC7 &lt;dbl&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Then, we can use <code><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot()</a></code> to plot and pair of components. To aid interpretation, I label the points by their state abbreviation and color them by <code>region</code> of the U.S.. A geometric interpretation of the plot requires an aspect ratio of 1.0 (via <code><a href="https://ggplot2.tidyverse.org/reference/coord_fixed.html">coord_fixed()</a></code>) so that a unit distance on the horizontal axis is the same length as a unit distance on the vertical. To demonstrate that the components are uncorrelated, I also added their data ellipse.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb10" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">crime.pca</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/augment.html">augment</a></span><span class="op">(</span><span class="va">crime</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="co"># add original dataset back in</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span><span class="va">.fittedPC1</span>, <span class="va">.fittedPC2</span>, color <span class="op">=</span> <span class="va">region</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">0</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_vline</a></span><span class="op">(</span>xintercept <span class="op">=</span> <span class="fl">0</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">1.5</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_text.html">geom_text</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>label <span class="op">=</span> <span class="va">st</span><span class="op">)</span>, nudge_x <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/stat_ellipse.html">stat_ellipse</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"grey"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/coord_fixed.html">coord_fixed</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"PC Dimension 1"</span>, y <span class="op">=</span> <span class="st">"PC Dimnension 2"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_minimal</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">14</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"top"</span><span class="op">)</span> </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-crime-scores-plot12" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="figs/fig-crime-scores-plot12-1.png" class="img-fluid figure-img" style="width:80.0%"></p>
+<figcaption class="figure-caption">Figure&nbsp;4.6: Plot of component scores on the first two principal components for the <code>crime</code> data. States are colored by <code>region</code>.</figcaption></figure>
+</div>
+</div>
+</div>
+<p>To interpret such plots, it is useful consider the observations that are a high and low on each of the axes as well as other information, such as region here, and ask how these differ on the crime statistics. The first component, PC1, contrasts Nevada and California with North Dakota, South Dakota and West Virginia. The second component has most of the southern states on the low end and Massachusetts, Rhode Island and Hawaii on the high end. However, interpretation is easier when we also consider how the various crimes contribute to these dimensions.</p>
+</section><section id="variable-vectors" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="variable-vectors">Variable vectors</h4>
+<p>You can extract the variable loadings using either <code>crime.pca$rotation</code> or <code>purrr::pluck("rotation")</code>, similar to what I did with the scores.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb11" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">crime.pca</span> <span class="op">|&gt;</span> <span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/pluck.html">pluck</a></span><span class="op">(</span><span class="st">"rotation"</span><span class="op">)</span></span>
+<span><span class="co">#&gt;             PC1     PC2     PC3     PC4     PC5     PC6     PC7</span></span>
+<span><span class="co">#&gt; murder   -0.300 -0.6292  0.1782 -0.2321  0.5381  0.2591  0.2676</span></span>
+<span><span class="co">#&gt; rape     -0.432 -0.1694 -0.2442  0.0622  0.1885 -0.7733 -0.2965</span></span>
+<span><span class="co">#&gt; robbery  -0.397  0.0422  0.4959 -0.5580 -0.5200 -0.1144 -0.0039</span></span>
+<span><span class="co">#&gt; assault  -0.397 -0.3435 -0.0695  0.6298 -0.5067  0.1724  0.1917</span></span>
+<span><span class="co">#&gt; burglary -0.440  0.2033 -0.2099 -0.0576  0.1010  0.5360 -0.6481</span></span>
+<span><span class="co">#&gt; larceny  -0.357  0.4023 -0.5392 -0.2349  0.0301  0.0394  0.6017</span></span>
+<span><span class="co">#&gt; auto     -0.295  0.5024  0.5684  0.4192  0.3698 -0.0573  0.1470</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>But note something important in this output: All of the weights for the first component are negative. In PCA, the directions of the eigenvectors are completely arbitrary, in the sense that the vector <span class="math inline">\(-\mathbf{v}_i\)</span> gives the same linear combination as <span class="math inline">\(\mathbf{v}_i\)</span>, but with its’ sign reversed. For interpretation, it is useful (and usually recommended) to reflect the loadings to a positive orientation by multiplying them by -1.</p>
+<p>To reflect the PCA loadings and get them into a convenient format for plotting with <code><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot()</a></code>, it is necessary to do a bit of processing, including making the <code><a href="https://rdrr.io/r/base/row.names.html">row.names()</a></code> into an explicit variable for the purpose of labeling.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb12" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">vectors</span> <span class="op">&lt;-</span> <span class="va">crime.pca</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/pluck.html">pluck</a></span><span class="op">(</span><span class="st">"rotation"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>PC1 <span class="op">=</span> <span class="op">-</span><span class="fl">1</span> <span class="op">*</span> <span class="va">PC1</span>, PC2 <span class="op">=</span> <span class="op">-</span><span class="fl">1</span> <span class="op">*</span> <span class="va">PC2</span><span class="op">)</span> <span class="op">|&gt;</span>      <span class="co"># reflect axes</span></span>
+<span>  <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html">rownames_to_column</a></span><span class="op">(</span>var <span class="op">=</span> <span class="st">"label"</span><span class="op">)</span> </span>
+<span></span>
+<span><span class="va">vectors</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">]</span></span>
+<span><span class="co">#&gt;      label   PC1     PC2</span></span>
+<span><span class="co">#&gt; 1   murder 0.300  0.6292</span></span>
+<span><span class="co">#&gt; 2     rape 0.432  0.1694</span></span>
+<span><span class="co">#&gt; 3  robbery 0.397 -0.0422</span></span>
+<span><span class="co">#&gt; 4  assault 0.397  0.3435</span></span>
+<span><span class="co">#&gt; 5 burglary 0.440 -0.2033</span></span>
+<span><span class="co">#&gt; 6  larceny 0.357 -0.4023</span></span>
+<span><span class="co">#&gt; 7     auto 0.295 -0.5024</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Then, I plot these using <code><a href="https://ggplot2.tidyverse.org/reference/geom_segment.html">geom_segment()</a></code>, taking some care to use arrows from the origin with a nice shape and add <code><a href="https://ggplot2.tidyverse.org/reference/geom_text.html">geom_text()</a></code> labels for the variables positioned slightly to the right. Again, <code><a href="https://ggplot2.tidyverse.org/reference/coord_fixed.html">coord_fixed()</a></code> ensures equal scales for the axes, which is important because we want to interpret the angles between the variable vectors and the PCA coordinate axes.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb13" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">arrow_style</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/grid/arrow.html">arrow</a></span><span class="op">(</span></span>
+<span>  angle <span class="op">=</span> <span class="fl">20</span>, ends <span class="op">=</span> <span class="st">"first"</span>, type <span class="op">=</span> <span class="st">"closed"</span>, </span>
+<span>  length <span class="op">=</span> <span class="fu">grid</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/grid/unit.html">unit</a></span><span class="op">(</span><span class="fl">8</span>, <span class="st">"pt"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">vectors</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span><span class="va">PC1</span>, <span class="va">PC2</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">0</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_vline</a></span><span class="op">(</span>xintercept <span class="op">=</span> <span class="fl">0</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_segment.html">geom_segment</a></span><span class="op">(</span>xend <span class="op">=</span> <span class="fl">0</span>, yend <span class="op">=</span> <span class="fl">0</span>, </span>
+<span>               linewidth <span class="op">=</span> <span class="fl">1</span>, </span>
+<span>               arrow <span class="op">=</span> <span class="va">arrow_style</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_text.html">geom_text</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>label <span class="op">=</span> <span class="va">label</span><span class="op">)</span>, </span>
+<span>            size <span class="op">=</span> <span class="fl">5</span>,</span>
+<span>            hjust <span class="op">=</span> <span class="st">"outward"</span>,</span>
+<span>            nudge_x <span class="op">=</span> <span class="fl">0.05</span>, </span>
+<span>            color <span class="op">=</span> <span class="st">"brown"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/lims.html">xlim</a></span><span class="op">(</span><span class="op">-</span><span class="fl">0.4</span>, <span class="fl">0.9</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/lims.html">ylim</a></span><span class="op">(</span><span class="op">-</span><span class="fl">0.8</span>, <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/coord_fixed.html">coord_fixed</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_minimal</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">14</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-crime-vectors" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="figs/fig-crime-vectors-1.png" class="img-fluid figure-img" style="width:80.0%"></p>
+<figcaption class="figure-caption">Figure&nbsp;4.7: Plot of component loadings the first two principal components for the <code>crime</code> data.</figcaption></figure>
+</div>
+</div>
+</div>
+<p>What is shown in <a href="#fig-crime-vectors">Figure&nbsp;<span>4.7</span></a> has the following interpretations:</p>
+<ul>
+<li><p>the lengths of the variable vectors, <span class="math inline">\(||\mathbf{v}_i|| = \sqrt{\Sigma_{j = 1:2} \; v_{ij}^2}\)</span> give the proportion of variance of each variable accounted for in a two-dimensional display.</p></li>
+<li><p>the value, <span class="math inline">\(v_{ij}\)</span>, of the vector for variable <span class="math inline">\(\mathbf{x}_i\)</span> on component <span class="math inline">\(j\)</span> gives the correlation of that variable with the <span class="math inline">\(j\)</span>th principal component.</p></li>
+<li><p>the angle between two variable vectors, <span class="math inline">\(\mathbf{v}_i\)</span> and <span class="math inline">\(\mathbf{v}_j\)</span> gives the approximation of the correlation between <span class="math inline">\(\mathbf{x}_i\)</span> and <span class="math inline">\(\mathbf{x}_j\)</span> that is shown in this space.</p></li>
+</ul></section></section></section><section id="sec-biplot" class="level2" data-number="4.3"><h2 data-number="4.3" class="anchored" data-anchor-id="sec-biplot">
+<span class="header-section-number">4.3</span> Biplots</h2>
+<!-- Elliptical insights: Outliers -->
+</section><section id="elliptical-insights-outlier-detection" class="level2" data-number="4.4"><h2 data-number="4.4" class="anchored" data-anchor-id="elliptical-insights-outlier-detection">
+<span class="header-section-number">4.4</span> Elliptical insights: Outlier detection</h2>
 <p>The data ellipse (<a href="03-multivariate_plots.html#sec-data-ellipse"><span>Section&nbsp;3.1.4</span></a>), or ellipsoid in more than 2D is fundamental in regression. But also, as Pearson showed, it is key to understanding principal components analysis, where the principal component directions are simply the axes of the ellipsoid of the data. As such, observations that are unusual in data space may not stand out in univariate views of the variables, but will stand out in principal component space, usually on the <em>smallest</em> dimension.</p>
 <p>As an illustration, I created a dataset of <span class="math inline">\(n = 100\)</span> observations with a linear relation, <span class="math inline">\(y = x + \mathcal{N}(0, 1)\)</span> and then added two discrepant points at (1.5, -1.5), (-1.5, 1.5).</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb7" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">123345</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb14" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">123345</span><span class="op">)</span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,             <span class="fl">1.5</span>, <span class="op">-</span><span class="fl">1.5</span><span class="op">)</span></span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">x</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">100</span><span class="op">]</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>, <span class="op">-</span><span class="fl">1.5</span>, <span class="fl">1.5</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>When these are plotted with a data ellipse in <a href="#fig-outlier-demo">Figure&nbsp;<span>4.6</span></a> (left), you can see the discrepant points labeled 101 and 102, but they do not stand out as unusual on either <span class="math inline">\(x\)</span> or <span class="math inline">\(y\)</span>. The transformation to from data space to principal components space, shown in <a href="#fig-outlier-demo">Figure&nbsp;<span>4.6</span></a> (right), is simply a rotation of <span class="math inline">\((x, y)\)</span> to a space whose coordinate axes are the major and minor axes of the data ellipse, <span class="math inline">\((PC_1, PC_2)\)</span>. In this view, the additional points appear a univariate outliers on the smallest dimension, <span class="math inline">\(PC_2\)</span>.</p>
+<p>When these are plotted with a data ellipse in <a href="#fig-outlier-demo">Figure&nbsp;<span>4.8</span></a> (left), you can see the discrepant points labeled 101 and 102, but they do not stand out as unusual on either <span class="math inline">\(x\)</span> or <span class="math inline">\(y\)</span>. The transformation to from data space to principal components space, shown in <a href="#fig-outlier-demo">Figure&nbsp;<span>4.8</span></a> (right), is simply a rotation of <span class="math inline">\((x, y)\)</span> to a space whose coordinate axes are the major and minor axes of the data ellipse, <span class="math inline">\((PC_1, PC_2)\)</span>. In this view, the additional points appear a univariate outliers on the smallest dimension, <span class="math inline">\(PC_2\)</span>.</p>
 <div class="cell" data-layout-align="center">
 <div class="cell-output-display">
 <div id="fig-outlier-demo" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure"><p><img src="images/outlier-demo.png" class="img-fluid figure-img" style="width:100.0%"></p>
-<figcaption class="figure-caption">Figure&nbsp;4.6: <strong>Outlier demonstration</strong>: The left panel shows the original data and highlights the two discrepant points, which do not appear to be unusual on either x or y. The right panel shows the data rotated to principal components, where the labeled points stand out on the smallest PCA dimension.</figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;4.8: <strong>Outlier demonstration</strong>: The left panel shows the original data and highlights the two discrepant points, which do not appear to be unusual on either x or y. The right panel shows the data rotated to principal components, where the labeled points stand out on the smallest PCA dimension.</figcaption></figure>
 </div>
 </div>
 </div>
-<p>To see this more clearly, <a href="#fig-outlier-animation">Figure&nbsp;<span>4.7</span></a> shows an animation of the rotation from data space to PCA space. This uses <code><a href="https://friendly.github.io/heplots/reference/interpPlot.html">heplots::interpPlot()</a></code> …</p>
-<div id="fig-outlier-animation" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure"><div data-align="center">
-<iframe width="480" height="480" src="images/outlier-demo.gif">
-</iframe>
-</div>
-<figcaption class="figure-caption">Figure&nbsp;4.7: Animation of rotation from data space to PCA space.</figcaption></figure>
-</div>
-</section></section><section id="sec-biplot" class="level2" data-number="4.3"><h2 data-number="4.3" class="anchored" data-anchor-id="sec-biplot">
-<span class="header-section-number">4.3</span> Biplots</h2>
+<p>To see this more clearly, <span class="quarto-unresolved-ref">?fig-outlier-animation</span> shows an animation of the rotation from data space to PCA space. This uses <code><a href="https://friendly.github.io/heplots/reference/interpPlot.html">heplots::interpPlot()</a></code> …</p>
+::: {#fig-outlier-animation}
+<div align="center">
+<pre data-code-line-numbers=""><code>&lt;iframe width="480" height="480" src="images/outlier-demo.gif"&gt;&lt;/iframe&gt;
+  &lt;/div&gt;
+  Animation of rotation from data space to PCA space.
+:::
+  
+  </code></pre>
 
 
 <div id="refs" class="references csl-bib-body hanging-indent" role="list" style="display: none">
@@ -493,10 +631,11 @@ Pearson, Karl. 1896. <span>“Contributions to the Mathematical Theory of Evolut
 ———. 1901. <span>“On Lines and Planes of Closest Fit to Systems of Points in Space.”</span> <em>Philosophical Magazine</em> 6 (2): 559–72.
 </div>
 </div>
-</section><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><hr>
+
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><hr>
 <ol>
 <li id="fn1"><p>This is Euler’s <span class="citation" data-cites="Euler:1758">(<a href="90-references.html#ref-Euler:1758" role="doc-biblioref">1758</a>)</span> formula, which states that any convex polyheron must obey the formula <span class="math inline">\(V + F - E = 2\)</span> where <span class="math inline">\(V\)</span> is the number of vertexes (corners), <span class="math inline">\(F\)</span> is the number of faces and <span class="math inline">\(E\)</span> is the number of edges. For example, a tetrahedron or pyramid has <span class="math inline">\((V, F, E) = (4, 4, 6)\)</span> and a cube has <span class="math inline">\((V, F, E) = (8, 6, 12)\)</span>. Stated in words, for all solid bodies confined by planes, the sum of the number of vertexes and the number of faces is two less than the number of edges.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-</ol></section></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
+</ol></section><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
     const mode = bsSheetEl.getAttribute("data-mode");
@@ -741,6 +880,8 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </nav>
 </div> <!-- /content -->
 
+</section></main>
+</div>
 
 
 <script src="site_libs/quarto-contrib/line-highlight-1.0.0/line-highlight.js" defer="true"></script>

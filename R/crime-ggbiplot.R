@@ -7,6 +7,7 @@ library(ggbiplot)
 library(dplyr)
 library(corrplot)
 library(patchwork)
+library(broom)
 
 data(crime)
 
@@ -20,7 +21,7 @@ crime.pca <-
   dplyr::select(where(is.numeric)) |>
   prcomp(scale. = TRUE)
 
-summary(crime,pca)
+summary(crime.pca)
 
 # show the eigenvalue decomposition
 (crime.eig <- crime.pca |> 
@@ -40,6 +41,97 @@ p2 <- ggscreeplot(crime.pca, type = "cev") +
 
 p1 + p2
 
+# tidy scores plot
+
+scores <- crime.pca |> purrr::pluck("x") 
+cov(scores) |> zapsmall()
+
+crime.pca |>
+  broom::augment(crime) |> # add original dataset back in
+  ggplot(aes(.fittedPC1, .fittedPC2, color = region)) + 
+  geom_hline(yintercept = 0) +
+  geom_vline(xintercept = 0) +
+  geom_point(size = 1.5) +
+  geom_text(aes(label = st), nudge_x = 0.2) +
+  stat_ellipse(color = "grey") +
+  coord_fixed()
+  labs(x = "PC Dimension 1", y = "PC Dimnension 2") +
+  theme_minimal(base_size = 14) +
+  theme(legend.position = "top") +
+
+crime.pca |>
+  broom::augment(crime) |> 
+  ggplot(aes(.fittedPC1, .fittedPC3, color = region, label = st)) + 
+  geom_point(size = 1.5) +
+  geom_text(nudge_x = 0.2) +
+  geom_hline(yintercept = 0) +
+  geom_vline(xintercept = 0) +
+  labs(x = "PC Dimension 1", y = "PC Dimnension 3") +
+  theme_minimal(base_size = 14) +
+  theme(legend.position = "top") +
+  coord_fixed()
+
+
+
+# tidy variable vectors
+
+crime.pca |> purrr::pluck("rotation")
+
+crime.pca |>
+  tidy(matrix = "rotation")
+
+
+
+# define arrow style for plotting
+arrow_style <- arrow(
+  angle = 20, ends = "first", type = "closed", length = grid::unit(8, "pt")
+)
+
+# try to plot the unit circle
+r <- 1
+theta <- c(seq(-pi, pi, length = 100))
+cir  <- data.frame(PC1 = r * cos(theta), PC2 = r * sin(theta))
+circle <- geom_path(data = circle, color = "grey")
+
+# plot rotation matrix
+crime.pca |>
+  tidy(matrix = "rotation") |>
+  tidyr::pivot_wider(names_from = "PC", 
+                     names_prefix = "PC", 
+                     values_from = "value") |>
+  ggplot(aes(PC1, PC2)) +
+  geom_segment(xend = 0, yend = 0, arrow = arrow_style) +
+  geom_text(
+    aes(label = column),
+    hjust = 1, nudge_x = -0.02, 
+    color = "brown") +
+  xlim(-0.8, .2) + ylim(-.7, 0.6) +
+  coord_fixed() + # fix aspect ratio to 1:1
+  theme_minimal(base_size = 14) 
+
+
+# do this without pivot_wider
+
+vectors <- crime.pca |> 
+  purrr::pluck("rotation") |>
+  as.data.frame() |>
+  mutate(PC1 = -1 * PC1, PC2 = -1 * PC2) |>      # reflect axes
+  tibble::rownames_to_column(var = "label") 
+vectors
+
+vectors |>
+  ggplot(aes(PC1, PC2)) +
+  geom_hline(yintercept = 0) +
+  geom_vline(xintercept = 0) +
+  geom_segment(xend = 0, yend = 0, linewidth=1, arrow = arrow_style) +
+  geom_text(aes(label = label), 
+        size = 5,
+        hjust = "outward",
+        nudge_x = 0.05, 
+        color = "brown") +
+  xlim(-0.4, 0.9) + ylim(-0.8, 0.8) +
+  coord_fixed() + # fix aspect ratio to 1:1
+  theme_minimal(base_size = 14)
 
 
 #biplot(crime.pca)

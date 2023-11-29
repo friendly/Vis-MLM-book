@@ -67,7 +67,8 @@ knitr::include_graphics("images/MV-juicer.png")
 ```
 
 Here, I concentrate on **principal components analysis** (PCA), whose goal reflects A Square's desire to see that sparkly cloud of points 
-in $nD$ space in the plane showing the greatest variation among all other possible views.
+in $nD$ space in the plane showing the greatest variation (squeezing the most juice)
+among all other possible views.
 
 This appealed to his sense of geometry, but left him wondering how the variables in that 
 high-D cloud were related to the dimensions he could see in a best-fitting plane.
@@ -236,6 +237,17 @@ is `summary()`, which gives the contributions of each component to the total var
 summary(crime.pca) |> print(digits=2)
 ```
 
+The object, `crime.pca` returned by `prcomp()` is a list of the following the following elements:
+```{r crime-pca-components}
+names(crime.pca)
+```
+
+Of these, for $n$ observations and $p$ variables,
+
+* `sdev` is the length $p$ vector of the standard deviations of the principal components (i.e., the square roots $\sqrt{\lambda_i}$ of the eigenvalues of the covariance/correlation matrix);
+* `rotation` is the $p \times p$ matrix of weights or **loadings** of the variables on the components; the columns are the eigenvectors of the covariance or correlation matrix of the data;
+* `x` is the $n \times p$ matrix of **scores** for the observations on the components, the result of multiplying (rotating) the data matrix by the loadings. These are uncorrelated, so `cov(x)` is a $p \times p$ diagonal matrix whose diagonal elements are the eigenvalues $\lambda_i$ = `sdev^2`.
+
 ### Visualizing variance proportions: screeplots
 
 For a high-D dataset, such as the crime data in seven dimensions, a natural question is how much of the
@@ -280,49 +292,141 @@ From this we might conclude that four components are necessary to satisfy the sc
 account for 90% of the total variation in these crime statistics. However two components, giving
 76.5%, might be enough juice to tell a reasonable story.
 
-### Visualizing PCA scores
+### Visualizing PCA scores and variable vectors
 
+To see and attempt to understand PCA results, it is useful to plot both the scores for the observations
+on a few of the largest components and also the loadings or variable vectors that give the weights
+for the variables in determining the principal components.
 
-### Elliptical insights: Outlier detection
+In @sec-biplot I discuss the biplot technique that plots both in a single display. However,
+I do this directly here, using tidy processing to explain what is going on in PCA
+and in these graphical displays.
 
-The data ellipse (@sec-data-ellipse), or ellipsoid in more than 2D is fundamental in regression. But also,
-as Pearson showed, it is key to understanding principal components analysis, where the principal component directions are simply
-the axes of the ellipsoid of the data. As such, observations that are unusual in data space may not stand out
-in univariate views of the variables, but will stand out in principal component space, usually on the _smallest_ dimension.
+#### Scores {.unnumbered}
+The (uncorrelated) principal component scores can be extracted as `crime.pca$x` or using `purrr::pluck("x")`. As noted above, these are uncorrelated and have variances
+equal to the eigenvalues of the correlation matrix.
 
-As an illustration, I created a dataset of $n = 100$ observations
-with a linear relation, $y = x + \mathcal{N}(0, 1)$ and then
-added two discrepant points at (1.5, -1.5), (-1.5, 1.5).
-
-```{r}
-set.seed(123345)
-x <- c(rnorm(100),             1.5, -1.5)
-y <- c(x[1:100] + rnorm(100), -1.5, 1.5)
+```{r scores}
+scores <- crime.pca |> purrr::pluck("x") 
+cov(scores) |> zapsmall()
 ```
 
-When these are plotted with a data ellipse in @fig-outlier-demo (left), you can see
-the discrepant points labeled 101 and 102, but they do not stand out as unusual on
-either $x$ or $y$. The transformation to from data space to principal components space,
-shown in @fig-outlier-demo (right),
-is simply a rotation of $(x, y)$ to a space whose coordinate axes are the major and minor axes of the data ellipse, $(PC_1, PC_2)$. In this view, the additional points appear a univariate outliers on the smallest dimension, $PC_2$.
+For plotting, it is more convenient to use `broom::augment()` which 
+extracts the scores (named `.fittedPC*`)
+and appends these to the variables in the dataset.
 
 ```{r}
-#| label: fig-outlier-demo
-#| echo: false
-#| out-width: "100%"
-#| fig-cap: "**Outlier demonstration**: The left panel shows the original data and highlights the two discrepant points, which do not appear to be unusual on either x or y. The right panel shows the data rotated to principal components, where the labeled points stand out on the smallest PCA dimension."
-knitr::include_graphics("images/outlier-demo.png")
+crime.pca |>
+  broom::augment(crime) |> head()
 ```
 
-To see this more clearly, @fig-outlier-animation shows an animation of the rotation from data space to PCA space. This uses `heplots::interpPlot()` ...
+Then, we can use `ggplot()` to plot and pair of components.
+To aid interpretation, I label the points by their state abbreviation and color them
+by `region` of the U.S.. A geometric interpretation of the plot requires 
+an aspect ratio of 1.0 (via `coord_fixed()`)
+so that a unit distance on the horizontal axis is the
+same length as a unit distance on the vertical.
+To demonstrate that the components are uncorrelated, I also added their data
+ellipse.
 
-::: {#fig-outlier-animation}
-<div align="center">
-<iframe width="480" height="480" src="images/outlier-demo.gif"></iframe>
-</div>
-Animation of rotation from data space to PCA space.
-:::
+```{r}
+#| label: fig-crime-scores-plot12
+#| out-width: "80%"
+#| fig-cap: "Plot of component scores on the first two principal components for the `crime` data. States are colored by `region`."
+crime.pca |>
+  broom::augment(crime) |> # add original dataset back in
+  ggplot(aes(.fittedPC1, .fittedPC2, color = region)) + 
+  geom_hline(yintercept = 0) +
+  geom_vline(xintercept = 0) +
+  geom_point(size = 1.5) +
+  geom_text(aes(label = st), nudge_x = 0.2) +
+  stat_ellipse(color = "grey") +
+  coord_fixed() +
+  labs(x = "PC Dimension 1", y = "PC Dimnension 2") +
+  theme_minimal(base_size = 14) +
+  theme(legend.position = "top") 
+```
+
+To interpret such plots, it is useful consider the observations that are a high
+and low on each of the axes as well as other information, such as region here,
+and ask how these differ on the crime statistics.
+The first component, PC1, contrasts Nevada and California with North Dakota, South Dakota
+and West Virginia. The second component has most of the southern states on the low end
+and Massachusetts, Rhode Island and Hawaii on the high end. However, interpretation is
+easier when we also consider how the various crimes contribute to these dimensions.
+
+#### Variable vectors {.unnumbered}
+
+You can extract the variable loadings using either `crime.pca$rotation` or
+`purrr::pluck("rotation")`, similar to what I did with the scores.
+
+```{r rotation}
+crime.pca |> purrr::pluck("rotation")
+```
+
+But note something important in this output: All of the weights for the first component are negative. In PCA, the directions of the eigenvectors are completely arbitrary, in the sense that the vector $-\mathbf{v}_i$ gives the same linear combination as $\mathbf{v}_i$,
+but with its' sign reversed. For interpretation, it is useful (and usually recommended) to reflect the loadings to a positive orientation by multiplying them by -1.
+
+To reflect the PCA loadings and get them into a convenient format for plotting with `ggplot()`, it is necessary to do a bit of processing, including making the `row.names()` into an explicit variable for the purpose of labeling.
+
+```{r vectors}
+vectors <- crime.pca |> 
+  purrr::pluck("rotation") |>
+  as.data.frame() |>
+  mutate(PC1 = -1 * PC1, PC2 = -1 * PC2) |>      # reflect axes
+  tibble::rownames_to_column(var = "label") 
+
+vectors[, 1:3]
+```
+
+Then, I plot these using `geom_segment()`, taking some care to use arrows
+from the origin with a nice shape and add `geom_text()` labels for the variables positioned slightly to the right. Again, `coord_fixed()` ensures equal scales for the axes, which is important because we want to interpret the angles between the variable vectors and the 
+PCA coordinate axes.
+
+```{r}
+#| label: fig-crime-vectors
+#| out-width: "80%"
+#| fig-cap: "Plot of component loadings the first two principal components for the `crime` data."
+arrow_style <- arrow(
+  angle = 20, ends = "first", type = "closed", 
+  length = grid::unit(8, "pt")
+)
+
+vectors |>
+  ggplot(aes(PC1, PC2)) +
+  geom_hline(yintercept = 0) +
+  geom_vline(xintercept = 0) +
+  geom_segment(xend = 0, yend = 0, 
+               linewidth = 1, 
+               arrow = arrow_style) +
+  geom_text(aes(label = label), 
+            size = 5,
+            hjust = "outward",
+            nudge_x = 0.05, 
+            color = "brown") +
+  xlim(-0.4, 0.9) + 
+  ylim(-0.8, 0.8) +
+  coord_fixed() + 
+  theme_minimal(base_size = 14)
+```
+
+What is shown in @fig-crime-vectors has the following interpretations:
+
+* the lengths of the variable vectors, $||\mathbf{v}_i|| = \sqrt{\Sigma_{j = 1:2} \; v_{ij}^2}$ give the proportion of variance of each variable accounted for in a two-dimensional display.
+
+* the value, $v_{ij}$, of the vector for variable $\mathbf{x}_i$ on component $j$ gives
+the correlation of that variable with the $j$th principal component.
+
+* the angle between two variable vectors, $\mathbf{v}_i$ and $\mathbf{v}_j$
+gives the approximation of the correlation between $\mathbf{x}_i$ and $\mathbf{x}_j$
+that is shown in this space.
+
 
 
 ## Biplots {#sec-biplot}
+
+<!-- Elliptical insights: Outliers -->
+```{r child="child/04-outliers.qmd"}
+```
+
 
