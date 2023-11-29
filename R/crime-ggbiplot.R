@@ -133,6 +133,13 @@ vectors |>
   coord_fixed() + # fix aspect ratio to 1:1
   theme_minimal(base_size = 14)
 
+# interpreting variable vectors
+vectors[, 2:3]^2 |> rowSums() |> sqrt()
+vectors |> select(label, PC1, PC2) |> mutate(length = sqrt(PC1^2 + PC2^2))
+
+# correlations
+crime |> select(murder, auto) |> cor()
+
 
 #biplot(crime.pca)
 
