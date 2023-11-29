@@ -13,7 +13,7 @@ source("R/common.R")
 > There is no excuse for failing to plot and look. --- J. W.Tukey
 > (1997), *Exploratory Data Analysis*, p. 157
 
-<!--# comment -->
+
 
 The quote above from John Tukey reminds us that data analysis should
 rightly start with graphs to help us understand the main features of our
@@ -473,7 +473,7 @@ Plotting these together gives @fig-prestige-pairs. In such plots, the
 diagonal cells give labels for the variables, but they are also a guide
 to interpreting what is shown. In each row, say row 2 for `income`,
 income is the vertical $y$ variable in plots against other variables. In
-each column, say column 3 for `education`, education is the horizonal
+each column, say column 3 for `education`, education is the horizontal
 $x$ variable.
 
 ```{r}
@@ -526,7 +526,7 @@ scatterplotMatrix(~ prestige + income + education + women,
 
 `scatterplotMatrix()` can also label points using the `id =` argument
 (though this can get messy) and can stratify the observations by a
-grouping variable with different symbols and colors. For example
+grouping variable with different symbols and colors. For example,
 @fig-prestige-spm2 uses the syntax
 `~ prestige + education + income + women | type` to provide separate
 regression lines, smoothed curves and data ellipses for the three types
@@ -579,9 +579,10 @@ scatterplotMatrix(~ bill_length + bill_depth + flipper_length + body_mass | spec
   regLine = list(lwd=3),
   diagonal = list(method = "boxplot"),
   smooth = FALSE,
-  plot.points = FALSE)
+  plot.points = FALSE,
+  cex.labels=1) 
 ```
-
+<!--# I added cex.labels=1 in the code above because the diag labels were on top of the boxplots, I think it looks a bit better now, but still slightly obscured-->
 It can be seen that the species are widely separated in most of the
 bivariate plots. As well, the regression lines for species have similar
 slopes and the data ellipses have similar size and shape in most of the
@@ -596,8 +597,8 @@ penguins.
 ## Looking ahead
 
 @fig-peng-spm provides a reasonably complete visual summary of the data
-in relation to multivariate models that ask "do the species differ on in
-their means on these body size measures? This corresponds to the MANOVA
+in relation to multivariate models that ask "do the species differ in
+their means on these body size measures?" This corresponds to the MANOVA
 model,
 
 ```{r}
@@ -610,7 +611,7 @@ Hypothesis-error (HE) plots, described in @sec-vis-mlm provide a better
 summary of the evidence for the MANOVA test of differences among means
 on all variables together. These give an $\mathbf{H}$ ellipse reflecting
 the differences among means, to be compared with an $\mathbf{E}$ ellipse
-reflecting within-group variation and a visual test of significance
+reflecting within-group variation and a visual test of significance.
 
 A related question is "how well are the penguin species distinguished by
 these body size measures?" Here, the relevant model is linear
@@ -624,7 +625,7 @@ peng.lda <- MASS:lda( species ~ cbind(bill_length, bill_depth, flipper_length, b
 ```
 
 Both MANOVA and LDA depend on the assumption that the variances and
-correlations of the are the same for all groups. This assumption can be
+correlations between the variables are the same for all groups. This assumption can be
 tested and visualized using the methods in @sec-eqcov.
 :::
 
@@ -647,7 +648,7 @@ str(crime)
 
 @fig-crime-spm displays the scatterplot matrix for these seven
 variables, using only the regression line and data ellipse to show the
-linear relation and the loess smooth to show potential nonlinearity. To
+linear relation and the loess smooth to show potential non-linearity.<!--# I believe you used non-linear, hyphenated earlier so I added the - --> To
 make this even more schematic, the axis tick marks and labels are also
 removed using the `par()` settings `xaxt = "n", yaxt = "n"`.
 
@@ -700,7 +701,7 @@ related variables together as described in @sec-pca-biplot.
 knitr::include_graphics("images/corrgram-renderings.png")
 ```
 
-In R these diagrams can be created using the **corrgram** [@R-corrgram]
+In R, these diagrams can be created using the **corrgram** [@R-corrgram]
 and **corrplot** [@R-corrplot] packages, with different features.
 `corrgram::corrgram()` is closest to @Friendly:02:corrgram, in that it
 allows different rendering functions for the lower, upper and diagonal
@@ -721,7 +722,7 @@ crime |>
 `c("circle", "square", "ellipse", "number", "shade", "color", "pie")`,
 but only one can be used at a time. The function
 `corrplot::corrplot.mixed()` allows different options to be selected for
-the lower and upper triangles. The iconic shape is colored with with a
+the lower and upper triangles. The iconic shape is colored with a
 gradient in relation to the correlation value.
 
 ```{r}
@@ -756,7 +757,24 @@ presentation purposes), makes this an attractive alternative to boring
 tables of correlations.
 
 **TODO**: Add example showing correlation ordering -- e.g., `mtcars`
-data.
+data.<!--# How's something like the code I added below? -->
+
+```{r}
+#| echo: false
+#| include: false
+#| label: fig-mtcars-corrplot-ordering
+#| fig-width: 8
+#| fig-height: 8
+#| out-width: "100%"
+#| fig-cap: "Corrplot of the `mtcars` data, showing the ordered correlation between each pair of variables with a circle (upper) and a numerical correlation value (lower), all shaded in proportion to the correlation magnitude and direction."
+#| 
+library(corrplot)
+corrplot.mixed(cor(mtcars[,1:5]),
+               lower = "number", 
+               order = 'FPC',
+               upper = 'circle',
+               tl.col = "black")
+```
 
 ## Generalized pairs plots {#sec-ggpairs}
 
@@ -775,7 +793,7 @@ For example, we can tabulate the distributions of penguin species by sex
 and the island where they were observed using `xtabs()`. `ftable()`
 prints this three-way table more compactly. (In this example, and what
 follows in the chapter, I've changed the labels for sex from ("f", "m")
-to ("Female", "Male"))
+to ("Female", "Male")).
 
 ```{r peng-table}
 # use better labels for sex
@@ -823,25 +841,23 @@ species varies across island because on each island one or more species
 did not occur. Row 2 and column 2 show that sex is nearly exactly
 proportional among species and islands, indicating independence,
 $\text{sex} \perp \{\text{species}, \text{island}\}$. More importantly,
-mosaic pairs plots can show, at a glance all (bivariate) associations
+mosaic pairs plots can show, at a glance, all (bivariate) associations
 among multivariate categorical variables.
 
 The next step, by John Emerson and others [@Emerson-etal:2013] was to
 recognize that combinations of continuous and discrete, categorical
 variables could be plotted in different ways.
 
--   two continuous variables can be shown as a standard scatterplot of
+-   Two continuous variables can be shown as a standard scatterplot of
     points and/or bivariate density contours, or simply by numeric
     summaries such as a correlation value;
--   a pair of one continuous and one categorical variable can be shown
+-   A pair of one continuous and one categorical variable can be shown
     as side-by-side boxplots or violin plots, histograms or density
-    plots
--   two categorical variables could be shown in a mosaic plot or by
+    plots;
+-   Two categorical variables could be shown in a mosaic plot or by
     grouped bar plots.
 
-In the `ggplot2` framework, these displays are implemented in the
-**GGally** package [@R-GGally] in the `ggpairs()` function. This allows
-different plot types to be shown in the lower and upper triangles and in
+In the **ggplot2** framework, these displays are implemented using the `ggpairs()` function from the **GGally** package [@R-GGally]. This allows different plot types to be shown in the lower and upper triangles and in
 the diagonal cells of the plot matrix. As well, aesthetics such as color
 and shape can be used within the plots to distinguish groups directly.
 As illustrated below, you can define custom functions to control exactly
@@ -849,7 +865,7 @@ what is plotted in any panel.
 
 The basic, default plot shows scatterplots for pairs of continuous
 variables in the lower triangle and the values of correlations in the
-upper triangle. A combination of a discrete and continuous variable is
+upper triangle. A combination of a discrete and continuous variables is
 plotted as histograms in the lower triangle and boxplots in the upper
 triangle. @fig-peng-ggpairs1 includes `sex` to illustrate the
 combinations.
@@ -872,30 +888,30 @@ To my eye, printing the values of correlations in the upper triangle is
 often a waste of graphic space. But this example shows something
 peculiar and interesting if you look closely: In all pairs among the
 penguin size measurements, there are positive correlations within each
-species, as we can see in @fig-peng-spm. Yet in three of these panels,
-the overall correlation ignoring species is negative. For example the
+species, as we can see in @fig-peng-spm. Yet, in three of these panels,
+the overall correlation ignoring species is negative. For example, the
 overall correlation between bill depth and flipper length is
 $r = -0.579$ in row 2, column 3; the scatterplot in the diagonally
 opposite cell, row 3, column 2 shows the data. These cases, of differing
 signs for an overall correlation, ignoring a group variable and the
 within group correlations are examples of **Simpson's Paradox**,
-explored later in Chapter XX.
+explored later in Chapter XX. <!--# TODO: add chapter number when known -->
 
 The last row and column, for `sex` in @fig-peng-ggpairs1, provides an
-initial glance at the issue of sex differences among pengiun species
+initial glance at the issue of sex differences among penguin species
 that motivated the collection of these data. We can go further by also
 examining differences among species and island, but first we need to
 understand how to display exactly what we want for each pairwise plot.
 
-`ggpairs()` is extremely general, in that for each of the `lower`,
+`ggpairs()` is extremely general in that for each of the `lower`,
 `upper` and `diag` sections you can assign any of a large number of
-built-in functions (of the form `ggally_NAME`), or you own custom
+built-in functions (of the form `ggally_NAME`), or your own custom
 function for what is plotted, depending on the types of variables in
 each plot.
 
--   `continuous`: both X and Y are continuous variables; supply this as
+-   `continuous`: both X and Y are continuous variables, supply this as
     the `NAME` part of a `ggally_NAME()` function or the name of a
-    custom function.
+    custom function;
 -   `combo`: one X of and Y variable is discrete while the other is
     continuous, using the same convention;
 -   `discrete`: both X and Y are discrete variables.
@@ -922,7 +938,7 @@ discrete factors.
 
 See the vignette,
 [ggally_plots](https://ggobi.github.io/ggally/articles/ggally_plots.html)
-for an illustrated list of available high-level plots. For my purpose
+for an illustrated list of available high-level plots. For our purpose
 here, which is to illustrate enhanced displays, note that for
 scatterplots of continuous variables, there are two functions which plot
 the points and also add a smoother, `_lm` or `_loess`.
@@ -937,8 +953,8 @@ function that takes `data` and `mapping` arguments and returns a
 `aes(color=species, alpha=0.5)`, but only if you wish to override what
 is supplied in the `ggpairs()` call.
 
-Here is a function, `my_panel()` that plots the data points and
-regression line and loess smooth
+Here is a function, `my_panel()` that plots the data points,
+regression line and loess smooth:
 
 ```{r}
 #| label: my-panel
@@ -951,7 +967,7 @@ my_panel <- function(data, mapping, ...){
 }
 ```
 
-For this example, I want to simple summaries of for the scatterplots, so
+For this example, I want only simple summaries of for the scatterplots, so
 I don't want to plot the data points, but do want to add the regression
 line and a data ellipse.
 
@@ -995,7 +1011,7 @@ ggpairs(peng, columns=c(3:6, 1, 2, 7),
 There is certainly a lot going on in @fig-peng-ggpairs7, but it does
 show a high-level overview of all the variables (except `year`) in the
 penguins dataset.
-
+<!--# Up to here, Nov 28 -->
 ## Parallel coordinate plots {#sec-parcoord}
 
 As we have seen above, scatterplot matrices and generalized pairs plots
