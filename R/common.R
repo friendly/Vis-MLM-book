@@ -105,7 +105,8 @@ $\\newcommand*{\\diag}[1]{\\ensuremath{\\mathrm{diag}\\, #1}}$
   "datasauRus",
   "vcd",
   "vcdExtra", 
-  "palmerpenguins")
+  "palmerpenguins",
+  "FactoMineR")
 
 # write list of packages used at end of every chapter
 .pkg_file <- here::here("bib", "pkgs.txt")
