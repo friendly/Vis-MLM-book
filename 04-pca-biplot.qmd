@@ -69,11 +69,14 @@ knitr::include_graphics("images/MV-juicer.png")
 Here, I concentrate on **principal components analysis** (PCA), whose goal reflects A Square's desire to see that sparkly cloud of points 
 in $nD$ space in the plane showing the greatest variation (squeezing the most juice)
 among all other possible views.
-
 This appealed to his sense of geometry, but left him wondering how the variables in that 
 high-D cloud were related to the dimensions he could see in a best-fitting plane.
+
 The idea of a **biplot**, showing the data points in the plane, together with thick pointed
-arrows---variable vectors--- in one view is the other topic explained in this chapter (@sec-biplot).
+arrows---variable vectors--- in one view is the other topic explained in this chapter (@sec-biplot). The biplot is the simplest example of a multivariate juicer. The essential idea is to project the cloud of data points in $n$ dimensions into the 
+2D space of principal components and simultaneously show how the original variables
+relate to this space. For exploratory analysis to get an initial, incisive view of
+a multivariate dataset, a biplot is often my first choice.
 
 **Packages**
 
@@ -264,11 +267,13 @@ The components returned by various PCA methods have (confusingly) different name
 Then, a simple visualization is a plot of the proportion of variance for each component (or cumulative proportion)
 against the component number, usually called a **screeplot**. The idea, introduced by @Cattell1966, is that
 after the largest, dominant components, the remainder should resemble the rubble, or scree formed by rocks falling
-from a cliff. From this plot, imagine
+from a cliff. 
+
+From this plot, imagine
 drawing a straight line through the plotted eigenvalues, starting with the largest one. The typical rough guidance is that the last point to fall on this line represents the last component to extract, the idea being that beyond this, the amount of additional variance explained is non-meaningful. Another rule of thumb is to choose the number
 of components to extract a desired proportion of total variance, usually in the range of 80 - 90%.
 
-`stats::plot(crime.pca)` would give a bar plot of the variances of the components, however ggbiplot::ggscreeplot()` gives nicer and more flexible displays as shown in @fig-crime-ggscreeplot.
+`stats::plot(crime.pca)` would give a bar plot of the variances of the components, however `ggbiplot::ggscreeplot()` gives nicer and more flexible displays as shown in @fig-crime-ggscreeplot.
 
 ```{r}
 #| label: fig-crime-ggscreeplot
@@ -331,7 +336,7 @@ ellipse.
 
 ```{r}
 #| label: fig-crime-scores-plot12
-#| out-width: "80%"
+#| out-width: "100%"
 #| fig-cap: "Plot of component scores on the first two principal components for the `crime` data. States are colored by `region`."
 crime.pca |>
   broom::augment(crime) |> # add original dataset back in
@@ -413,18 +418,49 @@ vectors |>
 
 What is shown in @fig-crime-vectors has the following interpretations:
 
-* the lengths of the variable vectors, $||\mathbf{v}_i|| = \sqrt{\Sigma_{j = 1:2} \; v_{ij}^2}$ give the proportion of variance of each variable accounted for in a two-dimensional display.
+(1) the lengths of the variable vectors, $||\mathbf{v}_i|| = \sqrt{\Sigma_{j = 1:2} \; v_{ij}^2}$ give the proportion of variance of each variable accounted for in a two-dimensional display.
 
-* the value, $v_{ij}$, of the vector for variable $\mathbf{x}_i$ on component $j$ gives
+(2) the value, $v_{ij}$, of the vector for variable $\mathbf{x}_i$ on component $j$ gives
 the correlation of that variable with the $j$th principal component.
 
-* the cosine of the angle between two variable vectors, $\mathbf{v}_i$ and $\mathbf{v}_j$
+(3) the cosine of the angle between two variable vectors, $\mathbf{v}_i$ and $\mathbf{v}_j$
 gives the approximation of the correlation between $\mathbf{x}_i$ and $\mathbf{x}_j$
 that is shown in this space. This means that two variable vectors that point in the same direction are highly correlated, while variable vectors at right angles are approximately uncorrelated.
+
+To illustrate point (1), the following indicates that almost 70% of the variance of
+`murder` is represented in the the 2D plot shown in @fig-crime-scores-plot12, but only
+40% of the variance of `robbery` is captured.
+
+```{r}
+vectors |> select(label, PC1, PC2) |> 
+  mutate(length = sqrt(PC1^2 + PC2^2))
+```
+
 
 
 
 ## Biplots {#sec-biplot}
+
+The biplot is a simple and powerful idea that came from the recognition that
+you can overlay a plot of observation scores in a principal components analysis
+with the information of the variable loadings (weights) to give a simultaneous display
+that is easy to interpret. In this sense, a biplot is generalization of a scatterplot,
+going from data space to PCA space, where the observations are shown by points and variables are shown by vectors (or scaled linear axes aligned with those vectors).
+
+Biplot methodolgy is far more general than I cover here. ...
+**TODO**: mention categorical variables (category level points), correspondence analysis, CCA, MDS, ...
+
+The idea of the biplot was introduced by Ruben Gabriel [-@Gabriel:71] and later expanded in scope by @GowerHand:96.
+**TODO**: Cite Greenacre, Biplots in Practice, Gower et al. 2010.
+
+### Constructing a biplot
+
+SVD:
+
+### Example
+
+
+
 
 ## Elliptical insights: Outlier detection
 
