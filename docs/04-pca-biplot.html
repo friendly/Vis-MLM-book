@@ -301,7 +301,7 @@ div.csl-indent {
 <section id="multivariate-juicers" class="level3" data-number="4.1.1"><h3 data-number="4.1.1" class="anchored" data-anchor-id="multivariate-juicers">
 <span class="header-section-number">4.1.1</span> Multivariate juicers</h3>
 <p>Up to now, we have also been living in Flatland. We have been trying to understand data in <strong>data space</strong> of possibly many dimensions, but confined to the 2D plane of a graph window. Scatterplot matrices and parallel coordinate plots provided some relief. The former did so by <strong>projecting</strong> the data into sets of 2D views in the coordinates of data space; the latter did so by providing multiple axes in a 2D space along which we could trace the paths of individual observations.</p>
-<p>This chapter is about seeing data in a different space, a low-dimensional, usually 2D, space that which squeezes out the most juice from multidimensional data for a particular purpose (<a href="#fig-MV-juicer">Figure&nbsp;<span>4.1</span></a>), where what we want to understand can be more easily seen.</p>
+<p>This chapter is about seeing data in a different projection, a low-dimensional, usually 2D, space that which squeezes out the most juice from multidimensional data for a particular purpose (<a href="#fig-MV-juicer">Figure&nbsp;<span>4.1</span></a>), where what we want to understand can be more easily seen.</p>
 <div class="cell" data-layout-align="center">
 <div class="cell-output-display">
 <div id="fig-MV-juicer" class="quarto-figure quarto-figure-center anchored">
@@ -312,6 +312,22 @@ div.csl-indent {
 </div>
 <p>Here, I concentrate on <strong>principal components analysis</strong> (PCA), whose goal reflects A Square’s desire to see that sparkly cloud of points in <span class="math inline">\(nD\)</span> space in the plane showing the greatest variation (squeezing the most juice) among all other possible views. This appealed to his sense of geometry, but left him wondering how the variables in that high-D cloud were related to the dimensions he could see in a best-fitting plane.</p>
 <p>The idea of a <strong>biplot</strong>, showing the data points in the plane, together with thick pointed arrows—variable vectors— in one view is the other topic explained in this chapter (<a href="#sec-biplot"><span>Section&nbsp;4.3</span></a>). The biplot is the simplest example of a multivariate juicer. The essential idea is to project the cloud of data points in <span class="math inline">\(n\)</span> dimensions into the 2D space of principal components and simultaneously show how the original variables relate to this space. For exploratory analysis to get an initial, incisive view of a multivariate dataset, a biplot is often my first choice.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Looking ahead
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>I’m using the term <em>multivariate juicer</em> here to refer the wider class of <strong>dimension reduction</strong> techniques, used for various purposes in data analysis and visualization and principal components analysis is the simplest example.</p>
+<p>The key point is that these methods are designed to transform the data into a low-dimensional space for a particular goal or purpose. In PCA, the goal is to extract the greatest amount of total variability in the data. In the context of univariate multiple regression, the goal is often to reduce the number of predictors necessary to account for an outcome variable, called <em>feature selection</em> in the machine learning literature.</p>
+<p>When the goal is to best distinguish among groups …</p>
+<p>…</p>
+</div>
+</div>
 <p><strong>Packages</strong></p>
 <p>In this chapter I use the following packages. Load them now:</p>
 <div class="cell" data-layout-align="center">
@@ -355,18 +371,26 @@ div.csl-indent {
 <li>these could be seen as a rotation of the data space of <span class="math inline">\((x, y)\)</span> to a new space (PC1, PC2) with uncorrelated variables;</li>
 <li>the total variation of the points in data space, <span class="math inline">\(\text{Var}(x) + \text{Var}(y)\)</span>, being unchanged by rotation, was equally well expressed as the total variation <span class="math inline">\(\text{Var}(PC1) + \text{Var}(PC2)\)</span> of the scores on what are now called the principal component axes.</li>
 </ul>
+<p>It would have appealed to Pearson (and also to A Square) to see these observations demonstrated in a 3D video. <a href="#fig-pca-animation">Figure&nbsp;<span>4.4</span></a> shows a 3D plot of the variables <code>Sepal.Length</code>, <code>Sepal.Width</code> and <code>Petal.Length</code> in Edgar Anderson’s <code>iris</code> data, with points colored by species and the 95% data ellipsoid. This is rotated smoothly by interpolation until the first two principal axes, PC1 and PC2 are aligned with the horizontal and vertical dimensions. Because this is a rigid rotation of the cloud of points, the total variability is obviously unchanged.</p>
+<div id="fig-pca-animation" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><div data-align="center">
+<iframe width="946" height="594" src="images/pca-animation1.gif">
+</iframe>
+</div>
+<figcaption class="figure-caption">Figure&nbsp;4.4: Animation of PCA as a rotation in 3D space. The plot shows three variables for the <code>iris</code> data, initially in data space and its’ data ellipsoid, with points colored according to species of the iris flowers. This is rotated smoothly until the first two principal axes are aligned with the horizontal and vertical dimensions.</figcaption></figure>
+</div>
 <section id="pca-by-springs" class="level3" data-number="4.2.1"><h3 data-number="4.2.1" class="anchored" data-anchor-id="pca-by-springs">
 <span class="header-section-number">4.2.1</span> PCA by springs</h3>
 <p>Before delving into the mathematics of PCA, it is useful to see how Pearson’s problem, and fitting by least squares generally, could be solved in a physical realization.</p>
 <p>From elementary statistics, you may be familiar with a physical demonstration that the mean, <span class="math inline">\(\bar{x}\)</span>, of a sample is the value for which the sum of deviations, <span class="math inline">\(\Sigma_i (x_i - \bar{x})\)</span> is zero, so the mean can be visualized as the point of balance on a line where those differences <span class="math inline">\((x_i - \bar{x})\)</span> are placed. Equally well, there is a physical realization of the mean as the point along an axis where weights connected by springs will minimize the sum of squared differences, because springs with a constant stiffness, <span class="math inline">\(k\)</span>, exert forces proportional to <span class="math inline">\(k (x_i - \bar{x}) ^2\)</span>. That’s the reason is useful as a measure of central tendency: it minimizes the average squared error.</p>
-<p>In two dimensions, imagine that we have points, <span class="math inline">\((x_i, y_i)\)</span> and these are attached by springs of equal stiffness <span class="math inline">\(k\)</span>, to a line anchored at the centroid, <span class="math inline">\((\bar{x}, \bar{y})\)</span> as shown in <a href="#fig-pca-springs">Figure&nbsp;<span>4.4</span></a>. If we rotate the line to some initial position and release it, the springs will pull the line clockwise or counterclockwise and the line will bounce around until the forces, proportional to the squares of the lengths of the springs, will eventually balance out at the position (shown by the <span style="color: red;">red</span> of the fixed line segments at the ends). This is the position that minimizes the the sum of squared lengths of the connecting springs, and also minimizes the kinetic energy in the system.</p>
-<p>If you look closely at <a href="#fig-pca-springs">Figure&nbsp;<span>4.4</span></a> you will see something else: When the line is at its’ final position of minimum squared length and energy, the positions of the <span style="color: red;">red</span> points on this line are spread out furthest, i.e., have <strong>maximum</strong> variance. Conversely, when the line line is at right angles to its’ final position (shown by the black line) the projected points have the smallest possible variance.</p>
+<p>In two dimensions, imagine that we have points, <span class="math inline">\((x_i, y_i)\)</span> and these are attached by springs of equal stiffness <span class="math inline">\(k\)</span>, to a line anchored at the centroid, <span class="math inline">\((\bar{x}, \bar{y})\)</span> as shown in <a href="#fig-pca-springs">Figure&nbsp;<span>4.5</span></a>. If we rotate the line to some initial position and release it, the springs will pull the line clockwise or counterclockwise and the line will bounce around until the forces, proportional to the squares of the lengths of the springs, will eventually balance out at the position (shown by the <span style="color: red;">red</span> fixed line segments at the ends). This is the position that minimizes the the sum of squared lengths of the connecting springs, and also minimizes the kinetic energy in the system.</p>
+<p>If you look closely at <a href="#fig-pca-springs">Figure&nbsp;<span>4.5</span></a> you will see something else: When the line is at its’ final position of minimum squared length and energy, the positions of the <span style="color: red;">red</span> points on this line are spread out furthest, i.e., have <strong>maximum</strong> variance. Conversely, when the line line is at right angles to its’ final position (shown by the black line at 90<span class="math inline">\(^o\)</span>) the projected points have the smallest possible variance.</p>
 <div id="fig-pca-springs" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure"><div data-align="center">
 <iframe width="412" height="364" src="images/pca-springs-cropped.gif">
 </iframe>
 </div>
-<figcaption class="figure-caption">Figure&nbsp;4.4: Animation of PCA fitted by springs. The <span style="color: blue;">blue</span> data points are connected to their projections on the <span style="color: red;">red</span> line by springs perpendicular to that line. From an initial position, the springs pull that line in proportion to their squared distances, until the line finally settles down to the position where the forces are balanced and the minimum is achieved. <em>Source</em>: https://bit.ly/46tAicu.</figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;4.5: Animation of PCA fitted by springs. The <span style="color: blue;">blue</span> data points are connected to their projections on the <span style="color: red;">red</span> line by springs perpendicular to that line. From an initial position, the springs pull that line in proportion to their squared distances, until the line finally settles down to the position where the forces are balanced and the minimum is achieved. <em>Source</em>: Amoeba, https://bit.ly/46tAicu.</figcaption></figure>
 </div>
 <!-- See: https://joshualoftus.com/posts/2020-11-23-least-squares-as-springs/least-squares-as-springs.html -->
 <p><strong>TODO</strong>: Simple PCA example</p>
@@ -436,7 +460,7 @@ div.csl-indent {
 </div>
 <p>Then, a simple visualization is a plot of the proportion of variance for each component (or cumulative proportion) against the component number, usually called a <strong>screeplot</strong>. The idea, introduced by <span class="citation" data-cites="Cattell1966">Cattell (<a href="90-references.html#ref-Cattell1966" role="doc-biblioref">1966</a>)</span>, is that after the largest, dominant components, the remainder should resemble the rubble, or scree formed by rocks falling from a cliff.</p>
 <p>From this plot, imagine drawing a straight line through the plotted eigenvalues, starting with the largest one. The typical rough guidance is that the last point to fall on this line represents the last component to extract, the idea being that beyond this, the amount of additional variance explained is non-meaningful. Another rule of thumb is to choose the number of components to extract a desired proportion of total variance, usually in the range of 80 - 90%.</p>
-<p><code>stats::plot(crime.pca)</code> would give a bar plot of the variances of the components, however <code><a href="https://rdrr.io/pkg/ggbiplot/man/ggscreeplot.html">ggbiplot::ggscreeplot()</a></code> gives nicer and more flexible displays as shown in <a href="#fig-crime-ggscreeplot">Figure&nbsp;<span>4.5</span></a>.</p>
+<p><code>stats::plot(crime.pca)</code> would give a bar plot of the variances of the components, however <code><a href="https://rdrr.io/pkg/ggbiplot/man/ggscreeplot.html">ggbiplot::ggscreeplot()</a></code> gives nicer and more flexible displays as shown in <a href="#fig-crime-ggscreeplot">Figure&nbsp;<span>4.6</span></a>.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb7" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ggbiplot/man/ggscreeplot.html">ggscreeplot</a></span><span class="op">(</span><span class="va">crime.pca</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_smooth.html">stat_smooth</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">crime.eig</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">PC</span><span class="op">&gt;=</span><span class="fl">4</span><span class="op">)</span>, </span>
@@ -453,7 +477,7 @@ div.csl-indent {
 <div class="cell-output-display">
 <div id="fig-crime-ggscreeplot" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure"><p><img src="figs/fig-crime-ggscreeplot-1.png" class="img-fluid figure-img" style="width:100.0%"></p>
-<figcaption class="figure-caption">Figure&nbsp;4.5: Screeplots for the PCA of the crime data. The left panel shows the traditional version, plotting variance proportions against component number, with linear guideline for the scree rule of thumb. The right panel plots cumulative proportions, showing cutoffs of 80%, 90%.</figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;4.6: Screeplots for the PCA of the crime data. The left panel shows the traditional version, plotting variance proportions against component number, with linear guideline for the scree rule of thumb. The right panel plots cumulative proportions, showing cutoffs of 80%, 90%.</figcaption></figure>
 </div>
 </div>
 </div>
@@ -511,7 +535,7 @@ div.csl-indent {
 <div class="cell-output-display">
 <div id="fig-crime-scores-plot12" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure"><p><img src="figs/fig-crime-scores-plot12-1.png" class="img-fluid figure-img" style="width:100.0%"></p>
-<figcaption class="figure-caption">Figure&nbsp;4.6: Plot of component scores on the first two principal components for the <code>crime</code> data. States are colored by <code>region</code>.</figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;4.7: Plot of component scores on the first two principal components for the <code>crime</code> data. States are colored by <code>region</code>.</figcaption></figure>
 </div>
 </div>
 </div>
@@ -575,17 +599,17 @@ div.csl-indent {
 <div class="cell-output-display">
 <div id="fig-crime-vectors" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure"><p><img src="figs/fig-crime-vectors-1.png" class="img-fluid figure-img" style="width:80.0%"></p>
-<figcaption class="figure-caption">Figure&nbsp;4.7: Plot of component loadings the first two principal components for the <code>crime</code> data. These are interpreted as the contributions of the variables to the components.</figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;4.8: Plot of component loadings the first two principal components for the <code>crime</code> data. These are interpreted as the contributions of the variables to the components.</figcaption></figure>
 </div>
 </div>
 </div>
-<p>What is shown in <a href="#fig-crime-vectors">Figure&nbsp;<span>4.7</span></a> has the following interpretations:</p>
+<p>What is shown in <a href="#fig-crime-vectors">Figure&nbsp;<span>4.8</span></a> has the following interpretations:</p>
 <ol type="1">
 <li><p>the lengths of the variable vectors, <span class="math inline">\(||\mathbf{v}_i|| = \sqrt{\Sigma_{j = 1:2} \; v_{ij}^2}\)</span> give the proportion of variance of each variable accounted for in a two-dimensional display.</p></li>
 <li><p>the value, <span class="math inline">\(v_{ij}\)</span>, of the vector for variable <span class="math inline">\(\mathbf{x}_i\)</span> on component <span class="math inline">\(j\)</span> gives the correlation of that variable with the <span class="math inline">\(j\)</span>th principal component.</p></li>
 <li><p>the cosine of the angle between two variable vectors, <span class="math inline">\(\mathbf{v}_i\)</span> and <span class="math inline">\(\mathbf{v}_j\)</span> gives the approximation of the correlation between <span class="math inline">\(\mathbf{x}_i\)</span> and <span class="math inline">\(\mathbf{x}_j\)</span> that is shown in this space. This means that two variable vectors that point in the same direction are highly correlated, while variable vectors at right angles are approximately uncorrelated.</p></li>
 </ol>
-<p>To illustrate point (1), the following indicates that almost 70% of the variance of <code>murder</code> is represented in the the 2D plot shown in <a href="#fig-crime-scores-plot12">Figure&nbsp;<span>4.6</span></a>, but only 40% of the variance of <code>robbery</code> is captured.</p>
+<p>To illustrate point (1), the following indicates that almost 70% of the variance of <code>murder</code> is represented in the the 2D plot shown in <a href="#fig-crime-scores-plot12">Figure&nbsp;<span>4.7</span></a>, but only 40% of the variance of <code>robbery</code> is captured.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb14" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">vectors</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">label</span>, <span class="va">PC1</span>, <span class="va">PC2</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>length <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">sqrt</a></span><span class="op">(</span><span class="va">PC1</span><span class="op">^</span><span class="fl">2</span> <span class="op">+</span> <span class="va">PC2</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
@@ -617,21 +641,21 @@ div.csl-indent {
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,             <span class="fl">1.5</span>, <span class="op">-</span><span class="fl">1.5</span><span class="op">)</span></span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">x</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">100</span><span class="op">]</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>, <span class="op">-</span><span class="fl">1.5</span>, <span class="fl">1.5</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>When these are plotted with a data ellipse in <a href="#fig-outlier-demo">Figure&nbsp;<span>4.8</span></a> (left), you can see the discrepant points labeled 101 and 102, but they do not stand out as unusual on either <span class="math inline">\(x\)</span> or <span class="math inline">\(y\)</span>. The transformation to from data space to principal components space, shown in <a href="#fig-outlier-demo">Figure&nbsp;<span>4.8</span></a> (right), is simply a rotation of <span class="math inline">\((x, y)\)</span> to a space whose coordinate axes are the major and minor axes of the data ellipse, <span class="math inline">\((PC_1, PC_2)\)</span>. In this view, the additional points appear a univariate outliers on the smallest dimension, <span class="math inline">\(PC_2\)</span>.</p>
+<p>When these are plotted with a data ellipse in <a href="#fig-outlier-demo">Figure&nbsp;<span>4.9</span></a> (left), you can see the discrepant points labeled 101 and 102, but they do not stand out as unusual on either <span class="math inline">\(x\)</span> or <span class="math inline">\(y\)</span>. The transformation to from data space to principal components space, shown in <a href="#fig-outlier-demo">Figure&nbsp;<span>4.9</span></a> (right), is simply a rotation of <span class="math inline">\((x, y)\)</span> to a space whose coordinate axes are the major and minor axes of the data ellipse, <span class="math inline">\((PC_1, PC_2)\)</span>. In this view, the additional points appear a univariate outliers on the smallest dimension, <span class="math inline">\(PC_2\)</span>.</p>
 <div class="cell" data-layout-align="center">
 <div class="cell-output-display">
 <div id="fig-outlier-demo" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure"><p><img src="images/outlier-demo.png" class="img-fluid figure-img" style="width:100.0%"></p>
-<figcaption class="figure-caption">Figure&nbsp;4.8: <strong>Outlier demonstration</strong>: The left panel shows the original data and highlights the two discrepant points, which do not appear to be unusual on either x or y. The right panel shows the data rotated to principal components, where the labeled points stand out on the smallest PCA dimension.</figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;4.9: <strong>Outlier demonstration</strong>: The left panel shows the original data and highlights the two discrepant points, which do not appear to be unusual on either x or y. The right panel shows the data rotated to principal components, where the labeled points stand out on the smallest PCA dimension.</figcaption></figure>
 </div>
 </div>
 </div>
-<p>To see this more clearly, <a href="#fig-outlier-animation">Figure&nbsp;<span>4.9</span></a> shows an animation of the rotation from data space to PCA space. This uses <code><a href="https://friendly.github.io/heplots/reference/interpPlot.html">heplots::interpPlot()</a></code> …</p>
+<p>To see this more clearly, <a href="#fig-outlier-animation">Figure&nbsp;<span>4.10</span></a> shows an animation of the rotation from data space to PCA space. This uses <code><a href="https://friendly.github.io/heplots/reference/interpPlot.html">heplots::interpPlot()</a></code> …</p>
 <div id="fig-outlier-animation" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure"><div data-align="center">
 <p><iframe width="480" height="480" src="images/outlier-demo.gif"></iframe></p>
 </div>
-<figcaption class="figure-caption">Figure&nbsp;4.9: Animation of rotation from data space to PCA space.</figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;4.10: Animation of rotation from data space to PCA space.</figcaption></figure>
 </div>
 
 
