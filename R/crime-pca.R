@@ -54,22 +54,24 @@ crime.pca |>
   geom_point(size = 1.5) +
   geom_text(aes(label = st), nudge_x = 0.2) +
   stat_ellipse(color = "grey") +
-  coord_fixed()
-labs(x = "PC Dimension 1", y = "PC Dimnension 2") +
+  coord_fixed() +
+  labs(x = "PC Dimension 1", y = "PC Dimnension 2") +
   theme_minimal(base_size = 14) +
-  theme(legend.position = "top") +
+  theme(legend.position = "top") 
   
-  crime.pca |>
+# Dim 1 vs. Dim 3
+crime.pca |>
   broom::augment(crime) |> 
   ggplot(aes(.fittedPC1, .fittedPC3, color = region, label = st)) + 
   geom_point(size = 1.5) +
   geom_text(nudge_x = 0.2) +
   geom_hline(yintercept = 0) +
   geom_vline(xintercept = 0) +
+  stat_ellipse(color = "grey") +
+  coord_fixed() +
   labs(x = "PC Dimension 1", y = "PC Dimnension 3") +
   theme_minimal(base_size = 14) +
-  theme(legend.position = "top") +
-  coord_fixed()
+  theme(legend.position = "top") 
 
 
 

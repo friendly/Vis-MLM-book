@@ -40,7 +40,7 @@ ggbiplot(crime.pca,
          labels = crime$st ,
          circle = TRUE,
          varname.size = 4,
-         varname.color = "red") +
+         varname.color = "brown") +
   theme_minimal(base_size = 14) 
 
 ggbiplot(crime.pca,
@@ -48,11 +48,12 @@ ggbiplot(crime.pca,
          labels = crime$st ,
          circle = TRUE,
          varname.size = 4,
-         varname.color = "red") +
+         varname.color = "brown") +
   theme_minimal(base_size = 14) 
 
 # regions as groups, with ellipses
 ggbiplot(crime.pca,
+         obs.scale = 1, var.scale = 1,
          groups = crime$region,
          labels = crime$st,
          labels.size = 4,
