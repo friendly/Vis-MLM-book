@@ -261,7 +261,8 @@ div.csl-indent {
 <a href="#sec-biplot" id="toc-sec-biplot" class="nav-link" data-scroll-target="#sec-biplot"><span class="header-section-number">4.3</span> Biplots</a>
   <ul class="collapse">
 <li><a href="#constructing-a-biplot" id="toc-constructing-a-biplot" class="nav-link" data-scroll-target="#constructing-a-biplot"><span class="header-section-number">4.3.1</span> Constructing a biplot</a></li>
-  <li><a href="#example" id="toc-example" class="nav-link" data-scroll-target="#example"><span class="header-section-number">4.3.2</span> Example</a></li>
+  <li><a href="#biplots-in-r" id="toc-biplots-in-r" class="nav-link" data-scroll-target="#biplots-in-r"><span class="header-section-number">4.3.2</span> Biplots in R</a></li>
+  <li><a href="#example" id="toc-example" class="nav-link" data-scroll-target="#example"><span class="header-section-number">4.3.3</span> Example</a></li>
   </ul>
 </li>
   <li><a href="#elliptical-insights-outlier-detection" id="toc-elliptical-insights-outlier-detection" class="nav-link" data-scroll-target="#elliptical-insights-outlier-detection"><span class="header-section-number">4.4</span> Elliptical insights: Outlier detection</a></li>
@@ -540,18 +541,19 @@ Looking ahead
 </div>
 </div>
 <p>To interpret such plots, it is useful consider the observations that are a high and low on each of the axes as well as other information, such as region here, and ask how these differ on the crime statistics. The first component, PC1, contrasts Nevada and California with North Dakota, South Dakota and West Virginia. The second component has most of the southern states on the low end and Massachusetts, Rhode Island and Hawaii on the high end. However, interpretation is easier when we also consider how the various crimes contribute to these dimensions.</p>
-</section><section id="variable-vectors" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="variable-vectors">Variable vectors</h4>
+<p>We could obviously go further and plot other pairs of components,</p>
+<p><strong>TODO</strong>: Add plot of PC1 vs.&nbsp;PC3 #### Variable vectors {.unnumbered}</p>
 <p>You can extract the variable loadings using either <code>crime.pca$rotation</code> or <code>purrr::pluck("rotation")</code>, similar to what I did with the scores.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb11" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">crime.pca</span> <span class="op">|&gt;</span> <span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/pluck.html">pluck</a></span><span class="op">(</span><span class="st">"rotation"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;             PC1     PC2     PC3     PC4     PC5     PC6     PC7</span></span>
-<span><span class="co">#&gt; murder   -0.300 -0.6292 -0.1782  0.2321  0.5381  0.2591  0.2676</span></span>
-<span><span class="co">#&gt; rape     -0.432 -0.1694  0.2442 -0.0622  0.1885 -0.7733 -0.2965</span></span>
-<span><span class="co">#&gt; robbery  -0.397  0.0422 -0.4959  0.5580 -0.5200 -0.1144 -0.0039</span></span>
-<span><span class="co">#&gt; assault  -0.397 -0.3435  0.0695 -0.6298 -0.5067  0.1724  0.1917</span></span>
-<span><span class="co">#&gt; burglary -0.440  0.2033  0.2099  0.0576  0.1010  0.5360 -0.6481</span></span>
-<span><span class="co">#&gt; larceny  -0.357  0.4023  0.5392  0.2349  0.0301  0.0394  0.6017</span></span>
-<span><span class="co">#&gt; auto     -0.295  0.5024 -0.5684 -0.4192  0.3698 -0.0573  0.1470</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; murder   -0.300 -0.6292  0.1782 -0.2321  0.5381  0.2591  0.2676</span></span>
+<span><span class="co">#&gt; rape     -0.432 -0.1694 -0.2442  0.0622  0.1885 -0.7733 -0.2965</span></span>
+<span><span class="co">#&gt; robbery  -0.397  0.0422  0.4959 -0.5580 -0.5200 -0.1144 -0.0039</span></span>
+<span><span class="co">#&gt; assault  -0.397 -0.3435 -0.0695  0.6298 -0.5067  0.1724  0.1917</span></span>
+<span><span class="co">#&gt; burglary -0.440  0.2033 -0.2099 -0.0576  0.1010  0.5360 -0.6481</span></span>
+<span><span class="co">#&gt; larceny  -0.357  0.4023 -0.5392 -0.2349  0.0301  0.0394  0.6017</span></span>
+<span><span class="co">#&gt; auto     -0.295  0.5024  0.5684  0.4192  0.3698 -0.0573  0.1470</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>But note something important in this output: All of the weights for the first component are negative. In PCA, the directions of the eigenvectors are completely arbitrary, in the sense that the vector <span class="math inline">\(-\mathbf{v}_i\)</span> gives the same linear combination as <span class="math inline">\(\mathbf{v}_i\)</span>, but with its’ sign reversed. For interpretation, it is useful (and usually recommended) to reflect the loadings to a positive orientation by multiplying them by -1.</p>
 <p>To reflect the PCA loadings and get them into a convenient format for plotting with <code><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot()</a></code>, it is necessary to do a bit of processing, including making the <code><a href="https://rdrr.io/r/base/row.names.html">row.names()</a></code> into an explicit variable for the purpose of labeling.</p>
@@ -624,38 +626,89 @@ Looking ahead
 </div>
 </section></section></section><section id="sec-biplot" class="level2" data-number="4.3"><h2 data-number="4.3" class="anchored" data-anchor-id="sec-biplot">
 <span class="header-section-number">4.3</span> Biplots</h2>
-<p>The biplot is a simple and powerful idea that came from the recognition that you can overlay a plot of observation scores in a principal components analysis with the information of the variable loadings (weights) to give a simultaneous display that is easy to interpret. In this sense, a biplot is generalization of a scatterplot, going from data space to PCA space, where the observations are shown by points and variables are shown by vectors (or scaled linear axes aligned with those vectors).</p>
-<p>Biplot methodolgy is far more general than I cover here. … <strong>TODO</strong>: mention categorical variables (category level points), correspondence analysis, CCA, MDS, …</p>
-<p>The idea of the biplot was introduced by Ruben Gabriel <span class="citation" data-cites="Gabriel:71">(<a href="90-references.html#ref-Gabriel:71" role="doc-biblioref">1971</a>)</span> and later expanded in scope by <span class="citation" data-cites="GowerHand:96">Gower and Hand (<a href="90-references.html#ref-GowerHand:96" role="doc-biblioref">1996</a>)</span>. <strong>TODO</strong>: Cite Greenacre, Biplots in Practice, Gower et al.&nbsp;2010.</p>
+<p>The biplot is a simple and powerful idea that came from the recognition that you can overlay a plot of observation scores in a principal components analysis with the information of the variable loadings (weights) to give a simultaneous display that is easy to interpret. In this sense, a biplot is generalization of a scatterplot, projecting from data space to PCA space, where the observations are shown by points, as in the plots of component scores in <a href="#fig-crime-scores-plot12">Figure&nbsp;<span>4.7</span></a>, but with the variables also shown by vectors (or scaled linear axes aligned with those vectors).</p>
+<p>Biplot methodolgy is far more general than I cover here. Categorical variables can be incorporated in PCA using category level points; two-way and multi-way frequency tables of categorical variables can be analysed using _ <strong>TODO</strong>: mention categorical variables (category level points), correspondence analysis, CCA, MDS, …</p>
+<p>The idea of the biplot was introduced by Ruben Gabriel <span class="citation" data-cites="Gabriel:71">(<a href="90-references.html#ref-Gabriel:71" role="doc-biblioref">1971</a>)</span> and later expanded in scope by <span class="citation" data-cites="GowerHand:96">Gower and Hand (<a href="90-references.html#ref-GowerHand:96" role="doc-biblioref">1996</a>)</span>. The book by <span class="citation" data-cites="Greenacre:2010:biplots">Greenacre (<a href="90-references.html#ref-Greenacre:2010:biplots" role="doc-biblioref">2010</a>)</span> gives a practical overview of the many variety of biplots and <span class="citation" data-cites="Gower-etal:2011">Gower, Lubbe, and Roux (<a href="90-references.html#ref-Gower-etal:2011" role="doc-biblioref">2011</a>)</span> provide a full treatment … <strong>TODO</strong>: Cite Greenacre, Biplots in Practice, Gower et al.&nbsp;2010.</p>
 <section id="constructing-a-biplot" class="level3" data-number="4.3.1"><h3 data-number="4.3.1" class="anchored" data-anchor-id="constructing-a-biplot">
 <span class="header-section-number">4.3.1</span> Constructing a biplot</h3>
 <p>SVD:</p>
-</section><section id="example" class="level3" data-number="4.3.2"><h3 data-number="4.3.2" class="anchored" data-anchor-id="example">
-<span class="header-section-number">4.3.2</span> Example</h3>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure"><p><img src="images/SVD-eqn.jpg" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption class="figure-caption">Singular value decomposition</figcaption></figure>
+</div>
+</div>
+</div>
+</section><section id="biplots-in-r" class="level3" data-number="4.3.2"><h3 data-number="4.3.2" class="anchored" data-anchor-id="biplots-in-r">
+<span class="header-section-number">4.3.2</span> Biplots in R</h3>
+<p>There are a large number of R packages providing biplots, …</p>
+<p>Here, I use the <strong>ggbiplot</strong> package …</p>
+</section><section id="example" class="level3" data-number="4.3.3"><h3 data-number="4.3.3" class="anchored" data-anchor-id="example">
+<span class="header-section-number">4.3.3</span> Example</h3>
+<p>Basic biplot, using standardized principal components and labeling the observation by their state abbreviation.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb15" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">crime.pca</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ggbiplot/man/reflect.html">reflect</a></span><span class="op">(</span><span class="va">crime.pca</span><span class="op">)</span> <span class="co"># reflect the axes</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/ggbiplot/man/ggbiplot.html">ggbiplot</a></span><span class="op">(</span><span class="va">crime.pca</span>,</span>
+<span>   obs.scale <span class="op">=</span> <span class="fl">1</span>, var.scale <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>   labels <span class="op">=</span> <span class="va">crime</span><span class="op">$</span><span class="va">st</span> ,</span>
+<span>   circle <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>   varname.size <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>   varname.color <span class="op">=</span> <span class="st">"brown"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_minimal</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">14</span><span class="op">)</span> </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-crime-biplot1" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="figs/fig-crime-biplot1-1.png" class="img-fluid figure-img" style="width:80.0%"></p>
+<figcaption class="figure-caption">Figure&nbsp;4.9: Basic biplot of the crime data. …</figcaption></figure>
+</div>
+</div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb16" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ggbiplot/man/ggbiplot.html">ggbiplot</a></span><span class="op">(</span><span class="va">crime.pca</span>,</span>
+<span>   obs.scale <span class="op">=</span> <span class="fl">1</span>, var.scale <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>   groups <span class="op">=</span> <span class="va">crime</span><span class="op">$</span><span class="va">region</span>,</span>
+<span>   labels <span class="op">=</span> <span class="va">crime</span><span class="op">$</span><span class="va">st</span>,</span>
+<span>   labels.size <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>   var.factor <span class="op">=</span> <span class="fl">1.4</span>,</span>
+<span>   ellipse <span class="op">=</span> <span class="cn">TRUE</span>, ellipse.level <span class="op">=</span> <span class="fl">0.5</span>, ellipse.alpha <span class="op">=</span> <span class="fl">0.1</span>,</span>
+<span>   circle <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>   varname.size <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>   varname.color <span class="op">=</span> <span class="st">"black"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="st">"Region"</span>, color <span class="op">=</span> <span class="st">"Region"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_minimal</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">14</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>legend.direction <span class="op">=</span> <span class="st">'horizontal'</span>, legend.position <span class="op">=</span> <span class="st">'top'</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-crime-biplot2" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="figs/fig-crime-biplot2-1.png" class="img-fluid figure-img" style="width:80.0%"></p>
+<figcaption class="figure-caption">Figure&nbsp;4.10: Enhanced biplot of the crime data. …</figcaption></figure>
+</div>
+</div>
+</div>
 </section></section><section id="elliptical-insights-outlier-detection" class="level2" data-number="4.4"><h2 data-number="4.4" class="anchored" data-anchor-id="elliptical-insights-outlier-detection">
 <span class="header-section-number">4.4</span> Elliptical insights: Outlier detection</h2>
 <p>The data ellipse (<a href="03-multivariate_plots.html#sec-data-ellipse"><span>Section&nbsp;3.1.4</span></a>), or ellipsoid in more than 2D is fundamental in regression. But also, as Pearson showed, it is key to understanding principal components analysis, where the principal component directions are simply the axes of the ellipsoid of the data. As such, observations that are unusual in data space may not stand out in univariate views of the variables, but will stand out in principal component space, usually on the <em>smallest</em> dimension.</p>
 <p>As an illustration, I created a dataset of <span class="math inline">\(n = 100\)</span> observations with a linear relation, <span class="math inline">\(y = x + \mathcal{N}(0, 1)\)</span> and then added two discrepant points at (1.5, -1.5), (-1.5, 1.5).</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb15" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">123345</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb17" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">123345</span><span class="op">)</span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,             <span class="fl">1.5</span>, <span class="op">-</span><span class="fl">1.5</span><span class="op">)</span></span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">x</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">100</span><span class="op">]</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>, <span class="op">-</span><span class="fl">1.5</span>, <span class="fl">1.5</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>When these are plotted with a data ellipse in <a href="#fig-outlier-demo">Figure&nbsp;<span>4.9</span></a> (left), you can see the discrepant points labeled 101 and 102, but they do not stand out as unusual on either <span class="math inline">\(x\)</span> or <span class="math inline">\(y\)</span>. The transformation to from data space to principal components space, shown in <a href="#fig-outlier-demo">Figure&nbsp;<span>4.9</span></a> (right), is simply a rotation of <span class="math inline">\((x, y)\)</span> to a space whose coordinate axes are the major and minor axes of the data ellipse, <span class="math inline">\((PC_1, PC_2)\)</span>. In this view, the additional points appear a univariate outliers on the smallest dimension, <span class="math inline">\(PC_2\)</span>.</p>
+<p>When these are plotted with a data ellipse in <a href="#fig-outlier-demo">Figure&nbsp;<span>4.11</span></a> (left), you can see the discrepant points labeled 101 and 102, but they do not stand out as unusual on either <span class="math inline">\(x\)</span> or <span class="math inline">\(y\)</span>. The transformation to from data space to principal components space, shown in <a href="#fig-outlier-demo">Figure&nbsp;<span>4.11</span></a> (right), is simply a rotation of <span class="math inline">\((x, y)\)</span> to a space whose coordinate axes are the major and minor axes of the data ellipse, <span class="math inline">\((PC_1, PC_2)\)</span>. In this view, the additional points appear a univariate outliers on the smallest dimension, <span class="math inline">\(PC_2\)</span>.</p>
 <div class="cell" data-layout-align="center">
 <div class="cell-output-display">
 <div id="fig-outlier-demo" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure"><p><img src="images/outlier-demo.png" class="img-fluid figure-img" style="width:100.0%"></p>
-<figcaption class="figure-caption">Figure&nbsp;4.9: <strong>Outlier demonstration</strong>: The left panel shows the original data and highlights the two discrepant points, which do not appear to be unusual on either x or y. The right panel shows the data rotated to principal components, where the labeled points stand out on the smallest PCA dimension.</figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;4.11: <strong>Outlier demonstration</strong>: The left panel shows the original data and highlights the two discrepant points, which do not appear to be unusual on either x or y. The right panel shows the data rotated to principal components, where the labeled points stand out on the smallest PCA dimension.</figcaption></figure>
 </div>
 </div>
 </div>
-<p>To see this more clearly, <a href="#fig-outlier-animation">Figure&nbsp;<span>4.10</span></a> shows an animation of the rotation from data space to PCA space. This uses <code><a href="https://friendly.github.io/heplots/reference/interpPlot.html">heplots::interpPlot()</a></code> …</p>
+<p>To see this more clearly, <a href="#fig-outlier-animation">Figure&nbsp;<span>4.12</span></a> shows an animation of the rotation from data space to PCA space. This uses <code><a href="https://friendly.github.io/heplots/reference/interpPlot.html">heplots::interpPlot()</a></code> …</p>
 <div id="fig-outlier-animation" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure"><div data-align="center">
 <p><iframe width="480" height="480" src="images/outlier-demo.gif"></iframe></p>
 </div>
-<figcaption class="figure-caption">Figure&nbsp;4.10: Animation of rotation from data space to PCA space.</figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;4.12: Animation of rotation from data space to PCA space.</figcaption></figure>
 </div>
 
 
@@ -680,6 +733,12 @@ Galton, Francis. 1886. <span>“Regression Towards Mediocrity in Hereditary Stat
 </div>
 <div id="ref-GowerHand:96" class="csl-entry" role="listitem">
 Gower, J. C., and D. J. Hand. 1996. <em>Biplots</em>. London: Chapman &amp; Hall.
+</div>
+<div id="ref-Gower-etal:2011" class="csl-entry" role="listitem">
+Gower, J. C., S. G. Lubbe, and N. J. L. Roux. 2011. <em>Understanding Biplots</em>. Wiley. <a href="http://books.google.ca/books?id=66gQCi5JOKYC">http://books.google.ca/books?id=66gQCi5JOKYC</a>.
+</div>
+<div id="ref-Greenacre:2010:biplots" class="csl-entry" role="listitem">
+Greenacre, M. J. 2010. <em>Biplots in Practice</em>. Fundaci<span>ó</span>n BBVA. <a href="https://books.google.ca/books?id=dv4LrFP7U%5C_EC">https://books.google.ca/books?id=dv4LrFP7U\_EC</a>.
 </div>
 <div id="ref-R-FactoMineR" class="csl-entry" role="listitem">
 Husson, Francois, Julie Josse, Sebastien Le, and Jeremy Mazet. 2023. <em>FactoMineR: Multivariate Exploratory Data Analysis and Data Mining</em>. <a href="http://factominer.free.fr">http://factominer.free.fr</a>.
