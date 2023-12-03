@@ -627,26 +627,51 @@ Looking ahead
 </section></section></section><section id="sec-biplot" class="level2" data-number="4.3"><h2 data-number="4.3" class="anchored" data-anchor-id="sec-biplot">
 <span class="header-section-number">4.3</span> Biplots</h2>
 <p>The biplot is a simple and powerful idea that came from the recognition that you can overlay a plot of observation scores in a principal components analysis with the information of the variable loadings (weights) to give a simultaneous display that is easy to interpret. In this sense, a biplot is generalization of a scatterplot, projecting from data space to PCA space, where the observations are shown by points, as in the plots of component scores in <a href="#fig-crime-scores-plot12">Figure&nbsp;<span>4.7</span></a>, but with the variables also shown by vectors (or scaled linear axes aligned with those vectors).</p>
-<p>Biplot methodolgy is far more general than I cover here. Categorical variables can be incorporated in PCA using category level points; two-way and multi-way frequency tables of categorical variables can be analysed using _ <strong>TODO</strong>: mention categorical variables (category level points), correspondence analysis, CCA, MDS, …</p>
-<p>The idea of the biplot was introduced by Ruben Gabriel <span class="citation" data-cites="Gabriel:71">(<a href="90-references.html#ref-Gabriel:71" role="doc-biblioref">1971</a>)</span> and later expanded in scope by <span class="citation" data-cites="GowerHand:96">Gower and Hand (<a href="90-references.html#ref-GowerHand:96" role="doc-biblioref">1996</a>)</span>. The book by <span class="citation" data-cites="Greenacre:2010:biplots">Greenacre (<a href="90-references.html#ref-Greenacre:2010:biplots" role="doc-biblioref">2010</a>)</span> gives a practical overview of the many variety of biplots and <span class="citation" data-cites="Gower-etal:2011">Gower, Lubbe, and Roux (<a href="90-references.html#ref-Gower-etal:2011" role="doc-biblioref">2011</a>)</span> provide a full treatment … <strong>TODO</strong>: Cite Greenacre, Biplots in Practice, Gower et al.&nbsp;2010.</p>
+<p>The idea of the biplot was introduced by Ruben Gabriel <span class="citation" data-cites="Gabriel:71 Gabriel:81">(<a href="90-references.html#ref-Gabriel:71" role="doc-biblioref">1971</a>, <a href="90-references.html#ref-Gabriel:81" role="doc-biblioref">1981</a>)</span> and later expanded in scope by <span class="citation" data-cites="GowerHand:96">Gower and Hand (<a href="90-references.html#ref-GowerHand:96" role="doc-biblioref">1996</a>)</span>. The book by <span class="citation" data-cites="Greenacre:2010:biplots">Greenacre (<a href="90-references.html#ref-Greenacre:2010:biplots" role="doc-biblioref">2010</a>)</span> gives a practical overview of the many variety of biplots and <span class="citation" data-cites="Gower-etal:2011">Gower, Lubbe, and Roux (<a href="90-references.html#ref-Gower-etal:2011" role="doc-biblioref">2011</a>)</span> provide a full treatment …</p>
+<p>Biplot methodolgy is far more general than I cover here. Categorical variables can be incorporated in PCA using category level points. Two-way frequency tables of categorical variables can be analysed using <em>correspondence analysis</em>, which is similar to PCA, but designed to account for the maximum amount of the <span class="math inline">\(\chi^2\)</span> statistic for association; <em>multiple correspondence analysis</em> extends this to method to multi-way tables <span class="citation" data-cites="FriendlyMeyer:2016:DDAR Greenacre:84">(<a href="90-references.html#ref-FriendlyMeyer:2016:DDAR" role="doc-biblioref">Friendly and Meyer 2016</a>; <a href="90-references.html#ref-Greenacre:84" role="doc-biblioref">Greenacre 1984</a>)</span>.</p>
 <section id="constructing-a-biplot" class="level3" data-number="4.3.1"><h3 data-number="4.3.1" class="anchored" data-anchor-id="constructing-a-biplot">
 <span class="header-section-number">4.3.1</span> Constructing a biplot</h3>
-<p>SVD:</p>
+<p>The biplot is constructed by using the singular value decomposition (SVD) to obtain a low-rank approximation to the data matrix <span class="math inline">\(\mathbf{X}_{n \times p}\)</span> (centered, and optionally scaled to unit variances) whose <span class="math inline">\(n\)</span> rows are the observations and whose <span class="math inline">\(p\)</span> columns are the variables.</p>
 <div class="cell" data-layout-align="center">
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
-<figure class="figure"><p><img src="images/SVD-eqn.jpg" class="img-fluid figure-img" style="width:100.0%"></p>
-<figcaption class="figure-caption">Singular value decomposition</figcaption></figure>
+<figure class="figure"><p><img src="images/SVD-eqn.jpg" class="img-fluid figure-img" style="width:80.0%"></p>
+<figcaption class="figure-caption">The singular value decomposition expresses a data matrix <strong>X</strong> as the product of a matrix <strong>U</strong> of observation scores, a diagonal matrix <strong>Lambda</strong> of singular values and a matrix <strong>V</strong> of variable weights. <strong>TODO</strong>: Re-draw to fix notation.</figcaption></figure>
 </div>
 </div>
 </div>
+<p>Using the SVD, the matrix <span class="math inline">\(\mathbf{X}\)</span>, of rank <span class="math inline">\(r \le p\)</span> can be expressed <em>exactly</em> as: <span class="math display">\[
+\mathbf{X} = \mathbf{U} \mathbf{\Lambda} \mathbf{V}'
+                 = \sum_i^r \lambda_i \mathbf{u}_i \mathbf{v}_i' \; ,
+\]</span></p>
+<p>where</p>
+<ul>
+<li>
+<span class="math inline">\(\mathbf{U}\)</span> is an <span class="math inline">\(n \times r\)</span> orthonormal matrix of uncorrelated observation scores; these are also the eigenvectors of <span class="math inline">\(\mathbf{X} \mathbf{X}'\)</span>,</li>
+<li>
+<span class="math inline">\(\mathbf{\Lambda}\)</span> is an <span class="math inline">\(r \times r\)</span> diagonal matrix of singular values, <span class="math inline">\(\lambda_1 \ge \lambda_2 \ge \cdots \lambda_r\)</span>, which are also the square roots of the eigenvalues of <span class="math inline">\(\mathbf{X} \mathbf{X}'\)</span>.</li>
+<li>
+<span class="math inline">\(\mathbf{V}\)</span> is an <span class="math inline">\(r \times p\)</span> orthonormal matrix of observation scores and also the eigenvectors of <span class="math inline">\(\mathbf{X}' \mathbf{X}\)</span>.</li>
+</ul>
+<p>Then, a rank 2 (or 3) PCA approximation <span class="math inline">\(\widehat{\mathbf{X}}\)</span> to the data matrix used in the biplot can be obtained from the first 2 (or 3) singular values <span class="math inline">\(\lambda_i\)</span> and the corresponding <span class="math inline">\(\mathbf{u}_i, \mathbf{v}_i\)</span> as:</p>
+<p><span class="math display">\[
+\mathbf{X} \approx \widehat{\mathbf{X}} = \lambda_1 \mathbf{u}_1 \mathbf{v}_1' + \lambda_2 \mathbf{u}_2 \mathbf{v}_2' \; .
+\]</span></p>
+<p>The variance of <span class="math inline">\(\mathbf{X}\)</span> accounted for by each term is <span class="math inline">\(\lambda_i^2\)</span>.</p>
+<p>A biplot is then obtained by overlaying two scatterplots that share a common set of axes and have a between-set scalar product interpretation. Typically, the observations (rows of <span class="math inline">\(\mathbf{X}\)</span>) are represented as points and the variables (columns of <span class="math inline">\(\mathbf{X}\)</span>) are represented as vectors from the origin.</p>
+<p>The factor, <span class="math inline">\(\alpha\)</span> allows the variances of the components to be apportioned between the row points and column vectors, with different interpretations, by representing the approximation <span class="math inline">\(\widehat{\mathbf{X}}\)</span> as the product of two matrices,</p>
+<p><span class="math display">\[
+\widehat{\mathbf{X}} = (\mathbf{U} \mathbf{\Lambda}^\alpha) (\mathbf{\Lambda}^{1-\alpha} \mathbf{V}') = \mathbf{A} \mathbf{B}'
+\]</span></p>
+<p>The choice <span class="math inline">\(\alpha = 1\)</span>, assigning the singular values totally to the left factor, gives a distance interpretation to the row display and <span class="math inline">\(\alpha = 0\)</span> gives a distance interpretation to the column display. <span class="math inline">\(\alpha = 1/2\)</span> gives a symmetrically scaled biplot.</p>
+<p>When the singular values are assigned totally to the left or to the right factor, the resultant coordinates are called <em>principal coordinates</em> and the sum of squared coordinates on each dimension equal the corresponding singular value. The other matrix, to which no part of the singular values is assigned, contains the so-called <em>standard coordinates</em> and have sum of squared values equal to 1.0.</p>
 </section><section id="biplots-in-r" class="level3" data-number="4.3.2"><h3 data-number="4.3.2" class="anchored" data-anchor-id="biplots-in-r">
 <span class="header-section-number">4.3.2</span> Biplots in R</h3>
 <p>There are a large number of R packages providing biplots, …</p>
 <p>Here, I use the <strong>ggbiplot</strong> package …</p>
 </section><section id="example" class="level3" data-number="4.3.3"><h3 data-number="4.3.3" class="anchored" data-anchor-id="example">
 <span class="header-section-number">4.3.3</span> Example</h3>
-<p>Basic biplot, using standardized principal components and labeling the observation by their state abbreviation.</p>
+<p>A basic biplot, using standardized principal components and labeling the observation by their state abbreviation is shown in <a href="#fig-crime-biplot1">Figure&nbsp;<span>4.9</span></a>.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb15" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">crime.pca</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ggbiplot/man/reflect.html">reflect</a></span><span class="op">(</span><span class="va">crime.pca</span><span class="op">)</span> <span class="co"># reflect the axes</span></span>
 <span></span>
@@ -719,6 +744,9 @@ Cattell, Raymond B. 1966. <span>“The Scree Test for the Number of Factors.”<
 <div id="ref-Euler:1758" class="csl-entry" role="listitem">
 Euler, Leonhard. 1758. <span>“Elementa Doctrinae Solidorum.”</span> <em>Novi Commentarii Academiae Scientiarum Petropolitanae</em> 4: 109–40. <a href="https://scholarlycommons.pacific.edu/euler-works/230/">https://scholarlycommons.pacific.edu/euler-works/230/</a>.
 </div>
+<div id="ref-FriendlyMeyer:2016:DDAR" class="csl-entry" role="listitem">
+Friendly, Michael, and David Meyer. 2016. <em>Discrete Data Analysis with <span>R</span>: Visualization and Modeling Techniques for Categorical and Count Data</em>. Boca Raton, FL: Chapman &amp; Hall/CRC.
+</div>
 <div id="ref-Friendly-etal:ellipses:2013" class="csl-entry" role="listitem">
 Friendly, Michael, Georges Monette, and John Fox. 2013. <span>“Elliptical Insights: Understanding Statistical Methods Through Elliptical Geometry.”</span> <em>Statistical Science</em> 28 (1): 1–39. <a href="https://doi.org/10.1214/12-STS402">https://doi.org/10.1214/12-STS402</a>.
 </div>
@@ -727,6 +755,9 @@ Friendly, Michael, and Howard Wainer. 2021. <em>A History of Data Visualization 
 </div>
 <div id="ref-Gabriel:71" class="csl-entry" role="listitem">
 Gabriel, K. R. 1971. <span>“The Biplot Graphic Display of Matrices with Application to Principal Components Analysis.”</span> <em>Biometrics</em> 58 (3): 453–67.
+</div>
+<div id="ref-Gabriel:81" class="csl-entry" role="listitem">
+———. 1981. <span>“Biplot Display of Multivariate Matrices for Inspection of Data and Diagnosis.”</span> In <em>Interpreting Multivariate Data</em>, edited by V. Barnett, 147–73. London: John Wiley; Sons.
 </div>
 <div id="ref-Galton:1886" class="csl-entry" role="listitem">
 Galton, Francis. 1886. <span>“Regression Towards Mediocrity in Hereditary Stature.”</span> <em>Journal of the Anthropological Institute</em> 15: 246–63. <a href="http://www.jstor.org/cgi-bin/jstor/viewitem/09595295/dm995266/99p0374f/0">http://www.jstor.org/cgi-bin/jstor/viewitem/09595295/dm995266/99p0374f/0</a>.
@@ -737,8 +768,11 @@ Gower, J. C., and D. J. Hand. 1996. <em>Biplots</em>. London: Chapman &amp; Hall
 <div id="ref-Gower-etal:2011" class="csl-entry" role="listitem">
 Gower, J. C., S. G. Lubbe, and N. J. L. Roux. 2011. <em>Understanding Biplots</em>. Wiley. <a href="http://books.google.ca/books?id=66gQCi5JOKYC">http://books.google.ca/books?id=66gQCi5JOKYC</a>.
 </div>
+<div id="ref-Greenacre:84" class="csl-entry" role="listitem">
+Greenacre, Michael. 1984. <em>Theory and Applications of Correspondence Analysis</em>. London: Academic Press.
+</div>
 <div id="ref-Greenacre:2010:biplots" class="csl-entry" role="listitem">
-Greenacre, M. J. 2010. <em>Biplots in Practice</em>. Fundaci<span>ó</span>n BBVA. <a href="https://books.google.ca/books?id=dv4LrFP7U%5C_EC">https://books.google.ca/books?id=dv4LrFP7U\_EC</a>.
+———. 2010. <em>Biplots in Practice</em>. Fundaci<span>ó</span>n BBVA. <a href="https://books.google.ca/books?id=dv4LrFP7U%5C_EC">https://books.google.ca/books?id=dv4LrFP7U\_EC</a>.
 </div>
 <div id="ref-R-FactoMineR" class="csl-entry" role="listitem">
 Husson, Francois, Julie Josse, Sebastien Le, and Jeremy Mazet. 2023. <em>FactoMineR: Multivariate Exploratory Data Analysis and Data Mining</em>. <a href="http://factominer.free.fr">http://factominer.free.fr</a>.

@@ -479,27 +479,84 @@ projecting from data space to PCA space, where the observations are shown by poi
 component scores in @fig-crime-scores-plot12, but with the 
 variables also shown by vectors (or scaled linear axes aligned with those vectors).
 
-Biplot methodolgy is far more general than I cover here. Categorical variables can be incorporated in PCA
-using category level points; two-way and multi-way frequency tables of categorical variables
-can be analysed using _
-**TODO**: mention categorical variables (category level points), correspondence analysis, CCA, MDS, ...
-
-
-The idea of the biplot was introduced by Ruben Gabriel [-@Gabriel:71] and later expanded in scope by @GowerHand:96. The book by @Greenacre:2010:biplots gives a practical overview
+The idea of the biplot was introduced by Ruben Gabriel [-@Gabriel:71;-@Gabriel:81] and later expanded in scope by @GowerHand:96. The book by @Greenacre:2010:biplots gives a practical overview
 of the many variety of biplots and @Gower-etal:2011 provide a full treatment ...
-**TODO**: Cite Greenacre, Biplots in Practice, Gower et al. 2010.
+
+Biplot methodolgy is far more general than I cover here. Categorical variables can be incorporated in PCA
+using category level points. 
+Two-way frequency tables of categorical variables
+can be analysed using _correspondence analysis_, which is similar to
+PCA, but designed to account for the maximum amount of the $\chi^2$ statistic
+for association; _multiple correspondence analysis_ extends this to
+method to multi-way tables [@FriendlyMeyer:2016:DDAR;@Greenacre:84].
+
+
 
 ### Constructing a biplot
 
-SVD:
+The biplot is constructed by using the singular value decomposition (SVD) to obtain a low-rank approximation to the data matrix $\mathbf{X}_{n \times p}$ (centered, and optionally scaled to unit variances)
+whose $n$ rows are the observations and whose $p$ columns are the variables. 
+
 
 ```{r}
 #| label: svd-diagram
 #| echo: false
-#| out-width: "100%"
-#| fig-cap: "Singular value decomposition"
+#| out-width: "80%"
+#| fig-cap: "The singular value decomposition expresses a data matrix **X** as the product of a matrix **U** of observation scores, a diagonal matrix **Lambda** of singular values and a matrix **V** of variable weights. **TODO**: Re-draw to fix notation. "
 knitr::include_graphics("images/SVD-eqn.jpg")
 ```
+
+Using the SVD, the matrix $\mathbf{X}$, of rank $r \le p$
+can be expressed _exactly_ as:
+$$
+\mathbf{X} = \mathbf{U} \mathbf{\Lambda} \mathbf{V}'
+                 = \sum_i^r \lambda_i \mathbf{u}_i \mathbf{v}_i' \; ,
+$$          
+
+where 
+
+   * $\mathbf{U}$ is an $n \times r$ orthonormal matrix of uncorrelated observation scores; these are also the 
+         eigenvectors of $\mathbf{X} \mathbf{X}'$,
+   * $\mathbf{\Lambda}$ is an $r \times r$ diagonal matrix of singular values, 
+         $\lambda_1 \ge \lambda_2 \ge \cdots \lambda_r$, which are also the square roots
+         of the eigenvalues of $\mathbf{X} \mathbf{X}'$. 
+   * $\mathbf{V}$ is an $r \times p$ orthonormal matrix of observation scores and also the 
+         eigenvectors of $\mathbf{X}' \mathbf{X}$.
+
+Then, a rank 2 (or 3) PCA approximation $\widehat{\mathbf{X}}$ to the data matrix used in the biplot can be obtained from the first 2 (or 3)
+singular values $\lambda_i$ and the corresponding $\mathbf{u}_i, \mathbf{v}_i$ as:
+
+$$
+\mathbf{X} \approx \widehat{\mathbf{X}} = \lambda_1 \mathbf{u}_1 \mathbf{v}_1' + \lambda_2 \mathbf{u}_2 \mathbf{v}_2' \; .
+$$
+
+The variance of $\mathbf{X}$ accounted for by each term is $\lambda_i^2$.
+
+A biplot is then obtained by overlaying two scatterplots that share a common set of axes and have a between-set scalar 
+product interpretation. Typically, the observations (rows of $\mathbf{X}$) are represented as points
+and the variables (columns of $\mathbf{X}$) are represented as vectors from the origin.
+
+The \code{scale} factor, $\alpha$ allows the variances of the components to be apportioned between the
+row points and column vectors, with different interpretations, by representing the approximation
+$\widehat{\mathbf{X}}$ as the product of two matrices,
+
+$$
+\widehat{\mathbf{X}} = (\mathbf{U} \mathbf{\Lambda}^\alpha) (\mathbf{\Lambda}^{1-\alpha} \mathbf{V}') = \mathbf{A} \mathbf{B}'
+$$
+
+The choice $\alpha = 1$, assigning the singular values totally to the left factor,
+ gives a distance interpretation to the row display and 
+$\alpha = 0$ gives a distance interpretation to the column display.
+$\alpha = 1/2$ gives a symmetrically scaled biplot.
+
+When the singular values are assigned totally to the left or to the right factor, the resultant 
+coordinates are called _principal coordinates_ and the sum of squared coordinates
+on each dimension equal the corresponding singular value.
+The other matrix, to which no part of the singular 
+values is assigned, contains the so-called _standard coordinates_ and have sum of squared
+values equal to 1.0. 
+
+
 
 ### Biplots in R
 
@@ -509,8 +566,7 @@ Here, I use the **ggbiplot** package ...
 
 ### Example
 
-Basic biplot, using standardized principal components and labeling the observation by their state
-abbreviation.
+A basic biplot, using standardized principal components and labeling the observation by their state abbreviation is shown in @fig-crime-biplot1.
 ```{r}
 #| label: fig-crime-biplot1
 #| out-width: "80%"
