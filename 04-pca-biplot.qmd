@@ -174,13 +174,23 @@ data, with points colored by species and the 95% data ellipsoid. This is rotated
 Because this is a rigid rotation of the cloud of points, the total variability is obviously unchanged.
 
 
-::: {#fig-pca-animation}
-<div align="center">
-<iframe width="946" height="594" src="images/pca-animation1.gif"></iframe>
-</div>
-Animation of PCA as a rotation in 3D space. The plot shows three variables for the `iris` data, initially
-in data space and its' data ellipsoid, with points colored according to species of the iris flowers. This is rotated smoothly until the first two principal axes are aligned with the horizontal and vertical dimensions.
+<!-- ::: {#fig-pca-animation} -->
+<!-- <div align="center"> -->
+<!-- <iframe width="946" height="594" src="images/pca-animation1.gif"></iframe> -->
+<!-- </div> -->
+<!-- Animation of PCA as a rotation in 3D space. The plot shows three variables for the `iris` data, initially -->
+<!-- in data space and its' data ellipsoid, with points colored according to species of the iris flowers. This is rotated smoothly until the first two principal axes are aligned with the horizontal and vertical dimensions. -->
 
+<!-- ::: -->
+
+::: {.content-visible unless-format="pdf"}
+```{r}
+#| label: fig-pca-animation
+#| out-width: "100%"
+#| echo: false
+#| fig-cap: "Animation of PCA as a rotation in 3D space. The plot shows three variables for the #| `iris` data, initially in data space and its' data ellipsoid, with points colored according #| to species of the iris flowers. This is rotated smoothly until the first two principal axes #| are aligned with the horizontal and vertical dimensions."
+knitr::include_graphics("images/pca-animation1.gif")
+```
 :::
 
 
@@ -227,12 +237,21 @@ The **FactoMineR** package [@R-FactoMineR]
 has extensive capabilities for exploratory analysis of multivariate data (PCA, correspondence analysis, cluster analysis, ...). 
 
 Unfortunately, although all of these performing similar calculations, the options for
-analysis and the details of the result they return differ ...
+analysis and the details of the result they return differ.
 
 The important options for analysis include: 
 
-* whether or not the data variables are **centered**, to a mean of 0
-* whether or not the data variables are **scaled**, to a variance of 1.
+* whether or not the data variables are **centered**, to a mean of $\bar{x}_j =0$
+* whether or not the data variables are **scaled**, to a variance of $\text{Var}(x_j) =1$.
+
+It nearly always makes sense to center the variables. The choice of
+scaling determines whether the correlation matrix is analyzed, so that
+each variable contributes equally to the total variance that is to be accounted for
+versus analysis of the covariance matrix, where each variable contributes its
+own variance to the total. Analysis of the covariance matrix makes little sense
+when the variables are measured on different scales.[^pca-scales]
+
+[^pca-scales]: For example, if two variables in the analysis are height and weight, changing the unit of height from inches to centimeters would multiply its' variance by $2.54^2$; changing weight from pounds to kilograms would divide its' variance by $2.2^2$.
 
 #### Example: Crime data {.unnumbered}
 
@@ -304,6 +323,7 @@ of components to extract a desired proportion of total variance, usually in the 
 
 ```{r}
 #| label: fig-crime-ggscreeplot
+#| fig-height: 4
 #| out-width: "100%"
 #| fig-cap: "Screeplots for the PCA of the crime data. The left panel shows the traditional version, plotting variance proportions against component number, with linear guideline for the scree rule of thumb. The right panel plots cumulative proportions, showing cutoffs of 80%, 90%."
 p1 <- ggscreeplot(crime.pca) +
@@ -352,7 +372,7 @@ crime.pca |>
   broom::augment(crime) |> head()
 ```
 
-Then, we can use `ggplot()` to plot and pair of components.
+Then, we can use `ggplot()` to plot any pair of components.
 To aid interpretation, I label the points by their state abbreviation and color them
 by `region` of the U.S.. A geometric interpretation of the plot requires 
 an aspect ratio of 1.0 (via `coord_fixed()`)
@@ -387,9 +407,10 @@ and West Virginia. The second component has most of the southern states on the l
 and Massachusetts, Rhode Island and Hawaii on the high end. However, interpretation is
 easier when we also consider how the various crimes contribute to these dimensions.
 
-We could obviously go further and plot other pairs of components,
+When, as here, there
+are more than two components that seem important in the scree plot,
+we could obviously go further and plot other pairs.
 
-**TODO**: Add plot of PC1 vs. PC3
 #### Variable vectors {.unnumbered}
 
 You can extract the variable loadings using either `crime.pca$rotation` or
@@ -543,11 +564,18 @@ $\widehat{\mathbf{X}}$ as the product of two matrices,
 $$
 \widehat{\mathbf{X}} = (\mathbf{U} \mathbf{\Lambda}^\alpha) (\mathbf{\Lambda}^{1-\alpha} \mathbf{V}') = \mathbf{A} \mathbf{B}'
 $$
+This notation uses a little math trick involving a power, $0 \le \alpha \le 1$:
+When $\alpha = 1$, $\mathbf{\Lambda}^\alpha = \mathbf{\Lambda}^1  =\mathbf{\Lambda}$,
+and $\mathbf{\Lambda}^{1-\alpha} = \mathbf{\Lambda}^0  =\mathbf{I}$.
+$\alpha = 1/2$ gives the diagonal matrix $\mathbf{\Lambda}^1/2$ whose elements are the square roots of the singular values.
 
-The choice $\alpha = 1$, assigning the singular values totally to the left factor,
- gives a distance interpretation to the row display and 
+The choice $\alpha = 1$ assigns the singular values totally to the left factor;
+then, the angle between two variable vectors, reflecting the inner product 
+$\mathbf{x}_j^T, \mathbf{x}_{j'}$ approximates their correlation or covariance,
+and the distance between the points approximates their Mahalanobis distances.
 $\alpha = 0$ gives a distance interpretation to the column display.
 $\alpha = 1/2$ gives a symmetrically scaled biplot.
+*TODO**: Explain this better.
 
 When the singular values are assigned totally to the left or to the right factor, the resultant 
 coordinates are called _principal coordinates_ and the sum of squared coordinates
@@ -560,13 +588,17 @@ values equal to 1.0.
 
 ### Biplots in R
 
-There are a large number of R packages providing biplots, ...
+There are a large number of R packages providing biplots. The most basic, `stats::biplot()`, provides methods for `"prcomp"` and `"princomp"` objects.
 
-Here, I use the **ggbiplot** package ...
+**TODO**: Mention **factoextra** package, `fviz()`, `fviz_pca_biplot()`, ... giving `ggplot2` graphics. Also mention **adegraphics** package
+
+Here, I use the **ggbiplot** package, which aims to provide a simple interface to biplots within the `ggplot2` framework.
 
 ### Example
 
-A basic biplot, using standardized principal components and labeling the observation by their state abbreviation is shown in @fig-crime-biplot1.
+A basic biplot of the `crime` data, using standardized principal components and labeling the observation by their state abbreviation is shown in @fig-crime-biplot1.
+The correlation circle indicates that these components are uncorrelated and have
+equal variance in the display.
 ```{r}
 #| label: fig-crime-biplot1
 #| out-width: "80%"
@@ -582,10 +614,13 @@ ggbiplot(crime.pca,
   theme_minimal(base_size = 14) 
 ```
 
+In this dataset the states are grouped by region and we saw some differences among regions in the plot (@fig-crime-scores-plot12) of component scores.
+`ggbiplot()` provides options to include a `groups =` variable, used to
+color the observation points and also to draw their data ellipses, facilitating interpretation.
 ```{r}
 #| label: fig-crime-biplot2
 #| out-width: "80%"
-#| fig-cap: "Enhanced biplot of the crime data. ..."
+#| fig-cap: "Enhanced biplot of the crime data, grouping the states by region and adding data ellipses."
 ggbiplot(crime.pca,
    obs.scale = 1, var.scale = 1,
    groups = crime$region,
@@ -600,6 +635,48 @@ ggbiplot(crime.pca,
   theme_minimal(base_size = 14) +
   theme(legend.direction = 'horizontal', legend.position = 'top')
 ```
+
+This plot provides what is necessary to interpret the nature of the components and also the variation of the states in relation to these. In this, the data ellipses for the regions
+provide a visual summary that aids interpretation.
+
+* From the variable vectors, it seems that PC1, having all positive and nearly equal loadings, reflects a total or overall index of crimes. Nevada, California, New York and Florida are highest on this, while North Dakota, South Dakota and West Virginia are lowest.
+
+* The second component, PC2, shows a contrast between crimes against persons (murder, assault, rape) at the top and property crimes (auto theft, larceny) at the bottom. Nearly all the Southern states are high on personal crimes; states in the North East are generally higher
+on property crimes.
+
+* Western states tend to be somewhat higher on overall crime rate, while North Central are lower on average. In these states there is not much variation in the relative proportions of personal vs. property crimes.
+
+Moreover, in this biplot you can interpret the the value for a particular state on a given crime by considering its projection on the variable vector, where the origin corresponds to the mean, positions along the vector have greater than average values on that crime, and the opposite direction have lower than average values. For example, Massachusetts has the highest value on auto theft, but a value less than the mean. Louisiana and South Carolina on the other hand are highest in the rate of murder and slightly less than average on auto theft.
+
+These 2D plots account for only 76.5% of the total variance of crimes, so it is useful to also examine the third principal component, which accounts for an additional 10.4%.
+The `choices =` option controls which dimensions are plotted.
+
+```{r}
+#| label: fig-crime-biplot3
+#| out-width: "80%"
+#| fig-cap: "Biplot of dimensions 1 & 3 of the crime data."
+ggbiplot(crime.pca,
+         choices = c(1,3),
+         obs.scale = 1, var.scale = 1,
+         groups = crime$region,
+         labels = crime$st,
+         labels.size = 4,
+         var.factor = 2,
+         ellipse = TRUE, ellipse.level = 0.5, ellipse.alpha = 0.1,
+         circle = TRUE,
+         varname.size = 4,
+         varname.color = "black") +
+  labs(fill = "Region", color = "Region") +
+  theme_minimal(base_size = 14) +
+  theme(legend.direction = 'horizontal', legend.position = 'top')
+```
+
+Dimension 3 in @fig-crime-biplot3 is more subtle. One interpretation is a contrast between
+larceny, which is a simple theft and robbery, which involves stealing something from a person
+and is considered a more serious crime with an element of possible violence.
+In this plot, murder has a relatively short variable vector, so does not contribute
+very much to differences among the states.
+
 
 
 ## Elliptical insights: Outlier detection

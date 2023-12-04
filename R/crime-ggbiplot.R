@@ -66,4 +66,19 @@ ggbiplot(crime.pca,
   theme_minimal(base_size = 14) +
   theme(legend.direction = 'horizontal', legend.position = 'top')
 
+# PC1 & PC3
+ggbiplot(crime.pca,
+         choices = c(1,3),
+         obs.scale = 1, var.scale = 1,
+         groups = crime$region,
+         labels = crime$st,
+         labels.size = 4,
+         var.factor = 2,
+         ellipse = TRUE, ellipse.level = 0.5, ellipse.alpha = 0.1,
+         circle = TRUE,
+         varname.size = 4,
+         varname.color = "black") +
+  labs(fill = "Region", color = "Region") +
+  theme_minimal(base_size = 14) +
+  theme(legend.direction = 'horizontal', legend.position = 'top')
 
