@@ -1,33 +1,41 @@
-library(corrplot)
-library(corrgram)
+#' ---
+#' title: Variable ordering based on PCA & corrplot
+#' ---
+
+library(ggplot2)
+library(ggbiplot)
 library(dplyr)
+library(corrplot)
 
-# vignette: https://cran.r-project.org/web/packages/corrplot/vignettes/corrplot-intro.html
+data(mtcars)
 
-data("mtcars")
-M <- cor(mtcars)
+mtcars.pca <- prcomp(mtcars, scale. = TRUE)
+ggbiplot(mtcars.pca,
+         circle = TRUE,
+         point.size = 2.5,
+         varname.size = 4,
+         varname.color = "brown") +
+  theme_minimal(base_size = 14) 
 
-M |>
-  corrplot.mixed(
-    order = "original",
-    lower = "ellipse",
-    upper = "pie",
-    tl.col = "black",
-    title = "Dataset variable order",
-    mar = c(0,0,2,0)
-  )
-    
-M |>
-  corrplot.mixed(
-    order = "AOE",
-    lower = "ellipse",
-    upper = "pie",
-    tl.col = "black",
-    title = "PCA variable order",
-    mar = c(0,0,2,0)
-  )
+R <- cor(mtcars)
 
-corrplot.mixed(M, 
-               lower = 'shade', 
-               upper = 'pie', 
-               order = 'hclust')
+# show numerically
+print(floor(100*R))
+
+corrplot(R, 
+         method = 'ellipse',
+         title = "Dataset variable order",
+         tl.srt = 0, tl.col = "black", tl.pos = 'd',
+         mar = c(0,0,1,0))
+
+corrplot(R, 
+         method = 'ellipse', 
+         order = "AOE",
+         title = "PCA variable order",
+         tl.srt = 0, tl.col = "black", tl.pos = 'd',
+         mar = c(0,0,1,0)) |>
+  corrRect(c(1, 6, 7, 11))
+
+corrplot(R, method = 'ellipse', order = 'AOE', type = 'upper')
+
+

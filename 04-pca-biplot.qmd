@@ -677,7 +677,106 @@ and is considered a more serious crime with an element of possible violence.
 In this plot, murder has a relatively short variable vector, so does not contribute
 very much to differences among the states.
 
+## Application: Variable ordering for data displays
 
+In many multivariate data displays, such as scatterplot matrices, parallel coordinate plots and others
+reviewed in @sec-multivariate_plots,
+the order of different variables might seem arbitrary. They might appear in alphabetic order, or more often in the order they appear in your dataset, for example when you use `pairs(mydata)`.
+Yet, the principle of _effect ordering_ (@FriendlyKwan:03:effect) for variables says you should try to arrange the variables so that adjacent ones are as similar as possible.
+**TODO**: Mention seriation as the general topic.
+
+For example, the `mtcars` dataset contains data on 32 automobiles from the 1974 U.S. magazine
+_Motor Trend_ and consists of fuel comsumption (`mpg`) and 10 aspects of automobile
+design (`cyl`: number of cyliners; `hp`: horsepower, `wt`: weight) and performance
+(`qsec`: time to drive a quarter-mile). What can we see from a simple `corrplot()` of their
+correlations?
+
+
+```{r}
+#| label: fig-mtcars-corrplot-varorder
+#| fig-width: 8
+#| fig-height: 8
+#| out-width: "75%"
+#| fig-cap: "Corrplot of `mtcars` data, with the variables in the order they appear in the dataset."
+data(mtcars)
+library(corrplot)
+R <- cor(mtcars)
+corrplot(R, 
+         method = 'ellipse',
+         title = "Dataset variable order",
+         tl.srt = 0, tl.col = "black", tl.pos = 'd',
+         mar = c(0,0,1,0))
+```
+
+
+In this display you can scan the rows and columns to "look up" the sign and approximate magnitude of a given correlation; for example, the correlation between `mpg` and `cyl` appears to be about -0.9,
+while that between `mpg` and `gear` is about 0.5. Of course, you could print the correlation matrix to find the actual values (-0.86 and 0.48 respectively):
+
+```{r mtcars-cor}
+print(floor(100*R))
+```
+
+Because the angles between variable vectors in the biplot reflect their correlations, @FriendlyKwan:03:effect defined **principal component variable ordering** as the order of angles,
+$a_i$ of the first two eigenvectors, $\mathbf{v}_1, \mathbf{v}_2$ around the unit circle. These values are calculated going counter-clockwise from the 12:00 position as:
+
+$$
+a_i = 
+  \begin{cases}
+    \tan^{-1} (v_{i2}/v_{i1}), & \text{if $v_{i1}>0$;}
+     \newline
+    \tan^{-1} (v_{i2}/v_{i1}) + \pi, & \text{otherwise.}
+  \end{cases}     
+$$
+(read $\tan^{-1}(x)$ as "the angle whose tangent is $x$".)
+
+For the `mtcars` data the biplot in @fig-mtcars-biplot accounts for 84% of the total variance
+so a 2D representation is fairly good.
+The plotshows the variables as widely dispersed. There is a collection at the left of positively correlated variables and another positively correlated set at the right.
+
+```{r}
+#| label: fig-mtcars-biplot
+#| fig-width: 8
+#| fig-height: 8
+#| out-width: "70%"
+#| fig-cap: "Biplot of the `mtcars` data ..."
+mtcars.pca <- prcomp(mtcars, scale. = TRUE)
+ggbiplot(mtcars.pca,
+         circle = TRUE,
+         point.size = 2.5,
+         varname.size = 6,
+         varname.color = "brown") +
+  theme_minimal(base_size = 14) 
+```
+
+In `corrplot()` principal component variable ordering is implemented using the `order = "AOE"` option. There are a variety of other methods based on hierarchical cluster analysis described in the 
+[package vignette](https://cran.r-project.org/web/packages/corrplot/vignettes/corrplot-intro.html).
+
+@fig-mtcars-corrplot-pcaorder shows the result. A nice feature of `corrplot()` is the ability to manually highlight blocks of variables that have a similar pattern of signs by outlining them with
+rectangles. From the biplot, the two main clusters of positively correlated variables seemed clear,
+and are outlined in the plot using `corrplot::corrRect()`. What became clear in the corrplot is that `qsec`, the time to drive a quarter-mile from a dead start didn't fit this pattern, so I highlighted it
+separately.
+
+```{r}
+#| label: fig-mtcars-corrplot-pcaorder
+#| fig-width: 8
+#| fig-height: 8
+#| out-width: "75%"
+#| fig-cap: "Corrplot of `mtcars` data, with the variables ordered according to the variable vectors in the biplot."
+corrplot(R, 
+         method = 'ellipse', 
+         order = "AOE",
+         title = "PCA variable order",
+         tl.srt = 0, tl.col = "black", tl.pos = 'd',
+         mar = c(0,0,1,0)) |>
+  corrRect(c(1, 6, 7, 11))
+```
+
+But wait, there is something else to be seen in @fig-mtcars-corrplot-pcaorder.
+Can you see one cell that doesn't fit with the rest?
+
+Yes, the correlation of number of forward gears (`gear`) and number of carburators (`carb`)
+in the upper left and lower right corners is moderately positive (0.27) while all the others
+in their off-diagonal blocks are negative. 
 
 ## Elliptical insights: Outlier detection
 
