@@ -403,9 +403,26 @@ Looking ahead
 <figcaption class="figure-caption">Figure&nbsp;4.5: Animation of PCA fitted by springs. The <span style="color: blue;">blue</span> data points are connected to their projections on the <span style="color: red;">red</span> line by springs perpendicular to that line. From an initial position, the springs pull that line in proportion to their squared distances, until the line finally settles down to the position where the forces are balanced and the minimum is achieved. <em>Source</em>: Amoeba, https://bit.ly/46tAicu.</figcaption></figure>
 </div>
 <!-- See: https://joshualoftus.com/posts/2020-11-23-least-squares-as-springs/least-squares-as-springs.html -->
-<p><strong>TODO</strong>: Simple PCA example</p>
+<p><strong>TODO</strong>: Simple PCA example using workers data</p>
 </section><section id="mathematics-and-geometry-of-pca" class="level3" data-number="4.2.2"><h3 data-number="4.2.2" class="anchored" data-anchor-id="mathematics-and-geometry-of-pca">
 <span class="header-section-number">4.2.2</span> Mathematics and geometry of PCA</h3>
+<p>As the ideas of principal components developed, there was a happy marriage of Galton’s geometrical intuition and Pearson’s mathematical analysis. The best men at the wedding were ellipses and higher-dimensional ellipsoids. The brides maids were eigenvectors, pointing in as many different directions as space would allow, each sized according to their associated eigenvalues. Attending the wedding were the ghosts of uncles, Leonhard Euler, Jean-Louis Lagrange, Augustin-Louis Cauchy and others who had earlier discovered the mathematical properties of quadratic forms in relation to problems in physics.</p>
+<p>The key idea in the statistical application was that, for a set of variables <span class="math inline">\(\mathbf{x}_1, \mathbf{x}_2, \dots, \mathbf{x}_p\)</span>, the <span class="math inline">\(p \times p\)</span> covariance matrix <span class="math inline">\(\mathbf{S}\)</span> could be expressed exactly as a matrix product involving a matrix <span class="math inline">\(\mathbf{V}\)</span>, whose columns are eigenvectors (<span class="math inline">\(\mathbf{v}_i\)</span>) and a diagonal matrix <span class="math inline">\(\mathbf{\Lambda}\)</span>, whose diagonal elements (<span class="math inline">\(\lambda_i\)</span>) are the corresponding eigenvalues,</p>
+<p><span class="math display">\[
+\begin{align*}
+\mathbf{S} &amp; = \mathbf{V} \mathbf{\Lambda} \mathbf{V}^T \\
+           &amp; = \lambda_1 \mathbf{v}_1 \mathbf{v}_1^T + \lambda_2 \mathbf{v}_2 \mathbf{v}_2^T + ... + \lambda_p \mathbf{v}_p \mathbf{v}_p^T
+\end{align*}
+\]</span> In this equation, * The columns of <span class="math inline">\(\mathbf{V}\)</span> are the eigenvectors and they represent orthogonal (uncorrelated) directions in data space. The values <span class="math inline">\(\mathbf{v}_i\)</span> are the weights applied to the variables. * The eigenvalues, <span class="math inline">\(\lambda_i\)</span> …</p>
+<p>For the case of two variables, <span class="math inline">\(\mathbf{x}_1\)</span> and <span class="math inline">\(\mathbf{x}_2\)</span> <a href="#fig-pca-rotation">Figure&nbsp;<span>4.6</span></a> shows the transformation …</p>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div id="fig-pca-rotation" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="images/pca-rotation.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption class="figure-caption">Figure&nbsp;4.6: Geometry of PCA as a rotation from data space to principal component space, defined by the eigenvectors v1 and v2 of a covariance matrix</figcaption></figure>
+</div>
+</div>
+</div>
 </section><section id="finding-principal-components" class="level3" data-number="4.2.3"><h3 data-number="4.2.3" class="anchored" data-anchor-id="finding-principal-components">
 <span class="header-section-number">4.2.3</span> Finding principal components</h3>
 <p>In R, principal components analysis is most easily carried out using <code><a href="https://rdrr.io/r/stats/prcomp.html">stats::prcomp()</a></code> or <code><a href="https://rdrr.io/r/stats/princomp.html">stats::princomp()</a></code> or similar functions in other packages such as <code>FactomineR::PCA()</code>. The <strong>FactoMineR</strong> package <span class="citation" data-cites="R-FactoMineR">(<a href="90-references.html#ref-R-FactoMineR" role="doc-biblioref">Husson et al., 2023</a>)</span> has extensive capabilities for exploratory analysis of multivariate data (PCA, correspondence analysis, cluster analysis, …).</p>
@@ -472,7 +489,7 @@ Looking ahead
 </div>
 <p>Then, a simple visualization is a plot of the proportion of variance for each component (or cumulative proportion) against the component number, usually called a <strong>screeplot</strong>. The idea, introduced by <span class="citation" data-cites="Cattell1966">Cattell (<a href="90-references.html#ref-Cattell1966" role="doc-biblioref">1966</a>)</span>, is that after the largest, dominant components, the remainder should resemble the rubble, or scree formed by rocks falling from a cliff.</p>
 <p>From this plot, imagine drawing a straight line through the plotted eigenvalues, starting with the largest one. The typical rough guidance is that the last point to fall on this line represents the last component to extract, the idea being that beyond this, the amount of additional variance explained is non-meaningful. Another rule of thumb is to choose the number of components to extract a desired proportion of total variance, usually in the range of 80 - 90%.</p>
-<p><code>stats::plot(crime.pca)</code> would give a bar plot of the variances of the components, however <code><a href="https://rdrr.io/pkg/ggbiplot/man/ggscreeplot.html">ggbiplot::ggscreeplot()</a></code> gives nicer and more flexible displays as shown in <a href="#fig-crime-ggscreeplot">Figure&nbsp;<span>4.6</span></a>.</p>
+<p><code>stats::plot(crime.pca)</code> would give a bar plot of the variances of the components, however <code><a href="https://rdrr.io/pkg/ggbiplot/man/ggscreeplot.html">ggbiplot::ggscreeplot()</a></code> gives nicer and more flexible displays as shown in <a href="#fig-crime-ggscreeplot">Figure&nbsp;<span>4.7</span></a>.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb7" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ggbiplot/man/ggscreeplot.html">ggscreeplot</a></span><span class="op">(</span><span class="va">crime.pca</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_smooth.html">stat_smooth</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">crime.eig</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">PC</span><span class="op">&gt;=</span><span class="fl">4</span><span class="op">)</span>, </span>
@@ -489,7 +506,7 @@ Looking ahead
 <div class="cell-output-display">
 <div id="fig-crime-ggscreeplot" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure"><p><img src="figs/fig-crime-ggscreeplot-1.png" class="img-fluid figure-img" style="width:100.0%"></p>
-<figcaption class="figure-caption">Figure&nbsp;4.6: Screeplots for the PCA of the crime data. The left panel shows the traditional version, plotting variance proportions against component number, with linear guideline for the scree rule of thumb. The right panel plots cumulative proportions, showing cutoffs of 80%, 90%.</figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;4.7: Screeplots for the PCA of the crime data. The left panel shows the traditional version, plotting variance proportions against component number, with linear guideline for the scree rule of thumb. The right panel plots cumulative proportions, showing cutoffs of 80%, 90%.</figcaption></figure>
 </div>
 </div>
 </div>
@@ -547,7 +564,7 @@ Looking ahead
 <div class="cell-output-display">
 <div id="fig-crime-scores-plot12" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure"><p><img src="figs/fig-crime-scores-plot12-1.png" class="img-fluid figure-img" style="width:100.0%"></p>
-<figcaption class="figure-caption">Figure&nbsp;4.7: Plot of component scores on the first two principal components for the <code>crime</code> data. States are colored by <code>region</code>.</figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;4.8: Plot of component scores on the first two principal components for the <code>crime</code> data. States are colored by <code>region</code>.</figcaption></figure>
 </div>
 </div>
 </div>
@@ -612,17 +629,17 @@ Looking ahead
 <div class="cell-output-display">
 <div id="fig-crime-vectors" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure"><p><img src="figs/fig-crime-vectors-1.png" class="img-fluid figure-img" style="width:80.0%"></p>
-<figcaption class="figure-caption">Figure&nbsp;4.8: Plot of component loadings the first two principal components for the <code>crime</code> data. These are interpreted as the contributions of the variables to the components.</figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;4.9: Plot of component loadings the first two principal components for the <code>crime</code> data. These are interpreted as the contributions of the variables to the components.</figcaption></figure>
 </div>
 </div>
 </div>
-<p>What is shown in <a href="#fig-crime-vectors">Figure&nbsp;<span>4.8</span></a> has the following interpretations:</p>
+<p>What is shown in <a href="#fig-crime-vectors">Figure&nbsp;<span>4.9</span></a> has the following interpretations:</p>
 <ol type="1">
 <li><p>the lengths of the variable vectors, <span class="math inline">\(||\mathbf{v}_i|| = \sqrt{\Sigma_{j = 1:2} \; v_{ij}^2}\)</span> give the proportion of variance of each variable accounted for in a two-dimensional display.</p></li>
 <li><p>the value, <span class="math inline">\(v_{ij}\)</span>, of the vector for variable <span class="math inline">\(\mathbf{x}_i\)</span> on component <span class="math inline">\(j\)</span> gives the correlation of that variable with the <span class="math inline">\(j\)</span>th principal component.</p></li>
 <li><p>the cosine of the angle between two variable vectors, <span class="math inline">\(\mathbf{v}_i\)</span> and <span class="math inline">\(\mathbf{v}_j\)</span> gives the approximation of the correlation between <span class="math inline">\(\mathbf{x}_i\)</span> and <span class="math inline">\(\mathbf{x}_j\)</span> that is shown in this space. This means that two variable vectors that point in the same direction are highly correlated, while variable vectors at right angles are approximately uncorrelated.</p></li>
 </ol>
-<p>To illustrate point (1), the following indicates that almost 70% of the variance of <code>murder</code> is represented in the the 2D plot shown in <a href="#fig-crime-scores-plot12">Figure&nbsp;<span>4.7</span></a>, but only 40% of the variance of <code>robbery</code> is captured.</p>
+<p>To illustrate point (1), the following indicates that almost 70% of the variance of <code>murder</code> is represented in the the 2D plot shown in <a href="#fig-crime-scores-plot12">Figure&nbsp;<span>4.8</span></a>, but only 40% of the variance of <code>robbery</code> is captured.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb14" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">vectors</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">label</span>, <span class="va">PC1</span>, <span class="va">PC2</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>length <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">sqrt</a></span><span class="op">(</span><span class="va">PC1</span><span class="op">^</span><span class="fl">2</span> <span class="op">+</span> <span class="va">PC2</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
@@ -637,7 +654,7 @@ Looking ahead
 </div>
 </section></section></section><section id="sec-biplot" class="level2" data-number="4.3"><h2 data-number="4.3" class="anchored" data-anchor-id="sec-biplot">
 <span class="header-section-number">4.3</span> Biplots</h2>
-<p>The biplot is a simple and powerful idea that came from the recognition that you can overlay a plot of observation scores in a principal components analysis with the information of the variable loadings (weights) to give a simultaneous display that is easy to interpret. In this sense, a biplot is generalization of a scatterplot, projecting from data space to PCA space, where the observations are shown by points, as in the plots of component scores in <a href="#fig-crime-scores-plot12">Figure&nbsp;<span>4.7</span></a>, but with the variables also shown by vectors (or scaled linear axes aligned with those vectors).</p>
+<p>The biplot is a simple and powerful idea that came from the recognition that you can overlay a plot of observation scores in a principal components analysis with the information of the variable loadings (weights) to give a simultaneous display that is easy to interpret. In this sense, a biplot is generalization of a scatterplot, projecting from data space to PCA space, where the observations are shown by points, as in the plots of component scores in <a href="#fig-crime-scores-plot12">Figure&nbsp;<span>4.8</span></a>, but with the variables also shown by vectors (or scaled linear axes aligned with those vectors).</p>
 <p>The idea of the biplot was introduced by Ruben Gabriel <span class="citation" data-cites="Gabriel:71 Gabriel:81">(<a href="90-references.html#ref-Gabriel:71" role="doc-biblioref">1971</a>, <a href="90-references.html#ref-Gabriel:81" role="doc-biblioref">1981</a>)</span> and later expanded in scope by <span class="citation" data-cites="GowerHand:96">Gower &amp; Hand (<a href="90-references.html#ref-GowerHand:96" role="doc-biblioref">1996</a>)</span>. The book by <span class="citation" data-cites="Greenacre:2010:biplots">Greenacre (<a href="90-references.html#ref-Greenacre:2010:biplots" role="doc-biblioref">2010</a>)</span> gives a practical overview of the many variety of biplots and <span class="citation" data-cites="Gower-etal:2011">Gower et al. (<a href="90-references.html#ref-Gower-etal:2011" role="doc-biblioref">2011</a>)</span> provide a full treatment …</p>
 <p>Biplot methodolgy is far more general than I cover here. Categorical variables can be incorporated in PCA using category level points. Two-way frequency tables of categorical variables can be analysed using <em>correspondence analysis</em>, which is similar to PCA, but designed to account for the maximum amount of the <span class="math inline">\(\chi^2\)</span> statistic for association; <em>multiple correspondence analysis</em> extends this to method to multi-way tables <span class="citation" data-cites="FriendlyMeyer:2016:DDAR Greenacre:84">(<a href="90-references.html#ref-FriendlyMeyer:2016:DDAR" role="doc-biblioref">Friendly &amp; Meyer, 2016</a>; <a href="90-references.html#ref-Greenacre:84" role="doc-biblioref">Greenacre, 1984</a>)</span>.</p>
 <section id="constructing-a-biplot" class="level3" data-number="4.3.1"><h3 data-number="4.3.1" class="anchored" data-anchor-id="constructing-a-biplot">
@@ -683,7 +700,7 @@ Looking ahead
 <p>Here, I use the <strong>ggbiplot</strong> package, which aims to provide a simple interface to biplots within the <code>ggplot2</code> framework.</p>
 </section><section id="example" class="level3" data-number="4.3.3"><h3 data-number="4.3.3" class="anchored" data-anchor-id="example">
 <span class="header-section-number">4.3.3</span> Example</h3>
-<p>A basic biplot of the <code>crime</code> data, using standardized principal components and labeling the observation by their state abbreviation is shown in <a href="#fig-crime-biplot1">Figure&nbsp;<span>4.9</span></a>. The correlation circle indicates that these components are uncorrelated and have equal variance in the display.</p>
+<p>A basic biplot of the <code>crime</code> data, using standardized principal components and labeling the observation by their state abbreviation is shown in <a href="#fig-crime-biplot1">Figure&nbsp;<span>4.10</span></a>. The correlation circle indicates that these components are uncorrelated and have equal variance in the display.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb15" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">crime.pca</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ggbiplot/man/reflect.html">reflect</a></span><span class="op">(</span><span class="va">crime.pca</span><span class="op">)</span> <span class="co"># reflect the axes</span></span>
 <span></span>
@@ -697,11 +714,11 @@ Looking ahead
 <div class="cell-output-display">
 <div id="fig-crime-biplot1" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure"><p><img src="figs/fig-crime-biplot1-1.png" class="img-fluid figure-img" style="width:80.0%"></p>
-<figcaption class="figure-caption">Figure&nbsp;4.9: Basic biplot of the crime data. …</figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;4.10: Basic biplot of the crime data. …</figcaption></figure>
 </div>
 </div>
 </div>
-<p>In this dataset the states are grouped by region and we saw some differences among regions in the plot (<a href="#fig-crime-scores-plot12">Figure&nbsp;<span>4.7</span></a>) of component scores. <code><a href="https://rdrr.io/pkg/ggbiplot/man/ggbiplot.html">ggbiplot()</a></code> provides options to include a <code>groups =</code> variable, used to color the observation points and also to draw their data ellipses, facilitating interpretation.</p>
+<p>In this dataset the states are grouped by region and we saw some differences among regions in the plot (<a href="#fig-crime-scores-plot12">Figure&nbsp;<span>4.8</span></a>) of component scores. <code><a href="https://rdrr.io/pkg/ggbiplot/man/ggbiplot.html">ggbiplot()</a></code> provides options to include a <code>groups =</code> variable, used to color the observation points and also to draw their data ellipses, facilitating interpretation.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb16" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ggbiplot/man/ggbiplot.html">ggbiplot</a></span><span class="op">(</span><span class="va">crime.pca</span>,</span>
 <span>   obs.scale <span class="op">=</span> <span class="fl">1</span>, var.scale <span class="op">=</span> <span class="fl">1</span>,</span>
@@ -719,7 +736,7 @@ Looking ahead
 <div class="cell-output-display">
 <div id="fig-crime-biplot2" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure"><p><img src="figs/fig-crime-biplot2-1.png" class="img-fluid figure-img" style="width:80.0%"></p>
-<figcaption class="figure-caption">Figure&nbsp;4.10: Enhanced biplot of the crime data, grouping the states by region and adding data ellipses.</figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;4.11: Enhanced biplot of the crime data, grouping the states by region and adding data ellipses.</figcaption></figure>
 </div>
 </div>
 </div>
@@ -749,11 +766,11 @@ Looking ahead
 <div class="cell-output-display">
 <div id="fig-crime-biplot3" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure"><p><img src="figs/fig-crime-biplot3-1.png" class="img-fluid figure-img" style="width:80.0%"></p>
-<figcaption class="figure-caption">Figure&nbsp;4.11: Biplot of dimensions 1 &amp; 3 of the crime data.</figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;4.12: Biplot of dimensions 1 &amp; 3 of the crime data.</figcaption></figure>
 </div>
 </div>
 </div>
-<p>Dimension 3 in <a href="#fig-crime-biplot3">Figure&nbsp;<span>4.11</span></a> is more subtle. One interpretation is a contrast between larceny, which is a simple theft and robbery, which involves stealing something from a person and is considered a more serious crime with an element of possible violence. In this plot, murder has a relatively short variable vector, so does not contribute very much to differences among the states.</p>
+<p>Dimension 3 in <a href="#fig-crime-biplot3">Figure&nbsp;<span>4.12</span></a> is more subtle. One interpretation is a contrast between larceny, which is a simple theft and robbery, which involves stealing something from a person and is considered a more serious crime with an element of possible violence. In this plot, murder has a relatively short variable vector, so does not contribute very much to differences among the states.</p>
 </section></section><section id="application-variable-ordering-for-data-displays" class="level2" data-number="4.4"><h2 data-number="4.4" class="anchored" data-anchor-id="application-variable-ordering-for-data-displays">
 <span class="header-section-number">4.4</span> Application: Variable ordering for data displays</h2>
 <p>In many multivariate data displays, such as scatterplot matrices, parallel coordinate plots and others reviewed in <a href="03-multivariate_plots.html"><span>Chapter&nbsp;3</span></a>, the order of different variables might seem arbitrary. They might appear in alphabetic order, or more often in the order they appear in your dataset, for example when you use <code>pairs(mydata)</code>. Yet, the principle of <em>effect ordering</em> (<span class="citation" data-cites="FriendlyKwan:03:effect">Friendly &amp; Kwan (<a href="90-references.html#ref-FriendlyKwan:03:effect" role="doc-biblioref">2003</a>)</span>) for variables says you should try to arrange the variables so that adjacent ones are as similar as possible. <strong>TODO</strong>: Mention seriation as the general topic.</p>
@@ -770,7 +787,7 @@ Looking ahead
 <div class="cell-output-display">
 <div id="fig-mtcars-corrplot-varorder" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure"><p><img src="figs/fig-mtcars-corrplot-varorder-1.png" class="img-fluid figure-img" style="width:75.0%"></p>
-<figcaption class="figure-caption">Figure&nbsp;4.12: Corrplot of <code>mtcars</code> data, with the variables in the order they appear in the dataset.</figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;4.13: Corrplot of <code>mtcars</code> data, with the variables in the order they appear in the dataset.</figcaption></figure>
 </div>
 </div>
 </div>
@@ -799,7 +816,7 @@ a_i =
     \tan^{-1} (v_{i2}/v_{i1}) + \pi, &amp; \text{otherwise.}
   \end{cases}     
 \]</span> (read <span class="math inline">\(\tan^{-1}(x)\)</span> as “the angle whose tangent is <span class="math inline">\(x\)</span>”.)</p>
-<p>For the <code>mtcars</code> data the biplot in <a href="#fig-mtcars-biplot">Figure&nbsp;<span>4.13</span></a> accounts for 84% of the total variance so a 2D representation is fairly good. The plotshows the variables as widely dispersed. There is a collection at the left of positively correlated variables and another positively correlated set at the right.</p>
+<p>For the <code>mtcars</code> data the biplot in <a href="#fig-mtcars-biplot">Figure&nbsp;<span>4.14</span></a> accounts for 84% of the total variance so a 2D representation is fairly good. The plotshows the variables as widely dispersed. There is a collection at the left of positively correlated variables and another positively correlated set at the right.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb20" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">mtcars.pca</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/prcomp.html">prcomp</a></span><span class="op">(</span><span class="va">mtcars</span>, scale. <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/ggbiplot/man/ggbiplot.html">ggbiplot</a></span><span class="op">(</span><span class="va">mtcars.pca</span>,</span>
@@ -811,12 +828,12 @@ a_i =
 <div class="cell-output-display">
 <div id="fig-mtcars-biplot" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure"><p><img src="figs/fig-mtcars-biplot-1.png" class="img-fluid figure-img" style="width:70.0%"></p>
-<figcaption class="figure-caption">Figure&nbsp;4.13: Biplot of the <code>mtcars</code> data …</figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;4.14: Biplot of the <code>mtcars</code> data …</figcaption></figure>
 </div>
 </div>
 </div>
 <p>In <code><a href="https://rdrr.io/pkg/corrplot/man/corrplot.html">corrplot()</a></code> principal component variable ordering is implemented using the <code>order = "AOE"</code> option. There are a variety of other methods based on hierarchical cluster analysis described in the <a href="https://cran.r-project.org/web/packages/corrplot/vignettes/corrplot-intro.html">package vignette</a>.</p>
-<p><a href="#fig-mtcars-corrplot-pcaorder">Figure&nbsp;<span>4.14</span></a> shows the result. A nice feature of <code><a href="https://rdrr.io/pkg/corrplot/man/corrplot.html">corrplot()</a></code> is the ability to manually highlight blocks of variables that have a similar pattern of signs by outlining them with rectangles. From the biplot, the two main clusters of positively correlated variables seemed clear, and are outlined in the plot using <code><a href="https://rdrr.io/pkg/corrplot/man/corrRect.html">corrplot::corrRect()</a></code>. What became clear in the corrplot is that <code>qsec</code>, the time to drive a quarter-mile from a dead start didn’t fit this pattern, so I highlighted it separately.</p>
+<p><a href="#fig-mtcars-corrplot-pcaorder">Figure&nbsp;<span>4.15</span></a> shows the result. A nice feature of <code><a href="https://rdrr.io/pkg/corrplot/man/corrplot.html">corrplot()</a></code> is the ability to manually highlight blocks of variables that have a similar pattern of signs by outlining them with rectangles. From the biplot, the two main clusters of positively correlated variables seemed clear, and are outlined in the plot using <code><a href="https://rdrr.io/pkg/corrplot/man/corrRect.html">corrplot::corrRect()</a></code>. What became clear in the corrplot is that <code>qsec</code>, the time to drive a quarter-mile from a dead start didn’t fit this pattern, so I highlighted it separately.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb21" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/corrplot/man/corrplot.html">corrplot</a></span><span class="op">(</span><span class="va">R</span>, </span>
 <span>         method <span class="op">=</span> <span class="st">'ellipse'</span>, </span>
@@ -828,11 +845,11 @@ a_i =
 <div class="cell-output-display">
 <div id="fig-mtcars-corrplot-pcaorder" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure"><p><img src="figs/fig-mtcars-corrplot-pcaorder-1.png" class="img-fluid figure-img" style="width:75.0%"></p>
-<figcaption class="figure-caption">Figure&nbsp;4.14: Corrplot of <code>mtcars</code> data, with the variables ordered according to the variable vectors in the biplot.</figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;4.15: Corrplot of <code>mtcars</code> data, with the variables ordered according to the variable vectors in the biplot.</figcaption></figure>
 </div>
 </div>
 </div>
-<p>But wait, there is something else to be seen in <a href="#fig-mtcars-corrplot-pcaorder">Figure&nbsp;<span>4.14</span></a>. Can you see one cell that doesn’t fit with the rest?</p>
+<p>But wait, there is something else to be seen in <a href="#fig-mtcars-corrplot-pcaorder">Figure&nbsp;<span>4.15</span></a>. Can you see one cell that doesn’t fit with the rest?</p>
 <p>Yes, the correlation of number of forward gears (<code>gear</code>) and number of carburators (<code>carb</code>) in the upper left and lower right corners is moderately positive (0.27) while all the others in their off-diagonal blocks are negative.</p>
 </section><section id="elliptical-insights-outlier-detection" class="level2" data-number="4.5"><h2 data-number="4.5" class="anchored" data-anchor-id="elliptical-insights-outlier-detection">
 <span class="header-section-number">4.5</span> Elliptical insights: Outlier detection</h2>
@@ -843,21 +860,21 @@ a_i =
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,             <span class="fl">1.5</span>, <span class="op">-</span><span class="fl">1.5</span><span class="op">)</span></span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">x</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">100</span><span class="op">]</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>, <span class="op">-</span><span class="fl">1.5</span>, <span class="fl">1.5</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>When these are plotted with a data ellipse in <a href="#fig-outlier-demo">Figure&nbsp;<span>4.15</span></a> (left), you can see the discrepant points labeled 101 and 102, but they do not stand out as unusual on either <span class="math inline">\(x\)</span> or <span class="math inline">\(y\)</span>. The transformation to from data space to principal components space, shown in <a href="#fig-outlier-demo">Figure&nbsp;<span>4.15</span></a> (right), is simply a rotation of <span class="math inline">\((x, y)\)</span> to a space whose coordinate axes are the major and minor axes of the data ellipse, <span class="math inline">\((PC_1, PC_2)\)</span>. In this view, the additional points appear a univariate outliers on the smallest dimension, <span class="math inline">\(PC_2\)</span>.</p>
+<p>When these are plotted with a data ellipse in <a href="#fig-outlier-demo">Figure&nbsp;<span>4.16</span></a> (left), you can see the discrepant points labeled 101 and 102, but they do not stand out as unusual on either <span class="math inline">\(x\)</span> or <span class="math inline">\(y\)</span>. The transformation to from data space to principal components space, shown in <a href="#fig-outlier-demo">Figure&nbsp;<span>4.16</span></a> (right), is simply a rotation of <span class="math inline">\((x, y)\)</span> to a space whose coordinate axes are the major and minor axes of the data ellipse, <span class="math inline">\((PC_1, PC_2)\)</span>. In this view, the additional points appear a univariate outliers on the smallest dimension, <span class="math inline">\(PC_2\)</span>.</p>
 <div class="cell" data-layout-align="center">
 <div class="cell-output-display">
 <div id="fig-outlier-demo" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure"><p><img src="images/outlier-demo.png" class="img-fluid figure-img" style="width:100.0%"></p>
-<figcaption class="figure-caption">Figure&nbsp;4.15: <strong>Outlier demonstration</strong>: The left panel shows the original data and highlights the two discrepant points, which do not appear to be unusual on either x or y. The right panel shows the data rotated to principal components, where the labeled points stand out on the smallest PCA dimension.</figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;4.16: <strong>Outlier demonstration</strong>: The left panel shows the original data and highlights the two discrepant points, which do not appear to be unusual on either x or y. The right panel shows the data rotated to principal components, where the labeled points stand out on the smallest PCA dimension.</figcaption></figure>
 </div>
 </div>
 </div>
-<p>To see this more clearly, <a href="#fig-outlier-animation">Figure&nbsp;<span>4.16</span></a> shows an animation of the rotation from data space to PCA space. This uses <code><a href="https://friendly.github.io/heplots/reference/interpPlot.html">heplots::interpPlot()</a></code> …</p>
+<p>To see this more clearly, <a href="#fig-outlier-animation">Figure&nbsp;<span>4.17</span></a> shows an animation of the rotation from data space to PCA space. This uses <code><a href="https://friendly.github.io/heplots/reference/interpPlot.html">heplots::interpPlot()</a></code> …</p>
 <div id="fig-outlier-animation" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure"><div data-align="center">
 <p><iframe width="480" height="480" src="images/outlier-demo.gif"></iframe></p>
 </div>
-<figcaption class="figure-caption">Figure&nbsp;4.16: Animation of rotation from data space to PCA space.</figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;4.17: Animation of rotation from data space to PCA space.</figcaption></figure>
 </div>
 
 
