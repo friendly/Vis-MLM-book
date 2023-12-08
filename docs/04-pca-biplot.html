@@ -266,7 +266,8 @@ div.csl-indent {
   </ul>
 </li>
   <li><a href="#application-variable-ordering-for-data-displays" id="toc-application-variable-ordering-for-data-displays" class="nav-link" data-scroll-target="#application-variable-ordering-for-data-displays"><span class="header-section-number">4.4</span> Application: Variable ordering for data displays</a></li>
-  <li><a href="#elliptical-insights-outlier-detection" id="toc-elliptical-insights-outlier-detection" class="nav-link" data-scroll-target="#elliptical-insights-outlier-detection"><span class="header-section-number">4.5</span> Elliptical insights: Outlier detection</a></li>
+  <li><a href="#application-eigenfaces" id="toc-application-eigenfaces" class="nav-link" data-scroll-target="#application-eigenfaces"><span class="header-section-number">4.5</span> Application: Eigenfaces</a></li>
+  <li><a href="#elliptical-insights-outlier-detection" id="toc-elliptical-insights-outlier-detection" class="nav-link" data-scroll-target="#elliptical-insights-outlier-detection"><span class="header-section-number">4.6</span> Elliptical insights: Outlier detection</a></li>
   </ul><div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/friendly/vis-MLM-book/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
     </div>
 <!-- main -->
@@ -406,15 +407,43 @@ Looking ahead
 <p><strong>TODO</strong>: Simple PCA example using workers data</p>
 </section><section id="mathematics-and-geometry-of-pca" class="level3" data-number="4.2.2"><h3 data-number="4.2.2" class="anchored" data-anchor-id="mathematics-and-geometry-of-pca">
 <span class="header-section-number">4.2.2</span> Mathematics and geometry of PCA</h3>
-<p>As the ideas of principal components developed, there was a happy marriage of Galton’s geometrical intuition and Pearson’s mathematical analysis. The best men at the wedding were ellipses and higher-dimensional ellipsoids. The brides maids were eigenvectors, pointing in as many different directions as space would allow, each sized according to their associated eigenvalues. Attending the wedding were the ghosts of uncles, Leonhard Euler, Jean-Louis Lagrange, Augustin-Louis Cauchy and others who had earlier discovered the mathematical properties of quadratic forms in relation to problems in physics.</p>
-<p>The key idea in the statistical application was that, for a set of variables <span class="math inline">\(\mathbf{x}_1, \mathbf{x}_2, \dots, \mathbf{x}_p\)</span>, the <span class="math inline">\(p \times p\)</span> covariance matrix <span class="math inline">\(\mathbf{S}\)</span> could be expressed exactly as a matrix product involving a matrix <span class="math inline">\(\mathbf{V}\)</span>, whose columns are eigenvectors (<span class="math inline">\(\mathbf{v}_i\)</span>) and a diagonal matrix <span class="math inline">\(\mathbf{\Lambda}\)</span>, whose diagonal elements (<span class="math inline">\(\lambda_i\)</span>) are the corresponding eigenvalues,</p>
+<p>As the ideas of principal components developed, there was a happy marriage of Galton’s geometrical intuition and Pearson’s mathematical analysis. The best men at the wedding were ellipses and higher-dimensional ellipsoids. The brides maids were eigenvectors, pointing in as many different directions as space would allow, each sized according to their associated eigenvalues. Attending the wedding were the ghosts of uncles, Leonhard Euler, Jean-Louis Lagrange, Augustin-Louis Cauchy and others who had earlier discovered the mathematical properties of ellipses and quadratic forms in relation to problems in physics.</p>
+<p>The key idea in the statistical application was that, for a set of variables <span class="math inline">\(\mathbf{x}_1, \mathbf{x}_2, \dots, \mathbf{x}_p\)</span>, the <span class="math inline">\(p \times p\)</span> covariance matrix <span class="math inline">\(\mathbf{S}\)</span> could be expressed <strong>exactly</strong> as a matrix product involving a matrix <span class="math inline">\(\mathbf{V}\)</span>, whose columns are <em>eigenvectors</em> (<span class="math inline">\(\mathbf{v}_i\)</span>) and a diagonal matrix <span class="math inline">\(\mathbf{\Lambda}\)</span>, whose diagonal elements (<span class="math inline">\(\lambda_i\)</span>) are the corresponding <em>eigenvalues</em>.</p>
+<p>To explain this, it is helpful to use a bit of matrix math:</p>
+<p><span class="math display">\[\begin{align*}
+\mathbf{S}_{p \times p} &amp; = \mathbf{V}_{p \times p} \quad\quad \mathbf{\Lambda}_{p \times p} \quad\quad \mathbf{V}_{p \times p}^T \\
+           &amp; = \left( \mathbf{v}_1, \, \mathbf{v}_2, \,\dots, \, \mathbf{v}_p \right)
+           \begin{pmatrix}
+             \lambda_1 &amp;  &amp;  &amp; \\
+             &amp; \lambda_2  &amp;   &amp; \\
+             &amp;  &amp; \ddots &amp; \\
+             &amp;  &amp;  &amp; \lambda_p
+            \end{pmatrix}
+            
+            \begin{pmatrix}
+            \mathbf{v}_1^T\\
+            \mathbf{v}_2^T\\
+            \vdots\\
+            \mathbf{v}_p^T\\
+            \end{pmatrix}
+           \\
+           &amp; = \lambda_1 \mathbf{v}_1 \mathbf{v}_1^T + \lambda_2 \mathbf{v}_2 \mathbf{v}_2^T + \cdots + \lambda_p \mathbf{v}_p \mathbf{v}_p^T
+\end{align*}\]</span></p>
+<p>In this equation,</p>
+<ul>
+<li><p>The last line follows because <span class="math inline">\(\mathbf{\Lambda}\)</span> is a diagonal matrix, so <span class="math inline">\(\mathbf{S}\)</span> is expressed as a sum of outer products of each <span class="math inline">\(\mathbf{v}_i\)</span> with itself.<br></p></li>
+<li><p>The columns of <span class="math inline">\(\mathbf{V}\)</span> are the eigenvectors of <span class="math inline">\(\mathbf{S}\)</span>. They are orthogonal and of unit length, so <span class="math inline">\(\mathbf{V}^T \mathbf{V} = \mathbf{I}\)</span> and thus they represent orthogonal (uncorrelated) directions in data space.</p></li>
+<li><p>The columns <span class="math inline">\(\mathbf{v}_i\)</span> are the weights applied to the variables to produce the scores on the principal components. For example, the first principal component is the weighted sum:</p></li>
+</ul>
 <p><span class="math display">\[
-\begin{align*}
-\mathbf{S} &amp; = \mathbf{V} \mathbf{\Lambda} \mathbf{V}^T \\
-           &amp; = \lambda_1 \mathbf{v}_1 \mathbf{v}_1^T + \lambda_2 \mathbf{v}_2 \mathbf{v}_2^T + ... + \lambda_p \mathbf{v}_p \mathbf{v}_p^T
-\end{align*}
-\]</span> In this equation, * The columns of <span class="math inline">\(\mathbf{V}\)</span> are the eigenvectors and they represent orthogonal (uncorrelated) directions in data space. The values <span class="math inline">\(\mathbf{v}_i\)</span> are the weights applied to the variables. * The eigenvalues, <span class="math inline">\(\lambda_i\)</span> …</p>
-<p>For the case of two variables, <span class="math inline">\(\mathbf{x}_1\)</span> and <span class="math inline">\(\mathbf{x}_2\)</span> <a href="#fig-pca-rotation">Figure&nbsp;<span>4.6</span></a> shows the transformation …</p>
+PC1 = v_{11} \mathbf{x}_1 + v_{12} \mathbf{x}_2 + \cdots + v_{1p} \mathbf{x}_p
+\]</span></p>
+<ul>
+<li><p>The eigenvalues, <span class="math inline">\(\lambda_1, \lambda_2, \dots, \lambda_p\)</span> are the variances of the the components, because <span class="math inline">\(\mathbf{v}_i^T \;\mathbf{S} \; \mathbf{v}_i = \lambda_i\)</span>.</p></li>
+<li><p>It is usually the case that the variables <span class="math inline">\(\mathbf{x}_1, \mathbf{x}_2, \dots, \mathbf{x}_p\)</span> are linearly independent, which means that none of these is an exact linear combination of the others. In this case, all eigenvalues <span class="math inline">\(\lambda_i\)</span> are positive and the covariance matrix <span class="math inline">\(\mathbf{S}\)</span> is said to have <strong>rank</strong> <span class="math inline">\(p\)</span>.</p></li>
+<li><p>Here is the key fact: If the eigenvalues are arranged in order, so that <span class="math inline">\(\lambda_1 &gt; \lambda_2 &gt; \dots &gt; \lambda_p\)</span>, then the first <span class="math inline">\(d\)</span> components give a <span class="math inline">\(d\)</span>-dimensional approximation to <span class="math inline">\(\mathbf{S}\)</span>, which accounts for <span class="math inline">\(\sigma_i^d \lambda_i / \sigma_i^p \lambda_i\)</span> of the total variance.</p></li>
+</ul>
+<p>For the case of two variables, <span class="math inline">\(\mathbf{x}_1\)</span> and <span class="math inline">\(\mathbf{x}_2\)</span> <a href="#fig-pca-rotation">Figure&nbsp;<span>4.6</span></a> shows the transformation from data space to component space. The eigenvectors, <span class="math inline">\(\mathbf{v}_1, \mathbf{v}_2\)</span> are the major and minor axes of the data ellipse, whose lengths are the square roots <span class="math inline">\(\sqrt{\lambda_1}, \sqrt{\lambda_2}\)</span> of the eigenvalues.</p>
 <div class="cell" data-layout-align="center">
 <div class="cell-output-display">
 <div id="fig-pca-rotation" class="quarto-figure quarto-figure-center anchored">
@@ -425,7 +454,8 @@ Looking ahead
 </div>
 </section><section id="finding-principal-components" class="level3" data-number="4.2.3"><h3 data-number="4.2.3" class="anchored" data-anchor-id="finding-principal-components">
 <span class="header-section-number">4.2.3</span> Finding principal components</h3>
-<p>In R, principal components analysis is most easily carried out using <code><a href="https://rdrr.io/r/stats/prcomp.html">stats::prcomp()</a></code> or <code><a href="https://rdrr.io/r/stats/princomp.html">stats::princomp()</a></code> or similar functions in other packages such as <code>FactomineR::PCA()</code>. The <strong>FactoMineR</strong> package <span class="citation" data-cites="R-FactoMineR">(<a href="90-references.html#ref-R-FactoMineR" role="doc-biblioref">Husson et al., 2023</a>)</span> has extensive capabilities for exploratory analysis of multivariate data (PCA, correspondence analysis, cluster analysis, …).</p>
+<p>In R, principal components analysis is most easily carried out using <code><a href="https://rdrr.io/r/stats/prcomp.html">stats::prcomp()</a></code> or <code><a href="https://rdrr.io/r/stats/princomp.html">stats::princomp()</a></code> or similar functions in other packages such as <code>FactomineR::PCA()</code>. The <strong>FactoMineR</strong> package <span class="citation" data-cites="R-FactoMineR Husson-etal-2017">(<a href="90-references.html#ref-Husson-etal-2017" role="doc-biblioref">Husson et al., 2017</a>, <a href="90-references.html#ref-R-FactoMineR" role="doc-biblioref">2023</a>)</span> has extensive capabilities for exploratory analysis of multivariate data (PCA, correspondence analysis, cluster analysis).</p>
+<p>A particular strength of FactoMineR for PCA is that it allows the inclusion of <em>supplementary variables</em> (which can be categorical or quantitative) and <em>supplementary points</em> for individuals. These are not used in the analysis, but are projected into the plots to facilitate interpretation. For example, in the analysis of the <code>crime</code> data described below, it would be useful to have measures of other characteristics of the U.S. states, such as poverty and average level of education.</p>
 <p>Unfortunately, although all of these performing similar calculations, the options for analysis and the details of the result they return differ.</p>
 <p>The important options for analysis include:</p>
 <ul>
@@ -575,13 +605,13 @@ Looking ahead
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb11" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">crime.pca</span> <span class="op">|&gt;</span> <span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/pluck.html">pluck</a></span><span class="op">(</span><span class="st">"rotation"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;             PC1     PC2     PC3     PC4     PC5     PC6     PC7</span></span>
-<span><span class="co">#&gt; murder   -0.300 -0.6292  0.1782 -0.2321  0.5381  0.2591  0.2676</span></span>
-<span><span class="co">#&gt; rape     -0.432 -0.1694 -0.2442  0.0622  0.1885 -0.7733 -0.2965</span></span>
-<span><span class="co">#&gt; robbery  -0.397  0.0422  0.4959 -0.5580 -0.5200 -0.1144 -0.0039</span></span>
-<span><span class="co">#&gt; assault  -0.397 -0.3435 -0.0695  0.6298 -0.5067  0.1724  0.1917</span></span>
-<span><span class="co">#&gt; burglary -0.440  0.2033 -0.2099 -0.0576  0.1010  0.5360 -0.6481</span></span>
-<span><span class="co">#&gt; larceny  -0.357  0.4023 -0.5392 -0.2349  0.0301  0.0394  0.6017</span></span>
-<span><span class="co">#&gt; auto     -0.295  0.5024  0.5684  0.4192  0.3698 -0.0573  0.1470</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; murder   -0.300 -0.6292 -0.1782  0.2321  0.5381  0.2591  0.2676</span></span>
+<span><span class="co">#&gt; rape     -0.432 -0.1694  0.2442 -0.0622  0.1885 -0.7733 -0.2965</span></span>
+<span><span class="co">#&gt; robbery  -0.397  0.0422 -0.4959  0.5580 -0.5200 -0.1144 -0.0039</span></span>
+<span><span class="co">#&gt; assault  -0.397 -0.3435  0.0695 -0.6298 -0.5067  0.1724  0.1917</span></span>
+<span><span class="co">#&gt; burglary -0.440  0.2033  0.2099  0.0576  0.1010  0.5360 -0.6481</span></span>
+<span><span class="co">#&gt; larceny  -0.357  0.4023  0.5392  0.2349  0.0301  0.0394  0.6017</span></span>
+<span><span class="co">#&gt; auto     -0.295  0.5024 -0.5684 -0.4192  0.3698 -0.0573  0.1470</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>But note something important in this output: All of the weights for the first component are negative. In PCA, the directions of the eigenvectors are completely arbitrary, in the sense that the vector <span class="math inline">\(-\mathbf{v}_i\)</span> gives the same linear combination as <span class="math inline">\(\mathbf{v}_i\)</span>, but with its’ sign reversed. For interpretation, it is useful (and usually recommended) to reflect the loadings to a positive orientation by multiplying them by -1.</p>
 <p>To reflect the PCA loadings and get them into a convenient format for plotting with <code><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot()</a></code>, it is necessary to do a bit of processing, including making the <code><a href="https://rdrr.io/r/base/row.names.html">row.names()</a></code> into an explicit variable for the purpose of labeling.</p>
@@ -851,8 +881,10 @@ a_i =
 </div>
 <p>But wait, there is something else to be seen in <a href="#fig-mtcars-corrplot-pcaorder">Figure&nbsp;<span>4.15</span></a>. Can you see one cell that doesn’t fit with the rest?</p>
 <p>Yes, the correlation of number of forward gears (<code>gear</code>) and number of carburators (<code>carb</code>) in the upper left and lower right corners is moderately positive (0.27) while all the others in their off-diagonal blocks are negative.</p>
-</section><section id="elliptical-insights-outlier-detection" class="level2" data-number="4.5"><h2 data-number="4.5" class="anchored" data-anchor-id="elliptical-insights-outlier-detection">
-<span class="header-section-number">4.5</span> Elliptical insights: Outlier detection</h2>
+</section><section id="application-eigenfaces" class="level2" data-number="4.5"><h2 data-number="4.5" class="anchored" data-anchor-id="application-eigenfaces">
+<span class="header-section-number">4.5</span> Application: Eigenfaces</h2>
+</section><section id="elliptical-insights-outlier-detection" class="level2" data-number="4.6"><h2 data-number="4.6" class="anchored" data-anchor-id="elliptical-insights-outlier-detection">
+<span class="header-section-number">4.6</span> Elliptical insights: Outlier detection</h2>
 <p>The data ellipse (<a href="03-multivariate_plots.html#sec-data-ellipse"><span>Section&nbsp;3.1.4</span></a>), or ellipsoid in more than 2D is fundamental in regression. But also, as Pearson showed, it is key to understanding principal components analysis, where the principal component directions are simply the axes of the ellipsoid of the data. As such, observations that are unusual in data space may not stand out in univariate views of the variables, but will stand out in principal component space, usually on the <em>smallest</em> dimension.</p>
 <p>As an illustration, I created a dataset of <span class="math inline">\(n = 100\)</span> observations with a linear relation, <span class="math inline">\(y = x + \mathcal{N}(0, 1)\)</span> and then added two discrepant points at (1.5, -1.5), (-1.5, 1.5).</p>
 <div class="cell" data-layout-align="center">
@@ -920,6 +952,9 @@ Greenacre, M. (2010). <em>Biplots in practice</em>. Fundaci<span>ó</span>n BBVA
 </div>
 <div id="ref-R-FactoMineR" class="csl-entry" role="listitem">
 Husson, F., Josse, J., Le, S., &amp; Mazet, J. (2023). <em>FactoMineR: Multivariate exploratory data analysis and data mining</em>. <a href="http://factominer.free.fr">http://factominer.free.fr</a>
+</div>
+<div id="ref-Husson-etal-2017" class="csl-entry" role="listitem">
+Husson, F., Le, S., &amp; Pagès, J. (2017). <em>Exploratory multivariate analysis by example using r</em>. Chapman &amp; Hall. <a href="https://doi.org/10.1201/b21874">https://doi.org/10.1201/b21874</a>
 </div>
 <div id="ref-Pearson:1896" class="csl-entry" role="listitem">
 Pearson, K. (1896). Contributions to the mathematical theory of evolution—<span>III</span>, regression, heredity and panmixia. <em>Philosophical Transactions of the Royal Society of London</em>, <em>187</em>, 253–318.

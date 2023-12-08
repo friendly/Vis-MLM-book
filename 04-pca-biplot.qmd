@@ -234,25 +234,63 @@ higher-dimensional ellipsoids. The brides maids were eigenvectors, pointing in a
 different directions as space would allow, each sized according to their associated eigenvalues.
 Attending the wedding were the ghosts of uncles, Leonhard Euler, Jean-Louis Lagrange,
 Augustin-Louis Cauchy and others who had earlier discovered the mathematical properties
-of quadratic forms in relation to problems in physics.
+of ellipses and quadratic forms in relation to problems in physics.
 
 The key idea in the statistical application was that, for a set of variables $\mathbf{x}_1, \mathbf{x}_2, \dots, \mathbf{x}_p$,
-the $p \times p$ covariance matrix $\mathbf{S}$ could be expressed exactly as a matrix
-product involving a matrix $\mathbf{V}$, whose columns are eigenvectors ($\mathbf{v}_i$) and a
-diagonal matrix $\mathbf{\Lambda}$, whose diagonal elements ($\lambda_i$) are the corresponding eigenvalues,
+the $p \times p$ covariance matrix $\mathbf{S}$ could be expressed **exactly** as a matrix
+product involving a matrix $\mathbf{V}$, whose columns are _eigenvectors_ ($\mathbf{v}_i$) and a
+diagonal matrix $\mathbf{\Lambda}$, whose diagonal elements ($\lambda_i$) are the corresponding _eigenvalues_.
+
+To explain this, it is helpful to use a bit of matrix math:
+
+\begin{align*}
+\mathbf{S}_{p \times p} & = \mathbf{V}_{p \times p} \quad\quad \mathbf{\Lambda}_{p \times p} \quad\quad \mathbf{V}_{p \times p}^T \\
+           & = \left( \mathbf{v}_1, \, \mathbf{v}_2, \,\dots, \, \mathbf{v}_p \right)
+           \begin{pmatrix}
+             \lambda_1 &  &  & \\ 
+             & \lambda_2  &   & \\ 
+             &  & \ddots & \\ 
+             &  &  & \lambda_p 
+            \end{pmatrix}
+            
+            \begin{pmatrix}
+            \mathbf{v}_1^T\\ 
+            \mathbf{v}_2^T\\ 
+            \vdots\\ 
+            \mathbf{v}_p^T\\ 
+            \end{pmatrix}
+           \\
+           & = \lambda_1 \mathbf{v}_1 \mathbf{v}_1^T + \lambda_2 \mathbf{v}_2 \mathbf{v}_2^T + \cdots + \lambda_p \mathbf{v}_p \mathbf{v}_p^T
+\end{align*}
+
+In this equation,
+
+* The last line follows because $\mathbf{\Lambda}$ is a diagonal matrix, so $\mathbf{S}$ is expressed as a sum of outer products of each $\mathbf{v}_i$ with itself.  
+* The columns of $\mathbf{V}$ are the eigenvectors of $\mathbf{S}$. They are orthogonal
+and of unit length, so $\mathbf{V}^T \mathbf{V} = \mathbf{I}$ and thus
+they represent orthogonal (uncorrelated) directions in data space. 
+
+* The columns $\mathbf{v}_i$ are the weights applied to the variables to produce the scores on
+the principal components. For example, the first principal component is the weighted sum:
 
 $$
-\begin{align*}
-\mathbf{S} & = \mathbf{V} \mathbf{\Lambda} \mathbf{V}^T \\
-           & = \lambda_1 \mathbf{v}_1 \mathbf{v}_1^T + \lambda_2 \mathbf{v}_2 \mathbf{v}_2^T + ... + \lambda_p \mathbf{v}_p \mathbf{v}_p^T
-\end{align*}
+PC1 = v_{11} \mathbf{x}_1 + v_{12} \mathbf{x}_2 + \cdots + v_{1p} \mathbf{x}_p
 $$
-In this equation,
-* The columns of $\mathbf{V}$ are the eigenvectors and they represent orthogonal (uncorrelated) directions in data space. The values $\mathbf{v}_i$ are the weights applied to the variables.
-* The eigenvalues, $\lambda_i$ ...
+
+* The eigenvalues, $\lambda_1, \lambda_2, \dots, \lambda_p$ are the variances of the the components, because
+$\mathbf{v}_i^T \;\mathbf{S} \; \mathbf{v}_i = \lambda_i$.
+
+* It is usually the case that the variables $\mathbf{x}_1, \mathbf{x}_2, \dots, \mathbf{x}_p$ are linearly
+independent, which means that none of these is an exact linear combination of the others. In this case,
+all eigenvalues $\lambda_i$ are positive and the covariance matrix $\mathbf{S}$ is said to have **rank** $p$.
+
+* Here is the key fact: If the eigenvalues are arranged in order, so that $\lambda_1 > \lambda_2 > \dots > \lambda_p$, then the first $d$ components give a $d$-dimensional approximation to $\mathbf{S}$, which accounts for $\sigma_i^d \lambda_i / \sigma_i^p \lambda_i$ of the total variance.
 
 For the case of two variables, $\mathbf{x}_1$ and $\mathbf{x}_2$ @fig-pca-rotation shows the
-transformation ...
+transformation from data space to component space. The eigenvectors, $\mathbf{v}_1, \mathbf{v}_2$ 
+are the major and minor
+axes of the data ellipse, whose lengths are the square roots $\sqrt{\lambda_1}, \sqrt{\lambda_2}$
+of the eigenvalues.
 ```{r}
 #| label: fig-pca-rotation
 #| out-width: "100%"
@@ -266,8 +304,15 @@ transformation ...
 
 In R, principal components analysis is most easily carried out using `stats::prcomp()` or `stats::princomp()`
 or similar functions in other packages such as `FactomineR::PCA()`.
-The **FactoMineR** package [@R-FactoMineR] 
-has extensive capabilities for exploratory analysis of multivariate data (PCA, correspondence analysis, cluster analysis, ...). 
+The **FactoMineR** package [@R-FactoMineR; @Husson-etal-2017] 
+has extensive capabilities for exploratory analysis of multivariate data (PCA, correspondence analysis, cluster analysis).  
+
+A particular strength of FactoMineR
+for PCA is that it allows the inclusion of _supplementary variables_ (which can be categorical
+or quantitative) and _supplementary points_ for individuals. These are not used in the analysis,
+but are projected into the plots to facilitate interpretation. For example, in the analysis of
+the `crime` data described below, it would be useful to have measures of other characteristics
+of the U.S. states, such as poverty and average level of education.
 
 Unfortunately, although all of these performing similar calculations, the options for
 analysis and the details of the result they return differ.
@@ -810,6 +855,8 @@ Can you see one cell that doesn't fit with the rest?
 Yes, the correlation of number of forward gears (`gear`) and number of carburators (`carb`)
 in the upper left and lower right corners is moderately positive (0.27) while all the others
 in their off-diagonal blocks are negative. 
+
+## Application: Eigenfaces
 
 ## Elliptical insights: Outlier detection
 
