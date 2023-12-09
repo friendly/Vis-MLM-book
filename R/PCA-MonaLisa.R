@@ -13,9 +13,26 @@ library(ggplot2)
 library(gganimate)
 
 img <- imager::load.image(here("images", "MonaLisa.jpg"))
+img <- imager::load.image("https://github.com/friendly/Vis-MLM-book/blob/master/images/MonaLisa.jpg?raw=true")
 dim(img)
 
 #[1] 640 954   1   3
+
+plot(img)
+
+as.data.frame(img) |> names()
+# [1] "x"     "y"     "cc"    "value"
+
+# to plot with ggplot,need to manipulate r,g,b channels
+img_df <- as.data.frame(img, wide="c") |>
+  mutate(rgb.val=rgb(c.1,c.2,c.3))
+ggplot(data = img_df, 
+       mapping = aes(x = x, y = y, fill = rgb.val)) +
+  geom_raster() + 
+  scale_y_reverse() + scale_fill_identity() +
+  guides(fill = "none")  
+  
+  
 
 img <- imager::load.image(here("images", "MonaLisa-BW.jpg"))
 dim(img)
