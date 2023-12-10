@@ -23,6 +23,12 @@ crime.pca <-
 
 summary(crime.pca)
 
+# information about variables
+var_info <- factoextra::get_pca_var(crime.pca)
+
+# correlations
+var_info |> purrr::pluck("cor")
+
 
 #biplot(crime.pca)
 
@@ -31,6 +37,22 @@ summary(crime.pca)
 # crime.pca$x[,1:2] <- -1 * crime.pca$x[,1:2]
 
 crime.pca <- reflect(crime.pca)
+
+# information about variables
+var_info <- factoextra::get_pca_var(crime.pca)
+
+# correlations
+var_info |> purrr::pluck("cor")
+
+# contributions of dimensions to variables
+var_info |> purrr::pluck("contrib")
+var_info |> purrr::pluck("contrib") |> rowSums()
+var_info |> purrr::pluck("contrib") |> colSums()
+
+
+contrib <- var_info |> purrr::pluck("contrib")
+cbind(contrib, Total = rowSums(contrib)) |>
+  rbind(Total = c(colSums(contrib), NA)) |> round(digits=3)
 
 biplot(crime.pca)
 
