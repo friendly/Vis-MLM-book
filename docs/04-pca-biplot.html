@@ -605,13 +605,13 @@ PC1 = v_{11} \mathbf{x}_1 + v_{12} \mathbf{x}_2 + \cdots + v_{1p} \mathbf{x}_p
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb11" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">crime.pca</span> <span class="op">|&gt;</span> <span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/pluck.html">pluck</a></span><span class="op">(</span><span class="st">"rotation"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;             PC1     PC2     PC3     PC4     PC5     PC6     PC7</span></span>
-<span><span class="co">#&gt; murder   -0.300 -0.6292 -0.1782  0.2321  0.5381  0.2591  0.2676</span></span>
-<span><span class="co">#&gt; rape     -0.432 -0.1694  0.2442 -0.0622  0.1885 -0.7733 -0.2965</span></span>
-<span><span class="co">#&gt; robbery  -0.397  0.0422 -0.4959  0.5580 -0.5200 -0.1144 -0.0039</span></span>
-<span><span class="co">#&gt; assault  -0.397 -0.3435  0.0695 -0.6298 -0.5067  0.1724  0.1917</span></span>
-<span><span class="co">#&gt; burglary -0.440  0.2033  0.2099  0.0576  0.1010  0.5360 -0.6481</span></span>
-<span><span class="co">#&gt; larceny  -0.357  0.4023  0.5392  0.2349  0.0301  0.0394  0.6017</span></span>
-<span><span class="co">#&gt; auto     -0.295  0.5024 -0.5684 -0.4192  0.3698 -0.0573  0.1470</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; murder   -0.300 -0.6292  0.1782 -0.2321  0.5381  0.2591  0.2676</span></span>
+<span><span class="co">#&gt; rape     -0.432 -0.1694 -0.2442  0.0622  0.1885 -0.7733 -0.2965</span></span>
+<span><span class="co">#&gt; robbery  -0.397  0.0422  0.4959 -0.5580 -0.5200 -0.1144 -0.0039</span></span>
+<span><span class="co">#&gt; assault  -0.397 -0.3435 -0.0695  0.6298 -0.5067  0.1724  0.1917</span></span>
+<span><span class="co">#&gt; burglary -0.440  0.2033 -0.2099 -0.0576  0.1010  0.5360 -0.6481</span></span>
+<span><span class="co">#&gt; larceny  -0.357  0.4023 -0.5392 -0.2349  0.0301  0.0394  0.6017</span></span>
+<span><span class="co">#&gt; auto     -0.295  0.5024  0.5684  0.4192  0.3698 -0.0573  0.1470</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>But note something important in this output: All of the weights for the first component are negative. In PCA, the directions of the eigenvectors are completely arbitrary, in the sense that the vector <span class="math inline">\(-\mathbf{v}_i\)</span> gives the same linear combination as <span class="math inline">\(\mathbf{v}_i\)</span>, but with its’ sign reversed. For interpretation, it is useful (and usually recommended) to reflect the loadings to a positive orientation by multiplying them by -1.</p>
 <p>To reflect the PCA loadings and get them into a convenient format for plotting with <code><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot()</a></code>, it is necessary to do a bit of processing, including making the <code><a href="https://rdrr.io/r/base/row.names.html">row.names()</a></code> into an explicit variable for the purpose of labeling.</p>
@@ -889,10 +889,10 @@ a_i =
 <p>The uses here include</p>
 <ul>
 <li>image compression: a process applied to a graphics file to minimize its size in bytes for storage or transmission, without degrading image quality below an acceptable threshold</li>
-<li>image reconstruction:</li>
+<li>image enhancement: improving the quality of an image, with applications in Computer Vision tasks, remote sensing, and satellite imagery.</li>
 <li>facial recognition: classifying or matching a facial image against a large corpus of stored images.</li>
 </ul>
-<p>As an example, consider the black and white version of the Mona Lisa shown in <a href="#fig-MonaLisa">Figure&nbsp;<span>4.16</span></a>, adapted from this <a href="https://kieranhealy.org/blog/archives/2019/10/27/reconstructing-images-using-pca/">blog post</a> by Kieran Healy.</p>
+<p>When PCA is used on facial images, you can think of the process as generating <strong>eigenfaces</strong>, a representation of the pixels in the image in terms of an eigenvalue decomposition. As an example, consider the black and white version of the Mona Lisa shown in <a href="#fig-MonaLisa">Figure&nbsp;<span>4.16</span></a>. The idea and code for this is adapted from this <a href="https://kieranhealy.org/blog/archives/2019/10/27/reconstructing-images-using-pca/">blog post</a> by Kieran Healy.</p>
 <div class="cell" data-layout-align="center">
 <div class="cell-output-display">
 <div id="fig-MonaLisa" class="quarto-figure quarto-figure-center anchored">
@@ -903,6 +903,68 @@ a_i =
 </div>
 <p>It would take too long to explain the entire method, so I’ll just sketch the essential parts here. The complete script for this example is contained in <a href="R/PCA-MonaLisa.R">PCA-MonaLisa.R</a>. …</p>
 <p><strong>TODO</strong>: Show the necessary parts, including the screeplot.</p>
+<p>An image can be imported using <code><a href="https://rdrr.io/pkg/imager/man/load.image.html">imager::load.image()</a></code> which creates a <code>"cimg"</code> object, a 4-dimensional array with dimensions named <code>x,y,z,c</code>. <code>x</code> and <code>y</code> are the usual spatial dimensions, <code>z</code> is a depth dimension (which would correspond to time in a movie), and <code>c</code> is a color dimension containing R, G, B values.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb22" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://asgr.github.io/imager/">imager</a></span><span class="op">)</span></span>
+<span><span class="va">img</span> <span class="op">&lt;-</span> <span class="fu">imager</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/imager/man/load.image.html">load.image</a></span><span class="op">(</span><span class="st">"https://github.com/friendly/Vis-MLM-book/blob/master/images/MonaLisa-BW.jpg?raw=true"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/dim.html">dim</a></span><span class="op">(</span><span class="va">img</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 640 954   1   1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>An <code><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame()</a></code> method converts this to a data frame with <code>x</code> and <code>y</code> coordinates. Each x-y pair is a location in the 640 by 955 pixel grid, and the <code>value</code> is a grayscale value ranging from zero to one.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb23" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">img_df_long</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span><span class="op">(</span><span class="va">img</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">img_df_long</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   x y value</span></span>
+<span><span class="co">#&gt; 1 1 1 0.431</span></span>
+<span><span class="co">#&gt; 2 2 1 0.337</span></span>
+<span><span class="co">#&gt; 3 3 1 0.467</span></span>
+<span><span class="co">#&gt; 4 4 1 0.337</span></span>
+<span><span class="co">#&gt; 5 5 1 0.376</span></span>
+<span><span class="co">#&gt; 6 6 1 0.361</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>However, to do a PCA we will need a matrix of data in wide format containing the grayscale pixel values. We can do this using <code><a href="https://tidyr.tidyverse.org/reference/pivot_wider.html">tidyr::pivot_wider()</a></code>, giving a result with 640 rows and 955 columns.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb24" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">img_df</span> <span class="op">&lt;-</span> <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_wider.html">pivot_wider</a></span><span class="op">(</span><span class="va">img_df_long</span>, </span>
+<span>                             names_from <span class="op">=</span> <span class="va">y</span>, </span>
+<span>                             values_from <span class="op">=</span> <span class="va">value</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/dim.html">dim</a></span><span class="op">(</span><span class="va">img_df</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 640 955</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Mona’s PCA is produced with <code><a href="https://rdrr.io/r/stats/prcomp.html">prcomp()</a></code>, first dropping the <code>x</code> generated above.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb25" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">img_pca</span> <span class="op">&lt;-</span> <span class="va">img_df</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="op">-</span><span class="va">x</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/prcomp.html">prcomp</a></span><span class="op">(</span>scale <span class="op">=</span> <span class="cn">TRUE</span>, center <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Examine the eigenvalues:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb26" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">img_pca</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html">tidy</a></span><span class="op">(</span>matrix <span class="op">=</span> <span class="st">"eigenvalues"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 10 × 4</span></span>
+<span><span class="co">#&gt;       PC std.dev percent cumulative</span></span>
+<span><span class="co">#&gt;    &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;      &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt;  1     1   14.1  0.209        0.209</span></span>
+<span><span class="co">#&gt;  2     2   11.6  0.141        0.350</span></span>
+<span><span class="co">#&gt;  3     3   10.1  0.107        0.457</span></span>
+<span><span class="co">#&gt;  4     4    7.83 0.0643       0.522</span></span>
+<span><span class="co">#&gt;  5     5    6.11 0.0392       0.561</span></span>
+<span><span class="co">#&gt;  6     6    4.75 0.0237       0.585</span></span>
+<span><span class="co">#&gt;  7     7    3.70 0.0143       0.599</span></span>
+<span><span class="co">#&gt;  8     8    3.52 0.0130       0.612</span></span>
+<span><span class="co">#&gt;  9     9    3.12 0.0102       0.622</span></span>
+<span><span class="co">#&gt; 10    10    2.86 0.00855      0.631</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Make a scree plot:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb27" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ggbiplot/man/ggscreeplot.html">ggscreeplot</a></span><span class="op">(</span><span class="va">img_pca</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_x_log10</a></span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure"><p><img src="figs/mona-screeplot-1.png" class="img-fluid figure-img" style="width:100.0%"></p>
+</figure>
+</div>
+</div>
+</div>
 <p>Finally, the recovered images, using 2, 3 , 4, 5, 10, 15, 20, 50, and 100 principal components are plotted using ggplot, giving <a href="#fig-mona-pca">Figure&nbsp;<span>4.17</span></a>.</p>
 <div class="cell" data-layout-align="center">
 <div class="cell-output-display">
@@ -917,7 +979,7 @@ a_i =
 <p>The data ellipse (<a href="03-multivariate_plots.html#sec-data-ellipse"><span>Section&nbsp;3.1.4</span></a>), or ellipsoid in more than 2D is fundamental in regression. But also, as Pearson showed, it is key to understanding principal components analysis, where the principal component directions are simply the axes of the ellipsoid of the data. As such, observations that are unusual in data space may not stand out in univariate views of the variables, but will stand out in principal component space, usually on the <em>smallest</em> dimension.</p>
 <p>As an illustration, I created a dataset of <span class="math inline">\(n = 100\)</span> observations with a linear relation, <span class="math inline">\(y = x + \mathcal{N}(0, 1)\)</span> and then added two discrepant points at (1.5, -1.5), (-1.5, 1.5).</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb22" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">123345</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb28" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">123345</span><span class="op">)</span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,             <span class="fl">1.5</span>, <span class="op">-</span><span class="fl">1.5</span><span class="op">)</span></span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">x</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">100</span><span class="op">]</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>, <span class="op">-</span><span class="fl">1.5</span>, <span class="fl">1.5</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>

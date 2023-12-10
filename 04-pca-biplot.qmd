@@ -875,11 +875,13 @@ pixels in B/W and 1200K pixels in color.
 The uses here include
 
 * image compression:  a process applied to a graphics file to minimize its size in bytes for storage or transmission, without degrading image quality below an acceptable threshold
-* image reconstruction: 
+* image enhancement: improving the quality of an image, with applications in Computer Vision tasks, remote sensing, and satellite imagery. 
 * facial recognition: classifying or matching a facial image against a large corpus of stored images.
 
-As an example, consider the black and white version of the Mona Lisa shown in @fig-MonaLisa,
-adapted from this [blog post](https://kieranhealy.org/blog/archives/2019/10/27/reconstructing-images-using-pca/)
+When PCA is used on facial images, you can think of the process as generating **eigenfaces**,
+a representation of the pixels in the image in terms of an eigenvalue decomposition.
+As an example, consider the black and white version of the Mona Lisa shown in @fig-MonaLisa.
+The idea and code for this is adapted from this [blog post](https://kieranhealy.org/blog/archives/2019/10/27/reconstructing-images-using-pca/)
 by Kieran Healy. 
 
 
@@ -895,6 +897,57 @@ It would take too long to explain the entire method, so I'll just sketch the ess
 The complete script for this example is contained in [PCA-MonaLisa.R](R/PCA-MonaLisa.R). ...
 
 **TODO**: Show the necessary parts, including the screeplot.
+
+An image can be imported using `imager::load.image()` which creates a `"cimg"` object, 
+a 4-dimensional array with dimensions
+named `x,y,z,c`. `x` and `y` are the usual spatial dimensions, `z` is a depth dimension (which would correspond to time in a movie), and `c` is a color dimension containing R, G, B values.
+```{r mona-load}
+library(imager)
+img <- imager::load.image("https://github.com/friendly/Vis-MLM-book/blob/master/images/MonaLisa-BW.jpg?raw=true")
+dim(img)
+```
+
+An `as.data.frame()` method converts this to a data frame with `x` and `y` coordinates.
+Each x-y pair is a location in the 640 by 954 pixel grid, and the `value` is a grayscale value ranging from zero to one.
+```{r mona-reshape-long}
+img_df_long <- as.data.frame(img)
+head(img_df_long)
+```
+
+However, to do a PCA we will need a matrix of data in wide format containing the grayscale pixel values.
+We can do this using `tidyr::pivot_wider()`, giving a result with 640 rows and 954 columns.
+```{r mona-reshape-wide}
+img_df <- pivot_wider(img_df_long, 
+                     names_from = y, 
+                     values_from = value) |>
+  select(-x)
+dim(img_df)
+```
+
+Mona's PCA is produced with `prcomp()`.
+```{r mona-pca}
+img_pca <- img_df |>
+  prcomp(scale = TRUE, center = TRUE)
+```
+
+Examine the eigenvalues:
+
+```{r mona-eig}
+img_pca |>
+  broom::tidy(matrix = "eigenvalues") |> head(10)
+```
+
+
+Make a scree plot:
+
+```{r}
+#| label: mona-screeplot
+#| fig-height: 4
+#| out-width: "100%"
+ggscreeplot(img_pca) +
+  scale_x_log10()
+```
+
 
 Finally, the recovered images, using 2, 3 , 4, 5, 10, 15, 20, 50, and 100 principal components are plotted
 using ggplot, giving @fig-mona-pca.
