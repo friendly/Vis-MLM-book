@@ -772,10 +772,11 @@ The component `contrib` gives these variance contributions as percents, where ea
 contrib <- var_info$contrib
 cbind(contrib, Total = rowSums(contrib)) |>
   rbind(Total = c(colSums(contrib), NA)) |> 
-  round(digits=3)
+  round(digits=2)
 ```
 
-Another useful measure is called `cos2`, the quality of representation, meaning how much of a variable is represented in a given component.
+Another useful measure is called `cos2`, the quality of representation, meaning how much of a variable is represented in a given component. The rows each sum to 1.0, meaning each variable is completely
+represented on all components. The columns sum to the eigenvalue for each dimension.
 
 ```{r quality}
 quality <- var_info$cos2
@@ -792,7 +793,24 @@ quality[, 1:3]
 An important feature of biplot methodology is that once you have a reduced-rank display of the
 relations among a set of variables, you can use other available data to help interpret what
 what is shown in the biplot. In a sense, this is what I did above in @fig-crime-biplot2 and @fig-crime-biplot3
-using `region` as a grouping variable and summarizing the variability in the scores for states with their data ellipses by region.
+using `region` as a grouping variable and summarizing the variability in the scores for states with their data ellipses by region. 
+
+When we have other quantitative variables on the same observations, these can be represented as supplementary
+variables in the same space, by what amounts to regressions of these new variables on the principal component dimensions. For this example, it happens that some suitable variables are available in the dataset `state.x77`.
+I select a few of these below and make the state name a column variable so it can be merged with the `crime` data.
+
+
+```{r supp-data}
+supp_data <- state.x77 |>
+  as.data.frame() |>
+  tibble::rownames_to_column(var = "state") |>
+  select(state, Income:`Life Exp`, `HS Grad`) |>
+  rename(Life_Exp = `Life Exp`,
+         HS_Grad = `HS Grad`)
+
+head(supp_data)
+```
+
 
 
 
