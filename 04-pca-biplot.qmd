@@ -732,7 +732,7 @@ The `choices =` option controls which dimensions are plotted.
 ```{r}
 #| label: fig-crime-biplot3
 #| out-width: "80%"
-#| fig-cap: "Biplot of dimensions 1 & 3 of the crime data."
+#| fig-cap: "Biplot of dimensions 1 & 3 of the crime data, with data ellipses for the regions."
 ggbiplot(crime.pca,
          choices = c(1,3),
          obs.scale = 1, var.scale = 1,
@@ -754,6 +754,47 @@ larceny, which is a simple theft and robbery, which involves stealing something 
 and is considered a more serious crime with an element of possible violence.
 In this plot, murder has a relatively short variable vector, so does not contribute
 very much to differences among the states.
+
+### Biplot contributions and quality
+
+To better understand how much each variable contributes to the biplot dimensions,
+it is helpful to see a table of the variance along each dimension.
+`factoextra::get_pca_var()` calculates a number of tables from a `"prcomp"` or similar object.
+
+```{r var-info}
+var_info <- factoextra::get_pca_var(crime.pca)
+names(var_info)
+```
+
+The component `contrib` gives these variance contributions as percents, where each row and column sums to 100.
+
+```{r contrib}
+contrib <- var_info$contrib
+cbind(contrib, Total = rowSums(contrib)) |>
+  rbind(Total = c(colSums(contrib), NA)) |> 
+  round(digits=3)
+```
+
+Another useful measure is called `cos2`, the quality of representation, meaning how much of a variable is represented in a given component.
+
+```{r quality}
+quality <- var_info$cos2
+rowSums(quality)
+colSums(quality)
+
+quality[, 1:3]
+```
+
+
+
+### Supplementary variables
+
+An important feature of biplot methodology is that once you have a reduced-rank display of the
+relations among a set of variables, you can use other available data to help interpret what
+what is shown in the biplot. In a sense, this is what I did above in @fig-crime-biplot2 and @fig-crime-biplot3
+using `region` as a grouping variable and summarizing the variability in the scores for states with their data ellipses by region.
+
+
 
 ## Application: Variable ordering for data displays
 
@@ -960,11 +1001,12 @@ ggscreeplot(img_pca) +
 ```
 
 Then, if $\mathbf{M}$ is the $640 \times 955$ matrix of pixel values, a best approximation 
-$\widehat{\mathbf{M}}_k$ using $k$ dimensions can be obtained as $\widehat{\mathbf{M}}_k = \mathbf{M}\;\mathbf{V}_k^T$ where $\mathbf{V}_k$ is the eigenvectors corresponding to the $k$
+$\widehat{\mathbf{M}}_k$ using $k$ dimensions can be obtained as $\widehat{\mathbf{M}}_k = \mathbf{X}_k\;\mathbf{V}_k^T$ where $\mathbf{X}_k$ are the principal component scores and
+$\mathbf{V}_k$ are the eigenvectors corresponding to the $k$
 largest eigenvalues. The function `approx_pca()` does this, and also undoes the scaling
 and centering carried out in PCA.
 
-**TODO**: This description isn't quite right. Also, separate approximation from the pivot_longer code...
+**TODO**: Also, separate approximation from the pivot_longer code...
 
 ```{r approx_pca}
 #| code-fold: true
@@ -1020,7 +1062,7 @@ knitr::include_graphics("images/mona-pca.png")
 
 In this figure, with 4-5 components most people would recognize this as a blury image of the world's most famous portrait. It is certainly clear that this is the Mona Lisa with 10--15 components.
 Details of the portrait and backgound features become recognizable with 20--50 components, and with 100 components it compares favorably with the original in @fig-MonaLisa.
-In numbers, the original $640 \times 955) image is of size 600 Kb. The 100 component version is 93 Kb,
+In numbers, the original $640 \times 955$) image is of size 600 Kb. The 100 component version is only 93 Kb,
 15.6% of this.
 
 

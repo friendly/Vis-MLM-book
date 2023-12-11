@@ -40,9 +40,12 @@ crime.pca <- reflect(crime.pca)
 
 # information about variables
 var_info <- factoextra::get_pca_var(crime.pca)
+names(var_info)
 
 # correlations
 var_info |> purrr::pluck("cor")
+
+var_info$cor[, 1:3] |> round(digits=2)
 
 # contributions of dimensions to variables
 var_info |> purrr::pluck("contrib")
@@ -50,9 +53,15 @@ var_info |> purrr::pluck("contrib") |> rowSums()
 var_info |> purrr::pluck("contrib") |> colSums()
 
 
-contrib <- var_info |> purrr::pluck("contrib")
+contrib <- var_info$contrib
 cbind(contrib, Total = rowSums(contrib)) |>
   rbind(Total = c(colSums(contrib), NA)) |> round(digits=3)
+
+quality <- var_info$cos2
+rowSums(quality)
+colSums(quality)
+
+quality[, 1:3]
 
 biplot(crime.pca)
 
