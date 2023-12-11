@@ -70,7 +70,7 @@ ggscreeplot(img_pca) +
 
 
 
-reverse_pca <- function(n_comp = 20, pca_object = img_pca){
+approx_pca <- function(n_comp = 20, pca_object = img_pca){
   ## The pca_object is an object created by base R's prcomp() function.
   
   ## Multiply the matrix of rotated data by the transpose of the matrix 
@@ -109,6 +109,7 @@ reverse_pca <- function(n_comp = 20, pca_object = img_pca){
   recon_df_long
 }
 
+
 # Let?s put the function to work by mapping it to our PCA object, and reconstructing our image based on the first 2, 3, 4, 5, 10, 20, 50, and 100 principal components.
 
 
@@ -118,7 +119,7 @@ names(n_pcs) <- paste("First", n_pcs, "Components", sep = "_")
 
 ## map reverse_pca() 
 recovered_imgs <- map_dfr(n_pcs, 
-                          reverse_pca, 
+                          approx_pca, 
                           .id = "pcs") |>
   mutate(pcs = stringr::str_replace_all(pcs, "_", " "), 
          pcs = factor(pcs, levels = unique(pcs), ordered = TRUE))

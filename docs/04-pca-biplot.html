@@ -885,14 +885,18 @@ a_i =
 <span class="header-section-number">4.5</span> Application: Eigenfaces</h2>
 <p>There are many applications of principal components analysis beyond the use for visualization for multivariate data covered here, that rely on its’ ability as a dimension reduction technique, that is, to find a low-dimensional approximation to a high-dimensional dataset.</p>
 <p>In machine learning, for example, PCA is a method used to reduce model complexity and avoid overfilling by <em>feature extraction</em>, which amounts to … This is just another name for principal components regression …</p>
-<p>An interesting class of problems have to do with image processing, where an image of size width <span class="math inline">\(\times\)</span> height in pixels can be represented by a <span class="math inline">\(w \times h\)</span> array of greyscale values <span class="math inline">\(x_{ij}\)</span> in the range of [0, 1]$ or <span class="math inline">\(h \times w \times 3\)</span> array <span class="math inline">\(x_{ijk}\)</span> of (red, green, blue) color values. For example a single <span class="math inline">\(640 \times 640\)</span> photo is comprised of about 400K pixels in B/W and 1200K pixels in color.</p>
+<p>An interesting class of problems have to do with image processing, where an image of size width <span class="math inline">\(\times\)</span> height in pixels can be represented by a <span class="math inline">\(w \times h\)</span> array of greyscale values <span class="math inline">\(x_{ij}\)</span> in the range of [0, 1] or <span class="math inline">\(h \times w \times 3\)</span> array <span class="math inline">\(x_{ijk}\)</span> of (red, green, blue) color values. For example a single <span class="math inline">\(640 \times 640\)</span> photo is comprised of about 400K pixels in B/W and 1200K pixels in color.</p>
 <p>The uses here include</p>
 <ul>
-<li>image compression: a process applied to a graphics file to minimize its size in bytes for storage or transmission, without degrading image quality below an acceptable threshold</li>
-<li>image enhancement: improving the quality of an image, with applications in Computer Vision tasks, remote sensing, and satellite imagery.</li>
-<li>facial recognition: classifying or matching a facial image against a large corpus of stored images.</li>
+<li>
+<strong>Image compression</strong>: a process applied to a graphics file to minimize its size in bytes for storage or transmission, without degrading image quality below an acceptable threshold</li>
+<li>
+<strong>image enhancement</strong>: improving the quality of an image, with applications in Computer Vision tasks, remote sensing, and satellite imagery.</li>
+<li>
+<strong>facial recognition</strong>: classifying or matching a facial image against a large corpus of stored images.</li>
 </ul>
-<p>When PCA is used on facial images, you can think of the process as generating <strong>eigenfaces</strong>, a representation of the pixels in the image in terms of an eigenvalue decomposition. As an example, consider the black and white version of the Mona Lisa shown in <a href="#fig-MonaLisa">Figure&nbsp;<span>4.16</span></a>. The idea and code for this is adapted from this <a href="https://kieranhealy.org/blog/archives/2019/10/27/reconstructing-images-using-pca/">blog post</a> by Kieran Healy.</p>
+<p>When PCA is used on facial images, you can think of the process as generating <strong>eigenfaces</strong>, a representation of the pixels in the image in terms of an eigenvalue decomposition. Dimension reduction means that a facial image can be considerably compressed by removing the components associated with small dimensions. As an example, consider the black and white version of the Mona Lisa shown in <a href="#fig-MonaLisa">Figure&nbsp;<span>4.16</span></a>. The idea and code for this is adapted from this <a href="https://kieranhealy.org/blog/archives/2019/10/27/reconstructing-images-using-pca/">blog post</a> by Kieran Healy.</p>
+<p><strong>TODO</strong>: Web links like this should be footnotes for PDF</p>
 <div class="cell" data-layout-align="center">
 <div class="cell-output-display">
 <div id="fig-MonaLisa" class="quarto-figure quarto-figure-center anchored">
@@ -906,10 +910,11 @@ a_i =
 <p>An image can be imported using <code><a href="https://rdrr.io/pkg/imager/man/load.image.html">imager::load.image()</a></code> which creates a <code>"cimg"</code> object, a 4-dimensional array with dimensions named <code>x,y,z,c</code>. <code>x</code> and <code>y</code> are the usual spatial dimensions, <code>z</code> is a depth dimension (which would correspond to time in a movie), and <code>c</code> is a color dimension containing R, G, B values.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb22" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://asgr.github.io/imager/">imager</a></span><span class="op">)</span></span>
-<span><span class="va">img</span> <span class="op">&lt;-</span> <span class="fu">imager</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/imager/man/load.image.html">load.image</a></span><span class="op">(</span><span class="st">"https://github.com/friendly/Vis-MLM-book/blob/master/images/MonaLisa-BW.jpg?raw=true"</span><span class="op">)</span></span>
+<span><span class="va">img</span> <span class="op">&lt;-</span> <span class="fu">imager</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/imager/man/load.image.html">load.image</a></span><span class="op">(</span><span class="fu">here</span><span class="fu">::</span><span class="fu"><a href="https://here.r-lib.org//reference/here.html">here</a></span><span class="op">(</span><span class="st">"images"</span>, <span class="st">"MonaLisa-BW.jpg"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/dim.html">dim</a></span><span class="op">(</span><span class="va">img</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 640 954   1   1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<!-- img <- imager::load.image("https://github.com/friendly/Vis-MLM-book/blob/master/images/MonaLisa-BW.jpg?raw=true") -->
 <p>An <code><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame()</a></code> method converts this to a data frame with <code>x</code> and <code>y</code> coordinates. Each x-y pair is a location in the 640 by 954 pixel grid, and the <code>value</code> is a grayscale value ranging from zero to one.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb23" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">img_df_long</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span><span class="op">(</span><span class="va">img</span><span class="op">)</span></span>
@@ -954,7 +959,7 @@ a_i =
 <span><span class="co">#&gt;  9     9    3.12 0.0102       0.622</span></span>
 <span><span class="co">#&gt; 10    10    2.86 0.00855      0.631</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p><a href="#fig-mona-screeplot">Figure&nbsp;<span>4.17</span></a> shows the screeplot. Because there are so many components and most of the information is concentrated in the largest dimension, I’ve used a $_10()` scale on the horizontal axis.</p>
+<p><a href="#fig-mona-screeplot">Figure&nbsp;<span>4.17</span></a> shows a screeplot of proportions of variance. Because there are so many components and most of the information is concentrated in the largest dimension, I’ve used a <span class="math inline">\(\log_{10}()\)</span> scale on the horizontal axis.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb27" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ggbiplot/man/ggscreeplot.html">ggscreeplot</a></span><span class="op">(</span><span class="va">img_pca</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_x_log10</a></span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -964,6 +969,45 @@ a_i =
 <figcaption class="figure-caption">Figure&nbsp;4.17: Screeplot of the variance proportions in the Mona Lisa PCA.</figcaption></figure>
 </div>
 </div>
+</div>
+<p>Then, if <span class="math inline">\(\mathbf{M}\)</span> is the <span class="math inline">\(640 \times 955\)</span> matrix of pixel values, a best approximation <span class="math inline">\(\widehat{\mathbf{M}}_k\)</span> using <span class="math inline">\(k\)</span> dimensions can be obtained as <span class="math inline">\(\widehat{\mathbf{M}}_k = \mathbf{M}\;\mathbf{V}_k^T\)</span> where <span class="math inline">\(\mathbf{V}_k\)</span> is the eigenvectors corresponding to the <span class="math inline">\(k\)</span> largest eigenvalues. The function <code>approx_pca()</code> does this, and also undoes the scaling and centering carried out in PCA.</p>
+<p><strong>TODO</strong>: This description isn’t quite right. Also, separate approximation from the pivot_longer code…</p>
+<div class="cell" data-layout-align="center">
+<details><summary>Code</summary><div class="sourceCode" id="cb28" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">approx_pca</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">n_comp</span> <span class="op">=</span> <span class="fl">20</span>, <span class="va">pca_object</span> <span class="op">=</span> <span class="va">img_pca</span><span class="op">)</span><span class="op">{</span></span>
+<span>  <span class="co">## Multiply the matrix of rotated data (component scores) by the transpose of </span></span>
+<span>  <span class="co">## the matrix of eigenvectors (i.e. the component loadings) to get back to a </span></span>
+<span>  <span class="co">## matrix of original data values</span></span>
+<span></span>
+<span>  <span class="va">recon</span> <span class="op">&lt;-</span> <span class="va">pca_object</span><span class="op">$</span><span class="va">x</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="va">n_comp</span><span class="op">]</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html">%*%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/t.html">t</a></span><span class="op">(</span><span class="va">pca_object</span><span class="op">$</span><span class="va">rotation</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="va">n_comp</span><span class="op">]</span><span class="op">)</span></span>
+<span>  </span>
+<span>  <span class="co">## Reverse any scaling and centering that was done by prcomp()</span></span>
+<span>  <span class="kw">if</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/all.html">all</a></span><span class="op">(</span><span class="va">pca_object</span><span class="op">$</span><span class="va">scale</span> <span class="op">!=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
+<span>    <span class="co">## Rescale by the reciprocal of the scaling factor, i.e. back to</span></span>
+<span>    <span class="co">## original range.</span></span>
+<span>    <span class="va">recon</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/scale.html">scale</a></span><span class="op">(</span><span class="va">recon</span>, center <span class="op">=</span> <span class="cn">FALSE</span>, scale <span class="op">=</span> <span class="fl">1</span><span class="op">/</span><span class="va">pca_object</span><span class="op">$</span><span class="va">scale</span><span class="op">)</span></span>
+<span>  <span class="op">}</span></span>
+<span>  <span class="kw">if</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/all.html">all</a></span><span class="op">(</span><span class="va">pca_object</span><span class="op">$</span><span class="va">center</span> <span class="op">!=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
+<span>    <span class="co">## Remove any mean centering by adding the subtracted mean back in</span></span>
+<span>    <span class="va">recon</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/scale.html">scale</a></span><span class="op">(</span><span class="va">recon</span>, scale <span class="op">=</span> <span class="cn">FALSE</span>, center <span class="op">=</span> <span class="op">-</span><span class="fl">1</span> <span class="op">*</span> <span class="va">pca_object</span><span class="op">$</span><span class="va">center</span><span class="op">)</span></span>
+<span>  <span class="op">}</span></span>
+<span>  </span>
+<span>  <span class="co">## Make it a data frame that we can easily pivot to long format</span></span>
+<span>  <span class="co">## for drawing with ggplot</span></span>
+<span>  <span class="va">recon_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">recon</span><span class="op">)</span>, <span class="va">recon</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">recon_df</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="fl">1</span><span class="op">:</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">ncol</a></span><span class="op">(</span><span class="va">recon_df</span><span class="op">)</span><span class="op">-</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="co">## Return the data to long form </span></span>
+<span>  <span class="va">recon_df_long</span> <span class="op">&lt;-</span> <span class="va">recon_df</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html">pivot_longer</a></span><span class="op">(</span>cols <span class="op">=</span> <span class="op">-</span><span class="va">x</span>, </span>
+<span>                        names_to <span class="op">=</span> <span class="st">"y"</span>, </span>
+<span>                        values_to <span class="op">=</span> <span class="st">"value"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html">arrange</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  </span>
+<span>  <span class="va">recon_df_long</span></span>
+<span><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 </div>
 <p>Finally, the recovered images, using 2, 3 , 4, 5, 10, 15, 20, 50, and 100 principal components are plotted using ggplot. The result, in <a href="#fig-mona-pca">Figure&nbsp;<span>4.18</span></a> is instructive about how much visual information is contained in lower-dimensional reconstructions, or conversely, how much the image can be compressed by omitting the many small dimensions.</p>
 <div class="cell" data-layout-align="center">
@@ -980,7 +1024,7 @@ a_i =
 <p>The data ellipse (<a href="03-multivariate_plots.html#sec-data-ellipse"><span>Section&nbsp;3.1.4</span></a>), or ellipsoid in more than 2D is fundamental in regression. But also, as Pearson showed, it is key to understanding principal components analysis, where the principal component directions are simply the axes of the ellipsoid of the data. As such, observations that are unusual in data space may not stand out in univariate views of the variables, but will stand out in principal component space, usually on the <em>smallest</em> dimension.</p>
 <p>As an illustration, I created a dataset of <span class="math inline">\(n = 100\)</span> observations with a linear relation, <span class="math inline">\(y = x + \mathcal{N}(0, 1)\)</span> and then added two discrepant points at (1.5, -1.5), (-1.5, 1.5).</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb28" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">123345</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb29" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">123345</span><span class="op">)</span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,             <span class="fl">1.5</span>, <span class="op">-</span><span class="fl">1.5</span><span class="op">)</span></span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">x</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">100</span><span class="op">]</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>, <span class="op">-</span><span class="fl">1.5</span>, <span class="fl">1.5</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>

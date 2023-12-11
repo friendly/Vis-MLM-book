@@ -868,22 +868,25 @@ This is just another name for principal components regression ...
 
 An interesting class of problems have to do with image processing, where an image of size
 width $\times$ height in pixels can be represented by a $w \times h$ array of 
-greyscale values $x_{ij}$ in the range of [0, 1]$ or $h \times w \times 3$ array $x_{ijk}$
+greyscale values $x_{ij}$ in the range of [0, 1] or $h \times w \times 3$ array $x_{ijk}$
 of (red, green, blue) color values. For example a single $640 \times 640$ photo is comprised of about 400K
 pixels in B/W and 1200K pixels in color.
 
 The uses here include
 
-* image compression:  a process applied to a graphics file to minimize its size in bytes for storage or transmission, without degrading image quality below an acceptable threshold
-* image enhancement: improving the quality of an image, with applications in Computer Vision tasks, remote sensing, and satellite imagery. 
-* facial recognition: classifying or matching a facial image against a large corpus of stored images.
+* **Image compression**:  a process applied to a graphics file to minimize its size in bytes for storage or transmission, without degrading image quality below an acceptable threshold
+* **image enhancement**: improving the quality of an image, with applications in Computer Vision tasks, remote sensing, and satellite imagery. 
+* **facial recognition**: classifying or matching a facial image against a large corpus of stored images.
 
 When PCA is used on facial images, you can think of the process as generating **eigenfaces**,
-a representation of the pixels in the image in terms of an eigenvalue decomposition.
+a representation of the pixels in the image in terms of an eigenvalue decomposition. Dimension reduction
+means that a facial image can be considerably compressed by removing the components associated with
+small dimensions.
 As an example, consider the black and white version of the Mona Lisa shown in @fig-MonaLisa.
 The idea and code for this is adapted from this [blog post](https://kieranhealy.org/blog/archives/2019/10/27/reconstructing-images-using-pca/)
 by Kieran Healy. 
 
+**TODO**: Web links like this should be footnotes for PDF
 
 ```{r}
 #| label: fig-MonaLisa
@@ -903,9 +906,12 @@ a 4-dimensional array with dimensions
 named `x,y,z,c`. `x` and `y` are the usual spatial dimensions, `z` is a depth dimension (which would correspond to time in a movie), and `c` is a color dimension containing R, G, B values.
 ```{r mona-load}
 library(imager)
-img <- imager::load.image("https://github.com/friendly/Vis-MLM-book/blob/master/images/MonaLisa-BW.jpg?raw=true")
+img <- imager::load.image(here::here("images", "MonaLisa-BW.jpg"))
 dim(img)
 ```
+
+<!-- img <- imager::load.image("https://github.com/friendly/Vis-MLM-book/blob/master/images/MonaLisa-BW.jpg?raw=true") -->
+
 
 An `as.data.frame()` method converts this to a data frame with `x` and `y` coordinates.
 Each x-y pair is a location in the 640 by 954 pixel grid, and the `value` is a grayscale value ranging from zero to one.
@@ -940,8 +946,9 @@ img_pca |>
 ```
 
 
-@fig-mona-screeplot shows the screeplot. Because there are so many components and most of the information
-is concentrated in the largest dimension, I've used a $\log_10()` scale on the horizontal axis.
+@fig-mona-screeplot shows a screeplot of proportions of variance. 
+Because there are so many components and most of the information
+is concentrated in the largest dimension, I've used a $\log_{10}()$ scale on the horizontal axis.
 
 ```{r}
 #| label: fig-mona-screeplot
@@ -952,6 +959,50 @@ ggscreeplot(img_pca) +
   scale_x_log10()
 ```
 
+Then, if $\mathbf{M}$ is the $640 \times 955$ matrix of pixel values, a best approximation 
+$\widehat{\mathbf{M}}_k$ using $k$ dimensions can be obtained as $\widehat{\mathbf{M}}_k = \mathbf{M}\;\mathbf{V}_k^T$ where $\mathbf{V}_k$ is the eigenvectors corresponding to the $k$
+largest eigenvalues. The function `approx_pca()` does this, and also undoes the scaling
+and centering carried out in PCA.
+
+**TODO**: This description isn't quite right. Also, separate approximation from the pivot_longer code...
+
+```{r approx_pca}
+#| code-fold: true
+approx_pca <- function(n_comp = 20, pca_object = img_pca){
+  ## Multiply the matrix of rotated data (component scores) by the transpose of 
+  ## the matrix of eigenvectors (i.e. the component loadings) to get back to a 
+  ## matrix of original data values
+
+  recon <- pca_object$x[, 1:n_comp] %*% t(pca_object$rotation[, 1:n_comp])
+  
+  ## Reverse any scaling and centering that was done by prcomp()
+  if(all(pca_object$scale != FALSE)){
+    ## Rescale by the reciprocal of the scaling factor, i.e. back to
+    ## original range.
+    recon <- scale(recon, center = FALSE, scale = 1/pca_object$scale)
+  }
+  if(all(pca_object$center != FALSE)){
+    ## Remove any mean centering by adding the subtracted mean back in
+    recon <- scale(recon, scale = FALSE, center = -1 * pca_object$center)
+  }
+  
+  ## Make it a data frame that we can easily pivot to long format
+  ## for drawing with ggplot
+  recon_df <- data.frame(cbind(1:nrow(recon), recon))
+  colnames(recon_df) <- c("x", 1:(ncol(recon_df)-1))
+
+  ## Return the data to long form 
+  recon_df_long <- recon_df |>
+    tidyr::pivot_longer(cols = -x, 
+                        names_to = "y", 
+                        values_to = "value") |>
+    mutate(y = as.numeric(y)) |>
+    arrange(y) |>
+    as.data.frame()
+  
+  recon_df_long
+}
+```
 
 
 Finally, the recovered images, using 2, 3 , 4, 5, 10, 15, 20, 50, and 100 principal components are plotted
