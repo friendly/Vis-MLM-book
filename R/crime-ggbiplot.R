@@ -30,11 +30,6 @@ var_info <- factoextra::get_pca_var(crime.pca)
 var_info |> purrr::pluck("cor")
 
 
-#biplot(crime.pca)
-
-# reflect dims 1:2
-# crime.pca$rotation[,1:2] <- -1 * crime.pca$rotation[,1:2]
-# crime.pca$x[,1:2] <- -1 * crime.pca$x[,1:2]
 
 crime.pca <- reflect(crime.pca)
 
@@ -63,7 +58,7 @@ colSums(quality)
 
 quality[, 1:3]
 
-biplot(crime.pca)
+#biplot(crime.pca)
 
 
 # default scaling: standardized components

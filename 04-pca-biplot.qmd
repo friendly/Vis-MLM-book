@@ -503,7 +503,11 @@ crime.pca |> purrr::pluck("rotation")
 But note something important in this output: All of the weights for the first component are negative. In PCA, the directions of the eigenvectors are completely arbitrary, in the sense that the vector $-\mathbf{v}_i$ gives the same linear combination as $\mathbf{v}_i$,
 but with its' sign reversed. For interpretation, it is useful (and usually recommended) to reflect the loadings to a positive orientation by multiplying them by -1.
 
-To reflect the PCA loadings and get them into a convenient format for plotting with `ggplot()`, it is necessary to do a bit of processing, including making the `row.names()` into an explicit variable for the purpose of labeling.
+To reflect the PCA loadings and get them into a convenient format for plotting with `ggplot()`, it is necessary to do a bit of processing, including making the `row.names()` into an explicit variable for the purpose of labeling.[^rownames]
+
+**TODO**: This should probably be a callout-warning
+[^rownames]: R software evolved over many years, particularly in conventions for labeling cases in printed output and graphics.  In base-R, the convention was that the `row.names()` of a matrix or data.frame served as observation labels in all printed output and plots, with a default to use numbers `1:n` if there were no rownames. In `ggplot2` and the `tidyverse` framework, the decision was made that observation labels had to be an **explicit** variable in a "tidy" dataset, so it could be used as a variable in constructs like 
+`geom_text(aes(label = label))` as in this example. This change often requires extra steps ...
 
 ```{r vectors}
 vectors <- crime.pca |> 
@@ -600,7 +604,7 @@ whose $n$ rows are the observations and whose $p$ columns are the variables.
 
 
 ```{r}
-#| label: svd-diagram
+#| label: fig-svd-diagram
 #| echo: false
 #| out-width: "80%"
 #| fig-cap: "The singular value decomposition expresses a data matrix **X** as the product of a matrix **U** of observation scores, a diagonal matrix **Lambda** of singular values and a matrix **V** of variable weights. **TODO**: Re-draw to fix notation. "
@@ -612,7 +616,7 @@ can be expressed _exactly_ as:
 $$
 \mathbf{X} = \mathbf{U} \mathbf{\Lambda} \mathbf{V}'
                  = \sum_i^r \lambda_i \mathbf{u}_i \mathbf{v}_i' \; ,
-$$          
+$$ {#eq-svd1}        
 
 where 
 
@@ -752,7 +756,7 @@ ggbiplot(crime.pca,
 ```
 
 Dimension 3 in @fig-crime-biplot3 is more subtle. One interpretation is a contrast between
-larceny, which is a simple theft and robbery, which involves stealing something from a person
+larceny, which is a larceny (simple theft) and robbery, which involves stealing something from a person
 and is considered a more serious crime with an element of possible violence.
 In this plot, murder has a relatively short variable vector, so does not contribute
 very much to differences among the states.
@@ -760,7 +764,8 @@ very much to differences among the states.
 ### Biplot contributions and quality
 
 To better understand how much each variable contributes to the biplot dimensions,
-it is helpful to see a table of the variance along each dimension.
+it is helpful to see information about the variance of variables along each dimension.
+Graphically, this is nothing more than a measure of the projections
 `factoextra::get_pca_var()` calculates a number of tables from a `"prcomp"` or similar object.
 
 ```{r var-info}
@@ -779,11 +784,12 @@ cbind(contrib, Total = rowSums(contrib)) |>
 
 
 These contributions can be visualized as sorted barcharts for a given axis
-using `factoextra::fviz_contrib()`. The dashed horizontal lines are at the average value for each dimension.
+using `factoextra::fviz_contrib()`. The dashed horizontal lines are at the average value for each dimension. A simple rubric for interpreting the dimensions in terms of the variable contributions is mention those that
+are above average on each dimension.
 ```{r}
 #| label: fig-fviz-contrib
 #| out-width: "100%"
-#| fig-cap: "Contributions of the crime variables to dimensions 1 & 2 of the PCA solution"
+#| fig-cap: "Contributions of the crime variables to dimensions 1 (left) & 2 (right) of the PCA solution"
 p1 <- fviz_contrib(crime.pca, choice = "var", axes = 1,
                    fill = "lightgreen", color = "black")
 p2 <- fviz_contrib(crime.pca, choice = "var", axes = 2,
@@ -792,15 +798,19 @@ p1 + p2
 
 ```
 
-Another useful measure is called `cos2`, the quality of representation, meaning how much of a variable is represented in a given component. The rows each sum to 1.0, meaning each variable is completely
-represented on all components. The columns sum to the eigenvalue for each dimension.
+Another useful measure is called `cos2`, the quality of representation, meaning how much of a variable is represented in a given component. The columns sum to the eigenvalue for each dimension. 
+The rows each sum to 1.0, meaning each variable is completely
+represented on all components, but we can find the quality of a $k$-D solution by summing the values in the
+first $k$ columns.
+These can be plotted
+in a style similar to @fig-fviz-contrib using `factoextra::fviz_cos2()`.
 
 ```{r quality}
 quality <- var_info$cos2
 rowSums(quality)
 colSums(quality)
 
-quality[, 1:3]
+cbind(quality[, 1:2], Total = rowSums(quality[, 1:2]))
 ```
 
 
@@ -828,8 +838,61 @@ supp_data <- state.x77 |>
 head(supp_data)
 ```
 
+Then, we can merge the `crime` data with the `supp_data` dataset to produced something suitable
+for analysis using `factoMineR::PCA()`.
+```{r}
+crime_joined <-
+  dplyr::left_join(crime[, 1:8], supp_data, by = "state")
+names(crime_joined)
+```
 
+`PCA()` can only get the labels for the observations from the `row.names()` of the dataset,
+so I assign them explicitly. The supplementary variables are specified by `quanti.sup`
+as the indices of the columns in what is passed as the data argument.
+```{r}
+row.names(crime_joined) <- crime$st
+crime.PCA_sup <- PCA(crime_joined[,c(2:8, 9:12)], 
+                     quanti.sup = 8:11,
+                     scale.unit=TRUE, 
+                     ncp=5, 
+                     graph = FALSE)
+```
 
+The essential difference between the result of `prcomp()` used earlier to get the `crime.pca` object
+and the result of `PCA()` with supplementary variables is that the `crime.PCA_sup` object now contains
+a `quanti.sup` component for the supplementary variables. This can be plotted using `FactoMiner::plot()`
+or various `factoextra` functions ... 
+
+For simplicity I use `FactoMiner::plot()` here and only show the variable vectors. For consistency with earlier
+plots, I reflect the orientation of the 2nd PCA dimension so that crimes of personal violence are at the top,
+as in @fig-crime-vectors.
+
+```{r}
+#| label: fig-crime-factominer
+#| out-width: "90%"
+#| fig-cap: "PCA plot of variables for the crime data, with vectors for the supplementary variables... ."
+# reverse coordinates of Dim 2
+crime.PCA_sup <- ggbiplot::reflect(crime.PCA_sup, columns = 2)
+# also reverse the orientation of the coordinates for sumpplementary variables on Dim 2
+crime.PCA_sup$quanti.sup$coord[, 2] <- -1 * crime.PCA_sup$quanti.sup$coord[, 2]
+plot(crime.PCA_sup, choix = "var")
+```
+
+Recall that from earlier analyses, I interpreted the the dominant PC1 dimension as reflecting overall
+rate of crime. The contributions to this dimension, which are the projections of the variable vectors
+on the horizontal axis in @fig-crime-vectors and @fig-crime-biplot2 were shown graphically by
+barcharts in the left panel of @fig-fviz-contrib.
+
+But now in @fig-crime-factominer, with the addition of variable vectors for the supplementary variables, you can see how income, rate of illiteracy, life expectancy and proportion of high school graduates are related
+to the variation in rates of crimes for the U.S. states. 
+
+On dimension 1, what stands out is that
+life expectancy is associated with lower overall crime, while other supplementary variable have
+positive associations.
+On Dimension 2, crimes against persons (murder, assault, rape) are associated with greater rates of
+illiteracy among the states, which we earlier saw (@fig-crime-biplot2) were more often Southern states.
+Crimes against property (auto theft, larceny) at the bottom of this dimension are associated with 
+higher levels of income and high school graduates
 
 ## Application: Variable ordering for data displays
 

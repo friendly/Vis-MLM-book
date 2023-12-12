@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.361">
+<meta name="generator" content="quarto-1.3.450">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <title>Visualizing Multivariate Data and Models in R - 4&nbsp; PCA and Biplots</title>
 <style>
@@ -132,7 +132,7 @@ div.csl-indent {
     <div class="sidebar-title mb-0 py-0">
       <a href="./">Visualizing Multivariate Data and Models in R</a> 
         <div class="sidebar-tools-main">
-    <a href="https://github.com/friendly/vis-MLM-book" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+    <a href="https://github.com/friendly/vis-MLM-book" rel="" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
 </div>
     </div>
       </div>
@@ -618,7 +618,8 @@ PC1 = v_{11} \mathbf{x}_1 + v_{12} \mathbf{x}_2 + \cdots + v_{1p} \mathbf{x}_p
 <span><span class="co">#&gt; auto     -0.295  0.5024  0.5684  0.4192  0.3698 -0.0573  0.1470</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>But note something important in this output: All of the weights for the first component are negative. In PCA, the directions of the eigenvectors are completely arbitrary, in the sense that the vector <span class="math inline">\(-\mathbf{v}_i\)</span> gives the same linear combination as <span class="math inline">\(\mathbf{v}_i\)</span>, but with its’ sign reversed. For interpretation, it is useful (and usually recommended) to reflect the loadings to a positive orientation by multiplying them by -1.</p>
-<p>To reflect the PCA loadings and get them into a convenient format for plotting with <code><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot()</a></code>, it is necessary to do a bit of processing, including making the <code><a href="https://rdrr.io/r/base/row.names.html">row.names()</a></code> into an explicit variable for the purpose of labeling.</p>
+<p>To reflect the PCA loadings and get them into a convenient format for plotting with <code><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot()</a></code>, it is necessary to do a bit of processing, including making the <code><a href="https://rdrr.io/r/base/row.names.html">row.names()</a></code> into an explicit variable for the purpose of labeling.[^rownames]</p>
+<p><strong>TODO</strong>: This should probably be a callout-warning [^rownames]: R software evolved over many years, particularly in conventions for labeling cases in printed output and graphics. In base-R, the convention was that the <code><a href="https://rdrr.io/r/base/row.names.html">row.names()</a></code> of a matrix or data.frame served as observation labels in all printed output and plots, with a default to use numbers <code>1:n</code> if there were no rownames. In <code>ggplot2</code> and the <code>tidyverse</code> framework, the decision was made that observation labels had to be an <strong>explicit</strong> variable in a “tidy” dataset, so it could be used as a variable in constructs like <code>geom_text(aes(label = label))</code> as in this example. This change often requires extra steps …</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb12" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">vectors</span> <span class="op">&lt;-</span> <span class="va">crime.pca</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/pluck.html">pluck</a></span><span class="op">(</span><span class="st">"rotation"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -696,16 +697,16 @@ PC1 = v_{11} \mathbf{x}_1 + v_{12} \mathbf{x}_2 + \cdots + v_{1p} \mathbf{x}_p
 <p>The biplot is constructed by using the singular value decomposition (SVD) to obtain a low-rank approximation to the data matrix <span class="math inline">\(\mathbf{X}_{n \times p}\)</span> (centered, and optionally scaled to unit variances) whose <span class="math inline">\(n\)</span> rows are the observations and whose <span class="math inline">\(p\)</span> columns are the variables.</p>
 <div class="cell" data-layout-align="center">
 <div class="cell-output-display">
-<div class="quarto-figure quarto-figure-center">
+<div id="fig-svd-diagram" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure"><p><img src="images/SVD-eqn.jpg" class="img-fluid figure-img" style="width:80.0%"></p>
-<figcaption class="figure-caption">The singular value decomposition expresses a data matrix <strong>X</strong> as the product of a matrix <strong>U</strong> of observation scores, a diagonal matrix <strong>Lambda</strong> of singular values and a matrix <strong>V</strong> of variable weights. <strong>TODO</strong>: Re-draw to fix notation.</figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;4.10: The singular value decomposition expresses a data matrix <strong>X</strong> as the product of a matrix <strong>U</strong> of observation scores, a diagonal matrix <strong>Lambda</strong> of singular values and a matrix <strong>V</strong> of variable weights. <strong>TODO</strong>: Re-draw to fix notation.</figcaption></figure>
 </div>
 </div>
 </div>
-<p>Using the SVD, the matrix <span class="math inline">\(\mathbf{X}\)</span>, of rank <span class="math inline">\(r \le p\)</span> can be expressed <em>exactly</em> as: <span class="math display">\[
+<p>Using the SVD, the matrix <span class="math inline">\(\mathbf{X}\)</span>, of rank <span class="math inline">\(r \le p\)</span> can be expressed <em>exactly</em> as: <span id="eq-svd1"><span class="math display">\[
 \mathbf{X} = \mathbf{U} \mathbf{\Lambda} \mathbf{V}'
                  = \sum_i^r \lambda_i \mathbf{u}_i \mathbf{v}_i' \; ,
-\]</span></p>
+\tag{4.1}\]</span></span></p>
 <p>where</p>
 <ul>
 <li>
@@ -734,7 +735,7 @@ PC1 = v_{11} \mathbf{x}_1 + v_{12} \mathbf{x}_2 + \cdots + v_{1p} \mathbf{x}_p
 <p>Here, I use the <strong>ggbiplot</strong> package, which aims to provide a simple interface to biplots within the <code>ggplot2</code> framework.</p>
 </section><section id="example" class="level3" data-number="4.3.3"><h3 data-number="4.3.3" class="anchored" data-anchor-id="example">
 <span class="header-section-number">4.3.3</span> Example</h3>
-<p>A basic biplot of the <code>crime</code> data, using standardized principal components and labeling the observation by their state abbreviation is shown in <a href="#fig-crime-biplot1">Figure&nbsp;<span>4.10</span></a>. The correlation circle indicates that these components are uncorrelated and have equal variance in the display.</p>
+<p>A basic biplot of the <code>crime</code> data, using standardized principal components and labeling the observation by their state abbreviation is shown in <a href="#fig-crime-biplot1">Figure&nbsp;<span>4.11</span></a>. The correlation circle indicates that these components are uncorrelated and have equal variance in the display.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb15" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">crime.pca</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ggbiplot/man/reflect.html">reflect</a></span><span class="op">(</span><span class="va">crime.pca</span><span class="op">)</span> <span class="co"># reflect the axes</span></span>
 <span></span>
@@ -748,7 +749,7 @@ PC1 = v_{11} \mathbf{x}_1 + v_{12} \mathbf{x}_2 + \cdots + v_{1p} \mathbf{x}_p
 <div class="cell-output-display">
 <div id="fig-crime-biplot1" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure"><p><img src="figs/fig-crime-biplot1-1.png" class="img-fluid figure-img" style="width:80.0%"></p>
-<figcaption class="figure-caption">Figure&nbsp;4.10: Basic biplot of the crime data. …</figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;4.11: Basic biplot of the crime data. …</figcaption></figure>
 </div>
 </div>
 </div>
@@ -770,7 +771,7 @@ PC1 = v_{11} \mathbf{x}_1 + v_{12} \mathbf{x}_2 + \cdots + v_{1p} \mathbf{x}_p
 <div class="cell-output-display">
 <div id="fig-crime-biplot2" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure"><p><img src="figs/fig-crime-biplot2-1.png" class="img-fluid figure-img" style="width:80.0%"></p>
-<figcaption class="figure-caption">Figure&nbsp;4.11: Enhanced biplot of the crime data, grouping the states by region and adding data ellipses.</figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;4.12: Enhanced biplot of the crime data, grouping the states by region and adding data ellipses.</figcaption></figure>
 </div>
 </div>
 </div>
@@ -800,14 +801,14 @@ PC1 = v_{11} \mathbf{x}_1 + v_{12} \mathbf{x}_2 + \cdots + v_{1p} \mathbf{x}_p
 <div class="cell-output-display">
 <div id="fig-crime-biplot3" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure"><p><img src="figs/fig-crime-biplot3-1.png" class="img-fluid figure-img" style="width:80.0%"></p>
-<figcaption class="figure-caption">Figure&nbsp;4.12: Biplot of dimensions 1 &amp; 3 of the crime data, with data ellipses for the regions.</figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;4.13: Biplot of dimensions 1 &amp; 3 of the crime data, with data ellipses for the regions.</figcaption></figure>
 </div>
 </div>
 </div>
-<p>Dimension 3 in <a href="#fig-crime-biplot3">Figure&nbsp;<span>4.12</span></a> is more subtle. One interpretation is a contrast between larceny, which is a simple theft and robbery, which involves stealing something from a person and is considered a more serious crime with an element of possible violence. In this plot, murder has a relatively short variable vector, so does not contribute very much to differences among the states.</p>
+<p>Dimension 3 in <a href="#fig-crime-biplot3">Figure&nbsp;<span>4.13</span></a> is more subtle. One interpretation is a contrast between larceny, which is a larceny (simple theft) and robbery, which involves stealing something from a person and is considered a more serious crime with an element of possible violence. In this plot, murder has a relatively short variable vector, so does not contribute very much to differences among the states.</p>
 </section><section id="biplot-contributions-and-quality" class="level3" data-number="4.3.4"><h3 data-number="4.3.4" class="anchored" data-anchor-id="biplot-contributions-and-quality">
 <span class="header-section-number">4.3.4</span> Biplot contributions and quality</h3>
-<p>To better understand how much each variable contributes to the biplot dimensions, it is helpful to see a table of the variance along each dimension. <code><a href="https://rdrr.io/pkg/factoextra/man/get_pca.html">factoextra::get_pca_var()</a></code> calculates a number of tables from a <code>"prcomp"</code> or similar object.</p>
+<p>To better understand how much each variable contributes to the biplot dimensions, it is helpful to see information about the variance of variables along each dimension. Graphically, this is nothing more than a measure of the projections <code><a href="https://rdrr.io/pkg/factoextra/man/get_pca.html">factoextra::get_pca_var()</a></code> calculates a number of tables from a <code>"prcomp"</code> or similar object.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb18" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">var_info</span> <span class="op">&lt;-</span> <span class="fu">factoextra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/factoextra/man/get_pca.html">get_pca_var</a></span><span class="op">(</span><span class="va">crime.pca</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">var_info</span><span class="op">)</span></span>
@@ -829,7 +830,7 @@ PC1 = v_{11} \mathbf{x}_1 + v_{12} \mathbf{x}_2 + \cdots + v_{1p} \mathbf{x}_p
 <span><span class="co">#&gt; auto       8.71  25.24  32.31  17.58  13.67   0.33   2.16   100</span></span>
 <span><span class="co">#&gt; Total    100.00 100.00 100.00 100.00 100.00 100.00 100.00    NA</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>These contributions can be visualized as sorted barcharts for a given axis using <code><a href="https://rdrr.io/pkg/factoextra/man/fviz_contrib.html">factoextra::fviz_contrib()</a></code>. The dashed horizontal lines are at the average value for each dimension.</p>
+<p>These contributions can be visualized as sorted barcharts for a given axis using <code><a href="https://rdrr.io/pkg/factoextra/man/fviz_contrib.html">factoextra::fviz_contrib()</a></code>. The dashed horizontal lines are at the average value for each dimension. A simple rubric for interpreting the dimensions in terms of the variable contributions is mention those that are above average on each dimension.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb20" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/factoextra/man/fviz_contrib.html">fviz_contrib</a></span><span class="op">(</span><span class="va">crime.pca</span>, choice <span class="op">=</span> <span class="st">"var"</span>, axes <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>                   fill <span class="op">=</span> <span class="st">"lightgreen"</span>, color <span class="op">=</span> <span class="st">"black"</span><span class="op">)</span></span>
@@ -839,11 +840,11 @@ PC1 = v_{11} \mathbf{x}_1 + v_{12} \mathbf{x}_2 + \cdots + v_{1p} \mathbf{x}_p
 <div class="cell-output-display">
 <div id="fig-fviz-contrib" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure"><p><img src="figs/fig-fviz-contrib-1.png" class="img-fluid figure-img" style="width:100.0%"></p>
-<figcaption class="figure-caption">Figure&nbsp;4.13: Contributions of the crime variables to dimensions 1 &amp; 2 of the PCA solution</figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;4.14: Contributions of the crime variables to dimensions 1 (left) &amp; 2 (right) of the PCA solution</figcaption></figure>
 </div>
 </div>
 </div>
-<p>Another useful measure is called <code>cos2</code>, the quality of representation, meaning how much of a variable is represented in a given component. The rows each sum to 1.0, meaning each variable is completely represented on all components. The columns sum to the eigenvalue for each dimension.</p>
+<p>Another useful measure is called <code>cos2</code>, the quality of representation, meaning how much of a variable is represented in a given component. The columns sum to the eigenvalue for each dimension. The rows each sum to 1.0, meaning each variable is completely represented on all components, but we can find the quality of a <span class="math inline">\(k\)</span>-D solution by summing the values in the first <span class="math inline">\(k\)</span> columns. These can be plotted in a style similar to <a href="#fig-fviz-contrib">Figure&nbsp;<span>4.14</span></a> using <code><a href="https://rdrr.io/pkg/factoextra/man/fviz_cos2.html">factoextra::fviz_cos2()</a></code>.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb21" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">quality</span> <span class="op">&lt;-</span> <span class="va">var_info</span><span class="op">$</span><span class="va">cos2</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/colSums.html">rowSums</a></span><span class="op">(</span><span class="va">quality</span><span class="op">)</span></span>
@@ -853,19 +854,19 @@ PC1 = v_{11} \mathbf{x}_1 + v_{12} \mathbf{x}_2 + \cdots + v_{1p} \mathbf{x}_p
 <span><span class="co">#&gt; Dim.1 Dim.2 Dim.3 Dim.4 Dim.5 Dim.6 Dim.7 </span></span>
 <span><span class="co">#&gt; 4.115 1.239 0.726 0.316 0.258 0.222 0.124</span></span>
 <span></span>
-<span><span class="va">quality</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">]</span></span>
-<span><span class="co">#&gt;          Dim.1   Dim.2   Dim.3</span></span>
-<span><span class="co">#&gt; murder   0.371 0.49036 0.02306</span></span>
-<span><span class="co">#&gt; rape     0.767 0.03556 0.04328</span></span>
-<span><span class="co">#&gt; robbery  0.648 0.00221 0.17846</span></span>
-<span><span class="co">#&gt; assault  0.647 0.14618 0.00351</span></span>
-<span><span class="co">#&gt; burglary 0.797 0.05122 0.03198</span></span>
-<span><span class="co">#&gt; larceny  0.526 0.20050 0.21105</span></span>
-<span><span class="co">#&gt; auto     0.359 0.31269 0.23448</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">quality</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>, Total <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colSums.html">rowSums</a></span><span class="op">(</span><span class="va">quality</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;          Dim.1   Dim.2 Total</span></span>
+<span><span class="co">#&gt; murder   0.371 0.49036 0.861</span></span>
+<span><span class="co">#&gt; rape     0.767 0.03556 0.803</span></span>
+<span><span class="co">#&gt; robbery  0.648 0.00221 0.650</span></span>
+<span><span class="co">#&gt; assault  0.647 0.14618 0.794</span></span>
+<span><span class="co">#&gt; burglary 0.797 0.05122 0.848</span></span>
+<span><span class="co">#&gt; larceny  0.526 0.20050 0.726</span></span>
+<span><span class="co">#&gt; auto     0.359 0.31269 0.671</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section><section id="supplementary-variables" class="level3" data-number="4.3.5"><h3 data-number="4.3.5" class="anchored" data-anchor-id="supplementary-variables">
 <span class="header-section-number">4.3.5</span> Supplementary variables</h3>
-<p>An important feature of biplot methodology is that once you have a reduced-rank display of the relations among a set of variables, you can use other available data to help interpret what what is shown in the biplot. In a sense, this is what I did above in <a href="#fig-crime-biplot2">Figure&nbsp;<span>4.11</span></a> and <a href="#fig-crime-biplot3">Figure&nbsp;<span>4.12</span></a> using <code>region</code> as a grouping variable and summarizing the variability in the scores for states with their data ellipses by region.</p>
+<p>An important feature of biplot methodology is that once you have a reduced-rank display of the relations among a set of variables, you can use other available data to help interpret what what is shown in the biplot. In a sense, this is what I did above in <a href="#fig-crime-biplot2">Figure&nbsp;<span>4.12</span></a> and <a href="#fig-crime-biplot3">Figure&nbsp;<span>4.13</span></a> using <code>region</code> as a grouping variable and summarizing the variability in the scores for states with their data ellipses by region.</p>
 <p>When we have other quantitative variables on the same observations, these can be represented as supplementary variables in the same space, by what amounts to regressions of these new variables on the principal component dimensions. For this example, it happens that some suitable variables are available in the dataset <code>state.x77</code>. I select a few of these below and make the state name a column variable so it can be merged with the <code>crime</code> data.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb22" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">supp_data</span> <span class="op">&lt;-</span> <span class="va">state.x77</span> <span class="op">|&gt;</span></span>
@@ -884,12 +885,48 @@ PC1 = v_{11} \mathbf{x}_1 + v_{12} \mathbf{x}_2 + \cdots + v_{1p} \mathbf{x}_p
 <span><span class="co">#&gt; 5 California   5114        1.1     71.7    62.6</span></span>
 <span><span class="co">#&gt; 6   Colorado   4884        0.7     72.1    63.9</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<p>Then, we can merge the <code>crime</code> data with the <code>supp_data</code> dataset to produced something suitable for analysis using <code>factoMineR::PCA()</code>.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb23" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">crime_joined</span> <span class="op">&lt;-</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html">left_join</a></span><span class="op">(</span><span class="va">crime</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">8</span><span class="op">]</span>, <span class="va">supp_data</span>, by <span class="op">=</span> <span class="st">"state"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">crime_joined</span><span class="op">)</span></span>
+<span><span class="co">#&gt;  [1] "state"      "murder"     "rape"       "robbery"   </span></span>
+<span><span class="co">#&gt;  [5] "assault"    "burglary"   "larceny"    "auto"      </span></span>
+<span><span class="co">#&gt;  [9] "Income"     "Illiteracy" "Life_Exp"   "HS_Grad"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><code><a href="https://rdrr.io/pkg/FactoMineR/man/PCA.html">PCA()</a></code> can only get the labels for the observations from the <code><a href="https://rdrr.io/r/base/row.names.html">row.names()</a></code> of the dataset, so I assign them explicitly. The supplementary variables are specified by <code>quanti.sup</code> as the indices of the columns in what is passed as the data argument.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb24" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/row.names.html">row.names</a></span><span class="op">(</span><span class="va">crime_joined</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">crime</span><span class="op">$</span><span class="va">st</span></span>
+<span><span class="va">crime.PCA_sup</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/FactoMineR/man/PCA.html">PCA</a></span><span class="op">(</span><span class="va">crime_joined</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">2</span><span class="op">:</span><span class="fl">8</span>, <span class="fl">9</span><span class="op">:</span><span class="fl">12</span><span class="op">)</span><span class="op">]</span>, </span>
+<span>                     quanti.sup <span class="op">=</span> <span class="fl">8</span><span class="op">:</span><span class="fl">11</span>,</span>
+<span>                     scale.unit<span class="op">=</span><span class="cn">TRUE</span>, </span>
+<span>                     ncp<span class="op">=</span><span class="fl">5</span>, </span>
+<span>                     graph <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The essential difference between the result of <code><a href="https://rdrr.io/r/stats/prcomp.html">prcomp()</a></code> used earlier to get the <code>crime.pca</code> object and the result of <code><a href="https://rdrr.io/pkg/FactoMineR/man/PCA.html">PCA()</a></code> with supplementary variables is that the <code>crime.PCA_sup</code> object now contains a <code>quanti.sup</code> component for the supplementary variables. This can be plotted using <code>FactoMiner::plot()</code> or various <code>factoextra</code> functions …</p>
+<p>For simplicity I use <code>FactoMiner::plot()</code> here and only show the variable vectors. For consistency with earlier plots, I reflect the orientation of the 2nd PCA dimension so that crimes of personal violence are at the top, as in <a href="#fig-crime-vectors">Figure&nbsp;<span>4.9</span></a>.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb25" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># reverse coordinates of Dim 2</span></span>
+<span><span class="va">crime.PCA_sup</span> <span class="op">&lt;-</span> <span class="fu">ggbiplot</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/ggbiplot/man/reflect.html">reflect</a></span><span class="op">(</span><span class="va">crime.PCA_sup</span>, columns <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="co"># also reverse the orientation of the coordinates for sumpplementary variables on Dim 2</span></span>
+<span><span class="va">crime.PCA_sup</span><span class="op">$</span><span class="va">quanti.sup</span><span class="op">$</span><span class="va">coord</span><span class="op">[</span>, <span class="fl">2</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="op">-</span><span class="fl">1</span> <span class="op">*</span> <span class="va">crime.PCA_sup</span><span class="op">$</span><span class="va">quanti.sup</span><span class="op">$</span><span class="va">coord</span><span class="op">[</span>, <span class="fl">2</span><span class="op">]</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">crime.PCA_sup</span>, choix <span class="op">=</span> <span class="st">"var"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-crime-factominer" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="figs/fig-crime-factominer-1.png" class="img-fluid figure-img" style="width:90.0%"></p>
+<figcaption class="figure-caption">Figure&nbsp;4.15: PCA plot of variables for the crime data, with vectors for the supplementary variables… .</figcaption></figure>
+</div>
+</div>
+</div>
+<p>Recall that from earlier analyses, I interpreted the the dominant PC1 dimension as reflecting overall rate of crime. The contributions to this dimension, which are the projections of the variable vectors on the horizontal axis in <a href="#fig-crime-vectors">Figure&nbsp;<span>4.9</span></a> and <a href="#fig-crime-biplot2">Figure&nbsp;<span>4.12</span></a> were shown graphically by barcharts in the left panel of <a href="#fig-fviz-contrib">Figure&nbsp;<span>4.14</span></a>.</p>
+<p>But now in <a href="#fig-crime-factominer">Figure&nbsp;<span>4.15</span></a>, with the addition of variable vectors for the supplementary variables, you can see how income, rate of illiteracy, life expectancy and proportion of high school graduates are related to the variation in rates of crimes for the U.S. states.</p>
+<p>On dimension 1, what stands out is that life expectancy is associated with lower overall crime, while other supplementary variable have positive associations. On Dimension 2, crimes against persons (murder, assault, rape) are associated with greater rates of illiteracy among the states, which we earlier saw (<a href="#fig-crime-biplot2">Figure&nbsp;<span>4.12</span></a>) were more often Southern states. Crimes against property (auto theft, larceny) at the bottom of this dimension are associated with higher levels of income and high school graduates</p>
 </section></section><section id="application-variable-ordering-for-data-displays" class="level2" data-number="4.4"><h2 data-number="4.4" class="anchored" data-anchor-id="application-variable-ordering-for-data-displays">
 <span class="header-section-number">4.4</span> Application: Variable ordering for data displays</h2>
 <p>In many multivariate data displays, such as scatterplot matrices, parallel coordinate plots and others reviewed in <a href="03-multivariate_plots.html"><span>Chapter&nbsp;3</span></a>, the order of different variables might seem arbitrary. They might appear in alphabetic order, or more often in the order they appear in your dataset, for example when you use <code>pairs(mydata)</code>. Yet, the principle of <em>effect ordering</em> (<span class="citation" data-cites="FriendlyKwan:03:effect">Friendly &amp; Kwan (<a href="90-references.html#ref-FriendlyKwan:03:effect" role="doc-biblioref">2003</a>)</span>) for variables says you should try to arrange the variables so that adjacent ones are as similar as possible. <strong>TODO</strong>: Mention seriation as the general topic.</p>
 <p>For example, the <code>mtcars</code> dataset contains data on 32 automobiles from the 1974 U.S. magazine <em>Motor Trend</em> and consists of fuel comsumption (<code>mpg</code>) and 10 aspects of automobile design (<code>cyl</code>: number of cyliners; <code>hp</code>: horsepower, <code>wt</code>: weight) and performance (<code>qsec</code>: time to drive a quarter-mile). What can we see from a simple <code><a href="https://rdrr.io/pkg/corrplot/man/corrplot.html">corrplot()</a></code> of their correlations?</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb23" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">mtcars</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb26" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">mtcars</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/taiyun/corrplot">corrplot</a></span><span class="op">)</span></span>
 <span><span class="va">R</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/cor.html">cor</a></span><span class="op">(</span><span class="va">mtcars</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/corrplot/man/corrplot.html">corrplot</a></span><span class="op">(</span><span class="va">R</span>, </span>
@@ -900,13 +937,13 @@ PC1 = v_{11} \mathbf{x}_1 + v_{12} \mathbf{x}_2 + \cdots + v_{1p} \mathbf{x}_p
 <div class="cell-output-display">
 <div id="fig-mtcars-corrplot-varorder" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure"><p><img src="figs/fig-mtcars-corrplot-varorder-1.png" class="img-fluid figure-img" style="width:75.0%"></p>
-<figcaption class="figure-caption">Figure&nbsp;4.14: Corrplot of <code>mtcars</code> data, with the variables in the order they appear in the dataset.</figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;4.16: Corrplot of <code>mtcars</code> data, with the variables in the order they appear in the dataset.</figcaption></figure>
 </div>
 </div>
 </div>
 <p>In this display you can scan the rows and columns to “look up” the sign and approximate magnitude of a given correlation; for example, the correlation between <code>mpg</code> and <code>cyl</code> appears to be about -0.9, while that between <code>mpg</code> and <code>gear</code> is about 0.5. Of course, you could print the correlation matrix to find the actual values (-0.86 and 0.48 respectively):</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb24" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html">floor</a></span><span class="op">(</span><span class="fl">100</span><span class="op">*</span><span class="va">R</span><span class="op">)</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb27" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html">floor</a></span><span class="op">(</span><span class="fl">100</span><span class="op">*</span><span class="va">R</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;      mpg cyl disp  hp drat  wt qsec  vs  am gear carb</span></span>
 <span><span class="co">#&gt; mpg  100 -86  -85 -78   68 -87   41  66  59   48  -56</span></span>
 <span><span class="co">#&gt; cyl  -86 100   90  83  -70  78  -60 -82 -53  -50   52</span></span>
@@ -929,9 +966,9 @@ a_i =
     \tan^{-1} (v_{i2}/v_{i1}) + \pi, &amp; \text{otherwise.}
   \end{cases}     
 \]</span> (read <span class="math inline">\(\tan^{-1}(x)\)</span> as “the angle whose tangent is <span class="math inline">\(x\)</span>”.)</p>
-<p>For the <code>mtcars</code> data the biplot in <a href="#fig-mtcars-biplot">Figure&nbsp;<span>4.15</span></a> accounts for 84% of the total variance so a 2D representation is fairly good. The plotshows the variables as widely dispersed. There is a collection at the left of positively correlated variables and another positively correlated set at the right.</p>
+<p>For the <code>mtcars</code> data the biplot in <a href="#fig-mtcars-biplot">Figure&nbsp;<span>4.17</span></a> accounts for 84% of the total variance so a 2D representation is fairly good. The plotshows the variables as widely dispersed. There is a collection at the left of positively correlated variables and another positively correlated set at the right.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb25" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">mtcars.pca</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/prcomp.html">prcomp</a></span><span class="op">(</span><span class="va">mtcars</span>, scale. <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb28" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">mtcars.pca</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/prcomp.html">prcomp</a></span><span class="op">(</span><span class="va">mtcars</span>, scale. <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/ggbiplot/man/ggbiplot.html">ggbiplot</a></span><span class="op">(</span><span class="va">mtcars.pca</span>,</span>
 <span>         circle <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>         point.size <span class="op">=</span> <span class="fl">2.5</span>,</span>
@@ -941,14 +978,14 @@ a_i =
 <div class="cell-output-display">
 <div id="fig-mtcars-biplot" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure"><p><img src="figs/fig-mtcars-biplot-1.png" class="img-fluid figure-img" style="width:70.0%"></p>
-<figcaption class="figure-caption">Figure&nbsp;4.15: Biplot of the <code>mtcars</code> data …</figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;4.17: Biplot of the <code>mtcars</code> data …</figcaption></figure>
 </div>
 </div>
 </div>
 <p>In <code><a href="https://rdrr.io/pkg/corrplot/man/corrplot.html">corrplot()</a></code> principal component variable ordering is implemented using the <code>order = "AOE"</code> option. There are a variety of other methods based on hierarchical cluster analysis described in the <a href="https://cran.r-project.org/web/packages/corrplot/vignettes/corrplot-intro.html">package vignette</a>.</p>
-<p><a href="#fig-mtcars-corrplot-pcaorder">Figure&nbsp;<span>4.16</span></a> shows the result. A nice feature of <code><a href="https://rdrr.io/pkg/corrplot/man/corrplot.html">corrplot()</a></code> is the ability to manually highlight blocks of variables that have a similar pattern of signs by outlining them with rectangles. From the biplot, the two main clusters of positively correlated variables seemed clear, and are outlined in the plot using <code><a href="https://rdrr.io/pkg/corrplot/man/corrRect.html">corrplot::corrRect()</a></code>. What became clear in the corrplot is that <code>qsec</code>, the time to drive a quarter-mile from a dead start didn’t fit this pattern, so I highlighted it separately.</p>
+<p><a href="#fig-mtcars-corrplot-pcaorder">Figure&nbsp;<span>4.18</span></a> shows the result. A nice feature of <code><a href="https://rdrr.io/pkg/corrplot/man/corrplot.html">corrplot()</a></code> is the ability to manually highlight blocks of variables that have a similar pattern of signs by outlining them with rectangles. From the biplot, the two main clusters of positively correlated variables seemed clear, and are outlined in the plot using <code><a href="https://rdrr.io/pkg/corrplot/man/corrRect.html">corrplot::corrRect()</a></code>. What became clear in the corrplot is that <code>qsec</code>, the time to drive a quarter-mile from a dead start didn’t fit this pattern, so I highlighted it separately.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb26" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/corrplot/man/corrplot.html">corrplot</a></span><span class="op">(</span><span class="va">R</span>, </span>
+<div class="sourceCode" id="cb29" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/corrplot/man/corrplot.html">corrplot</a></span><span class="op">(</span><span class="va">R</span>, </span>
 <span>         method <span class="op">=</span> <span class="st">'ellipse'</span>, </span>
 <span>         order <span class="op">=</span> <span class="st">"AOE"</span>,</span>
 <span>         title <span class="op">=</span> <span class="st">"PCA variable order"</span>,</span>
@@ -958,11 +995,11 @@ a_i =
 <div class="cell-output-display">
 <div id="fig-mtcars-corrplot-pcaorder" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure"><p><img src="figs/fig-mtcars-corrplot-pcaorder-1.png" class="img-fluid figure-img" style="width:75.0%"></p>
-<figcaption class="figure-caption">Figure&nbsp;4.16: Corrplot of <code>mtcars</code> data, with the variables ordered according to the variable vectors in the biplot.</figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;4.18: Corrplot of <code>mtcars</code> data, with the variables ordered according to the variable vectors in the biplot.</figcaption></figure>
 </div>
 </div>
 </div>
-<p>But wait, there is something else to be seen in <a href="#fig-mtcars-corrplot-pcaorder">Figure&nbsp;<span>4.16</span></a>. Can you see one cell that doesn’t fit with the rest?</p>
+<p>But wait, there is something else to be seen in <a href="#fig-mtcars-corrplot-pcaorder">Figure&nbsp;<span>4.18</span></a>. Can you see one cell that doesn’t fit with the rest?</p>
 <p>Yes, the correlation of number of forward gears (<code>gear</code>) and number of carburators (<code>carb</code>) in the upper left and lower right corners is moderately positive (0.27) while all the others in their off-diagonal blocks are negative.</p>
 </section><section id="application-eigenfaces" class="level2" data-number="4.5"><h2 data-number="4.5" class="anchored" data-anchor-id="application-eigenfaces">
 <span class="header-section-number">4.5</span> Application: Eigenfaces</h2>
@@ -978,13 +1015,13 @@ a_i =
 <li>
 <strong>facial recognition</strong>: classifying or matching a facial image against a large corpus of stored images.</li>
 </ul>
-<p>When PCA is used on facial images, you can think of the process as generating <strong>eigenfaces</strong>, a representation of the pixels in the image in terms of an eigenvalue decomposition. Dimension reduction means that a facial image can be considerably compressed by removing the components associated with small dimensions. As an example, consider the black and white version of the Mona Lisa shown in <a href="#fig-MonaLisa">Figure&nbsp;<span>4.17</span></a>. The idea and code for this is adapted from this <a href="https://kieranhealy.org/blog/archives/2019/10/27/reconstructing-images-using-pca/">blog post</a> by Kieran Healy.</p>
+<p>When PCA is used on facial images, you can think of the process as generating <strong>eigenfaces</strong>, a representation of the pixels in the image in terms of an eigenvalue decomposition. Dimension reduction means that a facial image can be considerably compressed by removing the components associated with small dimensions. As an example, consider the black and white version of the Mona Lisa shown in <a href="#fig-MonaLisa">Figure&nbsp;<span>4.19</span></a>. The idea and code for this is adapted from this <a href="https://kieranhealy.org/blog/archives/2019/10/27/reconstructing-images-using-pca/">blog post</a> by Kieran Healy.</p>
 <p><strong>TODO</strong>: Web links like this should be footnotes for PDF</p>
 <div class="cell" data-layout-align="center">
 <div class="cell-output-display">
 <div id="fig-MonaLisa" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure"><p><img src="images/MonaLisa-BW.jpg" class="img-fluid figure-img" style="width:40.0%"></p>
-<figcaption class="figure-caption">Figure&nbsp;4.17: 640 x 954 black and white image of the <em>Mona Lisa</em>. Source: <a href="https://bit.ly/3Rgo41f">Wikipedia</a></figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;4.19: 640 x 954 black and white image of the <em>Mona Lisa</em>. Source: <a href="https://bit.ly/3Rgo41f">Wikipedia</a></figcaption></figure>
 </div>
 </div>
 </div>
@@ -992,7 +1029,7 @@ a_i =
 <p><strong>TODO</strong>: Show the necessary parts, including the screeplot.</p>
 <p>An image can be imported using <code><a href="https://rdrr.io/pkg/imager/man/load.image.html">imager::load.image()</a></code> which creates a <code>"cimg"</code> object, a 4-dimensional array with dimensions named <code>x,y,z,c</code>. <code>x</code> and <code>y</code> are the usual spatial dimensions, <code>z</code> is a depth dimension (which would correspond to time in a movie), and <code>c</code> is a color dimension containing R, G, B values.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb27" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://asgr.github.io/imager/">imager</a></span><span class="op">)</span></span>
+<div class="sourceCode" id="cb30" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://asgr.github.io/imager/">imager</a></span><span class="op">)</span></span>
 <span><span class="va">img</span> <span class="op">&lt;-</span> <span class="fu">imager</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/imager/man/load.image.html">load.image</a></span><span class="op">(</span><span class="fu">here</span><span class="fu">::</span><span class="fu"><a href="https://here.r-lib.org//reference/here.html">here</a></span><span class="op">(</span><span class="st">"images"</span>, <span class="st">"MonaLisa-BW.jpg"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/dim.html">dim</a></span><span class="op">(</span><span class="va">img</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 640 954   1   1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -1000,7 +1037,7 @@ a_i =
 <!-- img <- imager::load.image("https://github.com/friendly/Vis-MLM-book/blob/master/images/MonaLisa-BW.jpg?raw=true") -->
 <p>An <code><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame()</a></code> method converts this to a data frame with <code>x</code> and <code>y</code> coordinates. Each x-y pair is a location in the 640 by 954 pixel grid, and the <code>value</code> is a grayscale value ranging from zero to one.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb28" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">img_df_long</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span><span class="op">(</span><span class="va">img</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb31" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">img_df_long</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span><span class="op">(</span><span class="va">img</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">img_df_long</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   x y value</span></span>
 <span><span class="co">#&gt; 1 1 1 0.431</span></span>
@@ -1012,7 +1049,7 @@ a_i =
 </div>
 <p>However, to do a PCA we will need a matrix of data in wide format containing the grayscale pixel values. We can do this using <code><a href="https://tidyr.tidyverse.org/reference/pivot_wider.html">tidyr::pivot_wider()</a></code>, giving a result with 640 rows and 954 columns.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb29" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">img_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_wider.html">pivot_wider</a></span><span class="op">(</span><span class="va">img_df_long</span>, </span>
+<div class="sourceCode" id="cb32" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">img_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_wider.html">pivot_wider</a></span><span class="op">(</span><span class="va">img_df_long</span>, </span>
 <span>                     names_from <span class="op">=</span> <span class="va">y</span>, </span>
 <span>                     values_from <span class="op">=</span> <span class="va">value</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="op">-</span><span class="va">x</span><span class="op">)</span></span>
@@ -1021,12 +1058,12 @@ a_i =
 </div>
 <p>Mona’s PCA is produced with <code><a href="https://rdrr.io/r/stats/prcomp.html">prcomp()</a></code>.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb30" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">img_pca</span> <span class="op">&lt;-</span> <span class="va">img_df</span> <span class="op">|&gt;</span></span>
+<div class="sourceCode" id="cb33" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">img_pca</span> <span class="op">&lt;-</span> <span class="va">img_df</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/stats/prcomp.html">prcomp</a></span><span class="op">(</span>scale <span class="op">=</span> <span class="cn">TRUE</span>, center <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>With 955 columns, the PCA comprises 955 eigenvalue/eigenvector pairs. However, the rank of a matrix is the smaller of the number of rows and columns, so only 640 eigenvalues can be non-zero. Printing the first 10 shows that …</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb31" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">img_pca</span> <span class="op">|&gt;</span></span>
+<div class="sourceCode" id="cb34" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">img_pca</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html">tidy</a></span><span class="op">(</span>matrix <span class="op">=</span> <span class="st">"eigenvalues"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 10 × 4</span></span>
 <span><span class="co">#&gt;       PC std.dev percent cumulative</span></span>
@@ -1042,21 +1079,21 @@ a_i =
 <span><span class="co">#&gt;  9     9    3.12 0.0102       0.622</span></span>
 <span><span class="co">#&gt; 10    10    2.86 0.00855      0.631</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p><a href="#fig-mona-screeplot">Figure&nbsp;<span>4.18</span></a> shows a screeplot of proportions of variance. Because there are so many components and most of the information is concentrated in the largest dimension, I’ve used a <span class="math inline">\(\log_{10}()\)</span> scale on the horizontal axis.</p>
+<p><a href="#fig-mona-screeplot">Figure&nbsp;<span>4.20</span></a> shows a screeplot of proportions of variance. Because there are so many components and most of the information is concentrated in the largest dimension, I’ve used a <span class="math inline">\(\log_{10}()\)</span> scale on the horizontal axis.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb32" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ggbiplot/man/ggscreeplot.html">ggscreeplot</a></span><span class="op">(</span><span class="va">img_pca</span><span class="op">)</span> <span class="op">+</span></span>
+<div class="sourceCode" id="cb35" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ggbiplot/man/ggscreeplot.html">ggscreeplot</a></span><span class="op">(</span><span class="va">img_pca</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_x_log10</a></span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div id="fig-mona-screeplot" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure"><p><img src="figs/fig-mona-screeplot-1.png" class="img-fluid figure-img" style="width:100.0%"></p>
-<figcaption class="figure-caption">Figure&nbsp;4.18: Screeplot of the variance proportions in the Mona Lisa PCA.</figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;4.20: Screeplot of the variance proportions in the Mona Lisa PCA.</figcaption></figure>
 </div>
 </div>
 </div>
 <p>Then, if <span class="math inline">\(\mathbf{M}\)</span> is the <span class="math inline">\(640 \times 955\)</span> matrix of pixel values, a best approximation <span class="math inline">\(\widehat{\mathbf{M}}_k\)</span> using <span class="math inline">\(k\)</span> dimensions can be obtained as <span class="math inline">\(\widehat{\mathbf{M}}_k = \mathbf{X}_k\;\mathbf{V}_k^T\)</span> where <span class="math inline">\(\mathbf{X}_k\)</span> are the principal component scores and <span class="math inline">\(\mathbf{V}_k\)</span> are the eigenvectors corresponding to the <span class="math inline">\(k\)</span> largest eigenvalues. The function <code>approx_pca()</code> does this, and also undoes the scaling and centering carried out in PCA.</p>
 <p><strong>TODO</strong>: Also, separate approximation from the pivot_longer code…</p>
 <div class="cell" data-layout-align="center">
-<details><summary>Code</summary><div class="sourceCode" id="cb33" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">approx_pca</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">n_comp</span> <span class="op">=</span> <span class="fl">20</span>, <span class="va">pca_object</span> <span class="op">=</span> <span class="va">img_pca</span><span class="op">)</span><span class="op">{</span></span>
+<details><summary>Code</summary><div class="sourceCode" id="cb36" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">approx_pca</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">n_comp</span> <span class="op">=</span> <span class="fl">20</span>, <span class="va">pca_object</span> <span class="op">=</span> <span class="va">img_pca</span><span class="op">)</span><span class="op">{</span></span>
 <span>  <span class="co">## Multiply the matrix of rotated data (component scores) by the transpose of </span></span>
 <span>  <span class="co">## the matrix of eigenvectors (i.e. the component loadings) to get back to a </span></span>
 <span>  <span class="co">## matrix of original data values</span></span>
@@ -1092,40 +1129,40 @@ a_i =
 <span><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<p>Finally, the recovered images, using 2, 3 , 4, 5, 10, 15, 20, 50, and 100 principal components are plotted using ggplot. The result, in <a href="#fig-mona-pca">Figure&nbsp;<span>4.19</span></a> is instructive about how much visual information is contained in lower-dimensional reconstructions, or conversely, how much the image can be compressed by omitting the many small dimensions.</p>
+<p>Finally, the recovered images, using 2, 3 , 4, 5, 10, 15, 20, 50, and 100 principal components are plotted using ggplot. The result, in <a href="#fig-mona-pca">Figure&nbsp;<span>4.21</span></a> is instructive about how much visual information is contained in lower-dimensional reconstructions, or conversely, how much the image can be compressed by omitting the many small dimensions.</p>
 <div class="cell" data-layout-align="center">
 <div class="cell-output-display">
 <div id="fig-mona-pca" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure"><p><img src="images/mona-pca.png" class="img-fluid figure-img" style="width:90.0%"></p>
-<figcaption class="figure-caption">Figure&nbsp;4.19: Re-construction of the Mona Lisa using 2, 3 , 4, 5, 10, 15, 20, 50, and 100 principal components.</figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;4.21: Re-construction of the Mona Lisa using 2, 3 , 4, 5, 10, 15, 20, 50, and 100 principal components.</figcaption></figure>
 </div>
 </div>
 </div>
-<p>In this figure, with 4-5 components most people would recognize this as a blury image of the world’s most famous portrait. It is certainly clear that this is the Mona Lisa with 10–15 components. Details of the portrait and backgound features become recognizable with 20–50 components, and with 100 components it compares favorably with the original in <a href="#fig-MonaLisa">Figure&nbsp;<span>4.17</span></a>. In numbers, the original <span class="math inline">\(640 \times 955\)</span>) image is of size 600 Kb. The 100 component version is only 93 Kb, 15.6% of this.</p>
+<p>In this figure, with 4-5 components most people would recognize this as a blury image of the world’s most famous portrait. It is certainly clear that this is the Mona Lisa with 10–15 components. Details of the portrait and backgound features become recognizable with 20–50 components, and with 100 components it compares favorably with the original in <a href="#fig-MonaLisa">Figure&nbsp;<span>4.19</span></a>. In numbers, the original <span class="math inline">\(640 \times 955\)</span>) image is of size 600 Kb. The 100 component version is only 93 Kb, 15.6% of this.</p>
 </section><section id="elliptical-insights-outlier-detection" class="level2" data-number="4.6"><h2 data-number="4.6" class="anchored" data-anchor-id="elliptical-insights-outlier-detection">
 <span class="header-section-number">4.6</span> Elliptical insights: Outlier detection</h2>
 <p>The data ellipse (<a href="03-multivariate_plots.html#sec-data-ellipse"><span>Section&nbsp;3.1.4</span></a>), or ellipsoid in more than 2D is fundamental in regression. But also, as Pearson showed, it is key to understanding principal components analysis, where the principal component directions are simply the axes of the ellipsoid of the data. As such, observations that are unusual in data space may not stand out in univariate views of the variables, but will stand out in principal component space, usually on the <em>smallest</em> dimension.</p>
 <p>As an illustration, I created a dataset of <span class="math inline">\(n = 100\)</span> observations with a linear relation, <span class="math inline">\(y = x + \mathcal{N}(0, 1)\)</span> and then added two discrepant points at (1.5, -1.5), (-1.5, 1.5).</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb34" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">123345</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb37" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">123345</span><span class="op">)</span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,             <span class="fl">1.5</span>, <span class="op">-</span><span class="fl">1.5</span><span class="op">)</span></span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">x</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">100</span><span class="op">]</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>, <span class="op">-</span><span class="fl">1.5</span>, <span class="fl">1.5</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>When these are plotted with a data ellipse in <a href="#fig-outlier-demo">Figure&nbsp;<span>4.20</span></a> (left), you can see the discrepant points labeled 101 and 102, but they do not stand out as unusual on either <span class="math inline">\(x\)</span> or <span class="math inline">\(y\)</span>. The transformation to from data space to principal components space, shown in <a href="#fig-outlier-demo">Figure&nbsp;<span>4.20</span></a> (right), is simply a rotation of <span class="math inline">\((x, y)\)</span> to a space whose coordinate axes are the major and minor axes of the data ellipse, <span class="math inline">\((PC_1, PC_2)\)</span>. In this view, the additional points appear a univariate outliers on the smallest dimension, <span class="math inline">\(PC_2\)</span>.</p>
+<p>When these are plotted with a data ellipse in <a href="#fig-outlier-demo">Figure&nbsp;<span>4.22</span></a> (left), you can see the discrepant points labeled 101 and 102, but they do not stand out as unusual on either <span class="math inline">\(x\)</span> or <span class="math inline">\(y\)</span>. The transformation to from data space to principal components space, shown in <a href="#fig-outlier-demo">Figure&nbsp;<span>4.22</span></a> (right), is simply a rotation of <span class="math inline">\((x, y)\)</span> to a space whose coordinate axes are the major and minor axes of the data ellipse, <span class="math inline">\((PC_1, PC_2)\)</span>. In this view, the additional points appear a univariate outliers on the smallest dimension, <span class="math inline">\(PC_2\)</span>.</p>
 <div class="cell" data-layout-align="center">
 <div class="cell-output-display">
 <div id="fig-outlier-demo" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure"><p><img src="images/outlier-demo.png" class="img-fluid figure-img" style="width:100.0%"></p>
-<figcaption class="figure-caption">Figure&nbsp;4.20: <strong>Outlier demonstration</strong>: The left panel shows the original data and highlights the two discrepant points, which do not appear to be unusual on either x or y. The right panel shows the data rotated to principal components, where the labeled points stand out on the smallest PCA dimension.</figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;4.22: <strong>Outlier demonstration</strong>: The left panel shows the original data and highlights the two discrepant points, which do not appear to be unusual on either x or y. The right panel shows the data rotated to principal components, where the labeled points stand out on the smallest PCA dimension.</figcaption></figure>
 </div>
 </div>
 </div>
-<p>To see this more clearly, <a href="#fig-outlier-animation">Figure&nbsp;<span>4.21</span></a> shows an animation of the rotation from data space to PCA space. This uses <code><a href="https://friendly.github.io/heplots/reference/interpPlot.html">heplots::interpPlot()</a></code> …</p>
+<p>To see this more clearly, <a href="#fig-outlier-animation">Figure&nbsp;<span>4.23</span></a> shows an animation of the rotation from data space to PCA space. This uses <code><a href="https://friendly.github.io/heplots/reference/interpPlot.html">heplots::interpPlot()</a></code> …</p>
 <div id="fig-outlier-animation" class="quarto-figure quarto-figure-center anchored">
 <figure class="figure"><div data-align="center">
 <p><iframe width="480" height="480" src="images/outlier-demo.gif"></iframe></p>
 </div>
-<figcaption class="figure-caption">Figure&nbsp;4.21: Animation of rotation from data space to PCA space.</figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;4.23: Animation of rotation from data space to PCA space.</figcaption></figure>
 </div>
 
 

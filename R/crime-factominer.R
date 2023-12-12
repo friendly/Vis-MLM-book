@@ -14,6 +14,16 @@ library(factoextra)
 
 data(crime, package = "ggbiplot")
 
+# Using FactoExtra
+row.names(crime) <- crime$st
+crime.PCA <- PCA(crime[,2:8], scale.unit=TRUE, ncp=5)
+
+# reflect Dim 2
+crime.PCA <- ggbiplot::reflect(crime.PCA, columns = 2)
+#plot(crime.PCA)
+plot(crime.PCA, choix = "var")
+
+# Supplementary data
 supp_data <- state.x77 |>
   as.data.frame() |>
   tibble::rownames_to_column(var = "state") |>
@@ -22,50 +32,43 @@ supp_data <- state.x77 |>
          HS_Grad = `HS Grad`)
 
 crime_joined <-
-dplyr::left_join(crime, supp_data, by = "state")
-
-
-row.names(crime) <- crime$st
-crime_pca <- PCA(crime[,2:8], scale.unit=TRUE, ncp=5)
-plot(crime_pca)
-
-# only need to reflect Dim 2 here ?
-# No -- supplementary variables are not reflected
-
-crime_pca <- ggbiplot::reflect(crime_pca, columns = 2)
-#plot(crime_pca)
-plot(crime_pca, choix = "var")
-
-
-
-#dimdesc(crime_pca, axes = 1:2)
+  dplyr::left_join(crime[, 1:8], supp_data, by = "state")
+names(crime_joined)
 
 row.names(crime_joined) <- crime$st
-crime_pca_supp <- PCA(crime_joined[,c(2:8, 11:14)], 
-                      quanti.sup = 8:11,
-                      scale.unit=TRUE, ncp=5, graph = TRUE)
-#crime_pca_supp <- ggbiplot::reflect(crime_pca_supp, columns = 2)
-plot(crime_pca_supp)
-plot(crime_pca_supp, choix = "var")
+crime.PCA_sup <- PCA(crime_joined[,c(2:8, 9:12)], 
+                     quanti.sup = 8:11,
+                     scale.unit=TRUE, 
+                     ncp=3, 
+                     graph = FALSE)
 
+# do this to avoid indexing columns?
+# row.names(crime_joined) <- crime$st
+# crime.PCA_sup <- crime_joined |>
+#   select(-state) |> PCA(quanti.sup = 8:11,
+#                         scale.unit=TRUE, 
+#                         ncp=3, 
+#                         graph = FALSE)
+  
+
+# reflect Dim 2
+crime.PCA_sup <- ggbiplot::reflect(crime.PCA_sup, columns = 2)
+crime.PCA_sup$quanti.sup$coord[, 2] <- -1 * crime.PCA_sup$quanti.sup$coord[, 2]
+
+#plot(crime.PCA_sup)
+plot(crime.PCA_sup, choix = "var")
+
+# do the same plot with factoextra::fviz_pca
 
 # get variable information
-var <- get_pca_var(crime_pca_supp)
+var <- get_pca_var(crime.PCA_sup)
 var
 
-names(crime_pca_supp)
+names(crime.PCA_sup)
 # supplemental variables
-crime_pca_supp$quanti.sup
+crime.PCA_sup$quanti.sup
 
-
-p1 <- fviz_contrib(crime_pca, choice = "var", axes = 1,
-                   fill = "lightgreen", color = "black")
-p2 <- fviz_contrib(crime_pca, choice = "var", axes = 2,
-                   fill = "lightgreen", color = "black")
-p1 + p2
-
-
-fviz_pca_biplot(crime_pca_supp)
+fviz_pca_biplot(crime.PCA_sup)
 
 
 #' # Add supplementary variables
@@ -74,6 +77,9 @@ rownames(coord) <- c("Rank", "Points")
 print(coord)
 fviz_add(p, coord, color ="red", geom="arrow")
 
+p <- fviz_pca_var(crime.PCA)
+p
+coord <- crime.PCA_sup$quanti.sup$coord
+fviz_add(p, coord, color ="red", geom="arrow", linetype = "solid")
 
-
-
+p <- ggbiplot()
