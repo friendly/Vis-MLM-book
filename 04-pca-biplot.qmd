@@ -286,7 +286,7 @@ $\mathbf{v}_i^T \;\mathbf{S} \; \mathbf{v}_i = \lambda_i$.
 independent, which means that none of these is an exact linear combination of the others. In this case,
 all eigenvalues $\lambda_i$ are positive and the covariance matrix $\mathbf{S}$ is said to have **rank** $p$.
 
-* Here is the key fact: If the eigenvalues are arranged in order, so that $\lambda_1 > \lambda_2 > \dots > \lambda_p$, then the first $d$ components give a $d$-dimensional approximation to $\mathbf{S}$, which accounts for $\sigma_i^d \lambda_i / \sigma_i^p \lambda_i$ of the total variance.
+* Here is the key fact: If the eigenvalues are arranged in order, so that $\lambda_1 > \lambda_2 > \dots > \lambda_p$, then the first $d$ components give a $d$-dimensional approximation to $\mathbf{S}$, which accounts for $\Sigma_i^d \lambda_i / \Sigma_i^p \lambda_i$ of the total variance.
 
 For the case of two variables, $\mathbf{x}_1$ and $\mathbf{x}_2$ @fig-pca-rotation shows the
 transformation from data space to component space. The eigenvectors, $\mathbf{v}_1, \mathbf{v}_2$ 
@@ -508,8 +508,9 @@ but with its' sign reversed. For interpretation, it is useful (and usually recom
 To reflect the PCA loadings and get them into a convenient format for plotting with `ggplot()`, it is necessary to do a bit of processing, including making the `row.names()` into an explicit variable for the purpose of labeling.[^rownames]
 
 **TODO**: This should probably be a callout-warning
+
 [^rownames]: R software evolved over many years, particularly in conventions for labeling cases in printed output and graphics.  In base-R, the convention was that the `row.names()` of a matrix or data.frame served as observation labels in all printed output and plots, with a default to use numbers `1:n` if there were no rownames. In `ggplot2` and the `tidyverse` framework, the decision was made that observation labels had to be an **explicit** variable in a "tidy" dataset, so it could be used as a variable in constructs like 
-`geom_text(aes(label = label))` as in this example. This change often requires extra steps ...
+`geom_text(aes(label = label))` as in this example. This change often requires extra steps in software that uses the rownames convention.
 
 ```{r vectors}
 vectors <- crime.pca |> 
@@ -555,7 +556,7 @@ vectors |>
 
 What is shown in @fig-crime-vectors has the following interpretations:
 
-(1) the lengths of the variable vectors, $||\mathbf{v}_i|| = \sqrt{\Sigma_{j = 1:2} \; v_{ij}^2}$ give the proportion of variance of each variable accounted for in a two-dimensional display.
+(1) the lengths of the variable vectors, $||\mathbf{v}_i|| = \sqrt{\Sigma_{j = 1}^{j=2} \; v_{ij}^2}$ give the proportion of variance of each variable accounted for in a two-dimensional display.
 
 (2) the value, $v_{ij}$, of the vector for variable $\mathbf{x}_i$ on component $j$ gives
 the correlation of that variable with the $j$th principal component.
@@ -841,6 +842,7 @@ of two principal component axes.
 
 ```{r}
 #| label: fig-supp-regession
+#| echo: false
 #| out-width: "90%"
 #| fig-cap: "Fitting supplementary variables in a biplot is analogous to regression on the principal component dimensions. _Source_: @Aluja-etal-2018, Figure 2.11"
 knitr::include_graphics("images/pca4ds-figure-2-11.png")
@@ -898,7 +900,7 @@ as in @fig-crime-vectors.
 ```{r}
 #| label: fig-crime-factominer
 #| out-width: "90%"
-#| fig-cap: "PCA plot of variables for the crime data, with vectors for the supplementary variables... ."
+#| fig-cap: "PCA plot of variables for the crime data, with vectors for the supplementary variables showing their association with the principal component dimensions."
 # reverse coordinates of Dim 2
 crime.PCA_sup <- ggbiplot::reflect(crime.PCA_sup, columns = 2)
 # also reverse the orientation of coordinates for supplementary vars on Dim 2
@@ -927,8 +929,11 @@ higher levels of income and high school graduates
 In many multivariate data displays, such as scatterplot matrices, parallel coordinate plots and others
 reviewed in @sec-multivariate_plots,
 the order of different variables might seem arbitrary. They might appear in alphabetic order, or more often in the order they appear in your dataset, for example when you use `pairs(mydata)`.
-Yet, the principle of _effect ordering_ (@FriendlyKwan:03:effect) for variables says you should try to arrange the variables so that adjacent ones are as similar as possible.
-**TODO**: Mention seriation as the general topic.
+Yet, the principle of _effect ordering_ (@FriendlyKwan:03:effect) for variables says you should try to arrange the variables so that adjacent ones are as similar as possible.[^1-seriation]
+
+[^1-seriation]: The general topic of arranging items (variables, factor values) in an orderly sequence is called
+_seriation_, and stems from methods of dating in archaeology, used to arrange stone tools, pottery fragments, and other artifacts in time order. In R, the **seriation** package [@R-seriation] provides a wide range of techniques. ...
+
 
 For example, the `mtcars` dataset contains data on 32 automobiles from the 1974 U.S. magazine
 _Motor Trend_ and consists of fuel comsumption (`mpg`) and 10 aspects of automobile
@@ -976,7 +981,7 @@ $$
 
 For the `mtcars` data the biplot in @fig-mtcars-biplot accounts for 84% of the total variance
 so a 2D representation is fairly good.
-The plotshows the variables as widely dispersed. There is a collection at the left of positively correlated variables and another positively correlated set at the right.
+The plot shows the variables as widely dispersed. There is a collection at the left of positively correlated variables and another positively correlated set at the right.
 
 ```{r}
 #| label: fig-mtcars-biplot
@@ -995,6 +1000,7 @@ ggbiplot(mtcars.pca,
 
 In `corrplot()` principal component variable ordering is implemented using the `order = "AOE"` option. There are a variety of other methods based on hierarchical cluster analysis described in the 
 [package vignette](https://cran.r-project.org/web/packages/corrplot/vignettes/corrplot-intro.html).
+
 
 @fig-mtcars-corrplot-pcaorder shows the result. A nice feature of `corrplot()` is the ability to manually highlight blocks of variables that have a similar pattern of signs by outlining them with
 rectangles. From the biplot, the two main clusters of positively correlated variables seemed clear,
@@ -1049,11 +1055,14 @@ When PCA is used on facial images, you can think of the process as generating **
 a representation of the pixels in the image in terms of an eigenvalue decomposition. Dimension reduction
 means that a facial image can be considerably compressed by removing the components associated with
 small dimensions.
-As an example, consider the black and white version of the Mona Lisa shown in @fig-MonaLisa.
-The idea and code for this is adapted from this [blog post](https://kieranhealy.org/blog/archives/2019/10/27/reconstructing-images-using-pca/)
-by Kieran Healy. 
 
-**TODO**: Web links like this should be footnotes for PDF
+As an example, consider the black and white version of the Mona Lisa shown in @fig-MonaLisa.
+The idea and code for this example is adapted from this [blog post](https://kieranhealy.org/blog/archives/2019/10/27/reconstructing-images-using-pca/)
+by Kieran Healy.[^healy] 
+
+[^healy]: https://kieranhealy.org/blog/archives/2019/10/27/reconstructing-images-using-pca/
+
+**TODO**: ~~Web links like this should be footnotes for PDF~~
 
 ```{r}
 #| label: fig-MonaLisa
@@ -1097,7 +1106,7 @@ img_df <- pivot_wider(img_df_long,
 dim(img_df)
 ```
 
-Mona's PCA is produced with `prcomp()`.
+Mona's PCA is produced from this `img_df` with `prcomp()`:
 ```{r mona-pca}
 img_pca <- img_df |>
   prcomp(scale = TRUE, center = TRUE)
@@ -1105,7 +1114,8 @@ img_pca <- img_df |>
 
 With 955 columns, the PCA comprises 955 eigenvalue/eigenvector pairs. However, the rank of a
 matrix is the smaller of the number of rows and columns, so only 640 eigenvalues can be non-zero.
-Printing the first 10 shows that ...
+Printing the first 10 shows that the first three dimensions account for  46% of the variance
+and we only get to 63% with 10 components.
 
 ```{r mona-eig}
 img_pca |>
@@ -1115,7 +1125,8 @@ img_pca |>
 
 @fig-mona-screeplot shows a screeplot of proportions of variance. 
 Because there are so many components and most of the information
-is concentrated in the largest dimension, I've used a $\log_{10}()$ scale on the horizontal axis.
+is concentrated in the largest dimensions, I've used a $\log_{10}()$ scale on the horizontal axis.
+Beyond 10 or so dimensions, the variance of additional components looks quite tiny.
 
 ```{r}
 #| label: fig-mona-screeplot
@@ -1132,7 +1143,7 @@ $\mathbf{V}_k$ are the eigenvectors corresponding to the $k$
 largest eigenvalues. The function `approx_pca()` does this, and also undoes the scaling
 and centering carried out in PCA.
 
-**TODO**: Also, separate approximation from the pivot_longer code...
+**TODO**: ~~Also, separate approximation from the pivot_longer code...~~
 
 ```{r approx_pca}
 #| code-fold: true
@@ -1173,10 +1184,50 @@ approx_pca <- function(n_comp = 20, pca_object = img_pca){
 ```
 
 
-Finally, the recovered images, using 2, 3 , 4, 5, 10, 15, 20, 50, and 100 principal components are plotted
-using ggplot. The result, in @fig-mona-pca is instructive about how much visual information is contained
+Finally, the recovered images, using 2, 3 , 4, 5, 10, 15, 20, 50, and 100 principal components can be plotted
+using ggplot. In the code below, the `approx_pca()` function is run for each of the 9 values specified by `n_pcs`
+giving a data frame `recovered_imgs` containing all reconstructed images, with variables `x`, `y` and `value` (the greyscale pixel value).
+
+```{r}
+#| eval: false
+n_pcs <- c(2:5, 10, 15, 20, 50, 100)
+names(n_pcs) <- paste("First", n_pcs, "Components", sep = "_")
+
+recovered_imgs <- map_dfr(n_pcs, 
+                          approx_pca, 
+                          .id = "pcs") |>
+  mutate(pcs = stringr::str_replace_all(pcs, "_", " "), 
+         pcs = factor(pcs, levels = unique(pcs), ordered = TRUE))
+```
+
+In `ggplot()`, each  is plotted using `geom_raster()`, using `value` to as the fill color.
+A quirk of images imported to R is that origin is taken as the upper left corner, so the
+Y axis scale needs to be reversed. The 9 images are then plotted together using `facet_wrap()`.
+
+```{r}
+#| eval: false
+p <- ggplot(data = recovered_imgs, 
+            mapping = aes(x = x, y = y, fill = value))
+p_out <- p + geom_raster() + 
+  scale_y_reverse() + 
+  scale_fill_gradient(low = "black", high = "white") +
+  facet_wrap(~ pcs, ncol = 3) + 
+  guides(fill = "none") + 
+  labs(title = "Recovering Mona Lisa from PCA of her pixels") + 
+  theme(strip.text = element_text(face = "bold", size = rel(1.2)),
+        plot.title = element_text(size = rel(1.5)))
+
+p_out
+
+```
+
+
+The result, in @fig-mona-pca is instructive about how much visual information is contained
 in lower-dimensional reconstructions, or conversely, how much the image can be compressed by omitting the
 many small dimensions.
+
+
+
 ```{r}
 #| label: fig-mona-pca
 #| echo: false
