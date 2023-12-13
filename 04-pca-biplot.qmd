@@ -314,9 +314,9 @@ for PCA is that it allows the inclusion of _supplementary variables_ (which can 
 or quantitative) and _supplementary points_ for individuals. These are not used in the analysis,
 but are projected into the plots to facilitate interpretation. For example, in the analysis of
 the `crime` data described below, it would be useful to have measures of other characteristics
-of the U.S. states, such as poverty and average level of education.
+of the U.S. states, such as poverty and average level of education (@sec-supp-vars).
 
-Unfortunately, although all of these performing similar calculations, the options for
+Unfortunately, although all of these functions perform similar calculations, the options for
 analysis and the details of the result they return differ.
 
 The important options for analysis include: 
@@ -344,8 +344,9 @@ You need to specify the numeric variables to analyze by their columns in the dat
 The most important option here is `scale. = TRUE` ...
 
 ```{r crime-pca0}
+#| eval: false
 data(crime, package = "ggbiplot")
-crime.pca <- prcomp(crime[, 2:7], scale. = TRUE)
+crime.pca <- prcomp(crime[, 2:8], scale. = TRUE)
 ```
 
 The tidy equivalent is more verbose, but also more expressive about what is being done.
@@ -373,7 +374,8 @@ names(crime.pca)
 
 Of these, for $n$ observations and $p$ variables,
 
-* `sdev` is the length $p$ vector of the standard deviations of the principal components (i.e., the square roots $\sqrt{\lambda_i}$ of the eigenvalues of the covariance/correlation matrix);
+* `sdev` is the length $p$ vector of the standard deviations of the principal components (i.e., the square roots $\sqrt{\lambda_i}$ of the eigenvalues of the covariance/correlation matrix). When the variables are standardized,
+the sum of squares of the eigenvalues is equal to $p$.
 * `rotation` is the $p \times p$ matrix of weights or **loadings** of the variables on the components; the columns are the eigenvectors of the covariance or correlation matrix of the data;
 * `x` is the $n \times p$ matrix of **scores** for the observations on the components, the result of multiplying (rotating) the data matrix by the loadings. These are uncorrelated, so `cov(x)` is a $p \times p$ diagonal matrix whose diagonal elements are the eigenvalues $\lambda_i$ = `sdev^2`.
 
@@ -765,7 +767,8 @@ very much to differences among the states.
 
 To better understand how much each variable contributes to the biplot dimensions,
 it is helpful to see information about the variance of variables along each dimension.
-Graphically, this is nothing more than a measure of the projections
+Graphically, this is nothing more than a measure of the lengths of projections
+of the variables on each of the dimensions.
 `factoextra::get_pca_var()` calculates a number of tables from a `"prcomp"` or similar object.
 
 ```{r var-info}
@@ -773,7 +776,8 @@ var_info <- factoextra::get_pca_var(crime.pca)
 names(var_info)
 ```
 
-The component `contrib` gives these variance contributions as percents, where each row and column sums to 100.
+The component `cor` gives correlations of the variables with the dimensions and
+`contrib` gives their variance contributions as percents, where each row and column sums to 100.
 
 ```{r contrib}
 contrib <- var_info$contrib
@@ -784,8 +788,8 @@ cbind(contrib, Total = rowSums(contrib)) |>
 
 
 These contributions can be visualized as sorted barcharts for a given axis
-using `factoextra::fviz_contrib()`. The dashed horizontal lines are at the average value for each dimension. A simple rubric for interpreting the dimensions in terms of the variable contributions is mention those that
-are above average on each dimension.
+using `factoextra::fviz_contrib()`. The dashed horizontal lines are at the average value for each dimension.
+
 ```{r}
 #| label: fig-fviz-contrib
 #| out-width: "100%"
@@ -798,7 +802,10 @@ p1 + p2
 
 ```
 
-Another useful measure is called `cos2`, the quality of representation, meaning how much of a variable is represented in a given component. The columns sum to the eigenvalue for each dimension. 
+ A simple rubric for interpreting the dimensions in terms of the variable contributions is to mention those that
+are largest or above average on each dimension. So, burglary and rape contribute most to the first dimension, while murder and auto theft contribute most to the second.
+
+Another useful measure is called `cos2`, the _quality_ of representation, meaning how much of a variable is represented in a given component. The columns sum to the eigenvalue for each dimension. 
 The rows each sum to 1.0, meaning each variable is completely
 represented on all components, but we can find the quality of a $k$-D solution by summing the values in the
 first $k$ columns.
@@ -808,16 +815,18 @@ in a style similar to @fig-fviz-contrib using `factoextra::fviz_cos2()`.
 ```{r quality}
 quality <- var_info$cos2
 rowSums(quality)
+
 colSums(quality)
 
 cbind(quality[, 1:2], 
-      Total = rowSums(quality[, 1:2]))
+      Total = rowSums(quality[, 1:2])) |>
+  round(digits = 2)
 ```
 
 In two dimensions, murder and burglary are best represented; robbery and larceny are the worst, but as
 we saw above (@fig-crime-biplot3), these crimes are implicated in the third dimension.
 
-### Supplementary variables
+### Supplementary variables {#sec-supp-vars}
 
 An important feature of biplot methodology is that once you have a reduced-rank display of the
 relations among a set of variables, you can use other available data to help interpret what
@@ -825,9 +834,23 @@ what is shown in the biplot. In a sense, this is what I did above in @fig-crime-
 using `region` as a grouping variable and summarizing the variability in the scores for states with their data ellipses by region. 
 
 When we have other quantitative variables on the same observations, these can be represented as supplementary
-variables in the same space, by what amounts to regressions of these new variables on the principal component dimensions. For this example, it happens that some suitable variables are available in the dataset `state.x77`.
-I select a few of these below and make the state name a column variable so it can be merged with the `crime` data.
+variables in the same space, by what amounts to regressions of these new variables on the principal component dimensions. For example, the left panel of @fig-supp-regession depicts the vector geometry of a regression 
+of a variable $\mathbf{y}$ on two predictors, $\mathbf{x}_1$ and $\mathbf{x}_2$. The fitted vector,
+$\widehat{\mathbf{y}}$, is the perpendicular projection of $\mathbf{y}$ onto the plane of $\mathbf{x}_1$ and $\mathbf{x}_2$. In the same way, in the right panel the supplementary variable is projected into the plane
+of two principal component axes.
 
+```{r}
+#| label: fig-supp-regession
+#| out-width: "90%"
+#| fig-cap: "Fitting supplementary variables in a biplot is analogous to regression on the principal component dimensions. _Source_: @Aluja-etal-2018, Figure 2.11"
+knitr::include_graphics("images/pca4ds-figure-2-11.png")
+```
+
+For this example, it happens that some suitable supplementary
+variables to aid interpretation of crime rates
+are available in the dataset `datsets::state.x77`, which was obtained from the U.S. Bureau of the Census
+_Statistical Abstract of the United States_ for 1977.
+I select a few of these below and make the state name a column variable so it can be merged with the `crime` data.
 
 ```{r supp-data}
 supp_data <- state.x77 |>
@@ -840,7 +863,7 @@ supp_data <- state.x77 |>
 head(supp_data)
 ```
 
-Then, we can merge the `crime` data with the `supp_data` dataset to produced something suitable
+Then, we can merge the `crime` data with the `supp_data` dataset to produce something suitable
 for analysis using `factoMineR::PCA()`.
 ```{r}
 crime_joined <-
@@ -849,7 +872,7 @@ names(crime_joined)
 ```
 
 `PCA()` can only get the labels for the observations from the `row.names()` of the dataset,
-so I assign them explicitly. The supplementary variables are specified by `quanti.sup`
+so I assign them explicitly. The supplementary variables are specified by the argument `quanti.sup`
 as the indices of the columns in what is passed as the data argument.
 ```{r}
 row.names(crime_joined) <- crime$st
@@ -862,8 +885,11 @@ crime.PCA_sup <- PCA(crime_joined[,c(2:8, 9:12)],
 
 The essential difference between the result of `prcomp()` used earlier to get the `crime.pca` object
 and the result of `PCA()` with supplementary variables is that the `crime.PCA_sup` object now contains
-a `quanti.sup` component for the supplementary variables. This can be plotted using `FactoMiner::plot()`
-or various `factoextra` functions ... 
+a `quanti.sup` component containing the coordinates for the supplementary variables.
+This can be plotted using `FactoMiner::plot()`
+or various `factoextra` functions like `fviz_pca_var()` for a plot of the variable vectors or
+`fviz_pca_biplot()` for a biplot. When a `quanti.sup` component is present, supplementary variables are
+also shown in the displays.
 
 For simplicity I use `FactoMiner::plot()` here and only show the variable vectors. For consistency with earlier
 plots, I reflect the orientation of the 2nd PCA dimension so that crimes of personal violence are at the top,
@@ -875,8 +901,8 @@ as in @fig-crime-vectors.
 #| fig-cap: "PCA plot of variables for the crime data, with vectors for the supplementary variables... ."
 # reverse coordinates of Dim 2
 crime.PCA_sup <- ggbiplot::reflect(crime.PCA_sup, columns = 2)
-# also reverse the orientation of the coordinates for sumpplementary variables on Dim 2
-crime.PCA_sup$quanti.sup$coord[, 2] <- -1 * crime.PCA_sup$quanti.sup$coord[, 2]
+# also reverse the orientation of coordinates for supplementary vars on Dim 2
+crime.PCA_sup$quanti.sup$coord[, 2] <- -crime.PCA_sup$quanti.sup$coord[, 2]
 plot(crime.PCA_sup, choix = "var")
 ```
 
@@ -891,12 +917,12 @@ to the variation in rates of crimes for the U.S. states.
 On dimension 1, what stands out is that
 life expectancy is associated with lower overall crime, while other supplementary variable have
 positive associations.
-On Dimension 2, crimes against persons (murder, assault, rape) are associated with greater rates of
-illiteracy among the states, which we earlier saw (@fig-crime-biplot2) were more often Southern states.
+On dimension 2, crimes against persons (murder, assault, rape) are associated with greater rates of
+illiteracy among the states, which as we earlier saw (@fig-crime-biplot2) were more often Southern states.
 Crimes against property (auto theft, larceny) at the bottom of this dimension are associated with 
 higher levels of income and high school graduates
 
-## Application: Variable ordering for data displays
+## Application: Variable ordering for data displays {#sec-var-order}
 
 In many multivariate data displays, such as scatterplot matrices, parallel coordinate plots and others
 reviewed in @sec-multivariate_plots,
