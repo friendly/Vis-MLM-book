@@ -78,15 +78,16 @@ arrows---variable vectors--- in one view is the other topic explained in this ch
 relate to this space. For exploratory analysis to get an initial, incisive view of
 a multivariate dataset, a biplot is often my first choice.
 
-::: callout-note
+::: {.callout-note title="Looking ahead"}
 ## Looking ahead
-I'm using the term _multivariate juicer_ here to refer the wider class of **dimension reduction** techniques,  used for various purposes in data analysis and visualization and principal components analysis is the simplest example.
+I'm using the term _multivariate juicer_ here to refer the wider class of **dimension reduction** techniques,  used for various purposes in data analysis and visualization. Principal components analysis is the simplest example and illustrates the general ideas.
 
-The key point is that these methods are designed to transform the data into a low-dimensional space for a particular goal or purpose. In PCA, the goal is to extract the greatest amount of total variability in the data. In the context of univariate multiple regression, the goal is often to reduce the number of predictors necessary to account for an outcome variable, called _feature selection_ in the machine learning literature.
+The key point is that these methods are designed to transform the data into a low-dimensional space for a particular goal or purpose. In PCA, the goal is to extract the greatest amount of total variability in the data. In the context of univariate multiple regression, the goal is often to reduce the number of predictors necessary to account for an outcome variable, called _feature extraction_ in the machine learning literature.
 
-When the goal is to best distinguish among groups ...
+When the goal is to best distinguish among groups **discriminant analysis** finds uncorrelated weighted sums of
+predictors on which the means of groups are most widely separated in a reduced space of hopefully fewer dimensions.
 
-...
+The methods I cover in this book are all linear methods, but there is also a wide variety of non-linear dimension reduction techniques ...
 
 :::
 
@@ -505,12 +506,14 @@ crime.pca |> purrr::pluck("rotation")
 But note something important in this output: All of the weights for the first component are negative. In PCA, the directions of the eigenvectors are completely arbitrary, in the sense that the vector $-\mathbf{v}_i$ gives the same linear combination as $\mathbf{v}_i$,
 but with its' sign reversed. For interpretation, it is useful (and usually recommended) to reflect the loadings to a positive orientation by multiplying them by -1.
 
-To reflect the PCA loadings and get them into a convenient format for plotting with `ggplot()`, it is necessary to do a bit of processing, including making the `row.names()` into an explicit variable for the purpose of labeling.[^rownames]
+To reflect the PCA loadings and get them into a convenient format for plotting with `ggplot()`, it is necessary to do a bit of processing, including making the `row.names()` into an explicit variable for the purpose of labeling.
 
-**TODO**: This should probably be a callout-warning
+**TODO**: ~~This should probably be a callout-warning~~
 
-[^rownames]: R software evolved over many years, particularly in conventions for labeling cases in printed output and graphics.  In base-R, the convention was that the `row.names()` of a matrix or data.frame served as observation labels in all printed output and plots, with a default to use numbers `1:n` if there were no rownames. In `ggplot2` and the `tidyverse` framework, the decision was made that observation labels had to be an **explicit** variable in a "tidy" dataset, so it could be used as a variable in constructs like 
+::: {.callout-warning title="Rownames"}
+R software evolved over many years, particularly in conventions for labeling cases in printed output and graphics.  In base-R, the convention was that the `row.names()` of a matrix or data.frame served as observation labels in all printed output and plots, with a default to use numbers `1:n` if there were no rownames. In `ggplot2` and the `tidyverse` framework, the decision was made that observation labels had to be an **explicit** variable in a "tidy" dataset, so it could be used as a variable in constructs like 
 `geom_text(aes(label = label))` as in this example. This change often requires extra steps in software that uses the rownames convention.
+:::
 
 ```{r vectors}
 vectors <- crime.pca |> 
@@ -946,7 +949,7 @@ correlations?
 #| label: fig-mtcars-corrplot-varorder
 #| fig-width: 8
 #| fig-height: 8
-#| out-width: "75%"
+#| out-width: "80%"
 #| fig-cap: "Corrplot of `mtcars` data, with the variables in the order they appear in the dataset."
 data(mtcars)
 library(corrplot)
@@ -978,6 +981,8 @@ a_i =
   \end{cases}     
 $$
 (read $\tan^{-1}(x)$ as "the angle whose tangent is $x$".)
+
+**TODO**: Make a diagram of this
 
 For the `mtcars` data the biplot in @fig-mtcars-biplot accounts for 84% of the total variance
 so a 2D representation is fairly good.
@@ -1011,7 +1016,7 @@ separately.
 #| label: fig-mtcars-corrplot-pcaorder
 #| fig-width: 8
 #| fig-height: 8
-#| out-width: "75%"
+#| out-width: "80%"
 #| fig-cap: "Corrplot of `mtcars` data, with the variables ordered according to the variable vectors in the biplot."
 corrplot(R, 
          method = 'ellipse', 
@@ -1026,18 +1031,29 @@ But wait, there is something else to be seen in @fig-mtcars-corrplot-pcaorder.
 Can you see one cell that doesn't fit with the rest?
 
 Yes, the correlation of number of forward gears (`gear`) and number of carburators (`carb`)
-in the upper left and lower right corners is moderately positive (0.27) while all the others
-in their off-diagonal blocks are negative. 
+in the upper left and lower right corners stands out as moderately positive (0.27) while all the others
+in their off-diagonal blocks are negative. This is another benefit of effect ordering: when you arrange
+the variables so that the most highly related variable are together, features that deviate from dominant
+pattern become visible.
 
 ## Application: Eigenfaces
 
 There are many applications of principal components analysis beyond the use for visualization
-for multivariate data covered here, that rely on its' ability as a dimension reduction technique,
+for multivariate data covered here, that rely on its' ability as a **dimension reduction** technique,
 that is, to find a low-dimensional approximation to a high-dimensional dataset.
 
+::: {.callout-note title="Machine learning uses"}
 In machine learning, for example, PCA is a method used to reduce model complexity
-and avoid overfilling by _feature extraction_, which amounts to ...
-This is just another name for principal components regression ...
+and avoid overfitting by _feature extraction_, which amounts to fitting a response variable in
+a low-D space of the predictors.
+This is just another name for _principal components regression_, where, instead of 
+regressing the dependent variable on all the explanatory variables directly, a smaller number
+principal components of the explanatory variables is used as predictors. This has the added
+benefit that it avoids problems of
+collinearity (section-ref) due to high correlations of the predictors, because the principal
+component scores are necessarily uncorrelated. When the goal is model explanation rather
+than pure prediction, it has the disadvantage that the components may be hard to interpret.
+:::
 
 An interesting class of problems have to do with image processing, where an image of size
 width $\times$ height in pixels can be represented by a $w \times h$ array of 
