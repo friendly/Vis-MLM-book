@@ -7,15 +7,34 @@
 library(imager)
 library(here)
 library(dplyr)
+library(tidyr)
 library(purrr)
 library(broom)
 library(ggplot2)
 library(gganimate)
+library(ggbiplot)
 
 img <- imager::load.image(here("images", "MonaLisa.jpg"))
+img <- imager::load.image("https://github.com/friendly/Vis-MLM-book/blob/master/images/MonaLisa.jpg?raw=true")
 dim(img)
 
 #[1] 640 954   1   3
+
+plot(img)
+
+as.data.frame(img) |> names()
+# [1] "x"     "y"     "cc"    "value"
+
+# to plot with ggplot,need to manipulate r,g,b channels
+img_df <- as.data.frame(img, wide="c") |>
+  mutate(rgb.val=rgb(c.1,c.2,c.3))
+ggplot(data = img_df, 
+       mapping = aes(x = x, y = y, fill = rgb.val)) +
+  geom_raster() + 
+  scale_y_reverse() + scale_fill_identity() +
+  guides(fill = "none")  
+  
+  
 
 img <- imager::load.image(here("images", "MonaLisa-BW.jpg"))
 dim(img)
@@ -30,18 +49,28 @@ img_df <- tidyr::pivot_wider(img_df_long,
                              values_from = value)
 dim(img_df)
 
-img_pca <- img_df %>%
-  dplyr::select(-x) %>%
+img_pca <- img_df |>
+  dplyr::select(-x) |>
   prcomp(scale = TRUE, center = TRUE)
+
   
 pca_tidy <- tidy(img_pca, matrix = "pcs")
 
-pca_tidy %>%
+# variance proportions
+img_pca |>
+  broom::tidy(matrix = "eigenvalues") |> head(12)
+
+pca_tidy |>
     ggplot(aes(x = PC, y = percent)) +
     geom_line(linewidth = 2) +
     labs(x = "Principal Component", y = "Variance Explained") 
 
-reverse_pca <- function(n_comp = 20, pca_object = img_pca){
+ggscreeplot(img_pca) +
+  scale_x_log10()
+
+
+
+approx_pca <- function(n_comp = 20, pca_object = img_pca){
   ## The pca_object is an object created by base R's prcomp() function.
   
   ## Multiply the matrix of rotated data by the transpose of the matrix 
@@ -69,16 +98,17 @@ reverse_pca <- function(n_comp = 20, pca_object = img_pca){
   colnames(recon_df) <- c("x", 1:(ncol(recon_df)-1))
 
   ## Return the data to long form 
-  recon_df_long <- recon_df %>%
+  recon_df_long <- recon_df |>
     tidyr::pivot_longer(cols = -x, 
                         names_to = "y", 
-                        values_to = "value") %>%
-    mutate(y = as.numeric(y)) %>%
-    arrange(y) %>%
+                        values_to = "value") |>
+    mutate(y = as.numeric(y)) |>
+    arrange(y) |>
     as.data.frame()
   
   recon_df_long
 }
+
 
 # Let?s put the function to work by mapping it to our PCA object, and reconstructing our image based on the first 2, 3, 4, 5, 10, 20, 50, and 100 principal components.
 
@@ -89,8 +119,8 @@ names(n_pcs) <- paste("First", n_pcs, "Components", sep = "_")
 
 ## map reverse_pca() 
 recovered_imgs <- map_dfr(n_pcs, 
-                          reverse_pca, 
-                          .id = "pcs") %>%
+                          approx_pca, 
+                          .id = "pcs") |>
   mutate(pcs = stringr::str_replace_all(pcs, "_", " "), 
          pcs = factor(pcs, levels = unique(pcs), ordered = TRUE))
 
