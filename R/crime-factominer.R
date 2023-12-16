@@ -53,6 +53,7 @@ crime.PCA_sup <- PCA(crime_joined[,c(2:8, 9:12)],
 
 # reflect Dim 2
 crime.PCA_sup <- ggbiplot::reflect(crime.PCA_sup, columns = 2)
+## NB: This is now handled in ggbiplot
 crime.PCA_sup$quanti.sup$coord[, 2] <- -1 * crime.PCA_sup$quanti.sup$coord[, 2]
 
 #plot(crime.PCA_sup)
@@ -82,4 +83,18 @@ p
 coord <- crime.PCA_sup$quanti.sup$coord
 fviz_add(p, coord, color ="red", geom="arrow", linetype = "solid")
 
-p <- ggbiplot()
+
+#' ## Test finding supplementary variables
+
+supp.coord <- crime.PCA_sup$quanti.sup$coord
+
+var.coord <- crime.PCA_sup$var$coord
+
+# do the regression directly
+reg.data <- cbind(scale(supp_data[, -1]), 
+                  crime.PCA_sup$ind$coord) |>
+  as.data.frame()
+
+sup.mod <- lm(cbind(Income, Illiteracy, Life_Exp, HS_Grad) ~ 0 + Dim.1 + Dim.2 + Dim.3, data = reg.data )
+
+(coefs <- t(coef(sup.mod)))

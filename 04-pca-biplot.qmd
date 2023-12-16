@@ -677,11 +677,14 @@ values equal to 1.0.
 
 ### Biplots in R
 
-There are a large number of R packages providing biplots. The most basic, `stats::biplot()`, provides methods for `"prcomp"` and `"princomp"` objects.
+There are a large number of R packages providing biplots. The most basic, `stats::biplot()`, provides methods for `"prcomp"` and `"princomp"` objects. Among other packages, **factoextra** package [@R-factoextra], an extension of
+**FactoMineR** [@R-FactoMineR], is perhaps the most comprehensive and provides `ggplot2` graphics.
+In addition to biplot methods for
+quantitative data using PCA (`fviz_pca()`), it offers biplots for categorical data using correspondence analysis
+(`fviz_ca()`) and multiple correspondence analysis (`fviz_mca()`); factor analysis with mixed quantitative and categorical variables (`fviz_famd()`) and cluster analysis (`fviz_cluster()`).
+**TODO**: Also mention **adegraphics** package
 
-**TODO**: Mention **factoextra** package, `fviz()`, `fviz_pca_biplot()`, ... giving `ggplot2` graphics. Also mention **adegraphics** package
-
-Here, I use the **ggbiplot** package, which aims to provide a simple interface to biplots within the `ggplot2` framework.
+Here, I use the **ggbiplot** package, which aims to provide a simple interface to biplots within the `ggplot2` framework. I also use some convenient utility functions from **factoextra**.
 
 ### Example
 
@@ -837,10 +840,10 @@ what is shown in the biplot. In a sense, this is what I did above in @fig-crime-
 using `region` as a grouping variable and summarizing the variability in the scores for states with their data ellipses by region. 
 
 When we have other quantitative variables on the same observations, these can be represented as supplementary
-variables in the same space, by what amounts to regressions of these new variables on the principal component dimensions. For example, the left panel of @fig-supp-regession depicts the vector geometry of a regression 
+variables in the same space, by what amounts to regressions of these new variables on the scores for the principal component dimensions. For example, the left panel of @fig-supp-regession depicts the vector geometry of a regression 
 of a variable $\mathbf{y}$ on two predictors, $\mathbf{x}_1$ and $\mathbf{x}_2$. The fitted vector,
 $\widehat{\mathbf{y}}$, is the perpendicular projection of $\mathbf{y}$ onto the plane of $\mathbf{x}_1$ and $\mathbf{x}_2$. In the same way, in the right panel the supplementary variable is projected into the plane
-of two principal component axes.
+of two principal component axes. The fitted vector shows how that additional variable relates to the biplot dimensions.
 
 ```{r}
 #| label: fig-supp-regession
@@ -869,7 +872,7 @@ head(supp_data)
 
 Then, we can merge the `crime` data with the `supp_data` dataset to produce something suitable
 for analysis using `factoMineR::PCA()`.
-```{r}
+```{r crime-joined}
 crime_joined <-
   dplyr::left_join(crime[, 1:8], supp_data, by = "state")
 names(crime_joined)
@@ -878,26 +881,41 @@ names(crime_joined)
 `PCA()` can only get the labels for the observations from the `row.names()` of the dataset,
 so I assign them explicitly. The supplementary variables are specified by the argument `quanti.sup`
 as the indices of the columns in what is passed as the data argument.
-```{r}
+```{r crime-joined-PCA}
 row.names(crime_joined) <- crime$st
 crime.PCA_sup <- PCA(crime_joined[,c(2:8, 9:12)], 
                      quanti.sup = 8:11,
                      scale.unit=TRUE, 
-                     ncp=5, 
+                     ncp=3, 
                      graph = FALSE)
 ```
 
 The essential difference between the result of `prcomp()` used earlier to get the `crime.pca` object
 and the result of `PCA()` with supplementary variables is that the `crime.PCA_sup` object now contains
-a `quanti.sup` component containing the coordinates for the supplementary variables.
-This can be plotted using `FactoMiner::plot()`
+a `quanti.sup` component containing the coordinates for the supplementary variables in PCA space. These can
+be calculated as a the coefficients of a multivariate regression of the standardized supplementary variables
+on the PCA scores for the dimensions, with no intercept to force the fitted vectors to go through the origin.
+
+```{r}
+reg.data <- cbind(scale(supp_data[, -1]), 
+                  crime.PCA_sup$ind$coord) |>
+  as.data.frame()
+
+sup.mod <- lm(cbind(Income, Illiteracy, Life_Exp, HS_Grad) ~ 
+                    0 + Dim.1 + Dim.2 + Dim.3, 
+              data = reg.data )
+
+(coefs <- t(coef(sup.mod)))
+```
+
+
+The `PCA()` result can be plotted using `FactoMiner::plot()`
 or various `factoextra` functions like `fviz_pca_var()` for a plot of the variable vectors or
 `fviz_pca_biplot()` for a biplot. When a `quanti.sup` component is present, supplementary variables are
 also shown in the displays.
 
 For simplicity I use `FactoMiner::plot()` here and only show the variable vectors. For consistency with earlier
-plots, I reflect the orientation of the 2nd PCA dimension so that crimes of personal violence are at the top,
-as in @fig-crime-vectors.
+plots, I first reflect the orientation of the 2nd PCA dimension so that crimes of personal violence are at the top, as in @fig-crime-vectors.
 
 ```{r}
 #| label: fig-crime-factominer
