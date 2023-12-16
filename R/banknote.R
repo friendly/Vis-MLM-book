@@ -2,12 +2,29 @@
 #' title: banknote data
 #' ---
 
-data(banknote, package= "mclust")
+library(dplyr)
 library(ggbiplot)
 library(ggplot2)
 library(MASS)
 library(heplots)
 library(candisc)
+
+data(banknote, package= "mclust")
+
+# violin plot
+
+banknote |>
+  tidyr::gather(key = "measure", value = "Size", Length:Diagonal) |> 
+  mutate(measure = factor(measure, 
+                          levels = c(names(banknote)[-1]))) |> 
+  ggplot(aes(x = Status, y = Size, color = Status, fill = Status)) +
+  geom_violin(alpha = 0.2) +
+  geom_jitter(width = .2, size = 2) +
+  facet_wrap( ~ measure, scales = "free", labeller = label_both) +
+  theme_bw(base_size = 14) +
+  theme(legend.position = "top")
+  
+
 
 banknote.pca <- prcomp(banknote[, -1], scale = TRUE)
 banknote.pca
@@ -23,6 +40,18 @@ ggbiplot(banknote.pca,
   theme_minimal(base_size = 14) +
   theme(legend.direction = 'horizontal', legend.position = 'top')
 
+
+#' MANOVA
+#' 
+
+banknote.mlm <- lm(cbind(Length, Left, Right, Bottom, Top, Diagonal) ~ Status,
+                    data = banknote)
+car::Anova(banknote.mlm)
+
+# univariate t tests
+broom::tidy(banknote.mlm) |> filter(term != "(Intercept)")
+
+#' Discriminant analysis
 banknote.lda <- lda(Status ~ Length + Left + Right + Bottom + Top + Diagonal,
                     data = banknote)
 banknote.lda
