@@ -49,6 +49,12 @@ banknote.mlm <- lm(cbind(Length, Left, Right, Bottom, Top, Diagonal) ~ Status,
                     data = banknote)
 car::Anova(banknote.mlm)
 
+summary(Anova(banknote.mlm))
+
+summary(Anova(banknote.mlm), univariate=TRUE)
+
+heplots::etasq(banknote.mlm)
+
 # univariate t tests
 broom::tidy(banknote.mlm) |> filter(term != "(Intercept)")
 
