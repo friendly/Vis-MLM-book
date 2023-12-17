@@ -449,8 +449,10 @@ A classic example is the dataset `mbclust::banknote`, containing six size measur
 banknotes can be distinguished. The measures are the `Length` and `Diagonal` lengths of a bill and
 the `Left`, `Right`, `Top` and `Bottom` edge margins.
 
+Before considering hypothesis tests, let's look at some exploratory graphics. @fig-banknote-violin shows univariate violin plots of each of the measures.
+
 ```{r}
-#| label: banknote-violin
+#| label: fig-banknote-violin
 #| out-width: "100%"
 #| fig-cap: "Violin plot of the banknote variables"
 banknote |>
@@ -463,6 +465,31 @@ banknote |>
   facet_wrap( ~ measure, scales = "free", labeller = label_both) +
   theme_bw(base_size = 14) +
   theme(legend.position = "top")
+```
+
+Bivariate relations could be explored in data space using scatterplots, I turn to my trusty multivariate juicer, a biplot.
+Two dimensions account for 70% of the total variance of all the banknotes.
+```{r banknote-pca}
+banknote.pca <- prcomp(banknote[, -1], scale = TRUE)
+summary(banknote.pca)
+```
+
+The biplot in @fig-banknote-biplot gives a nice summary, at least in two dimensions ...
+```{r}
+#| label: fig-banknote-biplot
+#| out-width: "100%"
+#| fig-cap: "Biplot of the banknote variables ..."
+ggbiplot(banknote.pca,
+   obs.scale = 1, var.scale = 1,
+   groups = banknote$Status,
+   ellipse = TRUE, 
+   ellipse.level = 0.5, 
+   ellipse.alpha = 0.1, ellipse.linewidth = 0,
+   varname.size = 4,
+   varname.color = "black") +
+  labs(fill = "Status", color = "Status") +
+  theme_minimal(base_size = 14) +
+  theme(legend.direction = 'horizontal', legend.position = 'top')
 ```
 
 
