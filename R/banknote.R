@@ -2,12 +2,14 @@
 #' title: banknote data
 #' ---
 
+library(car)
 library(dplyr)
 library(ggbiplot)
 library(ggplot2)
 library(MASS)
 library(heplots)
 library(candisc)
+library(broom)
 
 data(banknote, package= "mclust")
 
@@ -17,9 +19,10 @@ banknote |>
   tidyr::gather(key = "measure", value = "Size", Length:Diagonal) |> 
   mutate(measure = factor(measure, 
                           levels = c(names(banknote)[-1]))) |> 
-  ggplot(aes(x = Status, y = Size, color = Status, fill = Status)) +
-  geom_violin(alpha = 0.2) +
-  geom_jitter(width = .2, size = 2) +
+  ggplot(aes(x = Status, y = Size, color = Status)) +
+  geom_violin(aes(fill = Status), alpha = 0.2) +
+  geom_boxplot(width = 0.25, linewidth=1.25, color = "black") +
+  geom_jitter(width = .2, size = 1.2) +
   facet_wrap( ~ measure, scales = "free", labeller = label_both) +
   theme_bw(base_size = 14) +
   theme(legend.position = "top")
@@ -29,6 +32,7 @@ banknote |>
 banknote.pca <- prcomp(banknote[, -1], scale = TRUE)
 summary(banknote.pca)
 
+banknote.pca <- reflect(banknote.pca)
 ggbiplot(banknote.pca,
    obs.scale = 1, var.scale = 1,
    groups = banknote$Status,
@@ -47,16 +51,19 @@ ggbiplot(banknote.pca,
 
 banknote.mlm <- lm(cbind(Length, Left, Right, Bottom, Top, Diagonal) ~ Status,
                     data = banknote)
-car::Anova(banknote.mlm)
+Anova(banknote.mlm)
 
-summary(Anova(banknote.mlm))
+# see all test statistics
+summary(Anova(banknote.mlm)) |> print(SSP = FALSE)
 
-summary(Anova(banknote.mlm), univariate=TRUE)
+#summary(Anova(banknote.mlm), univariate=TRUE)
 
 heplots::etasq(banknote.mlm)
 
 # univariate t tests
-broom::tidy(banknote.mlm) |> filter(term != "(Intercept)")
+broom::tidy(banknote.mlm) |> 
+  filter(term != "(Intercept)") |>
+  rename(t = statistic)
 
 #' Discriminant analysis
 banknote.lda <- lda(Status ~ Length + Left + Right + Bottom + Top + Diagonal,

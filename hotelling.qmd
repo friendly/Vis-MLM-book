@@ -34,6 +34,7 @@ library(Hotelling)
 library(ggplot2)
 library(dplyr)
 library(tidyr)
+library(ggbiplot)
 ```
 
 
@@ -115,7 +116,7 @@ $$
 (\mathbf{Q}_H - \lambda \mathbf{Q}_E) \mathbf{a} = 0
 $$ {#eq-eigen}
 In more complex MANOVA problems, there are more than one non-zero latent
-roots, $\lambda_1, \lambda_2, \dots \lambda_s$, and test statistics
+roots, $\lambda_1, \lambda_2, \dots \lambda_s$, and test statistics (Wilks' $\Lambda$, Pillai and Hotelling-Lawley trace criteria, Roy's maximum root test)
 are functions of these.
 
 
@@ -442,43 +443,52 @@ relative to the two individual variables.
 
 ## More variables
 
+The `mathscore` data gave a simple example with two outcomes to explain the essential ideas behind
+Hotelling's $T^2$ and multivariate tests.
 Multivariate methods become increasingly useful as the number of response variables increases because
-it is harder to show them all together. ...
+it is harder to show them all together and see how they relate to differences between groups.
 
 A classic example is the dataset `mbclust::banknote`, containing six size measures made on 100 genuine and 100 counterfeit old-Swiss 1000-franc bank notes [@FleuryReidwyl-1988]. The goal is to see how well the real and fake
 banknotes can be distinguished. The measures are the `Length` and `Diagonal` lengths of a bill and
-the `Left`, `Right`, `Top` and `Bottom` edge margins.
+the `Left`, `Right`, `Top` and `Bottom` edge margins in mm.
 
-Before considering hypothesis tests, let's look at some exploratory graphics. @fig-banknote-violin shows univariate violin plots of each of the measures.
+Before considering hypothesis tests, let's look at some exploratory graphics. @fig-banknote-violin shows univariate violin  and boxplots of each of the measures. A quick glance shows that the counterfeit and genuine bills differ in their
+means on most of the measures, with the counterfeit ones slightly larger on Left, Right, Bottom and Top margins.
 
 ```{r}
 #| label: fig-banknote-violin
 #| out-width: "100%"
-#| fig-cap: "Violin plot of the banknote variables"
+#| fig-cap: "Overlaid violin and boxplots of the banknote variables. The violin plots give a sense of the shapes of the distributions, while the boxplots highlight the center and spread."
+data(banknote, package= "mclust")
 banknote |>
   tidyr::gather(key = "measure", value = "Size", Length:Diagonal) |> 
   mutate(measure = factor(measure, 
                           levels = c(names(banknote)[-1]))) |> 
-  ggplot(aes(x = Status, y = Size, color = Status, fill = Status)) +
-  geom_violin(alpha = 0.2) +
-  geom_jitter(width = .2, size = 2) +
+  ggplot(aes(x = Status, y = Size, color = Status)) +
+  geom_violin(aes(fill = Status), alpha = 0.2) +
+  geom_boxplot(width = 0.25, linewidth=1.25, color = "black") +
+  geom_jitter(width = .2, size = 1.2) +
   facet_wrap( ~ measure, scales = "free", labeller = label_both) +
   theme_bw(base_size = 14) +
   theme(legend.position = "top")
 ```
 
 Bivariate relations could be explored in data space using scatterplots, I turn to my trusty multivariate juicer, a biplot.
-Two dimensions account for 70% of the total variance of all the banknotes.
+Two dimensions account for 70% of the total variance of all the banknotes, while three would give 85%.
 ```{r banknote-pca}
 banknote.pca <- prcomp(banknote[, -1], scale = TRUE)
 summary(banknote.pca)
 ```
 
-The biplot in @fig-banknote-biplot gives a nice summary, at least in two dimensions ...
+The biplot in @fig-banknote-biplot gives a nice summary, at least in two dimensions. 
+The first component shows the positive correlations among the measures of the margins, where the 
+counterfeit bills are larger than the real ones and a negative correlation of the Diagonal with these.
+The length of bills only distinguishes the types of banknotes on the second dimension.
 ```{r}
 #| label: fig-banknote-biplot
 #| out-width: "100%"
 #| fig-cap: "Biplot of the banknote variables ..."
+banknote.pca <- reflect(banknote.pca)
 ggbiplot(banknote.pca,
    obs.scale = 1, var.scale = 1,
    groups = banknote$Status,
@@ -487,13 +497,57 @@ ggbiplot(banknote.pca,
    ellipse.alpha = 0.1, ellipse.linewidth = 0,
    varname.size = 4,
    varname.color = "black") +
-  labs(fill = "Status", color = "Status") +
+  labs(y = "Size (mm)",
+       fill = "Status", 
+       color = "Status") +
   theme_minimal(base_size = 14) +
   theme(legend.direction = 'horizontal', legend.position = 'top')
 ```
 
+### Testing mean differences
 
-<!-- ## Canonical analysis  -->
+As noted above, Hotelling's $T^2$ is equivalent to a one-way MANOVA, fitting the size measures
+to the `Status` of the banknotes. `Anova()` reports only the $F$-statistic based on Pillai's trace criterion.
+
+```{r banknote-mlm}
+banknote.mlm <- lm(cbind(Length, Left, Right, Bottom, Top, Diagonal) ~ Status,
+                    data = banknote)
+Anova(banknote.mlm)
+```
+
+You can see all the multivariate test statistics with the `summary()` method for `"Anova.mlm"` objects.
+With two groups, and hence a 1 df test, these all translate into identical $F$-statistics.
+
+```{r summary-Anova}
+summary(Anova(banknote.mlm)) |> print(SSP = FALSE)
+```
+
+If you wish, you can extract the univariate $t$-tests from the `"mlm"` object using `broom::tidy.mlm()`.
+What is given as the `estimate` is the difference in the mean for the genuine banknotes relative
+to the counterfeit ones.
+```{r}
+broom::tidy(banknote.mlm) |> 
+  filter(term != "(Intercept)") |>
+  rename(t = statistic)
+```
+
+### Goodness-of-fit: Eta square ($\eta^2$)
+
+In a univariate multiple regression model, the coefficient of determination $R^2 = \text{SS}_H / \text{SS}_\text{Total}$ gives the proportion of variance accounted for by hypothesized terms in $H$ relative to the total variance. An analog
+for ANOVA-type models [@Pearson-1903] is the _differentiation ratio_ $\eta^2$, defined as 
+$$
+\eta^2 = \frac{\text{SS}_\text{Between groups}}{\text{SS}_\text{Total}}
+$$
+For multivariate response models, the generalization uses ...
+
+```{r banknote-etasq}
+heplots::etasq(banknote.mlm)
+```
+
+
+## Canonical analysis
+
+
 
 ## Exercises
 
@@ -503,7 +557,7 @@ the equivalent $F$ statistic found by `Anova()` is 28.9. Verify that @eq-Fstat g
 
 ```{r}
 #| echo: false
-cat("Writing packages to ", .pkg_file, "\n")
+cat("Writing packages to\n\t", .pkg_file, "\n")
 write_pkgs(file = .pkg_file)
 ```
 

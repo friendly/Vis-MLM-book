@@ -255,7 +255,8 @@ div.csl-indent {
   </ul>
 </li>
   <li><a href="#discriminant-analysis" id="toc-discriminant-analysis" class="nav-link" data-scroll-target="#discriminant-analysis"><span class="header-section-number">8.4</span> Discriminant analysis</a></li>
-  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises"><span class="header-section-number">8.5</span> Exercises</a></li>
+  <li><a href="#more-variables" id="toc-more-variables" class="nav-link" data-scroll-target="#more-variables"><span class="header-section-number">8.5</span> More variables</a></li>
+  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises"><span class="header-section-number">8.6</span> Exercises</a></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul><div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/friendly/vis-MLM-book/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
     </div>
@@ -291,7 +292,8 @@ div.csl-indent {
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/jmcurran/Hotelling">Hotelling</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org">ggplot2</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org">dplyr</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyr.tidyverse.org">tidyr</a></span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyr.tidyverse.org">tidyr</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/friendly/ggbiplot">ggbiplot</a></span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="t2-as-a-generalized-t-test" class="level2" data-number="8.1"><h2 data-number="8.1" class="anchored" data-anchor-id="t2-as-a-generalized-t-test">
 <span class="header-section-number">8.1</span> <span class="math inline">\(T^2\)</span> as a generalized <span class="math inline">\(t\)</span>-test</h2>
@@ -643,16 +645,71 @@ T^2 = N (\bar{\mathbf{x}}_1 - \bar{\mathbf{x}}_2)^T \; \mathbf{S}_p^{-1} \; (\ba
 </div>
 </div>
 <p>You can readily see how well the groups are separated on the discriminant axes, relative to the two individual variables.</p>
+</section><section id="more-variables" class="level2" data-number="8.5"><h2 data-number="8.5" class="anchored" data-anchor-id="more-variables">
+<span class="header-section-number">8.5</span> More variables</h2>
+<p>The <code>mathscore</code> data gave a simple example with two outcomes to explain the essential ideas behind Hotelling’s <span class="math inline">\(T^2\)</span> and multivariate tests. Multivariate methods become increasingly useful as the number of response variables increases because it is harder to show them all together and see how they relate to differences between groups.</p>
+<p>A classic example is the dataset <code>mbclust::banknote</code>, containing six size measures made on 100 genuine and 100 counterfeit old-Swiss 1000-franc bank notes <span class="citation" data-cites="FleuryReidwyl-1988">(<a href="90-references.html#ref-FleuryReidwyl-1988" role="doc-biblioref"><strong>FleuryReidwyl-1988?</strong></a>)</span>. The goal is to see how well the real and fake banknotes can be distinguished. The measures are the <code>Length</code> and <code>Diagonal</code> lengths of a bill and the <code>Left</code>, <code>Right</code>, <code>Top</code> and <code>Bottom</code> edge margins.</p>
+<p>Before considering hypothesis tests, let’s look at some exploratory graphics. <a href="#fig-banknote-violin">Figure&nbsp;<span>8.7</span></a> shows univariate violin and boxplots of each of the measures. A quick glance shows that the counterfeit and genuine bills differ in their means on most of the measures, with the counterfeit ones slightly larger on Left, Right, Bottom and Top margins.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb16" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">banknote</span>, package<span class="op">=</span> <span class="st">"mclust"</span><span class="op">)</span></span>
+<span><span class="va">banknote</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/gather.html">gather</a></span><span class="op">(</span>key <span class="op">=</span> <span class="st">"measure"</span>, value <span class="op">=</span> <span class="st">"Size"</span>, <span class="va">Length</span><span class="op">:</span><span class="va">Diagonal</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>measure <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">measure</span>, </span>
+<span>                          levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">banknote</span><span class="op">)</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">Status</span>, y <span class="op">=</span> <span class="va">Size</span>, color <span class="op">=</span> <span class="va">Status</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_violin.html">geom_violin</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="va">Status</span><span class="op">)</span>, alpha <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_boxplot.html">geom_boxplot</a></span><span class="op">(</span>width <span class="op">=</span> <span class="fl">0.25</span>, linewidth<span class="op">=</span><span class="fl">1.25</span>, color <span class="op">=</span> <span class="st">"black"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_jitter.html">geom_jitter</a></span><span class="op">(</span>width <span class="op">=</span> <span class="fl">.2</span>, size <span class="op">=</span> <span class="fl">1.5</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html">facet_wrap</a></span><span class="op">(</span> <span class="op">~</span> <span class="va">measure</span>, scales <span class="op">=</span> <span class="st">"free"</span>, labeller <span class="op">=</span> <span class="va">label_both</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">14</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"top"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-banknote-violin" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="figs/fig-banknote-violin-1.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption class="figure-caption">Figure&nbsp;8.7: Overlaid violin and boxplots of the banknote variables. The violin plots give a sense of the shapes of the distributions, while the boxplots highlight the center and spread.</figcaption></figure>
+</div>
+</div>
+</div>
+<p>Bivariate relations could be explored in data space using scatterplots, I turn to my trusty multivariate juicer, a biplot. Two dimensions account for 70% of the total variance of all the banknotes.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb17" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">banknote.pca</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/prcomp.html">prcomp</a></span><span class="op">(</span><span class="va">banknote</span><span class="op">[</span>, <span class="op">-</span><span class="fl">1</span><span class="op">]</span>, scale <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">banknote.pca</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Importance of components:</span></span>
+<span><span class="co">#&gt;                          PC1   PC2   PC3   PC4    PC5    PC6</span></span>
+<span><span class="co">#&gt; Standard deviation     1.716 1.131 0.932 0.671 0.5183 0.4346</span></span>
+<span><span class="co">#&gt; Proportion of Variance 0.491 0.213 0.145 0.075 0.0448 0.0315</span></span>
+<span><span class="co">#&gt; Cumulative Proportion  0.491 0.704 0.849 0.924 0.9685 1.0000</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The biplot in <a href="#fig-banknote-biplot">Figure&nbsp;<span>8.8</span></a> gives a nice summary, at least in two dimensions …</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb18" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ggbiplot/man/ggbiplot.html">ggbiplot</a></span><span class="op">(</span><span class="va">banknote.pca</span>,</span>
+<span>   obs.scale <span class="op">=</span> <span class="fl">1</span>, var.scale <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>   groups <span class="op">=</span> <span class="va">banknote</span><span class="op">$</span><span class="va">Status</span>,</span>
+<span>   ellipse <span class="op">=</span> <span class="cn">TRUE</span>, </span>
+<span>   ellipse.level <span class="op">=</span> <span class="fl">0.5</span>, </span>
+<span>   ellipse.alpha <span class="op">=</span> <span class="fl">0.1</span>, ellipse.linewidth <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>   varname.size <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>   varname.color <span class="op">=</span> <span class="st">"black"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="st">"Status"</span>, color <span class="op">=</span> <span class="st">"Status"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_minimal</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">14</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>legend.direction <span class="op">=</span> <span class="st">'horizontal'</span>, legend.position <span class="op">=</span> <span class="st">'top'</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-banknote-biplot" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="figs/fig-banknote-biplot-1.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption class="figure-caption">Figure&nbsp;8.8: Biplot of the banknote variables …</figcaption></figure>
+</div>
+</div>
+</div>
 <!-- ## Canonical analysis  -->
-</section><section id="exercises" class="level2" data-number="8.5"><h2 data-number="8.5" class="anchored" data-anchor-id="exercises">
-<span class="header-section-number">8.5</span> Exercises</h2>
+</section><section id="exercises" class="level2" data-number="8.6"><h2 data-number="8.6" class="anchored" data-anchor-id="exercises">
+<span class="header-section-number">8.6</span> Exercises</h2>
 <ol type="1">
 <li>The value of Hotelling’s <span class="math inline">\(T^2\)</span> found by <code><a href="https://rdrr.io/pkg/Hotelling/man/hotelling.test.html">hotelling.test()</a></code> is 64.17. The value of the equivalent <span class="math inline">\(F\)</span> statistic found by <code><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova()</a></code> is 28.9. Verify that <a href="#eq-Fstat">Equation&nbsp;<span>8.2</span></a> gives this result.</li>
 </ol>
 <div class="cell" data-layout-align="center">
 <pre data-code-line-numbers=""><code>#&gt; Writing packages to  C:/R/Projects/Vis-MLM-book/bib/pkgs.txt
-#&gt; 16  packages used here:
-#&gt;  base, broom, car, carData, corpcor, datasets, dplyr, ggplot2, graphics, grDevices, heplots, Hotelling, methods, stats, tidyr, utils</code></pre>
+#&gt; 17  packages used here:
+#&gt;  base, broom, car, carData, corpcor, datasets, dplyr, ggbiplot, ggplot2, graphics, grDevices, heplots, Hotelling, methods, stats, tidyr, utils</code></pre>
 </div>
 </section><section id="references" class="level2 unnumbered"><h2 class="unnumbered anchored" data-anchor-id="references">References</h2>
 
