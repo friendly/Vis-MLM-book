@@ -16,13 +16,20 @@ data(banknote, package= "mclust")
 # violin plot
 
 banknote |>
-  tidyr::gather(key = "measure", value = "Size", Length:Diagonal) |> 
+  tidyr::gather(key = "measure", 
+                value = "Size", 
+                Length:Diagonal) |> 
   mutate(measure = factor(measure, 
                           levels = c(names(banknote)[-1]))) |> 
+
   ggplot(aes(x = Status, y = Size, color = Status)) +
   geom_violin(aes(fill = Status), alpha = 0.2) +
-  geom_boxplot(width = 0.25, linewidth=1.25, color = "black") +
   geom_jitter(width = .2, size = 1.2) +
+  geom_boxplot(width = 0.25, 
+               linewidth=1.1, 
+               color = "black", 
+               alpha = 0.5) +
+  labs(y = "Size (mm)") +
   facet_wrap( ~ measure, scales = "free", labeller = label_both) +
   theme_bw(base_size = 14) +
   theme(legend.position = "top")
@@ -64,6 +71,15 @@ heplots::etasq(banknote.mlm)
 broom::tidy(banknote.mlm) |> 
   filter(term != "(Intercept)") |>
   rename(t = statistic)
+
+# Univariate F tests
+broom::tidy(banknote.mlm) |> 
+  filter(term != "(Intercept)") |>
+  dplyr::select(-term) |>
+  rename(t = statistic) |>
+  mutate(F = t^2) |>
+  relocate(F, .after = t)
+
 
 #' Discriminant analysis
 banknote.lda <- lda(Status ~ Length + Left + Right + Bottom + Top + Diagonal,
