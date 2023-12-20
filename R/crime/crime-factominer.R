@@ -42,21 +42,11 @@ crime.PCA_sup <- PCA(crime_joined[,c(2:8, 9:12)],
                      ncp=3, 
                      graph = FALSE)
 
-# do this to avoid indexing columns?
-# row.names(crime_joined) <- crime$st
-# crime.PCA_sup <- crime_joined |>
-#   select(-state) |> PCA(quanti.sup = 8:11,
-#                         scale.unit=TRUE, 
-#                         ncp=3, 
-#                         graph = FALSE)
-  
-
 # reflect Dim 2
 crime.PCA_sup <- ggbiplot::reflect(crime.PCA_sup, columns = 2)
 ## NB: This is now handled in ggbiplot
 crime.PCA_sup$quanti.sup$coord[, 2] <- -1 * crime.PCA_sup$quanti.sup$coord[, 2]
 
-#plot(crime.PCA_sup)
 plot(crime.PCA_sup, choix = "var")
 
 # do the same plot with factoextra::fviz_pca

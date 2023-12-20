@@ -449,59 +449,87 @@ Multivariate methods become increasingly useful as the number of response variab
 it is harder to show them all together and see how they relate to differences between groups.
 
 A classic example is the dataset `mbclust::banknote`, containing six size measures made on 100 genuine and 100 counterfeit old-Swiss 1000-franc bank notes [@FleuryReidwyl-1988]. The goal is to see how well the real and fake
-banknotes can be distinguished. The measures are the `Length` and `Diagonal` lengths of a bill and
+banknotes can be distinguished. The measures are the `Length` and `Diagonal` lengths of a banknote and
 the `Left`, `Right`, `Top` and `Bottom` edge margins in mm.
 
-Before considering hypothesis tests, let's look at some exploratory graphics. @fig-banknote-violin shows univariate violin  and boxplots of each of the measures. A quick glance shows that the counterfeit and genuine bills differ in their
-means on most of the measures, with the counterfeit ones slightly larger on Left, Right, Bottom and Top margins.
+Before considering hypothesis tests, let's look at some exploratory graphics. @fig-banknote-violin shows univariate violin  and boxplots of each of the measures. To make this plot, faceted by measure, I first reshape the data
+from wide to long and make `measure` a factor with levels in the order of the variables in the data set.
 
 ```{r}
 #| label: fig-banknote-violin
+#| fig-height: 7
 #| out-width: "100%"
 #| fig-cap: "Overlaid violin and boxplots of the banknote variables. The violin plots give a sense of the shapes of the distributions, while the boxplots highlight the center and spread."
 data(banknote, package= "mclust")
 banknote |>
-  tidyr::gather(key = "measure", value = "Size", Length:Diagonal) |> 
+  tidyr::gather(key = "measure", 
+                value = "Size", 
+                Length:Diagonal) |> 
   mutate(measure = factor(measure, 
                           levels = c(names(banknote)[-1]))) |> 
+
   ggplot(aes(x = Status, y = Size, color = Status)) +
-  geom_violin(aes(fill = Status), alpha = 0.2) +
-  geom_boxplot(width = 0.25, linewidth=1.25, color = "black") +
-  geom_jitter(width = .2, size = 1.2) +
+  geom_violin(aes(fill = Status), alpha = 0.2) +           # (1)
+  geom_jitter(width = .2, size = 1.2) +                    # (2)
+  geom_boxplot(width = 0.25,                               # (3)
+               linewidth = 1.1, 
+               color = "black", 
+               alpha = 0.5) +
+  labs(y = "Size (mm)") +
   facet_wrap( ~ measure, scales = "free", labeller = label_both) +
   theme_bw(base_size = 14) +
   theme(legend.position = "top")
 ```
 
-Bivariate relations could be explored in data space using scatterplots, I turn to my trusty multivariate juicer, a biplot.
+A quick glance at @fig-banknote-violin shows that the counterfeit and genuine bills differ in their
+means on most of the measures, with the counterfeit ones slightly larger on Left, Right, Bottom and Top margins.
+But univariate plots don't give an overall sense of how these variables are related to one another.
+
+::: {.callout-note title="**Graph craft**: Layers and transparency"}
+@fig-banknote-violin is somewhat complex, so it is useful to understand the steps needed to make this figure show what I wanted. The plot in each panel contains three layers:
+
+(1) the violin plot based on a density estimate, showing the shape of each distribution;
+(2) the data points, but they are jittered horizontally using `geom_jiter()` because otherwise they would all overlap on the X axis;
+(3) the boxplot, showing the center (median) and spread (IQR) of each distribution.
+
+In composing graphs with layers, order matters, and also does the `alpha` transparency, because each layer
+adds data ink on top of earlier ones. I plotted these in the order shown because I wanted the violin plot to
+provide the background, and the boxplot to show a simple univariate summary, not obscured by the other layers.
+The `alpha` values allow the data ink to be blended for each layer, and in this case, `alpha = 0.5` for the
+boxplot let the earlier layers show through.
+:::
+
+
+### Biplots
+Multivariate relations among these six variables could be explored in data space using scatterplots or other methods, but I turn to my trusty multivariate juicer, a biplot, to give a 2D summary.
 Two dimensions account for 70% of the total variance of all the banknotes, while three would give 85%.
 ```{r banknote-pca}
 banknote.pca <- prcomp(banknote[, -1], scale = TRUE)
 summary(banknote.pca)
 ```
 
-The biplot in @fig-banknote-biplot gives a nice summary, at least in two dimensions. 
+The biplot in @fig-banknote-biplot gives a nicely coherent overview, at least in two dimensions. 
 The first component shows the positive correlations among the measures of the margins, where the 
-counterfeit bills are larger than the real ones and a negative correlation of the Diagonal with these.
+counterfeit bills are larger than the real ones and a negative correlation of the Diagonal with the other measures.
 The length of bills only distinguishes the types of banknotes on the second dimension.
 ```{r}
 #| label: fig-banknote-biplot
 #| out-width: "100%"
-#| fig-cap: "Biplot of the banknote variables ..."
+#| fig-cap: "Biplot of the banknote variables, showing how the size measurements are related to each other. The points and data ellipses for the component scores are colored by Status, showing how the counterfeit and genuine bills are distinguished by these measures."
 banknote.pca <- reflect(banknote.pca)
 ggbiplot(banknote.pca,
    obs.scale = 1, var.scale = 1,
    groups = banknote$Status,
    ellipse = TRUE, 
    ellipse.level = 0.5, 
-   ellipse.alpha = 0.1, ellipse.linewidth = 0,
+   ellipse.alpha = 0.1, 
+   ellipse.linewidth = 0,
    varname.size = 4,
    varname.color = "black") +
-  labs(y = "Size (mm)",
-       fill = "Status", 
+  labs(fill = "Status", 
        color = "Status") +
   theme_minimal(base_size = 14) +
-  theme(legend.direction = 'horizontal', legend.position = 'top')
+  theme(legend.position = 'top')
 ```
 
 ### Testing mean differences
@@ -522,30 +550,48 @@ With two groups, and hence a 1 df test, these all translate into identical $F$-s
 summary(Anova(banknote.mlm)) |> print(SSP = FALSE)
 ```
 
-If you wish, you can extract the univariate $t$-tests from the `"mlm"` object using `broom::tidy.mlm()`.
+If you wish, you can extract the univariate $t$-tests or equivalent $F = t^2$ statistics
+from the `"mlm"` object using `broom::tidy.mlm()`.
 What is given as the `estimate` is the difference in the mean for the genuine banknotes relative
 to the counterfeit ones.
-```{r}
+```{r banknote-tests}
 broom::tidy(banknote.mlm) |> 
   filter(term != "(Intercept)") |>
-  rename(t = statistic)
+  dplyr::select(-term) |>
+  rename(t = statistic) |>
+  mutate(F = t^2) |>
+  relocate(F, .after = t)
+
 ```
 
-### Goodness-of-fit: Eta square ($\eta^2$)
+The individual $F_{(1, 198)}$ statistics can be compared to the $F_{(6, 193)} = 392$
+value for the overall multivariate test. While all of the individual tests are highly significant,
+the average of the univariate $F$s is only 236. The multivariate test gains power by taking the
+correlations of the size measures into account.
+
+## Variance accounted for: Eta square ($\eta^2$)
 
 In a univariate multiple regression model, the coefficient of determination $R^2 = \text{SS}_H / \text{SS}_\text{Total}$ gives the proportion of variance accounted for by hypothesized terms in $H$ relative to the total variance. An analog
-for ANOVA-type models [@Pearson-1903] is the _differentiation ratio_ $\eta^2$, defined as 
+for ANOVA-type models with categorical, group factors as predictors is  $\eta^2$ [@Pearson-1903], defined as 
 $$
 \eta^2 = \frac{\text{SS}_\text{Between groups}}{\text{SS}_\text{Total}}
 $$
-For multivariate response models, the generalization uses ...
+For multivariate response models, the generalization of $\eta^2$ uses multivariate analogs of these sums of squares, $\mathbf{Q}_H$
+and $\mathbf{Q}_T = \mathbf{Q}_H + \mathbf{Q}_E$, and there are different different calculations for a single
+measure corresponding to the various test statistics (Wilks' $\Lambda$, etc.), as described in **Chapter XX**.
+
+Let's calculate the $\eta^2$ for the multivariate model `banknote.mlm` with `Status` as the only predictor, giving $\eta^2 = 0.92$, or 92% of the total variance. 
 
 ```{r banknote-etasq}
 heplots::etasq(banknote.mlm)
 ```
 
+This can be compared (unfavorably) to the principal components analysis and the biplot in @fig-banknote-biplot,
+where two components accounted for 70% of total variance and it took four PCA dimensions to account for over 90%.
+The goals of PCA and MANOVA are different, of course, but they are both concerned with accounting for variance
+of multivariate data. We will meet another multivariate juicer, **canonical discriminant analysis** in **Chapter XX**.
 
-## Canonical analysis
+<!-- ## Canonical analysis -->
 
 
 
@@ -555,12 +601,13 @@ heplots::etasq(banknote.mlm)
 the equivalent $F$ statistic found by `Anova()` is 28.9. Verify that @eq-Fstat gives this result.
 
 
-```{r}
+**Packages**
+```{r linewidth=60, prompt=""}
 #| echo: false
-cat("Writing packages to\n\t", .pkg_file, "\n")
+#cat("Writing packages to:\n\t", .pkg_file, "\n")
 write_pkgs(file = .pkg_file)
 ```
 
-## References {.unnumbered}
+<!-- ## References {.unnumbered} -->
 
 

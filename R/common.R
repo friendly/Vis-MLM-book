@@ -48,6 +48,23 @@ knitr::opts_knit$set(
             scap='fig.scap'),
             eval.after = c('fig.cap','fig.scap'))
 
+
+# wrap hook
+# from: https://github.com/yihui/knitr-examples/blob/master/077-wrap-output.Rmd
+library(knitr)
+hook_output = knit_hooks$get('output')
+knit_hooks$set(output = function(x, options) {
+  # this hook is used only when the linewidth option is not NULL
+  if (!is.null(n <- options$linewidth)) {
+    x = xfun::split_lines(x)
+    # any lines wider than n should be wrapped
+    if (any(nchar(x) > n)) x = strwrap(x, width = n)
+    x = paste(x, collapse = '\n')
+  }
+  hook_output(x, options)
+})
+
+
 # --------------
 # ggplot options
 # --------------
