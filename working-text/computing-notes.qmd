@@ -1,0 +1,96 @@
+<!--- From: https://raw.githubusercontent.com/aml4td/website/main/index.qmd --->
+
+## Computing Notes {.unnumbered}
+
+```{r}
+#| label: preface-versions
+#| include: false
+
+get_pkg_depends <- function() {
+  info <- read.dcf("DESCRIPTION")
+  pkgs <- strsplit(info[, "Imports"], "\\n")[[1]]
+  pkgs <- purrr::map_chr(pkgs, ~ gsub(",", "", .x))
+  pkgs <- strsplit(pkgs, " ")
+  pkgs <- purrr::map_chr(pkgs, ~ .x[1])
+  pkgs
+}
+
+make_matrix <- function(x, cols = 3) {
+  remainder <- length(x) %% cols
+  padding <- cols - remainder
+  if (padding > 0) {
+    x <- c(x, rep(" ", padding))
+  }
+  matrix(x, ncol = 3, byrow = TRUE)
+}
+
+write_pkg_list <- function() {
+  pkgs <- get_pkg_depends()
+  excld <- c("sessioninfo", "tinytex", "cli", "devtools", "doParallel",
+             "kableExtra", "knitr", "pak", "renv", "BiocParallel",  "magick",  
+             "rsvg",  "pillar",  "jsonlite",  "gifski",  "future",  "text2vec",  
+             "tibble",  "waldo",  "xfun",  "yaml")
+  pkgs <- pkgs[!(pkgs %in% excld)]
+  loaded <-
+    purrr::map(pkgs,
+               ~ try(
+                 suppressPackageStartupMessages(
+                   library(.x, character.only = TRUE, quietly = TRUE)
+                 ),
+                 silent = TRUE
+               )
+    )
+  # Write to repo root
+  nm <- paste0("session-info-", Sys.info()["user"], "-", Sys.info()["machine"], ".txt")
+  # sessioninfo::session_info(to_file = nm)
+  # Save for text
+  si <-
+    sessioninfo::session_info()$packages %>%
+    tibble::as_tibble() %>%
+    dplyr::filter(package %in% pkgs)
+  pkgs <- purrr::map2_chr(si$package, si$loadedversion, ~ paste0("`", .x, "` (", .y, ")"))
+  make_matrix(pkgs)
+}
+```
+
+[Quarto](https://quarto.org/) was used to compile and render the materials
+
+```{r}
+#| label: quarto-info
+#| echo: false
+#| comment: ""
+
+quarto_info <- function(){
+  file_out <- tempfile("temp-quarto.txt")
+  system2(command = "quarto", args = "check", stderr = file_out)
+  res <- readLines(file_out)
+  res <- purrr::map_chr(res, cli::ansi_strip)
+  rms <- c("(|)", "(/)", "(\\)", "(/)", "(-)", "/Users", "Path:", "Install with")
+  for (pat in rms) {
+    res <- res[!grepl(pat, res, fixed = TRUE)]
+  }
+  res <- res[res != ""]
+  invisible(res)
+}
+
+quarto_res <- quarto_info()
+req_quarto_version <- "1.4.510"  # in future, use numeric_version()
+
+# if (!any(grepl(req_quarto_version, quarto_res))) {
+#   cli::cli_abort("Version {req_quarto_version} of Quarto is required. 
+#                   See {.url https://quarto.org/docs/download/}")
+# }
+
+cat(quarto_res, sep = "\n")
+```
+
+[`r R.version.string`](https://en.wikipedia.org/wiki/R_(programming_language)) was used for the majority of the computations. [torch](https://en.wikipedia.org/wiki/Torch_(machine_learning)) `r torch:::torch_version` was also used. The versions of the primary R modeling and visualization packages used here are: 
+  
+  ```{r}
+#| label: write-pkg-versions
+#| echo: false
+#| comment: " "
+#| results: asis
+
+knitr::kable(write_pkg_list())
+```
