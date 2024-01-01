@@ -84,7 +84,7 @@ colorize <- function(text, color) {
     sprintf("\\textcolor{%s}{%s}", color, text)
   } else if (knitr::is_html_output()) {
     sprintf("<span style='color: %s;'>%s</span>", color, text)
-  } else x
+  } else text
 }
 
 
