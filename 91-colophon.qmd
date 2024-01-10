@@ -1,0 +1,61 @@
+```{r include=FALSE}
+source("R/common.R")
+```
+
+# Colophon {.unnumbered}
+
+This book was produced using [`r R.version.string`](https://cran.r-project.org/). Fundamental to this was the framework for reproducible documents provided by Yihui Xie's [knitr package](https://cran.r-project.org/web/packages/knitr/index.html).
+
+[Quarto](https://quarto.org/) was used to compile and render the book in HTML and PDF formats.
+
+```{r}
+#| label: quarto-info
+#| echo: false
+#| comment: ""
+
+# this from: https://raw.githubusercontent.com/aml4td/website/main/index.qmd
+quarto_info <- function(){
+  file_out <- tempfile("temp-quarto.txt")
+  system2(command = "quarto", args = "check", stderr = file_out)
+  res <- readLines(file_out)
+  res <- purrr::map_chr(res, cli::ansi_strip)
+  rms <- c("(|)", "(/)", "(\\)", "(/)", "(-)", "/Users", "Path:", "Install with")
+  for (pat in rms) {
+    res <- res[!grepl(pat, res, fixed = TRUE)]
+  }
+  res <- res[res != ""]
+  invisible(res)
+}
+
+quarto_res <- quarto_info()
+req_quarto_version <- "1.4.510"  # in future, use numeric_version()
+
+# if (!any(grepl(req_quarto_version, quarto_res))) {
+#   cli::cli_abort("Version {req_quarto_version} of Quarto is required. 
+#                   See {.url https://quarto.org/docs/download/}")
+# }
+
+cat(quarto_res, sep = "\n")
+```
+
+## Package versions
+
+The principal R package versions used in examples and illustrations are listed below. 
+At the time of writing, most of these were current on [CRAN](http://cran.us.r-project.org/)
+repositories but some development versions are indicated in the `source` column. 
+
+```{r}
+#| label: package-info
+#| echo: false
+#| results: asis
+library(dplyr)
+
+packages <- read_pkgs()
+pkg_info <- sessioninfo:::package_info(packages, dependencies = FALSE) 
+# clean up unwanted
+pkg_info$source <- sub(" \\(R.*\\)", "", pkg_info$source)
+#pkg_info <- pkg_info[,-2]
+
+print(pkg_info)
+```
+
