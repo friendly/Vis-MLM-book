@@ -198,6 +198,25 @@
 \newcommand{\IX}[1]{\index{#1}#1}
 \newcommand{\ix}[1]{\index{#1}}
 \newcommand{\ixmain}[1]{\index{#1|textbf}}
+\newcommand{\ixon}[1]{\index{#1|(}}
+\newcommand{\ixoff}[1]{\index{#1|)}}
+
+% R functions
+\newcommand{\ixfunc}[1]{%
+  \index{#1@\texttt{#1()}}%
+ }
+
+% R packages:  indexed under both package name and packages!
+\newcommand{\ixp}[1]{%
+   \index{#1@\textsf{#1} package}%
+   \index{package!#1@\textsf{#1}}%
+	}
+
+% data sets: 
+\newcommand{\ixd}[1]{%
+  \index{datasets!@\texttt{#1}}
+  \index{@\texttt{#1} dataset}
+  }
 
 
 \urlstyle{tt}
@@ -280,6 +299,7 @@
 \@ifundefined{shadecolor}{\definecolor{shadecolor}{rgb}{.97, .97, .97}}
 \makeatother
 \makeatletter
+\@ifundefined{codebgcolor}{\definecolor{codebgcolor}{HTML}{E8FFFF}}
 \makeatother
 \makeatletter
 \@ifpackageloaded{sidenotes}{}{\usepackage{sidenotes}}
@@ -305,7 +325,7 @@
 
 \title{Visualizing Multivariate Data and Models in R}
 \author{Michael Friendly}
-\date{2024-01-11}
+\date{2024-01-12}
 
 \begin{document}
 \maketitle
@@ -324,7 +344,7 @@ Here is where the dedication goes ...
 \setlength{\abovedisplayskip}{-5pt}
 \setlength{\abovedisplayshortskip}{-5pt}
 
-\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[interior hidden, frame hidden, sharp corners, boxrule=0pt, enhanced, borderline west={3pt}{0pt}{shadecolor}, breakable]}{\end{tcolorbox}}\fi
+\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[borderline west={3pt}{0pt}{shadecolor}, frame hidden, colback={codebgcolor}, boxrule=0pt, enhanced, sharp corners, breakable]}{\end{tcolorbox}}\fi
 
 \renewcommand*\contentsname{Table of contents}
 {
@@ -527,20 +547,9 @@ more dimension can be thought of as the trace of movement over time.}
 \end{figure}
 
 But wait! Where does that 4D thing (a \emph{tesseract}) come from? To
-really see a tesseract it helps to view it in an animation over time.
-But like the Square, contemplating 3D from a 2D world, it takes some
-imagination.
-
-\begin{figure}
-
-{\centering 
-
-}
-
-\caption{\label{fig-tesseract}Animation of a tesseract, a cube changing
-over time.}
-
-\end{figure}
+really see a tesseract it helps to view it in an animation over time
+(\textbf{?@fig-tesseract}). But like the Square, contemplating 3D from a
+2D world, it takes some imagination.
 
 Yet the deep mathematics of more than three dimensions only emerged in
 the 19th century. In Newtonian mechanics, space and time were always
@@ -580,7 +589,8 @@ and z dimensions: a \texttt{ridge} along x, a \texttt{nub} in the y
 direction, and a \texttt{crack} in along the z dimension. The fourth
 variable is pollen grain \texttt{weight}, and the fifth is
 \texttt{density}. The challenge was to ``find something interesting'' in
-this dataset.
+this dataset, now available as \texttt{animation::pollen}. \ixd{pollen}
+\ixp{animation}
 
 Those who solved the puzzle were able to find an orientation of this
 5-dimensional dataset, such that zooming in revealed a magic word,
@@ -649,443 +659,6 @@ data, zooming in, clockwise from the upper left to discover the word
 ``EUREKA''.}
 
 \end{figure}
-
-This can be seen better in a 3D animation. \texttt{rgl}
-(\protect\hyperlink{ref-R-rgl}{Adler \& Murdoch, 2023}) is used to
-create a 3D scatterplot of the first three variables. Then the
-\texttt{animation} package (\protect\hyperlink{ref-R-animation}{Xie,
-2021}) is use to record a sequence of images, adjusting the
-\texttt{rgl::par3d(zoom)} value.
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\FunctionTok{library}\NormalTok{(animation)}
-\FunctionTok{library}\NormalTok{(rgl)}
-\FunctionTok{data}\NormalTok{(pollen, }\AttributeTok{package =} \StringTok{"animation"}\NormalTok{)}
-\NormalTok{oopt }\OtherTok{=} \FunctionTok{ani.options}\NormalTok{(}\AttributeTok{interval =} \FloatTok{0.05}\NormalTok{)}
-\DocumentationTok{\#\# adjust the viewpoint}
-\NormalTok{uM }\OtherTok{=}
-  \FunctionTok{matrix}\NormalTok{(}\FunctionTok{c}\NormalTok{(}\SpecialCharTok{{-}}\FloatTok{0.370919227600098}\NormalTok{, }\SpecialCharTok{{-}}\FloatTok{0.513357102870941}\NormalTok{,}
-           \SpecialCharTok{{-}}\FloatTok{0.773877620697021}\NormalTok{, }\DecValTok{0}\NormalTok{, }\SpecialCharTok{{-}}\FloatTok{0.73050606250763}\NormalTok{, }\FloatTok{0.675815105438232}\NormalTok{,}
-           \SpecialCharTok{{-}}\FloatTok{0.0981751680374146}\NormalTok{, }\DecValTok{0}\NormalTok{, }\FloatTok{0.573396027088165}\NormalTok{, }\FloatTok{0.528906404972076}\NormalTok{,}
-           \SpecialCharTok{{-}}\FloatTok{0.625681936740875}\NormalTok{, }\DecValTok{0}\NormalTok{, }\DecValTok{0}\NormalTok{, }\DecValTok{0}\NormalTok{, }\DecValTok{0}\NormalTok{, }\DecValTok{1}\NormalTok{), }\DecValTok{4}\NormalTok{, }\DecValTok{4}\NormalTok{)}
-\FunctionTok{open3d}\NormalTok{(}\AttributeTok{userMatrix =}\NormalTok{ uM, }
-       \AttributeTok{windowRect =} \FunctionTok{c}\NormalTok{(}\DecValTok{10}\NormalTok{, }\DecValTok{10}\NormalTok{, }\DecValTok{510}\NormalTok{, }\DecValTok{510}\NormalTok{))}
-
-\FunctionTok{plot3d}\NormalTok{(pollen[, }\DecValTok{1}\SpecialCharTok{:}\DecValTok{3}\NormalTok{])}
-
-\CommentTok{\# zoom in}
-\NormalTok{zm }\OtherTok{=} \FunctionTok{seq}\NormalTok{(}\DecValTok{1}\NormalTok{, }\FloatTok{0.045}\NormalTok{, }\AttributeTok{length =} \DecValTok{200}\NormalTok{)}
-\FunctionTok{par3d}\NormalTok{(}\AttributeTok{zoom =} \DecValTok{1}\NormalTok{)}
-\ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\FunctionTok{length}\NormalTok{(zm)) \{}
-  \FunctionTok{par3d}\NormalTok{(}\AttributeTok{zoom =}\NormalTok{ zm[i])}
-  \FunctionTok{ani.pause}\NormalTok{()}
-\NormalTok{\}}
-\FunctionTok{ani.options}\NormalTok{(oopt)}
-\end{Highlighting}
-\end{Shaded}
-
-\begin{figure}
-
-{\centering 
-
-}
-
-\caption{\label{fig-pollen-eureka-fig}Animation of zooming in on the
-\texttt{pollen} data.}
-
-\end{figure}
-
-Lest this example seem contrived (which it admittedly is), multivariate
-visualization has played an important role in quite a few scientific
-discoveries. Among these \textbf{TODO} \ldots{} diabetes classification
-\ldots.
-
-\hypertarget{what-i-assume}{%
-\section*{What I assume}\label{what-i-assume}}
-\addcontentsline{toc}{section}{What I assume}
-
-\markright{What I assume}
-
-It is assumed that the reader has a background in intermediate
-statistics including material on univariate linear models including
-analysis of variance (ANOVA) and multiple regression. This means you
-should be familiar with \ldots{}
-
-There will also be some mathematics in the book where words and diagrams
-are not enough. The mathematical level will be intermediate, mostly
-consisting of simple algebra. No derivations, proofs, theorems here! For
-multivariate methods, it will be useful to express ideas using matrix
-notation to simplify presentation. I'm using math to express ideas, and
-all you will need is a reading-level of understanding.
-
-I also assume the reader to have at least a basic familiarity with R.
-While R fundamentals are outside the scope of the book, I believe that
-this language provides a rich set of resources, far beyond that offered
-by other statistical software packages, and is well worth learning.
-
-For those not familiar with R, I recommend Matloff
-(\protect\hyperlink{ref-Matloff-2011}{2011}), Wickham
-(\protect\hyperlink{ref-Wickham2014}{2014}), and Cotton
-(\protect\hyperlink{ref-Cotton-2013}{2013}) for introductions to
-programming in the language, and Fox \& Weisberg
-(\protect\hyperlink{ref-FoxWeisberg:2018}{2018}) and Teetor
-(\protect\hyperlink{ref-Teetor2011}{2011}) for learning about how to
-conduct basic statistical analyses. \textbf{TODO}: Revise this list.
-
-\hypertarget{conventions-used-in-this-book}{%
-\section*{Conventions used in this
-book}\label{conventions-used-in-this-book}}
-\addcontentsline{toc}{section}{Conventions used in this book}
-
-\markright{Conventions used in this book}
-
-The following typographic conventions are used in this book:
-
-\begin{itemize}
-\item
-  \emph{italic} : indicates terms to be \emph{emphasized} or defined in
-  the text, \ldots{}
-\item
-  \textbf{bold} : is used for names of R packages
-\item
-  \texttt{fixed-width} : is used in program listings as well as in text
-  to refer to variable and function names, R statement elements and
-  keywords.
-\item
-  \emph{\texttt{fixed-width\ italic}} : isn't used yet, but probably
-  should be.
-\end{itemize}
-
-For R functions in packages, we use the notation
-\texttt{package::function()}, for example: \texttt{car::Anova()} to
-identify where those functions are defined
-
-\mainmatter
-
-\bookmarksetup{startatroot}
-
-\hypertarget{sec-introduction}{%
-\chapter{Introduction}\label{sec-introduction}}
-
-This material may or may not survive; it was taken from an earlier
-article.
-
-\hypertarget{multivariate-vs.-multivariable-methods}{%
-\section{Multivariate vs.~multivariable
-methods}\label{multivariate-vs.-multivariable-methods}}
-
-\begin{quote}
-multivariate \(\ne\) multivariable
-\end{quote}
-
-In this era of multivitamins, multitools, multifactor authentication and
-even the multiverse, it is well to understand the distinction between
-\emph{multivariate} and \emph{multivariable} methods as these terms are
-generally used and as I use them here in relation to statistical methods
-and data visualization. The distinction is simple:
-
-\begin{itemize}
-\item
-  \textbf{Multivariate methods} for linear models such as multivariate
-  regression have more than one dependent, response or outcome variable.
-  Other multivariate methods such as principal components analysis or
-  factor analysis treat all variables on an equal footing.
-\item
-  \textbf{Multivariable methods} have a single dependent variable and
-  more than one independent variables or covariates.
-\end{itemize}
-
-\hypertarget{why-use-a-multivariate-design}{%
-\section{Why use a multivariate
-design}\label{why-use-a-multivariate-design}}
-
-A particular research outcome (e.g., depression, neuro-cognitive
-functioning, academic achievement, self-concept, attention deficit
-hyperactivity disorders) might take on a multivariate form if it has
-several observed measurement scales or related aspects by which it is
-quantified, or if there are multiple theoretically distinct outcomes
-that should be assessed in conjunction with each other (e.g., using
-depression, generalized anxiety, and stress inventories to model overall
-happiness). In this situation, the primary concern of the researcher is
-to ascertain the impact of potential predictors on two or more response
-variables simultaneously.
-
-For example, if academic achievement is measured for adolescents by
-their reading, mathematics, science, and history scores, the following
-questions are of interest:
-
-\begin{itemize}
-\item
-  Do predictors such as parent encouragement, socioeconomic status and
-  school environmental variables affect \emph{all} of these outcomes?
-\item
-  Do they affect them in the \emph{same} or \emph{different} ways?
-\item
-  How many different aspects of academic achievement can be
-  distinguished in the predictors? Equivalently, is academic achievement
-  \emph{unidimensional} or \emph{multidimensional} in relation to the
-  predictors?
-\end{itemize}
-
-Similarly, if psychiatric patients in various diagnostic categories are
-measured on a battery of tests related to social skills and cognitive
-functioning, we might want to know:
-
-\begin{itemize}
-\item
-  Which measures best discriminate among the diagnostic groups?
-\item
-  Which measures are most predictive of positive outcomes?
-\item
-  Further, how are the \emph{relationships} between the outcomes
-  affected by the predictors?
-\end{itemize}
-
-Such questions obviously concern more than just the separate univariate
-relations of each response to the predictors. Equally, or perhaps more
-importantly, are questions of how the response variables are predicted
-\emph{jointly}.
-
-\begin{tcolorbox}[enhanced jigsaw, opacityback=0, arc=.35mm, opacitybacktitle=0.6, bottomrule=.15mm, left=2mm, rightrule=.15mm, colframe=quarto-callout-note-color-frame, breakable, coltitle=black, colback=white, colbacktitle=quarto-callout-note-color!10!white, leftrule=.75mm, bottomtitle=1mm, titlerule=0mm, toprule=.15mm, toptitle=1mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{SEM}]
-
-Structural equation modeling (SEM) offers another route to explore and
-analyze the relationships among multiple predictors and multiple
-responses. They have the advantage of being able to test potentially
-complex systems of linear equations in very flexible ways; however,
-these methods are often far removed from data analysis \emph{per se} and
-except for path diagrams offer little in the way of visualization
-methods to aid in understanding and communicating the results. The
-graphical methods we describe here can also be useful in a SEM context.
-
-\end{tcolorbox}
-
-\hypertarget{linear-models-univariate-to-multivariate}{%
-\section{Linear models: Univariate to
-multivariate}\label{linear-models-univariate-to-multivariate}}
-
-For classical linear models for ANOVA and regression, the step from a
-univariate model for a single response, \(y\), to a multivariate one for
-a collection of \(p\) responses, \(\mathbf{y}\) is conceptually very
-easy. That's because the univariate model,
-
-\[y_i = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \dots + \beta_q x_q + u_i , \]
-
-or, in matrix terms,
-
-\[\mathbf{y} = \mathbf{X} \; \mathbf{\beta} + \mathbf{u}, \quad\mbox{   with   }\quad \mathbf{u} \sim \mathcal{N} (0, \sigma^2 \mathbf{I}) ,\]
-
-generalizes directly to an analogous multivariate linear model (MLM),
-
-\[\mathbf{Y} = [\mathbf{y_1}, \mathbf{y_2}, \dots, \mathbf{y_p}] = \mathbf{X} \; \mathbf{B} + \mathbf{U} \quad\mbox{   with   }\quad \mathbf{U} \sim \mathcal{N} (\mathbf{0}, \mathbf{\Sigma})\]
-
-for multiple responses (as will be discussed in detail). The design
-matrix, \(\mathbf{X}\) remains the same, and the vector \(\beta\) of
-coefficients becomes a matrix \(\mathbf{B}\), with one column for each
-of the \(p\) outcome variables.
-
-Happily as well, hypothesis tests for the MLM are also straight-forward
-generalizations of the familiar \(F\) and \(t\)-tests for univariate
-response models. Moreover, there is a rich geometry underlying these
-generalizations which we can exploit for understanding and
-visualization.
-
-\hypertarget{visualization-is-harder}{%
-\section{Visualization is harder}\label{visualization-is-harder}}
-
-However, with two or more response variables, visualizations for
-multivariate models are not as simple as they are for their univariate
-counterparts for understanding the effects of predictors, model
-parameters, or model diagnostics. Consequently, the results of such
-studies are often explored and discussed solely in terms of coefficients
-and significance, and visualizations of the relationships are only
-provided for one response variable at a time, if at all. This tradition
-can mask important nuances, and lead researchers to draw erroneous
-conclusions.
-
-The aim of this book is to describe and illustrate some central methods
-that we have developed over the last ten years that aid in the
-understanding and communication of the results of multivariate linear
-models (\protect\hyperlink{ref-Friendly-07-manova}{Friendly, 2007};
-\protect\hyperlink{ref-FriendlyMeyer:2016:DDAR}{Friendly \& Meyer,
-2016}). These methods rely on \emph{data ellipsoids} as simple,
-minimally sufficient visualizations of variance that can be shown in 2D
-and 3D plots. As will be demonstrated, the \emph{Hypothesis-Error (HE)
-plot} framework applies this idea to the results of multivariate tests
-of linear hypotheses.
-
-Further, in the case where there are more than just a few outcome
-variables, the important nectar of their relationships to predictors can
-often be distilled in a multivariate juicer--- a \textbf{projection} of
-the multivariate relationships to the predictors in the low-D space that
-captures most of the flavor. This idea can be applied using
-\emph{canonical correlation plots} and with \emph{canonical discriminant
-HE plots}.
-
-\begin{figure}
-
-{\centering \includegraphics{images/Cover-image-GBE.png}
-
-}
-
-\caption{\textbf{Projection}: The cover image from Hofstadter's
-\emph{Goedel, Bach and Escher} illustrates projection of 3D solids onto
-each 2D plane.}
-
-\end{figure}
-
-\hypertarget{sec-problems}{%
-\section{Problems in understanding and communicating MLM
-results}\label{sec-problems}}
-
-In my consulting practice within the Statistical Consulting Service at
-York University, I see hundreds of clients each year ranging from
-advanced undergraduate thesis students, to graduate students and faculty
-from a variety of fields. Over the last two decades, and across each of
-these groups, I have noticed an increasing desire to utilize
-multivariate methods. As researchers are exposed to the utility and
-power of multivariate tests, they see them as an appealing alternative
-to running many univariate ANOVAs or multiple regressions for each
-response variable separately.
-
-However, multivariate analyses are more complicated than such
-approaches, especially when it comes to understanding and communicating
-results. Output is typically voluminous, and researchers will often get
-lost in the numbers. While software (SPSS, SAS and R) make tabular
-summary displays easy, these often obscure the findings that researchers
-are most interested in. The most common analytic oversights that we have
-observed are:
-
-\begin{itemize}
-\item
-  \textbf{Atomistic data screening}: Researchers have mostly learned the
-  assumptions (the Holy Trinity of normality, constant variance and
-  independence) of univariate linear models, but then apply
-  \emph{univariate} tests (e.g., Shapiro-Wilk) and diagnostic plots
-  (normal QQ plots) to every predictor and every response.
-\item
-  \textbf{Bonferroni everywhere}: Faced with the task of reporting the
-  results for multiple response measures and a collection of predictors
-  for each, a common tendency is to run (and sometimes report) each of
-  the separate univariate response models and then apply a correction
-  for multiple testing. Not only is this confusing and awkward to
-  report, but it is largely unnecessary because the multivariate tests
-  provide protection for multiple testing.
-\item
-  \textbf{Reverting to univariate visualizations}: To display results,
-  SPSS and SAS make some visualization methods available through menu
-  choices or syntax, but usually these are the wrong (or at least
-  unhelpful) choices, in that they generate separate univariate graphs
-  for the individual responses.
-\end{itemize}
-
-This book to discusses a few essential procedures for multivariate
-linear models, how their interpretation can be aided through the use of
-well-crafted (though novel) visualizations, and provides replicable
-sample code in R to showcase their use in applied behaviorial research.
-A later section {[}ref?{]} provides some practical guidelines for
-analyzing, visualizing and reporting such models to help avoid these and
-other problems.
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\CommentTok{\#cat("Packages used here:\textbackslash{}n")}
-\FunctionTok{write\_pkgs}\NormalTok{(}\AttributeTok{file =}\NormalTok{ .pkg\_file)}
-\CommentTok{\#\textgreater{} 8  packages used here:}
-\CommentTok{\#\textgreater{}  base, datasets, graphics, grDevices, knitr, methods, stats, utils}
-\end{Highlighting}
-\end{Shaded}
-
-\bookmarksetup{startatroot}
-
-\hypertarget{sec-getting_started}{%
-\chapter{Getting Started}\label{sec-getting_started}}
-
-\hypertarget{sec-why_plot}{%
-\section{Why plot your data?}\label{sec-why_plot}}
-
-\begin{quote}
-Getting information from a table is like extracting sunlight from a
-cucumber. Farquhar \& Farquhar
-(\protect\hyperlink{ref-FarquharFarquhar:91}{1891})
-\end{quote}
-
-At the time the Farhquhar brothers wrote this pithy aphorism, graphical
-methods for understanding data had advanced considerably, but were not
-universally practiced, prompting their complaint.
-
-The main graphic forms we use today---the pie chart, line graphs and
-bar---were invented by William Playfair around 1800
-(\protect\hyperlink{ref-Playfair:1786}{Playfair, 1786},
-\protect\hyperlink{ref-Playfair:1801}{1801}). The scatterplot arrived
-shortly after (\protect\hyperlink{ref-Herschel:1833}{Herschel, 1833})
-and thematic maps showing the spatial distributions of social variables
-(crime, suicides, literacy) were used for the first time to reason about
-important societal questions
-(\protect\hyperlink{ref-Guerry:1833}{Guerry, 1833}) such as ``is
-increased education associated with lower rates of crime?''
-\ix{pie chart} \ix{bar chart} \ix{line graph} \ix{scatterplot}
-
-In the last half of the 18th Century, the idea of correlation was
-developed (\protect\hyperlink{ref-Galton:1886}{Galton, 1886};
-\protect\hyperlink{ref-Pearson:1896}{Pearson, 1896}) and the period,
-roughly 1860--1890, dubbed the ``Golden Age of Graphics
-(\protect\hyperlink{ref-Funkhouser:1937}{Funkhouser, 1937}) became the
-richest period of innovation and beauty in the entire history of data
-visualization. During this time there was an incredible development of
-visual thinking, represented by the work of Charles Joseph Minard,
-advances in the role of visualization within scientific discovery, as
-illustrated through Francis Galton, and graphical excellence, embodied
-in state statistical atlases produced in France and elsewhere. See
-Friendly (\protect\hyperlink{ref-Friendly:2008:golden}{2008}); Friendly
-\& Wainer (\protect\hyperlink{ref-FriendlyWainer:2021:TOGS}{2021}) for
-this history.
-
-\hypertarget{sec-anscombe}{%
-\subsection{Anscombe's Quartet}\label{sec-anscombe}}
-
-In 1973, Francis Anscombe (\protect\hyperlink{ref-Anscombe:73}{Anscombe,
-1973}) famously constructed a set of four datasets illustrate the
-importance of plotting the graphs before analyzing and model building,
-and the effect of unusual observations on fitted models. Now known as
-\emph{Anscombe's Quartet}, these datasets had identical statistical
-properties: the same means, standard devitions, correlations and
-regression lines.
-
-His purpose was to debunk three notions that had been prevalent at the
-time:
-
-\begin{itemize}
-\tightlist
-\item
-  Numerical calculations are exact, but graphs are rough;
-\item
-  For any particular kind of statistical data there is just one set of
-  calculations constituting a correct statistical analysis;
-\item
-  Performing intricate calculations is virtuous, whereas actually
-  looking at the data is cheating.
-\end{itemize}
-
-The dataset \texttt{datasets::anscombe} has 11 observations, recorded in
-wide format, with variables \texttt{x1:x4} and \texttt{y1:y4}. :::
-\{.cell layout-align=``center''\}
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\FunctionTok{data}\NormalTok{(anscombe) }
-\FunctionTok{head}\NormalTok{(anscombe)}
-\CommentTok{\#\textgreater{}   x1 x2 x3 x4   y1   y2    y3   y4}
-\CommentTok{\#\textgreater{} 1 10 10 10  8 8.04 9.14  7.46 6.58}
-\CommentTok{\#\textgreater{} 2  8  8  8  8 6.95 8.14  6.77 5.76}
-\CommentTok{\#\textgreater{} 3 13 13 13  8 7.58 8.74 12.74 7.71}
-\CommentTok{\#\textgreater{} 4  9  9  9  8 8.81 8.77  7.11 8.84}
-\CommentTok{\#\textgreater{} 5 11 11 11  8 8.33 9.26  7.81 8.47}
-\CommentTok{\#\textgreater{} 6 14 14 14  8 9.96 8.10  8.84 7.04}
-\end{Highlighting}
-\end{Shaded}
-
-:::
 
 The following code transforms this data to long format and calculates
 some summary statistics for each \texttt{dataset}.
@@ -1195,7 +768,7 @@ pulls the line toward discrepant points to minimize the sum of squared
 residuals.}
 \end{quote}
 
-\begin{tcolorbox}[enhanced jigsaw, opacityback=0, arc=.35mm, opacitybacktitle=0.6, bottomrule=.15mm, left=2mm, rightrule=.15mm, colframe=quarto-callout-note-color-frame, breakable, coltitle=black, colback=white, colbacktitle=quarto-callout-note-color!10!white, leftrule=.75mm, bottomtitle=1mm, titlerule=0mm, toprule=.15mm, toptitle=1mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Datasaurus Dozen}]
+\begin{tcolorbox}[enhanced jigsaw, rightrule=.15mm, colbacktitle=quarto-callout-note-color!10!white, titlerule=0mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Datasaurus Dozen}, arc=.35mm, breakable, bottomtitle=1mm, toptitle=1mm, colframe=quarto-callout-note-color-frame, leftrule=.75mm, opacityback=0, bottomrule=.15mm, toprule=.15mm, coltitle=black, left=2mm, opacitybacktitle=0.6, colback=white]
 
 The method Anscombe used to compose his quartet is unknown, but it turns
 out that that there is a method to construct a wider collection of
@@ -1227,7 +800,7 @@ Campitelli} and implemented in the \textbf{metamer} package.
 
 \end{tcolorbox}
 
-\begin{tcolorbox}[enhanced jigsaw, opacityback=0, arc=.35mm, opacitybacktitle=0.6, bottomrule=.15mm, left=2mm, rightrule=.15mm, colframe=quarto-callout-note-color-frame, breakable, coltitle=black, colback=white, colbacktitle=quarto-callout-note-color!10!white, leftrule=.75mm, bottomtitle=1mm, titlerule=0mm, toprule=.15mm, toptitle=1mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Quartets}]
+\begin{tcolorbox}[enhanced jigsaw, rightrule=.15mm, colbacktitle=quarto-callout-note-color!10!white, titlerule=0mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Quartets}, arc=.35mm, breakable, bottomtitle=1mm, toptitle=1mm, colframe=quarto-callout-note-color-frame, leftrule=.75mm, opacityback=0, bottomrule=.15mm, toprule=.15mm, coltitle=black, left=2mm, opacitybacktitle=0.6, colback=white]
 
 The essential idea of a statistical ``quartet'' is to illustrate four
 quite different datasets or circumstances that seem superficially the
@@ -1252,7 +825,8 @@ contains these and other variations on this theme.
 \end{tcolorbox}
 
 \hypertarget{sec-davis}{%
-\subsection{A real example}\label{sec-davis}}
+\subsection*{A real example}\label{sec-davis}}
+\addcontentsline{toc}{subsection}{A real example}
 
 In the mid 1980s, a consulting client had a strange problem. She was
 conducting a study of the relation between body image and weight
@@ -1388,7 +962,10 @@ original data showed that this person switched the values, recording her
 reported weight in the box for measured weight and vice versa.
 
 \hypertarget{plots-for-data-analysis}{%
-\section{Plots for data analysis}\label{plots-for-data-analysis}}
+\section*{Plots for data analysis}\label{plots-for-data-analysis}}
+\addcontentsline{toc}{section}{Plots for data analysis}
+
+\markright{Plots for data analysis}
 
 Visualization methods take an enormous variety of forms, but it is
 useful to distinguish several broad categories according to their use in
@@ -1434,7 +1011,10 @@ We give some more details and a few examples in the sections that
 follow.
 
 \hypertarget{data-plots}{%
-\section{Data plots}\label{data-plots}}
+\section*{Data plots}\label{data-plots}}
+\addcontentsline{toc}{section}{Data plots}
+
+\markright{Data plots}
 
 Data plots portray the data in a space where the coordinate axes are the
 observed variables.
@@ -1449,17 +1029,26 @@ observed variables.
 \end{itemize}
 
 \hypertarget{model-plots}{%
-\section{Model plots}\label{model-plots}}
+\section*{Model plots}\label{model-plots}}
+\addcontentsline{toc}{section}{Model plots}
+
+\markright{Model plots}
 
 Model plots show the fitted or predicted values from a statistical model
 and provide visual summaries\ldots{}
 
 \hypertarget{diagnostic-plots}{%
-\section{Diagnostic plots}\label{diagnostic-plots}}
+\section*{Diagnostic plots}\label{diagnostic-plots}}
+\addcontentsline{toc}{section}{Diagnostic plots}
+
+\markright{Diagnostic plots}
 
 \hypertarget{principles-of-graphical-display}{%
-\section{Principles of graphical
+\section*{Principles of graphical
 display}\label{principles-of-graphical-display}}
+\addcontentsline{toc}{section}{Principles of graphical display}
+
+\markright{Principles of graphical display}
 
 {[}This could be a separate chapter{]}
 
@@ -1509,7 +1098,7 @@ data. It is important to understand the general \emph{patterns} and
 approximately linear or non-linear? But it is also important to spot
 \emph{anomalies}: ``unusual'' observations, groups of points that seem
 to differ from the rest, and so forth. As we saw with Anscombe's quartet
-(Section~\ref{sec-anscombe}) numerical summaries hide features that are
+(\textbf{?@sec-anscombe}) numerical summaries hide features that are
 immediately apparent in a plot.
 
 This chapter introduces a toolbox of basic graphical methods for
@@ -1818,7 +1407,7 @@ techniques:
   eye must scan from one panel to another.
 \end{itemize}
 
-\begin{tcolorbox}[enhanced jigsaw, opacityback=0, arc=.35mm, opacitybacktitle=0.6, bottomrule=.15mm, left=2mm, rightrule=.15mm, colframe=quarto-callout-note-color-frame, breakable, coltitle=black, colback=white, colbacktitle=quarto-callout-note-color!10!white, leftrule=.75mm, bottomtitle=1mm, titlerule=0mm, toprule=.15mm, toptitle=1mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{History Corner}]
+\begin{tcolorbox}[enhanced jigsaw, rightrule=.15mm, colbacktitle=quarto-callout-note-color!10!white, titlerule=0mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{History Corner}, arc=.35mm, breakable, bottomtitle=1mm, toptitle=1mm, colframe=quarto-callout-note-color-frame, leftrule=.75mm, opacityback=0, bottomrule=.15mm, toprule=.15mm, coltitle=black, left=2mm, opacitybacktitle=0.6, colback=white]
 
 Recognition of the roles of visual grouping by factors within a panel
 and conditioning in multi-panel displays was an important advance in the
@@ -3049,7 +2638,7 @@ others, while \textcolor{green}{Gentoo} penguins have smaller bill
 depth, but longer flippers and are heavier than
 \textcolor{purple}{Chinstrap} and \textcolor{orange}{Adelie} penguins.
 
-\begin{tcolorbox}[enhanced jigsaw, opacityback=0, arc=.35mm, opacitybacktitle=0.6, bottomrule=.15mm, left=2mm, rightrule=.15mm, colframe=quarto-callout-note-color-frame, breakable, coltitle=black, colback=white, colbacktitle=quarto-callout-note-color!10!white, leftrule=.75mm, bottomtitle=1mm, titlerule=0mm, toprule=.15mm, toptitle=1mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Looking ahead}]
+\begin{tcolorbox}[enhanced jigsaw, rightrule=.15mm, colbacktitle=quarto-callout-note-color!10!white, titlerule=0mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Looking ahead}, arc=.35mm, breakable, bottomtitle=1mm, toptitle=1mm, colframe=quarto-callout-note-color-frame, leftrule=.75mm, opacityback=0, bottomrule=.15mm, toprule=.15mm, coltitle=black, left=2mm, opacitybacktitle=0.6, colback=white]
 
 Figure~\ref{fig-peng-spm} provides a reasonably complete visual summary
 of the data in relation to multivariate models that ask ``do the species
@@ -3593,7 +3182,7 @@ intersect in a point in projective space. What this does is to map
 \(n\)-dimensional relations into 2D patterns we can see in a parallel
 coordinates plot.
 
-\begin{tcolorbox}[enhanced jigsaw, opacityback=0, arc=.35mm, opacitybacktitle=0.6, bottomrule=.15mm, left=2mm, rightrule=.15mm, colframe=quarto-callout-note-color-frame, breakable, coltitle=black, colback=white, colbacktitle=quarto-callout-note-color!10!white, leftrule=.75mm, bottomtitle=1mm, titlerule=0mm, toprule=.15mm, toptitle=1mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{History Corner}]
+\begin{tcolorbox}[enhanced jigsaw, rightrule=.15mm, colbacktitle=quarto-callout-note-color!10!white, titlerule=0mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{History Corner}, arc=.35mm, breakable, bottomtitle=1mm, toptitle=1mm, colframe=quarto-callout-note-color-frame, leftrule=.75mm, opacityback=0, bottomrule=.15mm, toprule=.15mm, coltitle=black, left=2mm, opacitybacktitle=0.6, colback=white]
 
 \begin{quote}
 Those who don't know history are doomed to plagarize it ---The author
@@ -3763,8 +3352,8 @@ merely preface --- Edwin Abbott, \emph{Flatland}, p.~57.
 There was a cloud in the sky above \emph{Flatland} one day. But it was a
 huge, multidimensional cloud of sparkly points that might contain some
 important message, perhaps like the hidden EUREKA
-(Figure~\ref{fig-pollen-eureka-fig}), or perhaps forecasting the
-upcoming harvest, if only Flatlanders could appreciate it.
+(\textbf{?@fig-pollen-eureka-fig}), or perhaps forecasting the upcoming
+harvest, if only Flatlanders could appreciate it.
 
 A leading citizen, A SQUARE, who had traveled once to Spaceland and
 therefore had an inkling of its majesty beyond the simple world of his
@@ -3863,7 +3452,7 @@ show how the original variables relate to this space. For exploratory
 analysis to get an initial, incisive view of a multivariate dataset, a
 biplot is often my first choice.
 
-\begin{tcolorbox}[enhanced jigsaw, opacityback=0, arc=.35mm, opacitybacktitle=0.6, bottomrule=.15mm, left=2mm, rightrule=.15mm, colframe=quarto-callout-note-color-frame, breakable, coltitle=black, colback=white, colbacktitle=quarto-callout-note-color!10!white, leftrule=.75mm, bottomtitle=1mm, titlerule=0mm, toprule=.15mm, toptitle=1mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Looking ahead}]
+\begin{tcolorbox}[enhanced jigsaw, rightrule=.15mm, colbacktitle=quarto-callout-note-color!10!white, titlerule=0mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Looking ahead}, arc=.35mm, breakable, bottomtitle=1mm, toptitle=1mm, colframe=quarto-callout-note-color-frame, leftrule=.75mm, opacityback=0, bottomrule=.15mm, toprule=.15mm, coltitle=black, left=2mm, opacitybacktitle=0.6, colback=white]
 
 I'm using the term \emph{multivariate juicer} here to refer the wider
 class of \textbf{dimension reduction} techniques, used for various
@@ -4554,7 +4143,7 @@ variable for the purpose of labeling.
 
 \textbf{TODO}: Should this be a callout-warning or a footnote??
 
-\begin{tcolorbox}[enhanced jigsaw, opacityback=0, arc=.35mm, opacitybacktitle=0.6, bottomrule=.15mm, left=2mm, rightrule=.15mm, colframe=quarto-callout-warning-color-frame, breakable, coltitle=black, colback=white, colbacktitle=quarto-callout-warning-color!10!white, leftrule=.75mm, bottomtitle=1mm, titlerule=0mm, toprule=.15mm, toptitle=1mm, title=\textcolor{quarto-callout-warning-color}{\faExclamationTriangle}\hspace{0.5em}{\texttt{rownames} in R}]
+\begin{tcolorbox}[enhanced jigsaw, rightrule=.15mm, colbacktitle=quarto-callout-warning-color!10!white, titlerule=0mm, title=\textcolor{quarto-callout-warning-color}{\faExclamationTriangle}\hspace{0.5em}{\texttt{rownames} in R}, arc=.35mm, breakable, bottomtitle=1mm, toptitle=1mm, colframe=quarto-callout-warning-color-frame, leftrule=.75mm, opacityback=0, bottomrule=.15mm, toprule=.15mm, coltitle=black, left=2mm, opacitybacktitle=0.6, colback=white]
 
 R software evolved over many years, particularly in conventions for
 labeling cases in printed output and graphics. In base-R, the convention
@@ -5454,7 +5043,7 @@ use for visualization for multivariate data covered here, that rely on
 its' ability as a \textbf{dimension reduction} technique, that is, to
 find a low-dimensional approximation to a high-dimensional dataset.
 
-\begin{tcolorbox}[enhanced jigsaw, opacityback=0, arc=.35mm, opacitybacktitle=0.6, bottomrule=.15mm, left=2mm, rightrule=.15mm, colframe=quarto-callout-note-color-frame, breakable, coltitle=black, colback=white, colbacktitle=quarto-callout-note-color!10!white, leftrule=.75mm, bottomtitle=1mm, titlerule=0mm, toprule=.15mm, toptitle=1mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Machine learning uses}]
+\begin{tcolorbox}[enhanced jigsaw, rightrule=.15mm, colbacktitle=quarto-callout-note-color!10!white, titlerule=0mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Machine learning uses}, arc=.35mm, breakable, bottomtitle=1mm, toptitle=1mm, colframe=quarto-callout-note-color-frame, leftrule=.75mm, opacityback=0, bottomrule=.15mm, toprule=.15mm, coltitle=black, left=2mm, opacitybacktitle=0.6, colback=white]
 
 In machine learning, for example, PCA is a method used to reduce model
 complexity and avoid overfitting by \emph{feature extraction}, which
@@ -6349,7 +5938,7 @@ observations are labeled.}
 
 In small to moderate samples, ``unusual'' observations can have dramatic
 effects on a fitted regression model, as we saw in the analysis of
-Davis's data on reported and measured weight (Section~\ref{sec-davis})
+Davis's data on reported and measured weight (\textbf{?@sec-davis})
 where one erroneous observations hugely altered the fitted line.
 
 An observation can be unusual in three archetypal ways, with different
@@ -7259,7 +6848,7 @@ divided by this number, compared with the case when all predictors are
 uncorrelated. \texttt{engine}, \texttt{horse} and \texttt{weight} suffer
 a similar fate.
 
-\begin{tcolorbox}[enhanced jigsaw, opacityback=0, arc=.35mm, opacitybacktitle=0.6, bottomrule=.15mm, left=2mm, rightrule=.15mm, colframe=quarto-callout-tip-color-frame, breakable, coltitle=black, colback=white, colbacktitle=quarto-callout-tip-color!10!white, leftrule=.75mm, bottomtitle=1mm, titlerule=0mm, toprule=.15mm, toptitle=1mm, title=\textcolor{quarto-callout-tip-color}{\faLightbulb}\hspace{0.5em}{Connection with inverse of correlation matrix}]
+\begin{tcolorbox}[enhanced jigsaw, rightrule=.15mm, colbacktitle=quarto-callout-tip-color!10!white, titlerule=0mm, title=\textcolor{quarto-callout-tip-color}{\faLightbulb}\hspace{0.5em}{Connection with inverse of correlation matrix}, arc=.35mm, breakable, bottomtitle=1mm, toptitle=1mm, colframe=quarto-callout-tip-color-frame, leftrule=.75mm, opacityback=0, bottomrule=.15mm, toprule=.15mm, coltitle=black, left=2mm, opacitybacktitle=0.6, colback=white]
 
 In the linear regression model with standardized predictors, the
 covariance matrix of the estimated intercept-excluding parameter vector
@@ -8599,7 +8188,7 @@ measures, with the counterfeit ones slightly larger on Left, Right,
 Bottom and Top margins. But univariate plots don't give an overall sense
 of how these variables are related to one another.
 
-\begin{tcolorbox}[enhanced jigsaw, opacityback=0, arc=.35mm, opacitybacktitle=0.6, bottomrule=.15mm, left=2mm, rightrule=.15mm, colframe=quarto-callout-note-color-frame, breakable, coltitle=black, colback=white, colbacktitle=quarto-callout-note-color!10!white, leftrule=.75mm, bottomtitle=1mm, titlerule=0mm, toprule=.15mm, toptitle=1mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{\textbf{Graph craft}: Layers and transparency}]
+\begin{tcolorbox}[enhanced jigsaw, rightrule=.15mm, colbacktitle=quarto-callout-note-color!10!white, titlerule=0mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{\textbf{Graph craft}: Layers and transparency}, arc=.35mm, breakable, bottomtitle=1mm, toptitle=1mm, colframe=quarto-callout-note-color-frame, leftrule=.75mm, opacityback=0, bottomrule=.15mm, toprule=.15mm, coltitle=black, left=2mm, opacitybacktitle=0.6, colback=white]
 
 Figure~\ref{fig-banknote-violin} is somewhat complex, so it is useful to
 understand the steps needed to make this figure show what I wanted. The
@@ -10100,10 +9689,6 @@ questions of heterogeneity of covariance in MANOVA designs:
 Abbott, E. A. (1884). \emph{Flatland: A romance of many dimensions}.
 Buccaneer Books.
 
-\leavevmode\vadjust pre{\hypertarget{ref-R-rgl}{}}%
-Adler, D., \& Murdoch, D. (2023). \emph{Rgl: 3D visualization using
-OpenGL}. \url{https://CRAN.R-project.org/package=rgl}
-
 \leavevmode\vadjust pre{\hypertarget{ref-Aluja-etal-2018}{}}%
 Aluja, T., Morineau, A., \& Sanchez, G. (2018). \emph{Principal
 component analysis for data science}. \url{https://pca4ds.github.io/}
@@ -10111,10 +9696,6 @@ component analysis for data science}. \url{https://pca4ds.github.io/}
 \leavevmode\vadjust pre{\hypertarget{ref-Andrews:72}{}}%
 Andrews, D. F. (1972). Plots of high dimensional data.
 \emph{Biometrics}, \emph{28}, 123--136.
-
-\leavevmode\vadjust pre{\hypertarget{ref-Anscombe:73}{}}%
-Anscombe, F. J. (1973). Graphs in statistical analysis. \emph{The
-American Statistician}, \emph{27}, 17--21.
 
 \leavevmode\vadjust pre{\hypertarget{ref-Bartlett:1937}{}}%
 Bartlett, M. S. (1937). Properties of sufficiency and statistical tests.
@@ -10223,9 +9804,6 @@ outer continental shelf bidding data. \emph{Technometrics},
 Cook, R. D., \& Weisberg, S. (1982). \emph{Residuals and influence in
 regression}. Chapman; Hall.
 
-\leavevmode\vadjust pre{\hypertarget{ref-Cotton-2013}{}}%
-Cotton, R. (2013). \emph{{Learning R}}. O'Reilly Media.
-
 \leavevmode\vadjust pre{\hypertarget{ref-Cox:1968}{}}%
 Cox, D. R. (1968). Notes on some aspects of regression analysis.
 \emph{Journal of the Royal Statistical Society Series A}, \emph{131},
@@ -10265,10 +9843,6 @@ Hofmann, H., \& Wickham, H. (2013). The generalized pairs plot.
 Euler, L. (1758). Elementa doctrinae solidorum. \emph{Novi Commentarii
 Academiae Scientiarum Petropolitanae}, \emph{4}, 109--140.
 \url{https://scholarlycommons.pacific.edu/euler-works/230/}
-
-\leavevmode\vadjust pre{\hypertarget{ref-FarquharFarquhar:91}{}}%
-Farquhar, A. B., \& Farquhar, H. (1891). \emph{Economic and industrial
-delusions: A discourse of the case for protection}. Putnam.
 
 \leavevmode\vadjust pre{\hypertarget{ref-Fisher:1936}{}}%
 Fisher, R. A. (1936). The use of multiple measurements in taxonomic
@@ -10317,16 +9891,6 @@ Friendly, M. (2002). Corrgrams: Exploratory displays for correlation
 matrices. \emph{The American Statistician}, \emph{56}(4), 316--324.
 \url{https://doi.org/10.1198/000313002533}
 
-\leavevmode\vadjust pre{\hypertarget{ref-Friendly-07-manova}{}}%
-Friendly, M. (2007). {HE} plots for multivariate general linear models.
-\emph{Journal of Computational and Graphical Statistics}, \emph{16}(2),
-421--444. \url{https://doi.org/10.1198/106186007X208407}
-
-\leavevmode\vadjust pre{\hypertarget{ref-Friendly:2008:golden}{}}%
-Friendly, M. (2008). The {Golden Age} of statistical graphics.
-\emph{Statistical Science}, \emph{23}(4), 502--535.
-\url{https://doi.org/10.1214/08-STS268}
-
 \leavevmode\vadjust pre{\hypertarget{ref-Friendly2022}{}}%
 Friendly, M. (2022). The life and works of andr{é}-michel guerry,
 revisited. \emph{Sociological Spectrum}, \emph{42}(4-6), 233--259.
@@ -10361,11 +9925,6 @@ Understanding statistical methods through elliptical geometry.
 Friendly, M., \& Wainer, H. (2021). \emph{A history of data
 visualization and graphic communication}. Harvard University Press.
 \url{https://doi.org/10.4159/9780674259034}
-
-\leavevmode\vadjust pre{\hypertarget{ref-Funkhouser:1937}{}}%
-Funkhouser, H. G. (1937). Historical development of the graphical
-representation of statistical data. \emph{Osiris}, \emph{3}(1),
-269--405. \url{http://tinyurl.com/32ema9}
 
 \leavevmode\vadjust pre{\hypertarget{ref-Gabriel:71}{}}%
 Gabriel, K. R. (1971). The biplot graphic display of matrices with
@@ -10460,12 +10019,6 @@ Heinrichs, R. W., Pinnock, F., Muharib, E., Hartman, L., Goldberg, J.,
 \& McDermid Vaz, S. (2015). Neurocognitive normality in schizophrenia
 revisited. \emph{Schizophrenia Research: Cognition}, \emph{2}(4),
 227--232. \url{https://doi.org/10.1016/j.scog.2015.09.001}
-
-\leavevmode\vadjust pre{\hypertarget{ref-Herschel:1833}{}}%
-Herschel, J. F. W. (1833). On the investigation of the orbits of
-revolving double stars: Being a supplement to a paper entitled
-"micrometrical measures of 364 double stars". \emph{Memoirs of the Royal
-Astronomical Society}, \emph{5}, 171--222.
 
 \leavevmode\vadjust pre{\hypertarget{ref-HoaglinWelsch1978}{}}%
 Hoaglin, D. C., \& Welsch, R. E. (1978). The hat matrix in regression
@@ -10569,10 +10122,6 @@ Matejka, J., \& Fitzmaurice, G. (2017, May). Same stats, different
 graphs. \emph{Proceedings of the 2017 {CHI} Conference on Human Factors
 in Computing Systems}. \url{https://doi.org/10.1145/3025453.3025912}
 
-\leavevmode\vadjust pre{\hypertarget{ref-Matloff-2011}{}}%
-Matloff, N. (2011). \emph{The art of {R} programming: {A} tour of
-statistical software design}. No Starch Press.
-
 \leavevmode\vadjust pre{\hypertarget{ref-McGowan2023}{}}%
 McGowan, L. D., Gerke, T., \& Barrett, M. (2023). Causal inference is
 not just a statistics problem. \emph{Journal of Statistics and Data
@@ -10620,18 +10169,6 @@ Pineo, P. O., \& Porter, J. (2008). Occupational prestige in canada.
 \emph{Canadian Review of Sociology}, \emph{4}(1), 24--40.
 \url{https://doi.org/10.1111/j.1755-618x.1967.tb00472.x}
 
-\leavevmode\vadjust pre{\hypertarget{ref-Playfair:1786}{}}%
-Playfair, W. (1786). \emph{Commercial and political atlas: Representing,
-by copper-plate charts, the progress of the commerce, revenues,
-expenditure, and debts of england, during the whole of the eighteenth
-century}. Debrett; Robinson;; Sewell.
-\url{http://ucpj.uchicago.edu/Isis/journal/demo/v000n000/000000/000000.fg4.html}
-
-\leavevmode\vadjust pre{\hypertarget{ref-Playfair:1801}{}}%
-Playfair, W. (1801). \emph{Statistical breviary; shewing, on a principle
-entirely new, the resources of every state and kingdom in {Europe}}.
-Wallis.
-
 \leavevmode\vadjust pre{\hypertarget{ref-Rogan:1977}{}}%
 Rogan, J. C., \& Keselman, H. J. (1977). Is the {ANOVA} f-test robust to
 variance heterogeneity when sample sizes are equal?: An investigation
@@ -10655,9 +10192,6 @@ practice, and visualization}. Wiley.
 \leavevmode\vadjust pre{\hypertarget{ref-Silverman:86}{}}%
 Silverman, B. W. (1986). \emph{Density estimation for statistics and
 data analysis}. Chapman \& Hall.
-
-\leavevmode\vadjust pre{\hypertarget{ref-Teetor2011}{}}%
-Teetor, P. (2011). \emph{{R cookbook}}. {O'Reilly} Media.
 
 \leavevmode\vadjust pre{\hypertarget{ref-TikuBalakrishnan:1984}{}}%
 Tiku, M. L., \& Balakrishnan, N. (1984). Testing equality of population
@@ -10684,9 +10218,6 @@ coordinates. \emph{Journal of the American Statistical Association},
 Wei, T., \& Simko, V. (2021). \emph{Corrplot: Visualization of a
 correlation matrix}. \url{https://github.com/taiyun/corrplot}
 
-\leavevmode\vadjust pre{\hypertarget{ref-Wickham2014}{}}%
-Wickham, H. (2014). \emph{{Advanced R}}. {Chapman and Hall/CRC}.
-
 \leavevmode\vadjust pre{\hypertarget{ref-Wood:2006}{}}%
 Wood, S. N. (2006). \emph{Generalized additive models: An introduction
 with r}. Chapman; Hall/CRC Press.
@@ -10694,10 +10225,6 @@ with r}. Chapman; Hall/CRC Press.
 \leavevmode\vadjust pre{\hypertarget{ref-R-corrgram}{}}%
 Wright, K. (2021). \emph{Corrgram: Plot a correlogram}.
 \url{https://kwstat.github.io/corrgram/}
-
-\leavevmode\vadjust pre{\hypertarget{ref-R-animation}{}}%
-Xie, Y. (2021). \emph{Animation: A gallery of animations in statistics
-and utilities to create animations}. \url{https://yihui.org/animation/}
 
 \leavevmode\vadjust pre{\hypertarget{ref-ZhangBoos:1992:BCV}{}}%
 Zhang, J., \& Boos, D. D. (1992). Bootstrap critical values for testing
