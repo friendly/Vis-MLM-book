@@ -46,3 +46,42 @@ plot(Y2, cex = 3,
      xlim = c(-1, 15), ylim = c(-5, 14)
      )
 par(op)
+
+# Install and load the rgl package
+if (!requireNamespace("rgl", quietly = TRUE)) {
+  install.packages("rgl")
+}
+
+
+
+library(rgl)
+
+open3d()
+plot3d(X, type = "s", size = 2,  pch = pch, col = col)
+
+# Create a function to draw a cube
+draw_cube <- function(side_length) {
+  # Define the vertices of the cube
+  vertices <- cbind(
+    c(0, 0, 0, 0, 1, 1, 1, 1),
+    c(0, 0, 1, 1, 0, 0, 1, 1),
+    c(0, 1, 0, 1, 0, 1, 0, 1)
+  ) * side_length
+  
+  # Connect the vertices to form the edges of the cube
+  edges <- matrix(c(
+    1, 2, 3, 4, 5, 6, 7, 8,
+    1, 2, 4, 3, 5, 6, 8, 7,
+    1, 3, 7, 5, 2, 4, 8, 6
+  ), ncol = 3, byrow = TRUE)
+  
+  # Open an rgl window and plot the cube
+  open3d()
+  points3d(vertices)
+  lines3d(vertices[edges[, 1], ], vertices[edges[, 2], ])
+}
+
+# Call the function to draw the cube with side length 10
+draw_cube(10)
+
+
