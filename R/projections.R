@@ -13,7 +13,7 @@ X <- cbind(x1, x2, x3)
 X
 
 #or, as a data frame
-expand.grid(x1 = vals, x2=vals, x3=vals)
+X <- expand.grid(x1 = vals, x2=vals, x3=vals) |> as.matrix()
 
 
 # project on just x1, x2 plane
@@ -23,6 +23,14 @@ Y1 <- X %*% P1
 
 P2 <- matrix(c(0.71, 0.71, 0, -0.42, .42, 0.84), ncol=2)
 Y2 <- X %*% P2
+
+source("R/matrix2latex.R")
+
+matrix2latex(X)
+matrix2latex(P1)
+matrix2latex(Y1)
+
+
 
 pch <- rep(15:18, 2)
 colors <- c("red", "blue", "darkgreen", "brown")
