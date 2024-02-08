@@ -55,17 +55,30 @@ plot(Y2, cex = 3,
      )
 par(op)
 
-# Install and load the rgl package
-if (!requireNamespace("rgl", quietly = TRUE)) {
-  install.packages("rgl")
-}
-
 
 
 library(rgl)
 
+# use spheres
 open3d()
 plot3d(X, type = "s", size = 2,  pch = pch, col = col)
+
+# use pch symbols
+open3d()
+plot3d(X, type = "n")
+pch3d(X, pch = pch, col = col)
+
+# use sprites
+open3d()
+plot3d(X, type = "n")
+sprites3d(X, 
+          shape = c(shade3d(spheres3d()),
+                    shade3d(cube3d()),
+                    shade3d(tetrahedron3d())
+                    ),
+          col = col
+          )
+
 
 # Create a function to draw a cube
 draw_cube <- function(side_length) {
