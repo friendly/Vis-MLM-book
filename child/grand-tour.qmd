@@ -10,7 +10,7 @@ Thereby, they could gain a wider appreciation of history and be prepared to play
 a role in polite society or in their chosen endeavors.
 
 Travels in high-dimensional data space might be less thrilling than a journey
-from Oxford through Paris and Turin to Rome. Yet, in both cases it is useful to
+from London through Paris and Millan to Rome. Yet, in both cases it is useful to
 think of the path taken, and what might be seen along the way.
 But there are different kinds of tours. We might simply take a meandering tour,
 exploring all the way, or want to plan a tour to see the most interesting 
@@ -73,7 +73,10 @@ as $\mathbf{Y} = \mathbf{X} \mathbf{P}$, where the columns of $\mathbf{P}$ are o
 $\mathbf{P}^T \mathbf{P} = \mathbf{I}_{(d \times d)}$.
 
 For example, to project a data matrix $\mathbf{X}$ in three dimensions onto a 2D plane, we would multiply it by a $(3 \times 2)$ orthonormal
-matrix $\mathbf{P}$. The matrix $\mathbf{P}_1$ below simply selects the first two columns of $\mathbf{X}$.
+matrix $\mathbf{P}$. The matrix $\mathbf{P}_1$ below simply selects the first two columns of $\mathbf{X}$.[^ref-Cook]
+
+[^ref-Cook]: This example was modified from one used by @Cook-etal-2008.
+
 $$
 \mathbf{X} =
 \begin{bmatrix} 
@@ -86,14 +89,14 @@ $$
     10 & 10 & 0 \\ 
     10 & 10 & 10 \\ 
  \end{bmatrix}_{8 \times 3}
- ;\quad
+ ;\;
  \mathbf{P_1} =
  \begin{bmatrix} 
     1 & 0 \\ 
     0 & 1 \\ 
     0 & 0 \\ 
  \end{bmatrix}_{3 \times 2} 
- \quad\Rightarrow\quad
+ \;\Rightarrow\quad
  \mathbf{Y} = \mathbf{X} \; \mathbf{P_1} =
  \begin{bmatrix} 
     0 & 0 \\ 
@@ -104,9 +107,9 @@ $$
     10 & 0 \\ 
     10 & 10 \\ 
     10 & 10 \\ 
- \end{bmatrix}_{(8 \times 2)} 
+ \end{bmatrix}_{8 \times 2} 
 $$
-A different projection given by $\mathbf{P_2}$ gives a new $\mathbf{Y}$:
+An oblique projection using all three dimensions is given by $\mathbf{P_2}$ gives a new $\mathbf{Y}$:
 $$
  \mathbf{P_2} =
 \begin{bmatrix} 
@@ -136,19 +139,81 @@ $$
 \mathbf{y}_2 & = & -0.42 \mathbf{x}_1 + 0.42 \mathbf{x}_2 + 0.84 \mathbf{x}_3 \\
 \end{eqnarray*}
 $$
+```{r}
+#| code-fold: true
+vals <- c(0, 10)
+X <- expand.grid(x1 = vals, x2=vals, x3=vals) |> as.matrix()
+
+# project on just x1, x2 plane
+P1 <- rbind(diag(2), c(0,0))
+Y1 <- X %*% P1
+
+# oblique projection
+P2 <- matrix(c(0.71, 0.71, 0, -0.42, .42, 0.84), ncol=2)
+Y2 <- X %*% P2
+```
+
+
 In this example, the matrix $\mathbf{X}$ consists of 8 points at the vertices of a cube of size 10, as shown in @fig-proj-combined (a).
 The projections $\mathbf{Y}_1 = \mathbf{P}_1 \mathbf{X}$ and $\mathbf{Y}_2 = \mathbf{P}_2 \mathbf{X}$ are shown in panels (b) and (c).
+
 ```{r}
 #| label: fig-proj-combined
+#| echo: false
 #| out-width: "100%"
-#| fig-cap: "**Projection example**: (a) The 8 points in **X** form a cube of size 10; (b) the projection by **P1** is the view ignoring **x3**; (c) the projection by **P2** is an oblique view."
+#| fig-cap: "**Projection example**: (a) The 8 points in **X** form a cube of size 10; (b) the projection by **P1** is the view ignoring **x3** (two points coincide at each vertex); (c) the projection by **P2** is an oblique view."
 knitr::include_graphics("images/proj-combined.png")
 ```
 
+But, if we are traveling in the projection space of $\mathbf{Y}$, we need to have some signposts to tell us how the new dimensions relate to those
+of $\mathbf{X}$. The answer is provided simply by plotting the rows of $\mathbf{X}$ as vectors, as shown in @fig-proj-vectors.
+In these plots, each row of $\mathbf{P}_1$ and $\mathbf{P}_2$ appears as a vector and shows the contribution each of 
+$\mathbf{x}_1, \mathbf{x}_2, \mathbf{x}_3$ make to the new coordinates $\mathbf{y}_1$ and $\mathbf{y}_2$.
+
+In $\mathbf{P}_1$, the projected variable $\mathbf{y}_1$ is related only to $\mathbf{x}_1$, while $\mathbf{y}_2$ is related only to $\mathbf{x}_2$
+$\mathbf{x}_3$ makes no contribution, and appears at the origin. In $\mathbf{P}_2$, $\mathbf{x}_1$ and $\mathbf{x}_2$ make the same contribution
+to $\mathbf{y}_1$, but $\mathbf{x}_3$ has no contribution to the horizontal axis.
+The vertical axis, $\mathbf{y}_2$ here is completely aligned with $\mathbf{x}_3$; $\mathbf{x}_1$ and $\mathbf{x}_2$ have vertical components
+that are half of that for $\mathbf{x}_3$ in absolute value. 
+
+```{r}
+#| label: fig-proj-vectors
+#| out-width: "48%"
+#| code-fold: true
+#| fig-show: hold
+#| fig-cap: "Data variables viewed as vectors in the space of their projections. Left: **P1**; right: **P2**."
+xlim <- ylim <- c(-1.1, 1.1)
+axes.x <- c(-1, 1, NA, 0, 0)
+axes.y <- c(0, 0, NA, -1, 1)
+labs <- c(expression(x[1]), expression(x[2]), expression(x[3]))
+
+op <- par(mar=c(4, 5, 1, 1)+.1)
+plot(xlim, ylim, type = "n", asp=1,
+     xlab = expression(y[1]), ylab = expression(y[2]),
+     cex.lab = 1.8)
+plotrix::draw.circle(0, 0, 1, 
+                     col = adjustcolor("skyblue", alpha = 0.2))
+lines(axes.x, axes.y, col = "grey")
+matlib::vectors(P1, labels = labs, cex.lab = 1.8, lwd = 3)
+
+plot(xlim, ylim, type = "n", asp=1,
+     xlab = expression(y[1]), ylab = expression(y[2]),
+     cex.lab = 1.8)
+plotrix::draw.circle(0, 0, 1, 
+                     col = adjustcolor("skyblue", alpha = 0.2))
+lines(axes.x, axes.y, col = "grey")
+matlib::vectors(P2, labels = labs, cex.lab = 1.8, lwd = 3)
+par(op)
+```
+
+In practice, we can overlay the variable vectors in plots like @fig-proj-combined (b)
+and @fig-proj-combined (c) to see how the axes in a projection relate to those in the data. 
+
+
 ### Touring methods
 The trick of statistical touring methods is to generate a smooth sequence of interpolated projections $\mathbf{P}_{(t)}$
-indexed by time $t$, $\mathbf{P}_{(1)}, \mathbf{P}_{(2)}, \mathbf{P}_{(3)}, \dots$
-giving a path of views $\mathbf{Y}_{(t)} = \mathbf{X} \mathbf{P}_{(t)}$ that can be animated in successive frames, as
+indexed by time $t$, $\mathbf{P}_{(1)}, \mathbf{P}_{(2)}, \mathbf{P}_{(3)}, \dots, \mathbf{P}_{(T)}$.
+This gives a path of views $\mathbf{Y}_{(t)} = \mathbf{X} \mathbf{P}_{(t)}$, that can be animated in successive frames, as
 shown in @fig-peng-tourr-diagram.
 
 ```{r}
@@ -161,7 +226,12 @@ knitr::include_graphics("images/peng-tourr-diagram.png")
 
 
 
-Asimov's [-@Asimov:85] original idea of the grand tour was that of a random path ...
+Asimov's [-@Asimov:85] original idea of the grand tour was that of a random path, picking orthogonal projections $\mathbf{P}_{(i)}$ at random.
+Given enough time, the grand tour gives a space-filling path and would eventually show every possible projection of the data. But it does so smoothly, by interpolating from one projection to the next.
+In the travel analogy, the path by road from London to Paris might go smoothly through Kent to Dover,
+thence via Amiens and Beauvais before reaching Paris. By air, the tour would follow a
+smoother _geodesic_ path, and this is what the grand tour does. The grand tour algorithm is described
+in detail by @Buja-etal-2005 and @Cook-etal-2008.
 
 In the time since @Asimov:85, there have been many implementations of touring visualization methods ...
 XGobi -> GGobi @CookSwayne:2007 ->
