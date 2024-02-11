@@ -4,6 +4,8 @@
 
 # idea from: Cook, Buja, Lee, Wickham, Grand Tours, Projection Pursuit, ...
 
+library(matlib)
+
 vals <- c(0, 10)
 X <- expand.grid(x1 = vals, x2=vals, x3=vals) |> as.matrix()
 
@@ -55,19 +57,39 @@ op <- par(mar=c(4, 5, 1, 1)+.1)
 plot(xlim, ylim, type = "n", asp=1,
      xlab = expression(y[1]), ylab = expression(y[2]),
      cex.lab = 1.8)
-plotrix::draw.circle(0, 0, 1, 
-                     col = adjustcolor("skyblue", alpha = 0.2))
+circle(0, 0, 1, col = adjustcolor("skyblue", alpha = 0.2))
 lines(axes.x, axes.y, col = "grey")
-matlib::vectors(P1, labels = labs, cex.lab = 1.8, lwd = 3)
+vectors(P1, labels = labs, cex.lab = 1.8, lwd = 3, pos.lab = c(4, 2, 1))
 
 plot(xlim, ylim, type = "n", asp=1,
      xlab = expression(y[1]), ylab = expression(y[2]),
      cex.lab = 1.8)
-plotrix::draw.circle(0, 0, 1, 
-                     col = adjustcolor("skyblue", alpha = 0.2))
+circle(0, 0, 1, col = adjustcolor("skyblue", alpha = 0.2))
 lines(axes.x, axes.y, col = "grey")
-matlib::vectors(P2, labels = labs, cex.lab = 1.8, lwd = 3)
+vectors(P2, labels = labs, cex.lab = 1.8, lwd = 3)
 par(op)
+
+# combine data & vector plots
+
+plot(Y2, cex = 3, 
+     asp = 1,
+     pch = pch, col = col,
+     xlab = expression(y[1]), ylab = expression(y[2]),
+     xlim = c(-1, 15), ylim = c(-5, 14), cex.lab = 1.8)
+mY <- colMeans(Y2)
+r <- 7
+circle(mY, radius=r)
+vecs <- (r*diag(3) %*% P2) |> sweep(2,mY, FUN="+")
+vectors(vecs,
+        origin = mY,
+        labels = labs, cex.lab = 1.8, lwd = 2)
+
+# vecs <- (r*diag(3) %*% P2) |> sweep(2,mY, FUN="-")
+# vectors(vecs,
+#         origin = mY,
+#         labels = FALSE, lty = 2)
+
+
 
 library(rgl)
 
