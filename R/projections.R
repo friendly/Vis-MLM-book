@@ -25,7 +25,7 @@ matrix2latex(Y1)
 
 
 
-pch <- rep(15:18, 2)
+pch <- rep(15:18, times = 2)
 colors <- c("red", "blue", "darkgreen", "brown")
 col <- rep(colors, each = 2)
 
@@ -35,7 +35,8 @@ pairs(X, cex = 2,
       pch = pch, col = col, 
       xlim = c(-1, 11), ylim = c(-1, 11))
 
-op <- par(mar=c(4, 4, 1, 1)+.5)
+#' ## draw the projected data
+op <- par(mar=c(4, 5, 1, 1)+.1)
 plot(Y1, cex = 3, 
      pch = pch, col = col,
      xlab = expression(y[1]), ylab = expression(y[2]),
@@ -47,7 +48,7 @@ plot(Y2, cex = 3,
      xlim = c(-1, 15), ylim = c(-5, 14), cex.lab = 1.8)
 par(op)
 
-# draw X vectors in Y space
+#' ## draw X vectors in Y space
 xlim <- ylim <- c(-1.1, 1.1)
 axes.x <- c(-1, 1, NA, 0, 0)
 axes.y <- c(0, 0, NA, -1, 1)
@@ -72,23 +73,31 @@ par(op)
 
 # combine data & vector plots
 
-plot(Y2, cex = 3, 
+# plot(Y2, cex = 3, 
+#      asp = 1,
+#      pch = pch, col = col,
+#      xlab = expression(y[1]), ylab = expression(y[2]),
+#      xlim = c(-1, 15), ylim = c(-5, 14), cex.lab = 1.8)
+# mY <- colMeans(Y2)
+# r <- 7
+# circle(mY, radius=r)
+# vecs <- (r*diag(3) %*% P2) |> sweep(2,mY, FUN="+")
+# vectors(vecs,
+#         origin = mY,
+#         labels = labs, cex.lab = 1.8, lwd = 2)
+
+
+Y2s <- scale(Y2, scale=FALSE)       # center Y2
+plot(Y2s, cex = 3, 
      asp = 1,
      pch = pch, col = col,
      xlab = expression(y[1]), ylab = expression(y[2]),
-     xlim = c(-1, 15), ylim = c(-5, 14), cex.lab = 1.8)
-mY <- colMeans(Y2)
+     xlim = c(-10, 10), ylim = c(-10, 10), cex.lab = 1.8)
 r <- 7
-circle(mY, radius=r)
-vecs <- (r*diag(3) %*% P2) |> sweep(2,mY, FUN="+")
-vectors(vecs,
-        origin = mY,
-        labels = labs, cex.lab = 1.8, lwd = 2)
+vecs <- (r*diag(3) %*% P2)
+vectors(vecs, labels = labs, cex.lab = 1.8, lwd = 2)
+vectors(-vecs, labels = NULL, lty = 1, angle = 1, col = "gray")
 
-# vecs <- (r*diag(3) %*% P2) |> sweep(2,mY, FUN="-")
-# vectors(vecs,
-#         origin = mY,
-#         labels = FALSE, lty = 2)
 
 
 

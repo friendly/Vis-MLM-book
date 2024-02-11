@@ -5,13 +5,16 @@
 # from: https://stackoverflow.com/questions/20749444/converting-r-matrix-into-latex-matrix-in-the-math-or-equation-environment
 
 matrix2latex <- function(mat, 
-                         type = c("b", "p", "", "B", "v", "V"),
+                         brackets = c("b", "p", "", "B", "v", "V"),
+                         show.size = FALSE,
                          digits = 2) {
 
   matr <- round(mat, digits = digits)  
-  type <- match.arg(type)
+  type <- match.arg(brackets)
   begin <- paste0("\\begin{", type, "matrix", "}")
   end   <- paste0("\\end{", type, "matrix", "}")
+  size <- if (show.size) paste0("_{", nrow(mat), " \times ", ncol(mat), "}")
+          else NULL
 
   # printmrow <- function(x) {
   #   cat(cat(x,sep=" & "),"\\\\ \n")
@@ -30,7 +33,7 @@ matrix2latex <- function(mat,
   out <- paste(
     begin, "\n",
     paste(out, collapse = " "),
-    end, "\n"
+    end, size, "\n"
     )
   cat(out)
 }

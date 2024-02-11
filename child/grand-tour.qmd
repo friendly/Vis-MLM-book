@@ -41,7 +41,8 @@ The idea of a projection is fundamental to touring methods and other visualizati
 what a projection is. Quite simply, you can think of a projection as the shadow of an object or cloud of points. 
 This is nicely illustrated by the cover image (@fig-cover-GBE) used for Douglas Hofstadter's [-@Hofstadter1979] _Gödel, Bach and Escher_
 which shows 3D solid shapes illuminated by light sources so their shadows form the letters G, B and E projected onto the planes
-formed by pairs of the three coordinate axes. The set of three 2D views is essentially the same that we see in a scatterplot matrix.
+formed by pairs of the three coordinate axes. The set of three 2D views is essentially the same that we see in a scatterplot matrix,
+where a 3D dataset is portrayed by the set of shadows of the points on planes formed by pairs of coordinate axes.
 
 ```{r}
 #| label: fig-cover-GBE
@@ -139,6 +140,7 @@ $$
 \mathbf{y}_2 & = & -0.42 \mathbf{x}_1 + 0.42 \mathbf{x}_2 + 0.84 \mathbf{x}_3 \\
 \end{eqnarray*}
 $$
+
 ```{r}
 #| code-fold: true
 vals <- c(0, 10)
@@ -156,6 +158,22 @@ Y2 <- X %*% P2
 
 In this example, the matrix $\mathbf{X}$ consists of 8 points at the vertices of a cube of size 10, as shown in @fig-proj-combined (a).
 The projections $\mathbf{Y}_1 = \mathbf{P}_1 \mathbf{X}$ and $\mathbf{Y}_2 = \mathbf{P}_2 \mathbf{X}$ are shown in panels (b) and (c).
+To make it easier to relate the points in different views, shapes and colors are assigned so that each point has a unique combination
+of these attributes.[^pch]
+
+[^pch]: Plot shapes given by `pch = 15:18` correspond to: 
+filled square (15),
+filled circle (16),
+filled triangle point-up (17).
+filled diamond (18)
+
+```{r pch-col}
+pch <- rep(15:18, times = 2)
+colors <- c("red", "blue", "darkgreen", "brown")
+col <- rep(colors, each = 2)
+data.frame(X, pch, col)
+```
+
 
 ```{r}
 #| label: fig-proj-combined
@@ -176,19 +194,17 @@ to $\mathbf{y}_1$, while $\mathbf{x}_3$ has no contribution to that horizontal a
 The vertical axis, $\mathbf{y}_2$ here is completely aligned with $\mathbf{x}_3$; $\mathbf{x}_1$ and $\mathbf{x}_2$ have vertical components
 that are half of that for $\mathbf{x}_3$ in absolute value. 
 
-```{r}
+```{r fig.show="hold", out.width="49%"}
 #| label: fig-proj-vectors
-#| out-width: "48%"
 #| code-fold: true
-#| fig-show: hold
 #| fig-cap: "Data variables viewed as vectors in the space of their projections. Left: **P1**; right: **P2**."
+
+library(matlib)
+op <- par(mar=c(4, 5, 1, 1)+.1)
 xlim <- ylim <- c(-1.1, 1.1)
 axes.x <- c(-1, 1, NA, 0, 0)
 axes.y <- c(0, 0, NA, -1, 1)
 labs <- c(expression(x[1]), expression(x[2]), expression(x[3]))
-
-library(matlib)
-op <- par(mar=c(4, 5, 1, 1)+.1)
 plot(xlim, ylim, type = "n", asp=1,
      xlab = expression(y[1]), ylab = expression(y[2]),
      cex.lab = 1.8)
@@ -205,16 +221,38 @@ vectors(P2, labels = labs, cex.lab = 1.8, lwd = 3)
 par(op)
 ```
 
-In practice, we want to see **both** the projected data and the signposts that tell us where we are
+To interpret such projections, we want to see **both** the projected data and the signposts that tell us where we are
 in relation to the original variables.
-we can overlay the variable vectors in plots like @fig-proj-combined (b)
+To do this, we can overlay the variable vectors represented by the rows of the projection matrix $\mathbf{P}$
+in plots like @fig-proj-combined (b)
 and @fig-proj-combined (c) to see how the axes in a projection relate to those in the data. 
+To place these together on the same plot, we can either center the columns of $\mathbf{Y}$ at their means or shift the 
+the columns of $\mathbf{P}$ to `colMeans(Y)`. It is only the directions of the vectors that matters, so we are free
+to scale their lengths by any convenient factor.
+
+```{r}
+#| label: proj-P2-vec
+#| code-fold: true
+Y2s <- scale(Y2, scale=FALSE)       # center Y2
+plot(Y2s, cex = 3, 
+     asp = 1,
+     pch = pch, col = col,
+     xlab = expression(y[1]), ylab = expression(y[2]),
+     xlim = c(-10, 10), ylim = c(-10, 10), cex.lab = 1.8)
+r <- 7
+vecs <- (r*diag(3) %*% P2)
+vectors(vecs, labels = labs, cex.lab = 1.8, lwd = 2)
+vectors(-vecs, labels = NULL, lty = 1, angle = 1, col = "gray")
+```
+
+The plot in @fig-proj-P2-vec illustrates this, centering $\mathbf{Y}$, and multiplying the vectors in $\mathbf{P}$ by 7.
+To check your understanding, try to see if you can relate what is shown in this plot to the 3D plot in @fig-proj-combined (a).
 
 ```{r}
 #| label: fig-proj-P2-vec
 #| echo: false
 #| out-width: "50%"
-#| fig-cap: "The projection of the data"
+#| fig-cap: "The **P2** projection of the data showing vectors for the original variables in the space of **Y**."
 knitr::include_graphics("images/proj-P2-vec.png")
 ```
 
@@ -224,7 +262,7 @@ knitr::include_graphics("images/proj-P2-vec.png")
 The trick of statistical touring methods is to generate a smooth sequence of interpolated projections $\mathbf{P}_{(t)}$
 indexed by time $t$, $\mathbf{P}_{(1)}, \mathbf{P}_{(2)}, \mathbf{P}_{(3)}, \dots, \mathbf{P}_{(T)}$.
 This gives a path of views $\mathbf{Y}_{(t)} = \mathbf{X} \mathbf{P}_{(t)}$, that can be animated in successive frames, as
-shown in @fig-peng-tourr-diagram.
+shown schematically in @fig-peng-tourr-diagram.
 
 ```{r}
 #| label: fig-peng-tourr-diagram
@@ -240,11 +278,21 @@ Asimov's [-@Asimov:85] original idea of the grand tour was that of a random path
 Given enough time, the grand tour gives a space-filling path and would eventually show every possible projection of the data. But it does so smoothly, by interpolating from one projection to the next.
 In the travel analogy, the path by road from London to Paris might go smoothly through Kent to Dover,
 thence via Amiens and Beauvais before reaching Paris. By air, the tour would follow a
-smoother _geodesic_ path, and this is what the grand tour does. The grand tour algorithm is described
+smoother _geodesic_ path, and this is what the grand tour does. The sense in watching an animation of a statistical grand tour
+is that of continuous motion.
+The grand tour algorithm is described
 in detail by @Buja-etal-2005 and @Cook-etal-2008.
 
+Projection pursuit @Cook-etal-1995 -> guided tour
+
+The next big idea was that rather than traveling randomly in projection space one could take a _guided tour_, following
+a path that leads to "interesting projections", such as those that reveal clusters, gaps in data space or outliers.
+This idea, called _projection pursuit_ @Cook-etal-1995, works by defining a measure of interestingness of a data projection.
+In a guided tour, the next projection is chosen to increase that index, so over time the projection moves toward one
+that is maximizes that index.
+
 In the time since @Asimov:85, there have been many implementations of touring visualization methods ...
-XGobi -> GGobi @CookSwayne:2007 ->
+XGobi -> GGobi @Swayne-etal-2003 @CookSwayne:2007 ->
 -> tourr @Wickham-etal-2011
 
 The current state of art is best captured in the **tourr** package [@R-tourr]. 
