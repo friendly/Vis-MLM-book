@@ -53,6 +53,7 @@ axes.x <- c(-1, 1, NA, 0, 0)
 axes.y <- c(0, 0, NA, -1, 1)
 labs <- c(expression(x[1]), expression(x[2]), expression(x[3]))
 
+library(matlib)
 op <- par(mar=c(4, 5, 1, 1)+.1)
 plot(xlim, ylim, type = "n", asp=1,
      xlab = expression(y[1]), ylab = expression(y[2]),
