@@ -110,7 +110,7 @@ $$
     10 & 10 \\ 
  \end{bmatrix}_{8 \times 2} 
 $$
-An oblique projection using all three dimensions is given by $\mathbf{P_2}$ below. This produces gives a new 2D view in $\mathbf{Y}$:
+An oblique projection using all three dimensions is given by $\mathbf{P_2}$ below. This produces a new 2D view in $\mathbf{Y}$:
 $$
  \mathbf{P_2} =
 \begin{bmatrix} 
@@ -164,8 +164,8 @@ of these attributes.[^pch]
 [^pch]: Plot shapes given by `pch = 15:18` correspond to: 
 filled square (15),
 filled circle (16),
-filled triangle point-up (17).
-filled diamond (18)
+filled triangle point-up (17),
+filled diamond (18).
 
 ```{r pch-col}
 pch <- rep(15:18, times = 2)
@@ -195,10 +195,9 @@ The vertical axis, $\mathbf{y}_2$ here is completely aligned with $\mathbf{x}_3$
 that are half of that for $\mathbf{x}_3$ in absolute value. 
 
 ```{r fig.show="hold", out.width="49%"}
-#| label: fig-proj-vectors
+#| label: proj-vectors
 #| code-fold: true
-#| fig-cap: "Data variables viewed as vectors in the space of their projections. Left: **P1**; right: **P2**."
-
+#| eval: false
 library(matlib)
 op <- par(mar=c(4, 5, 1, 1)+.1)
 xlim <- ylim <- c(-1.1, 1.1)
@@ -221,10 +220,34 @@ vectors(P2, labels = labs, cex.lab = 1.8, lwd = 3)
 par(op)
 ```
 
+```{r}
+#| label: fig-proj-vectors
+#| echo: false
+#| out-width: "100%"
+#| fig-cap: "**Veriable vectors**: Data variables viewed as vectors in the space of their projections. The angles of the **x** vectors with respect to the **y** coordinate axes show their relative contributions to each. The lengths of the **x** vectors show the relative degree to which they are represented in the space of **y**s. Left: the **P1** projection; right: the **P2** projection."
+knitr::include_graphics("images/proj-vectors.png")
+```
+
+#### Vector lengths
+In @fig-proj-vectors, the **lengths** of the $\mathbf{x}$ vectors reflect the relative degree to which each variable is represented in the space of the projection, and this is important for interpretation.
+For the $\mathbf{P}_1$ projection, $\mathbf{x}_3$ is of length 0, while $\mathbf{x}_1$ and $\mathbf{x}_2$ fill the unit circle. In the projection given by $\mathbf{P}_2$, all three $\mathbf{x}$ are approximately
+the same length. 
+
+In algebra, the length of a vector $\mathbf{x}$ is 
+$||\mathbf{x}|| = (\mathbf{x}^T \mathbf{x})^{1/2} = \sqrt{\Sigma x_i^2}$, the Euclidean distance of the tip of the vector from the origin.
+In R, we calculate the lengths of row vectors in a projection matrix by transposing and using `matlib::len()`.
+
+```{r}
+P1 |> t() |> matlib::len()
+P2 |> t() |> matlib::len()
+```
+
+
+#### Joint-views
 To interpret such projections, we want to see **both** the projected data and the signposts that tell us where we are
 in relation to the original variables.
 To do this, we can overlay the variable vectors represented by the rows of the projection matrix $\mathbf{P}$
-in plots like @fig-proj-combined (b)
+onto plots like @fig-proj-combined (b)
 and @fig-proj-combined (c) to see how the axes in a projection relate to those in the data. 
 To place these together on the same plot, we can either center the columns of $\mathbf{Y}$ at their means or shift the 
 the columns of $\mathbf{P}$ to `colMeans(Y)`. It is only the directions of the vectors that matters, so we are free
@@ -232,6 +255,7 @@ to scale their lengths by any convenient factor.
 
 ```{r}
 #| label: proj-P2-vec
+#| eval: false
 #| code-fold: true
 Y2s <- scale(Y2, scale=FALSE)       # center Y2
 plot(Y2s, cex = 3, 
@@ -256,7 +280,9 @@ To check your understanding, try to see if you can relate what is shown in this 
 knitr::include_graphics("images/proj-P2-vec.png")
 ```
 
-
+The idea of viewing low-dimensional projections of data together with vectors representing the contributions of the
+original variables to the dimensions shown in a display is also the basis of **biplot** techniques (@sec-biplot)
+we will use in relation to principal components analysis.
 
 ### Touring methods
 The trick of statistical touring methods is to generate a smooth sequence of interpolated projections $\mathbf{P}_{(t)}$
@@ -268,7 +294,7 @@ shown schematically in @fig-peng-tourr-diagram.
 #| label: fig-peng-tourr-diagram
 #| echo: false
 #| out-width: "90%"
-#| fig-cap: "Illustration of a grand tour of interpolations of projection planes showing 2D scatterplots of the Penguin dataset"
+#| fig-cap: "**Interpolations**: Illustration of a grand tour of interpolations of projection planes showing 2D scatterplots of the Penguin dataset. The seqeunce of views moves smoothly from an initial frame **P(1)** to a final frame **P(T)** where the penguin species are widely separated."
 knitr::include_graphics("images/peng-tourr-diagram.png")
 ```
 
@@ -283,19 +309,38 @@ is that of continuous motion.
 The grand tour algorithm is described
 in detail by @Buja-etal-2005 and @Cook-etal-2008.
 
-Projection pursuit @Cook-etal-1995 -> guided tour
+<!-- Projection pursuit @Cook-etal-1995 -> guided tour -->
 
+#### Guided tours
 The next big idea was that rather than traveling randomly in projection space one could take a _guided tour_, following
 a path that leads to "interesting projections", such as those that reveal clusters, gaps in data space or outliers.
-This idea, called _projection pursuit_ @Cook-etal-1995, works by defining a measure of interestingness of a data projection.
+This idea, called _projection pursuit_ [@Cook-etal-1995], works by defining a measure of interestingness of a data projection.
 In a guided tour, the next projection is chosen to increase that index, so over time the projection moves toward one
 that is maximizes that index.
 
-In the time since @Asimov:85, there have been many implementations of touring visualization methods ...
-XGobi -> GGobi @Swayne-etal-2003 @CookSwayne:2007 ->
--> tourr @Wickham-etal-2011
+In the time since @Asimov:85, there have been many implementations of touring visualization methods.
+XGobi [@Swayne-etal-1998] for X-Windows displays on Linux systems provided a test-bed for dynamic, interactive graphic
+methods; it's successor, GGobi [@Swayne-etal-2003;@CookSwayne:2007] extended the range of touring methods
+to include a wider variety of projection pursuit indices.
 
-The current state of art is best captured in the **tourr** package [@R-tourr]. 
+#### `tourr` package
+The current state of art is best captured in the **tourr** package for R [@Wickham-etal-2011;@R-tourr]. 
+It defines a tour to consist of three components:
+
+* **data**: An $(n \times p)$ numerical data matrix to be viewed.
+* **path**: A tour path function that produces a smoothed sequence of projection matrices $\mathbf{P}_{(p \times d)}$ in $d$. dimensions, for example `grand_tour(d = 2)` or `guided_tour(index = holes)`.
+* **display**: A function that renders the projected data, for example `display_xy()` for a scatterplot, `display_depth()` for a 3D plot with simulated depth, or `display_pcp()` for a parallel coordinates plots
+
+This very nicely separates the aspects of a tour, and allows one to think of and define new tour path methods and display methods.
+The package defines two general tour functions: `animate()` produces a real-time animation on a display device and 
+`render()` saves image frames to disk, such as a `.gif` file.
+
+```{r tour-functions}
+#| eval: false
+animate(data, tour_path, display_method)
+render(data, tour_path, display_method)
+```
+
 
 
 ```{r}
