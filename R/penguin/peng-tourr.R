@@ -4,11 +4,21 @@
 library(tourr)
 
 #setwd("C:/R/Projects/Vis-MLM-book")
-load(here::here("data", "peng.RData"))
+#load(here::here("data", "peng.RData"))
+data(peng, package = "heplots")
 source("R/penguin/penguin-colors.R")
 
 peng_scaled <- scale(peng[,3:6])
 colnames(peng_scaled) <- c("BL", "BD", "FL", "BM")
+
+animate(peng_scaled, grand_tour(d = 2), display_xy())
+animate(peng_scaled, grand_tour(d = 3), display_depth())
+animate(peng_scaled, grand_tour(d = 4), display_pcp())
+
+
+
+# find all display methods
+grep("display", lsf.str("package:tourr"), value = TRUE)
 
 animate(peng_scaled,
         tour_path = guided_tour(holes()),
