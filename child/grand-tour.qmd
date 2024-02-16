@@ -367,11 +367,16 @@ In this, `index_f` specifies a function that the method tries to optimize on its
 
 * Holes (`holes()`): This is sensitive to projections with separated clusters of points, with few points near the origin
 * Central mass (`cmass()`): Sensitive to projections with lots of points in the center, but perhaps with some outliers
-* Linear discriminant analysis (`lda_pp()`)
-* PDA analysis (`pda_pp()`)
+* Linear discriminant analysis (`lda_pp()`): For data with a grouping factor, optimizes a measure of separation of the group means as in MANOVA or linear discriminant analysis
+* PDA analysis (`pda_pp()`): A penalized version of `lda_pp()` for cases of large $p$ relative to sample size $n$ @LeeCook-2009.
 
 
 #### Penguin tours
+
+Penguins are a traveling species. They make yearly travels inland to breeding sites in early spring, repeating the patterns of their ancestors. Near the beginning of summer, adult penguins and their chicks return to the sea and spend the rest of the summer feeding there. If they were also data scientists, they might wonder about the relations among
+among their cousins of different genus and take a tour of their measurements...
+
+Cite: Black et al Time-lapse imagery of Ade´lie penguins, https://doi.org/10.1371/journal.pone.0193532
 
 
 For example, using the Penguins dataset, the following calls produce grand tours in 2, 3, and 4 dimensions.
@@ -404,13 +409,16 @@ knitr::include_graphics("images/peng-tour-demo2.png")
 knitr::include_graphics("images/peng-tour-demo3.png")
 ```
 
+Let's take the penguins on a tour, motivated by finding views that show the greatest separations among the 
+penguin species; that is, a guided tour, optimizing the `lda_pp()` index.
+I'll abbreviate the variables to two characters,
+"BL" = `bill_length`, "BD" = `bill_depth`, "FL" = `flipper_length`, and "BM" = `body_mass`.
 
 ```{r}
 #| eval: false
-load(here::here("data", "peng.RData"))
+data(peng, package = "heplots")
 peng_scaled <- scale(peng[,3:6])
-source("R/penguin/penguin-colors.R")
-col <- peng.colors()[peng$species]
+colnames(peng_scaled) <- c("BL", "BD", "FL", "BM")
 
 animate(peng_scaled, 
         guided_tour(lda_pp(peng$species)),
@@ -425,7 +433,16 @@ animate(peng_scaled,
 #| label: fig-peng-tour-lda
 #| out-width: "60%"
 #| echo: false
-#| fig-cap: "Animation of a grand tour of the Penguin data."
-knitr::include_graphics("images/peng-tourr-lda-crop.gif")
+#| fig-cap: "Animation of a grand tour of the Penguin data, using a guided tour designed to find an optimal separation among the penguin species."
+knitr::include_graphics("images/peng-tourr-lda.gif")
 ```
 :::
+
+This example was intended to highly what is possible with dynamic graphics for exploring high-dimensional data visually. But it also illustrates limitations in implementation in **tourr**.
+Ideally, we should be able interact with a tour, pausing when we see something interesting and saving the view
+for later analysis; selecting or highlighting unusual points, ...
+
+Actually, that was done in Ggobi ...
+There is a **tourGUI** package ...
+
+

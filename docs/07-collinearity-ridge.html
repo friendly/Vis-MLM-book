@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.361">
+<meta name="generator" content="quarto-1.4.550">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <title>Visualizing Multivariate Data and Models in R - 7&nbsp; Collinearity &amp; Ridge Regression</title>
 <style>
@@ -19,7 +19,7 @@ ul.task-list li input[type="checkbox"] {
 }
 /* CSS for syntax highlighting */
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -55,6 +55,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 div.csl-bib-body { }
 div.csl-entry {
   clear: both;
+  margin-bottom: 0em;
 }
 .hanging-indent div.csl-entry {
   margin-left:2em;
@@ -97,7 +98,13 @@ div.csl-indent {
   "collapse-after": 3,
   "panel-placement": "start",
   "type": "textbox",
-  "limit": 20,
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
   "language": {
     "search-no-results-text": "No results",
     "search-matching-documents-text": "matching documents",
@@ -106,22 +113,48 @@ div.csl-indent {
     "search-more-match-text": "more match in this document",
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
     "search-detached-cancel-button-title": "Cancel",
     "search-submit-button-title": "Submit",
     "search-label": "Search"
   }
-}</script><script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script><script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+}</script><script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script><script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script><script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 </head>
 <body class="nav-sidebar floating slimcontent">
 
 <div id="quarto-search-results"></div>
-  <header id="quarto-header" class="headroom fixed-top"><nav class="quarto-secondary-nav"><div class="container-fluid d-flex">
-      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <header id="quarto-header" class="headroom fixed-top quarto-banner"><nav class="quarto-secondary-nav"><div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./07-collinearity-ridge.html"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Collinearity &amp; Ridge Regression</span></a></li></ol></nav>
-      <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
-      </a>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./07-collinearity-ridge.html"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Collinearity &amp; Ridge Regression</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
       <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
         <i class="bi bi-search"></i>
       </button>
@@ -143,7 +176,7 @@ div.csl-indent {
   
   </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
 <!-- sidebar -->
-  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation floating overflow-auto"><div class="pt-lg-2 mt-2 text-left sidebar-header">
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto"><div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
       <a href="./">Visualizing Multivariate Data and Models in R</a> 
         <div class="sidebar-tools-main">
@@ -250,7 +283,7 @@ div.csl-indent {
 </li>
     </ul>
 </div>
-</nav><div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
+</nav><div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
         <nav id="TOC" role="doc-toc" class="toc-active"><h2 id="toc-title">Table of contents</h2>
@@ -281,7 +314,7 @@ div.csl-indent {
   <li><a href="#bivariate-ridge-trace-plots" id="toc-bivariate-ridge-trace-plots" class="nav-link" data-scroll-target="#bivariate-ridge-trace-plots"><span class="header-section-number">7.4.3</span> Bivariate ridge trace plots</a></li>
   </ul>
 </li>
-  </ul><div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/friendly/vis-MLM-book/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
+  </ul><div class="toc-actions"><ul><li><a href="https://github.com/friendly/vis-MLM-book/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content quarto-banner-title-block page-columns page-full" id="quarto-document-content"><blockquote class="blockquote">
@@ -328,7 +361,7 @@ div.csl-indent {
 </ul>
 <section id="visualizing-collinearity" class="level3" data-number="7.1.1"><h3 data-number="7.1.1" class="anchored" data-anchor-id="visualizing-collinearity">
 <span class="header-section-number">7.1.1</span> Visualizing collinearity</h3>
-<p>Collinearity can be illustrated in data space for two predictors in terms of the stability of the regression plane for a linear model <code>Y = X1 + X2</code>. In <a href="#fig-collin-demo">Figure&nbsp;<span>7.1</span></a> (adapted from <span class="citation" data-cites="Fox:2016:ARA">Fox (<a href="90-references.html#ref-Fox:2016:ARA" role="doc-biblioref">2016</a>)</span>, Fig. 13.2):</p>
+<p>Collinearity can be illustrated in data space for two predictors in terms of the stability of the regression plane for a linear model <code>Y = X1 + X2</code>. In <a href="#fig-collin-demo" class="quarto-xref">Figure&nbsp;<span>7.1</span></a> (adapted from <span class="citation" data-cites="Fox:2016:ARA">Fox (<a href="90-references.html#ref-Fox:2016:ARA" role="doc-biblioref">2016</a>)</span>, Fig. 13.2):</p>
 <ol type="a">
 <li><p>shows a case where <span class="math inline">\(X_1\)</span> and <span class="math inline">\(X_2\)</span> are uncorrelated as can be seen in their scatter in the horizontal plane (<code>+</code> symbols). The regression plane is well-supported; a small change in Y for one observation won’t make much difference.</p></li>
 <li><p>In panel (b), <span class="math inline">\(X_1\)</span> and <span class="math inline">\(X_2\)</span> have a perfect correlation, <span class="math inline">\(r (x_1, x_2) = 1.0\)</span>. The regression plane is not unique; in fact there are an infinite number of planes that fit the data equally well. Note that, if all we care about is prediction (not the coefficients), we could use <span class="math inline">\(X_1\)</span> or <span class="math inline">\(X_2\)</span>, or both, or any weighted sum of them in a model and get the same predicted values.</p></li>
@@ -336,9 +369,13 @@ div.csl-indent {
 </ol>
 <div class="cell" data-layout-align="center">
 <div class="cell-output-display">
-<div id="fig-collin-demo" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure"><p><img src="images/collin-demo.png" class="img-fluid figure-img" style="width:100.0%"></p>
-<figcaption class="figure-caption">Figure&nbsp;7.1: Effect of collinearity on the least squares regression plane. (a) Small correlation between predictors; (b) Perfect correlation ; (c) Very strong correlation. The black points show the data Y values, white points are the fitted values in the regression plane, and + signs represent the values of X1 and X2. <em>Source</em>: Adapted from <span class="citation" data-cites="Fox:2016:ARA">Fox (<a href="90-references.html#ref-Fox:2016:ARA" role="doc-biblioref">2016</a>)</span>, Fig. 13.2</figcaption></figure>
+<div id="fig-collin-demo" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-collin-demo-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="images/collin-demo.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-collin-demo-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;7.1: Effect of collinearity on the least squares regression plane. (a) Small correlation between predictors; (b) Perfect correlation ; (c) Very strong correlation. The black points show the data Y values, white points are the fitted values in the regression plane, and + signs represent the values of X1 and X2. <em>Source</em>: Adapted from <span class="citation" data-cites="Fox:2016:ARA">Fox (<a href="90-references.html#ref-Fox:2016:ARA" role="doc-biblioref">2016</a>)</span>, Fig. 13.2
+</figcaption></figure>
 </div>
 </div>
 </div>
@@ -350,7 +387,7 @@ div.csl-indent {
 <p>Working file: <code>R/collin-data-beta.R</code></p>
 </div></div><p>First, we use <code>MASS:mvrnorm()</code> to construct a list of data frames <code>XY</code> with specified values for the means and covariance matrices and a corresponding list of models, <code>mods</code>.</p>
 <div class="cell" data-layout-align="center">
-<details open=""><summary>Code</summary><div class="sourceCode" id="cb2" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="http://www.stats.ox.ac.uk/pub/MASS4/">MASS</a></span><span class="op">)</span></span>
+<details open="" class="code-fold"><summary>Code</summary><div class="sourceCode" id="cb2" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="http://www.stats.ox.ac.uk/pub/MASS4/">MASS</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://r-forge.r-project.org/projects/car/">car</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">421</span><span class="op">)</span>            <span class="co"># reproducibility</span></span>
@@ -393,7 +430,7 @@ div.csl-indent {
 </div>
 <p>Then, we define a function to plot the data ellipse (<code><a href="https://rdrr.io/pkg/car/man/Ellipses.html">car::dataEllipse()</a></code>) for each data frame and confidence ellipse (<code><a href="https://rdrr.io/pkg/car/man/Ellipses.html">car::dataEllipse()</a></code>) in the corresponding fitted model. In this figure, I specify the x, y limits for each plot so that the relative sizes of these ellipses are comparable, so that variance inflation can be assesed visually.</p>
 <div class="cell" data-layout-align="center">
-<details open=""><summary>Code</summary><div class="sourceCode" id="cb4" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">do_plots</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">XY</span>, <span class="va">mod</span>, <span class="va">r</span><span class="op">)</span> <span class="op">{</span></span>
+<details open="" class="code-fold"><summary>Code</summary><div class="sourceCode" id="cb4" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">do_plots</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">XY</span>, <span class="va">mod</span>, <span class="va">r</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">X</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span><span class="op">(</span><span class="va">XY</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/car/man/Ellipses.html">dataEllipse</a></span><span class="op">(</span><span class="va">X</span>,</span>
 <span>              levels<span class="op">=</span> <span class="fl">0.95</span>,</span>
@@ -424,20 +461,24 @@ div.csl-indent {
 <span><span class="op">}</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html">par</a></span><span class="op">(</span><span class="va">op</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details><div class="cell-output-display">
-<div id="fig-collin-data-beta" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure"><p><img src="figs/fig-collin-data-beta-1.png" class="img-fluid figure-img" style="width:100.0%"></p>
-<figcaption class="figure-caption">Figure&nbsp;7.2: 95% Ddata ellipses for x1, x2 and the corresponding 95% confidence ellipses for their coefficients. In the confidence ellipse plots, reference lines show the value (0,0) for the null hypothesis and “+” marks the true values for the coefficients. This figure adapts an example by John Fox (2022).</figcaption></figure>
+<div id="fig-collin-data-beta" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-collin-data-beta-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/fig-collin-data-beta-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-collin-data-beta-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;7.2: 95% Ddata ellipses for x1, x2 and the corresponding 95% confidence ellipses for their coefficients. In the confidence ellipse plots, reference lines show the value (0,0) for the null hypothesis and “+” marks the true values for the coefficients. This figure adapts an example by John Fox (2022).
+</figcaption></figure>
 </div>
 </div>
 </div>
 <p>Recall (Section #sec-data-beta) that the confidence ellipse for <span class="math inline">\((\beta_1, \beta_2)\)</span> is just a 90 degree rotation (and rescaling) of the data ellipse for <span class="math inline">\((x_1, x_2)\)</span>: it is wide (more variance) in any direction where the data ellipse is narrow.</p>
-<p>The shadows of the confidence ellipses on the coordinate axes in <a href="#fig-collin-data-beta">Figure&nbsp;<span>7.2</span></a> represent the standard errors of the coefficients, and get larger with increasing <span class="math inline">\(\rho\)</span>. This is the effect of variance inflation, described in the following section.</p>
+<p>The shadows of the confidence ellipses on the coordinate axes in <a href="#fig-collin-data-beta" class="quarto-xref">Figure&nbsp;<span>7.2</span></a> represent the standard errors of the coefficients, and get larger with increasing <span class="math inline">\(\rho\)</span>. This is the effect of variance inflation, described in the following section.</p>
 </section></section><section id="sec-measure-collin" class="level2" data-number="7.2"><h2 data-number="7.2" class="anchored" data-anchor-id="sec-measure-collin">
 <span class="header-section-number">7.2</span> Measuring collinearity</h2>
 <section id="sec-vif" class="level3" data-number="7.2.1"><h3 data-number="7.2.1" class="anchored" data-anchor-id="sec-vif">
 <span class="header-section-number">7.2.1</span> Variance inflation factors</h3>
 <p>How can we measure the effect of collinearity? The essential idea is to compare, for each predictor the variance <span class="math inline">\(s^2 (\widehat{b_j})\)</span> that the coefficient that <span class="math inline">\(x_j\)</span> would have if it was totally unrelated to the other predictors to the actual variance it has in the given model.</p>
-<p>For two predictors such as shown in <a href="#fig-collin-data-beta">Figure&nbsp;<span>7.2</span></a> the sampling variance of <span class="math inline">\(x_1\)</span> can be expressed as</p>
+<p>For two predictors such as shown in <a href="#fig-collin-data-beta" class="quarto-xref">Figure&nbsp;<span>7.2</span></a> the sampling variance of <span class="math inline">\(x_1\)</span> can be expressed as</p>
 <p><span class="math display">\[
 s^2 (\widehat{b_1}) = \frac{MSE}{(n-1) \; s^2(x_1)} \; \times \; \left[ \frac{1}{1-r^2_{12}} \right]
 \]</span> The first term here is the variance of <span class="math inline">\(b_1\)</span> when the two predictors are uncorrelated. The term in brackets represents the <strong>variance inflation factor</strong> <span class="citation" data-cites="Marquardt:1970">(<a href="90-references.html#ref-Marquardt:1970" role="doc-biblioref">Marquardt, 1970</a>)</span>, the amount by which the variance of the coefficient is multiplied as a consequence of the correlation <span class="math inline">\(r_{12}\)</span> of the predictors. As <span class="math inline">\(r_{12} \rightarrow 1\)</span>, the variances approaches infinity.</p>
@@ -448,7 +489,7 @@ s^2 (\widehat{b_j}) = \frac{MSE}{(n-1) \; s^2(x_j)} \; \times \; \left[ \frac{1}
 <p><span class="math display">\[
 \text{VIF}_j = \frac{1}{1-R^2_{j \,|\, \text{others}}}
 \]</span> In practice, it is often easier to think in terms of the square root, <span class="math inline">\(\sqrt{\text{VIF}_j}\)</span> as the multiplier of the standard errors. The denominator, <span class="math inline">\(1-R^2_{j | \text{others}}\)</span> is sometimes called <strong>tolerance</strong>, a term I don’t find particularly useful.</p>
-<p>For the cases shown in <a href="#fig-collin-data-beta">Figure&nbsp;<span>7.2</span></a> the VIFs and their square roots are:</p>
+<p>For the cases shown in <a href="#fig-collin-data-beta" class="quarto-xref">Figure&nbsp;<span>7.2</span></a> the VIFs and their square roots are:</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb5" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">vifs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="fu">car</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/car/man/vif.html">vif</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">vifs</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="st">"rho:"</span>, <span class="va">rho</span><span class="op">)</span></span>
@@ -462,7 +503,7 @@ s^2 (\widehat{b_j}) = \frac{MSE}{(n-1) \; s^2(x_j)} \; \times \; \left[ \frac{1}
 <span><span class="co">#&gt; x1      1     1.76      4.31</span></span>
 <span><span class="co">#&gt; x2      1     1.76      4.31</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Note that when there are terms in the model with more than one df, such as education with four levels (and hence 3 df) or a polynomial term specified as <code>poly(x, 3)</code>, the standard VIF calculation gives results that vary with how those terms are coded in the model. <span class="citation" data-cites="FoxMonette:92">Fox &amp; Monette (<a href="90-references.html#ref-FoxMonette:92" role="doc-biblioref">1992</a>)</span> define <em>generalized</em>, GVIFs as the inflation in the squared area of the confidence ellipse for the coefficients of such terms, relative to what would be obtained with uncorrelated data. Visually, this can be seen by comparing the areas of the ellipses in the bottom row of <a href="#fig-collin-data-beta">Figure&nbsp;<span>7.2</span></a>. Because the magnitude of the GVIF increases with the number of degrees of freedom for the set of parameters, Fox &amp; Monette suggest the analog <span class="math inline">\(\sqrt{\text{GVIF}^{1/2 \text{df}}}\)</span> as the measure of impact on standard errors.</p>
+<p>Note that when there are terms in the model with more than one df, such as education with four levels (and hence 3 df) or a polynomial term specified as <code>poly(x, 3)</code>, the standard VIF calculation gives results that vary with how those terms are coded in the model. <span class="citation" data-cites="FoxMonette:92">Fox &amp; Monette (<a href="90-references.html#ref-FoxMonette:92" role="doc-biblioref">1992</a>)</span> define <em>generalized</em>, GVIFs as the inflation in the squared area of the confidence ellipse for the coefficients of such terms, relative to what would be obtained with uncorrelated data. Visually, this can be seen by comparing the areas of the ellipses in the bottom row of <a href="#fig-collin-data-beta" class="quarto-xref">Figure&nbsp;<span>7.2</span></a>. Because the magnitude of the GVIF increases with the number of degrees of freedom for the set of parameters, Fox &amp; Monette suggest the analog <span class="math inline">\(\sqrt{\text{GVIF}^{1/2 \text{df}}}\)</span> as the measure of impact on standard errors.</p>
 <p><strong>Example</strong>: This example uses the <code>cars</code> dataset in the <code>VisCollin</code> package containing various measures of size and performance on 406 models of automobiles from 1982. Interest is focused on predicting gas mileage, <code>mpg</code>.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb6" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">cars</span>, package <span class="op">=</span> <span class="st">"VisCollin"</span><span class="op">)</span></span>
@@ -536,7 +577,7 @@ Connection with inverse of correlation matrix
 \mathbf{R}_{X} = \mathbf{V} \mathbf{\Lambda} \mathbf{V}^T
 \]</span> By elementary matrix algebra, the eigen decomposition of <span class="math inline">\(\mathbf{R}_{XX}^{-1}\)</span> is then <span id="eq-rxinv-eigen"><span class="math display">\[
 \mathbf{R}_{X}^{-1} = \mathbf{V} \mathbf{\Lambda}^{-1} \mathbf{V}^T \; ,
-\tag{7.1}\]</span></span> so, <span class="math inline">\(\mathbf{R}_{X}\)</span> and <span class="math inline">\(\mathbf{R}_{XX}^{-1}\)</span> have the same eigenvectors, and the eigenvalues of <span class="math inline">\(\mathbf{R}_{X}^{-1}\)</span> are just <span class="math inline">\(\lambda_i^{-1}\)</span>. Using <a href="#eq-rxinv-eigen">Equation&nbsp;<span>7.1</span></a>, the variance inflation factors may be expressed as <span class="math display">\[
+\tag{7.1}\]</span></span> so, <span class="math inline">\(\mathbf{R}_{X}\)</span> and <span class="math inline">\(\mathbf{R}_{XX}^{-1}\)</span> have the same eigenvectors, and the eigenvalues of <span class="math inline">\(\mathbf{R}_{X}^{-1}\)</span> are just <span class="math inline">\(\lambda_i^{-1}\)</span>. Using <a href="#eq-rxinv-eigen" class="quarto-xref">Equation&nbsp;<span>7.1</span></a>, the variance inflation factors may be expressed as <span class="math display">\[
 \text{VIF}_j = \sum_{k=1}^p \frac{V^2_{jk}}{\lambda_k} \; ,
 \]</span> which shows that only the <em>small</em> eigenvalues contribute to variance inflation, but only for those predictors that have large eigenvector coefficients on those small components. These facts lead to the following diagnostic statistics for collinearity:</p>
 <ul>
@@ -591,19 +632,23 @@ Connection with inverse of correlation matrix
 <li><p>the condition indices, using using <em>squares</em> whose background color is red for condition indices &gt; 10, green for values &gt; 5 and green otherwise, reflecting danger, warning and OK respectively. The value of the condition index is encoded within this using a white square whose side is proportional to the value (up to some maximum value, <code>cond.max</code> that fills the cell).</p></li>
 <li><p>Variance decomposition proportions are shown by filled <em>circles</em> whose radius is proportional to those values and are filled (by default) with shades ranging from white through pink to red. Rounded values of those diagnostics are printed in the cells.</p></li>
 </ul>
-<p>The tableplot below (<a href="#fig-cars-tableplot">Figure&nbsp;<span>7.3</span></a>) encodes all the information from the values of <code><a href="https://rdrr.io/pkg/VisCollin/man/colldiag.html">colldiag()</a></code> printed above (but using <code>prop.col</code> color breaks such that variance proportions &lt; 0.3 are shaded white). The visual message is that one should attend to collinearities with large condition indices <strong>and</strong> large variance proportions implicating two or more predictors.</p>
+<p>The tableplot below (<a href="#fig-cars-tableplot" class="quarto-xref">Figure&nbsp;<span>7.3</span></a>) encodes all the information from the values of <code><a href="https://rdrr.io/pkg/VisCollin/man/colldiag.html">colldiag()</a></code> printed above (but using <code>prop.col</code> color breaks such that variance proportions &lt; 0.3 are shaded white). The visual message is that one should attend to collinearities with large condition indices <strong>and</strong> large variance proportions implicating two or more predictors.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb11" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/VisCollin/man/tableplot.html">tableplot</a></span><span class="op">(</span><span class="va">cd</span>, title <span class="op">=</span> <span class="st">"Tableplot of cars data"</span>, cond.max <span class="op">=</span> <span class="fl">30</span> <span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div id="fig-cars-tableplot" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure"><p><img src="figs/fig-cars-tableplot-1.png" class="img-fluid figure-img" style="width:90.0%"></p>
-<figcaption class="figure-caption">Figure&nbsp;7.3: Tableplot of condition indices and variance proportions for the Cars data. In column 1, the square symbols are scaled relative to a maximum condition index of 30. In the remaining columns, variance proportions (times 100) are shown as circles scaled relative to a maximum of 100.</figcaption></figure>
+<div id="fig-cars-tableplot" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-cars-tableplot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/fig-cars-tableplot-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:90.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-cars-tableplot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;7.3: Tableplot of condition indices and variance proportions for the Cars data. In column 1, the square symbols are scaled relative to a maximum condition index of 30. In the remaining columns, variance proportions (times 100) are shown as circles scaled relative to a maximum of 100.
+</figcaption></figure>
 </div>
 </div>
 </div>
 </section><section id="collinearity-biplots" class="level3" data-number="7.2.4"><h3 data-number="7.2.4" class="anchored" data-anchor-id="collinearity-biplots">
 <span class="header-section-number">7.2.4</span> Collinearity biplots</h3>
-<p>As we have seen, the collinearity diagnostics are all functions of the eigenvalues and eigenvectors of the correlation matrix of the predictors in the regression model, or alternatively, the SVD of the <span class="math inline">\(\mathbf{X}\)</span> matrix in the linear model (excluding the constant). The standard biplot <span class="citation" data-cites="Gabriel:71 GowerHand:96">(<a href="90-references.html#ref-Gabriel:71" role="doc-biblioref">Gabriel, 1971</a>; <a href="90-references.html#ref-GowerHand:96" role="doc-biblioref">Gower &amp; Hand, 1996</a>)</span> (see: <a href="04-pca-biplot.html#sec-biplot"><span>Section&nbsp;4.3</span></a>) can be regarded as a multivariate analog of a scatterplot, obtained by projecting a multivariate sample into a low-dimensional space (typically of 2 or 3 dimensions) accounting for the greatest variance in the data.</p>
+<p>As we have seen, the collinearity diagnostics are all functions of the eigenvalues and eigenvectors of the correlation matrix of the predictors in the regression model, or alternatively, the SVD of the <span class="math inline">\(\mathbf{X}\)</span> matrix in the linear model (excluding the constant). The standard biplot <span class="citation" data-cites="Gabriel:71 GowerHand:96">(<a href="90-references.html#ref-Gabriel:71" role="doc-biblioref">Gabriel, 1971</a>; <a href="90-references.html#ref-GowerHand:96" role="doc-biblioref">Gower &amp; Hand, 1996</a>)</span> (see: <a href="04-pca-biplot.html#sec-biplot" class="quarto-xref"><span>Section 4.3</span></a>) can be regarded as a multivariate analog of a scatterplot, obtained by projecting a multivariate sample into a low-dimensional space (typically of 2 or 3 dimensions) accounting for the greatest variance in the data.</p>
 <p>However the standard biplot is less useful for visualizing the relations among the predictors that lead to nearly collinear relations. Instead, biplots of the <strong>smallest dimensions</strong> show these relations directly, and can show other features of the data as well, such as outliers and leverage points. We use <code>prcomp(X, scale.=TRUE)</code> to obtain the PCA of the correlation matrix of the predictors:</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb12" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cars.X</span> <span class="op">&lt;-</span> <span class="va">cars</span> <span class="op">|&gt;</span></span>
@@ -616,13 +661,13 @@ Connection with inverse of correlation matrix
 <span><span class="co">#&gt; [1] 2.070 0.911 0.809 0.367 0.245 0.189</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Rotation (n x k) = (6 x 6):</span></span>
-<span><span class="co">#&gt;             PC1    PC2    PC3    PC4     PC5     PC6</span></span>
-<span><span class="co">#&gt; cylinder -0.454 0.1869 -0.168  0.659 -0.2711  0.4725</span></span>
-<span><span class="co">#&gt; engine   -0.467 0.1628 -0.134  0.193 -0.0109 -0.8364</span></span>
-<span><span class="co">#&gt; horse    -0.462 0.0177  0.123 -0.620 -0.6123  0.1067</span></span>
-<span><span class="co">#&gt; weight   -0.444 0.2598 -0.278 -0.350  0.6860  0.2539</span></span>
-<span><span class="co">#&gt; accel     0.330 0.2098 -0.865 -0.143 -0.2774 -0.0337</span></span>
-<span><span class="co">#&gt; year      0.237 0.9092  0.335 -0.025 -0.0624 -0.0142</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt;             PC1     PC2    PC3    PC4     PC5     PC6</span></span>
+<span><span class="co">#&gt; cylinder -0.454 -0.1869  0.168 -0.659 -0.2711 -0.4725</span></span>
+<span><span class="co">#&gt; engine   -0.467 -0.1628  0.134 -0.193 -0.0109  0.8364</span></span>
+<span><span class="co">#&gt; horse    -0.462 -0.0177 -0.123  0.620 -0.6123 -0.1067</span></span>
+<span><span class="co">#&gt; weight   -0.444 -0.2598  0.278  0.350  0.6860 -0.2539</span></span>
+<span><span class="co">#&gt; accel     0.330 -0.2098  0.865  0.143 -0.2774  0.0337</span></span>
+<span><span class="co">#&gt; year      0.237 -0.9092 -0.335  0.025 -0.0624  0.0142</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>The standard deviations above are the square roots <span class="math inline">\(\sqrt{\lambda_j}\)</span> of the eigenvalues of the correlation matrix, and are returned in the <code>sdev</code> component of the <code>"prcomp"</code> object. The eigenvectors are returned in the <code>rotation</code> component, whose directions are arbitrary. Because we are interested in seeing the relative magnitude of variable vectors, we are free to multiply them by any constant to make them more visible in relation to the scores for the cars.</p>
 <div class="cell" data-layout-align="center">
@@ -652,22 +697,26 @@ Connection with inverse of correlation matrix
 <span>                vjust <span class="op">=</span> <span class="op">-</span><span class="fl">0.5</span>,</span>
 <span>                size <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div id="fig-cars-collin-biplot" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure"><p><img src="figs/fig-cars-collin-biplot-1.png" class="img-fluid figure-img" style="width:100.0%"></p>
-<figcaption class="figure-caption">Figure&nbsp;7.4: Collinearity biplot of the Cars data, showing the last two dimensions. The projections of the variable vectors on the coordinate axes are proportional to their variance proportions. To reduce graphic clutter, only the most outlying observations in predictor space are identified by case labels. An extreme outlier (case 20) appears in the lower left corner.</figcaption></figure>
+<div id="fig-cars-collin-biplot" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-cars-collin-biplot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/fig-cars-collin-biplot-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-cars-collin-biplot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;7.4: Collinearity biplot of the Cars data, showing the last two dimensions. The projections of the variable vectors on the coordinate axes are proportional to their variance proportions. To reduce graphic clutter, only the most outlying observations in predictor space are identified by case labels. An extreme outlier (case 20) appears in the lower left corner.
+</figcaption></figure>
 </div>
 </div>
 </div>
 <p>As with the tabular display of variance proportions, Waldo is hiding in the dimensions associated with the smallest eigenvalues (largest condition indices).<br>
 As well, it turns out that outliers in the predictor space (also high leverage observations) can often be seen as observations far from the centroid in the space of the smallest principal components.</p>
-<p>The projections of the variable vectors in <a href="#fig-cars-collin-biplot">Figure&nbsp;<span>7.4</span></a> on the Dimension 5 and Dimension 6 axes are proportional to their variance proportions shown above. The relative lengths of these variable vectors can be considered to indicate the extent to which each variable contributes to collinearity for these two near-singular dimensions.</p>
+<p>The projections of the variable vectors in <a href="#fig-cars-collin-biplot" class="quarto-xref">Figure&nbsp;<span>7.4</span></a> on the Dimension 5 and Dimension 6 axes are proportional to their variance proportions shown above. The relative lengths of these variable vectors can be considered to indicate the extent to which each variable contributes to collinearity for these two near-singular dimensions.</p>
 <p>Thus, we see again that Dimension 6 is largely determined by <code>engine</code> size, with a substantial (negative) relation to <code>cylinder</code>. Dimension 5 has its’ strongest relations to <code>weight</code> and <code>horse</code>.</p>
 <p>Moreover, there is one observation, #20, that stands out as an outlier in predictor space, far from the centroid. It turns out that this vehicle, a Buick Estate wagon, is an early-year (1970) American behemoth, with an 8-cylinder, 455 cu. in, 225 horse-power engine, and able to go from 0 to 60 mph in 10 sec. (Its MPG is only slightly under-predicted from the regression model, however.)</p>
 </section></section><section id="sec-remedies" class="level2" data-number="7.3"><h2 data-number="7.3" class="anchored" data-anchor-id="sec-remedies">
 <span class="header-section-number">7.3</span> Remedies for collinearity: What can I do?</h2>
 <p>Collinearity is often a <strong>data</strong> problem, for which there is no magic cure. Nevertheless there are some general guidelines and useful techniques to address this problem.</p>
 <ul>
-<li><p><strong>Pure prediction</strong>: If we are only interested in predicting / explaining an outcome, and not the model coefficients or which are “significant”, collinearity can be largely ignored. The fitted values are unaffected by collinearity, even in the case of perfect collinearity as shown in <a href="#fig-collin-demo">Figure&nbsp;<span>7.1</span></a> (b).</p></li>
+<li><p><strong>Pure prediction</strong>: If we are only interested in predicting / explaining an outcome, and not the model coefficients or which are “significant”, collinearity can be largely ignored. The fitted values are unaffected by collinearity, even in the case of perfect collinearity as shown in <a href="#fig-collin-demo" class="quarto-xref">Figure&nbsp;<span>7.1</span></a> (b).</p></li>
 <li>
 <p><strong>structural collinearity</strong>: Sometimes collinearity results from structural relations among the variables that relate to how they have been defined.</p>
 <ul>
@@ -730,9 +779,13 @@ As well, it turns out that outliers in the predictor space (also high leverage o
 <span></span>
 <span><span class="va">gg1</span> <span class="op">+</span> <span class="va">gg2</span>         <span class="co"># show plots side-by-side</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div id="fig-collin-centering" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure"><p><img src="figs/fig-collin-centering-1.png" class="img-fluid figure-img" style="width:100.0%"></p>
-<figcaption class="figure-caption">Figure&nbsp;7.5: Centering a predictor removes the nessessary correlation in a quadratic regression</figcaption></figure>
+<div id="fig-collin-centering" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-collin-centering-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/fig-collin-centering-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-collin-centering-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;7.5: Centering a predictor removes the nessessary correlation in a quadratic regression
+</figcaption></figure>
 </div>
 </div>
 </div>
@@ -797,14 +850,14 @@ As well, it turns out that outliers in the predictor space (also high leverage o
 </section><section id="bivariate-ridge-trace-plots" class="level3" data-number="7.4.3"><h3 data-number="7.4.3" class="anchored" data-anchor-id="bivariate-ridge-trace-plots">
 <span class="header-section-number">7.4.3</span> Bivariate ridge trace plots</h3>
 <div class="cell" data-layout-align="center">
-<pre data-code-line-numbers=""><code>#&gt; Writing packages to  C:/R/Projects/Vis-MLM-book/bib/pkgs.txt
+<pre data-code-line-numbers=""><code>#&gt; Writing packages to  C:/R/projects/Vis-MLM-book/bib/pkgs.txt
 #&gt; 18  packages used here:
 #&gt;  base, car, carData, datasets, dplyr, factoextra, genridge, ggplot2, ggrepel, graphics, grDevices, knitr, MASS, methods, patchwork, stats, utils, VisCollin</code></pre>
 </div>
 <!-- ## References {.unnumbered} -->
 
 
-<div id="refs" class="references csl-bib-body hanging-indent" data-line-spacing="2" role="list" style="display: none">
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" data-line-spacing="2" role="list" style="display: none">
 <div id="ref-Belsley:91a" class="csl-entry" role="listitem">
 Belsley, D. A. (1991). <em>Conditioning diagnostics: Collinearity and weak data in regression</em>. Wiley.
 </div>
@@ -921,10 +974,9 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     // clear code selection
     e.clearSelection();
   });
-  function tippyHover(el, contentFn) {
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
-      content: contentFn,
       maxWidth: 500,
       delay: 100,
       arrow: false,
@@ -934,8 +986,17 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       interactive: true,
       interactiveBorder: 10,
       theme: 'quarto',
-      placement: 'bottom-start'
+      placement: 'bottom-start',
     };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
     window.tippy(el, config); 
   }
   const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
@@ -948,6 +1009,125 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
       return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
     });
   }
       let selectedAnnoteEl;
@@ -991,6 +1171,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
             }
             div.style.top = top - 2 + "px";
             div.style.height = height + 4 + "px";
+            div.style.left = 0;
             let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
             if (gutterDiv === null) {
               gutterDiv = window.document.createElement("div");
@@ -1016,6 +1197,32 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         });
         selectedAnnoteEl = undefined;
       };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
       // Attach click handler to the DT
       const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
       for (const annoteDlNode of annoteDls) {
@@ -1075,12 +1282,12 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   }
 });
 </script><nav class="page-navigation"><div class="nav-page nav-page-previous">
-      <a href="./06-linear_models-plots.html" class="pagination-link">
+      <a href="./06-linear_models-plots.html" class="pagination-link" aria-label="Plots for univariate response models">
         <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Plots for univariate response models</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./hotelling.html" class="pagination-link">
+      <a href="./hotelling.html" class="pagination-link" aria-label="Hotelling's $T^2$">
         <span class="nav-page-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Hotelling’s <span class="math inline">\(T^2\)</span></span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
@@ -1089,5 +1296,5 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 
 
 
-<script src="site_libs/quarto-contrib/line-highlight-1.0.0/line-highlight.js" defer="true"></script>
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/friendly/vis-MLM-book/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></div></div></footer><script src="site_libs/quarto-contrib/line-highlight-1.0.0/line-highlight.js" defer="true"></script>
 </body></html>

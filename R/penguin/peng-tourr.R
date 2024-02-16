@@ -27,8 +27,18 @@ animate(peng_scaled,
                              cex = 1.5))
 
 # how to get the right colors & legend?
-col <- peng.colors()[peng$species]
-pch <- c(21, 22, 24)[peng$species]
+col <- peng.colors()[peng$species] 
+pch <- c(21, 22, 24)[peng$species] 
+
+animate(peng_scaled,
+        tour_path = grand_tour(d=2),
+        display = display_xy(col = col,
+                             pch = pch,
+                             cex = 1.2))
+
+# making them factors gives legends, but without the species names
+col <- peng.colors()[peng$species] |> as.factor()
+pch <- c(21, 22, 24)[peng$species] |> as.factor()
 
 animate(peng_scaled,
         tour_path = grand_tour(d=2),
@@ -37,22 +47,49 @@ animate(peng_scaled,
                              cex = 1.2))
 
 
+# let's use holes()
+
 animate(peng_scaled,
         tour_path = guided_tour(holes()),
-        display = display_xy(col = col,
+        display = display_xy(col = peng$species,
                              cex = 1.5))
+
+# use LDA
+animate(peng_scaled, 
+        guided_tour(lda_pp(peng$species)),
+        display = display_xy(col = peng$species,
+                             cex = 1.5))
+render_gif(peng_scaled, 
+           guided_tour(lda_pp(peng$species)),
+           display = display_xy(col = peng$species,
+                                cex = 1.5),
+           gif_file = "images/peng-tourr-lda.gif")
+
+
+
+# save and animate as a planned tour
+hist1 <- save_history(peng_scaled, guided_tour(holes()), max = 5)
+animate(peng_scaled, planned_tour(hist1),
+        display = display_xy(col = peng$species,
+                             cex = 1.5))
+
+render_gif(peng_scaled, planned_tour(hist1),
+           display = display_xy(col = peng$species,
+                                cex = 1.5),
+           gif_file = "images/peng-tourr-holes.gif")
+
+plot(path_index(interpolate(hist1), holes()))
+plot(path_curves(interpolate(hist1)))
 
 animate(peng_scaled, 
         guided_tour(lda_pp(peng$species)),
         display = display_xy(col = col,
-                             cex = 1.5,
-                             edges.width = 2))
+                             cex = 1.5))
 
 render_gif(peng_scaled, 
         guided_tour(lda_pp(peng$species)),
         display = display_xy(col = col,
-                             cex = 1.5,
-                             edges.width = 2),
+                             cex = 1.5),
         gif_file = "images/peng-tourr-lda.gif",
         loop = 3)
 
@@ -73,7 +110,7 @@ animate_xy(peng_scaled,
    tour_path = grand_tour(),
    col=col,
    pch = pch,
-   axes="off", 
+#   axes="off", 
    fps=5,
    max_frames = 20)
 
