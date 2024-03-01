@@ -157,6 +157,6 @@ p_anim <- p + geom_raster() +
 
 p_anim
 #Error: cannot allocate vector of size 55.9 Mb
-anim_save("mona-pca.gif", p_anim,
+anim_save("images/mona-pca.gif", p_anim,
     start_pause = 3, end_pause = 3) 
      
