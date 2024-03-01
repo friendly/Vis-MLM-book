@@ -130,8 +130,10 @@ $\\newcommand*{\\diag}[1]{\\ensuremath{\\mathrm{diag}\\, #1}}$
 
 # write list of packages used at end of every chapter
 .pkg_file <- here::here("bib", "pkgs.txt")
+base_pkgs <- c("stats", "graphics", "grDevices", "utils", "datasets",  "methods", "base")
 write_pkgs <- function(file="") {
   pkgs <- .packages() |> sort() |> unique()
+  pkgs <- setdiff(pkgs, base_pkgs)
   np <- length(pkgs)
   cat(np, " packages used here:\n", paste(pkgs, collapse = ", ")  )
   if(np > 0) cat(pkgs, file = .pkg_file, append=TRUE, sep = "\n")
