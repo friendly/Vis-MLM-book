@@ -11,7 +11,10 @@ library(heplots)
 library(rstatix)
 library(ggpubr)
 
-load(here("data", "peng.RData"))
+#load(here("data", "peng.RData"))
+data(peng, package = "heplots")
+source("R/penguin/penguin-colors.R")
+cols
 
 peng.mlm <- lm(cbind(bill_length, bill_depth, flipper_length, body_mass) ~ 
                  sex + species, data=peng)
