@@ -26,18 +26,20 @@ peng.colors <- function(shade=c("medium", "light", "dark")) {
 peng.colors("light")
 peng.colors("medium")
 
+#The `scale_name` argument of `discrete_scale()` is deprecated as of ggplot2 3.5.0.
+
 scale_fill_penguins <- function(shade=c("medium", "light", "dark"), ...){
   shade = match.arg(shade)
-  ggplot2::discrete_scale("fill","penguins",
-                          scales:::manual_pal(values = peng.colors(shade)), ...)
+  ggplot2::discrete_scale("fill", # "penguins",
+                          palette = scales:::manual_pal(values = peng.colors(shade)), ...)
 }
 
 scale_fill_penguins()
 
 scale_colour_penguins <- function(shade=c("medium", "light", "dark"), ...){
   shade = match.arg(shade)
-  ggplot2::discrete_scale("colour","penguins",
-                          scales:::manual_pal(values = peng.colors(shade)), ...)
+  ggplot2::discrete_scale("colour",# "penguins",
+                          palette = scales:::manual_pal(values = peng.colors(shade)), ...)
 }
 scale_color_penguins <- scale_colour_penguins
 

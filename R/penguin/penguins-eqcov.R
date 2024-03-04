@@ -7,34 +7,14 @@ library(effects)
 library(heplots)
 library(candisc)
 
-# 
-# library(palmerpenguins)
-# 
-# # clean up variable names, etc.
-# peng <- penguins %>%
-#   rename(
-#     bill_length = bill_length_mm, 
-#     bill_depth = bill_depth_mm, 
-#     flipper_length = flipper_length_mm, 
-#     body_mass = body_mass_g
-#   ) %>%
-#   mutate(species = as.factor(species),
-#          island = as.factor(island),
-#          sex = as.factor(substr(sex,1,1))) %>%
-#   filter(!is.na(bill_depth),
-#          !is.na(sex))
+# load(here::here("data", "peng.RData"))
+data(peng, package="heplots")
+source("R/penguin/penguin-colors.R")
 
-load(here::here("data", "peng.RData"))
-
-# ggplotColours <- function(n = 6, h = c(0, 360) + 15){
-#   if ((diff(h) %% 360) < 1) h[2] <- h[2] - 360/n
-#   hcl(h = (seq(h[1], h[2], length = n)), c = 100, l = 65)
-# }
-# 
 #' ## Initial scatterplots and data ellipses
 
-# use ggplot colors
-col <- scales::hue_pal()(3)
+# use penguin colors
+col <- peng.colors()
 pch <- 15:17
 
 op <- par(mfcol=c(1,2), mar=c(5,4,1,1)+.1)
@@ -70,16 +50,19 @@ covEllipses(cbind(bill_length, bill_depth) ~ species, data=peng,
 
 #' All pairs when more than two variables are specified
 #' They look pretty similar
+cols = c(peng.colors(), "black")
 covEllipses(peng[,3:6], peng$species, 
-            variables=1:4, 
-            fill=c(rep(FALSE,3), TRUE), 
+            variables=1:4,
+            col = cols,
+            fill=TRUE, 
             fill.alpha=.1)
 
 #' See diffs better by overlay at grand mean
 covEllipses(peng[,3:6], peng$species, 
             variables=1:4, 
+            col = cols,
             center=TRUE,
-            fill=c(rep(FALSE,3), TRUE), 
+            fill=TRUE, 
             label.pos=c(1:3,0), 
             fill.alpha=.1)
 
@@ -115,38 +98,48 @@ summary(peng.pca)
 
 #' Plot in space of PC1 & PC2
 op <- par(mfcol=c(1,2), mar=c(5,4,1,1)+.1)
+#cols = c(scales::hue_pal()(3), "black")
+cols = c(peng.colors(), "black")
 covEllipses(peng.pca$x, peng$species, 
-            fill=c(rep(FALSE,3), TRUE), 
+            col = cols,
+            fill= TRUE, 
             fill.alpha=.1,
             label.pos=1:4, asp=1)
 
 covEllipses(peng.pca$x, peng$species, 
+            col = cols,
             center=TRUE,
-            fill=c(rep(FALSE,3), TRUE), 
+            fill=TRUE, 
             fill.alpha=.1, 
             label.pos=1:4, asp=1)
 par(op)
 
 # all variables
 covEllipses(peng.pca$x, peng$species, 
+            col = cols,
             variables=1:4, 
-            fill=c(rep(FALSE,3), TRUE), 
+            fill=TRUE, 
             label.pos=1:4, fill.alpha=.1)
 
 covEllipses(peng.pca$x, peng$species, 
+            col = cols,
             center=TRUE,  
             variables=1:4, 
-            fill=c(rep(FALSE,3), TRUE), 
+            fill=TRUE, 
             label.pos=1:4, fill.alpha=.1)
 
 # Plot the last two, PC 3,4
+op <- par(mfcol=c(1,2), mar=c(5,4,1,1)+.1)
 covEllipses(peng.pca$x, peng$species, 
+            col = cols,
             variables=3:4, 
-            fill=c(rep(FALSE,3), TRUE), 
-            label.pos=c(1:3,0), fill.alpha=.1, asp=1)
+            fill=TRUE, 
+            label.pos=c(1, 3, 3, 0), fill.alpha=.1, asp=1)
 
 covEllipses(peng.pca$x, peng$species, 
+            col = cols,
             center=TRUE, 
             variables=3:4, 
             fill=c(rep(FALSE,3), TRUE), 
             label.pos=c(1:3,0), fill.alpha=.1, asp=1)
+par(op)
