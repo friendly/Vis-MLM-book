@@ -10,7 +10,6 @@ source("R/penguin/penguin-colors.R")
 
 peng_scaled <- scale(peng[,3:6])
 colnames(peng_scaled) <- c("BL", "BD", "FL", "BM")
-
 animate(peng_scaled, grand_tour(d = 2), display_xy())
 animate(peng_scaled, grand_tour(d = 3), display_depth())
 animate(peng_scaled, grand_tour(d = 4), display_pcp())
@@ -28,24 +27,32 @@ animate(peng_scaled,
 
 # how to get the right colors & legend?
 col <- peng.colors()[peng$species] 
-pch <- c(21, 22, 24)[peng$species] 
+pch <- c(15, 16, 17)[peng$species] 
 
+set.seed(1234)
 animate(peng_scaled,
         tour_path = grand_tour(d=2),
         display = display_xy(col = col,
                              pch = pch,
                              cex = 1.2))
+set.seed(1234)
+render_gif(peng_scaled,
+           tour_path = grand_tour(d=2),
+           display = display_xy(col = col,
+                                pch = pch,
+                                cex = 1.2),
+           gif_file = "images/peng-tourr-grand.gif")
 
 # making them factors gives legends, but without the species names
 col <- peng.colors()[peng$species] |> as.factor()
 pch <- c(21, 22, 24)[peng$species] |> as.factor()
 
+# grand tour
 animate(peng_scaled,
         tour_path = grand_tour(d=2),
         display = display_xy(col = col,
                              pch = pch,
                              cex = 1.2))
-
 
 # let's use holes()
 

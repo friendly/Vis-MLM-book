@@ -14,7 +14,7 @@ library(ggpubr)
 #load(here("data", "peng.RData"))
 data(peng, package = "heplots")
 source("R/penguin/penguin-colors.R")
-cols
+col <- peng.colors("dark")
 
 peng.mlm <- lm(cbind(bill_length, bill_depth, flipper_length, body_mass) ~ 
                  sex + species, data=peng)
@@ -79,9 +79,19 @@ peng |>
   as.data.frame() 
 
 op <- par(mar = c(4, 4, 2, 1) + .1)
-heplots::cqplot(peng.mlm, id.n = 3, conf=0.999,
-                main="Chi-Square QQ plot of residuals from peng.mlm")
+cqplot(peng.mlm, id.n = 3, conf=0.999,
+       main="Chi-Square QQ plot of residuals from peng.mlm")
 par(op)
+
+# color the points by species
+cqplot(peng.mlm, id.n = 3, conf=0.95,
+       col = col[peng$species],
+       main="Chi-Square QQ plot of residuals from peng.mlm")
+
+# which points are outliers?
+out <- c(10, 179, 283)
+peng[out,]
+
 
 #' One plot for each species
 op <- par(mfrow = c(1,3))
@@ -101,6 +111,11 @@ par(op)
 
 resids <- residuals(peng.mlm)
 heplots::cqplot(resids, id.n=3)
+
+# Try qqtest
+library(qqtest)
+qqtest(resids, dist = "chi-squared", df = 4)
+
 
 
 #' ## Check univariate normality (Shapiro-Wilks test)
