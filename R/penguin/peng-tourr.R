@@ -15,74 +15,116 @@ animate(peng_scaled, grand_tour(d = 3), display_depth())
 animate(peng_scaled, grand_tour(d = 4), display_pcp())
 
 
-
 # find all display methods
 grep("display", lsf.str("package:tourr"), value = TRUE)
+# all guided methods
+grep("guided", lsf.str("package:tourr"), value = TRUE)
 
-animate(peng_scaled,
-        tour_path = guided_tour(holes()),
-        display = display_xy(col = peng$species,
-                             palette = "Roma",
-                             cex = 1.5))
+# examples of guided tours
+animate(peng_scaled, guided_tour(holes()))        # optimize finding gaps
+animate(peng_scaled, guided_tour(lda_pp(group)))  # optimize separation of groups
+animate(peng_scaled, guided_anomaly_tour())       # optimize finding outliers
+
+
+# animate(peng_scaled,
+#         tour_path = guided_tour(holes()),
+#         display = display_xy(col = peng$species,
+#                              palette = peng.colors("dark"),
+#                              cex = 1.5))
 
 # how to get the right colors & legend?
-col <- peng.colors()[peng$species] 
+#col <- peng.colors()[peng$species] 
 pch <- c(15, 16, 17)[peng$species] 
+cex = 1.2
 
+#' ## Grand tour
+# |- Grand tour ---
 set.seed(1234)
 animate(peng_scaled,
         tour_path = grand_tour(d=2),
-        display = display_xy(col = col,
-                             pch = pch,
-                             cex = 1.2))
+        display = display_xy(col = peng$species,
+                             palette = peng.colors("dark"),
+                             pch = pch, cex = cex))
 set.seed(1234)
 render_gif(peng_scaled,
            tour_path = grand_tour(d=2),
-           display = display_xy(col = col,
-                                pch = pch,
-                                cex = 1.2),
-           gif_file = "images/peng-tourr-grand.gif")
+           display = display_xy(col = peng$species,
+                                palette = peng.colors("dark"),
+                                pch = pch, cex = cex),
+           gif_file = "images/tours/peng-tourr-grand.gif")
 
 # making them factors gives legends, but without the species names
-col <- peng.colors()[peng$species] |> as.factor()
-pch <- c(21, 22, 24)[peng$species] |> as.factor()
+#col <- peng.colors()[peng$species] |> as.factor()
+pch <- c(15,16,17)[peng$species] |> as.factor()
 
 # grand tour
+set.seed(1234)
 animate(peng_scaled,
         tour_path = grand_tour(d=2),
-        display = display_xy(col = col,
+        display = display_xy(col = peng$species,
+                             palette = peng.colors("dark"),
                              pch = pch,
-                             cex = 1.2))
+                             cex = cex))
 
-# let's use holes()
-
+# ## Guided tours
+#  --let's use holes() ---
+set.seed(1234)
 animate(peng_scaled,
         tour_path = guided_tour(holes()),
         display = display_xy(col = peng$species,
-                             cex = 1.5))
+                             palette = peng.colors("dark"),
+                             pch = pch,
+                             cex = cex))
+set.seed(1234)
+render_gif(peng_scaled,
+        tour_path = guided_tour(holes()),
+        display = display_xy(col = peng$species,
+                             palette = peng.colors("dark"),
+                             pch = pch,
+                             cex = cex),
+        gif_file = "images/tours/peng-tourr-holes.gif",
+        loop = 4)
 
-# use LDA
+# -- use LDA projection pursuit
+set.seed(1234)
 animate(peng_scaled, 
         guided_tour(lda_pp(peng$species)),
         display = display_xy(col = peng$species,
-                             cex = 1.5))
+                             palette = peng.colors("dark"),
+                             pch = pch,
+                             cex = cex))
+set.seed(1234)
 render_gif(peng_scaled, 
            guided_tour(lda_pp(peng$species)),
            display = display_xy(col = peng$species,
-                                cex = 1.5),
-           gif_file = "images/peng-tourr-lda.gif")
+                                palette = peng.colors("dark"),
+                                pch = pch,
+                                cex = cex),
+           gif_file = "images/tours/peng-tourr-lda.gif")
 
+# |- use anomalies ---
+animate(peng_scaled, 
+        guided_anomaly_tour(anomaly_index(), ellipse = cov(peng_scaled)),
+        display = display_xy(col = peng$species,
+                             palette = peng.colors("dark"),
+                             cex = 1.2))
+render_gif(peng_scaled, 
+           guided_anomaly_tour(anomaly_index(), ellipse = cov(peng_scaled)),
+           display = display_xy(col = peng$species,
+                                palette = peng.colors("dark"),
+                                cex = 1.2),
+           gif_file = "images/tours/peng-tourr-anomalies.gif")
 
 
 # save and animate as a planned tour
 hist1 <- save_history(peng_scaled, guided_tour(holes()), max = 5)
 animate(peng_scaled, planned_tour(hist1),
         display = display_xy(col = peng$species,
-                             cex = 1.5))
+                             cex = 1.2))
 
 render_gif(peng_scaled, planned_tour(hist1),
            display = display_xy(col = peng$species,
-                                cex = 1.5),
+                                cex = 1.2),
            gif_file = "images/peng-tourr-holes.gif")
 
 plot(path_index(interpolate(hist1), holes()))
@@ -91,12 +133,12 @@ plot(path_curves(interpolate(hist1)))
 animate(peng_scaled, 
         guided_tour(lda_pp(peng$species)),
         display = display_xy(col = col,
-                             cex = 1.5))
+                             cex = 1.2))
 
 render_gif(peng_scaled, 
         guided_tour(lda_pp(peng$species)),
         display = display_xy(col = col,
-                             cex = 1.5),
+                             cex = 1.2),
         gif_file = "images/peng-tourr-lda.gif",
         loop = 3)
 
