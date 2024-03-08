@@ -44,13 +44,19 @@ animate(peng_scaled,
         tour_path = grand_tour(d=2),
         display = display_xy(col = peng$species,
                              palette = peng.colors("dark"),
-                             pch = pch, cex = cex))
+                             pch = pch, cex = cex,
+                             axis.col = "black", 
+                             axis.text.col = "black", 
+                             axis.lwd = 1.5))
 set.seed(1234)
 render_gif(peng_scaled,
            tour_path = grand_tour(d=2),
            display = display_xy(col = peng$species,
                                 palette = peng.colors("dark"),
-                                pch = pch, cex = cex),
+                                pch = pch, cex = cex,
+                                axis.col = "black", 
+                                axis.text.col = "black", 
+                                axis.lwd = 1.5),
            gif_file = "images/tours/peng-tourr-grand.gif")
 
 # making them factors gives legends, but without the species names
@@ -81,9 +87,13 @@ render_gif(peng_scaled,
         display = display_xy(col = peng$species,
                              palette = peng.colors("dark"),
                              pch = pch,
-                             cex = cex),
+                             cex = cex,
+                             axis.col = "black", 
+                             axis.text.col = "black", 
+                             axis.lwd = 1.5),
         gif_file = "images/tours/peng-tourr-holes.gif",
-        loop = 4)
+        loop = 3)
+
 
 # -- use LDA projection pursuit
 set.seed(1234)
@@ -92,28 +102,53 @@ animate(peng_scaled,
         display = display_xy(col = peng$species,
                              palette = peng.colors("dark"),
                              pch = pch,
-                             cex = cex))
+                             cex = cex,
+                             axis.col = "black", 
+                             axis.text.col = "black", 
+                             axis.lwd = 1.5))
 set.seed(1234)
 render_gif(peng_scaled, 
            guided_tour(lda_pp(peng$species)),
            display = display_xy(col = peng$species,
                                 palette = peng.colors("dark"),
                                 pch = pch,
-                                cex = cex),
-           gif_file = "images/tours/peng-tourr-lda.gif")
+                                cex = cex,
+                                axis.col = "black", 
+                                axis.text.col = "black", 
+                                axis.lwd = 1.5),
+           gif_file = "images/tours/peng-tourr-lda.gif",
+           loop = 3)
+
+# wha does LDA show?
+MASS::lda(species ~ bill_length + bill_depth + flipper_length + body_mass, data=peng)
+
+
 
 # |- use anomalies ---
 animate(peng_scaled, 
         guided_anomaly_tour(anomaly_index(), ellipse = cov(peng_scaled)),
         display = display_xy(col = peng$species,
                              palette = peng.colors("dark"),
-                             cex = 1.2))
+                             pch = pch,
+                             cex = cex))
 render_gif(peng_scaled, 
            guided_anomaly_tour(anomaly_index(), ellipse = cov(peng_scaled)),
            display = display_xy(col = peng$species,
                                 palette = peng.colors("dark"),
-                                cex = 1.2),
-           gif_file = "images/tours/peng-tourr-anomalies.gif")
+                                pch = pch,
+                                cex = cex,
+                                axis.col = "black", 
+                                axis.text.col = "black", 
+                                axis.lwd = 1.5),
+           gif_file = "images/tours/peng-tourr-anomalies.gif",
+           loop = 3)
+
+# display_pca
+set.seed(1234)
+peng_pca <- prcomp(peng_scaled, center = FALSE)
+peng_scores <- peng_pca$x[, 1:3]
+peng_coefs <- peng_pca$rotation[, 1:3]
+animate_pca(peng_scores, pc_coefs = peng_coefs)
 
 
 # save and animate as a planned tour

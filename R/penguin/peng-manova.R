@@ -1,24 +1,30 @@
+#' ---
+#' title: Penguins MANOVA
+#' ---
+
 
 library(car)
 library(heplots)
 library(candisc)
+library(mvinfluence)
+library(dplyr)
 
 data(peng, package="heplots")
-contrasts(peng$species)<-matrix(c(1,-1,0, -1, -1, -2), 3,2)
+contrasts(peng$species) <- matrix(c(1,-1,0, -1, -1, -2), 3,2)
 contrasts(peng$species)
 
 
-peng.mod0 <-lm(cbind(bill_length, bill_depth, flipper_length, body_mass) ~
+peng.mod0 <- lm(cbind(bill_length, bill_depth, flipper_length, body_mass) ~
                  species, data=peng)
 Anova(peng.mod0)
 
 # all main effects
-peng.mod1 <-lm(cbind(bill_length, bill_depth, flipper_length, body_mass) ~
+peng.mod1 <- lm(cbind(bill_length, bill_depth, flipper_length, body_mass) ~
                  species + island + sex, data=peng)
 Anova(peng.mod1)
 
 # two-way interactions
-peng.mod2 <-lm(cbind(bill_length, bill_depth, flipper_length, body_mass) ~
+peng.mod2 <- lm(cbind(bill_length, bill_depth, flipper_length, body_mass) ~
                  species + island * sex, data=peng)
 Anova(peng.mod2)
 
@@ -71,6 +77,25 @@ plot(bm)
 (peng.can0 <- candisc(peng.mod0))
 
 (peng.can1 <- candisc(peng.mod1))
+
+# influence
+res <- influencePlot(peng.mod0, id.n=3, type="stres")
+
+loc <- merge(peng, res, 
+              by = "row.names") |>
+  group_by(species) |>
+  slice(1) |>
+  ungroup() |>
+  select(species, H)
+text(loc$H, 0.10, loc$species, xpd=TRUE)
+
+
+  
+
+influencePlot(peng.mod0, id.n=3, type="LR")
+
+influencePlot(peng.mod1, id.n=4, type="stres")
+influencePlot(peng.mod0, id.n=4, type="stres")
 
 
 
