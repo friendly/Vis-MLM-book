@@ -4,6 +4,7 @@
 
 library(here)
 library(dplyr)
+library(tidyr)
 library(ggplot2)
 library(car)
 #library(effects)
@@ -79,18 +80,76 @@ peng |>
   as.data.frame() 
 
 op <- par(mar = c(4, 4, 2, 1) + .1)
-cqplot(peng.mlm, id.n = 3, conf=0.999,
+cqplot(peng.mlm, id.n = 3, conf=0.95,
        main="Chi-Square QQ plot of residuals from peng.mlm")
 par(op)
 
 # color the points by species
-cqplot(peng.mlm, id.n = 3, conf=0.95,
-       col = col[peng$species],
+op <- par(mar = c(5,4, 3, 1)+.1)
+ids <- cqplot(peng.mlm, id.n = 3 , conf=0.95,
+       col = col[peng$species], 
+       cex = 1.3, id.cex = 1.4,
        main="Chi-Square QQ plot of residuals from peng.mlm")
 
+# detrend
+cqplot(peng.mlm, id.n = 3 , conf=0.95, detrend = TRUE,
+       col = col[peng$species], 
+       cex = 1.3, id.cex = 1.4,
+       main="Chi-Square QQ plot of residuals from peng.mlm",
+       ylim = c(-6, 20))
+par(op)
+
+
 # which points are outliers?
-out <- c(10, 179, 283)
-peng[out,]
+#out <- c(10, 179, 283)
+out <- rownames(ids)
+outliers <- peng[out,] |>
+#  tibble::rownames_to_column() |>
+  mutate(across(bill_length:body_mass,  ~ scale(.)[,1])) |>     # scale w/in group?
+  bind_cols(id = rownames(ids)) |>
+  bind_cols(ids) |>
+  rename(BL = bill_length, BD = bill_depth, FL = flipper_length, BM = body_mass) |>
+  relocate(id:quantile)
+
+outliers
+
+# show outliers in plots
+peng.dsq <- peng |>
+  tibble::rownames_to_column(var = "id") |>
+  mutate(DSQ = Mahalanobis(residuals(peng.mlm)),
+         pvalue = pchisq(DSQ, df=4, lower.tail = FALSE)) 
+
+peng.dsq |>
+  ggplot(aes(x = bill_length, y = bill_depth,
+           color = species, shape = species, fill=species)) +
+  geom_point(size=1.7) +
+  geom_smooth(method = "lm", formula = y ~ x,
+              se=FALSE, linewidth=1.2) +
+  stat_ellipse(geom = "polygon", level = 0.95, alpha = 0.2) +
+  geom_label(aes(label = id),
+             fill = "white",
+            nudge_y = 0.3,
+            data = subset(peng.dsq, pvalue < 0.005)) +
+  theme_penguins +
+  theme(legend.position = "inside",
+        legend.position.inside=c(0.85, 0.15))
+
+peng.dsq |>
+  ggplot(aes(x = bill_length, y = flipper_length,
+             color = species, shape = species, fill=species)) +
+  geom_point(size=1.7) +
+  geom_smooth(method = "lm", formula = y ~ x,
+              se=FALSE, linewidth=1.2) +
+  stat_ellipse(geom = "polygon", level = 0.95, alpha = 0.2) +
+  geom_label(aes(label = id), 
+             fill = scales::alpha("white", 0.2),
+             nudge_y = 1.5,
+             data = subset(peng.dsq, pvalue < 0.005)) +
+  theme_penguins +
+  theme(legend.position = "inside",
+        legend.position.inside=c(0.05, 0.85))
+
+
 
 
 #' One plot for each species
@@ -110,7 +169,7 @@ par(op)
 #' But this is the same as plotting the MLM
 
 resids <- residuals(peng.mlm)
-heplots::cqplot(resids, id.n=3)
+ids <- heplots::cqplot(resids, id.n=3)
 
 # Try qqtest
 library(qqtest)
