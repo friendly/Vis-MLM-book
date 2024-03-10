@@ -8,7 +8,8 @@ library(effects)
 library(heplots)
 library(candisc)
 
-load(here::here("data", "peng.RData"))
+#load(here::here("data", "peng.RData"))
+data(peng, package = "heplots")
 source("R/penguin/penguin-colors.R")
 
 # use ggplot colors
@@ -17,6 +18,7 @@ pch <- 15:17
 
 col <- peng.colors("medium")
 # basic scatterplot
+op <- par(mar = c(5, 4, 0, 0) + .1)
 scatterplot(bill_length ~ body_mass | species, data=peng,
             smooth=FALSE, regLine=FALSE, 
             grid=FALSE,
@@ -37,10 +39,11 @@ scatterplot(bill_length ~ body_mass | species, data=peng,
 scatterplot(bill_length ~ body_mass | species, data=peng,
             smooth=FALSE, regLine=TRUE, 
             ellipse=list(levels=0.68), 
-            grid=FALSE,
-            legend=list(coords = "bottomright"), 
+            grid=FALSE, 
+            legend=list(coords = "bottomright"), pch=pch,
             col = col, cex = 0, cex.lab = 1.5
 )
+par(op)
 
 
 

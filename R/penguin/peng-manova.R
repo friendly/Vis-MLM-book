@@ -80,6 +80,7 @@ plot(bm)
 
 # influence
 res <- influencePlot(peng.mod0, id.n=3, type="stres")
+res |> arrange(desc(CookD))
 
 loc <- merge(peng, res, 
               by = "row.names") |>
@@ -89,10 +90,18 @@ loc <- merge(peng, res,
   select(species, H)
 text(loc$H, 0.10, loc$species, xpd=TRUE)
 
+res <- influencePlot(peng.mod0, id.n=3, type="LR")
+loc <- merge(peng, res, 
+             by = "row.names") |>
+  group_by(species) |>
+  slice(1) |>
+  ungroup() |>
+  select(species, L) |>
+  mutate(logL = log(L))
+text(loc$logL, -2, loc$species, xpd=TRUE)
 
-  
+res <- influencePlot(peng.mod0, id.n=3, type="cookd")
 
-influencePlot(peng.mod0, id.n=3, type="LR")
 
 influencePlot(peng.mod1, id.n=4, type="stres")
 influencePlot(peng.mod0, id.n=4, type="stres")
