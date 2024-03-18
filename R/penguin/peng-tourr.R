@@ -10,6 +10,8 @@ source("R/penguin/penguin-colors.R")
 
 peng_scaled <- scale(peng[,3:6])
 colnames(peng_scaled) <- c("BL", "BD", "FL", "BM")
+
+# illustrating tour dimensions and display methods
 animate(peng_scaled, grand_tour(d = 2), display_xy())
 animate(peng_scaled, grand_tour(d = 3), display_depth())
 animate(peng_scaled, grand_tour(d = 4), display_pcp())
@@ -42,26 +44,26 @@ cex = 1.2
 set.seed(1234)
 animate(peng_scaled,
         tour_path = grand_tour(d=2),
-        display = display_xy(col = peng$species,
-                             palette = peng.colors("dark"),
-                             pch = pch, cex = cex,
-                             axis.col = "black", 
-                             axis.text.col = "black", 
-                             axis.lwd = 1.5))
+        display_xy(col = peng$species,
+                   palette = peng.colors("dark"),
+                   pch = pch, cex = cex,
+                   axis.col = "black", 
+                   axis.text.col = "black", 
+                   axis.lwd = 1.5))
 set.seed(1234)
 render_gif(peng_scaled,
            tour_path = grand_tour(d=2),
-           display = display_xy(col = peng$species,
-                                palette = peng.colors("dark"),
-                                pch = pch, cex = cex,
-                                axis.col = "black", 
-                                axis.text.col = "black", 
-                                axis.lwd = 1.5),
+           display_xy(col = peng$species,
+                      palette = peng.colors("dark"),
+                      pch = pch, cex = cex,
+                      axis.col = "black", 
+                      axis.text.col = "black", 
+                      axis.lwd = 1.5),
            gif_file = "images/tours/peng-tourr-grand.gif")
 
 # making them factors gives legends, but without the species names
 #col <- peng.colors()[peng$species] |> as.factor()
-pch <- c(15,16,17)[peng$species] |> as.factor()
+#pch <- c(15,16,17)[peng$species] |> as.factor()
 
 # grand tour
 set.seed(1234)
@@ -127,19 +129,20 @@ MASS::lda(species ~ bill_length + bill_depth + flipper_length + body_mass, data=
 # |- use anomalies ---
 animate(peng_scaled, 
         guided_anomaly_tour(anomaly_index(), ellipse = cov(peng_scaled)),
-        display = display_xy(col = peng$species,
-                             palette = peng.colors("dark"),
-                             pch = pch,
-                             cex = cex))
+        display_xy(col = peng$species,
+                   palette = peng.colors("dark"),
+                   pch = pch,
+                   cex = cex))
+
 render_gif(peng_scaled, 
            guided_anomaly_tour(anomaly_index(), ellipse = cov(peng_scaled)),
-           display = display_xy(col = peng$species,
-                                palette = peng.colors("dark"),
-                                pch = pch,
-                                cex = cex,
-                                axis.col = "black", 
-                                axis.text.col = "black", 
-                                axis.lwd = 1.5),
+           display_xy(col = peng$species,
+                      palette = peng.colors("dark"),
+                      pch = pch,
+                      cex = cex,
+                      axis.col = "black", 
+                      axis.text.col = "black", 
+                      axis.lwd = 1.5),
            gif_file = "images/tours/peng-tourr-anomalies.gif",
            loop = 3)
 
