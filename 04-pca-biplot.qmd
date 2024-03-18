@@ -11,21 +11,23 @@ knitr::opts_chunk$set(fig.path = "figs/ch04/")
 
 There was a cloud in the sky above _Flatland_ one day. But it was a huge, multidimensional cloud of sparkly points that might contain some important message, perhaps like the hidden EUREKA (@fig-pollen-eureka-fig), or perhaps forecasting the upcoming harvest, if only Flatlanders could appreciate it. 
 
+<!-- UDI: the reference for @fig-pollen-eureka-fig in the paragraph above does not work. I was looking for the right fig, but the is none of that exact same name under images or figs. Do you mean pollen-eurekea.gif? -->
+
 A leading citizen, A SQUARE, who had traveled once to 
 Spaceland and therefore had an inkling of its majesty beyond the simple world of his life in the plane looked at that cloud and had a brilliant thought, an OMG moment:
 
-> "Oh, can I, in my imagination, rotate that cloud and squeeze its' juice so that it rains down on Flatland with greatest joy?"
+> "Oh, can I, in my imagination, rotate that cloud and squeeze its juice so that it rains down on Flatland with greatest joy?"
 
 As it happened, our Square friend, although he could never really _see_ in three dimensions, he could now 
 at least _think_ of a world described by **height** as well as breadth and width, and think of the
 **shadow** cast by a cloud as something mutable, changing size and shape depending on its' orientation over Flatland.
 
 And what a world it was, inhabited by
-Pryamids, Cubes and wondrous creatures called Polyhedrons with many $C$orners, $F$aces and $E$dges.
+Pyramids, Cubes and wondrous creatures called Polyhedrons with many $C$orners, $F$aces and $E$dges.
 Not only that, but all those Polyhedra were forced in Spaceland to obey a magic formula:
 $C + F - E = 2$.[^1-euler] How cool was that!
 
-[^1-euler]: This is Euler's [-@Euler:1758] formula, which states that any convex polyheron must obey the formula $V + F - E = 2$ where $V$ is the number of vertexes (corners), $F$ is the number of faces and $E$ is the number of edges.  For example, a tetrahedron
+[^1-euler]: This is Euler's [-@Euler:1758] formula, which states that any convex polyhedron must obey the formula $V + F - E = 2$ where $V$ is the number of vertexes (corners), $F$ is the number of faces and $E$ is the number of edges.  For example, a tetrahedron
 or pyramid has $(V, F, E) = (4, 4, 6)$ and a cube has $(V, F, E) = (8, 6, 12)$. Stated in words,
 for all solid bodies confined by planes, the sum of the number of vertexes and the number of faces is two less than the number of edges.
 
@@ -53,8 +55,8 @@ The former did so by **projecting** the data into sets of 2D views in the coordi
 space; the latter did so by providing multiple axes in a 2D space along which we could trace
 the paths of individual observations.
 
-This chapter is about seeing data in a different projection, a low-dimensional, usually 2D, space
-that which squeezes out the most juice
+This chapter is about seeing data in a different projection, a low-dimensional (usually 2D) space
+that squeezes out the most juice
 from multidimensional data for a particular purpose (@fig-MV-juicer), where what we want to
 understand can be more easily seen.
 
@@ -80,14 +82,14 @@ relate to this space. For exploratory analysis to get an initial, incisive view 
 a multivariate dataset, a biplot is often my first choice.
 
 ::: {.callout-note title="Looking ahead"}
-I'm using the term _multivariate juicer_ here to refer the wider class of **dimension reduction** techniques,  used for various purposes in data analysis and visualization. Principal components analysis is the simplest example and illustrates the general ideas.
+I'm using the term _multivariate juicer_ here to refer the wider class of **dimension reduction** techniques, used for various purposes in data analysis and visualization. PCA is the simplest example and illustrates the general ideas.
 
 The key point is that these methods are designed to transform the data into a low-dimensional space for a particular goal or purpose. In PCA, the goal is to extract the greatest amount of total variability in the data. In the context of univariate multiple regression, the goal is often to reduce the number of predictors necessary to account for an outcome variable, called _feature extraction_ in the machine learning literature.
 
 When the goal is to best distinguish among groups **discriminant analysis** finds uncorrelated weighted sums of
 predictors on which the means of groups are most widely separated in a reduced space of hopefully fewer dimensions.
 
-The methods I cover in this book are all linear methods, but there is also a wide variety of non-linear dimension reduction techniques ...
+The methods I cover in this book are all linear methods, but there is also a wide variety of non-linear dimension reduction techniques.
 
 :::
 
@@ -106,7 +108,7 @@ library(factoextra)
 ```
 
 
-## Principal components analysis {#sec-pca}
+## Principal components analysis (PCA) {#sec-pca}
 
 When Francis Galton [-@Galton:1886] first discovered the idea of regression toward the mean
 and presented his famous diagram (@fig-galton-corr), he had little thought that he had provided a
@@ -117,7 +119,7 @@ regression and a measure of correlation that would bear his name, Pearson's $r$.
 But then Pearson [-@Pearson:1901] had a further inspiration, akin to that of A Square. 
 If he also had a cloud of sparkly points in $2, 3, 4, ..., p$ dimensions, could he find a
 point ($0D$), or line ($1D$), or plane ($2D$), or even a hyperplane ($nD$) that best summarized ---
-squeezed out the most juice---from multivariate data? This was the first trully multivariate
+squeezed out the most juice---from multivariate data? This was the first truly multivariate
 problem in the history of statistics [@FriendlyWainer:2021:TOGS, p. 186].
 
 The best $0D$ point was easy--- it was simply the centroid, the means of each of the
@@ -159,13 +161,13 @@ with the largest average squared distance.
 knitr::include_graphics("images/Pearson1901_2.png")
 ```
 
-Even more importantly--- and this is the basis for what we call **principal components analysis** (PCA)--- he recognized that the two orthogonal axes of the ellipse gave new coordinates for the data which were uncorrelated, whatever the correlation of $x$ and $y$.
+Even more importantly--- and this is the basis for PCA --- he recognized that the two orthogonal axes of the ellipse gave new coordinates for the data which were uncorrelated, whatever the correlation of $x$ and $y$.
 
 > Physically, the axes of the correlation type-ellipse are the directions of independent and uncorrelated variation. --- @Pearson:1901, p. 566.
 
 It was but a small step to recognize that for two variables, $x$ and $y$:
 
-* the line of best fit, the major axis (PC1) had the greatest variance of points projected onto it;
+* The line of best fit, the major axis (PC1) had the greatest variance of points projected onto it;
 * the line of worst fit, the minor axis (PC2), had the least variance;
 * these could be seen as a rotation of the data space of $(x, y)$ to a new space (PC1, PC2) with uncorrelated variables;
 * the total variation of the points in data space, $\text{Var}(x) + \text{Var}(y)$, being unchanged by rotation, was equally well expressed as the total variation $\text{Var}(PC1) + \text{Var}(PC2)$ of the scores on what are
@@ -208,15 +210,15 @@ $\Sigma_i (x_i - \bar{x})$ is zero, so the mean can be visualized as the point o
 those differences $(x_i - \bar{x})$ are placed. Equally well, there is a physical realization of the mean
 as the point along an axis where weights connected by springs will minimize the sum of squared differences,
 because springs with a constant stiffness, $k$, exert forces proportional to $k (x_i - \bar{x}) ^2$. That's
-the reason is useful as a measure of central tendency: it minimizes the average squared error.
+the reason it is useful as a measure of central tendency: it minimizes the average squared error.
 
 In two dimensions, imagine that we have points, $(x_i, y_i)$ and these are attached by springs of equal stiffness $k$, to a line anchored at the centroid, $(\bar{x}, \bar{y})$ as shown in @fig-pca-springs. 
 If we rotate the line to some initial position and release it, the springs will pull the line clockwise or counterclockwise and the line will bounce around until the forces, proportional to the squares of the lengths of the springs, will eventually balance out at the position 
 (shown by the `r colorize("red")` fixed line segments at the ends). This is the position that minimizes the
 the sum of squared lengths of the connecting springs, and also minimizes the kinetic energy in the system.
 
-If you look closely at @fig-pca-springs you will see something else: When the line is at its' final position of minimum
-squared length and energy, the positions of the `r colorize("red")` points on this line are spread out furthest, i.e., have **maximum** variance. Conversely, when the line line is at right angles to its' final position (shown by the black line at 90$^o$) the projected points have the smallest possible variance.
+If you look closely at @fig-pca-springs you will see something else: When the line is at its final position of minimum
+squared length and energy, the positions of the `r colorize("red")` points on this line are spread out furthest, i.e., have **maximum** variance. Conversely, when the line is at right angles to its final position (shown by the black line at 90$^o$) the projected points have the smallest possible variance.
 
 ::: {#fig-pca-springs}
 <div align="center">
@@ -228,12 +230,12 @@ Animation of PCA fitted by springs. The `r colorize("blue")` data points are con
 
 <!-- See: https://joshualoftus.com/posts/2020-11-23-least-squares-as-springs/least-squares-as-springs.html -->
 
-**TODO**: Simple PCA example using workers data
+<!-- **TODO**: Simple PCA example using workers data -->
 
 ### Mathematics and geometry of PCA
 
 As the ideas of principal components developed, there was a happy marriage of Galton's geometrical intuition and Pearson's mathematical analysis. The best men at the wedding were ellipses and
-higher-dimensional ellipsoids. The brides maids were eigenvectors, pointing in as many
+higher-dimensional ellipsoids. The bridesmaids were eigenvectors, pointing in as many
 different directions as space would allow, each sized according to their associated eigenvalues.
 Attending the wedding were the ghosts of uncles, Leonhard Euler, Jean-Louis Lagrange,
 Augustin-Louis Cauchy and others who had earlier discovered the mathematical properties
@@ -301,11 +303,11 @@ of the eigenvalues.
 #| fig-cap: "Geometry of PCA as a rotation from data space to principal component space, defined by the eigenvectors v1 and v2 of a covariance matrix"
  knitr::include_graphics("images/pca-rotation.png")
 ```
-
+<!-- UDI: I like this figure, but I would change the blue curved arrow. What do you think? I can put together a few drafts using Inkscape. Let me know if you agree and if you have any suggestions. -->
 
 ### Finding principal components
 
-In R, principal components analysis is most easily carried out using `stats::prcomp()` or `stats::princomp()`
+In R, PCA is most easily carried out using `stats::prcomp()` or `stats::princomp()`
 or similar functions in other packages such as `FactomineR::PCA()`.
 The **FactoMineR** package [@R-FactoMineR; @Husson-etal-2017] 
 has extensive capabilities for exploratory analysis of multivariate data (PCA, correspondence analysis, cluster analysis).  
@@ -332,17 +334,17 @@ versus analysis of the covariance matrix, where each variable contributes its
 own variance to the total. Analysis of the covariance matrix makes little sense
 when the variables are measured on different scales.[^pca-scales]
 
-[^pca-scales]: For example, if two variables in the analysis are height and weight, changing the unit of height from inches to centimeters would multiply its' variance by $2.54^2$; changing weight from pounds to kilograms would divide its' variance by $2.2^2$.
+[^pca-scales]: For example, if two variables in the analysis are height and weight, changing the unit of height from inches to centimeters would multiply its variance by $2.54^2$; changing weight from pounds to kilograms would divide its variance by $2.2^2$.
 
 #### Example: Crime data {.unnumbered}
 
 The dataset `crime`, analysed in @sec-corrgram, showed all positive correlations among the rates of various
-crimes in the corrgram, @fig-crime-corrplot. What can we see from a principal components analysis?
+crimes in the corrgram, @fig-crime-corrplot. What can we see from a PCA?
 Is it possible that a few dimensions can account for most of the juice in this data?
 
 In this example, you can easily find the PCA solution using `prcomp()` in a single line in base-R.
 You need to specify the numeric variables to analyze by their columns in the data frame.
-The most important option here is `scale. = TRUE` ...
+The most important option here is `scale. = TRUE`.
 
 ```{r crime-pca0}
 #| eval: false
