@@ -370,6 +370,10 @@ In this, `index_f` specifies a function that the method tries to optimize on its
 * Linear discriminant analysis (`lda_pp()`): For data with a grouping factor, optimizes a measure of separation of the group means as in MANOVA or linear discriminant analysis.
 * PDA analysis (`pda_pp()`): A penalized version of `lda_pp()` for cases of large $p$ relative to sample size $n$ [@LeeCook-2009].
 
+In addition, there is now a `guided_anomaly_tour()`  that looks for the best projection of
+observations that are outside the data ellipsoid, finding a view showing observations with large
+Mahalanobis distances from the centroid.
+
 
 #### Penguin tours
 
@@ -446,34 +450,56 @@ knitr::include_graphics("images/tours/peng-tourr-grand.gif")
 ```
 :::
 
-What did you see? @fig-peng-tour-grand-frames shows three frames from this movie. ...
+What do you see? @fig-peng-tour-grand-frames shows three frames from this movie.
+The first (a) is the initial frame that shows the projection in the plane of
+bill depth and bill length. The variable vectors indicate that bill length
+differentiates Adelie penguins from the others. In frame (b), the three species
+are widely separated, with bill depth distinguishing Gentoo from the others.
+In frame (c) the three species are largely mixed, but two points stand out as
+outliers, with exceptionally long bills compared to the rest.
 
-::: {#fig-peng-tour-grand-frames layout-ncol=3}
-![Initial frame](images/tours/peng-grand-tour1.png){#fig-peng-grand-tour1 width=150}
+```{r}
+#| label: fig-peng-tour-grand-frames
+#| layout-ncol: 3
+#| echo: false
+#| out-width: "100%"
+#| fig-cap: "Three frames from the grand tour of the Penguin data. (a) The initial frame is the projection showing only BD and BL, where bill length conveniently separates Adelie from the other two species. (b) A frame that shows the three species more widely separated. (c) A frame that shows two outliers."
+#| fig-subcap: 
+#|  - "Initial frame"
+#|  - "Clusters"
+#|  - "Outliers"
+knitr::include_graphics("images/tours/peng-grand-tour1.png")
+knitr::include_graphics("images/tours/peng-grand-tour2.png")
+knitr::include_graphics("images/tours/peng-grand-tour3.png")
+```
 
-![Clusters](images/tours/peng-grand-tour2.png){#fig-peng-grand-tour2 width=150}
-![Outliers](images/tours/peng-grand-tour3.png){#fig-peng-grand-tour3 width=150}
 
-Three frames from the grand tour of the Penguin data. (a) The initial frame is the projection showing only
-BD and BL, where bill length conveniently separates Adelie from the other two species.
-(b) A frame that shows the three species more widely separated. (c) A frame that shows two outliers.
-<!-- Frames from 2D tours on two 5D datasets, with clusters of points in (a) and two outliers with a plane in (b). This figure is best viewed in the HTML version of the book. -->
-:::
+<!-- ::: {#fig-peng-tour-grand-frames layout-ncol=3} -->
+
+<!-- ![Initial frame](images/tours/peng-grand-tour1.png){#fig-peng-grand-tour1 width=140} -->
+
+<!-- ![Clusters](images/tours/peng-grand-tour2.png){#fig-peng-grand-tour2 width=140} -->
+<!-- ![Outliers](images/tours/peng-grand-tour3.png){#fig-peng-grand-tour3 width=140} -->
+
+<!-- Three frames from the grand tour of the Penguin data. (a) The initial frame is the projection showing only -->
+<!-- BD and BL, where bill length conveniently separates Adelie from the other two species. -->
+<!-- (b) A frame that shows the three species more widely separated. (c) A frame that shows two outliers. -->
+<!-- ::: -->
 
 
-Let's take the penguins on a guide tour, trying to find views that show the greatest separations among the 
+Let's take the penguins on a guided tour, trying to find views that show the greatest separations among the 
 penguin species; that is, a guided tour, optimizing the `lda_pp()` index.
 
 ```{r}
 #| eval: false
-data(peng, package = "heplots")
-peng_scaled <- scale(peng[,3:6])
-colnames(peng_scaled) <- c("BL", "BD", "FL", "BM")
-
+set.seed(1234)
 animate(peng_scaled, 
         guided_tour(lda_pp(peng$species)),
-        display = display_xy(col = col,
-                             cex = 1.5))
+        display_xy(col = peng$species,
+                   palette = peng.colors("dark"),
+                   pch = pch,
+                   cex = cex)
+)
 ```
 
 
@@ -482,16 +508,47 @@ animate(peng_scaled,
 #| label: fig-peng-tour-lda
 #| out-width: "75%"
 #| echo: false
-#| fig-cap: "Animation of a guided tour of the Penguin data, using a tour criterion designed to find an optimal separation among the penguin species."
+#| fig-cap: "Animation of a guided tour of the Penguin data, using a tour criterion designed to find an optimal separation among the penguin species. The animation shows three loops of the sequence of projections and stops when the LDA criterion cannot be improved."
 knitr::include_graphics("images/tours/peng-tourr-lda.gif")
 ```
 :::
 
-This example was intended to highlight what is possible with dynamic graphics for exploring high-dimensional data visually. But it also illustrates limitations in implementation in **tourr**.
-Ideally, we should be able interact with a tour, pausing when we see something interesting and saving the view
-for later analysis; selecting or highlighting unusual points, ...
+**TODO**: I'm trying to balance what will/can be shown in the HTML version vs. the printed PDF.
+Needs text here specifically for the PDF version.
 
-Actually, that was done in Ggobi ...
-There is a **tourGUI** package ...
+```{r}
+#| label: fig-peng-tour-guided
+#| layout-ncol: 2
+#| echo: false
+#| out-width: "100%"
+#| fig-cap: "**Guided tours**: These figures show the final frame in the animations of guided tours designed to find the projection that optimize an index."
+#| fig-subcap: 
+#|  - "optimizing `lda_pp()`"
+#|  - "Optimizing `anomaly_index()`"
+knitr::include_graphics("images/tours/peng-tour-lda-final.png")
+knitr::include_graphics("images/tours/peng-tour-anomalies-final.png")
+```
+
+
+These examples are intended to highlight what is possible with dynamic graphics for exploring high-dimensional data visually. 
+@CookLaa-mulgar extend the discussion of these methods from @CookSwayne:2007 using Ggobi
+to the **tourr** package and illustrate dimension reduction, various cluster analysis methods,
+trees and random forests and some machine-learning techniques.
+
+**TODO**: Clean up these package references. I'm linking to the pkgdown sites, b/c I don't have them installed and can't easily get a `citation()`. 
+
+Ideally, we should be able interact with a tour, pausing when we see something interesting and saving the view
+for later analysis; selecting or highlighting unusual points, changing tour methods or variables displayed
+on the fly, and so forth.
+Some packages that provide these capabilities are: 
+[**detourr**](https://casperhart.github.io/detourr/index.html),
+[**liminal**](https://sa-lee.github.io/liminal/),
+and
+[**langevitour**](https://logarithmic.net/langevitour/index.html).
+The **loon** package [@R-loon]
+is a general toolkit that enables highly interactive data visualization.
+It provides a **loon.tour** package [@R-loon-tour] for using touring methods within the `loon` environment.
+
+
 
 

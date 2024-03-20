@@ -75,54 +75,56 @@ animate(peng_scaled,
                              cex = cex))
 
 # ## Guided tours
-#  --let's use holes() ---
-set.seed(1234)
-animate(peng_scaled,
-        tour_path = guided_tour(holes()),
-        display = display_xy(col = peng$species,
-                             palette = peng.colors("dark"),
-                             pch = pch,
-                             cex = cex))
-set.seed(1234)
-render_gif(peng_scaled,
-        tour_path = guided_tour(holes()),
-        display = display_xy(col = peng$species,
-                             palette = peng.colors("dark"),
-                             pch = pch,
-                             cex = cex,
-                             axis.col = "black", 
-                             axis.text.col = "black", 
-                             axis.lwd = 1.5),
-        gif_file = "images/tours/peng-tourr-holes.gif",
-        loop = 3)
-
 
 # -- use LDA projection pursuit
 set.seed(1234)
 animate(peng_scaled, 
         guided_tour(lda_pp(peng$species)),
-        display = display_xy(col = peng$species,
-                             palette = peng.colors("dark"),
-                             pch = pch,
-                             cex = cex,
-                             axis.col = "black", 
-                             axis.text.col = "black", 
-                             axis.lwd = 1.5))
+        display_xy(col = peng$species,
+                   palette = peng.colors("dark"),
+                   pch = pch,
+                   cex = cex,
+                   axis.col = "black", 
+                   axis.text.col = "black", 
+                   axis.lwd = 1.5))
 set.seed(1234)
 render_gif(peng_scaled, 
            guided_tour(lda_pp(peng$species)),
-           display = display_xy(col = peng$species,
-                                palette = peng.colors("dark"),
-                                pch = pch,
-                                cex = cex,
-                                axis.col = "black", 
-                                axis.text.col = "black", 
-                                axis.lwd = 1.5),
+           display_xy(col = peng$species,
+                      palette = peng.colors("dark"),
+                      pch = pch,
+                      cex = cex,
+                      axis.col = "black", 
+                      axis.text.col = "black", 
+                      axis.lwd = 1.5),
            gif_file = "images/tours/peng-tourr-lda.gif",
            loop = 3)
 
 # wha does LDA show?
 MASS::lda(species ~ bill_length + bill_depth + flipper_length + body_mass, data=peng)
+
+#  --let's use holes() ---
+set.seed(1234)
+animate(peng_scaled,
+        tour_path = guided_tour(holes()),
+        display_xy(col = peng$species,
+                   palette = peng.colors("dark"),
+                   pch = pch,
+                   cex = cex))
+set.seed(1234)
+render_gif(peng_scaled,
+        tour_path = guided_tour(holes()),
+        display_xy(col = peng$species,
+                   palette = peng.colors("dark"),
+                   pch = pch,
+                   cex = cex,
+                   axis.col = "black", 
+                   axis.text.col = "black", 
+                   axis.lwd = 1.5),
+        gif_file = "images/tours/peng-tourr-holes.gif",
+        loop = 3)
+
+
 
 
 
