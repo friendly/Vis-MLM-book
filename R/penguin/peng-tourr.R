@@ -3,7 +3,6 @@
 # library(ggplot2)
 library(tourr)
 
-#setwd("C:/R/Projects/Vis-MLM-book")
 #load(here::here("data", "peng.RData"))
 data(peng, package = "heplots")
 source("R/penguin/penguin-colors.R")
@@ -147,6 +146,23 @@ render_gif(peng_scaled,
                       axis.lwd = 1.5),
            gif_file = "images/tours/peng-tourr-anomalies.gif",
            loop = 3)
+
+# what about maximizing the variance of D^2?
+anomaly_index2 <-function () 
+{
+  function(mat, ell2d) {
+    mat_tab <- var(sqrt(mahalanobis(mat, center = c(0, 0), 
+                                     cov = ell2d)))
+  }
+}
+
+animate(peng_scaled, 
+        guided_anomaly_tour(anomaly_index2(), ellipse = cov(peng_scaled)),
+        display_xy(col = peng$species,
+                   palette = peng.colors("dark"),
+                   pch = pch,
+                   cex = cex))
+
 
 # display_pca
 set.seed(1234)
