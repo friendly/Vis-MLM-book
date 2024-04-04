@@ -35,3 +35,25 @@ plt + geom_label(data = centroids,
                  nudge_y = 0.2)
 
 
+# What about 3D?
+library(biplot2d3d)
+# only works with princomp()
+diab.princomp <- 
+  Diabetes |> 
+  dplyr::select(where(is.numeric)) |>
+  princomp(cor = TRUE)
+
+
+biplot_3d(diab.princomp,
+          groups = Diabetes$group,
+          detach_arrows = FALSE,
+          show_fitAnalysis = FALSE,
+          group_representation = "ellipsoid",
+          group_legend_title = "Group")
+# Error in if (nrow(loadings) > 0) { : argument is of length zero
+
+library(compositions)
+biplot3D(diab.princomp)
+
+
+
