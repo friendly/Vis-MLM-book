@@ -10,13 +10,13 @@ diab.pca <-
   prcomp(scale. = TRUE)
 
 plt <- ggbiplot(diab.pca,
-         obs.scale = 1, var.scale = 1,
-         groups = Diabetes$group,
-         labels.size = 4,
-         var.factor = 1.4,
-         ellipse = TRUE, ellipse.level = 0.5, ellipse.alpha = 0.1,
-         circle = TRUE,
-         varname.size = 4) +
+     obs.scale = 1, var.scale = 1,
+     groups = Diabetes$group,
+     var.factor = 1.4,
+     ellipse = TRUE, 
+     ellipse.prob = 0.5, ellipse.alpha = 0.1,
+     circle = TRUE,
+     varname.size = 4) +
   labs(fill = "Group", color = "Group") +
   theme_minimal(base_size = 14) +
   theme(legend.position = "none")

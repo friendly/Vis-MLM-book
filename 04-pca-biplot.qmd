@@ -613,7 +613,7 @@ whose $n$ rows are the observations and whose $p$ columns are the variables.
 #| label: fig-svd-diagram
 #| echo: false
 #| out-width: "80%"
-#| fig-cap: "The singular value decomposition expresses a data matrix **X** as the product of a matrix **U** of observation scores, a diagonal matrix **Lambda** of singular values and a matrix **V** of variable weights. **TODO**: Re-draw to fix notation. "
+#| fig-cap: "The singular value decomposition expresses a data matrix **X** as the product of a matrix **U** of observation scores, a diagonal matrix **Lambda** of singular values and a matrix **V** of variable weights."
 knitr::include_graphics("images/SVD.png")
 ```
 
@@ -687,7 +687,7 @@ quantitative data using PCA (`fviz_pca()`), it offers biplots for categorical da
 
 Here, I use the **ggbiplot** package, which aims to provide a simple interface to biplots within the `ggplot2` framework. I also use some convenient utility functions from **factoextra**.
 
-### Example
+### Example: Crime data
 
 A basic biplot of the `crime` data, using standardized principal components and labeling the observation by their state abbreviation is shown in @fig-crime-biplot1.
 The correlation circle indicates that these components are uncorrelated and have
@@ -695,7 +695,7 @@ equal variance in the display.
 ```{r}
 #| label: fig-crime-biplot1
 #| out-width: "80%"
-#| fig-cap: "Basic biplot of the crime data. ..."
+#| fig-cap: "Basic biplot of the crime data. State abbreviations are shown at their standardized scores on the first two dimensions. The variable vectors reflect the correlations of the variables with the biplot dimensions."
 crime.pca <- reflect(crime.pca) # reflect the axes
 
 ggbiplot(crime.pca,
@@ -945,6 +945,65 @@ On dimension 2, crimes against persons (murder, assault, rape) are associated wi
 illiteracy among the states, which as we earlier saw (@fig-crime-biplot2) were more often Southern states.
 Crimes against property (auto theft, larceny) at the bottom of this dimension are associated with 
 higher levels of income and high school graduates
+
+### Example: Diabetes data
+
+As another example, consider the data from @ReavenMiller:79 on measures of insulin and glucose
+shown in @fig-diabetes1 and @fig-ReavenMiller-3d
+that led to the discovery of two distinct types of development of Type 2 diabetes (@sec-discoveries).
+This dataset is available as `heplots::Diabetes` and contains the following numeric variables:
+
+* `relwt`: relative weight, the ratio of actual to expected weight, given the person's height,
+* `glufast`: fasting blood plasma glucose level
+* `glutest`: test blood plasma glucose level, a measure of glucose intolerance
+* `instest`: plasma insulin during test, a measure of insulin response to oral glucose
+* `sspg`: steady state plasma glucose, a measure of insulin resistance
+
+The PCA of these data shows that 83% of the variance is captured in two dimensions and 96% in
+three.
+```{r}
+#| label: diabetes-pca
+data(Diabetes, package="heplots")
+
+diab.pca <- 
+  Diabetes |> 
+  dplyr::select(where(is.numeric)) |>
+  prcomp(scale. = TRUE)
+summary(diab.pca)
+```
+
+
+```{r}
+#| label: diabetes-ggbiplot
+plt <- ggbiplot(diab.pca,
+     obs.scale = 1, var.scale = 1,
+     groups = Diabetes$group,
+     var.factor = 1.4,
+     ellipse = TRUE, 
+     ellipse.level = 0.5, ellipse.alpha = 0.1,
+     circle = TRUE,
+     varname.size = 4) +
+  labs(fill = "Group", color = "Group") +
+  theme_minimal(base_size = 14) +
+  theme(legend.position = "none")
+```
+
+```{r}
+#| label: fig-diabetes-ggbiplot
+#| out-width: "90%"
+#| fig-cap: "2D biplot of the Diabetes data"
+scores <- data.frame(diab.pca$x[, 1:2], group = Diabetes$group)
+centroids <- scores |>
+  group_by(group) |>
+  summarize(PC1 = mean(PC1),
+            PC2 = mean(PC2))
+
+plt + geom_label(data = centroids, 
+                 aes(x = PC1, y = PC2, 
+                     label=group, color = group),
+                 nudge_y = 0.2)
+```
+
 
 ## Application: Variable ordering for data displays {#sec-var-order}
 
