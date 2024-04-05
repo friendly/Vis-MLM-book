@@ -16,6 +16,7 @@ plt <- ggbiplot(diab.pca,
      ellipse = TRUE, 
      ellipse.prob = 0.5, ellipse.alpha = 0.1,
      circle = TRUE,
+     point.size = 2,
      varname.size = 4) +
   labs(fill = "Group", color = "Group") +
   theme_minimal(base_size = 14) +
@@ -23,11 +24,11 @@ plt <- ggbiplot(diab.pca,
 
 # label ellipses directly
 
-scores <- data.frame(diab.pca$x[, 1:2], group = Diabetes$group)
+scores <- data.frame(diab.pca$x[, 1:2], 
+                     group = Diabetes$group)
 centroids <- scores |>
-  group_by(group) |>
   summarize(PC1 = mean(PC1),
-            PC2 = mean(PC2))
+            PC2 = mean(PC2), .by = group)
 
 plt + geom_label(data = centroids, 
                  aes(x = PC1, y = PC2, 

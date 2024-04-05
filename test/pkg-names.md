@@ -4,7 +4,9 @@ In a book using `.Rnw` / LaTeX, I had the definitions below to format package na
 automatically index them when they appeared. I used `\textsf{}` for a sans-serif font
 distinct from typewriter `\texttt{}`, but that's just a detail.
 
-`\pkg{foo} -> \textsf{foo}` and also `\index{\textsf{foo}}`, `\index{package!\textsf{foo}}`
+The essential idea was that
+`\pkg{foo} -> \textsf{foo}` and also generated
+`\index{\textsf{foo}}`, `\index{package!\textsf{foo}}`
 
 
 ```tex
