@@ -866,9 +866,9 @@ I select a few of these below and make the state name a column variable so it ca
 supp_data <- state.x77 |>
   as.data.frame() |>
   tibble::rownames_to_column(var = "state") |>
-  select(state, Income:`Life Exp`, `HS Grad`) |>
   rename(Life_Exp = `Life Exp`,
-         HS_Grad = `HS Grad`)
+         HS_Grad = `HS Grad`) |>
+  select(state, Income:Life_Exp, HS_Grad) 
 
 head(supp_data)
 ```
@@ -898,7 +898,7 @@ and the result of `PCA()` with supplementary variables is that the `crime.PCA_su
 a `quanti.sup` component containing the coordinates for the supplementary variables in PCA space. 
 
 These can be calculated directly as a the coefficients of a multivariate regression of the standardized supplementary variables on the PCA scores for the dimensions, with no intercept to force the fitted vectors to go through the origin. For example, in the plot below (@fig-crime-factominer), the vector for Income has
-coordinates (0.192, .530) on the first two PCA dimensions.
+coordinates (0.192, -0.530) on the first two PCA dimensions.
 
 ```{r}
 reg.data <- cbind(scale(supp_data[, -1]), 
@@ -962,9 +962,51 @@ This dataset is available as `heplots::Diabetes`. The three groups are `Normal`,
 * `instest`: plasma insulin during test, a measure of insulin response to oral glucose
 * `sspg`: steady state plasma glucose, a measure of insulin resistance
 
+**TODO**: Should introduce 3D plots earlier, in Ch3 before @#sec-scatmat.
+
+First, let's try to create a 3D plot, analogous to the artist's drawing from PRIM-9
+shown in @fig-ReavenMiller-3d. For this, I use `car::scatter3d()` which
+can show data ellipsoids summarizing each group. The formula notation,
+`z ~ x + y` assigns the `z` variable to the vertical direction in the plot, and the
+`x` and `y` variable form a base plane.
+
+```{r}
+#| label: diabetes-scatter3d
+#| eval: false
+cols <- c("darkgreen", "blue", "red")
+library(car)
+scatter3d(sspg ~ instest + glutest, data=Diabetes,
+          groups = Diabetes$group,
+          ellipsoid = TRUE,
+          surface = FALSE,
+          col = cols,
+          surface.col = cols)
+```
+
+`car::scatter3d()` uses the **rgl** package [@R-rgl] to render 3D graphics on a display device,
+which means that it has facilities for perspective, lighting and other visual properties. You can interactively zoom
+in or out or rotate the display in any of the three dimensions and use `rgl::spin3d()`
+to animate rotations around any axes and record this a a `movie3d()`.
+@fig-diabetes-3d shows two views of this plot, one from the front and one from the back.
+The data ellipsoids are not as evocative as the artist's rendering, but they give a sense
+of the relative sizes and shapes of the clouds of points for the three diagnostic groups.
+```{r}
+#| label: fig-diabetes-3d
+#| echo: false
+#| out-width: "100%"
+#| fig-cap: "Two views of a 3D scatterplot of three main diagnostic variables in the `Diabetes` dataset. The left panel shows an orientation similar to that of @fig-ReavenMiller-3d; the right panel shows a view from the back."
+#| knitr::include_graphics("images/diabetes-3d-both.png")
+```
+
+The normal group is concentrated near the origin, with relatively low values on all three diagnostic
+measures. The chemical diabetic group forms a wing with higher values on insulin response to oral glucose
+(`instest`), while the overt diabetics form the other wing, with higher values on glucose intolerance
+(`glutest`). The relative sizes and orientations of the data ellipsoids are also informative.
+
+Given this, what can we see in a biplot view based on PCA?
 The PCA of these data shows that 83% of the variance is captured in two dimensions and 96% in
 three. The result for 3D is interesting, in that the view from PRIM-9
-shown in @fig-ReavenMiller-3d nearly captured all available information.
+shown in @fig-ReavenMiller-3d and @fig-diabetes-3d nearly captured all available information.
 ```{r}
 #| label: diabetes-pca
 data(Diabetes, package="heplots")

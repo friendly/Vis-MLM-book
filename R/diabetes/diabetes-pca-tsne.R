@@ -17,12 +17,13 @@ df1 <- data.frame(diab.pca$x, group = Diabetes$group)
 colnames(df1) <- c("Dim1", "Dim2", "group")
 df1 <- cbind(df1, method="PCA")
 
-
+cols <- scales::hue_pal()(3) |> rev()
 p1 <- ggplot(df1, aes(x=Dim1, y=Dim2, color=group, shape=group)) + 
   geom_point(size = 3) + 
   stat_ellipse(level = 0.68, linewidth=1.1) +
   geom_hline(yintercept = 0) +
   geom_vline(xintercept = 0) +
+  scale_color_manual(values = cols) +
   labs(x = "Dimension 1",
        y = "Dimension 2") + 
   ggtitle("PCA") +
@@ -42,6 +43,7 @@ p2 <- ggplot(df2, aes(x=Dim1, y=Dim2, color = group, shape=group)) +
   stat_ellipse(level = 0.68, linewidth=1.1) +
   geom_hline(yintercept = 0) +
   geom_vline(xintercept = 0) +
+  scale_color_manual(values = cols) +
   labs(x = "Dimension 1",
        y = "Dimension 2") + 
   ggtitle("tSNE") +
@@ -49,7 +51,10 @@ p2 <- ggplot(df2, aes(x=Dim1, y=Dim2, color = group, shape=group)) +
   theme(legend.position = "bottom") 
 p2
 
-p1 + p2
+both <- p1 + p2 & theme(legend.position = "bottom")
+both + plot_layout(guides = "collect")
+
+ggsave("images/diabetes-pca-tsne.png", width = 8, height = 4)
 
 #' ## Make an animated plot showing transitions between the PCA representation and the tsne one
 
@@ -61,11 +66,12 @@ animated_plot <-
   stat_ellipse(level = 0.68, linewidth=1.1) +
   geom_hline(yintercept = 0) +
   geom_vline(xintercept = 0) +
+  scale_color_manual(values = cols) +
   labs(title = "PCA vs. tSNE Dimension Reduction: {closest_state}",
        subtitle = "Frame {frame} of {nframes}",
        x = "Dimension 1",
        y = "Dimension 2") + 
-  transition_states( method, transition_length = 2, state_length = 3 ) + 
+  transition_states( method, transition_length = 3, state_length = 2 ) + 
   view_follow() + 
   theme_bw(base_size = 16) +
   theme(legend.position = "bottom") 

@@ -27,9 +27,9 @@ plot(crime.PCA, choix = "var")
 supp_data <- state.x77 |>
   as.data.frame() |>
   tibble::rownames_to_column(var = "state") |>
-  select(state, Income:`Life Exp`, `HS Grad`) |>
   rename(Life_Exp = `Life Exp`,
-         HS_Grad = `HS Grad`)
+         HS_Grad = `HS Grad`) |> 
+  dplyr::select(state, Income, Illiteracy, Life_Exp, HS_Grad)
 
 crime_joined <-
   dplyr::left_join(crime[, 1:8], supp_data, by = "state")
@@ -88,3 +88,8 @@ reg.data <- cbind(scale(supp_data[, -1]),
 sup.mod <- lm(cbind(Income, Illiteracy, Life_Exp, HS_Grad) ~ 0 + Dim.1 + Dim.2 + Dim.3, data = reg.data )
 
 (coefs <- t(coef(sup.mod)))
+
+# but, same at the correlations
+R <- cor(reg.data[, 1:4], reg.data[, 5:7])
+
+R / coefs

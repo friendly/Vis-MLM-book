@@ -14,11 +14,13 @@ mds <- Diabetes |>
 colnames(mds) <- c("Dim1", "Dim2")
 mds <- bind_cols(mds, group = Diabetes$group)
 
+cols <- scales::hue_pal()(3) |> rev()
 # Plot MDS
 mplot <-
 ggscatter(mds, x = "Dim1", y = "Dim2", 
           color = "group",
           shape = "group",
+          palette = cols,
           size = 2,
           ellipse = TRUE,
           ellipse.type = "t") +
