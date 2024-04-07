@@ -80,3 +80,33 @@ animated_plot
 
 anim_save("diabetes-pca-tsne.gif", animated_plot, path="images/")
 
+# try adding vectors
+
+source("R/ggvectors.R")
+vecs <- diab.pca$rotation
+p1 + ggvectors(vecs[,1], vecs[,2], label = rownames(vecs),
+               color = cols)
+
+scale <- 5
+p1 + geom_segment(data = vecs, 
+                  aes(x = 0, xend = scale * PC1, 
+                      y = 0, yend = scale * PC2),
+                  inherit.aes = FALSE)
+
+?ordr::geom_vector
+
+#library(ordr)    # masks too much
+arrow_style <- arrow(length = unit(1/2, 'picas'), 
+                     type="closed", 
+                     angle=20) 
+p1 + ordr::geom_vector(data=vecs, 
+                 aes(x=scale * PC1, y=scale * PC2),
+                 arrow = arrow_style,
+                 linewidth = 1.2,
+                 inherit.aes = FALSE)
+
+last_plot() + ordr::geom_text_radiate(
+  data=vecs, 
+  aes(x=scale * PC1, y=scale * PC2), 
+  label = rownames(vecs),
+  inherit.aes = FALSE)  
