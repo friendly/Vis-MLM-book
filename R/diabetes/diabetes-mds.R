@@ -45,7 +45,9 @@ mplot +
                arrow = arrow(length = unit(0.2, "cm"), type = "closed"),
                linewidth = 1.1) +
   geom_text(data = vectors,
-            aes(x = 1.05*scale_fac*Dim1, y = 1.05*scale_fac*Dim2, label=row.names(vectors)),
+            aes(x = 1.1*scale_fac*Dim1, y = 1.07*scale_fac*Dim2, 
+                label=row.names(vectors)),
+            nudge_x = 4,
             size = 4)
 
   
