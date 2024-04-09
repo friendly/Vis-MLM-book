@@ -105,6 +105,7 @@ library(ggbiplot)
 library(FactoMineR)
 library(factoextra)
 library(car)
+library(ggpubr)
 ```
 
 
@@ -902,7 +903,7 @@ a `quanti.sup` component containing the coordinates for the supplementary variab
 These can be calculated directly as a the coefficients of a multivariate regression of the standardized supplementary variables on the PCA scores for the dimensions, with no intercept to force the fitted vectors to go through the origin. For example, in the plot below (@fig-crime-factominer), the vector for Income has
 coordinates (0.192, -0.530) on the first two PCA dimensions.
 
-```{r}
+```{r reg-data}
 reg.data <- cbind(scale(supp_data[, -1]), 
                   crime.PCA_sup$ind$coord) |>
   as.data.frame()
@@ -913,6 +914,19 @@ sup.mod <- lm(cbind(Income, Illiteracy, Life_Exp, HS_Grad) ~
 
 (coefs <- t(coef(sup.mod)))
 ```
+
+Note that these coefficients are the same as the correlations between the supplementary variables
+and the scores on the principal components, up to a scaling factor for each dimension. This provides a
+general way to relate dimensions found in other methods to the original data variables using vectors
+as in biplot techniques.
+
+```{r}
+cor(reg.data[, 1:4], reg.data[, 5:7]) |>
+  print() -> R
+
+R / coefs
+```
+
 
 
 The `PCA()` result can be plotted using `FactoMiner::plot()`
@@ -1084,19 +1098,89 @@ is far more difficult and nonlinear methods become attractive.
 knitr::include_graphics("images/nonlin-demo.png")
 ```
 
-
+### Multidimensional scaling
 One way to break out of the "linear-combination, maximize-variance PCA mold" is to consider
 a more intrinsic property of points in _Spaceland_: similarity or distance.
 The earliest expression of this idea was in **multidimensional scaling** (MDS)
 by @Torgerson1952, which involved trying to determine a metric low-D representation of objects
 from their interpoint distances via an application of the SVD.
+
 The brake-through for nonlinear methods came from Roger Shepard and William Kruskal
-[@Shepard1962a; @Shepard1962b; @Kruskal1964] who recognized that 
+[@Shepard1962a; @Shepard1962b; @Kruskal1964] who recognized that a more general,
+nonmetric version (nMDS) could be achieved using only the rank order of input distances $d_{ij}$
+among objects. nMDS maps these into a low-D spatial representation of points, $\mathbf{x}_i, \mathbf{x}_j$
+whose fitted distances, $\hat{d}_{ij} = ||\mathbf{x}_i - \mathbf{x}_j||$ matches
+the order of the $d_{ij}$ as closely as possible.
+The impetus for this stemmed largely from psychology, where experimental measures of
+similarity or dissimilarity of psychological objects (faces, words, Morse code symbols)
+could be obtained by direct ratings, confusions, or other tasks and MDS provided
+a method to study the dimensions of perceptual and cognitive space.
 
+To perform nMDS, calculate the matrix of distances between all pairs of observations and
+call `MASS::isoMDS()`. It returns the coordinates in a dataset called `points`.
 
-Methods: MDS, TSNE, UMAP, ...
+```{r diabetes-mds}
+mds <- Diabetes |>
+  dplyr::select(where(is.numeric)) |>
+  dist() |>          
+  MASS::isoMDS() |>
+  purrr::pluck("points") 
 
-tSNE [@vanDerMaaten2008]
+colnames(mds) <- c("Dim1", "Dim2")
+mds <- bind_cols(mds, group = Diabetes$group)
+mds |> sample_n(6)
+```
+
+To plot the solution, I'll use `ggpubr::ggscatter()` here because it provides concentration ellipses 
+and other graphical features.
+```{r diabetes-mplot}
+library(ggpubr)
+cols <- scales::hue_pal()(3) |> rev()
+mplot <-
+ggscatter(mds, x = "Dim1", y = "Dim2", 
+          color = "group",
+          shape = "group",
+          palette = cols,
+          size = 2,
+          ellipse = TRUE,
+          ellipse.level = 0.5,
+          ellipse.type = "t") +
+  geom_hline(yintercept = 0, color = "gray") +
+  geom_vline(xintercept = 0, color = "gray") 
+```
+
+For this and other examples using MDS, it would be nice to also show how the dimensions of this
+space relate to the original variables, as in a biplot. Using the idea of
+correlations between variables and dimensions from @sec-supp-vars, I do this as follows:
+
+```{r}
+#| label: fig-diabetes-mds
+#| out-width: "100%"
+#| fig-cap: "Nonmetric MDS representation of the Diabetes data."
+vectors <- cor(Diabetes[, 1:5], mds[, 1:2])
+scale_fac <- 500
+mplot + 
+  coord_fixed() +
+  geom_segment(data=vectors,
+               aes(x=0, xend=scale_fac*Dim1, y=0, yend=scale_fac*Dim2),
+               arrow = arrow(length = unit(0.2, "cm"), type = "closed"),
+               linewidth = 1.1) +
+  geom_text(data = vectors,
+            aes(x = 1.15*scale_fac*Dim1, y = 1.07*scale_fac*Dim2, 
+                label=row.names(vectors)),
+            nudge_x = 4,
+            size = 4) +
+  theme(legend.position = "inside",
+        legend.position.inside = c(.8, .8))
+```
+
+### tSNE
+
+With the rise of "machine learning" methods for "feature extraction" in "supervised"
+vs. "unsupervised" settings, a variety of new algorithms have been proposed for the
+task of finding low-D representations of high-D data. Among these ...
+
+tSNE [@MaatenHinton2008]
 
 
 

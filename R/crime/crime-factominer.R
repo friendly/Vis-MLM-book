@@ -90,6 +90,7 @@ sup.mod <- lm(cbind(Income, Illiteracy, Life_Exp, HS_Grad) ~ 0 + Dim.1 + Dim.2 +
 (coefs <- t(coef(sup.mod)))
 
 # but, same at the correlations
-R <- cor(reg.data[, 1:4], reg.data[, 5:7])
+cor(reg.data[, 1:4], reg.data[, 5:7]) |>
+  print() -> R
 
 R / coefs
