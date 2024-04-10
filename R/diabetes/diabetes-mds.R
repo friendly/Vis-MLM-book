@@ -5,11 +5,18 @@ library(dplyr)
 
 data(Diabetes, package="heplots")
 
-mds <- Diabetes |>
-  dplyr::select(where(is.numeric)) |>
-  dist() |>          
-  isoMDS() |>
+# mds <- Diabetes |>
+#   dplyr::select(where(is.numeric)) |>
+#   dist() |>          
+#   isoMDS() |>
+#   purrr::pluck("points") 
+
+diab.dist <- dist(Diabetes[, 1:5])
+mds <- diab.dist |>
+  isoMDS(k = 2, trace = FALSE) |>
   purrr::pluck("points") 
+
+
 
 colnames(mds) <- c("Dim1", "Dim2")
 mds <- bind_cols(mds, group = Diabetes$group)
@@ -49,4 +56,28 @@ mplot +
   theme(legend.position = "inside",
         legend.position.inside = c(.8, .8))
 
-  
+
+# find stress over several dimensions
+
+diab.dist <- dist(Diabetes[, 1:5])
+
+stress <- vector(length = 5)
+for(k in 1:5){
+  res <- MASS::isoMDS(diab.dist, k=k)
+  stress[k] <- res$stress
+}
+round(stress, 3)
+
+op <- par(mar = c(5, 4, 1, 1)+0.1)
+plot(stress, type = "b", pch = 16, cex = 2,
+     xlab = "Number of dimensions",
+     ylab = "Stress (%)")
+par(op)
+
+
+# try vegan::metaMDS  
+library(vegan)
+diab.mds <- metaMDS(diab.dist, distance="euclidean", k=2)
+names(diab.mds)
+stressplot(diab.mds)
+plot(diab.mds)

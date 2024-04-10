@@ -3,8 +3,8 @@ source(here::here("R", "common.R"))
 knitr::opts_chunk$set(fig.path = "figs/ch04/")
 ```
 
-# PCA and Biplots {#sec-pca-biplot}
-**TODO**: Rename Dimension Reduction
+# Dimension Reduction {#sec-pca-biplot}
+<!-- **TODO**: Rename Dimension Reduction -->
 
 ## _Flatland_ and _Spaceland_ {#sec-spaceland}
 
@@ -1109,21 +1109,21 @@ The brake-through for nonlinear methods came from Roger Shepard and William Krus
 [@Shepard1962a; @Shepard1962b; @Kruskal1964] who recognized that a more general,
 nonmetric version (nMDS) could be achieved using only the rank order of input distances $d_{ij}$
 among objects. nMDS maps these into a low-D spatial representation of points, $\mathbf{x}_i, \mathbf{x}_j$
-whose fitted distances, $\hat{d}_{ij} = ||\mathbf{x}_i - \mathbf{x}_j||$ matches
+whose fitted distances, $\hat{d}_{ij} = \lVert\mathbf{x}_i - \mathbf{x}_j\rVert$ matches
 the order of the $d_{ij}$ as closely as possible.
 The impetus for this stemmed largely from psychology, where experimental measures of
 similarity or dissimilarity of psychological objects (faces, words, Morse code symbols)
 could be obtained by direct ratings, confusions, or other tasks and MDS provided
 a method to study the dimensions of perceptual and cognitive space.
 
-To perform nMDS, calculate the matrix of distances between all pairs of observations and
-call `MASS::isoMDS()`. It returns the coordinates in a dataset called `points`.
+To perform nMDS, you need to calculate the matrix of distances between all pairs of observations 
+(`dist()`) and then call `MASS::isoMDS()`, specifying the number of dimensions (`k`) desired. 
+It returns the coordinates in a dataset called `points`.
 
 ```{r diabetes-mds}
-mds <- Diabetes |>
-  dplyr::select(where(is.numeric)) |>
-  dist() |>          
-  MASS::isoMDS() |>
+diab.dist <- dist(Diabetes[, 1:5])
+mds <- diab.dist |>
+  MASS::isoMDS(k = 2, trace = FALSE) |>
   purrr::pluck("points") 
 
 colnames(mds) <- c("Dim1", "Dim2")
@@ -1131,7 +1131,39 @@ mds <- bind_cols(mds, group = Diabetes$group)
 mds |> sample_n(6)
 ```
 
-To plot the solution, I'll use `ggpubr::ggscatter()` here because it provides concentration ellipses 
+The method works by trying to minimize a measure, "Stress", of the average difference between
+the fitted distances $\hat{d}_{ij}$ and an optimal monotonic (order-preserving) transformation, $f_{\text{mon}}(d_{ij})$, of the distances in the data. Values of Stress around 5-8% and smaller
+are generally considered adequate.
+
+Unlike PCA, where you can fit all possible dimensions once and choose the number of components
+to retain by examining the eigenvalues or variance proportions, in MDS it is necessary to 
+fit the data for several values of `k` and consider the trade-off between goodness of fit
+and complexity.
+
+```{r}
+#| label: diabetes-stress
+stress <- vector(length = 5)
+for(k in 1:5){
+  res <- MASS::isoMDS(diab.dist, k=k)
+  stress[k] <- res$stress
+}
+round(stress, 3)
+```
+
+Plotting these shows that a 3D solution is nearly perfect, while a 2D solution is certainly adequate.
+This plot is the MDS analog of a screeplot for PCA.
+
+```{r echo = -1}
+#| label: fig-diabetes-stress
+#| out-width: "70%"
+op <- par(mar = c(5, 4, 1, 1)+0.1)
+plot(stress, type = "b", pch = 16, cex = 2,
+     xlab = "Number of dimensions",
+     ylab = "Stress (%)")
+```
+
+
+To plot the 2D solution, I'll use `ggpubr::ggscatter()` here because it handles grouping, provides concentration ellipses 
 and other graphical features.
 ```{r diabetes-mplot}
 library(ggpubr)
@@ -1151,12 +1183,14 @@ ggscatter(mds, x = "Dim1", y = "Dim2",
 
 For this and other examples using MDS, it would be nice to also show how the dimensions of this
 space relate to the original variables, as in a biplot. Using the idea of
-correlations between variables and dimensions from @sec-supp-vars, I do this as follows:
+correlations between variables and dimensions from @sec-supp-vars, I do this as shown below.
+Only the relative directions and lengths of the variable vectors matter, so you can choose
+any convenient scale factor to make the vectors fill the plot region.
 
 ```{r}
 #| label: fig-diabetes-mds
 #| out-width: "100%"
-#| fig-cap: "Nonmetric MDS representation of the Diabetes data."
+#| fig-cap: "Nonmetric MDS representation of the Diabetes data. The vectors reflect the correlations of the variables with the MDS dimensions."
 vectors <- cor(Diabetes[, 1:5], mds[, 1:2])
 scale_fac <- 500
 mplot + 
@@ -1174,14 +1208,36 @@ mplot +
         legend.position.inside = c(.8, .8))
 ```
 
-### tSNE
+The configuration of the groups in @fig-diabetes-mds is similar to that of the biplot in @fig-diabetes-ggbiplot, but the groups are more widely separated along the first
+MDS dimension. The variable vectors are also similar, except that `relwt` 
+is not well-represented in the MDS solution.
+
+### t-SNE
 
 With the rise of "machine learning" methods for "feature extraction" in "supervised"
 vs. "unsupervised" settings, a variety of new algorithms have been proposed for the
-task of finding low-D representations of high-D data. Among these ...
+task of finding low-D representations of high-D data. Among these,
+t-distributed Stochastic Neighbor Embedding (t-SNE) developed by @MaatenHinton2008
+is touted as method for revealing
+local structure and clustering better in possibly complex high-D data and at different scales.
 
-tSNE [@MaatenHinton2008]
+t-SNE also uses the idea of mapping distance measures into a low-D space,
+but converts Euclidean distances into conditional probabilities.
 
+
+As van der Maaten and Hinton explained: "The similarity of datapoint $\mathbf{x}_{j}$ to datapoint  $\mathbf{x}_{i}$ is the conditional probability, $p_{j|i}$, that x i $\mathbf{x}_{i}$ would pick  $\mathbf{x}_{j}$ as its neighbor if neighbors were picked in proportion to their probability density under a Gaussian distribution centered at $\mathbf{x}_{i}$." For $i \ne j$, they define
+
+$$
+p_{j\mid i} = \frac{\exp(-\lVert\mathbf{x}_i - \mathbf{x}_j\rVert^2 / 2\sigma_i^2)}{\sum_{k \neq i} \exp(-\lVert\mathbf{x}_i - \mathbf{x}_k\rVert^2 / 2\sigma_i^2)} \;. 
+$$
+and set $p_{i\mid i} = 0$. $\sigma^2_i$ is the variance of the normal distribution that centered on datapoint $\mathbf{x}_{i}$.
+
+```{r}
+#| label: fig-diabetes-pca-tsne
+#| out-width: "100%"
+#| fig-cap: "Animation of the relationship of PCA to the t-SNE embedding for the Diabetes data."
+knitr::include_graphics("images/diabetes-pca-tsne.gif")
+```
 
 
 ## Application: Variable ordering for data displays {#sec-var-order}

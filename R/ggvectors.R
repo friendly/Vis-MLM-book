@@ -38,10 +38,11 @@ ggvectors <- function(x, y, label,
                arrow = arrow_style, 
                color = color,
                linewidth = linewidth)
-  if(!missing(label))
+  if(!missing(label)) {
   geom_text(data = df, 
               aes(label = label, x = x, y = y, 
                   angle = angle, hjust = hjust), 
               color = color, size = size)
+  }
   
 }
