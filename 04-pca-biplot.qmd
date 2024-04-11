@@ -1226,16 +1226,59 @@ t-distributed Stochastic Neighbor Embedding (t-SNE) developed by @MaatenHinton20
 is touted as method for revealing
 local structure and clustering better in possibly complex high-D data and at different scales.
 
+<!-- Simpler description, from: https://www.displayr.com/using-t-sne-to-visualize-data-before-prediction/ -->
+<!-- The t-SNE algorithm models the probability distribution of neighbors around each point. Here, the term neighbors refers to the set of points which are closest to each point. In the original, high-dimensional space this is modeled as a Gaussian distribution. In the 2-dimensional output space this is modeled as a t-distribution. The goal of the procedure is to find a mapping onto the 2-dimensional space that minimizes the differences between these two distributions over all points. The fatter tails of a t-distribution compared to a Gaussian help to spread the points more evenly in the 2-dimensional space. -->
+
 t-SNE also uses the idea of mapping distance measures into a low-D space,
 but converts Euclidean distances into conditional probabilities.
-
+Stochastic neighbor embedding means that t-SNE constructs a probability distribution over pairs of high-dimensional objects in such a way that similar objects are assigned a higher probability while dissimilar points are assigned a lower probability.
 
 As van der Maaten and Hinton explained: "The similarity of datapoint $\mathbf{x}_{j}$ to datapoint  $\mathbf{x}_{i}$ is the conditional probability, $p_{j|i}$, that x i $\mathbf{x}_{i}$ would pick  $\mathbf{x}_{j}$ as its neighbor if neighbors were picked in proportion to their probability density under a Gaussian distribution centered at $\mathbf{x}_{i}$." For $i \ne j$, they define
 
 $$
 p_{j\mid i} = \frac{\exp(-\lVert\mathbf{x}_i - \mathbf{x}_j\rVert^2 / 2\sigma_i^2)}{\sum_{k \neq i} \exp(-\lVert\mathbf{x}_i - \mathbf{x}_k\rVert^2 / 2\sigma_i^2)} \;. 
 $$
-and set $p_{i\mid i} = 0$. $\sigma^2_i$ is the variance of the normal distribution that centered on datapoint $\mathbf{x}_{i}$.
+and set $p_{i\mid i} = 0$. $\sigma^2_i$ is the variance of the normal distribution that centered on datapoint $\mathbf{x}_{i}$ and serves as a tuning bandwidth so 
+smaller values of $\sigma _{i}$ are used in denser parts of the data space.
+These conditional probabilities are made symmetric via averaging, giving 
+$p_{ij} = \frac{p_{j\mid i} + p_{i\mid j}}{2n}$.
+
+t-SNE defines a similar probability distribution $q_{ij}$
+over the points \mathbf{y}_i$
+in the low-dimensional map, and it minimizes the Kullback–Leibler divergence (KL divergence) between the two distributions with respect to the locations of the points in the map,
+
+$$
+D_\mathrm{KL}\left(P \parallel Q\right) = \sum_{i \neq j} p_{ij} \log \frac{p_{ij}}{q_{ij}} \; ,
+$$
+a measure of how different the distribution of $P$ in the data is from that of $Q$ in the
+low-D representation. The _t_ in t-SNE comes from the fact that the probability distribution
+of the points $\mathbf{y}_i$ in the embedding space is taken to be a heavy-tailed $t_{(1)}$
+distribution with one degree of freedom, rather than the Gaussian distribution for the points
+in the high-D data space.
+
+t-SNE is implemented in the **Rtsne** package [@R-Rtsne] which is capable of handling thousands
+of points in very high dimensions. It uses a tuning parameter, "perplexity" to choose the
+bandwidth $\sigma^2_i$ for each point. This value effectively controls how many nearest neighbors are taken into account when constructing the embedding in the low-dimensional space.
+It can be thought of as the means to balance between preserving the global and the local structure of the data.[^perplexity]
+
+[^perplexity]: The usual default, `perplexity = 30` focuses  on preserving the distances to the 30 nearest neighbors and puts virtually no weight on preserving distances to the remaining points. For data sets with a small number of points e.g. $n=100$, this will uncover the global structure quite well since each point will preserve distances to a third of the data set. For larger problems, e.g.,
+$n = 10,000$ points, using a higher perplexity value e.g. 500, will do a much better job for of uncovering the global structure. (This description comes from https://opentsne.readthedocs.io/en/latest/parameters.html)
+
+`Rtsne::Rtsne()` finds the ...
+```{r}
+#| label: diabetes-tsne
+library(Rtsne)
+set.seed(123) 
+diab.tsne <- Rtsne(Diabetes[, 1:5], scale = TRUE)
+df2 <- data.frame(diab.tsne$Y, group = Diabetes$group) 
+colnames(df2) <- c("Dim1", "Dim2", "group")
+```
+
+
+#### Comparing solutions
+
+For the Diabetes data, I've shown the results of three different dimension reduction techniques,
+PCA (@fig-diabetes-ggbiplot), MDS (@fig-diabetes-mds), and t-SNE ().
 
 ```{r}
 #| label: fig-diabetes-pca-tsne

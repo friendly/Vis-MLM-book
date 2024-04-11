@@ -67,6 +67,7 @@ animated_plot <-
   geom_hline(yintercept = 0) +
   geom_vline(xintercept = 0) +
   scale_color_manual(values = cols) +
+#  coord_fixed() +
   labs(title = "PCA vs. tSNE Dimension Reduction: {closest_state}",
        subtitle = "Frame {frame} of {nframes}",
        x = "Dimension 1",
