@@ -82,20 +82,26 @@ animated_plot <-
   geom_hline(yintercept = 0) +
   geom_vline(xintercept = 0) +
   scale_color_manual(values = cols) +
-#  coord_fixed() +
   labs(title = "PCA vs. tSNE Dimension Reduction: {closest_state}",
        subtitle = "Frame {frame} of {nframes}",
        x = "Dimension 1",
        y = "Dimension 2") + 
   transition_states( method, transition_length = 3, state_length = 2 ) + 
   view_follow() + 
-  shadow_wake(wake_length = 0.2, exclude_layer = 2:4) +
   theme_bw(base_size = 16) +
   theme(legend.position = "bottom") 
 
 animated_plot
 
 anim_save("diabetes-pca-tsne.gif", animated_plot, path="images/")
+
+# show the wake following ponts
+wake_plot <- animated_plot +
+  shadow_wake(wake_length = 0.2, exclude_layer = 2:4) 
+wake_plot
+  
+anim_save("diabetes-pca-tsne-wake.gif", wake_plot, path="images/")
+
 
 # try adding vectors
 
