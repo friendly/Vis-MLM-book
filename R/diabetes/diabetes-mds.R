@@ -77,7 +77,34 @@ par(op)
 
 # try vegan::metaMDS  
 library(vegan)
-diab.mds <- metaMDS(diab.dist, distance="euclidean", k=2)
+diab.mds <- metaMDS(diab.dist, distance="euclidean", k=2, trace = 0)
 names(diab.mds)
 stressplot(diab.mds)
 plot(diab.mds)
+
+points <- data.frame(diab.mds$points, group = Diabetes$group)
+vectors <- data.frame(diab.mds$species)
+
+cols <- scales::hue_pal()(3) |> rev()
+ggplot(data=points, aes(x = MDS1, y = MDS2, 
+                        color = group, shape = group)) +
+  geom_point(size = 2) +
+  stat_ellipse(level = 0.68, linewidth=1.1) +
+  geom_hline(yintercept = 0) +
+  geom_vline(xintercept = 0) +
+  scale_color_manual(values = cols) +
+  geom_segment(data = vectors, aes(x=0, xend=MDS1, y=0, yend=MDS2,),
+               arrow = arrow(length = unit(0.2, "cm"), type = "closed"),
+               colour="black",
+               linewidth = 1.2,
+               inherit.aes = FALSE) +
+  geom_text(data=vectors, aes(x=MDS1, y=MDS2, label=rownames(vectors)), 
+            size=5,
+            vjust = "outward",
+            inherit.aes = FALSE) +
+  coord_cartesian(clip = "off") +
+  theme_bw(base_size = 14) +
+  theme(legend.position = "inside",
+        legend.position.inside = c(.8, .8))
+
+
