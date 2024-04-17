@@ -119,8 +119,8 @@ ggplot(df, aes(x,y)) +
   geom_point(alpha = 0.2) +
   stat_ellipse(geom = "polygon", 
                color = "blue",fill= "blue", 
-               alpha=0.2, linewidth = 1.1) +
-  geom_smooth(method="lm", formula = y~x, fullrange=TRUE) +
+               alpha=0.1, linewidth = 1.1) +
+  geom_smooth(method="lm", formula = y~x, fullrange=TRUE, level=0.995) +
   facet_wrap(~name) +
   theme_bw(base_size = 14)
 
