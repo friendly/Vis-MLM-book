@@ -131,7 +131,8 @@ vectors |>
             hjust = "outward",
             nudge_x = 0.05, 
             color = "brown") +
-  xlim(-0.4, 0.9) + ylim(-0.8, 0.8) +
+  ggforce::geom_circle(aes(x0 = 0, y0 = 0, r = 0.5),  color = gray(.50)) +
+  xlim(-0.5, 0.9) + ylim(-0.8, 0.8) +
   coord_fixed() + # fix aspect ratio to 1:1
   theme_minimal(base_size = 14)
 
