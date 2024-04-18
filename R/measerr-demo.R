@@ -1,8 +1,11 @@
 # simulation for measurement error
 # from: https://statmodeling.stat.columbia.edu/2024/04/14/simulation-to-understand-measurement-error-in-regression/
 
-library("arm")
+#library("arm")
 library(car)
+library(dplyr)
+library(ggplot2)
+library(forcats)
 
 set.seed(123)
 n <- 500
@@ -24,60 +27,17 @@ demo  <- demo |>
          x_star = rnorm(n, x, err_x))
 
 
-fit_1 <- lm(y ~ x, data = demo)
-fit_2 <- lm(y_star ~ x, data=demo)
-fit_3 <- lm(y ~ x_star, data=demo)
+fit_1 <- lm(y ~ x,           data = demo)
+fit_2 <- lm(y_star ~ x,      data=demo)
+fit_3 <- lm(y ~ x_star,      data=demo)
 fit_4 <- lm(y_star ~ x_star, data=demo)
 
-# display(fit_1)
-# 
-# sigma_y <- 1
-# demo$y_star <- rnorm(n, demo$y, sigma_y)
-# sigma_x <- 4
-# demo$x_star <- rnorm(n, demo$x, sigma_x)
-# 
-# display(fit_2)
-# 
-# display(fit_3)
-# 
-# display(fit_4)
-# 
-# 
+
+
+# use a function to plot data & data ellipses
 
 x_range <- range(demo$x, demo$x_star)
 y_range <- range(demo$y, demo$y_star)
-
-# op <- par(mfrow=c(2,2), 
-#           mar=c(3,3,1,1), 
-#           mgp=c(1.5,.5,0), tck=-.01)
-# dataEllipse(demo$x, demo$y,
-#             xlim=x_range, ylim=y_range, 
-#             pch=20, levels = 0.9,
-#             main="No measurement error")
-# abline(coef(fit_1), col="red", lwd=2)
-# 
-# dataEllipse(demo$x, demo$y_star,
-#             xlim=x_range, ylim=y_range, 
-#             pch=20, levels = 0.9,
-#             main="Measurement error on y")
-# abline(coef(fit_2), col="red", lwd = 2)
-# 
-# dataEllipse(demo$x_star, demo$y,
-#             xlim=x_range, ylim=y_range, 
-#             pch=20, levels = 0.9,
-#             main="Measurement error on x")
-# abline(coef(fit_3), col="red", lwd = 2)
-# 
-# 
-# dataEllipse(demo$x_star, demo$y_star,
-#             xlim=x_range, ylim=y_range, 
-#             pch=20, levels = 0.9,
-#             main="Measurement error on x and y")
-# abline(coef(fit_4), col="red", lwd = 2)
-# 
-# par(op)
-
-# use a function
 
 library(car)
 demo_plot <- function(x, y, fit, title) {
@@ -98,14 +58,6 @@ demo_plot(demo$x_star, demo$y,      fit_3, "Measurement error on x")
 demo_plot(demo$x_star, demo$y_star, fit_4, "Measurement error on x and y")
 par(op)
 
-
-library(ggplot2)
-library(dplyr)
-library(forcats)
-
-# demo |>
-# mutate(y_star = rnorm(n, y, sigma_y),
-#        x_star = rnorm(n, x, sigma_x))
 
 # make long, with names for the four conditions
 df <- bind_rows(
@@ -137,7 +89,7 @@ mod_stats <- models |>
   relocate(errX, errY, .after = name) |>
   print()
 
-ggplot(data=mod_stats, aes(x = errX, y = r.squared, 
+ggplot(data=mod_stats, aes(x = errX, y = sqrt(r.squared), 
                            group = errY, color = errY, shape = errY)) +
   geom_point(size = 4) +
   geom_line(linewidth = 1.2) +
