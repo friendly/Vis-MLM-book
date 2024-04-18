@@ -1337,10 +1337,11 @@ The same idea can be applied to other graphical features: lines, paths (ellipses
 These methods are implemented in the **gganimate** package [@R-gganimate].
 
 In this case, to create an animation
-you can extract the coordinates for the PCA $\mathbf{X}_{\text{PCA}}$ as a data.frame `df1`,
+you can extract the coordinates for the PCA, $\mathbf{X}_{\text{PCA}}$, as a data.frame `df1`,
 and those for the t-SNE, $\mathbf{X}_{\text{t-SNE}}$ as `df2`, each with a constant
 `method` variable. These two are then
-stacked (using `rbind()`) to give a combined `df3`.
+stacked (using `rbind()`) to give a combined `df3`. The animation can then interpolate over `method`
+going from pure PCA to pure t-SNE.
 
 ```{r}
 #| label: diabetes-pca-tsne-df
@@ -1361,7 +1362,9 @@ df3 <- rbind(df1, df2)
 
 Then, plot the configuration of the points and add data ellipses as before.
 The key thing for animating the difference between the solutions is to add
-`transition_states(method, ...)`
+`transition_states(method, ...)`, tweening from PCA to t-SNE.
+The `state_length` argument `transition_states()` controls the relative 
+length of the pause between states. 
 
 ```{r}
 #| label: fig-diabetes-pca-tsne-anim
@@ -1386,18 +1389,19 @@ animated_plot <-
   theme_bw(base_size = 16) +
   theme(legend.position = "bottom") 
 
-animated_plot
+print(animated_plot, res=200)
 ```
 
 <!--
-```{r}
-#| label: fig-diabetes-pca-tsne-anim
-#| echo: false
-#| out-width: "90%"
-#| fig-cap: "Animation of the relationship of PCA to the t-SNE embedding for the Diabetes data."
 knitr::include_graphics("images/diabetes-pca-tsne.gif")
-```
 -->
+
+You can see that the PCA configuration is morphed into the that for t-SNE largely by 
+rotation 90$^o$ clockwise, so that dimension 1 in PCA becomes dimension 2 in t-SNE.
+This is not unexpected, because PCA finds the dimensions in to order of maximum variance,
+whereas t-SNE is only trying to match the distances in the data to those in the
+solution. To interpret the result from t-SNE you are free to interchange the axes, or indeed
+to rotate the solution arbitrarily.
 
 ## Application: Variable ordering for data displays {#sec-var-order}
 
