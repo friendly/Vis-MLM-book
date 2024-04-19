@@ -1,36 +1,34 @@
 # simulation for measurement error
 # from: https://statmodeling.stat.columbia.edu/2024/04/14/simulation-to-understand-measurement-error-in-regression/
 
-#library("arm")
 library(car)
 library(dplyr)
 library(ggplot2)
 library(forcats)
 
 set.seed(123)
-n <- 500
+n <- 300
 
 a <- 0.2    # true intercept
 b <- 0.3    # true slope
-
 sigma <- 0.5 # baseline error standard deviation
-err_y <- 1   # additional error stdev for y
-err_x <- 4   # additional error stdev for x
 
 x <- runif(n, 0, 10)
 y <- rnorm(n, a + b*x, sigma)
 demo <- data.frame(x,y)
 
 # add random normal errors to x and y around each point
+err_y <- 1   # additional error stdev for y
+err_x <- 4   # additional error stdev for x
 demo  <- demo |>
   mutate(y_star = rnorm(n, y, err_y),
          x_star = rnorm(n, x, err_x))
 
 
-fit_1 <- lm(y ~ x,           data = demo)
-fit_2 <- lm(y_star ~ x,      data=demo)
-fit_3 <- lm(y ~ x_star,      data=demo)
-fit_4 <- lm(y_star ~ x_star, data=demo)
+fit_1 <- lm(y ~ x,           data = demo)   # no additional error
+fit_2 <- lm(y_star ~ x,      data = demo)   # error in y
+fit_3 <- lm(y ~ x_star,      data = demo)   # error in x
+fit_4 <- lm(y_star ~ x_star, data = demo)   # error in x and y
 
 
 
@@ -58,6 +56,7 @@ demo_plot(demo$x_star, demo$y,      fit_3, "Measurement error on x")
 demo_plot(demo$x_star, demo$y_star, fit_4, "Measurement error on x and y")
 par(op)
 
+#' Do this with ggplot
 
 # make long, with names for the four conditions
 df <- bind_rows(
@@ -68,11 +67,12 @@ df <- bind_rows(
   mutate(name = fct_inorder(name)) 
 
 ggplot(df, aes(x,y)) +
-  geom_point(alpha = 0.2) +
+  geom_point(alpha = 0.3) +
   stat_ellipse(geom = "polygon", 
                color = "blue",fill= "blue", 
                alpha=0.1, linewidth = 1.1) +
-  geom_smooth(method="lm", formula = y~x, fullrange=TRUE, level=0.995) +
+  geom_smooth(method="lm", formula = y~x, fullrange=TRUE, level=0.995,
+              color = "red", fill = "red", alpha = 0.2) +
   facet_wrap(~name) +
   theme_bw(base_size = 14)
 
@@ -85,8 +85,9 @@ mod_stats <- models |>
   summarise(broom::glance(model), .groups = "keep") |>
   select(name, r.squared, sigma) |>
   mutate(errX = stringr::str_detect(name, " x"),
-         errY = stringr::str_detect(name, " y")) |>
-  relocate(errX, errY, .after = name) |>
+         errY = stringr::str_detect(name, " y"),
+         r = sqrt(r.squared)) |>
+  relocate(errX, errY, r, .after = name) |>
   print()
 
 ggplot(data=mod_stats, aes(x = errX, y = sqrt(r.squared), 
@@ -94,7 +95,7 @@ ggplot(data=mod_stats, aes(x = errX, y = sqrt(r.squared),
   geom_point(size = 4) +
   geom_line(linewidth = 1.2) +
   labs(x = "Error on X?",
-       y = "Model R squared",
+       y = "Model R ",
        color = "Error on Y?",
        shape = "Error on Y?"
   ) +
