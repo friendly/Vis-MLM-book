@@ -44,7 +44,7 @@ error in the measurement in  $y$
 increases the MSE and thus standard errors of the regression coefficients but does not introduce
 bias in the coefficients.
 
-### Example
+#### Example
 An illuminating example can be constructed by starting with the simple linear regression
 $$
 y_i = \beta_0 + \beta_1 x_i + \epsilon_i \; ,
@@ -70,6 +70,7 @@ I'll take $x$ to be uniformly distributed in [0, 10] and calculate $y$ as normal
 library(dplyr)
 library(ggplot2)
 library(forcats)
+library(patchwork)
 
 set.seed(123)
 n <- 300
@@ -120,7 +121,7 @@ Then, we can plot the data in `df` with points, regression lines and a data elli
 ```{r}
 #| label: fig-measerr-demo
 #| out-width: "100%"
-#| fig-cap: "**The measurement error quartet**: Each plot shows the linear regression of _y_ on _x_, but where additional error variance has been added to _y_ or _x_ or both."
+#| fig-cap: "**The measurement error quartet**: Each plot shows the linear regression of _y_ on _x_, but where additional error variance has been added to _y_ or _x_ or both. The widths of the confidence bands and the vertical extent of the data ellipses show the effect on precision."
 ggplot(df, aes(x, y)) +
   geom_point(alpha = 0.3) +
   stat_ellipse(geom = "polygon", 
@@ -138,6 +139,58 @@ The effect of error in $x$ is less kind. Comparing the first row of plots with t
 $$
 \widehat{\beta}_{x^\star} \longrightarrow \frac{\beta}{1+\sigma^2_\eta /\sigma^2_x} \; ,
 $$
-where $\beta$ here refers to the regression slope and $\longrightarrow$ means converges to, as the sample size gets large.
+where $\beta$ here refers to the regression slope and $\longrightarrow$ means "converges to", as the sample size gets large.
 Thus, as $\sigma^2_\eta$ increases, $\widehat{\beta}_{x^\star}$ becomes less than \beta$.
+
+Beyond plots like @fig-measerr-demo, we can see the effects of error in $x$ or $y$ on the model summary
+statistics such as the correlation $r_{xy}$ or MSE by extracting these from the fitted models.
+This is easily done using `dplyr::nest_by(name)` ...
+
+```{r measerr-stats}
+model_stats <- df |>
+  dplyr::nest_by(name) |>
+  mutate(model = list(lm(y ~ x, data = data)),
+         sigma = sigma(model),
+         intercept = coef(model)[1],
+         slope = coef(model)[2],
+         r = sqrt(summary(model)$r.squared)) |>
+  mutate(errX = stringr::str_detect(name, " x"),
+         errY = stringr::str_detect(name, " y")) |>
+  relocate(errX, errY, r, .after = name) |>
+  select(-data) |>
+  print()
+```
+
+```{r}
+#| label: fig-measerr-stats
+#| out-width: "100%"
+#| fig-cap: "Model statistics for the combinations of additional error variance in x or y or both."
+p1 <- ggplot(data=model_stats, 
+             aes(x = errX, y = r, 
+                 group = errY, color = errY, shape = errY)) +
+  geom_point(size = 4) +
+  geom_line(linewidth = 1.2) +
+  labs(x = "Error on X?",
+       y = "Model R ",
+       color = "Error on Y?",
+       shape = "Error on Y?") +
+  theme_bw(base_size = 14) +
+  theme(legend.position = "inside",
+        legend.position.inside = c(.8, .8))
+
+p2 <- ggplot(data=model_stats, 
+             aes(x = errX, y = sigma, 
+                 group = errY, color = errY, shape = errY)) +
+  geom_point(size = 4) +
+  geom_line(linewidth = 1.2) +
+  labs(x = "Error on X?",
+     y = "Model residual standard error",
+     color = "Error on Y?",
+     shape = "Error on Y?") +
+  theme_bw(base_size = 14) +
+  theme(legend.position = "inside",
+        legend.position.inside = c(.8, .8))
+
+p1 + p2
+```
 

@@ -5,6 +5,7 @@ library(car)
 library(dplyr)
 library(ggplot2)
 library(forcats)
+library(patchwork)
 
 set.seed(123)
 n <- 300
@@ -77,48 +78,53 @@ ggplot(df, aes(x,y)) +
   theme_bw(base_size = 14)
 
 # get coefficients and std. errors for models
-models <- df |>
+model_stats <- df |>
   dplyr::nest_by(name) |>
   mutate(model = list(lm(y ~ x, data = data)),
          sigma = sigma(model),
          intercept = coef(model)[1],
          slope = coef(model)[2],
-         r =sqrt(summary(model)$r.squared)) |>
-  print()
-
-mod_stats <- models |>
-  summarise(broom::glance(model), .groups = "keep") |>
-  select(name, r.squared, sigma) |>
+         r = sqrt(summary(model)$r.squared)) |>
   mutate(errX = stringr::str_detect(name, " x"),
-         errY = stringr::str_detect(name, " y"),
-         r = sqrt(r.squared)) |>
+         errY = stringr::str_detect(name, " y")) |>
   relocate(errX, errY, r, .after = name) |>
+  select(-data) |>
   print()
 
-ggplot(data=mod_stats, aes(x = errX, y = sqrt(r.squared), 
+# mod_stats <- models |>
+#   summarise(broom::glance(model), .groups = "keep") |>
+#   select(name, r.squared, sigma) |>
+#   mutate(errX = stringr::str_detect(name, " x"),
+#          errY = stringr::str_detect(name, " y"),
+#          r = sqrt(r.squared)) |>
+#   relocate(errX, errY, r, .after = name) |>
+#   print()
+
+p1 <- ggplot(data=mod_stats, aes(x = errX, y = r, 
                            group = errY, color = errY, shape = errY)) +
   geom_point(size = 4) +
   geom_line(linewidth = 1.2) +
   labs(x = "Error on X?",
        y = "Model R ",
        color = "Error on Y?",
-       shape = "Error on Y?"
-  ) +
-  theme_bw(base_size = 14)
+       shape = "Error on Y?") +
+  theme_bw(base_size = 14) +
+  theme(legend.position = "inside",
+        legend.position.inside = c(.8, .8))
 
-
-
-ggplot(data=mod_stats, aes(x = errX, y = sigma, 
+p2 <- ggplot(data=mod_stats, aes(x = errX, y = sigma, 
                            group = errY, color = errY, shape = errY)) +
   geom_point(size = 4) +
   geom_line(linewidth = 1.2) +
   labs(x = "Error on X?",
      y = "Model residual standard error",
      color = "Error on Y?",
-     shape = "Error on Y?"
-) +
-  theme_bw(base_size = 14)
+     shape = "Error on Y?") +
+  theme_bw(base_size = 14) +
+  theme(legend.position = "inside",
+        legend.position.inside = c(.8, .8))
 
+p1 + p2
 
 # view in beta space
 
