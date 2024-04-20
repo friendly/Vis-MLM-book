@@ -79,7 +79,12 @@ ggplot(df, aes(x,y)) +
 # get coefficients and std. errors for models
 models <- df |>
   dplyr::nest_by(name) |>
-  mutate(model = list(lm(y ~ x, data = data)))
+  mutate(model = list(lm(y ~ x, data = data)),
+         sigma = sigma(model),
+         intercept = coef(model)[1],
+         slope = coef(model)[2],
+         r =sqrt(summary(model)$r.squared)) |>
+  print()
 
 mod_stats <- models |>
   summarise(broom::glance(model), .groups = "keep") |>
@@ -115,14 +120,24 @@ ggplot(data=mod_stats, aes(x = errX, y = sigma,
   theme_bw(base_size = 14)
 
 
+# view in beta space
+
+confidenceEllipse(fit_1, col = "black", 
+                  xlim = c(-.25, 1.5), ylim = c(0, .4))
+confidenceEllipse(fit_2, col = "blue", add = TRUE)
+confidenceEllipse(fit_3, col = "red", add = TRUE)
+confidenceEllipse(fit_4, col = "purple", add = TRUE)
+
+labs <- tibble::tribble(
+  ~x, ~y, ~label, ~color,
+  .244, .25, "No X error", "black",
+  1.22, .06, "X error", "red",
+  -.03, .39, "Y error", "blue",
+  1.0,  .17, "Y error", "purple"
+)
+
+with(labs, text(x, y, label, col = color, cex = 1.4))
 
 
 
 
-
-
-
-  summarise(
-    model = list(lm(y ~ x, data = data)),
-    sigma = list(sigma(model))
-  )
