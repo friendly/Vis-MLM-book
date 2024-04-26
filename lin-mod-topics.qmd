@@ -8,6 +8,47 @@ source("R/common.R")
 knitr::opts_chunk$set(fig.path = "figs/topics/")
 ```
 
+Testing latex commands:
+
+{{< include latex/latex-commands.qmd >}}
+
+$$
+\sizedmat{Y}{n \times p} = \sizedmat{X}{n \times q}  \sizedmat{B}{q \times p} \;+\; \sizedmat{U}{n \times p}
+$$
+
+### Ellipsoids in data space and $\mathbf{\beta}$ space {#sec:betaspace}
+
+It is most common to look at data and fitted models in "data space," where axes correspond to
+variables, points represent observations, and fitted models are plotted as lines (or planes) in this space.
+As we've suggested, data ellipsoids provide informative summaries of relationships in data space.
+For linear models, particularly regression models with quantitative predictors, there is another space---"$\mathbf{\beta}$ space"---that provides deeper views of models and the relationships among them.
+
+In $\mathbf{\beta}$ space, the axes pertain to coefficients, for example $(\beta_0, \beta_1)$
+in a simple linear regression. Points in this space are models (true, hypothesized, fitted) whose coordinates represent values of these parameters. For example, one point 
+$\widehat{\mathbf{\beta}}_{\text{OLS}} = (\hat{\beta}_0, \hat{\beta}_1)$ represents the least squares estimate, points $\widehat{\mathbf{\beta}}_{\text{WLS}}$ and $\widehat{\mathbf{\beta}}_{\text{ML}}$
+would give weighted least squares or maximum likelihood estimates, and the line
+$\beta_1 = 0$ represents the null hypothesis that the slope is zero. 
+
+In the sense described below, data space and $\vec{\beta}$ space are \emph{dual} to each other.
+In simple linear regression, for example:  
+
+* each line like $\mathbf{y} = a + b \mathbf{x}$
+in data space corresponds to a point $(a,b)$  in $\mathbf{\beta}$ space, 
+* the set of points on any line $\beta_1 = \alpha + \gamma \beta_0$
+in $\mathbf{\beta}$ space corresponds to a set of lines through a given point 
+$(\alpha, \gamma)$ in data space, and 
+* the geometric proposition that every pair of points defines a line in one space corresponds to
+the proposition that every two lines intersect in a point in the other space.
+
+Moreover, ellipsoids in these spaces are dual and inversely related to each other.
+In data space, joint confidence intervals for the mean vector or joint prediction
+regions for the data are given by the ellipsoids $(\bar{x}_1, \bar{x}_2)^\textsf{T} \oplus c \sqrt{\mathbf{S}}$.
+In the dual $\vec{\beta}$ space, joint confidence regions for the coefficients of 
+a response variable $y$ on $(x_1, x_2)$
+are given by ellipsoids of the form $\widehat{\mathbf{\beta}} \oplus c \sqrt{\mathbf{S}^{-1}}$.
+We illustrate these relationships in the example below.
+
+
 ## Measurement error
 
 
@@ -50,7 +91,7 @@ $$
 y_i = \beta_0 + \beta_1 x_i + \epsilon_i \; ,
 $$
 where $x_i$ is the _true_, fully reliable predictor and $y$ is the response, with error variance $\sigma_\epsilon^2$.
-Now consider that don't measure $x_i$ exactly, but instead observe $x^\star_i$.
+Now consider that we don't measure $x_i$ exactly, but instead observe $x^\star_i$.
 $$
 x^\star_i = x_i + \eta_i \; ,
 $$
@@ -144,7 +185,7 @@ Thus, as $\sigma^2_\eta$ increases, $\widehat{\beta}_{x^\star}$ becomes less tha
 
 Beyond plots like @fig-measerr-demo, we can see the effects of error in $x$ or $y$ on the model summary
 statistics such as the correlation $r_{xy}$ or MSE by extracting these from the fitted models.
-This is easily done using `dplyr::nest_by(name)` ...
+This is easily done using `dplyr::nest_by(name)` and fitting the regression model to each subset, from which we can obtain the model statistics using `sigma()`, `coef()` and so forth.
 
 ```{r measerr-stats}
 model_stats <- df |>
@@ -161,10 +202,14 @@ model_stats <- df |>
   print()
 ```
 
+We plot the model $R = r_{xy}$ and the estimated residual standard error in @fig-measerr-stats below.
+The lines connecting the points are approximately parallel, indicating that errors of measurement
+in $x$ and $y$ have nearly additive effects on model summaries.
 ```{r}
 #| label: fig-measerr-stats
-#| out-width: "100%"
-#| fig-cap: "Model statistics for the combinations of additional error variance in x or y or both."
+#| out-width: "80%"
+#| code-fold: false
+#| fig-cap: "Model statistics for the combinations of additional error variance in x or y or both. Left: model R; right: Residual standard error."
 p1 <- ggplot(data=model_stats, 
              aes(x = errX, y = r, 
                  group = errY, color = errY, shape = errY)) +
@@ -176,7 +221,7 @@ p1 <- ggplot(data=model_stats,
        shape = "Error on Y?") +
   theme_bw(base_size = 14) +
   theme(legend.position = "inside",
-        legend.position.inside = c(.8, .8))
+        legend.position.inside = c(.75, .7))
 
 p2 <- ggplot(data=model_stats, 
              aes(x = errX, y = sigma, 
@@ -189,8 +234,56 @@ p2 <- ggplot(data=model_stats,
      shape = "Error on Y?") +
   theme_bw(base_size = 14) +
   theme(legend.position = "inside",
-        legend.position.inside = c(.8, .8))
+        legend.position.inside = c(.75, .7))
 
 p1 + p2
+```
+
+#### $\beta$ space
+
+In multiple regression the effects of measurement error in a predictor become more complex,
+because error variance in one predictor, $x_1$, say, can affect the coefficients of other
+terms in the model.
+
+Consider the marginal relation between Heart disease and Stress in the `coffee` data.
+@fig-coffee-data-beta shows this with data ellipses in data space and the corresponding
+confidence ellipses in $\beta$ space.
+Each panel starts with the observed data (the darkest ellipse, marked $0$), then adds random normal error,
+$\mathcal{N}(0, \delta \times \mathrm{SD}_{Stress})$, with $\delta = \{0.75, 1.0, 1.5\}$, to the value of Stress, while keeping the mean of Stress the same.
+All of the data ellipses have the same vertical shadows ($\text{SD}_{\textrm{Heart}}$), while the horizontal shadows increase with $\delta$, driving the slope for Stress toward 0.
+
+In $\beta$ space, it can be seen that the estimated coefficients, $(\beta_0, \beta_{\textrm{Stress}})$
+vary along a line and approach $\beta_{\textrm{Stress}}=0$ as $\delta$ gets sufficiently large.
+The shadows of
+ellipses for $(\beta_0, \beta_{\textrm{Stress}})$ along the $\beta_{\textrm{Stress}}$ axis
+also demonstrate the effects of measurement error
+on the standard error of $\beta_{\textrm{Stress}}$.
+
+
+
+```{r}
+#| label: fig-coffee-data-beta
+#| out-width: "100%"
+#| echo: false
+#| fig-cap: "Effects of measurement error in Stress on the marginal relationship between Heart disease and Stress. Each panel starts with the observed data ($\\delta = 0$), then adds random normal error, 
+#| $\\mathcal{N}(0, \\delta \\times \\text{SD}_\\text{Stress})$ with standard deviations multiplied by
+#| $\\delta$ = 0.75, 1.0, 1.5, to the value of Stress. Increasing measurement error biases the slope for Stress toward 0. Left: 50% data ellipses; right: 50% confidence ellipses."
+knitr::include_graphics("images/coffee-data-beta.png")
+```
+
+Perhaps less well-known, but both more surprising and interesting, is the effect that measurement error in one variable, $x_1$, 
+has on the estimate of the coefficient for an \emph{other} variable, $x_2$, in a multiple regression model.
+@fig-coffee-measerr shows the confidence ellipses for $(\beta_{\textrm{Coffee}}, \beta_{\textrm{Stress}})$ in the multiple regression predicting Heart disease, adding random normal error
+$\mathcal{N}(0, \delta \times \mathrm{SD}_{Stress})$, with $\delta = \{0, 0.2, 0.4, 0.8\}$, to the value of Stress alone.  
+As can be plainly seen, while this measurement error in Stress attenuates its coefficient,
+it also has the effect of biasing the coefficient for Coffee toward that in the \emph{marginal}
+regression of Heart disease on Coffee alone.
+
+```{r}
+#| label: fig-coffee-measerr
+#| out-width: "50%"
+#| echo: false
+#| fig-cap: "Biasing effect of measurement error in one variable (Stress) on on the coefficient of another variable (Coffee) in a multiple regression.  The coefficient for Coffee is driven towards its value in the marginal model using Coffee alone, as measurement error in Stress makes it less informative in the joint model."
+knitr::include_graphics("images/coffee-measerr.png")
 ```
 

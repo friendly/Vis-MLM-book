@@ -83,7 +83,19 @@ stressplot(diab.mds)
 plot(diab.mds)
 
 points <- data.frame(diab.mds$points, group = Diabetes$group)
-vectors <- data.frame(diab.mds$species)
+species <- data.frame(diab.mds$species)
+
+(fit <- envfit(diab.mds, Diabetes[, 1:5]))
+
+plot(diab.mds)
+plot(fit)
+points(points[, 1:2], col = Diabetes$group)
+car::dataEllipse(MDS2 ~ MDS1 | group, data=points, 
+                 col = cols,
+                 levels = 0.5, add=TRUE)
+
+scores(fit, "vectors")
+
 
 cols <- scales::hue_pal()(3) |> rev()
 ggplot(data=points, aes(x = MDS1, y = MDS2, 
