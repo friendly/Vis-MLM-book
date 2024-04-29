@@ -128,7 +128,8 @@ $\\newcommand*{\\diag}[1]{\\ensuremath{\\mathrm{diag}\\, #1}}$
   "seriation",
   "tourr",
   "liminal",
-  "langevitour")
+  "langevitour",
+  "vegan")
 
 # write list of packages used at end of every chapter
 .pkg_file <- here::here("bib", "pkgs.txt")
