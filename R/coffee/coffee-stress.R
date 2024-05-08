@@ -4,11 +4,13 @@
 #if (!require("spida")) install.packages("spida", repos="http://R-Forge.R-project.org", type = "source"); 
 # remotes::install_github('gmonette/spida2')
 library("spida2")   ## for coffee data 
+data(coffee, package="spida2")
+coffee <- coffee[, -5]  # get old Stress2 example variable out of the way
+
+load()
 
 library(car)		# for dataEllipse, confidenceEllipse
 
-data(coffee, package="spida2")
-coffee <- coffee[, -5]  # get old Stress2 example variable out of the way
 
 fit.stress <- lm(Heart ~ Stress, data=coffee)
 fit.coffee <- lm(Heart ~ Coffee, data=coffee)
@@ -17,7 +19,7 @@ fit.both   <- lm(Heart ~ Coffee + Stress, data=coffee)
 SD <- sd(coffee$Stress)
 n<-nrow(coffee)
 mStress <- mean(coffee$Stress)
-set.seed(12345)  # reproducability
+set.seed(12345)  # reproducibility
 
 # Add a N(0, SD) error, but keep the mean unchanged
 add_error <- function(x, factor) {
