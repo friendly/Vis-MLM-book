@@ -1,7 +1,7 @@
 
 ```{r include=FALSE}
 source("R/common.R")
-knitr::opts_chunk$set(fig.path = "figs/topics/")
+knitr::opts_chunk$set(fig.path = "figs/ch07/")
 ```
 
 {{< include latex/latex-commands.qmd >}}
@@ -14,6 +14,17 @@ for thinking about multivariate data, models for explaining them, and graphical 
 understanding their results. These can be applied to better understand common problems that arise
 in data analysis.
 
+**Packages**
+
+In this chapter I use the following packages. Load them now:
+
+```{r load-pkgs}
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(patchwork)
+library(car)
+```
 
 
 ## Ellipsoids in data space and $\mathbf{\beta}$ space {#sec:betaspace}
@@ -42,12 +53,55 @@ the proposition that every two lines intersect in a point in the other space.
 
 Moreover, ellipsoids in these spaces are dual and inversely related to each other.
 In data space, joint confidence intervals for the mean vector or joint prediction
-regions for the data are given by the ellipsoids $(\bar{x}_1, \bar{x}_2)^\textsf{T} \oplus c \sqrt{\mathbf{S}}$.
+regions for the data are given by the ellipsoids $(\bar{x}_1, \bar{x}_2)^\textsf{T} \oplus c \sqrt{\mathbf{S}}$, where the covariance matrix $\mathbf{S}$ depends on $\mathbf{X}\trans \mathbf{X}$.
 In the dual $\vec{\beta}$ space, joint confidence regions for the coefficients of 
 a response variable $y$ on $(x_1, x_2)$
-are given by ellipsoids of the form $\widehat{\mathbf{\beta}} \oplus c \sqrt{\mathbf{S}^{-1}}$.
+are given by ellipsoids of the form $\widehat{\mathbf{\beta}} \oplus c \sqrt{\mathbf{S}^{-1}}$,
+and depend on $\inv{(\mathbf{X}\trans \mathbf{X})}$.
 We illustrate these relationships in the example below.
 
+### Coffee, stress and heart disease
+
+Consider the dataset `coffee`, giving measures of `Heart` ($y$), an index of cardiac damage, 
+`Coffee` ($x_1$), a measure of daily coffee consumption, and 
+`Stress` ($x_2$), a measure of occupational stress, in a contrived sample of $n=20$ university people.[^coffee]
+For the sake of the example we assume that the main goal is
+to determine whether or not coffee is good or bad for your heart, and stress
+represents one potential confounding variable among others (age, smoking, etc.)
+that might be useful to control statistically.
+
+[^coffee]: This example was developed by Georges Monette.
+
+```{r}
+load(here::here("data", "coffee.RData"))
+coffee |> dplyr::sample_n(6)
+```
+
+@fig-coffee-scatmat shows the scatterplot matrix, giving the marginal relations between all pairs 
+of variables. The marginal message seems to be that coffee is
+bad for your heart, stress is bad for your heart and coffee consumption is
+also related to occupational stress.
+```{r}
+#| label: fig-coffee-scatmat
+#| echo: false
+#| fig-align: center
+#| out-width: "100%"
+op <- par(mar=c(4,3,3,1)+0.1)
+scatterplotMatrix(~ Heart + Coffee + Stress, data=coffee,
+                  smooth = FALSE,
+                  pch = 16, col = "brown",
+                  cex.axis = 1.3, cex.labels = 3,
+                  ellipse = list(levels = 0.68, fill.alpha = 0.1))
+```
+
+Yet, when we fit both variables together, we obtain the following results,
+suggesting that coffee is good for you---the coefficient for coffee is now
+negative, though non-significant.  How can this be?
+
+```{r coffee-mod}
+coffee.mod <- lm(Heart ~ Coffee + Stress, data=coffee)
+broom::tidy(coffee.mod)
+```
 
 ## Measurement error
 

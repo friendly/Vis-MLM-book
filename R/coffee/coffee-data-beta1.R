@@ -1,47 +1,71 @@
 # demo of data ellipse vs. beta ellipse
 
-setwd("c:/sasuser/datavis/manova/ellipses/fig")
+#setwd("c:/sasuser/datavis/manova/ellipses/fig")
 
-require(spida2)   # coffee data
+#require(spida2)   # coffee data
 require(p3d)     # ellipse functions
 require(car)     # dataEllipse, etc.  (needs car 2.0+)
+
+load(here::here("data", "coffee.RData"))
 
 ###########
 # fig 14: Scatterplot matrix
 ###########
 # need to modify margins for tighter bounding boxes
-opar <- par(mar=c(4,3,3,1)+0.1)
+op <- par(mar=c(4,3,3,1)+0.1)
+scatterplotMatrix(~ Heart + Coffee + Stress, data=coffee,
+                  smooth = FALSE,
+                  pch = 16, col = "brown",
+                  cex.axis = 1.3, cex.labels = 3,
+                  ellipse = list(levels = 0.68, fill.alpha = 0.1))
+par(op)
+#dev.copy2eps(file="vis-reg-coffee11.eps")
 
-scatterplotMatrix(~Heart+Coffee+Stress, coffee, smooth=FALSE, ellipse=TRUE, levels=0.68, pch=19, col=rep("blue", 2), lwd=2)
-par(opar)
-dev.copy2eps(file="vis-reg-coffee11.eps")
-
-fit.mult <- lm( Heart ~ Coffee + Stress, coffee)
+fit.mult   <- lm( Heart ~ Coffee + Stress, coffee)
 fit.simple <- lm( Heart ~ Coffee, coffee)
 fit.stress <- lm( Stress ~ Coffee, coffee)
 
 # data ellipse vs confidence ellipse
 
 ###########
-# fig 15a : Data space
+# fig 12a : Data space
 ###########
-opar <- par(mar=c(4,4,1,1)+0.1)
-with(coffee, dataEllipse(Coffee, Stress, level=0.40, col="blue", cex=1.2, cex.lab=1.5))
-text(40,190, "Data space", cex=1.5)
-abline(fit.stress)
-dev.copy2eps(file="vis-reg-coffee12a.eps")
-par(opar)
+# opar <- par(mar=c(4,4,1,1)+0.1)
+# with(coffee, dataEllipse(Coffee, Stress, 
+#                          level=0.40, col="blue", cex=1.2, cex.lab=1.5))
+# text(40,190, "Data space", cex=1.5)
+# abline(fit.stress)
+# #dev.copy2eps(file="vis-reg-coffee12a.eps")
+# par(opar)
+
+# better version
+png("images/coffee-data-beta1.png", width = 560, height = 560, res = 120)
+op <- par(mar=c(4,4,1,1)+0.1)
+dataEllipse(Stress ~ Coffee, data = coffee,
+            pch = 16,
+            levels = 0.68,
+            center.cex = 2, cex.lab = 1.5,
+            fill = TRUE, fill.alpha = 0.1)
+abline(lm(Stress ~ Coffee, data = coffee), lwd = 2)
+#text(40, 190, "Data space", cex = 2)
+text(20, 190, "Data space", cex = 2, pos=4)
+par(op)
+dev.off()
+
+
 
 
      # Confidence intervals, beta space
 ###########
 # fig 15b   
 ###########
-par(mar=c(4,4.2,1,1)+0.1)
+op <- par(mar=c(4,4.2,1,1)+0.1)
 
-plot( 0, 0, xlim = c( -2,2), ylim = c(-2,2)+1, type = 'n', cex.lab=1.7,
-        xlab = list(~beta["Coffee"]),
-        ylab = list(~beta["Stress"])
+plot( 0, 0, 
+      xlim = c( -2,2), ylim = c(-2,2)+1, 
+      type = 'n', cex.lab=1.7,
+      xlab = list(~beta["Coffee"]),
+      ylab = list(~beta["Stress"])
         )
 text(1.5,2.85, "Beta space", cex=1.5)
 
@@ -80,8 +104,8 @@ ax.down <- do.call( ell.conj, c( cep, list( dir = c(0,1), len=.5)))
 abline2( ax.down$tan3, col = 'red', lty="dotted")
 abline2( ax.down$tan4, col = 'red', lty="dotted")
 
-dev.copy2eps(file="vis-reg-coffee12b.eps")
-
+#dev.copy2eps(file="vis-reg-coffee12b.eps")
+par(op)
 
 # What about marginal (simple regression) model
 
