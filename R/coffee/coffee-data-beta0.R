@@ -1,6 +1,7 @@
 # demo of data ellipse vs. beta ellipse
 
 #setwd("c:/sasuser/datavis/manova/ellipses/fig")
+# was: visreg-coffee.R
 
 #require(spida2)   # coffee data
 require(p3d)     # ellipse functions

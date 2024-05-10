@@ -10,6 +10,9 @@ scatterplotMatrix(~ Heart + Coffee + Stress, data=coffee,
 plot(Heart ~ Coffee, data=coffee)
 text(coffee$Coffee, coffee$Heart, label = coffee$Group, cex = 0.5)
 
+## Coffee-stress data space
+png("images/coffee-data-beta1.png", width = 560, height = 560, res = 120)
+op <- par(mar=c(4,4,1,1)+0.1)
 dataEllipse(Stress ~ Coffee, data = coffee,
             pch = 16,
             levels = 0.68,
@@ -17,6 +20,8 @@ dataEllipse(Stress ~ Coffee, data = coffee,
             fill = TRUE, fill.alpha = 0.1)
 abline(lm(Stress ~ Coffee, data = coffee), lwd = 2)
 text(21, 180, "Data space", cex = 2, pos = 4)
+par(op)
+dev.off()
 
 coffee.mod <- lm(Heart ~ Coffee + Stress, data=coffee)
 Anova(coffee.mod)
@@ -24,16 +29,47 @@ broom::tidy(coffee.mod)
 
 #confidenceEllipses(coffee.mod)
 
-confidenceEllipse(coffee.mod, Scheffe = TRUE,
-                  grid = FALSE,
-                  xlim = c(-2, 1), ylim = c(-0.5, 2.5))
+png("images/coffee-data-beta2.png", width = 560, height = 560, res = 120)
+op <- par(mar=c(4,5,1,1)+0.1)
+confidenceEllipse(coffee.mod, 
+    grid = FALSE,
+    xlim = c(-2, 1), ylim = c(-0.5, 2.5),
+    xlab = expression(paste("Coffee coefficient,  ", beta["Coffee"])),
+    ylab = expression(paste("Stress coefficient,  ", beta["Stress"])),
+    cex.lab = 1.5)
 confidenceEllipse(coffee.mod, add=TRUE, draw = TRUE,
-                  Scheffe = TRUE)
-abline(h = 0, v = 0)
+    col = "red", fill = TRUE, fill.alpha = 0.1,
+    dfn = 1)
+abline(h = 0, v = 0, lwd = 2)
 
+# confidence intervals
 beta <- coef( coffee.mod )[-1]
-lines( y = c(0,0), x = confint(coffee.mod)["Coffee",] , lwd = 6, col = 'red')
-lines( x = c(0,0), y = confint(coffee.mod)["Stress",] , lwd = 6, col = 'red')
+CI <- confint(coffee.mod)
+lines( y = c(0,0), x = CI["Coffee",] , lwd = 6, col = 'red')
+lines( x = c(0,0), y = CI["Stress",] , lwd = 6, col = 'red')
 points( diag( beta ), col = 'black', pch = 16, cex=1.8)
 
-text(-2, 2.25, "Beta space", cex=1.5, pos = 4)
+abline(v = CI["Coffee",], col = "red", lty = 2)
+abline(h = CI["Stress",], col = "red", lty = 2)
+
+text(-2.1, 2.35, "Beta space", cex=2, pos = 4)
+arrows(beta[1], beta[2], beta[1], 0, angle=8, len=0.2)
+arrows(beta[1], beta[2], 0, beta[2], angle=8, len=0.2)
+
+text( -1.5, 1.85, "df = 2", col = 'blue', adj = 0, cex=1.2)
+text( 0.2, .85, "df = 1", col = 'red', adj = 0, cex=1.2)
+
+heplots::mark.H0(col = "darkgreen", pch = "+", lty = 0, pos = 4, cex = 3)
+par(op)
+dev.off()
+
+# see conditional relation in avPlots
+avPlots(coffee.mod,
+        ellipse = list(levels = 0.68, fill=TRUE, fill.alpha = 0.1),
+        cex.lab = 1.5,
+        pch = 19,
+        main = "Added-variable plots for coffee.mod")
+
+
+
+

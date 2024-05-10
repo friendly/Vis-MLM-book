@@ -40,7 +40,7 @@ $\widehat{\mathbf{\beta}}_{\text{OLS}} = (\hat{\beta}_0, \hat{\beta}_1)$ represe
 would give weighted least squares or maximum likelihood estimates, and the line
 $\beta_1 = 0$ represents the null hypothesis that the slope is zero. 
 
-In the sense described below, data space and $\vec{\beta}$ space are \emph{dual} to each other.
+In the sense described below, data space and $\boldsymbol{\beta}$ space are each _dual_ to the other.
 In simple linear regression, for example:  
 
 * each line like $\mathbf{y} = a + b \mathbf{x}$
@@ -53,10 +53,11 @@ the proposition that every two lines intersect in a point in the other space.
 
 Moreover, ellipsoids in these spaces are dual and inversely related to each other.
 In data space, joint confidence intervals for the mean vector or joint prediction
-regions for the data are given by the ellipsoids $(\bar{x}_1, \bar{x}_2)^\textsf{T} \oplus c \sqrt{\mathbf{S}}$, where the covariance matrix $\mathbf{S}$ depends on $\mathbf{X}\trans \mathbf{X}$.
+regions for the data are given by the ellipsoids 
+$(\bar{x}_1, \bar{x}_2)^\textsf{T} \oplus c \sqrt{\mathbf{S}_{\mathbf{X}}}$, where the covariance matrix $\mathbf{S}_{\mathbf{X}}$ depends on $\mathbf{X}\trans \mathbf{X}$.
 In the dual $\vec{\beta}$ space, joint confidence regions for the coefficients of 
 a response variable $y$ on $(x_1, x_2)$
-are given by ellipsoids of the form $\widehat{\mathbf{\beta}} \oplus c \sqrt{\mathbf{S}^{-1}}$,
+are given by ellipsoids of the form $\widehat{\mathbf{\beta}} \oplus c \sqrt{\mathbf{S}_{\mathbf{X}}^{-1}}$,
 and depend on $\inv{(\mathbf{X}\trans \mathbf{X})}$.
 We illustrate these relationships in the example below.
 
@@ -73,6 +74,7 @@ that might be useful to control statistically.
 [^coffee]: This example was developed by Georges Monette.
 
 ```{r}
+set.seed(1234)
 load(here::here("data", "coffee.RData"))
 coffee |> dplyr::sample_n(6)
 ```
@@ -86,6 +88,8 @@ also related to occupational stress.
 #| echo: false
 #| fig-align: center
 #| out-width: "100%"
+#| code-fold: true
+#| fig-cap: "Scatterplot matrix for the `coffee` data showing the pairwise relationships among Heart damage ($y$), Coffee consumption ($x_1$), and Stress ($x_2$), with linear regression lines and 68\% data ellipses."
 op <- par(mar=c(4,3,3,1)+0.1)
 scatterplotMatrix(~ Heart + Coffee + Stress, data=coffee,
                   smooth = FALSE,
@@ -102,6 +106,27 @@ negative, though non-significant.  How can this be?
 coffee.mod <- lm(Heart ~ Coffee + Stress, data=coffee)
 broom::tidy(coffee.mod)
 ```
+
+The answer is that the marginal plots of `Heart` vs. `Coffee` and `Stress` in the first row of @fig-coffee-scatmat each ignore
+the the other predictor. In contrast, the 
+coefficients for coffee and stress in the multiple regression model `coffee.mod` are _partial_ coefficients, giving the 
+estimated change in heart damage for a unit change in each predictor, but **adjusting for* (controlling for, or holding constant)
+the other predictor.
+
+We can see these effects directly in **added variable plots** (@sec-avplots), but here I consider the relationship
+of coffee and stress in data space and beta space.
+
+```{r}
+#| label: fig-coffee-data-beta-both
+#| echo: false
+#| out-width: "100%"
+#| fig-cap: "Data space and $\\mathbf{\\beta}$ space representations of Coffee and Stress.
+   Left: Standard (68%) data ellipse. Right: Joint 95% confidence ellipse (blue) for
+   ($\\beta_{\\text{Coffee}}, \\beta_{\\text{Stress}}$), CI ellipse (red) with 95% univariate shadows"
+knitr::include_graphics("images/coffee-data-beta-both.png")
+```
+
+
 
 ## Measurement error
 
