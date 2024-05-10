@@ -15,7 +15,8 @@ png("images/coffee-data-beta1.png", width = 560, height = 560, res = 120)
 op <- par(mar=c(4,4,1,1)+0.1)
 dataEllipse(Stress ~ Coffee, data = coffee,
             pch = 16,
-            levels = 0.68,
+            levels = c(0.40, 0.68),
+            ellipse.label = c(0.40, 0.68),
             center.cex = 2, cex.lab = 1.5,
             fill = TRUE, fill.alpha = 0.1)
 abline(lm(Stress ~ Coffee, data = coffee), lwd = 2)
