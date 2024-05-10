@@ -1,6 +1,7 @@
 load(here::here("data", "coffee.RData"))
 
 library(car)
+library(dplyr)
 
 scatterplotMatrix(~ Heart + Coffee + Stress, data=coffee,
                   smooth = FALSE,
@@ -15,14 +16,43 @@ png("images/coffee-data-beta1.png", width = 560, height = 560, res = 120)
 op <- par(mar=c(4,4,1,1)+0.1)
 dataEllipse(Stress ~ Coffee, data = coffee,
             pch = 16,
-            levels = c(0.40, 0.68),
-            ellipse.label = c(0.40, 0.68),
+            levels = 0.68,
             center.cex = 2, cex.lab = 1.5,
             fill = TRUE, fill.alpha = 0.1)
 abline(lm(Stress ~ Coffee, data = coffee), lwd = 2)
 text(21, 180, "Data space", cex = 2, pos = 4)
 par(op)
 dev.off()
+
+# try the same, but with 40, 68 % ellipses
+
+op <- par(mar=c(4,4,1,1)+0.1)
+dataEllipse(Stress ~ Coffee, data = coffee,
+            pch = 16,
+            levels = 0.68,
+            ellipse.label = 0.68,
+            center.cex = 2, cex.lab = 1.5,
+            fill = FALSE)
+dataEllipse(Stress ~ Coffee, data = coffee,
+            levels = 0.40,
+            ellipse.label = 0.40,
+            fill = TRUE, fill.alpha = 0.1,
+            col = "red", add = TRUE, plot.points = FALSE)
+
+coffee |> tidyr::pivot_longer(Coffee:Stress, names_to = "variable") |>
+  select(-Group, -Heart) 
+
+coffee |>
+  select(-Group, -Heart) |>
+  summarise(across(Coffee:Stress, .fns = c(mean, sd)))
+#  summarise_each(funs(mean,sd,se=sd(.)/sqrt(n())))  
+
+
+
+abline(lm(Stress ~ Coffee, data = coffee), lwd = 2)
+text(21, 180, "Data space", cex = 2, pos = 4)
+par(op)
+
 
 coffee.mod <- lm(Heart ~ Coffee + Stress, data=coffee)
 Anova(coffee.mod)
