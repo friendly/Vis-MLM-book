@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.450">
+<meta name="generator" content="quarto-1.4.550">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <title>Visualizing Multivariate Data and Models in R - 7&nbsp; Topics in Linear Models</title>
 <style>
@@ -19,7 +19,7 @@ ul.task-list li input[type="checkbox"] {
 }
 /* CSS for syntax highlighting */
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -55,6 +55,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 div.csl-bib-body { }
 div.csl-entry {
   clear: both;
+  margin-bottom: 0em;
 }
 .hanging-indent div.csl-entry {
   margin-left:2em;
@@ -97,7 +98,13 @@ div.csl-indent {
   "collapse-after": 3,
   "panel-placement": "start",
   "type": "textbox",
-  "limit": 20,
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
   "language": {
     "search-no-results-text": "No results",
     "search-matching-documents-text": "matching documents",
@@ -106,22 +113,48 @@ div.csl-indent {
     "search-more-match-text": "more match in this document",
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
     "search-detached-cancel-button-title": "Cancel",
     "search-submit-button-title": "Submit",
     "search-label": "Search"
   }
-}</script><script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script><script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+}</script><script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script><script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script><script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 </head>
 <body class="nav-sidebar floating">
 
 <div id="quarto-search-results"></div>
-  <header id="quarto-header" class="headroom fixed-top"><nav class="quarto-secondary-nav"><div class="container-fluid d-flex">
-      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <header id="quarto-header" class="headroom fixed-top quarto-banner"><nav class="quarto-secondary-nav"><div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./07-lin-mod-topics.html"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Topics in Linear Models</span></a></li></ol></nav>
-      <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
-      </a>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./07-lin-mod-topics.html"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Topics in Linear Models</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
       <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
         <i class="bi bi-search"></i>
       </button>
@@ -145,11 +178,11 @@ div.csl-indent {
   
   </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
 <!-- sidebar -->
-  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation floating overflow-auto"><div class="pt-lg-2 mt-2 text-left sidebar-header">
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto"><div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
       <a href="./">Visualizing Multivariate Data and Models in R</a> 
         <div class="sidebar-tools-main">
-    <a href="https://github.com/friendly/vis-MLM-book" rel="" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+    <a href="https://github.com/friendly/vis-MLM-book" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
 </div>
     </div>
       </div>
@@ -258,7 +291,7 @@ div.csl-indent {
 </li>
     </ul>
 </div>
-</nav><div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
+</nav><div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
         <nav id="TOC" role="doc-toc" class="toc-active"><h2 id="toc-title">Table of contents</h2>
@@ -277,7 +310,7 @@ div.csl-indent {
   <li><a href="#errors-in-predictors" id="toc-errors-in-predictors" class="nav-link" data-scroll-target="#errors-in-predictors"><span class="header-section-number">7.2.2</span> Errors in predictors</a></li>
   </ul>
 </li>
-  </ul><div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/friendly/vis-MLM-book/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
+  </ul><div class="toc-actions"><ul><li><a href="https://github.com/friendly/vis-MLM-book/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content quarto-banner-title-block" id="quarto-document-content"><!--- For HTML Only ---><!-- %\renewcommand*{\det}[1]{\mathrm{det} (#1)} --><!-- %\renewcommand*{\det}[1]{|#1|} --><!-- % R stuff --><p>The geometric and graphical approach of earlier chapters has already introduced some new ideas for thinking about multivariate data, models for explaining them, and graphical methods for understanding their results. These can be applied to better understand common problems that arise in data analysis.</p>
@@ -294,33 +327,38 @@ div.csl-indent {
 <span class="header-section-number">7.1</span> Ellipsoids in data space and <span class="math inline">\(\mathbf{\beta}\)</span> space</h2>
 <p>It is most common to look at data and fitted models in “data space,” where axes correspond to variables, points represent observations, and fitted models are plotted as lines (or planes) in this space. As we’ve suggested, data ellipsoids provide informative summaries of relationships in data space. For linear models, particularly regression models with quantitative predictors, there is another space—“<span class="math inline">\(\mathbf{\beta}\)</span> space”—that provides deeper views of models and the relationships among them.</p>
 <p>In <span class="math inline">\(\mathbf{\beta}\)</span> space, the axes pertain to coefficients, for example <span class="math inline">\((\beta_0, \beta_1)\)</span> in a simple linear regression. Points in this space are models (true, hypothesized, fitted) whose coordinates represent values of these parameters. For example, one point <span class="math inline">\(\widehat{\mathbf{\beta}}_{\text{OLS}} = (\hat{\beta}_0, \hat{\beta}_1)\)</span> represents the least squares estimate, points <span class="math inline">\(\widehat{\mathbf{\beta}}_{\text{WLS}}\)</span> and <span class="math inline">\(\widehat{\mathbf{\beta}}_{\text{ML}}\)</span> would give weighted least squares or maximum likelihood estimates, and the line <span class="math inline">\(\beta_1 = 0\)</span> represents the null hypothesis that the slope is zero.</p>
-<p>In the sense described below, data space and <span class="math inline">\(\mathbf{\beta}\)</span> space are to each other. In simple linear regression, for example:</p>
+<p>In the sense described below, data space and <span class="math inline">\(\boldsymbol{\beta}\)</span> space are each <em>dual</em> to the other. In simple linear regression, for example:</p>
 <ul>
 <li>each line like <span class="math inline">\(\mathbf{y} = a + b \mathbf{x}\)</span> in data space corresponds to a point <span class="math inline">\((a,b)\)</span> in <span class="math inline">\(\mathbf{\beta}\)</span> space,</li>
 <li>the set of points on any line <span class="math inline">\(\beta_1 = \alpha + \gamma \beta_0\)</span> in <span class="math inline">\(\mathbf{\beta}\)</span> space corresponds to a set of lines through a given point <span class="math inline">\((\alpha, \gamma)\)</span> in data space, and</li>
 <li>the geometric proposition that every pair of points defines a line in one space corresponds to the proposition that every two lines intersect in a point in the other space.</li>
 </ul>
-<p>Moreover, ellipsoids in these spaces are dual and inversely related to each other. In data space, joint confidence intervals for the mean vector or joint prediction regions for the data are given by the ellipsoids <span class="math inline">\((\bar{x}_1, \bar{x}_2)^\textsf{T} \oplus c \sqrt{\mathbf{S}}\)</span>, where the covariance matrix <span class="math inline">\(\mathbf{S}\)</span> depends on <span class="math inline">\(\mathbf{X}^\mathsf{T}\mathbf{X}\)</span>. In the dual <span class="math inline">\(\mathbf{\beta}\)</span> space, joint confidence regions for the coefficients of a response variable <span class="math inline">\(y\)</span> on <span class="math inline">\((x_1, x_2)\)</span> are given by ellipsoids of the form <span class="math inline">\(\widehat{\mathbf{\beta}} \oplus c \sqrt{\mathbf{S}^{-1}}\)</span>, and depend on <span class="math inline">\(\mathbf{(\mathbf{X}^\mathsf{T}\mathbf{X})}^{-1}\)</span>. We illustrate these relationships in the example below.</p>
+<p>Moreover, ellipsoids in these spaces are dual and inversely related to each other. In data space, joint confidence intervals for the mean vector or joint prediction regions for the data are given by the ellipsoids <span class="math inline">\((\bar{x}_1, \bar{x}_2)^\textsf{T} \oplus c \sqrt{\mathbf{S}_{\mathbf{X}}}\)</span>, where the covariance matrix <span class="math inline">\(\mathbf{S}_{\mathbf{X}}\)</span> depends on <span class="math inline">\(\mathbf{X}^\mathsf{T}\mathbf{X}\)</span>. In the dual <span class="math inline">\(\mathbf{\beta}\)</span> space, joint confidence regions for the coefficients of a response variable <span class="math inline">\(y\)</span> on <span class="math inline">\((x_1, x_2)\)</span> are given by ellipsoids of the form <span class="math inline">\(\widehat{\mathbf{\beta}} \oplus c \sqrt{\mathbf{S}_{\mathbf{X}}^{-1}}\)</span>, and depend on <span class="math inline">\(\mathbf{(\mathbf{X}^\mathsf{T}\mathbf{X})}^{-1}\)</span>. We illustrate these relationships in the example below.</p>
 <section id="coffee-stress-and-heart-disease" class="level3" data-number="7.1.1"><h3 data-number="7.1.1" class="anchored" data-anchor-id="coffee-stress-and-heart-disease">
 <span class="header-section-number">7.1.1</span> Coffee, stress and heart disease</h3>
 <p>Consider the dataset <code>coffee</code>, giving measures of <code>Heart</code> (<span class="math inline">\(y\)</span>), an index of cardiac damage, <code>Coffee</code> (<span class="math inline">\(x_1\)</span>), a measure of daily coffee consumption, and <code>Stress</code> (<span class="math inline">\(x_2\)</span>), a measure of occupational stress, in a contrived sample of <span class="math inline">\(n=20\)</span> university people.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> For the sake of the example we assume that the main goal is to determine whether or not coffee is good or bad for your heart, and stress represents one potential confounding variable among others (age, smoking, etc.) that might be useful to control statistically.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb2" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/load.html">load</a></span><span class="op">(</span><span class="fu">here</span><span class="fu">::</span><span class="fu"><a href="https://here.r-lib.org//reference/here.html">here</a></span><span class="op">(</span><span class="st">"data"</span>, <span class="st">"coffee.RData"</span><span class="op">)</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb2" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">1234</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/load.html">load</a></span><span class="op">(</span><span class="fu">here</span><span class="fu">::</span><span class="fu"><a href="https://here.r-lib.org//reference/here.html">here</a></span><span class="op">(</span><span class="st">"data"</span>, <span class="st">"coffee.RData"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">coffee</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/sample_n.html">sample_n</a></span><span class="op">(</span><span class="fl">6</span><span class="op">)</span></span>
-<span><span class="co">#&gt;       Group Coffee Stress Heart</span></span>
-<span><span class="co">#&gt; 1 Professor    124    146   103</span></span>
-<span><span class="co">#&gt; 2   Student    100    123    92</span></span>
-<span><span class="co">#&gt; 3   Student     23     14     6</span></span>
-<span><span class="co">#&gt; 4   Student     87    128   113</span></span>
-<span><span class="co">#&gt; 5   Student     61     82    69</span></span>
-<span><span class="co">#&gt; 6   Student     56     73    44</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt;          Group Coffee Stress Heart</span></span>
+<span><span class="co">#&gt; 1 Grad_Student    104    117    92</span></span>
+<span><span class="co">#&gt; 2      Student     52     86    63</span></span>
+<span><span class="co">#&gt; 3 Grad_Student     76     92    58</span></span>
+<span><span class="co">#&gt; 4      Student    100    123    92</span></span>
+<span><span class="co">#&gt; 5      Student     64     74    63</span></span>
+<span><span class="co">#&gt; 6    Professor    141    175   145</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p><a href="#fig-coffee-scatmat">Figure&nbsp;<span>7.1</span></a> shows the scatterplot matrix, giving the marginal relations between all pairs of variables. The marginal message seems to be that coffee is bad for your heart, stress is bad for your heart and coffee consumption is also related to occupational stress.</p>
+<p><a href="#fig-coffee-scatmat" class="quarto-xref">Figure&nbsp;<span>7.1</span></a> shows the scatterplot matrix, giving the marginal relations between all pairs of variables. The marginal message seems to be that coffee is bad for your heart, stress is bad for your heart and coffee consumption is also related to occupational stress.</p>
 <div class="cell" data-layout-align="center">
 <div class="cell-output-display">
-<div id="fig-coffee-scatmat" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure"><p><img src="figs/ch07/fig-coffee-scatmat-1.png" class="img-fluid figure-img" style="width:100.0%"></p>
-<figcaption class="figure-caption">Figure&nbsp;7.1: <strong>?(caption)</strong></figcaption></figure>
+<div id="fig-coffee-scatmat" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-coffee-scatmat-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/ch07/fig-coffee-scatmat-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-coffee-scatmat-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;7.1: Scatterplot matrix for the <code>coffee</code> data showing the pairwise relationships among Heart damage (<span class="math inline">\(y\)</span>), Coffee consumption (<span class="math inline">\(x_1\)</span>), and Stress (<span class="math inline">\(x_2\)</span>), with linear regression lines and 68% data ellipses.
+</figcaption></figure>
 </div>
 </div>
 </div>
@@ -334,6 +372,20 @@ div.csl-indent {
 <span><span class="co">#&gt; 1 (Intercept)   -7.79      5.79      -1.35 0.196    </span></span>
 <span><span class="co">#&gt; 2 Coffee        -0.409     0.292     -1.40 0.179    </span></span>
 <span><span class="co">#&gt; 3 Stress         1.20      0.224      5.34 0.0000536</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The answer is that the marginal plots of <code>Heart</code> vs.&nbsp;<code>Coffee</code> and <code>Stress</code> in the first row of <a href="#fig-coffee-scatmat" class="quarto-xref">Figure&nbsp;<span>7.1</span></a> each ignore the the other predictor. In contrast, the coefficients for coffee and stress in the multiple regression model <code>coffee.mod</code> are <em>partial</em> coefficients, giving the estimated change in heart damage for a unit change in each predictor, but **adjusting for* (controlling for, or holding constant) the other predictor.</p>
+<p>We can see these effects directly in <strong>added variable plots</strong> (<span class="quarto-unresolved-ref">?sec-avplots</span>), but here I consider the relationship of coffee and stress in data space and beta space.</p>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div id="fig-coffee-data-beta-both" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-coffee-data-beta-both-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="images/coffee-data-beta-both.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-coffee-data-beta-both-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;7.2: Data space and <span class="math inline">\(\mathbf{\beta}\)</span> space representations of Coffee and Stress. Left: Standard (68%) data ellipse. Right: Joint 95% confidence ellipse (blue) for (<span class="math inline">\(\beta_{\text{Coffee}}, \beta_{\text{Stress}}\)</span>), CI ellipse (red) with 95% univariate shadows
+</figcaption></figure>
+</div>
+</div>
 </div>
 </section></section><section id="measurement-error" class="level2" data-number="7.2"><h2 data-number="7.2" class="anchored" data-anchor-id="measurement-error">
 <span class="header-section-number">7.2</span> Measurement error</h2>
@@ -410,9 +462,13 @@ y^\star_i = y_i + \nu_i
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html">facet_wrap</a></span><span class="op">(</span><span class="op">~</span><span class="va">name</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">14</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div id="fig-measerr-demo" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure"><p><img src="figs/ch07/fig-measerr-demo-1.png" class="img-fluid figure-img" style="width:100.0%"></p>
-<figcaption class="figure-caption">Figure&nbsp;7.2: <strong>The measurement error quartet</strong>: Each plot shows the linear regression of <em>y</em> on <em>x</em>, but where additional error variance has been added to <em>y</em> or <em>x</em> or both. The widths of the confidence bands and the vertical extent of the data ellipses show the effect on precision.</figcaption></figure>
+<div id="fig-measerr-demo" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-measerr-demo-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/ch07/fig-measerr-demo-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-measerr-demo-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;7.3: <strong>The measurement error quartet</strong>: Each plot shows the linear regression of <em>y</em> on <em>x</em>, but where additional error variance has been added to <em>y</em> or <em>x</em> or both. The widths of the confidence bands and the vertical extent of the data ellipses show the effect on precision.
+</figcaption></figure>
 </div>
 </div>
 </div>
@@ -420,7 +476,7 @@ y^\star_i = y_i + \nu_i
 <p>The effect of error in <span class="math inline">\(x\)</span> is less kind. Comparing the first row of plots with the second row, you can see that the estimated slope decreases when errors are added to <span class="math inline">\(x\)</span>. This is called <em>attenuation bias</em>, and it can be shown that <span class="math display">\[
 \widehat{\beta}_{x^\star} \longrightarrow \frac{\beta}{1+\sigma^2_\eta /\sigma^2_x} \; ,
 \]</span> where <span class="math inline">\(\beta\)</span> here refers to the regression slope and <span class="math inline">\(\longrightarrow\)</span> means “converges to”, as the sample size gets large. Thus, as <span class="math inline">\(\sigma^2_\eta\)</span> increases, <span class="math inline">\(\widehat{\beta}_{x^\star}\)</span> becomes less than $.</p>
-<p>Beyond plots like <a href="#fig-measerr-demo">Figure&nbsp;<span>7.2</span></a>, we can see the effects of error in <span class="math inline">\(x\)</span> or <span class="math inline">\(y\)</span> on the model summary statistics such as the correlation <span class="math inline">\(r_{xy}\)</span> or MSE by extracting these from the fitted models. This is easily done using <code>dplyr::nest_by(name)</code> and fitting the regression model to each subset, from which we can obtain the model statistics using <code><a href="https://rdrr.io/r/stats/sigma.html">sigma()</a></code>, <code><a href="https://rdrr.io/r/stats/coef.html">coef()</a></code> and so forth.</p>
+<p>Beyond plots like <a href="#fig-measerr-demo" class="quarto-xref">Figure&nbsp;<span>7.3</span></a>, we can see the effects of error in <span class="math inline">\(x\)</span> or <span class="math inline">\(y\)</span> on the model summary statistics such as the correlation <span class="math inline">\(r_{xy}\)</span> or MSE by extracting these from the fitted models. This is easily done using <code>dplyr::nest_by(name)</code> and fitting the regression model to each subset, from which we can obtain the model statistics using <code><a href="https://rdrr.io/r/stats/sigma.html">sigma()</a></code>, <code><a href="https://rdrr.io/r/stats/coef.html">coef()</a></code> and so forth.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb9" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">model_stats</span> <span class="op">&lt;-</span> <span class="va">df</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/nest_by.html">nest_by</a></span><span class="op">(</span><span class="va">name</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -443,7 +499,7 @@ y^\star_i = y_i + \nu_i
 <span><span class="co">#&gt; 3 Measurement error … TRUE  FALSE 0.481 &lt;lm&gt;  0.844    1.22   0.0946</span></span>
 <span><span class="co">#&gt; 4 Measurement error … TRUE  TRUE  0.401 &lt;lm&gt;  1.31     1.12   0.117</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>We plot the model <span class="math inline">\(R = r_{xy}\)</span> and the estimated residual standard error in <a href="#fig-measerr-stats">Figure&nbsp;<span>7.3</span></a> below. The lines connecting the points are approximately parallel, indicating that errors of measurement in <span class="math inline">\(x\)</span> and <span class="math inline">\(y\)</span> have nearly additive effects on model summaries.</p>
+<p>We plot the model <span class="math inline">\(R = r_{xy}\)</span> and the estimated residual standard error in <a href="#fig-measerr-stats" class="quarto-xref">Figure&nbsp;<span>7.4</span></a> below. The lines connecting the points are approximately parallel, indicating that errors of measurement in <span class="math inline">\(x\)</span> and <span class="math inline">\(y\)</span> have nearly additive effects on model summaries.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb10" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">model_stats</span>, </span>
 <span>             <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">errX</span>, y <span class="op">=</span> <span class="va">r</span>, </span>
@@ -473,9 +529,13 @@ y^\star_i = y_i + \nu_i
 <span></span>
 <span><span class="va">p1</span> <span class="op">+</span> <span class="va">p2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div id="fig-measerr-stats" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure"><p><img src="figs/ch07/fig-measerr-stats-1.png" class="img-fluid figure-img" style="width:80.0%"></p>
-<figcaption class="figure-caption">Figure&nbsp;7.3: Model statistics for the combinations of additional error variance in x or y or both. Left: model R; right: Residual standard error.</figcaption></figure>
+<div id="fig-measerr-stats" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-measerr-stats-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/ch07/fig-measerr-stats-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-measerr-stats-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;7.4: Model statistics for the combinations of additional error variance in x or y or both. Left: model R; right: Residual standard error.
+</figcaption></figure>
 </div>
 </div>
 </div>
@@ -486,25 +546,33 @@ y^\star_i = y_i + \nu_i
 <p>In <span class="math inline">\(\beta\)</span> space, it can be seen that the estimated coefficients, <span class="math inline">\((\beta_0, \beta_{\textrm{Stress}})\)</span> vary along a line and approach <span class="math inline">\(\beta_{\textrm{Stress}}=0\)</span> as <span class="math inline">\(\delta\)</span> gets sufficiently large. The shadows of ellipses for <span class="math inline">\((\beta_0, \beta_{\textrm{Stress}})\)</span> along the <span class="math inline">\(\beta_{\textrm{Stress}}\)</span> axis also demonstrate the effects of measurement error on the standard error of <span class="math inline">\(\beta_{\textrm{Stress}}\)</span>.</p>
 <div class="cell" data-layout-align="center">
 <div class="cell-output-display">
-<div id="fig-coffee-measerr-data-beta.png" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure"><p><img src="images/coffee-measerr-data-beta.png" class="img-fluid figure-img" style="width:100.0%"></p>
-<figcaption class="figure-caption">Figure&nbsp;7.4: Effects of measurement error in Stress on the marginal relationship between Heart disease and Stress. Each panel starts with the observed data (<span class="math inline">\(\delta = 0\)</span>), then adds random normal error, <span class="math inline">\(\mathcal{N}(0, \delta \times \text{SD}_\text{Stress})\)</span> with standard deviations multiplied by <span class="math inline">\(\delta\)</span> = 0.75, 1.0, 1.5, to the value of Stress. Increasing measurement error biases the slope for Stress toward 0. Left: 50% data ellipses; right: 50% confidence ellipses.</figcaption></figure>
+<div id="fig-coffee-measerr-data-beta.png" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-coffee-measerr-data-beta.png-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="images/coffee-measerr-data-beta.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-coffee-measerr-data-beta.png-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;7.5: Effects of measurement error in Stress on the marginal relationship between Heart disease and Stress. Each panel starts with the observed data (<span class="math inline">\(\delta = 0\)</span>), then adds random normal error, <span class="math inline">\(\mathcal{N}(0, \delta \times \text{SD}_\text{Stress})\)</span> with standard deviations multiplied by <span class="math inline">\(\delta\)</span> = 0.75, 1.0, 1.5, to the value of Stress. Increasing measurement error biases the slope for Stress toward 0. Left: 50% data ellipses; right: 50% confidence ellipses.
+</figcaption></figure>
 </div>
 </div>
 </div>
-<p>Perhaps less well-known, but both more surprising and interesting, is the effect that measurement error in one variable, <span class="math inline">\(x_1\)</span>, has on the estimate of the coefficient for an variable, <span class="math inline">\(x_2\)</span>, in a multiple regression model. <a href="#fig-coffee-measerr">Figure&nbsp;<span>7.5</span></a> shows the confidence ellipses for <span class="math inline">\((\beta_{\textrm{Coffee}}, \beta_{\textrm{Stress}})\)</span> in the multiple regression predicting Heart disease, adding random normal error <span class="math inline">\(\mathcal{N}(0, \delta \times \mathrm{SD}_{Stress})\)</span>, with <span class="math inline">\(\delta = \{0, 0.2, 0.4, 0.8\}\)</span>, to the value of Stress alone.<br>
+<p>Perhaps less well-known, but both more surprising and interesting, is the effect that measurement error in one variable, <span class="math inline">\(x_1\)</span>, has on the estimate of the coefficient for an variable, <span class="math inline">\(x_2\)</span>, in a multiple regression model. <a href="#fig-coffee-measerr" class="quarto-xref">Figure&nbsp;<span>7.6</span></a> shows the confidence ellipses for <span class="math inline">\((\beta_{\textrm{Coffee}}, \beta_{\textrm{Stress}})\)</span> in the multiple regression predicting Heart disease, adding random normal error <span class="math inline">\(\mathcal{N}(0, \delta \times \mathrm{SD}_{Stress})\)</span>, with <span class="math inline">\(\delta = \{0, 0.2, 0.4, 0.8\}\)</span>, to the value of Stress alone.<br>
 As can be plainly seen, while this measurement error in Stress attenuates its coefficient, it also has the effect of biasing the coefficient for Coffee toward that in the regression of Heart disease on Coffee alone.</p>
 <div class="cell" data-layout-align="center">
 <div class="cell-output-display">
-<div id="fig-coffee-measerr" class="quarto-figure quarto-figure-center anchored">
-<figure class="figure"><p><img src="images/coffee-measerr.png" class="img-fluid figure-img" style="width:50.0%"></p>
-<figcaption class="figure-caption">Figure&nbsp;7.5: Biasing effect of measurement error in one variable (Stress) on on the coefficient of another variable (Coffee) in a multiple regression. The coefficient for Coffee is driven towards its value in the marginal model using Coffee alone, as measurement error in Stress makes it less informative in the joint model.</figcaption></figure>
+<div id="fig-coffee-measerr" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-coffee-measerr-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="images/coffee-measerr.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:50.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-coffee-measerr-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;7.6: Biasing effect of measurement error in one variable (Stress) on on the coefficient of another variable (Coffee) in a multiple regression. The coefficient for Coffee is driven towards its value in the marginal model using Coffee alone, as measurement error in Stress makes it less informative in the joint model.
+</figcaption></figure>
 </div>
 </div>
 </div>
 
 
-<div id="refs" class="references csl-bib-body hanging-indent" data-line-spacing="2" role="list" style="display: none">
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" data-line-spacing="2" role="list" style="display: none">
 <div id="ref-Fuller2006" class="csl-entry" role="listitem">
 Fuller, W. (2006). <em>Measurement error models</em> (2nd ed.). John Wiley &amp; Sons.
 </div>
@@ -591,10 +659,9 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     // clear code selection
     e.clearSelection();
   });
-  function tippyHover(el, contentFn) {
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
-      content: contentFn,
       maxWidth: 500,
       delay: 100,
       arrow: false,
@@ -604,8 +671,17 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       interactive: true,
       interactiveBorder: 10,
       theme: 'quarto',
-      placement: 'bottom-start'
+      placement: 'bottom-start',
     };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
     window.tippy(el, config); 
   }
   const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
@@ -618,6 +694,125 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
       return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
     });
   }
       let selectedAnnoteEl;
@@ -661,6 +856,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
             }
             div.style.top = top - 2 + "px";
             div.style.height = height + 4 + "px";
+            div.style.left = 0;
             let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
             if (gutterDiv === null) {
               gutterDiv = window.document.createElement("div");
@@ -686,6 +882,32 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         });
         selectedAnnoteEl = undefined;
       };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
       // Attach click handler to the DT
       const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
       for (const annoteDlNode of annoteDls) {
@@ -745,12 +967,12 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   }
 });
 </script><nav class="page-navigation"><div class="nav-page nav-page-previous">
-      <a href="./06-linear_models-plots.html" class="pagination-link">
+      <a href="./06-linear_models-plots.html" class="pagination-link" aria-label="Plots for univariate response models">
         <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Plots for univariate response models</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./08-collinearity-ridge.html" class="pagination-link">
+      <a href="./08-collinearity-ridge.html" class="pagination-link" aria-label="Collinearity &amp; Ridge Regression">
         <span class="nav-page-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Collinearity &amp; Ridge Regression</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
@@ -759,5 +981,5 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 
 
 
-<script src="site_libs/quarto-contrib/line-highlight-1.0.0/line-highlight.js" defer="true"></script>
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/friendly/vis-MLM-book/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></div></div></footer><script src="site_libs/quarto-contrib/line-highlight-1.0.0/line-highlight.js" defer="true"></script>
 </body></html>
