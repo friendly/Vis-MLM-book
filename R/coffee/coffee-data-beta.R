@@ -12,7 +12,7 @@ plot(Heart ~ Coffee, data=coffee)
 text(coffee$Coffee, coffee$Heart, label = coffee$Group, cex = 0.5)
 
 ## Coffee-stress data space
-png("images/coffee-data-beta1.png", width = 560, height = 560, res = 120)
+png("images/coffee-data-beta0.png", width = 560, height = 560, res = 120)
 op <- par(mar=c(4,4,1,1)+0.1)
 dataEllipse(Stress ~ Coffee, data = coffee,
             pch = 16,
@@ -26,6 +26,7 @@ dev.off()
 
 # try the same, but with 40, 68 % ellipses
 
+png("images/coffee-data-beta1.png", width = 560, height = 560, res = 120)
 op <- par(mar=c(4,4,1,1)+0.1)
 dataEllipse(Stress ~ Coffee, data = coffee,
             pch = 16,
@@ -46,7 +47,6 @@ stats <- coffee |>
   select(-Group, -Heart) |>
   group_by(variable) |>
   summarise(mean = mean(value), sd = sd(value), 
-#            se = sd/sqrt(n()),
             lower = mean - sd,
             upper = mean + sd
             ) 
@@ -59,6 +59,8 @@ points(x =  0, y = stats[2, "mean"], col = 'black', pch = 16, cex=1.8)
 abline(lm(Stress ~ Coffee, data = coffee), lwd = 2)
 text(0, 180, "Data space", cex = 2, pos = 4)
 par(op)
+dev.off()
+
 
 
 coffee.mod <- lm(Heart ~ Coffee + Stress, data=coffee)

@@ -88,13 +88,14 @@ also related to occupational stress.
 #| fig-align: center
 #| out-width: "100%"
 #| code-fold: true
+#| code-summary: "Show the code"
 #| fig-cap: "Scatterplot matrix for the `coffee` data showing the pairwise relationships among Heart damage ($y$), Coffee consumption ($x_1$), and Stress ($x_2$), with linear regression lines and 68% data ellipses."
 op <- par(mar=c(4,3,3,1)+0.1)
 scatterplotMatrix(~ Heart + Coffee + Stress, data=coffee,
-                  smooth = FALSE,
-                  pch = 16, col = "brown",
-                  cex.axis = 1.3, cex.labels = 3,
-                  ellipse = list(levels = 0.68, fill.alpha = 0.1))
+    smooth = FALSE,
+    pch = 16, col = "brown",
+    cex.axis = 1.3, cex.labels = 3,
+    ellipse = list(levels = 0.68, fill.alpha = 0.1))
 ```
 
 Yet, when we fit both variables together, we obtain the following results,
@@ -113,21 +114,71 @@ estimated change in heart damage for a unit change in each predictor, but **adju
 the other predictor.
 
 We can see these effects directly in **added variable plots** (@sec-avplots), but here I consider the relationship
-of coffee and stress in data space and beta space.
+of coffee and stress in data space and beta space and how their ellipses relate to
+each other and to hypothesis tests.
+
 The left panel in @fig-coffee-data-beta-both 
-is the same as that in the (3,2) cell of @fig-coffee-scatmat for the relation `Stress ~ Coffee`.
-The right panel shows the joint 95% confidence region for the coefficients $(\beta_{\text{Coffee}}, \beta_{\text{Stress}})$
-in $\mathbf{\beta}$ space.  
+is the same as that in the (3,2) cell of @fig-coffee-scatmat for the relation `Stress ~ Coffee` but with data ellipses of 40% and 60% coverage.
+The shadows of the 40% ellipse on any axis give univariate intervals of the mean 
+$\bar{x} \pm 1 s_x$ (standard deviation) shown by the thick red lines;
+the shadow of the 68% ellipse corresponds to an interval
+$\bar{x} \pm 1.5 s_x$.
+
+The right panel shows the joint 95% confidence region for the coefficients $(\beta_{\text{Coffee}}, \beta_{\text{Stress}})$ and individual confidence
+intervals
+in $\mathbf{\beta}$ space. These are determined as
+
+$$
+ \widehat{\vec{\beta}} \oplus \sqrt{d F^{.95}_{d, \nu}} \times s_e \times \mathbf{S}_X^{-1/2} \period
+$$
+where $d$ is the number of dimensions for which we want coverage,
+$\nu$ is the residual degrees of freedom for $s_e$, and $\mat{S}_X$
+is the covariance matrix of the predictors.
 
 
 ```{r}
 #| label: fig-coffee-data-beta-both
 #| echo: false
 #| out-width: "100%"
-#| fig-cap: "Data space and $\\mathbf{\\beta}$ space representations of Coffee and Stress.  Left: Standard (68%) data ellipse. Right: Joint 95% confidence ellipse (blue) for ($\\beta_{\\text{Coffee}}, \\beta_{\\text{Stress}}$), CI ellipse (red) with 95% univariate shadows"
+#| fig-cap: "Data space and $\\mathbf{\\beta}$ space representations of Coffee and Stress.  Left: 40% and 68% data ellipses. Right: Joint 95% confidence ellipse (blue) for ($\\beta_{\\text{Coffee}}, \\beta_{\\text{Stress}}$), confidence interval generating ellipse (red) with 95% univariate shadows. $H_0$ marks the joint
+#| hypothesis that both coefficients equal zero."
 knitr::include_graphics("images/coffee-data-beta-both.png")
 ```
 
+Thus, the `r colorize("blue")` ellipse in @fig-coffee-data-beta-both (right) is the
+ellipse of **joint** 95% coverage, using the factor $\sqrt{2 F^{.95}_{2, \nu}}$
+and covering the true values of ($\beta_{\mathrm{Stress}}, \beta_{\mathrm{Coffee}}$)
+in 95% of samples.  Moreover:
+
+*  Any _joint_ hypothesis (e.g., $H_0:\beta_{\mathrm{Stress}}=0, \beta_{\mathrm{Coffee}}=0$)
+can be tested visually, simply by observing whether the
+hypothesized point, $(0, 0)$ here, lies inside or outside the joint confidence ellipse.
+That hypothesis is rejected
+*  The shadows of this ellipse on the horizontal and vertical axes
+give Scheff\'e joint 95%  confidence intervals for the parameters, with protection for 
+simultaneous inference ("fishing")
+in a 2-dimensional space.
+* Similarly, using the factor $\sqrt{F^{1-\alpha/d}_{1, \nu}} = t^{1-\alpha/2d}_\nu$ would give an
+ellipse whose 1D shadows are $1-\alpha$ Bonferroni confidence intervals
+for $d$ posterior hypotheses.
+
+Visual hypothesis tests and $d=1$ confidence intervals for the parameters _separately_
+are obtained from the `r colorize("red")` ellipse in @fig-coffee-data-beta-both,
+which is scaled by $\sqrt{F^{.95}_{1, \nu}} = t^{.975}_\nu$. We call this the _confidence-interval generating ellipse" (or, more compactly, the "confidence-interval ellipse").
+The shadows of the confidence-interval ellipse on the axes (thick red lines) give the
+corresponding individual 95% confidence intervals, which are
+equivalent to the (partial, Type III) $t$-tests for each coefficient given in the
+standard multiple regression output shown above.
+
+Thus, controlling for Stress, the confidence interval for the slope for Coffee includes 0,
+so we cannot reject the hypothesis that $\beta_{\mathrm{Coffee}}=0$
+in the multiple regression model, as we saw above in the numerical output.
+On the other hand, the interval for the slope for Stress excludes the origin,
+so we reject the null hypothesis that $\beta_{\mathrm{Stress}}=0$,
+controlling for Coffee consumption.
+
+Finally, consider the relationship between the data ellipse and the
+confidence ellipse.
 These have exactly the same shape, but
 (with equal coordinate scaling of the axes), 
 the confidence ellipse
@@ -138,6 +189,42 @@ narrow, reflecting greater precision of the estimates of coefficients.
 Conversely, where slice of the the data ellipse is narrow (less information), the projection of the
 confidence ellipse is wide (less precision).
 
+Confidence ellipses are drawn using `car::confidenceEllipse()`. 
+Click the button to show the code.
+```{r}
+#| eval: false
+#| code-fold: true
+#| code-summary: "Code for confidence ellipses"
+confidenceEllipse(coffee.mod, 
+    grid = FALSE,
+    xlim = c(-2, 1), ylim = c(-0.5, 2.5),
+    xlab = expression(paste("Coffee coefficient,  ", beta["Coffee"])),
+    ylab = expression(paste("Stress coefficient,  ", beta["Stress"])),
+    cex.lab = 1.5)
+confidenceEllipse(coffee.mod, add=TRUE, draw = TRUE,
+    col = "red", fill = TRUE, fill.alpha = 0.1,
+    dfn = 1)
+abline(h = 0, v = 0, lwd = 2)
+
+# confidence intervals
+beta <- coef( coffee.mod )[-1]
+CI <- confint(coffee.mod)
+lines( y = c(0,0), x = CI["Coffee",] , lwd = 6, col = 'red')
+lines( x = c(0,0), y = CI["Stress",] , lwd = 6, col = 'red')
+points( diag( beta ), col = 'black', pch = 16, cex=1.8)
+
+abline(v = CI["Coffee",], col = "red", lty = 2)
+abline(h = CI["Stress",], col = "red", lty = 2)
+
+text(-2.1, 2.35, "Beta space", cex=2, pos = 4)
+arrows(beta[1], beta[2], beta[1], 0, angle=8, len=0.2)
+arrows(beta[1], beta[2], 0, beta[2], angle=8, len=0.2)
+
+text( -1.5, 1.85, "df = 2", col = 'blue', adj = 0, cex=1.2)
+text( 0.2, .85, "df = 1", col = 'red', adj = 0, cex=1.2)
+
+heplots::mark.H0(col = "darkgreen", pch = "+", lty = 0, pos = 4, cex = 3)
+```
 
 ## Measurement error
 
@@ -329,7 +416,7 @@ p2 <- ggplot(data=model_stats,
 p1 + p2
 ```
 
-#### $\beta$ space
+### Coffee data: $\beta$ space
 
 In multiple regression the effects of measurement error in a predictor become more complex,
 because error variance in one predictor, $x_1$, say, can affect the coefficients of other
@@ -352,7 +439,7 @@ on the standard error of $\beta_{\textrm{Stress}}$.
 
 
 ```{r}
-#| label: fig-coffee-measerr-data-beta.png
+#| label: fig-coffee-measerr-data-beta
 #| out-width: "100%"
 #| echo: false
 #| fig-cap: "Effects of measurement error in Stress on the marginal relationship between Heart disease and Stress. Each panel starts with the observed data ($\\delta = 0$), then adds random normal error, 

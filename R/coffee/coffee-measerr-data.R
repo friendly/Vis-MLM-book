@@ -10,8 +10,9 @@ library(car)		     # for dataEllipse, confidenceEllipse
 library(colorspace)
 library(RColorBrewer)
 
-data(coffee, package="spida2")
-coffee <- coffee[, -5]  # get old Stress2 example variable out of the way
+# data(coffee, package="spida2")
+# coffee <- coffee[, -5]  # get old Stress2 example variable out of the way
+load(here::here("data", "coffee.RData"))
 
 
 # Add a N(0, SD) error, but keep the mean unchanged
