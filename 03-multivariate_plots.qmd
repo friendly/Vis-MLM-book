@@ -467,13 +467,11 @@ Salaries |>
   legend_pos
 ```
 
-<!-- Data Ellipses -->
-<!--# UA: Is there a reason the Data Ellipses section was added as a different .qmd file? Let me know if you want me to insert the full code/text here instead. -->
 
 <!-- ```{r child="child/03-data-ellipse.qmd"} -->
 <!-- ``` -->
 
-### Data Ellipses {#sec-data-ellipse}
+## Data Ellipses {#sec-data-ellipse}
 
 The _data ellipse_ [@Monette:90], or _concentration ellipse_ [@Dempster:69] is a
 remarkably simple and effective display for viewing and understanding
@@ -560,7 +558,7 @@ $c^2 = \chi^2_2 (0.95) = 5.99 \approx 6$ gives a data ellipse of
 95\% coverage.
 
 
-#### Ellipse properties
+### Ellipse properties
 
 The essential ideas of correlation and regression and their relation to ellipses go back to
 @Galton:1886.
@@ -667,7 +665,7 @@ eigenvalues.
 
 
 
-#### R functions for data ellipses
+### R functions for data ellipses
 
 A number of packages provide functions for drawing data ellipses in a scatterplot, with various features.
 
@@ -679,7 +677,7 @@ appropriate in residual plots.
 * `heplots::covEllipses()`: draws classical or robust data ellipses for one or more groups in a one-way design and optionally for the pooled total sample, where the focus is on homogeneity of within-group covariance matrices.
 * `ggplot2::stat_ellipse()`: uses the calculation methods of `car::dataEllipse()` to add unfilled (`geom = "path"`) or filled (`geom = polygon"`) data ellipses in a `ggplot` scatterplot, using inherited aesthetics.
 
-#### Example: Canadian occupational prestige {#sec-prestige .unnumbered}
+### Example: Canadian occupational prestige {#sec:prestige}
 
 These examples use the data on the prestige of 102 occupational categories and other measures from the
 1971 Canadian Census, recorded in `carData::Prestige`.
@@ -854,7 +852,7 @@ an increasing relation of prestige with income, but the effect of income (slope)
 higher occupational category. A different plot entails a different story.
 
 
-#### Example: Penguins data {#sec-penguins .nonumber}
+### Example: Penguins data {#sec-penguins}
 
 ```{r}
 #| label: fig-penguin-species
@@ -1017,8 +1015,7 @@ ggplot(peng,
 
 #### Nonparamtric bivariate density plots
 
-While I emphasize data ellipses (because I like their beautiful geometry), other visual
-summaries of the bivariate density are possible and often useful. 
+While I emphasize data ellipses (because I like their beautiful geometry), other visual summaries of the bivariate density are possible and often useful. 
 
 For a single variable, `stats::density()` and `ggplot2::geom_density()`
 calculate a smoothed estimate of the density using nonparametric kernel methods [@Silverman:86]
@@ -1074,6 +1071,144 @@ p2 <- ggplot(peng,
 p1 + p2
 ```
 
+### Simpson's paradox: marginal and conditional relationships
+
+Because it provides a visual representation of means, variances, and correlations,
+the data ellipse is ideally suited as a tool for illustrating and
+explicating various phenomena that occur in the analysis of linear models.
+One class of simple, but important, examples concerns the difference between the _marginal relationship_ between variables, ignoring some important factor or covariate, and the _conditional_ relationship, adjusting (controlling) for that variable.
+
+Simpson's [-@Simpson:51] paradox  occurs when the marginal and
+conditional relationships differ in direction. That is, the overall correlation
+in a model `y ~ x` might be negative, while the within-group correlations
+in separate models for each group `y[g] ~ x[g]` might be positive, or vice versa.
+
+This may be seen in the plots
+of bill length against bill depth for the penguin data shown in @fig-peng-simpsons. Ignoring penguin species, the marginal, total-sample correlation is slightly negative
+as seen in panel (a). The individual-sample ellipses in panel (b) show
+that the conditional, within-species correlations are all positive, with
+approximately equal regression slopes.  However the group means have a negative
+relationship, accounting for the negative marginal correlation when species is ignored. 
+
+```{r}
+#| label: fig-peng-simpsons
+#| echo: false
+#| out-width: "120%"
+#| fig-cap: "Marginal (a), conditional (b), and pooled within-sample (c) relationships
+#|  of bill length and depth in the Penguins data. Each plot shows the 68% data ellipse and regression line(s) with 95% confidence bands."
+knitr::include_graphics("images/peng-simpsons.png")
+```
+
+The regression line in panel (a) is that for the linear model
+`lm(bill_depth ~ bill_length)`, while the separate lines in panel (b)
+are those for the model `lm(bill_depth ~ bill_length * species)` which
+allows a different slope and intercept for each species.
+
+A correct analysis of the (conditional) relationship between these variables, controlling or adjusting for mean
+differences among species, is based on the pooled within-sample covariance matrix,
+a weighted average of the individual within-group $\mat{S}_i$,
+$$
+\mat{S}_{\textrm{within}}  =
+\sum_{i=1}^g
+(n_i - 1) \mat{S}_i \, / \, (N - g)
+\comma
+$$
+where $N = \sum n_i$. The result is shown in
+panel (c) of @fig-peng-simpsons.
+
+In this graph, the data for each species were first transformed to deviations from the species means on both variables and then translated back to the grand means.
+You can also see here that the shapes and sizes of the individual data ellipses are roughly comparable, but perhaps not identical. This visual idea of centering groups to a common mean will become
+important in @sec-eqcov when we want to test the assumption of equality of
+error covariances in multivariate models.
+
+The `ggplot2` code for the panels in this figure are shown below. Note that for components that will be the same across panels, you can define elements
+(e.g., `labels`, `theme_penguins()`, `legend.position`) once, and then re-use
+these across several graphs.
+
+::: {.panel-tabset}
+
+## (a) Ignoring species
+
+```{r}
+#| eval: false
+labels <- labs(
+  x = "Bill length (mm)",
+  y = "Bill depth (mm)",
+  color = "Species",
+  shape = "Species",
+  fill = "Species") 
+
+plt1 <- ggplot(data = peng,
+               aes(x = bill_length,
+                   y = bill_depth)) +
+  geom_point(size = 1.5) +
+  geom_smooth(method = "lm", formula = y ~ x, 
+              se = TRUE, color = "gray50") +
+  stat_ellipse(level = 0.68, linewidth = 1.1) +
+  ggtitle("Ignoring species") +
+  labels
+
+plt1
+```
+
+## (b) By species
+
+```{r}
+#| eval: false
+legend.position <-
+  theme(legend.position = "inside",
+        legend.position.inside = c(0.83, 0.16))
+
+plt2 <- ggplot(data = peng,
+               aes(x = bill_length,
+                   y = bill_depth,
+                   color = species,
+                   shape = species,
+                   fill = species)) +
+  geom_point(size = 1.5,
+             alpha = 0.8) +
+  geom_smooth(method = "lm", formula = y ~ x, 
+              se = TRUE, alpha = 0.3) +
+  stat_ellipse(level = 0.68, linewidth = 1.1) +
+  ggtitle("By species") +
+  labels +
+  theme_penguins("dark") +
+  legend.position 
+
+plt2
+```
+
+## (c) Within species
+
+```{r}
+#| eval: false
+# center within groups, translate to grand means
+means <- colMeans(peng[, 3:4])
+peng.centered <- peng |>
+  group_by(species) |>
+  mutate(bill_length = means[1] + scale(bill_length, scale = FALSE),
+         bill_depth  = means[2] + scale(bill_depth, scale = FALSE))
+
+plt3 <- ggplot(data = peng.centered,
+               aes(x = bill_length,
+                   y = bill_depth,
+                   color = species,
+                   shape = species,
+                   fill = species)) +
+  geom_point(size = 1.5,
+             alpha = 0.8) +
+  geom_smooth(method = "lm", formula = y ~ x, 
+              se = TRUE, alpha = 0.3) +
+  stat_ellipse(level = 0.68, linewidth = 1.1) +
+  labels +
+  ggtitle("Within species") +
+  theme_penguins("dark") +
+  legend.position 
+
+plt3
+```
+
+:::
 
 
 ## Scatterplot matrices {#sec-scatmat}
