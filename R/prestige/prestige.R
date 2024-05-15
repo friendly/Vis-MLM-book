@@ -5,6 +5,8 @@
 # coefplot(m1, vertical=FALSE, mar=c(5.5,2.5,2,2))
 # coefplot(m1, mar=c(5.5,2.5,2,2))
 
+# see: http://rstudio-pubs-static.s3.amazonaws.com/425420_448c3a57871f4ac3a98f7b7781ffc91e.html for some analyses
+
 
 library("car") 
 data(Prestige, package = "carData")

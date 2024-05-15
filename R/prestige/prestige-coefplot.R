@@ -1,5 +1,5 @@
 ---
-  #'  title: prestige data, coefficient plots
+#'  title: prestige data, coefficient plots
 ---
   
 data(Prestige, package="carData")
@@ -28,11 +28,12 @@ mod2 <- lm(prestige ~ education + women + income * type,
 
 modelplot(list("mod0" = mod0, "mod1" = mod1, "mod2" = mod2), 
           coef_omit="Intercept", size=1.3) +
-  labs(title="Raw coefficients") +
+  ggtitle("Raw coefficients") +
   geom_vline(xintercept = 0, size=1.5) +
   scale_y_discrete(limits=rev) +
   theme_bw(base_size = 16) +
-  theme(legend.position = c(0.9, 0.2))
+  theme(legend.position = "inside",
+        legend.position.inside = c(0.85, 0.2))
 
 
 #' Scale the variables to get standardized coefficients
@@ -52,11 +53,12 @@ mod2_std <- lm(prestige ~ education + women + income * type,
 models <- list("mod0" = mod0_std, "mod1" = mod1_std, "mod2" = mod2_std)
 modelplot(models, 
           coef_omit="Intercept", size=1.3) +
-  labs(title="Standardized coefficients") +
+  ggtitle("Standardized coefficients") +
   geom_vline(xintercept = 0, size=1.5) +
   scale_y_discrete(limits=rev) +
   theme_bw(base_size = 16) +
-  theme(legend.position = c(0.9, 0.2))
+  theme(legend.position = "inside",
+        legend.position.inside = c(0.85, 0.2))
 
 # Use GGally::ggcoef_compare
 
