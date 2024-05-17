@@ -71,17 +71,4 @@ report(mod0)
 #                 output_file = "prestige-dashboard.html",
 #                 output_dir = "examples")
 
-#' ## avPlots
-library(car)
-avPlots(mod0, terms = ~education + income,
-        ellipse = TRUE,
-        pch = 19,
- #       id = FALSE
-        id = list(n = 1,
-                  method=list(abs(residuals(mod0, type="pearson")), "x")
-#                  labels = abbreviate(rownames(Prestige), 12)
-                  )
-        )
-
-avPlot3d(mod0, "education", "income")
 
