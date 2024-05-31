@@ -164,7 +164,9 @@ plot(mod1, lwd=2, cex.lab=1.4)
 
 #' Overall plot of residuals for `mod1`
 #' 
-qqPlot(mod1, pch=16)
+qqPlot(mod1, pch=16, simulate = FALSE)
+
+qqPlot(mod1, distribution = "norm", simulate = FALSE)
 
 #' QQ plots for individual variables and/or subsets
 #' 
