@@ -27,11 +27,20 @@ lmtest::coeftest(mod1)
 # or use model summary
 modelsummary(list("Model1" = mod1),
   coef_omit = "Intercept",
-#  output = "markdown",
   stars = TRUE,
   shape = term ~ statistic,
   statistic = c("std.error", "p.value"),
   gof_omit = ".")
+
+models <- list("Model1" = mod1, "Model2" = mod2, "Model3" = mod3)
+modelsummary(models,
+     coef_omit = "Intercept",
+     #  output = "markdown",
+     stars = TRUE,
+     shape = term ~ statistic,
+     statistic = c("std.error", "p.value"),
+     gof_map = c("rmse", "r.squared")
+     )
 
 
 # plot the coefficients
@@ -39,7 +48,7 @@ modelsummary(list("Model1" = mod1),
 theme_set(theme_minimal(base_size = 14))
 
 modelplot(mod1, coef_omit="Intercept", 
-          color="red", size=1) +
+          color="red", size=1, linewidth=2) +
   labs(title="Raw coefficients for mod1")
 
 # fit other models

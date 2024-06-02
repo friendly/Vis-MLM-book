@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.4.550">
+<meta name="generator" content="quarto-1.3.450">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <title>Visualizing Multivariate Data and Models in R - 4&nbsp; Dimension Reduction</title>
 <style>
@@ -19,7 +19,7 @@ ul.task-list li input[type="checkbox"] {
 }
 /* CSS for syntax highlighting */
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -55,7 +55,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 div.csl-bib-body { }
 div.csl-entry {
   clear: both;
-  margin-bottom: 0em;
 }
 .hanging-indent div.csl-entry {
   margin-left:2em;
@@ -98,13 +97,7 @@ div.csl-indent {
   "collapse-after": 3,
   "panel-placement": "start",
   "type": "textbox",
-  "limit": 50,
-  "keyboard-shortcut": [
-    "f",
-    "/",
-    "s"
-  ],
-  "show-item-context": false,
+  "limit": 20,
   "language": {
     "search-no-results-text": "No results",
     "search-matching-documents-text": "matching documents",
@@ -113,48 +106,22 @@ div.csl-indent {
     "search-more-match-text": "more match in this document",
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
-    "search-text-placeholder": "",
     "search-detached-cancel-button-title": "Cancel",
     "search-submit-button-title": "Submit",
     "search-label": "Search"
   }
-}</script><script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script><script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script><script type="text/javascript">
-const typesetMath = (el) => {
-  if (window.MathJax) {
-    // MathJax Typeset
-    window.MathJax.typeset([el]);
-  } else if (window.katex) {
-    // KaTeX Render
-    var mathElements = el.getElementsByClassName("math");
-    var macros = [];
-    for (var i = 0; i < mathElements.length; i++) {
-      var texText = mathElements[i].firstChild;
-      if (mathElements[i].tagName == "SPAN") {
-        window.katex.render(texText.data, mathElements[i], {
-          displayMode: mathElements[i].classList.contains('display'),
-          throwOnError: false,
-          macros: macros,
-          fleqn: false
-        });
-      }
-    }
-  }
-}
-window.Quarto = {
-  typesetMath
-};
-</script>
+}</script><script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script><script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 </head>
 <body class="nav-sidebar floating">
 
 <div id="quarto-search-results"></div>
-  <header id="quarto-header" class="headroom fixed-top quarto-banner"><nav class="quarto-secondary-nav"><div class="container-fluid d-flex">
-      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <header id="quarto-header" class="headroom fixed-top"><nav class="quarto-secondary-nav"><div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./04-pca-biplot.html"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Dimension Reduction</span></a></li></ol></nav>
-        <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
-        </a>
+      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./04-pca-biplot.html"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Dimension Reduction</span></a></li></ol></nav>
+      <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+      </a>
       <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
         <i class="bi bi-search"></i>
       </button>
@@ -176,11 +143,11 @@ window.Quarto = {
   
   </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
 <!-- sidebar -->
-  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto"><div class="pt-lg-2 mt-2 text-left sidebar-header">
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation floating overflow-auto"><div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
       <a href="./">Visualizing Multivariate Data and Models in R</a> 
         <div class="sidebar-tools-main">
-    <a href="https://github.com/friendly/vis-MLM-book" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+    <a href="https://github.com/friendly/vis-MLM-book" rel="" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
 </div>
     </div>
       </div>
@@ -289,7 +256,7 @@ window.Quarto = {
 </li>
     </ul>
 </div>
-</nav><div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+</nav><div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
         <nav id="TOC" role="doc-toc" class="toc-active"><h2 id="toc-title">Table of contents</h2>
@@ -332,7 +299,7 @@ window.Quarto = {
   <li><a href="#sec-var-order" id="toc-sec-var-order" class="nav-link" data-scroll-target="#sec-var-order"><span class="header-section-number">4.5</span> Application: Variable ordering for data displays</a></li>
   <li><a href="#application-eigenfaces" id="toc-application-eigenfaces" class="nav-link" data-scroll-target="#application-eigenfaces"><span class="header-section-number">4.6</span> Application: Eigenfaces</a></li>
   <li><a href="#elliptical-insights-outlier-detection" id="toc-elliptical-insights-outlier-detection" class="nav-link" data-scroll-target="#elliptical-insights-outlier-detection"><span class="header-section-number">4.7</span> Elliptical insights: Outlier detection</a></li>
-  </ul><div class="toc-actions"><ul><li><a href="https://github.com/friendly/vis-MLM-book/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
+  </ul><div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/friendly/vis-MLM-book/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
     </div>
 <!-- main -->
 <main class="content quarto-banner-title-block" id="quarto-document-content"><!--- For HTML Only ---><!-- %\renewcommand*{\det}[1]{\mathrm{det} (#1)} --><!-- %\renewcommand*{\det}[1]{|#1|} --><!-- % R stuff --><section id="sec-spaceland" class="level2" data-number="4.1"><h2 data-number="4.1" class="anchored" data-anchor-id="sec-spaceland">
@@ -341,34 +308,30 @@ window.Quarto = {
 <blockquote class="blockquote">
 <p>It is high time that I should pass from these brief and discursive notes about Flatland to the central event of this book, my initiation into the mysteries of Space. THAT is my subject; all that has gone before is merely preface — Edwin Abbott, <em>Flatland</em>, p.&nbsp;57.</p>
 </blockquote>
-<p>There was a cloud in the sky above <em>Flatland</em> one day. But it was a huge, multidimensional cloud of sparkly points that might contain some important message, perhaps like the hidden EUREKA (<a href="index.html#fig-pollen-eureka" class="quarto-xref">Figure&nbsp;<span>5</span></a>), or perhaps forecasting the upcoming harvest, if only Flatlanders could appreciate it.</p>
+<p>There was a cloud in the sky above <em>Flatland</em> one day. But it was a huge, multidimensional cloud of sparkly points that might contain some important message, perhaps like the hidden EUREKA (<a href="index.html#fig-pollen-eureka">Figure&nbsp;<span>5</span></a>), or perhaps forecasting the upcoming harvest, if only Flatlanders could appreciate it.</p>
 <p>A leading citizen, A SQUARE, who had traveled once to Spaceland and therefore had an inkling of its majesty beyond the simple world of his life in the plane looked at that cloud and had a brilliant thought, an OMG moment:</p>
 <blockquote class="blockquote">
 <p>“Oh, can I, in my imagination, rotate that cloud and squeeze its juice so that it rains down on Flatland with greatest joy?”</p>
 </blockquote>
 <p>As it happened, our Square friend, although he could never really <em>see</em> in three dimensions, he could now at least <em>think</em> of a world described by <strong>height</strong> as well as breadth and width, and think of the <strong>shadow</strong> cast by a cloud as something mutable, changing size and shape depending on its’ orientation over Flatland.</p>
 <p>And what a world it was, inhabited by Pyramids, Cubes and wondrous creatures called Polyhedrons with many <span class="math inline">\(C\)</span>orners, <span class="math inline">\(F\)</span>aces and <span class="math inline">\(E\)</span>dges. Not only that, but all those Polyhedra were forced in Spaceland to obey a magic formula: <span class="math inline">\(C + F - E = 2\)</span>.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> How cool was that!</p>
-<p>Indeed, there were even exalted Spheres, having so many faces that its surface became as smooth as a baby’s bottom with no need for pointed corners or edges, just as Circles were the smoothest occupants of his world with far too many sides to count. It was his dream of a Sphere passing through Flatland (<a href="index.html#fig-flatland-spheres" class="quarto-xref">Figure&nbsp;<span>1</span></a>) that first awakened him to a third dimension.</p>
+<p>Indeed, there were even exalted Spheres, having so many faces that its surface became as smooth as a baby’s bottom with no need for pointed corners or edges, just as Circles were the smoothest occupants of his world with far too many sides to count. It was his dream of a Sphere passing through Flatland (<a href="index.html#fig-flatland-spheres">Figure&nbsp;<span>1</span></a>) that first awakened him to a third dimension.</p>
 <p>He also marveled at Ellipsoids, as smooth as Spheres, but in Spaceland having three natural axes of different extent and capable of being appearing fatter or slimmer when rotated from different views. An Ellipsoid had magical properties: it could appear as so thin in one or more dimensions that it became a simple 2D ellipse, or a 1D line, or even a 0D point <span class="citation" data-cites="Friendly-etal:ellipses:2013">(<a href="90-references.html#ref-Friendly-etal:ellipses:2013" role="doc-biblioref">Friendly et al., 2013</a>)</span>. <!-- **TODO**: somehow mention the `gellipsoid` package here. --></p>
 <p>All of these now arose in Square’s richer 3D imagination. And, all of this came from just one more dimension than his life in Flatland.</p>
 <section id="multivariate-juicers" class="level3" data-number="4.1.1"><h3 data-number="4.1.1" class="anchored" data-anchor-id="multivariate-juicers">
 <span class="header-section-number">4.1.1</span> Multivariate juicers</h3>
 <p>Up to now, we have also been living in Flatland. We have been trying to understand data in <strong>data space</strong> of possibly many dimensions, but confined to the 2D plane of a graph window. Scatterplot matrices and parallel coordinate plots provided some relief. The former did so by <strong>projecting</strong> the data into sets of 2D views in the coordinates of data space; the latter did so by providing multiple axes in a 2D space along which we could trace the paths of individual observations.</p>
-<p>This chapter is about seeing data in a different projection, a low-dimensional (usually 2D) space that squeezes out the most juice from multidimensional data for a particular purpose (<a href="#fig-MV-juicer" class="quarto-xref">Figure&nbsp;<span>4.1</span></a>), where what we want to understand can be more easily seen.</p>
+<p>This chapter is about seeing data in a different projection, a low-dimensional (usually 2D) space that squeezes out the most juice from multidimensional data for a particular purpose (<a href="#fig-MV-juicer">Figure&nbsp;<span>4.1</span></a>), where what we want to understand can be more easily seen.</p>
 <div class="cell" data-layout-align="center">
 <div class="cell-output-display">
-<div id="fig-MV-juicer" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
-<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-MV-juicer-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="images/MV-juicer.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:90.0%">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-MV-juicer-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;4.1: A multivariate juicer takes data from possibly high-dimensional data space and transforms it to a lower-dimenional space in which important effects can be more easily seen.
-</figcaption></figure>
+<div id="fig-MV-juicer" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="images/MV-juicer.png" class="img-fluid figure-img" style="width:90.0%"></p>
+<figcaption class="figure-caption">Figure&nbsp;4.1: A multivariate juicer takes data from possibly high-dimensional data space and transforms it to a lower-dimenional space in which important effects can be more easily seen.</figcaption></figure>
 </div>
 </div>
 </div>
 <p>Here, I concentrate on <strong>principal components analysis</strong> (PCA), whose goal reflects A Square’s desire to see that sparkly cloud of points in <span class="math inline">\(nD\)</span> space in the plane showing the greatest variation (squeezing the most juice) among all other possible views. This appealed to his sense of geometry, but left him wondering how the variables in that high-D cloud were related to the dimensions he could see in a best-fitting plane.</p>
-<p>The idea of a <strong>biplot</strong>, showing the data points in the plane, together with thick pointed arrows—variable vectors— in one view is the other topic explained in this chapter (<a href="#sec-biplot" class="quarto-xref"><span>Section 4.3</span></a>). The biplot is the simplest example of a multivariate juicer. The essential idea is to project the cloud of data points in <span class="math inline">\(n\)</span> dimensions into the 2D space of principal components and simultaneously show how the original variables relate to this space. For exploratory analysis to get an initial, incisive view of a multivariate dataset, a biplot is often my first choice.</p>
+<p>The idea of a <strong>biplot</strong>, showing the data points in the plane, together with thick pointed arrows—variable vectors— in one view is the other topic explained in this chapter (<a href="#sec-biplot"><span>Section&nbsp;4.3</span></a>). The biplot is the simplest example of a multivariate juicer. The essential idea is to project the cloud of data points in <span class="math inline">\(n\)</span> dimensions into the 2D space of principal components and simultaneously show how the original variables relate to this space. For exploratory analysis to get an initial, incisive view of a multivariate dataset, a biplot is often my first choice.</p>
 <div class="callout callout-style-default callout-note callout-titled" title="Looking ahead">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -400,32 +363,24 @@ Looking ahead
 </div>
 </section></section><section id="sec-pca" class="level2" data-number="4.2"><h2 data-number="4.2" class="anchored" data-anchor-id="sec-pca">
 <span class="header-section-number">4.2</span> Principal components analysis (PCA)</h2>
-<p>When Francis Galton <span class="citation" data-cites="Galton:1886">(<a href="90-references.html#ref-Galton:1886" role="doc-biblioref">1886</a>)</span> first discovered the idea of regression toward the mean and presented his famous diagram (<a href="03-multivariate_plots.html#fig-galton-corr" class="quarto-xref">Figure&nbsp;<span>3.9</span></a>), he had little thought that he had provided a window to a higher-dimensional world, beyond what even A Square could imagine. His friend, Karl Pearson <span class="citation" data-cites="Pearson:1896">(<a href="90-references.html#ref-Pearson:1896" role="doc-biblioref">1896</a>)</span> took that idea and developed it into a theory of regression and a measure of correlation that would bear his name, Pearson’s <span class="math inline">\(r\)</span>.</p>
+<p>When Francis Galton <span class="citation" data-cites="Galton:1886">(<a href="90-references.html#ref-Galton:1886" role="doc-biblioref">1886</a>)</span> first discovered the idea of regression toward the mean and presented his famous diagram (<a href="03-multivariate_plots.html#fig-galton-corr">Figure&nbsp;<span>3.9</span></a>), he had little thought that he had provided a window to a higher-dimensional world, beyond what even A Square could imagine. His friend, Karl Pearson <span class="citation" data-cites="Pearson:1896">(<a href="90-references.html#ref-Pearson:1896" role="doc-biblioref">1896</a>)</span> took that idea and developed it into a theory of regression and a measure of correlation that would bear his name, Pearson’s <span class="math inline">\(r\)</span>.</p>
 <p>But then Pearson <span class="citation" data-cites="Pearson:1901">(<a href="90-references.html#ref-Pearson:1901" role="doc-biblioref">1901</a>)</span> had a further inspiration, akin to that of A Square. If he also had a cloud of sparkly points in <span class="math inline">\(2, 3, 4, ..., p\)</span> dimensions, could he find a point (<span class="math inline">\(0D\)</span>), or line (<span class="math inline">\(1D\)</span>), or plane (<span class="math inline">\(2D\)</span>), or even a hyperplane (<span class="math inline">\(nD\)</span>) that best summarized — squeezed out the most juice—from multivariate data? This was the first truly multivariate problem in the history of statistics <span class="citation" data-cites="FriendlyWainer:2021:TOGS">(<a href="90-references.html#ref-FriendlyWainer:2021:TOGS" role="doc-biblioref">Friendly &amp; Wainer, 2021, p. 186</a>)</span>.</p>
-<p>The best <span class="math inline">\(0D\)</span> point was easy— it was simply the centroid, the means of each of the variables in the data, <span class="math inline">\((\bar{x}_1, \bar{x}_2, ..., \bar{x}_p)\)</span>, because that was “closest” to the data in the sense of minimizing the sum of squared differences, <span class="math inline">\(\Sigma_i\Sigma_j (x_{ij} - \bar{x}_j)^2\)</span>. In higher dimensions, his solution was also an application of the method of least squares, but he argued it geometrically and visually as shown in <a href="#fig-Pearson1901" class="quarto-xref">Figure&nbsp;<span>4.2</span></a>.</p>
+<p>The best <span class="math inline">\(0D\)</span> point was easy— it was simply the centroid, the means of each of the variables in the data, <span class="math inline">\((\bar{x}_1, \bar{x}_2, ..., \bar{x}_p)\)</span>, because that was “closest” to the data in the sense of minimizing the sum of squared differences, <span class="math inline">\(\Sigma_i\Sigma_j (x_{ij} - \bar{x}_j)^2\)</span>. In higher dimensions, his solution was also an application of the method of least squares, but he argued it geometrically and visually as shown in <a href="#fig-Pearson1901">Figure&nbsp;<span>4.2</span></a>.</p>
 <div class="cell" data-layout-align="center">
 <div class="cell-output-display">
-<div id="fig-Pearson1901" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
-<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-Pearson1901-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="images/Pearson1901.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-Pearson1901-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;4.2: Karl Pearson’s (1901) geometric, visual argument for finding the line or plane of closest fit to a collection of points, P1, P2, P3, …
-</figcaption></figure>
+<div id="fig-Pearson1901" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="images/Pearson1901.png" class="img-fluid figure-img" style="width:70.0%"></p>
+<figcaption class="figure-caption">Figure&nbsp;4.2: Karl Pearson’s (1901) geometric, visual argument for finding the line or plane of closest fit to a collection of points, P1, P2, P3, …</figcaption></figure>
 </div>
 </div>
 </div>
 <p>For a <span class="math inline">\(1D\)</span> summary, the line of best fit to the points <span class="math inline">\(P_1, P_2, \dots P_n\)</span> is the line that goes through the centroid and made the average squared length of the <em>perpendicular</em> segments from those points to a line as small as possible. This was different from the case in linear regression, for fitting <span class="math inline">\(y\)</span> from <span class="math inline">\(x\)</span>, where the average squared length of the <em>vertical</em> segments, <span class="math inline">\(\Sigma_i (y_i - \hat{y}_i)^2\)</span> was minimized by least squares.</p>
-<p>He went on to prove the visual insights from simple smoothing of <span class="citation" data-cites="Galton:1886">Galton (<a href="90-references.html#ref-Galton:1886" role="doc-biblioref">1886</a>)</span> (shown in <a href="03-multivariate_plots.html#fig-galton-corr" class="quarto-xref">Figure&nbsp;<span>3.9</span></a>) regarding the regression lines of <code>y ~ x</code> and <code>x ~ y</code>. More importantly, he proved that the cloud of points is captured, for the purpose of finding a best line, plane or hyperplane, by the ellipsoid that encloses it, as seen in his diagram, <a href="#fig-Pearson1901-2" class="quarto-xref">Figure&nbsp;<span>4.3</span></a>. The major axis of the 2D ellipse is the line of best fit, along which the data points have the smallest average squared distance from the line. The axis at right angles to that—the minor axis— is labeled “line of worst fit” with the largest average squared distance.</p>
+<p>He went on to prove the visual insights from simple smoothing of <span class="citation" data-cites="Galton:1886">Galton (<a href="90-references.html#ref-Galton:1886" role="doc-biblioref">1886</a>)</span> (shown in <a href="03-multivariate_plots.html#fig-galton-corr">Figure&nbsp;<span>3.9</span></a>) regarding the regression lines of <code>y ~ x</code> and <code>x ~ y</code>. More importantly, he proved that the cloud of points is captured, for the purpose of finding a best line, plane or hyperplane, by the ellipsoid that encloses it, as seen in his diagram, <a href="#fig-Pearson1901-2">Figure&nbsp;<span>4.3</span></a>. The major axis of the 2D ellipse is the line of best fit, along which the data points have the smallest average squared distance from the line. The axis at right angles to that—the minor axis— is labeled “line of worst fit” with the largest average squared distance.</p>
 <div class="cell" data-layout-align="center">
 <div class="cell-output-display">
-<div id="fig-Pearson1901-2" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
-<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-Pearson1901-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="images/Pearson1901_2.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-Pearson1901-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;4.3: Karl Pearson’s diagram showing the elliptical geometry of regression and principal components analysis … <em>Source</em>: Pearson (1901), p.&nbsp;566.
-</figcaption></figure>
+<div id="fig-Pearson1901-2" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="images/Pearson1901_2.png" class="img-fluid figure-img" style="width:80.0%"></p>
+<figcaption class="figure-caption">Figure&nbsp;4.3: Karl Pearson’s diagram showing the elliptical geometry of regression and principal components analysis … <em>Source</em>: Pearson (1901), p.&nbsp;566.</figcaption></figure>
 </div>
 </div>
 </div>
@@ -440,7 +395,7 @@ Figure&nbsp;4.3: Karl Pearson’s diagram showing the elliptical geometry of reg
 <li>these could be seen as a rotation of the data space of <span class="math inline">\((x, y)\)</span> to a new space (PC1, PC2) with uncorrelated variables;</li>
 <li>the total variation of the points in data space, <span class="math inline">\(\text{Var}(x) + \text{Var}(y)\)</span>, being unchanged by rotation, was equally well expressed as the total variation <span class="math inline">\(\text{Var}(PC1) + \text{Var}(PC2)\)</span> of the scores on what are now called the principal component axes.</li>
 </ul>
-<p>It would have appealed to Pearson (and also to A Square) to see these observations demonstrated in a 3D video. <a href="#fig-pca-animation" class="quarto-xref">Figure&nbsp;<span>4.4</span></a> shows a 3D plot of the variables <code>Sepal.Length</code>, <code>Sepal.Width</code> and <code>Petal.Length</code> in Edgar Anderson’s <code>iris</code> data, with points colored by species and the 95% data ellipsoid. This is rotated smoothly by interpolation until the first two principal axes, PC1 and PC2 are aligned with the horizontal and vertical dimensions. Because this is a rigid rotation of the cloud of points, the total variability is obviously unchanged.</p>
+<p>It would have appealed to Pearson (and also to A Square) to see these observations demonstrated in a 3D video. <a href="#fig-pca-animation">Figure&nbsp;<span>4.4</span></a> shows a 3D plot of the variables <code>Sepal.Length</code>, <code>Sepal.Width</code> and <code>Petal.Length</code> in Edgar Anderson’s <code>iris</code> data, with points colored by species and the 95% data ellipsoid. This is rotated smoothly by interpolation until the first two principal axes, PC1 and PC2 are aligned with the horizontal and vertical dimensions. Because this is a rigid rotation of the cloud of points, the total variability is obviously unchanged.</p>
 <!-- ::: {#fig-pca-animation} -->
 <!-- <div align="center"> -->
 <!-- <iframe width="946" height="594" src="images/pca-animation1.gif"></iframe> -->
@@ -450,13 +405,9 @@ Figure&nbsp;4.3: Karl Pearson’s diagram showing the elliptical geometry of reg
 <!-- ::: -->
 <div class="cell" data-layout-align="center">
 <div class="cell-output-display">
-<div id="fig-pca-animation" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
-<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-pca-animation-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="images/pca-animation1.gif" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-pca-animation-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;4.4: Animation of PCA as a rotation in 3D space. The plot shows three variables for the <code>iris</code> data, initially in data space and its’ data ellipsoid, with points colored according to species of the iris flowers. This is rotated smoothly until the first two principal axes are aligned with the horizontal and vertical dimensions.
-</figcaption></figure>
+<div id="fig-pca-animation" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="images/pca-animation1.gif" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption class="figure-caption">Figure&nbsp;4.4: Animation of PCA as a rotation in 3D space. The plot shows three variables for the <code>iris</code> data, initially in data space and its’ data ellipsoid, with points colored according to species of the iris flowers. This is rotated smoothly until the first two principal axes are aligned with the horizontal and vertical dimensions.</figcaption></figure>
 </div>
 </div>
 </div>
@@ -464,18 +415,14 @@ Figure&nbsp;4.4: Animation of PCA as a rotation in 3D space. The plot shows thre
 <span class="header-section-number">4.2.1</span> PCA by springs</h3>
 <p>Before delving into the mathematics of PCA, it is useful to see how Pearson’s problem, and fitting by least squares generally, could be solved in a physical realization.</p>
 <p>From elementary statistics, you may be familiar with a physical demonstration that the mean, <span class="math inline">\(\bar{x}\)</span>, of a sample is the value for which the sum of deviations, <span class="math inline">\(\Sigma_i (x_i - \bar{x})\)</span> is zero, so the mean can be visualized as the point of balance on a line where those differences <span class="math inline">\((x_i - \bar{x})\)</span> are placed. Equally well, there is a physical realization of the mean as the point along an axis where weights connected by springs will minimize the sum of squared differences, because springs with a constant stiffness, <span class="math inline">\(k\)</span>, exert forces proportional to <span class="math inline">\(k (x_i - \bar{x}) ^2\)</span>. That’s the reason it is useful as a measure of central tendency: it minimizes the average squared error.</p>
-<p>In two dimensions, imagine that we have points, <span class="math inline">\((x_i, y_i)\)</span> and these are attached by springs of equal stiffness <span class="math inline">\(k\)</span>, to a line anchored at the centroid, <span class="math inline">\((\bar{x}, \bar{y})\)</span> as shown in <a href="#fig-pca-springs" class="quarto-xref">Figure&nbsp;<span>4.5</span></a>. If we rotate the line to some initial position and release it, the springs will pull the line clockwise or counterclockwise and the line will bounce around until the forces, proportional to the squares of the lengths of the springs, will eventually balance out at the position (shown by the <span style="color: red;">red</span> fixed line segments at the ends). This is the position that minimizes the the sum of squared lengths of the connecting springs, and also minimizes the kinetic energy in the system.</p>
-<p>If you look closely at <a href="#fig-pca-springs" class="quarto-xref">Figure&nbsp;<span>4.5</span></a> you will see something else: When the line is at its final position of minimum squared length and energy, the positions of the <span style="color: red;">red</span> points on this line are spread out furthest, i.e., have <strong>maximum</strong> variance. Conversely, when the line is at right angles to its final position (shown by the black line at 90<span class="math inline">\(^o\)</span>) the projected points have the smallest possible variance.</p>
-<div id="fig-pca-springs" class="quarto-figure quarto-figure-center quarto-float anchored">
-<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-pca-springs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<div data-align="center">
+<p>In two dimensions, imagine that we have points, <span class="math inline">\((x_i, y_i)\)</span> and these are attached by springs of equal stiffness <span class="math inline">\(k\)</span>, to a line anchored at the centroid, <span class="math inline">\((\bar{x}, \bar{y})\)</span> as shown in <a href="#fig-pca-springs">Figure&nbsp;<span>4.5</span></a>. If we rotate the line to some initial position and release it, the springs will pull the line clockwise or counterclockwise and the line will bounce around until the forces, proportional to the squares of the lengths of the springs, will eventually balance out at the position (shown by the <span style="color: red;">red</span> fixed line segments at the ends). This is the position that minimizes the the sum of squared lengths of the connecting springs, and also minimizes the kinetic energy in the system.</p>
+<p>If you look closely at <a href="#fig-pca-springs">Figure&nbsp;<span>4.5</span></a> you will see something else: When the line is at its final position of minimum squared length and energy, the positions of the <span style="color: red;">red</span> points on this line are spread out furthest, i.e., have <strong>maximum</strong> variance. Conversely, when the line is at right angles to its final position (shown by the black line at 90<span class="math inline">\(^o\)</span>) the projected points have the smallest possible variance.</p>
+<div id="fig-pca-springs" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><div data-align="center">
 <iframe width="412" height="364" src="images/pca-springs-cropped.gif">
 </iframe>
 </div>
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-pca-springs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;4.5: Animation of PCA fitted by springs. The <span style="color: blue;">blue</span> data points are connected to their projections on the <span style="color: red;">red</span> line by springs perpendicular to that line. From an initial position, the springs pull that line in proportion to their squared distances, until the line finally settles down to the position where the forces are balanced and the minimum is achieved. <em>Source</em>: Amoeba, https://bit.ly/46tAicu.
-</figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;4.5: Animation of PCA fitted by springs. The <span style="color: blue;">blue</span> data points are connected to their projections on the <span style="color: red;">red</span> line by springs perpendicular to that line. From an initial position, the springs pull that line in proportion to their squared distances, until the line finally settles down to the position where the forces are balanced and the minimum is achieved. <em>Source</em>: Amoeba, https://bit.ly/46tAicu.</figcaption></figure>
 </div>
 <!-- See: https://joshualoftus.com/posts/2020-11-23-least-squares-as-springs/least-squares-as-springs.html -->
 <!-- **TODO**: Simple PCA example using workers data -->
@@ -517,16 +464,12 @@ PC1 = v_{11} \mathbf{x}_1 + v_{12} \mathbf{x}_2 + \cdots + v_{1p} \mathbf{x}_p
 <li><p>It is usually the case that the variables <span class="math inline">\(\mathbf{x}_1, \mathbf{x}_2, \dots, \mathbf{x}_p\)</span> are linearly independent, which means that none of these is an exact linear combination of the others. In this case, all eigenvalues <span class="math inline">\(\lambda_i\)</span> are positive and the covariance matrix <span class="math inline">\(\mathbf{S}\)</span> is said to have <strong>rank</strong> <span class="math inline">\(p\)</span>.</p></li>
 <li><p>Here is the key fact: If the eigenvalues are arranged in order, so that <span class="math inline">\(\lambda_1 &gt; \lambda_2 &gt; \dots &gt; \lambda_p\)</span>, then the first <span class="math inline">\(d\)</span> components give a <span class="math inline">\(d\)</span>-dimensional approximation to <span class="math inline">\(\mathbf{S}\)</span>, which accounts for <span class="math inline">\(\Sigma_i^d \lambda_i / \Sigma_i^p \lambda_i\)</span> of the total variance.</p></li>
 </ul>
-<p>For the case of two variables, <span class="math inline">\(\mathbf{x}_1\)</span> and <span class="math inline">\(\mathbf{x}_2\)</span> <a href="#fig-pca-rotation" class="quarto-xref">Figure&nbsp;<span>4.6</span></a> shows the transformation from data space to component space. The eigenvectors, <span class="math inline">\(\mathbf{v}_1, \mathbf{v}_2\)</span> are the major and minor axes of the data ellipse, whose lengths are the square roots <span class="math inline">\(\sqrt{\lambda_1}, \sqrt{\lambda_2}\)</span> of the eigenvalues.</p>
+<p>For the case of two variables, <span class="math inline">\(\mathbf{x}_1\)</span> and <span class="math inline">\(\mathbf{x}_2\)</span> <a href="#fig-pca-rotation">Figure&nbsp;<span>4.6</span></a> shows the transformation from data space to component space. The eigenvectors, <span class="math inline">\(\mathbf{v}_1, \mathbf{v}_2\)</span> are the major and minor axes of the data ellipse, whose lengths are the square roots <span class="math inline">\(\sqrt{\lambda_1}, \sqrt{\lambda_2}\)</span> of the eigenvalues.</p>
 <div class="cell" data-layout-align="center">
 <div class="cell-output-display">
-<div id="fig-pca-rotation" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
-<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-pca-rotation-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="images/pca-rotation.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-pca-rotation-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;4.6: Geometry of PCA as a rotation from data space to principal component space, defined by the eigenvectors v1 and v2 of a covariance matrix
-</figcaption></figure>
+<div id="fig-pca-rotation" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="images/pca-rotation.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption class="figure-caption">Figure&nbsp;4.6: Geometry of PCA as a rotation from data space to principal component space, defined by the eigenvectors v1 and v2 of a covariance matrix</figcaption></figure>
 </div>
 </div>
 </div>
@@ -534,7 +477,7 @@ Figure&nbsp;4.6: Geometry of PCA as a rotation from data space to principal comp
 </section><section id="finding-principal-components" class="level3" data-number="4.2.3"><h3 data-number="4.2.3" class="anchored" data-anchor-id="finding-principal-components">
 <span class="header-section-number">4.2.3</span> Finding principal components</h3>
 <p>In R, PCA is most easily carried out using <code><a href="https://rdrr.io/r/stats/prcomp.html">stats::prcomp()</a></code> or <code><a href="https://rdrr.io/r/stats/princomp.html">stats::princomp()</a></code> or similar functions in other packages such as <code>FactomineR::PCA()</code>. The <strong>FactoMineR</strong> package <span class="citation" data-cites="R-FactoMineR Husson-etal-2017">(<a href="90-references.html#ref-Husson-etal-2017" role="doc-biblioref">Husson et al., 2017</a>, <a href="90-references.html#ref-R-FactoMineR" role="doc-biblioref">2024</a>)</span> has extensive capabilities for exploratory analysis of multivariate data (PCA, correspondence analysis, cluster analysis).</p>
-<p>A particular strength of FactoMineR for PCA is that it allows the inclusion of <em>supplementary variables</em> (which can be categorical or quantitative) and <em>supplementary points</em> for individuals. These are not used in the analysis, but are projected into the plots to facilitate interpretation. For example, in the analysis of the <code>crime</code> data described below, it would be useful to have measures of other characteristics of the U.S. states, such as poverty and average level of education (<a href="#sec-supp-vars" class="quarto-xref"><span>Section 4.3.5</span></a>).</p>
+<p>A particular strength of FactoMineR for PCA is that it allows the inclusion of <em>supplementary variables</em> (which can be categorical or quantitative) and <em>supplementary points</em> for individuals. These are not used in the analysis, but are projected into the plots to facilitate interpretation. For example, in the analysis of the <code>crime</code> data described below, it would be useful to have measures of other characteristics of the U.S. states, such as poverty and average level of education (<a href="#sec-supp-vars"><span>Section&nbsp;4.3.5</span></a>).</p>
 <p>Unfortunately, although all of these functions perform similar calculations, the options for analysis and the details of the result they return differ.</p>
 <p>The important options for analysis include:</p>
 <ul>
@@ -544,7 +487,7 @@ Figure&nbsp;4.6: Geometry of PCA as a rotation from data space to principal comp
 </ul>
 <p>It nearly always makes sense to center the variables. The choice of scaling determines whether the correlation matrix is analyzed, so that each variable contributes equally to the total variance that is to be accounted for versus analysis of the covariance matrix, where each variable contributes its own variance to the total. Analysis of the covariance matrix makes little sense when the variables are measured on different scales.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
 <section id="example-crime-data" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="example-crime-data">Example: Crime data</h4>
-<p>The dataset <code>crime</code>, analysed in <a href="03-multivariate_plots.html#sec-corrgram" class="quarto-xref"><span>Section 3.3.2</span></a>, showed all positive correlations among the rates of various crimes in the corrgram, <a href="03-multivariate_plots.html#fig-crime-corrplot" class="quarto-xref">Figure&nbsp;<span>3.28</span></a>. What can we see from a PCA? Is it possible that a few dimensions can account for most of the juice in this data?</p>
+<p>The dataset <code>crime</code>, analysed in <a href="03-multivariate_plots.html#sec-corrgram"><span>Section&nbsp;3.3.2</span></a>, showed all positive correlations among the rates of various crimes in the corrgram, <a href="03-multivariate_plots.html#fig-crime-corrplot">Figure&nbsp;<span>3.28</span></a>. What can we see from a PCA? Is it possible that a few dimensions can account for most of the juice in this data?</p>
 <p>In this example, you can easily find the PCA solution using <code><a href="https://rdrr.io/r/stats/prcomp.html">prcomp()</a></code> in a single line in base-R. You need to specify the numeric variables to analyze by their columns in the data frame. The most important option here is <code>scale. = TRUE</code>.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb2" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">crime</span>, package <span class="op">=</span> <span class="st">"ggbiplot"</span><span class="op">)</span></span>
@@ -598,7 +541,7 @@ Figure&nbsp;4.6: Geometry of PCA as a rotation from data space to principal comp
 </div>
 <p>Then, a simple visualization is a plot of the proportion of variance for each component (or cumulative proportion) against the component number, usually called a <strong>screeplot</strong>. The idea, introduced by <span class="citation" data-cites="Cattell1966">Cattell (<a href="90-references.html#ref-Cattell1966" role="doc-biblioref">1966</a>)</span>, is that after the largest, dominant components, the remainder should resemble the rubble, or scree formed by rocks falling from a cliff.</p>
 <p>From this plot, imagine drawing a straight line through the plotted eigenvalues, starting with the largest one. The typical rough guidance is that the last point to fall on this line represents the last component to extract, the idea being that beyond this, the amount of additional variance explained is non-meaningful. Another rule of thumb is to choose the number of components to extract a desired proportion of total variance, usually in the range of 80 - 90%.</p>
-<p><code>stats::plot(crime.pca)</code> would give a bar plot of the variances of the components, however <code><a href="http://friendly.github.io/ggbiplot/reference/ggscreeplot.html">ggbiplot::ggscreeplot()</a></code> gives nicer and more flexible displays as shown in <a href="#fig-crime-ggscreeplot" class="quarto-xref">Figure&nbsp;<span>4.7</span></a>.</p>
+<p><code>stats::plot(crime.pca)</code> would give a bar plot of the variances of the components, however <code><a href="http://friendly.github.io/ggbiplot/reference/ggscreeplot.html">ggbiplot::ggscreeplot()</a></code> gives nicer and more flexible displays as shown in <a href="#fig-crime-ggscreeplot">Figure&nbsp;<span>4.7</span></a>.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb7" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="http://friendly.github.io/ggbiplot/reference/ggscreeplot.html">ggscreeplot</a></span><span class="op">(</span><span class="va">crime.pca</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_smooth.html">stat_smooth</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">crime.eig</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">PC</span><span class="op">&gt;=</span><span class="fl">4</span><span class="op">)</span>, </span>
@@ -613,13 +556,9 @@ Figure&nbsp;4.6: Geometry of PCA as a rotation from data space to principal comp
 <span></span>
 <span><span class="va">p1</span> <span class="op">+</span> <span class="va">p2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div id="fig-crime-ggscreeplot" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
-<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-crime-ggscreeplot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="figs/ch04/fig-crime-ggscreeplot-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-crime-ggscreeplot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;4.7: Screeplots for the PCA of the crime data. The left panel shows the traditional version, plotting variance proportions against component number, with linear guideline for the scree rule of thumb. The right panel plots cumulative proportions, showing cutoffs of 80%, 90%.
-</figcaption></figure>
+<div id="fig-crime-ggscreeplot" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="figs/ch04/fig-crime-ggscreeplot-1.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption class="figure-caption">Figure&nbsp;4.7: Screeplots for the PCA of the crime data. The left panel shows the traditional version, plotting variance proportions against component number, with linear guideline for the scree rule of thumb. The right panel plots cumulative proportions, showing cutoffs of 80%, 90%.</figcaption></figure>
 </div>
 </div>
 </div>
@@ -627,7 +566,7 @@ Figure&nbsp;4.7: Screeplots for the PCA of the crime data. The left panel shows 
 </section><section id="visualizing-pca-scores-and-variable-vectors" class="level3" data-number="4.2.5"><h3 data-number="4.2.5" class="anchored" data-anchor-id="visualizing-pca-scores-and-variable-vectors">
 <span class="header-section-number">4.2.5</span> Visualizing PCA scores and variable vectors</h3>
 <p>To see and attempt to understand PCA results, it is useful to plot both the scores for the observations on a few of the largest components and also the loadings or variable vectors that give the weights for the variables in determining the principal components.</p>
-<p>In <a href="#sec-biplot" class="quarto-xref"><span>Section 4.3</span></a> I discuss the biplot technique that plots both in a single display. However, I do this directly here, using tidy processing to explain what is going on in PCA and in these graphical displays.</p>
+<p>In <a href="#sec-biplot"><span>Section&nbsp;4.3</span></a> I discuss the biplot technique that plots both in a single display. However, I do this directly here, using tidy processing to explain what is going on in PCA and in these graphical displays.</p>
 <section id="scores" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="scores">Scores</h4>
 <p>The (uncorrelated) principal component scores can be extracted as <code>crime.pca$x</code> or using <code>purrr::pluck("x")</code>. As noted above, these are uncorrelated and have variances equal to the eigenvalues of the correlation matrix.</p>
 <div class="cell" data-layout-align="center">
@@ -675,13 +614,9 @@ Figure&nbsp;4.7: Screeplots for the PCA of the crime data. The left panel shows 
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_minimal</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">14</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"top"</span><span class="op">)</span> </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div id="fig-crime-scores-plot12" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
-<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-crime-scores-plot12-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="figs/ch04/fig-crime-scores-plot12-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-crime-scores-plot12-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;4.8: Plot of component scores on the first two principal components for the <code>crime</code> data. States are colored by <code>region</code>.
-</figcaption></figure>
+<div id="fig-crime-scores-plot12" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="figs/ch04/fig-crime-scores-plot12-1.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption class="figure-caption">Figure&nbsp;4.8: Plot of component scores on the first two principal components for the <code>crime</code> data. States are colored by <code>region</code>.</figcaption></figure>
 </div>
 </div>
 </div>
@@ -759,17 +694,13 @@ Figure&nbsp;4.8: Plot of component scores on the first two principal components 
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/coord_fixed.html">coord_fixed</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>         <span class="co"># fix aspect ratio to 1:1</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_minimal</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">14</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div id="fig-crime-vectors" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
-<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-crime-vectors-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="figs/ch04/fig-crime-vectors-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-crime-vectors-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;4.9: Plot of component loadings the first two principal components for the <code>crime</code> data. These are interpreted as the contributions of the variables to the components.
-</figcaption></figure>
+<div id="fig-crime-vectors" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="figs/ch04/fig-crime-vectors-1.png" class="img-fluid figure-img" style="width:80.0%"></p>
+<figcaption class="figure-caption">Figure&nbsp;4.9: Plot of component loadings the first two principal components for the <code>crime</code> data. These are interpreted as the contributions of the variables to the components.</figcaption></figure>
 </div>
 </div>
 </div>
-<p>The variable vectors (arrows) shown in <a href="#fig-crime-vectors" class="quarto-xref">Figure&nbsp;<span>4.9</span></a> have the following interpretations:</p>
+<p>The variable vectors (arrows) shown in <a href="#fig-crime-vectors">Figure&nbsp;<span>4.9</span></a> have the following interpretations:</p>
 <ol type="1">
 <li><p>The lengths of the variable vectors, <span class="math inline">\(\lVert\mathbf{v}_i\rVert = \sqrt{\Sigma_{j} \; v_{ij}^2}\)</span> give the relative proportion of variance of each variable accounted for in a two-dimensional display.</p></li>
 <li><p>Each vector points in the direction in component space with which that variable is most highly correlated: the value, <span class="math inline">\(v_{ij}\)</span>, of the vector for variable <span class="math inline">\(\mathbf{x}_i\)</span> on component <span class="math inline">\(j\)</span> reflects the correlation of that variable with the <span class="math inline">\(j\)</span>th principal component. Thus,</p></li>
@@ -785,7 +716,7 @@ Figure&nbsp;4.9: Plot of component loadings the first two principal components f
 <li>two variable vectors that point in the same direction are highly correlated; <span class="math inline">\(r = 1\)</span> if they are completely aligned.</li>
 <li>Variable vectors at right angles are approximately uncorrelated, while those pointing in opposite directions are negatively correlated; <span class="math inline">\(r = -1\)</span> if they are at 180<span class="math inline">\(^o\)</span>.</li>
 </ul>
-<p>To illustrate point (1), the following indicates that almost 70% of the variance of <code>murder</code> is represented in the the 2D plot shown in <a href="#fig-crime-scores-plot12" class="quarto-xref">Figure&nbsp;<span>4.8</span></a>, but only 40% of the variance of <code>robbery</code> is captured. For point (2), the correlation of <code>murder</code> with the dimensions is 0.3 for PC1 and 0.63 for PC2. For point (3), the angle between <code>murder</code> and <code>burglary</code> looks to be about 90<span class="math inline">\(^o\)</span>, but the actual correlation is 0.39.</p>
+<p>To illustrate point (1), the following indicates that almost 70% of the variance of <code>murder</code> is represented in the the 2D plot shown in <a href="#fig-crime-scores-plot12">Figure&nbsp;<span>4.8</span></a>, but only 40% of the variance of <code>robbery</code> is captured. For point (2), the correlation of <code>murder</code> with the dimensions is 0.3 for PC1 and 0.63 for PC2. For point (3), the angle between <code>murder</code> and <code>burglary</code> looks to be about 90<span class="math inline">\(^o\)</span>, but the actual correlation is 0.39.</p>
 <!-- •  Each vector corresponds to a variable, and points in the direction in which that variable is most strongly linearly correlated. -->
 <!-- •  Variables that are perfectly correlated with an axis are parallel to it. -->
 <!-- •  Variables that are uncorrelated with an axis are perpendicular to it. -->
@@ -808,7 +739,7 @@ Figure&nbsp;4.9: Plot of component loadings the first two principal components f
 </div>
 </section></section></section><section id="sec-biplot" class="level2" data-number="4.3"><h2 data-number="4.3" class="anchored" data-anchor-id="sec-biplot">
 <span class="header-section-number">4.3</span> Biplots</h2>
-<p>The biplot is a simple and powerful idea that came from the recognition that you can overlay a plot of observation scores in a principal components analysis with the information of the variable loadings (weights) to give a simultaneous display that is easy to interpret. In this sense, a biplot is generalization of a scatterplot, projecting from data space to PCA space, where the observations are shown by points, as in the plots of component scores in <a href="#fig-crime-scores-plot12" class="quarto-xref">Figure&nbsp;<span>4.8</span></a>, but with the variables also shown by vectors (or scaled linear axes aligned with those vectors).</p>
+<p>The biplot is a simple and powerful idea that came from the recognition that you can overlay a plot of observation scores in a principal components analysis with the information of the variable loadings (weights) to give a simultaneous display that is easy to interpret. In this sense, a biplot is generalization of a scatterplot, projecting from data space to PCA space, where the observations are shown by points, as in the plots of component scores in <a href="#fig-crime-scores-plot12">Figure&nbsp;<span>4.8</span></a>, but with the variables also shown by vectors (or scaled linear axes aligned with those vectors).</p>
 <p>The idea of the biplot was introduced by Ruben Gabriel <span class="citation" data-cites="Gabriel:71 Gabriel:81">(<a href="90-references.html#ref-Gabriel:71" role="doc-biblioref">1971</a>, <a href="90-references.html#ref-Gabriel:81" role="doc-biblioref">1981</a>)</span> and later expanded in scope by <span class="citation" data-cites="GowerHand:96">Gower &amp; Hand (<a href="90-references.html#ref-GowerHand:96" role="doc-biblioref">1996</a>)</span>. The book by <span class="citation" data-cites="Greenacre:2010:biplots">Greenacre (<a href="90-references.html#ref-Greenacre:2010:biplots" role="doc-biblioref">2010</a>)</span> gives a practical overview of the many variety of biplots and <span class="citation" data-cites="Gower-etal:2011">Gower et al. (<a href="90-references.html#ref-Gower-etal:2011" role="doc-biblioref">2011</a>)</span> provide a full treatment …</p>
 <p>Biplot methodolgy is far more general than I cover here. Categorical variables can be incorporated in PCA using category level points. Two-way frequency tables of categorical variables can be analysed using <em>correspondence analysis</em>, which is similar to PCA, but designed to account for the maximum amount of the <span class="math inline">\(\chi^2\)</span> statistic for association; <em>multiple correspondence analysis</em> extends this to method to multi-way tables <span class="citation" data-cites="FriendlyMeyer:2016:DDAR Greenacre:84">(<a href="90-references.html#ref-FriendlyMeyer:2016:DDAR" role="doc-biblioref">Friendly &amp; Meyer, 2016</a>; <a href="90-references.html#ref-Greenacre:84" role="doc-biblioref">Greenacre, 1984</a>)</span>.</p>
 <section id="constructing-a-biplot" class="level3" data-number="4.3.1"><h3 data-number="4.3.1" class="anchored" data-anchor-id="constructing-a-biplot">
@@ -816,13 +747,9 @@ Figure&nbsp;4.9: Plot of component loadings the first two principal components f
 <p>The biplot is constructed by using the singular value decomposition (SVD) to obtain a low-rank approximation to the data matrix <span class="math inline">\(\mathbf{X}_{n \times p}\)</span> (centered, and optionally scaled to unit variances) whose <span class="math inline">\(n\)</span> rows are the observations and whose <span class="math inline">\(p\)</span> columns are the variables.</p>
 <div class="cell" data-layout-align="center">
 <div class="cell-output-display">
-<div id="fig-svd-diagram" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
-<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-svd-diagram-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="images/SVD.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-svd-diagram-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;4.10: The singular value decomposition expresses a data matrix <strong>X</strong> as the product of a matrix <strong>U</strong> of observation scores, a diagonal matrix <span class="math inline">\(\Lambda\)</span> of singular values and a matrix <strong>V</strong> of variable weights.
-</figcaption></figure>
+<div id="fig-svd-diagram" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="images/SVD.png" class="img-fluid figure-img" style="width:80.0%"></p>
+<figcaption class="figure-caption">Figure&nbsp;4.10: The singular value decomposition expresses a data matrix <strong>X</strong> as the product of a matrix <strong>U</strong> of observation scores, a diagonal matrix <span class="math inline">\(\Lambda\)</span> of singular values and a matrix <strong>V</strong> of variable weights.</figcaption></figure>
 </div>
 </div>
 </div>
@@ -848,7 +775,7 @@ Figure&nbsp;4.10: The singular value decomposition expresses a data matrix <stro
 <p>The <code>scale</code> factor, <span class="math inline">\(\alpha\)</span> allows the variances of the components to be apportioned between the row points and column vectors, with different interpretations, by representing the approximation <span class="math inline">\(\widehat{\mathbf{X}}\)</span> as the product of two matrices,</p>
 <p><span class="math display">\[
 \widehat{\mathbf{X}} = (\mathbf{U} \mathbf{\Lambda}^\alpha) (\mathbf{\Lambda}^{1-\alpha} \mathbf{V}') = \mathbf{A} \mathbf{B}'
-\]</span> This notation uses a little math trick involving a power, <span class="math inline">\(0 \le \alpha \le 1\)</span>: When <span class="math inline">\(\alpha = 1\)</span>, <span class="math inline">\(\mathbf{\Lambda}^\alpha = \mathbf{\Lambda}^1  =\mathbf{\Lambda}\)</span>, and <span class="math inline">\(\mathbf{\Lambda}^{1-\alpha} = \mathbf{\Lambda}^0  =\mathbf{I}\)</span>. <span class="math inline">\(\alpha = 1/2\)</span> gives the diagonal matrix <span class="math inline">\(\mathbf{\Lambda}^{1/2}\)</span> whose elements are the square roots of the singular values.</p>
+\]</span> This notation uses a little math trick involving a power, <span class="math inline">\(0 \le \alpha \le 1\)</span>: When <span class="math inline">\(\alpha = 1\)</span>, <span class="math inline">\(\mathbf{\Lambda}^\alpha = \mathbf{\Lambda}^1 =\mathbf{\Lambda}\)</span>, and <span class="math inline">\(\mathbf{\Lambda}^{1-\alpha} = \mathbf{\Lambda}^0 =\mathbf{I}\)</span>. <span class="math inline">\(\alpha = 1/2\)</span> gives the diagonal matrix <span class="math inline">\(\mathbf{\Lambda}^{1/2}\)</span> whose elements are the square roots of the singular values.</p>
 <p>The choice <span class="math inline">\(\alpha = 1\)</span> assigns the singular values totally to the left factor; then, the angle between two variable vectors, reflecting the inner product <span class="math inline">\(\mathbf{x}_j^\textsf{T}, \mathbf{x}_{j'}\)</span> approximates their correlation or covariance, and the distance between the points approximates their Mahalanobis distances. <span class="math inline">\(\alpha = 0\)</span> gives a distance interpretation to the column display. <span class="math inline">\(\alpha = 1/2\)</span> gives a symmetrically scaled biplot. *TODO**: Explain this better.</p>
 <p>When the singular values are assigned totally to the left or to the right factor, the resultant coordinates are called <em>principal coordinates</em> and the sum of squared coordinates on each dimension equal the corresponding singular value. The other matrix, to which no part of the singular values is assigned, contains the so-called <em>standard coordinates</em> and have sum of squared values equal to 1.0.</p>
 </section><section id="biplots-in-r" class="level3" data-number="4.3.2"><h3 data-number="4.3.2" class="anchored" data-anchor-id="biplots-in-r">
@@ -857,7 +784,7 @@ Figure&nbsp;4.10: The singular value decomposition expresses a data matrix <stro
 <p>Here, I use the <strong>ggbiplot</strong> package, which aims to provide a simple interface to biplots within the <code>ggplot2</code> framework. I also use some convenient utility functions from <strong>factoextra</strong>.</p>
 </section><section id="example-crime-data-1" class="level3" data-number="4.3.3"><h3 data-number="4.3.3" class="anchored" data-anchor-id="example-crime-data-1">
 <span class="header-section-number">4.3.3</span> Example: Crime data</h3>
-<p>A basic biplot of the <code>crime</code> data, using standardized principal components and labeling the observation by their state abbreviation is shown in <a href="#fig-crime-biplot1" class="quarto-xref">Figure&nbsp;<span>4.11</span></a>. The correlation circle indicates that these components are uncorrelated and have equal variance in the display.</p>
+<p>A basic biplot of the <code>crime</code> data, using standardized principal components and labeling the observation by their state abbreviation is shown in <a href="#fig-crime-biplot1">Figure&nbsp;<span>4.11</span></a>. The correlation circle indicates that these components are uncorrelated and have equal variance in the display.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb15" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">crime.pca</span> <span class="op">&lt;-</span> <span class="fu"><a href="http://friendly.github.io/ggbiplot/reference/reflect.html">reflect</a></span><span class="op">(</span><span class="va">crime.pca</span><span class="op">)</span> <span class="co"># reflect the axes</span></span>
 <span></span>
@@ -869,17 +796,13 @@ Figure&nbsp;4.10: The singular value decomposition expresses a data matrix <stro
 <span>   varname.color <span class="op">=</span> <span class="st">"brown"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_minimal</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">14</span><span class="op">)</span> </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div id="fig-crime-biplot1" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
-<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-crime-biplot1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="figs/ch04/fig-crime-biplot1-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-crime-biplot1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;4.11: Basic biplot of the crime data. State abbreviations are shown at their standardized scores on the first two dimensions. The variable vectors reflect the correlations of the variables with the biplot dimensions.
-</figcaption></figure>
+<div id="fig-crime-biplot1" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="figs/ch04/fig-crime-biplot1-1.png" class="img-fluid figure-img" style="width:80.0%"></p>
+<figcaption class="figure-caption">Figure&nbsp;4.11: Basic biplot of the crime data. State abbreviations are shown at their standardized scores on the first two dimensions. The variable vectors reflect the correlations of the variables with the biplot dimensions.</figcaption></figure>
 </div>
 </div>
 </div>
-<p>In this dataset the states are grouped by region and we saw some differences among regions in the plot (<a href="#fig-crime-scores-plot12" class="quarto-xref">Figure&nbsp;<span>4.8</span></a>) of component scores. <code><a href="http://friendly.github.io/ggbiplot/reference/ggbiplot.html">ggbiplot()</a></code> provides options to include a <code>groups =</code> variable, used to color the observation points and also to draw their data ellipses, facilitating interpretation.</p>
+<p>In this dataset the states are grouped by region and we saw some differences among regions in the plot (<a href="#fig-crime-scores-plot12">Figure&nbsp;<span>4.8</span></a>) of component scores. <code><a href="http://friendly.github.io/ggbiplot/reference/ggbiplot.html">ggbiplot()</a></code> provides options to include a <code>groups =</code> variable, used to color the observation points and also to draw their data ellipses, facilitating interpretation.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb16" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="http://friendly.github.io/ggbiplot/reference/ggbiplot.html">ggbiplot</a></span><span class="op">(</span><span class="va">crime.pca</span>,</span>
 <span>   obs.scale <span class="op">=</span> <span class="fl">1</span>, var.scale <span class="op">=</span> <span class="fl">1</span>,</span>
@@ -896,13 +819,9 @@ Figure&nbsp;4.11: Basic biplot of the crime data. State abbreviations are shown 
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_minimal</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">14</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>legend.direction <span class="op">=</span> <span class="st">'horizontal'</span>, legend.position <span class="op">=</span> <span class="st">'top'</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div id="fig-crime-biplot2" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
-<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-crime-biplot2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="figs/ch04/fig-crime-biplot2-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-crime-biplot2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;4.12: Enhanced biplot of the crime data, grouping the states by region and adding data ellipses.
-</figcaption></figure>
+<div id="fig-crime-biplot2" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="figs/ch04/fig-crime-biplot2-1.png" class="img-fluid figure-img" style="width:80.0%"></p>
+<figcaption class="figure-caption">Figure&nbsp;4.12: Enhanced biplot of the crime data, grouping the states by region and adding data ellipses.</figcaption></figure>
 </div>
 </div>
 </div>
@@ -931,17 +850,13 @@ Figure&nbsp;4.12: Enhanced biplot of the crime data, grouping the states by regi
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_minimal</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">14</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>legend.direction <span class="op">=</span> <span class="st">'horizontal'</span>, legend.position <span class="op">=</span> <span class="st">'top'</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div id="fig-crime-biplot3" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
-<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-crime-biplot3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="figs/ch04/fig-crime-biplot3-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-crime-biplot3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;4.13: Biplot of dimensions 1 &amp; 3 of the crime data, with data ellipses for the regions.
-</figcaption></figure>
+<div id="fig-crime-biplot3" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="figs/ch04/fig-crime-biplot3-1.png" class="img-fluid figure-img" style="width:80.0%"></p>
+<figcaption class="figure-caption">Figure&nbsp;4.13: Biplot of dimensions 1 &amp; 3 of the crime data, with data ellipses for the regions.</figcaption></figure>
 </div>
 </div>
 </div>
-<p>Dimension 3 in <a href="#fig-crime-biplot3" class="quarto-xref">Figure&nbsp;<span>4.13</span></a> is more subtle. One interpretation is a contrast between larceny, which is a larceny (simple theft) and robbery, which involves stealing something from a person and is considered a more serious crime with an element of possible violence. In this plot, murder has a relatively short variable vector, so does not contribute very much to differences among the states.</p>
+<p>Dimension 3 in <a href="#fig-crime-biplot3">Figure&nbsp;<span>4.13</span></a> is more subtle. One interpretation is a contrast between larceny, which is a larceny (simple theft) and robbery, which involves stealing something from a person and is considered a more serious crime with an element of possible violence. In this plot, murder has a relatively short variable vector, so does not contribute very much to differences among the states.</p>
 </section><section id="biplot-contributions-and-quality" class="level3" data-number="4.3.4"><h3 data-number="4.3.4" class="anchored" data-anchor-id="biplot-contributions-and-quality">
 <span class="header-section-number">4.3.4</span> Biplot contributions and quality</h3>
 <p>To better understand how much each variable contributes to the biplot dimensions, it is helpful to see information about the variance of variables along each dimension. Graphically, this is nothing more than a measure of the lengths of projections of the variables on each of the dimensions. <code><a href="https://rdrr.io/pkg/factoextra/man/get_pca.html">factoextra::get_pca_var()</a></code> calculates a number of tables from a <code>"prcomp"</code> or similar object.</p>
@@ -974,18 +889,14 @@ Figure&nbsp;4.13: Biplot of dimensions 1 &amp; 3 of the crime data, with data el
 <span>                   fill <span class="op">=</span> <span class="st">"lightgreen"</span>, color <span class="op">=</span> <span class="st">"black"</span><span class="op">)</span></span>
 <span><span class="va">p1</span> <span class="op">+</span> <span class="va">p2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div id="fig-fviz-contrib" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
-<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-fviz-contrib-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="figs/ch04/fig-fviz-contrib-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-fviz-contrib-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;4.14: Contributions of the crime variables to dimensions 1 (left) &amp; 2 (right) of the PCA solution
-</figcaption></figure>
+<div id="fig-fviz-contrib" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="figs/ch04/fig-fviz-contrib-1.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption class="figure-caption">Figure&nbsp;4.14: Contributions of the crime variables to dimensions 1 (left) &amp; 2 (right) of the PCA solution</figcaption></figure>
 </div>
 </div>
 </div>
 <p>A simple rubric for interpreting the dimensions in terms of the variable contributions is to mention those that are largest or above average on each dimension. So, burglary and rape contribute most to the first dimension, while murder and auto theft contribute most to the second.</p>
-<p>Another useful measure is called <code>cos2</code>, the <em>quality</em> of representation, meaning how much of a variable is represented in a given component. The columns sum to the eigenvalue for each dimension. The rows each sum to 1.0, meaning each variable is completely represented on all components, but we can find the quality of a <span class="math inline">\(k\)</span>-D solution by summing the values in the first <span class="math inline">\(k\)</span> columns. These can be plotted in a style similar to <a href="#fig-fviz-contrib" class="quarto-xref">Figure&nbsp;<span>4.14</span></a> using <code><a href="https://rdrr.io/pkg/factoextra/man/fviz_cos2.html">factoextra::fviz_cos2()</a></code>.</p>
+<p>Another useful measure is called <code>cos2</code>, the <em>quality</em> of representation, meaning how much of a variable is represented in a given component. The columns sum to the eigenvalue for each dimension. The rows each sum to 1.0, meaning each variable is completely represented on all components, but we can find the quality of a <span class="math inline">\(k\)</span>-D solution by summing the values in the first <span class="math inline">\(k\)</span> columns. These can be plotted in a style similar to <a href="#fig-fviz-contrib">Figure&nbsp;<span>4.14</span></a> using <code><a href="https://rdrr.io/pkg/factoextra/man/fviz_cos2.html">factoextra::fviz_cos2()</a></code>.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb21" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">quality</span> <span class="op">&lt;-</span> <span class="va">var_info</span><span class="op">$</span><span class="va">cos2</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/colSums.html">rowSums</a></span><span class="op">(</span><span class="va">quality</span><span class="op">)</span></span>
@@ -1008,20 +919,16 @@ Figure&nbsp;4.14: Contributions of the crime variables to dimensions 1 (left) &a
 <span><span class="co">#&gt; larceny   0.53  0.20  0.73</span></span>
 <span><span class="co">#&gt; auto      0.36  0.31  0.67</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>In two dimensions, murder and burglary are best represented; robbery and larceny are the worst, but as we saw above (<a href="#fig-crime-biplot3" class="quarto-xref">Figure&nbsp;<span>4.13</span></a>), these crimes are implicated in the third dimension.</p>
+<p>In two dimensions, murder and burglary are best represented; robbery and larceny are the worst, but as we saw above (<a href="#fig-crime-biplot3">Figure&nbsp;<span>4.13</span></a>), these crimes are implicated in the third dimension.</p>
 </section><section id="sec-supp-vars" class="level3" data-number="4.3.5"><h3 data-number="4.3.5" class="anchored" data-anchor-id="sec-supp-vars">
 <span class="header-section-number">4.3.5</span> Supplementary variables</h3>
-<p>An important feature of biplot methodology is that once you have a reduced-rank display of the relations among a set of variables, you can use other available data to help interpret what what is shown in the biplot. In a sense, this is what I did above in <a href="#fig-crime-biplot2" class="quarto-xref">Figure&nbsp;<span>4.12</span></a> and <a href="#fig-crime-biplot3" class="quarto-xref">Figure&nbsp;<span>4.13</span></a> using <code>region</code> as a grouping variable and summarizing the variability in the scores for states with their data ellipses by region.</p>
-<p>When we have other quantitative variables on the same observations, these can be represented as supplementary variables in the same space, by what amounts to regressions of these new variables on the scores for the principal component dimensions. For example, the left panel of <a href="#fig-supp-regession" class="quarto-xref">Figure&nbsp;<span>4.15</span></a> depicts the vector geometry of a regression of a variable <span class="math inline">\(\mathbf{y}\)</span> on two predictors, <span class="math inline">\(\mathbf{x}_1\)</span> and <span class="math inline">\(\mathbf{x}_2\)</span>. The fitted vector, <span class="math inline">\(\widehat{\mathbf{y}}\)</span>, is the perpendicular projection of <span class="math inline">\(\mathbf{y}\)</span> onto the plane of <span class="math inline">\(\mathbf{x}_1\)</span> and <span class="math inline">\(\mathbf{x}_2\)</span>. In the same way, in the right panel the supplementary variable is projected into the plane of two principal component axes. The fitted vector shows how that additional variable relates to the biplot dimensions.</p>
+<p>An important feature of biplot methodology is that once you have a reduced-rank display of the relations among a set of variables, you can use other available data to help interpret what what is shown in the biplot. In a sense, this is what I did above in <a href="#fig-crime-biplot2">Figure&nbsp;<span>4.12</span></a> and <a href="#fig-crime-biplot3">Figure&nbsp;<span>4.13</span></a> using <code>region</code> as a grouping variable and summarizing the variability in the scores for states with their data ellipses by region.</p>
+<p>When we have other quantitative variables on the same observations, these can be represented as supplementary variables in the same space, by what amounts to regressions of these new variables on the scores for the principal component dimensions. For example, the left panel of <a href="#fig-supp-regession">Figure&nbsp;<span>4.15</span></a> depicts the vector geometry of a regression of a variable <span class="math inline">\(\mathbf{y}\)</span> on two predictors, <span class="math inline">\(\mathbf{x}_1\)</span> and <span class="math inline">\(\mathbf{x}_2\)</span>. The fitted vector, <span class="math inline">\(\widehat{\mathbf{y}}\)</span>, is the perpendicular projection of <span class="math inline">\(\mathbf{y}\)</span> onto the plane of <span class="math inline">\(\mathbf{x}_1\)</span> and <span class="math inline">\(\mathbf{x}_2\)</span>. In the same way, in the right panel the supplementary variable is projected into the plane of two principal component axes. The fitted vector shows how that additional variable relates to the biplot dimensions.</p>
 <div class="cell" data-layout-align="center">
 <div class="cell-output-display">
-<div id="fig-supp-regession" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
-<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-supp-regession-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="images/pca4ds-figure-2-11.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:90.0%">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-supp-regession-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;4.15: Fitting supplementary variables in a biplot is analogous to regression on the principal component dimensions. <em>Source</em>: <span class="citation" data-cites="Aluja-etal-2018">Aluja et al. (<a href="90-references.html#ref-Aluja-etal-2018" role="doc-biblioref">2018</a>)</span>, Figure 2.11
-</figcaption></figure>
+<div id="fig-supp-regession" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="images/pca4ds-figure-2-11.png" class="img-fluid figure-img" style="width:90.0%"></p>
+<figcaption class="figure-caption">Figure&nbsp;4.15: Fitting supplementary variables in a biplot is analogous to regression on the principal component dimensions. <em>Source</em>: <span class="citation" data-cites="Aluja-etal-2018">Aluja et al. (<a href="90-references.html#ref-Aluja-etal-2018" role="doc-biblioref">2018</a>)</span>, Figure 2.11</figcaption></figure>
 </div>
 </div>
 </div>
@@ -1062,7 +969,7 @@ Figure&nbsp;4.15: Fitting supplementary variables in a biplot is analogous to re
 <span>                     graph <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>The essential difference between the result of <code><a href="https://rdrr.io/r/stats/prcomp.html">prcomp()</a></code> used earlier to get the <code>crime.pca</code> object and the result of <code><a href="https://rdrr.io/pkg/FactoMineR/man/PCA.html">PCA()</a></code> with supplementary variables is that the <code>crime.PCA_sup</code> object now contains a <code>quanti.sup</code> component containing the coordinates for the supplementary variables in PCA space.</p>
-<p>These can be calculated directly as a the coefficients of a multivariate regression of the standardized supplementary variables on the PCA scores for the dimensions, with no intercept to force the fitted vectors to go through the origin. For example, in the plot below (<a href="#fig-crime-factominer" class="quarto-xref">Figure&nbsp;<span>4.16</span></a>), the vector for Income has coordinates (0.192, -0.530) on the first two PCA dimensions.</p>
+<p>These can be calculated directly as a the coefficients of a multivariate regression of the standardized supplementary variables on the PCA scores for the dimensions, with no intercept to force the fitted vectors to go through the origin. For example, in the plot below (<a href="#fig-crime-factominer">Figure&nbsp;<span>4.16</span></a>), the vector for Income has coordinates (0.192, -0.530) on the first two PCA dimensions.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb25" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">reg.data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/scale.html">scale</a></span><span class="op">(</span><span class="va">supp_data</span><span class="op">[</span>, <span class="op">-</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span>, </span>
 <span>                  <span class="va">crime.PCA_sup</span><span class="op">$</span><span class="va">ind</span><span class="op">$</span><span class="va">coord</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -1097,7 +1004,7 @@ Figure&nbsp;4.15: Fitting supplementary variables in a biplot is analogous to re
 <span><span class="co">#&gt; HS_Grad     2.05  1.12 0.861</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>The <code><a href="https://rdrr.io/pkg/FactoMineR/man/PCA.html">PCA()</a></code> result can be plotted using <code>FactoMiner::plot()</code> or various <code>factoextra</code> functions like <code><a href="https://rdrr.io/pkg/factoextra/man/fviz_pca.html">fviz_pca_var()</a></code> for a plot of the variable vectors or <code><a href="https://rdrr.io/pkg/factoextra/man/fviz_pca.html">fviz_pca_biplot()</a></code> for a biplot. When a <code>quanti.sup</code> component is present, supplementary variables are also shown in the displays.</p>
-<p>For simplicity I use <code>FactoMiner::plot()</code> here and only show the variable vectors. For consistency with earlier plots, I first reflect the orientation of the 2nd PCA dimension so that crimes of personal violence are at the top, as in <a href="#fig-crime-vectors" class="quarto-xref">Figure&nbsp;<span>4.9</span></a>.</p>
+<p>For simplicity I use <code>FactoMiner::plot()</code> here and only show the variable vectors. For consistency with earlier plots, I first reflect the orientation of the 2nd PCA dimension so that crimes of personal violence are at the top, as in <a href="#fig-crime-vectors">Figure&nbsp;<span>4.9</span></a>.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb27" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># reverse coordinates of Dim 2</span></span>
 <span><span class="va">crime.PCA_sup</span> <span class="op">&lt;-</span> <span class="fu">ggbiplot</span><span class="fu">::</span><span class="fu"><a href="http://friendly.github.io/ggbiplot/reference/reflect.html">reflect</a></span><span class="op">(</span><span class="va">crime.PCA_sup</span>, columns <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
@@ -1105,22 +1012,18 @@ Figure&nbsp;4.15: Fitting supplementary variables in a biplot is analogous to re
 <span><span class="co"># crime.PCA_sup$quanti.sup$coord[, 2] &lt;- -crime.PCA_sup$quanti.sup$coord[, 2]</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">crime.PCA_sup</span>, choix <span class="op">=</span> <span class="st">"var"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div id="fig-crime-factominer" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
-<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-crime-factominer-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="figs/ch04/fig-crime-factominer-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:90.0%">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-crime-factominer-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;4.16: PCA plot of variables for the crime data, with vectors for the supplementary variables showing their association with the principal component dimensions.
-</figcaption></figure>
+<div id="fig-crime-factominer" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="figs/ch04/fig-crime-factominer-1.png" class="img-fluid figure-img" style="width:90.0%"></p>
+<figcaption class="figure-caption">Figure&nbsp;4.16: PCA plot of variables for the crime data, with vectors for the supplementary variables showing their association with the principal component dimensions.</figcaption></figure>
 </div>
 </div>
 </div>
-<p>Recall that from earlier analyses, I interpreted the the dominant PC1 dimension as reflecting overall rate of crime. The contributions to this dimension, which are the projections of the variable vectors on the horizontal axis in <a href="#fig-crime-vectors" class="quarto-xref">Figure&nbsp;<span>4.9</span></a> and <a href="#fig-crime-biplot2" class="quarto-xref">Figure&nbsp;<span>4.12</span></a> were shown graphically by barcharts in the left panel of <a href="#fig-fviz-contrib" class="quarto-xref">Figure&nbsp;<span>4.14</span></a>.</p>
-<p>But now in <a href="#fig-crime-factominer" class="quarto-xref">Figure&nbsp;<span>4.16</span></a>, with the addition of variable vectors for the supplementary variables, you can see how income, rate of illiteracy, life expectancy and proportion of high school graduates are related to the variation in rates of crimes for the U.S. states.</p>
-<p>On dimension 1, what stands out is that life expectancy is associated with lower overall crime, while other supplementary variable have positive associations. On dimension 2, crimes against persons (murder, assault, rape) are associated with greater rates of illiteracy among the states, which as we earlier saw (<a href="#fig-crime-biplot2" class="quarto-xref">Figure&nbsp;<span>4.12</span></a>) were more often Southern states. Crimes against property (auto theft, larceny) at the bottom of this dimension are associated with higher levels of income and high school graduates</p>
+<p>Recall that from earlier analyses, I interpreted the the dominant PC1 dimension as reflecting overall rate of crime. The contributions to this dimension, which are the projections of the variable vectors on the horizontal axis in <a href="#fig-crime-vectors">Figure&nbsp;<span>4.9</span></a> and <a href="#fig-crime-biplot2">Figure&nbsp;<span>4.12</span></a> were shown graphically by barcharts in the left panel of <a href="#fig-fviz-contrib">Figure&nbsp;<span>4.14</span></a>.</p>
+<p>But now in <a href="#fig-crime-factominer">Figure&nbsp;<span>4.16</span></a>, with the addition of variable vectors for the supplementary variables, you can see how income, rate of illiteracy, life expectancy and proportion of high school graduates are related to the variation in rates of crimes for the U.S. states.</p>
+<p>On dimension 1, what stands out is that life expectancy is associated with lower overall crime, while other supplementary variable have positive associations. On dimension 2, crimes against persons (murder, assault, rape) are associated with greater rates of illiteracy among the states, which as we earlier saw (<a href="#fig-crime-biplot2">Figure&nbsp;<span>4.12</span></a>) were more often Southern states. Crimes against property (auto theft, larceny) at the bottom of this dimension are associated with higher levels of income and high school graduates</p>
 </section><section id="example-diabetes-data" class="level3" data-number="4.3.6"><h3 data-number="4.3.6" class="anchored" data-anchor-id="example-diabetes-data">
 <span class="header-section-number">4.3.6</span> Example: Diabetes data</h3>
-<p>As another example, consider the data from <span class="citation" data-cites="ReavenMiller:79">Reaven &amp; Miller (<a href="90-references.html#ref-ReavenMiller:79" role="doc-biblioref">1979</a>)</span> on measures of insulin and glucose shown in <a href="index.html#fig-diabetes1" class="quarto-xref">Figure&nbsp;<span>6</span></a> and that led to the discovery of two distinct types of development of Type 2 diabetes (<a href="index.html#sec-discoveries" class="quarto-xref"><span>Section 3.1</span></a>). This dataset is available as <code><a href="https://friendly.github.io/heplots/reference/Diabetes.html">heplots::Diabetes</a></code>. The three groups are <code>Normal</code>, <code>Chemical_Diabetic</code> and <code>Overt_Diabetic</code>, and the (numerical) diagnostic variables are:</p>
+<p>As another example, consider the data from <span class="citation" data-cites="ReavenMiller:79">Reaven &amp; Miller (<a href="90-references.html#ref-ReavenMiller:79" role="doc-biblioref">1979</a>)</span> on measures of insulin and glucose shown in <a href="index.html#fig-diabetes1">Figure&nbsp;<span>6</span></a> and that led to the discovery of two distinct types of development of Type 2 diabetes (<a href="index.html#sec-discoveries"><span>Section&nbsp;3.1</span></a>). This dataset is available as <code><a href="https://friendly.github.io/heplots/reference/Diabetes.html">heplots::Diabetes</a></code>. The three groups are <code>Normal</code>, <code>Chemical_Diabetic</code> and <code>Overt_Diabetic</code>, and the (numerical) diagnostic variables are:</p>
 <ul>
 <li>
 <code>relwt</code>: relative weight, the ratio of actual to expected weight, given the person’s height,</li>
@@ -1133,8 +1036,8 @@ Figure&nbsp;4.16: PCA plot of variables for the crime data, with vectors for the
 <li>
 <code>sspg</code>: steady state plasma glucose, a measure of insulin resistance</li>
 </ul>
-<p><strong>TODO</strong>: Should introduce 3D plots earlier, in Ch3 before <a href="03-multivariate_plots.html#sec-scatmat" class="quarto-xref"><span>Section 3.3</span></a>.</p>
-<p>First, let’s try to create a 3D plot, analogous to the artist’s drawing from PRIM-9 shown in <a href="index.html#fig-ReavenMiller-3d" class="quarto-xref">Figure&nbsp;<span>7</span></a>. For this, I use <code><a href="https://rdrr.io/pkg/car/man/scatter3d.html">car::scatter3d()</a></code> which can show data ellipsoids summarizing each group. The formula notation, <code>z ~ x + y</code> assigns the <code>z</code> variable to the vertical direction in the plot, and the <code>x</code> and <code>y</code> variable form a base plane.</p>
+<p><strong>TODO</strong>: Should introduce 3D plots earlier, in Ch3 before <a href="03-multivariate_plots.html#sec-scatmat"><span>Section&nbsp;3.3</span></a>.</p>
+<p>First, let’s try to create a 3D plot, analogous to the artist’s drawing from PRIM-9 shown in <a href="index.html#fig-ReavenMiller-3d">Figure&nbsp;<span>7</span></a>. For this, I use <code><a href="https://rdrr.io/pkg/car/man/scatter3d.html">car::scatter3d()</a></code> which can show data ellipsoids summarizing each group. The formula notation, <code>z ~ x + y</code> assigns the <code>z</code> variable to the vertical direction in the plot, and the <code>x</code> and <code>y</code> variable form a base plane.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb28" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"darkgreen"</span>, <span class="st">"blue"</span>, <span class="st">"red"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/car/man/scatter3d.html">scatter3d</a></span><span class="op">(</span><span class="va">sspg</span> <span class="op">~</span> <span class="va">instest</span> <span class="op">+</span> <span class="va">glutest</span>, data<span class="op">=</span><span class="va">Diabetes</span>,</span>
@@ -1144,21 +1047,17 @@ Figure&nbsp;4.16: PCA plot of variables for the crime data, with vectors for the
 <span>          col <span class="op">=</span> <span class="va">cols</span>,</span>
 <span>          surface.col <span class="op">=</span> <span class="va">cols</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p><code><a href="https://rdrr.io/pkg/car/man/scatter3d.html">car::scatter3d()</a></code> uses the <strong>rgl</strong> package <span class="citation" data-cites="R-rgl">(<a href="90-references.html#ref-R-rgl" role="doc-biblioref">Adler &amp; Murdoch, 2023</a>)</span> to render 3D graphics on a display device, which means that it has facilities for perspective, lighting and other visual properties. You can interactively zoom in or out or rotate the display in any of the three dimensions and use <code><a href="https://dmurdoch.github.io/rgl/dev/reference/spin3d.html">rgl::spin3d()</a></code> to animate rotations around any axes and record this a a <code>movie3d()</code>. <a href="#fig-diabetes-3d" class="quarto-xref">Figure&nbsp;<span>4.17</span></a> shows two views of this plot, one from the front and one from the back. The data ellipsoids are not as evocative as the artist’s rendering, but they give a sense of the relative sizes and shapes of the clouds of points for the three diagnostic groups.</p>
+<p><code><a href="https://rdrr.io/pkg/car/man/scatter3d.html">car::scatter3d()</a></code> uses the <strong>rgl</strong> package <span class="citation" data-cites="R-rgl">(<a href="90-references.html#ref-R-rgl" role="doc-biblioref">Adler &amp; Murdoch, 2023</a>)</span> to render 3D graphics on a display device, which means that it has facilities for perspective, lighting and other visual properties. You can interactively zoom in or out or rotate the display in any of the three dimensions and use <code><a href="https://dmurdoch.github.io/rgl/dev/reference/spin3d.html">rgl::spin3d()</a></code> to animate rotations around any axes and record this a a <code>movie3d()</code>. <a href="#fig-diabetes-3d">Figure&nbsp;<span>4.17</span></a> shows two views of this plot, one from the front and one from the back. The data ellipsoids are not as evocative as the artist’s rendering, but they give a sense of the relative sizes and shapes of the clouds of points for the three diagnostic groups.</p>
 <div class="cell" data-layout-align="center">
 <div class="cell-output-display">
-<div id="fig-diabetes-3d" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
-<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-diabetes-3d-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="images/diabetes-3d-both.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-diabetes-3d-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;4.17: Two views of a 3D scatterplot of three main diagnostic variables in the <code>Diabetes</code> dataset. The left panel shows an orientation similar to that of <a href="index.html#fig-ReavenMiller-3d" class="quarto-xref">Figure&nbsp;<span>7</span></a>; the right panel shows a view from the back.
-</figcaption></figure>
+<div id="fig-diabetes-3d" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="images/diabetes-3d-both.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption class="figure-caption">Figure&nbsp;4.17: Two views of a 3D scatterplot of three main diagnostic variables in the <code>Diabetes</code> dataset. The left panel shows an orientation similar to that of <a href="index.html#fig-ReavenMiller-3d">Figure&nbsp;<span>7</span></a>; the right panel shows a view from the back.</figcaption></figure>
 </div>
 </div>
 </div>
 <p>The normal group is concentrated near the origin, with relatively low values on all three diagnostic measures. The chemical diabetic group forms a wing with higher values on insulin response to oral glucose (<code>instest</code>), while the overt diabetics form the other wing, with higher values on glucose intolerance (<code>glutest</code>). The relative sizes and orientations of the data ellipsoids are also informative.</p>
-<p>Given this, what can we see in a biplot view based on PCA? The PCA of these data shows that 83% of the variance is captured in two dimensions and 96% in three. The result for 3D is interesting, in that the view from PRIM-9 shown in <a href="index.html#fig-ReavenMiller-3d" class="quarto-xref">Figure&nbsp;<span>7</span></a> and <a href="#fig-diabetes-3d" class="quarto-xref">Figure&nbsp;<span>4.17</span></a> nearly captured all available information.</p>
+<p>Given this, what can we see in a biplot view based on PCA? The PCA of these data shows that 83% of the variance is captured in two dimensions and 96% in three. The result for 3D is interesting, in that the view from PRIM-9 shown in <a href="index.html#fig-ReavenMiller-3d">Figure&nbsp;<span>7</span></a> and <a href="#fig-diabetes-3d">Figure&nbsp;<span>4.17</span></a> nearly captured all available information.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb29" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">Diabetes</span>, package<span class="op">=</span><span class="st">"heplots"</span><span class="op">)</span></span>
 <span></span>
@@ -1201,30 +1100,22 @@ Figure&nbsp;4.17: Two views of a 3D scatterplot of three main diagnostic variabl
 <span>                     label<span class="op">=</span><span class="va">group</span>, color <span class="op">=</span> <span class="va">group</span><span class="op">)</span>,</span>
 <span>                 nudge_y <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div id="fig-diabetes-ggbiplot" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
-<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-diabetes-ggbiplot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="figs/ch04/fig-diabetes-ggbiplot-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:90.0%">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-diabetes-ggbiplot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;4.18: 2D biplot of the Diabetes data
-</figcaption></figure>
+<div id="fig-diabetes-ggbiplot" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="figs/ch04/fig-diabetes-ggbiplot-1.png" class="img-fluid figure-img" style="width:90.0%"></p>
+<figcaption class="figure-caption">Figure&nbsp;4.18: 2D biplot of the Diabetes data</figcaption></figure>
 </div>
 </div>
 </div>
-<p>What can we see here, and how does it relate to the artist’s depiction in <a href="index.html#fig-ReavenMiller-3d" class="quarto-xref">Figure&nbsp;<span>7</span></a>? The variables <code>instest</code>, <code>sspg</code> and <code>glutest</code> correspond approximately to the coordinate axes in the artist’s drawing. <code>glutest</code> and <code>glufast</code> primarily separate the overt diabetics from the others. The chemical diabetics are distinguished by having larger values of insulin response (<code>instest</code>) and are also higher in relative weight (<code>relwt</code>).</p>
+<p>What can we see here, and how does it relate to the artist’s depiction in <a href="index.html#fig-ReavenMiller-3d">Figure&nbsp;<span>7</span></a>? The variables <code>instest</code>, <code>sspg</code> and <code>glutest</code> correspond approximately to the coordinate axes in the artist’s drawing. <code>glutest</code> and <code>glufast</code> primarily separate the overt diabetics from the others. The chemical diabetics are distinguished by having larger values of insulin response (<code>instest</code>) and are also higher in relative weight (<code>relwt</code>).</p>
 </section></section><section id="sec-nonlinear" class="level2" data-number="4.4"><h2 data-number="4.4" class="anchored" data-anchor-id="sec-nonlinear">
 <span class="header-section-number">4.4</span> Nonlinear dimension reduction</h2>
 <p>The world of dimension reduction methods reflected by PCA is a simple and attractive one in which relationships among variable are at least approximately linear, and can be made visible in a lower-dimensional view by linear transformations and projections. PCA does an optimal job of capturing <em>global</em> linear relationships in the data. But many phenomena defy linear description or involve <em>local</em> nonlinear relationships and clusters within the data. Our understanding of high-D data can sometimes be improved by nonlinear dimension reduction techniques.</p>
-<p>To see why, consider the data shown in the left panel of <a href="#fig-nonlin-demo" class="quarto-xref">Figure&nbsp;<span>4.19</span></a> and suppose we want to be able to separate the two classes by a line. The groups are readily seen in this simple 2D example, but there is no linear combination or projection that shows them as distinct categories. The right panel shows the same data after a nonlinear transformation to polar coordinates, where the two groups are readily distinguished by radius. Such problems arise in higher dimensions where direct visualization is far more difficult and nonlinear methods become attractive.</p>
+<p>To see why, consider the data shown in the left panel of <a href="#fig-nonlin-demo">Figure&nbsp;<span>4.19</span></a> and suppose we want to be able to separate the two classes by a line. The groups are readily seen in this simple 2D example, but there is no linear combination or projection that shows them as distinct categories. The right panel shows the same data after a nonlinear transformation to polar coordinates, where the two groups are readily distinguished by radius. Such problems arise in higher dimensions where direct visualization is far more difficult and nonlinear methods become attractive.</p>
 <div class="cell" data-layout-align="center">
 <div class="cell-output-display">
-<div id="fig-nonlin-demo" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
-<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-nonlin-demo-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="images/nonlin-demo.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-nonlin-demo-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;4.19: *Nonlinear patterns**: Two representations of the same data are shown. In the plot at the left, the clusters are clear to the eye, but there is no linear relation that separates them. Transforming the data nonlinearly, to polar coordinates in the plot at the right, makes the two groups distinct.
-</figcaption></figure>
+<div id="fig-nonlin-demo" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="images/nonlin-demo.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption class="figure-caption">Figure&nbsp;4.19: *Nonlinear patterns**: Two representations of the same data are shown. In the plot at the left, the clusters are clear to the eye, but there is no linear relation that separates them. Transforming the data nonlinearly, to polar coordinates in the plot at the right, makes the two groups distinct.</figcaption></figure>
 </div>
 </div>
 </div>
@@ -1270,13 +1161,9 @@ Figure&nbsp;4.19: *Nonlinear patterns**: Two representations of the same data ar
 <span>     xlab <span class="op">=</span> <span class="st">"Number of dimensions"</span>,</span>
 <span>     ylab <span class="op">=</span> <span class="st">"Stress (%)"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div id="fig-diabetes-stress" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
-<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-diabetes-stress-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="figs/ch04/fig-diabetes-stress-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-diabetes-stress-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;4.20: Badness of fit (Stress) of the MDS solution in relation to number of dimensions.
-</figcaption></figure>
+<div id="fig-diabetes-stress" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="figs/ch04/fig-diabetes-stress-1.png" class="img-fluid figure-img" style="width:70.0%"></p>
+<figcaption class="figure-caption">Figure&nbsp;4.20: Badness of fit (Stress) of the MDS solution in relation to number of dimensions.</figcaption></figure>
 </div>
 </div>
 </div>
@@ -1296,7 +1183,7 @@ Figure&nbsp;4.20: Badness of fit (Stress) of the MDS solution in relation to num
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">0</span>, color <span class="op">=</span> <span class="st">"gray"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_vline</a></span><span class="op">(</span>xintercept <span class="op">=</span> <span class="fl">0</span>, color <span class="op">=</span> <span class="st">"gray"</span><span class="op">)</span> </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>For this and other examples using MDS, it would be nice to also show how the dimensions of this space relate to the original variables, as in a biplot. Using the idea of correlations between variables and dimensions from <a href="#sec-supp-vars" class="quarto-xref"><span>Section 4.3.5</span></a>, I do this as shown below. Only the relative directions and lengths of the variable vectors matter, so you can choose any convenient scale factor to make the vectors fill the plot region.</p>
+<p>For this and other examples using MDS, it would be nice to also show how the dimensions of this space relate to the original variables, as in a biplot. Using the idea of correlations between variables and dimensions from <a href="#sec-supp-vars"><span>Section&nbsp;4.3.5</span></a>, I do this as shown below. Only the relative directions and lengths of the variable vectors matter, so you can choose any convenient scale factor to make the vectors fill the plot region.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb36" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">vectors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/cor.html">cor</a></span><span class="op">(</span><span class="va">Diabetes</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span>, <span class="va">mds</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="va">scale_fac</span> <span class="op">&lt;-</span> <span class="fl">500</span></span>
@@ -1314,17 +1201,13 @@ Figure&nbsp;4.20: Badness of fit (Stress) of the MDS solution in relation to num
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"inside"</span>,</span>
 <span>        legend.position.inside <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">.8</span>, <span class="fl">.8</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div id="fig-diabetes-mds" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
-<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-diabetes-mds-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="figs/ch04/fig-diabetes-mds-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-diabetes-mds-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;4.21: Nonmetric MDS representation of the Diabetes data. The vectors reflect the correlations of the variables with the MDS dimensions.
-</figcaption></figure>
+<div id="fig-diabetes-mds" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="figs/ch04/fig-diabetes-mds-1.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption class="figure-caption">Figure&nbsp;4.21: Nonmetric MDS representation of the Diabetes data. The vectors reflect the correlations of the variables with the MDS dimensions.</figcaption></figure>
 </div>
 </div>
 </div>
-<p>The configuration of the groups in <a href="#fig-diabetes-mds" class="quarto-xref">Figure&nbsp;<span>4.21</span></a> is similar to that of the biplot in <a href="#fig-diabetes-ggbiplot" class="quarto-xref">Figure&nbsp;<span>4.18</span></a>, but the groups are more widely separated along the first MDS dimension. The variable vectors are also similar, except that <code>relwt</code> is not well-represented in the MDS solution.</p>
+<p>The configuration of the groups in <a href="#fig-diabetes-mds">Figure&nbsp;<span>4.21</span></a> is similar to that of the biplot in <a href="#fig-diabetes-ggbiplot">Figure&nbsp;<span>4.18</span></a>, but the groups are more widely separated along the first MDS dimension. The variable vectors are also similar, except that <code>relwt</code> is not well-represented in the MDS solution.</p>
 </section><section id="t-sne" class="level3" data-number="4.4.2"><h3 data-number="4.4.2" class="anchored" data-anchor-id="t-sne">
 <span class="header-section-number">4.4.2</span> t-SNE</h3>
 <p>With the rise of “machine learning” methods for “feature extraction” in “supervised” vs.&nbsp;“unsupervised” settings, a variety of new algorithms have been proposed for the task of finding low-D representations of high-D data. Among these, t-distributed Stochastic Neighbor Embedding (t-SNE) developed by <span class="citation" data-cites="MaatenHinton2008">Maaten &amp; Hinton (<a href="90-references.html#ref-MaatenHinton2008" role="doc-biblioref">2008</a>)</span> is touted as method for revealing local structure and clustering better in possibly complex high-D data and at different scales.</p>
@@ -1363,29 +1246,21 @@ D_\mathrm{KL}\left(P \parallel Q\right) = \sum_{i \neq j} p_{ij} \log \frac{p_{i
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span> </span>
 <span><span class="va">p2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div id="fig-diabetes-tsne" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
-<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-diabetes-tsne-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="figs/ch04/fig-diabetes-tsne-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-diabetes-tsne-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;4.22: t-SNE representation of the Diabetes data.
-</figcaption></figure>
+<div id="fig-diabetes-tsne" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="figs/ch04/fig-diabetes-tsne-1.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption class="figure-caption">Figure&nbsp;4.22: t-SNE representation of the Diabetes data.</figcaption></figure>
 </div>
 </div>
 </div>
 <section id="compare-solutions" class="level4" data-number="4.4.2.1"><h4 data-number="4.4.2.1" class="anchored" data-anchor-id="compare-solutions">
 <span class="header-section-number">4.4.2.1</span> Comparing solutions</h4>
-<p>For the Diabetes data, I’ve shown the results of three different dimension reduction techniques, PCA (<a href="#fig-diabetes-ggbiplot" class="quarto-xref">Figure&nbsp;<span>4.18</span></a>), MDS (<a href="#fig-diabetes-mds" class="quarto-xref">Figure&nbsp;<span>4.21</span></a>), and t-SNE (<a href="#fig-diabetes-tsne" class="quarto-xref">Figure&nbsp;<span>4.22</span></a>). How are these similar, and how do they differ?</p>
-<p>One way is to view them side by side as shown in <a href="#fig-diabetes-pca-tsne" class="quarto-xref">Figure&nbsp;<span>4.23</span></a>. To an initial glance, the t-SNE solution looks like a rotated version of the PCA solution.</p>
+<p>For the Diabetes data, I’ve shown the results of three different dimension reduction techniques, PCA (<a href="#fig-diabetes-ggbiplot">Figure&nbsp;<span>4.18</span></a>), MDS (<a href="#fig-diabetes-mds">Figure&nbsp;<span>4.21</span></a>), and t-SNE (<a href="#fig-diabetes-tsne">Figure&nbsp;<span>4.22</span></a>). How are these similar, and how do they differ?</p>
+<p>One way is to view them side by side as shown in <a href="#fig-diabetes-pca-tsne">Figure&nbsp;<span>4.23</span></a>. To an initial glance, the t-SNE solution looks like a rotated version of the PCA solution.</p>
 <div class="cell" data-layout-align="center">
 <div class="cell-output-display">
-<div id="fig-diabetes-pca-tsne" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
-<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-diabetes-pca-tsne-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="images/diabetes-pca-tsne.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-diabetes-pca-tsne-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;4.23: Comparison of the PCA and t-SNE 2D representations of the Diabetes data.
-</figcaption></figure>
+<div id="fig-diabetes-pca-tsne" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="images/diabetes-pca-tsne.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption class="figure-caption">Figure&nbsp;4.23: Comparison of the PCA and t-SNE 2D representations of the Diabetes data.</figcaption></figure>
 </div>
 </div>
 </div>
@@ -1431,13 +1306,9 @@ Figure&nbsp;4.23: Comparison of the PCA and t-SNE 2D representations of the Diab
 <span></span>
 <span><span class="va">animated_plot</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div id="fig-diabetes-pca-tsne-anim" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
-<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-diabetes-pca-tsne-anim-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="figs/ch04/fig-diabetes-pca-tsne-anim-1.gif" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-diabetes-pca-tsne-anim-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;4.24: Animation of the relationship of PCA to the t-SNE embedding for the Diabetes data.
-</figcaption></figure>
+<div id="fig-diabetes-pca-tsne-anim" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="figs/ch04/fig-diabetes-pca-tsne-anim-1.gif" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption class="figure-caption">Figure&nbsp;4.24: Animation of the relationship of PCA to the t-SNE embedding for the Diabetes data.</figcaption></figure>
 </div>
 </div>
 </div>
@@ -1447,7 +1318,7 @@ knitr::include_graphics("images/diabetes-pca-tsne.gif")
 <p>You can see that the PCA configuration is morphed into the that for t-SNE largely by rotation 90<span class="math inline">\(^o\)</span> clockwise, so that dimension 1 in PCA becomes dimension 2 in t-SNE. This is not unexpected, because PCA finds the dimensions in to order of maximum variance, whereas t-SNE is only trying to match the distances in the data to those in the solution. To interpret the result from t-SNE you are free to interchange the axes, or indeed to rotate the solution arbitrarily.</p>
 </section></section></section><section id="sec-var-order" class="level2" data-number="4.5"><h2 data-number="4.5" class="anchored" data-anchor-id="sec-var-order">
 <span class="header-section-number">4.5</span> Application: Variable ordering for data displays</h2>
-<p>In many multivariate data displays, such as scatterplot matrices, parallel coordinate plots and others reviewed in <a href="03-multivariate_plots.html" class="quarto-xref"><span>Chapter 3</span></a>, the order of different variables might seem arbitrary. They might appear in alphabetic order, or more often in the order they appear in your dataset, for example when you use <code>pairs(mydata)</code>. Yet, the principle of <em>effect ordering</em> (<span class="citation" data-cites="FriendlyKwan:03:effect">Friendly &amp; Kwan (<a href="90-references.html#ref-FriendlyKwan:03:effect" role="doc-biblioref">2003</a>)</span>) for variables says you should try to arrange the variables so that adjacent ones are as similar as possible.<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a></p>
+<p>In many multivariate data displays, such as scatterplot matrices, parallel coordinate plots and others reviewed in <a href="03-multivariate_plots.html"><span>Chapter&nbsp;3</span></a>, the order of different variables might seem arbitrary. They might appear in alphabetic order, or more often in the order they appear in your dataset, for example when you use <code>pairs(mydata)</code>. Yet, the principle of <em>effect ordering</em> (<span class="citation" data-cites="FriendlyKwan:03:effect">Friendly &amp; Kwan (<a href="90-references.html#ref-FriendlyKwan:03:effect" role="doc-biblioref">2003</a>)</span>) for variables says you should try to arrange the variables so that adjacent ones are as similar as possible.<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a></p>
 <p>For example, the <code>mtcars</code> dataset contains data on 32 automobiles from the 1974 U.S. magazine <em>Motor Trend</em> and consists of fuel comsumption (<code>mpg</code>) and 10 aspects of automobile design (<code>cyl</code>: number of cyliners; <code>hp</code>: horsepower, <code>wt</code>: weight) and performance (<code>qsec</code>: time to drive a quarter-mile). What can we see from a simple <code><a href="https://rdrr.io/pkg/corrplot/man/corrplot.html">corrplot()</a></code> of their correlations?</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb41" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">mtcars</span><span class="op">)</span></span>
@@ -1459,13 +1330,9 @@ knitr::include_graphics("images/diabetes-pca-tsne.gif")
 <span>         tl.srt <span class="op">=</span> <span class="fl">0</span>, tl.col <span class="op">=</span> <span class="st">"black"</span>, tl.pos <span class="op">=</span> <span class="st">'d'</span>,</span>
 <span>         mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">0</span>,<span class="fl">1</span>,<span class="fl">0</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div id="fig-mtcars-corrplot-varorder" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
-<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-mtcars-corrplot-varorder-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="figs/ch04/fig-mtcars-corrplot-varorder-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-mtcars-corrplot-varorder-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;4.25: Corrplot of <code>mtcars</code> data, with the variables in the order they appear in the dataset.
-</figcaption></figure>
+<div id="fig-mtcars-corrplot-varorder" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="figs/ch04/fig-mtcars-corrplot-varorder-1.png" class="img-fluid figure-img" style="width:80.0%"></p>
+<figcaption class="figure-caption">Figure&nbsp;4.25: Corrplot of <code>mtcars</code> data, with the variables in the order they appear in the dataset.</figcaption></figure>
 </div>
 </div>
 </div>
@@ -1495,7 +1362,7 @@ a_i =
   \end{cases}     
 \]</span> (read <span class="math inline">\(\tan^{-1}(x)\)</span> as “the angle whose tangent is <span class="math inline">\(x\)</span>”.)</p>
 <p><strong>TODO</strong>: Make a diagram of this</p>
-<p>For the <code>mtcars</code> data the biplot in <a href="#fig-mtcars-biplot" class="quarto-xref">Figure&nbsp;<span>4.26</span></a> accounts for 84% of the total variance so a 2D representation is fairly good. The plot shows the variables as widely dispersed. There is a collection at the left of positively correlated variables and another positively correlated set at the right.</p>
+<p>For the <code>mtcars</code> data the biplot in <a href="#fig-mtcars-biplot">Figure&nbsp;<span>4.26</span></a> accounts for 84% of the total variance so a 2D representation is fairly good. The plot shows the variables as widely dispersed. There is a collection at the left of positively correlated variables and another positively correlated set at the right.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb43" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">mtcars.pca</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/prcomp.html">prcomp</a></span><span class="op">(</span><span class="va">mtcars</span>, scale. <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="http://friendly.github.io/ggbiplot/reference/ggbiplot.html">ggbiplot</a></span><span class="op">(</span><span class="va">mtcars.pca</span>,</span>
@@ -1505,18 +1372,14 @@ a_i =
 <span>         varname.color <span class="op">=</span> <span class="st">"brown"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_minimal</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">14</span><span class="op">)</span> </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div id="fig-mtcars-biplot" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
-<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-mtcars-biplot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="figs/ch04/fig-mtcars-biplot-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-mtcars-biplot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;4.26: Biplot of the <code>mtcars</code> data …
-</figcaption></figure>
+<div id="fig-mtcars-biplot" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="figs/ch04/fig-mtcars-biplot-1.png" class="img-fluid figure-img" style="width:70.0%"></p>
+<figcaption class="figure-caption">Figure&nbsp;4.26: Biplot of the <code>mtcars</code> data …</figcaption></figure>
 </div>
 </div>
 </div>
 <p>In <code><a href="https://rdrr.io/pkg/corrplot/man/corrplot.html">corrplot()</a></code> principal component variable ordering is implemented using the <code>order = "AOE"</code> option. There are a variety of other methods based on hierarchical cluster analysis described in the <a href="https://cran.r-project.org/web/packages/corrplot/vignettes/corrplot-intro.html">package vignette</a>.</p>
-<p><a href="#fig-mtcars-corrplot-pcaorder" class="quarto-xref">Figure&nbsp;<span>4.27</span></a> shows the result. A nice feature of <code><a href="https://rdrr.io/pkg/corrplot/man/corrplot.html">corrplot()</a></code> is the ability to manually highlight blocks of variables that have a similar pattern of signs by outlining them with rectangles. From the biplot, the two main clusters of positively correlated variables seemed clear, and are outlined in the plot using <code><a href="https://rdrr.io/pkg/corrplot/man/corrRect.html">corrplot::corrRect()</a></code>. What became clear in the corrplot is that <code>qsec</code>, the time to drive a quarter-mile from a dead start didn’t fit this pattern, so I highlighted it separately.</p>
+<p><a href="#fig-mtcars-corrplot-pcaorder">Figure&nbsp;<span>4.27</span></a> shows the result. A nice feature of <code><a href="https://rdrr.io/pkg/corrplot/man/corrplot.html">corrplot()</a></code> is the ability to manually highlight blocks of variables that have a similar pattern of signs by outlining them with rectangles. From the biplot, the two main clusters of positively correlated variables seemed clear, and are outlined in the plot using <code><a href="https://rdrr.io/pkg/corrplot/man/corrRect.html">corrplot::corrRect()</a></code>. What became clear in the corrplot is that <code>qsec</code>, the time to drive a quarter-mile from a dead start didn’t fit this pattern, so I highlighted it separately.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb44" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/corrplot/man/corrplot.html">corrplot</a></span><span class="op">(</span><span class="va">R</span>, </span>
 <span>         method <span class="op">=</span> <span class="st">'ellipse'</span>, </span>
@@ -1526,17 +1389,13 @@ Figure&nbsp;4.26: Biplot of the <code>mtcars</code> data …
 <span>         mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">0</span>,<span class="fl">1</span>,<span class="fl">0</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/corrplot/man/corrRect.html">corrRect</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">6</span>, <span class="fl">7</span>, <span class="fl">11</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div id="fig-mtcars-corrplot-pcaorder" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
-<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-mtcars-corrplot-pcaorder-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="figs/ch04/fig-mtcars-corrplot-pcaorder-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-mtcars-corrplot-pcaorder-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;4.27: Corrplot of <code>mtcars</code> data, with the variables ordered according to the variable vectors in the biplot.
-</figcaption></figure>
+<div id="fig-mtcars-corrplot-pcaorder" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="figs/ch04/fig-mtcars-corrplot-pcaorder-1.png" class="img-fluid figure-img" style="width:80.0%"></p>
+<figcaption class="figure-caption">Figure&nbsp;4.27: Corrplot of <code>mtcars</code> data, with the variables ordered according to the variable vectors in the biplot.</figcaption></figure>
 </div>
 </div>
 </div>
-<p>But wait, there is something else to be seen in <a href="#fig-mtcars-corrplot-pcaorder" class="quarto-xref">Figure&nbsp;<span>4.27</span></a>. Can you see one cell that doesn’t fit with the rest?</p>
+<p>But wait, there is something else to be seen in <a href="#fig-mtcars-corrplot-pcaorder">Figure&nbsp;<span>4.27</span></a>. Can you see one cell that doesn’t fit with the rest?</p>
 <p>Yes, the correlation of number of forward gears (<code>gear</code>) and number of carburators (<code>carb</code>) in the upper left and lower right corners stands out as moderately positive (0.27) while all the others in their off-diagonal blocks are negative. This is another benefit of effect ordering: when you arrange the variables so that the most highly related variable are together, features that deviate from dominant pattern become visible.</p>
 </section><section id="application-eigenfaces" class="level2" data-number="4.6"><h2 data-number="4.6" class="anchored" data-anchor-id="application-eigenfaces">
 <span class="header-section-number">4.6</span> Application: Eigenfaces</h2>
@@ -1565,17 +1424,13 @@ Machine learning uses
 <strong>facial recognition</strong>: classifying or matching a facial image against a large corpus of stored images.</li>
 </ul>
 <p>When PCA is used on facial images, you can think of the process as generating <strong>eigenfaces</strong>, a representation of the pixels in the image in terms of an eigenvalue decomposition. Dimension reduction means that a facial image can be considerably compressed by removing the components associated with small dimensions.</p>
-<p>As an example, consider the black and white version of the Mona Lisa shown in <a href="#fig-MonaLisa" class="quarto-xref">Figure&nbsp;<span>4.28</span></a>. The idea and code for this example is adapted from this <a href="https://kieranhealy.org/blog/archives/2019/10/27/reconstructing-images-using-pca/">blog post</a> by Kieran Healy.<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a></p>
+<p>As an example, consider the black and white version of the Mona Lisa shown in <a href="#fig-MonaLisa">Figure&nbsp;<span>4.28</span></a>. The idea and code for this example is adapted from this <a href="https://kieranhealy.org/blog/archives/2019/10/27/reconstructing-images-using-pca/">blog post</a> by Kieran Healy.<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a></p>
 <p><strong>TODO</strong>: <del>Web links like this should be footnotes for PDF</del></p>
 <div class="cell" data-layout-align="center">
 <div class="cell-output-display">
-<div id="fig-MonaLisa" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
-<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-MonaLisa-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="images/MonaLisa-BW.jpg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:40.0%">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-MonaLisa-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;4.28: 640 x 954 black and white image of the <em>Mona Lisa</em>. Source: <a href="https://bit.ly/3Rgo41f">Wikipedia</a>
-</figcaption></figure>
+<div id="fig-MonaLisa" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="images/MonaLisa-BW.jpg" class="img-fluid figure-img" style="width:40.0%"></p>
+<figcaption class="figure-caption">Figure&nbsp;4.28: 640 x 954 black and white image of the <em>Mona Lisa</em>. Source: <a href="https://bit.ly/3Rgo41f">Wikipedia</a></figcaption></figure>
 </div>
 </div>
 </div>
@@ -1633,25 +1488,21 @@ Figure&nbsp;4.28: 640 x 954 black and white image of the <em>Mona Lisa</em>. Sou
 <span><span class="co">#&gt;  9     9    3.12 0.0102       0.622</span></span>
 <span><span class="co">#&gt; 10    10    2.86 0.00855      0.631</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p><a href="#fig-mona-screeplot" class="quarto-xref">Figure&nbsp;<span>4.29</span></a> shows a screeplot of proportions of variance. Because there are so many components and most of the information is concentrated in the largest dimensions, I’ve used a <span class="math inline">\(\log_{10}()\)</span> scale on the horizontal axis. Beyond 10 or so dimensions, the variance of additional components looks quite tiny.</p>
+<p><a href="#fig-mona-screeplot">Figure&nbsp;<span>4.29</span></a> shows a screeplot of proportions of variance. Because there are so many components and most of the information is concentrated in the largest dimensions, I’ve used a <span class="math inline">\(\log_{10}()\)</span> scale on the horizontal axis. Beyond 10 or so dimensions, the variance of additional components looks quite tiny.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb50" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="http://friendly.github.io/ggbiplot/reference/ggscreeplot.html">ggscreeplot</a></span><span class="op">(</span><span class="va">img_pca</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_x_log10</a></span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div id="fig-mona-screeplot" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
-<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-mona-screeplot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="figs/ch04/fig-mona-screeplot-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-mona-screeplot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;4.29: Screeplot of the variance proportions in the Mona Lisa PCA.
-</figcaption></figure>
+<div id="fig-mona-screeplot" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="figs/ch04/fig-mona-screeplot-1.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption class="figure-caption">Figure&nbsp;4.29: Screeplot of the variance proportions in the Mona Lisa PCA.</figcaption></figure>
 </div>
 </div>
 </div>
 <p>Then, if <span class="math inline">\(\mathbf{M}\)</span> is the <span class="math inline">\(640 \times 955\)</span> matrix of pixel values, a best approximation <span class="math inline">\(\widehat{\mathbf{M}}_k\)</span> using <span class="math inline">\(k\)</span> dimensions can be obtained as <span class="math inline">\(\widehat{\mathbf{M}}_k = \mathbf{X}_k\;\mathbf{V}_k^\textsf{T}\)</span> where <span class="math inline">\(\mathbf{X}_k\)</span> are the principal component scores and <span class="math inline">\(\mathbf{V}_k\)</span> are the eigenvectors corresponding to the <span class="math inline">\(k\)</span> largest eigenvalues. The function <code>approx_pca()</code> does this, and also undoes the scaling and centering carried out in PCA.</p>
 <p><strong>TODO</strong>: <del>Also, separate approximation from the pivot_longer code…</del></p>
 <div class="cell" data-layout-align="center">
-<details class="code-fold"><summary>Code</summary><div class="sourceCode" id="cb51" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">approx_pca</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">n_comp</span> <span class="op">=</span> <span class="fl">20</span>, <span class="va">pca_object</span> <span class="op">=</span> <span class="va">img_pca</span><span class="op">)</span><span class="op">{</span></span>
+<details><summary>Code</summary><div class="sourceCode" id="cb51" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">approx_pca</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">n_comp</span> <span class="op">=</span> <span class="fl">20</span>, <span class="va">pca_object</span> <span class="op">=</span> <span class="va">img_pca</span><span class="op">)</span><span class="op">{</span></span>
 <span>  <span class="co">## Multiply the matrix of rotated data (component scores) by the transpose of </span></span>
 <span>  <span class="co">## the matrix of eigenvectors (i.e. the component loadings) to get back to a </span></span>
 <span>  <span class="co">## matrix of original data values</span></span>
@@ -1713,59 +1564,47 @@ Figure&nbsp;4.29: Screeplot of the variance proportions in the Mona Lisa PCA.
 <span></span>
 <span><span class="va">p_out</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>The result, in <a href="#fig-mona-pca" class="quarto-xref">Figure&nbsp;<span>4.30</span></a> is instructive about how much visual information is contained in lower-dimensional reconstructions, or conversely, how much the image can be compressed by omitting the many small dimensions.</p>
+<p>The result, in <a href="#fig-mona-pca">Figure&nbsp;<span>4.30</span></a> is instructive about how much visual information is contained in lower-dimensional reconstructions, or conversely, how much the image can be compressed by omitting the many small dimensions.</p>
 <div class="cell" data-layout-align="center">
 <div class="cell-output-display">
-<div id="fig-mona-pca" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
-<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-mona-pca-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="images/mona-pca.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:90.0%">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-mona-pca-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;4.30: Re-construction of the Mona Lisa using 2, 3 , 4, 5, 10, 15, 20, 50, and 100 principal components.
-</figcaption></figure>
+<div id="fig-mona-pca" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="images/mona-pca.png" class="img-fluid figure-img" style="width:90.0%"></p>
+<figcaption class="figure-caption">Figure&nbsp;4.30: Re-construction of the Mona Lisa using 2, 3 , 4, 5, 10, 15, 20, 50, and 100 principal components.</figcaption></figure>
 </div>
 </div>
 </div>
-<p>In this figure, with 4-5 components most people would recognize this as a blury image of the world’s most famous portrait. It is certainly clear that this is the Mona Lisa with 10–15 components. Details of the portrait and backgound features become recognizable with 20–50 components, and with 100 components it compares favorably with the original in <a href="#fig-MonaLisa" class="quarto-xref">Figure&nbsp;<span>4.28</span></a>. In numbers, the original <span class="math inline">\(640 \times 955\)</span>) image is of size 600 Kb. The 100 component version is only 93 Kb, 15.6% of this.</p>
+<p>In this figure, with 4-5 components most people would recognize this as a blury image of the world’s most famous portrait. It is certainly clear that this is the Mona Lisa with 10–15 components. Details of the portrait and backgound features become recognizable with 20–50 components, and with 100 components it compares favorably with the original in <a href="#fig-MonaLisa">Figure&nbsp;<span>4.28</span></a>. In numbers, the original <span class="math inline">\(640 \times 955\)</span>) image is of size 600 Kb. The 100 component version is only 93 Kb, 15.6% of this.</p>
 </section><section id="elliptical-insights-outlier-detection" class="level2" data-number="4.7"><h2 data-number="4.7" class="anchored" data-anchor-id="elliptical-insights-outlier-detection">
 <span class="header-section-number">4.7</span> Elliptical insights: Outlier detection</h2>
-<p>The data ellipse (<a href="03-multivariate_plots.html#sec-data-ellipse" class="quarto-xref"><span>Section 3.2</span></a>), or ellipsoid in more than 2D is fundamental in regression. But also, as Pearson showed, it is key to understanding principal components analysis, where the principal component directions are simply the axes of the ellipsoid of the data. As such, observations that are unusual in data space may not stand out in univariate views of the variables, but will stand out in principal component space, usually on the <em>smallest</em> dimension.</p>
+<p>The data ellipse (<a href="03-multivariate_plots.html#sec-data-ellipse"><span>Section&nbsp;3.2</span></a>), or ellipsoid in more than 2D is fundamental in regression. But also, as Pearson showed, it is key to understanding principal components analysis, where the principal component directions are simply the axes of the ellipsoid of the data. As such, observations that are unusual in data space may not stand out in univariate views of the variables, but will stand out in principal component space, usually on the <em>smallest</em> dimension.</p>
 <p>As an illustration, I created a dataset of <span class="math inline">\(n = 100\)</span> observations with a linear relation, <span class="math inline">\(y = x + \mathcal{N}(0, 1)\)</span> and then added two discrepant points at (1.5, -1.5), (-1.5, 1.5).</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb54" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">123345</span><span class="op">)</span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>,             <span class="fl">1.5</span>, <span class="op">-</span><span class="fl">1.5</span><span class="op">)</span></span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">x</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">100</span><span class="op">]</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span>, <span class="op">-</span><span class="fl">1.5</span>, <span class="fl">1.5</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>When these are plotted with a data ellipse in <a href="#fig-outlier-demo" class="quarto-xref">Figure&nbsp;<span>4.31</span></a> (left), you can see the discrepant points labeled 101 and 102, but they do not stand out as unusual on either <span class="math inline">\(x\)</span> or <span class="math inline">\(y\)</span>. The transformation to from data space to principal components space, shown in <a href="#fig-outlier-demo" class="quarto-xref">Figure&nbsp;<span>4.31</span></a> (right), is simply a rotation of <span class="math inline">\((x, y)\)</span> to a space whose coordinate axes are the major and minor axes of the data ellipse, <span class="math inline">\((PC_1, PC_2)\)</span>. In this view, the additional points appear a univariate outliers on the smallest dimension, <span class="math inline">\(PC_2\)</span>.</p>
+<p>When these are plotted with a data ellipse in <a href="#fig-outlier-demo">Figure&nbsp;<span>4.31</span></a> (left), you can see the discrepant points labeled 101 and 102, but they do not stand out as unusual on either <span class="math inline">\(x\)</span> or <span class="math inline">\(y\)</span>. The transformation to from data space to principal components space, shown in <a href="#fig-outlier-demo">Figure&nbsp;<span>4.31</span></a> (right), is simply a rotation of <span class="math inline">\((x, y)\)</span> to a space whose coordinate axes are the major and minor axes of the data ellipse, <span class="math inline">\((PC_1, PC_2)\)</span>. In this view, the additional points appear a univariate outliers on the smallest dimension, <span class="math inline">\(PC_2\)</span>.</p>
 <div class="cell" data-layout-align="center">
 <div class="cell-output-display">
-<div id="fig-outlier-demo" class="quarto-figure quarto-figure-center quarto-float anchored" data-fig-align="center">
-<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-outlier-demo-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="images/outlier-demo.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-outlier-demo-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;4.31: <strong>Outlier demonstration</strong>: The left panel shows the original data and highlights the two discrepant points, which do not appear to be unusual on either x or y. The right panel shows the data rotated to principal components, where the labeled points stand out on the smallest PCA dimension.
-</figcaption></figure>
+<div id="fig-outlier-demo" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><p><img src="images/outlier-demo.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption class="figure-caption">Figure&nbsp;4.31: <strong>Outlier demonstration</strong>: The left panel shows the original data and highlights the two discrepant points, which do not appear to be unusual on either x or y. The right panel shows the data rotated to principal components, where the labeled points stand out on the smallest PCA dimension.</figcaption></figure>
 </div>
 </div>
 </div>
-<p>To see this more clearly, <a href="#fig-outlier-animation" class="quarto-xref">Figure&nbsp;<span>4.32</span></a> shows an animation of the rotation from data space to PCA space. This uses <code><a href="https://friendly.github.io/heplots/reference/interpPlot.html">heplots::interpPlot()</a></code> …</p>
-<div id="fig-outlier-animation" class="quarto-figure quarto-figure-center quarto-float anchored">
-<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-outlier-animation-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<div data-align="center">
+<p>To see this more clearly, <a href="#fig-outlier-animation">Figure&nbsp;<span>4.32</span></a> shows an animation of the rotation from data space to PCA space. This uses <code><a href="https://friendly.github.io/heplots/reference/interpPlot.html">heplots::interpPlot()</a></code> …</p>
+<div id="fig-outlier-animation" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure"><div data-align="center">
 <p><iframe width="480" height="480" src="images/outlier-demo.gif"></iframe></p>
 </div>
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-outlier-animation-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;4.32: Animation of rotation from data space to PCA space.
-</figcaption></figure>
+<figcaption class="figure-caption">Figure&nbsp;4.32: Animation of rotation from data space to PCA space.</figcaption></figure>
 </div>
 <div class="cell" data-layout-align="center">
 <p>Packages used here: 16 packages used here: car, carData, corrplot, dplyr, factoextra, FactoMineR, gganimate, ggbiplot, ggplot2, ggpubr, imager, knitr, magrittr, patchwork, Rtsne, tidyr</p>
 </div>
 
 
-<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" data-line-spacing="2" role="list" style="display: none">
+<div id="refs" class="references csl-bib-body hanging-indent" data-line-spacing="2" role="list" style="display: none">
 <div id="ref-R-rgl" class="csl-entry" role="listitem">
 Adler, D., &amp; Murdoch, D. (2023). <em>Rgl: 3D visualization using OpenGL</em>. <a href="https://CRAN.R-project.org/package=rgl">https://CRAN.R-project.org/package=rgl</a>
 </div>
@@ -1815,7 +1654,7 @@ Greenacre, M. (1984). <em>Theory and applications of correspondence analysis</em
 Greenacre, M. (2010). <em>Biplots in practice</em>. Fundaci<span>ó</span>n BBVA. <a href="https://books.google.ca/books?id=dv4LrFP7U%5C_EC">https://books.google.ca/books?id=dv4LrFP7U\_EC</a>
 </div>
 <div id="ref-R-seriation" class="csl-entry" role="listitem">
-Hahsler, M., Buchta, C., &amp; Hornik, K. (2024). <em>Seriation: Infrastructure for ordering objects using seriation</em>. <a href="https://github.com/mhahsler/seriation">https://github.com/mhahsler/seriation</a>
+Hahsler, M., Buchta, C., &amp; Hornik, K. (2023). <em>Seriation: Infrastructure for ordering objects using seriation</em>. <a href="https://github.com/mhahsler/seriation">https://github.com/mhahsler/seriation</a>
 </div>
 <div id="ref-R-FactoMineR" class="csl-entry" role="listitem">
 Husson, F., Josse, J., Le, S., &amp; Mazet, J. (2024). <em>FactoMineR: Multivariate exploratory data analysis and data mining</em>. <a href="http://factominer.free.fr">http://factominer.free.fr</a>
@@ -1875,7 +1714,7 @@ Torgerson, W. S. (1952). Multidimensional scaling: I. Theory and method. <em>Psy
 <li id="fn2"><p>For example, if two variables in the analysis are height and weight, changing the unit of height from inches to centimeters would multiply its variance by <span class="math inline">\(2.54^2\)</span>; changing weight from pounds to kilograms would divide its variance by <span class="math inline">\(2.2^2\)</span>.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn3"><p>The <strong>vegan</strong> package <span class="citation" data-cites="R-vegan">(<a href="90-references.html#ref-R-vegan" role="doc-biblioref">Oksanen et al., 2022</a>)</span> provides <code><a href="https://rdrr.io/pkg/vegan/man/metaMDS.html">vegan::metaMDS()</a></code> which allows a wide range of distance measures …<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn4"><p>The usual default, <code>perplexity = 30</code> focuses on preserving the distances to the 30 nearest neighbors and puts virtually no weight on preserving distances to the remaining points. For data sets with a small number of points e.g.&nbsp;<span class="math inline">\(n=100\)</span>, this will uncover the global structure quite well since each point will preserve distances to a third of the data set. For larger problems, e.g., <span class="math inline">\(n = 10,000\)</span> points, using a higher perplexity value e.g.&nbsp;500, will do a much better job for of uncovering the global structure. (This description comes from https://opentsne.readthedocs.io/en/latest/parameters.html)<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn5"><p>The general topic of arranging items (variables, factor values) in an orderly sequence is called <em>seriation</em>, and stems from methods of dating in archaeology, used to arrange stone tools, pottery fragments, and other artifacts in time order. In R, the <strong>seriation</strong> package <span class="citation" data-cites="R-seriation">(<a href="90-references.html#ref-R-seriation" role="doc-biblioref">Hahsler et al., 2024</a>)</span> provides a wide range of techniques. …<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p>The general topic of arranging items (variables, factor values) in an orderly sequence is called <em>seriation</em>, and stems from methods of dating in archaeology, used to arrange stone tools, pottery fragments, and other artifacts in time order. In R, the <strong>seriation</strong> package <span class="citation" data-cites="R-seriation">(<a href="90-references.html#ref-R-seriation" role="doc-biblioref">Hahsler et al., 2023</a>)</span> provides a wide range of techniques. …<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn6"><p>https://kieranhealy.org/blog/archives/2019/10/27/reconstructing-images-using-pca/<a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol></section></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
@@ -1956,9 +1795,10 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     // clear code selection
     e.clearSelection();
   });
-  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+  function tippyHover(el, contentFn) {
     const config = {
       allowHTML: true,
+      content: contentFn,
       maxWidth: 500,
       delay: 100,
       arrow: false,
@@ -1968,17 +1808,8 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       interactive: true,
       interactiveBorder: 10,
       theme: 'quarto',
-      placement: 'bottom-start',
+      placement: 'bottom-start'
     };
-    if (contentFn) {
-      config.content = contentFn;
-    }
-    if (onTriggerFn) {
-      config.onTrigger = onTriggerFn;
-    }
-    if (onUntriggerFn) {
-      config.onUntrigger = onUntriggerFn;
-    }
     window.tippy(el, config); 
   }
   const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
@@ -1991,125 +1822,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
       return note.innerHTML;
-    });
-  }
-  const xrefs = window.document.querySelectorAll('a.quarto-xref');
-  const processXRef = (id, note) => {
-    // Strip column container classes
-    const stripColumnClz = (el) => {
-      el.classList.remove("page-full", "page-columns");
-      if (el.children) {
-        for (const child of el.children) {
-          stripColumnClz(child);
-        }
-      }
-    }
-    stripColumnClz(note)
-    if (id === null || id.startsWith('sec-')) {
-      // Special case sections, only their first couple elements
-      const container = document.createElement("div");
-      if (note.children && note.children.length > 2) {
-        container.appendChild(note.children[0].cloneNode(true));
-        for (let i = 1; i < note.children.length; i++) {
-          const child = note.children[i];
-          if (child.tagName === "P" && child.innerText === "") {
-            continue;
-          } else {
-            container.appendChild(child.cloneNode(true));
-            break;
-          }
-        }
-        if (window.Quarto?.typesetMath) {
-          window.Quarto.typesetMath(container);
-        }
-        return container.innerHTML
-      } else {
-        if (window.Quarto?.typesetMath) {
-          window.Quarto.typesetMath(note);
-        }
-        return note.innerHTML;
-      }
-    } else {
-      // Remove any anchor links if they are present
-      const anchorLink = note.querySelector('a.anchorjs-link');
-      if (anchorLink) {
-        anchorLink.remove();
-      }
-      if (window.Quarto?.typesetMath) {
-        window.Quarto.typesetMath(note);
-      }
-      // TODO in 1.5, we should make sure this works without a callout special case
-      if (note.classList.contains("callout")) {
-        return note.outerHTML;
-      } else {
-        return note.innerHTML;
-      }
-    }
-  }
-  for (var i=0; i<xrefs.length; i++) {
-    const xref = xrefs[i];
-    tippyHover(xref, undefined, function(instance) {
-      instance.disable();
-      let url = xref.getAttribute('href');
-      let hash = undefined; 
-      if (url.startsWith('#')) {
-        hash = url;
-      } else {
-        try { hash = new URL(url).hash; } catch {}
-      }
-      if (hash) {
-        const id = hash.replace(/^#\/?/, "");
-        const note = window.document.getElementById(id);
-        if (note !== null) {
-          try {
-            const html = processXRef(id, note.cloneNode(true));
-            instance.setContent(html);
-          } finally {
-            instance.enable();
-            instance.show();
-          }
-        } else {
-          // See if we can fetch this
-          fetch(url.split('#')[0])
-          .then(res => res.text())
-          .then(html => {
-            const parser = new DOMParser();
-            const htmlDoc = parser.parseFromString(html, "text/html");
-            const note = htmlDoc.getElementById(id);
-            if (note !== null) {
-              const html = processXRef(id, note);
-              instance.setContent(html);
-            } 
-          }).finally(() => {
-            instance.enable();
-            instance.show();
-          });
-        }
-      } else {
-        // See if we can fetch a full url (with no hash to target)
-        // This is a special case and we should probably do some content thinning / targeting
-        fetch(url)
-        .then(res => res.text())
-        .then(html => {
-          const parser = new DOMParser();
-          const htmlDoc = parser.parseFromString(html, "text/html");
-          const note = htmlDoc.querySelector('main.content');
-          if (note !== null) {
-            // This should only happen for chapter cross references
-            // (since there is no id in the URL)
-            // remove the first header
-            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
-              note.children[0].remove();
-            }
-            const html = processXRef(null, note);
-            instance.setContent(html);
-          } 
-        }).finally(() => {
-          instance.enable();
-          instance.show();
-        });
-      }
-    }, function(instance) {
     });
   }
       let selectedAnnoteEl;
@@ -2153,7 +1865,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
             }
             div.style.top = top - 2 + "px";
             div.style.height = height + 4 + "px";
-            div.style.left = 0;
             let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
             if (gutterDiv === null) {
               gutterDiv = window.document.createElement("div");
@@ -2179,32 +1890,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         });
         selectedAnnoteEl = undefined;
       };
-        // Handle positioning of the toggle
-    window.addEventListener(
-      "resize",
-      throttle(() => {
-        elRect = undefined;
-        if (selectedAnnoteEl) {
-          selectCodeLines(selectedAnnoteEl);
-        }
-      }, 10)
-    );
-    function throttle(fn, ms) {
-    let throttle = false;
-    let timer;
-      return (...args) => {
-        if(!throttle) { // first call gets through
-            fn.apply(this, args);
-            throttle = true;
-        } else { // all the others get throttled
-            if(timer) clearTimeout(timer); // cancel #2
-            timer = setTimeout(() => {
-              fn.apply(this, args);
-              timer = throttle = false;
-            }, ms);
-        }
-      };
-    }
       // Attach click handler to the DT
       const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
       for (const annoteDlNode of annoteDls) {
@@ -2264,12 +1949,12 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   }
 });
 </script><nav class="page-navigation"><div class="nav-page nav-page-previous">
-      <a href="./03-multivariate_plots.html" class="pagination-link" aria-label="Plots of Multivariate Data">
+      <a href="./03-multivariate_plots.html" class="pagination-link">
         <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Plots of Multivariate Data</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./05-linear_models.html" class="pagination-link" aria-label="Overview of Linear models">
+      <a href="./05-linear_models.html" class="pagination-link">
         <span class="nav-page-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Overview of Linear models</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
@@ -2278,5 +1963,5 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 
 
 
-<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/friendly/vis-MLM-book/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></div></div></footer><script src="site_libs/quarto-contrib/line-highlight-1.0.0/line-highlight.js" defer="true"></script>
+<script src="site_libs/quarto-contrib/line-highlight-1.0.0/line-highlight.js" defer="true"></script>
 </body></html>
