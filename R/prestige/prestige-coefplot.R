@@ -29,13 +29,15 @@ modelsummary(list("Model1" = mod1),
   coef_omit = "Intercept",
   stars = TRUE,
   shape = term ~ statistic,
+  estimate = "{estimate} [{conf.low}, {conf.high}]",
   statistic = c("std.error", "p.value"),
-  gof_omit = ".")
+  fmt = fmt_statistic("estimate" = 3, "conf.low" = 4, "conf.high" = 4),
+   gof_omit = ".")
 
 models <- list("Model1" = mod1, "Model2" = mod2, "Model3" = mod3)
 modelsummary(models,
      coef_omit = "Intercept",
-     #  output = "markdown",
+     fmt = 2,
      stars = TRUE,
      shape = term ~ statistic,
      statistic = c("std.error", "p.value"),
@@ -58,8 +60,10 @@ mod2 <- lm(prestige ~ education + women + income + type,
 mod3 <- lm(prestige ~ education + women + income * type,
                    data=Prestige)
 
-modelplot(list("mod1" = mod1, "mod2" = mod2, "mod3" = mod3), 
-          coef_omit="Intercept", size=1.3, linewidth=2) +
+models <- list("Model1" = mod1, "Model2" = mod2, "Model3" = mod3)
+modelplot(models, 
+          coef_omit="Intercept", 
+          size=1.3, linewidth=2) +
   ggtitle("Raw coefficients") +
   geom_vline(xintercept = 0, linewidth=1.5) +
   scale_y_discrete(limits=rev) +

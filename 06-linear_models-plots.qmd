@@ -62,6 +62,7 @@ part of the **easystats** [@R-easystats] suite of packages.
 **Packages**:
 ```{r}
 library(car)
+library(ggplot2)
 library(easystats)
 library(modelsummary)
 ```
@@ -170,8 +171,8 @@ occupations, but with attention to the scales of measurement and possibly more c
 ```{r prestige}
 data(Prestige, package="carData")
 # `type` is really an ordered factor. Make it so.
-Prestige$type <- ordered(Prestige$type,
-                         levels=c("bc", "wc", "prof"))
+# Prestige$type <- ordered(Prestige$type,
+#                          levels=c("bc", "wc", "prof"))
 str(Prestige)
 ```
 
@@ -232,37 +233,83 @@ From our earlier analyses (@sec-prestige) we saw that the marginal relationship 
 
 `summary()` gives the complete precis of a fitted model, with information about the estimated coefficients, redisuals and goodness-of fit statistics like $R^2$. But if you only want to see the coefficients,
 standard errors, etc. `lmtest::coeftest()` gives these results in the familiar format for console output.
+`broom::tidy()` places these in a tidy format common to many modeling functions which is useful for 
+futher processing (e.g., comparing models).
 ```{r coeftest}
 lmtest::coeftest(mod1)
+
+broom::tidy(mod1)
 ```
 
-The **modelsummary** package (@R-modelsummary) ...
+The **modelsummary** package (@R-modelsummary) is an easy to use,
+very general package to summarize data and statistical models in R. The main function
+`modelsummary()` can produce highly customizable tables of coefficients
+in a wide variety of formats, including HTML, PDF, LaTeX, Markdown, and MS Word.
 ```{r modelsummary1}
 modelsummary(list("Model1" = mod1),
   coef_omit = "Intercept",
-#  output = "markdown",
-  stars = TRUE,
+#  stars = TRUE,
   shape = term ~ statistic,
+  estimate = "{estimate} [{conf.low}, {conf.high}]",
   statistic = c("std.error", "p.value"),
-  gof_omit = ".")
+  fmt = fmt_statistic("estimate" = 3, "conf.low" = 4, "conf.high" = 4),
+   gof_omit = ".")
 ```
 
-Comparing models:
 
-```{r modelsummary2}
+### Visualizing coefficients
+
+`modelplot()` is the companion function. It allows you to plot model estimates and confidence intervals. It makes it easy to subset, rename, reorder, and customize plots using same mechanics as in `modelsummary()`.
+```{r}
+#| label: fig-modelplot1
+#| out-width: "80%"
+#| fig-cap: "Plot of coefficients and their standard error bar for the simple main effects model"
+theme_set(theme_minimal(base_size = 14))
+
+modelplot(mod1, coef_omit="Intercept", 
+          color="red", size=1, linewidth=2) +
+  labs(title="Raw coefficients for mod1")
+```
+
+But this plot is disappointing and misleading because it show the **raw** coefficients. 
+From the plot, it looks like only `education` has a non-zero effect, but the effect of `income` is also
+highly significant. The problem is that the magnitude of the coefficient $\hat{b}_{\text{education}}$
+is more than 40,000 times that of the other coefficients, because education is measured years,
+while income is measured id dollars.
+
+Before figuring out how to fix this issue, I show the comparable displays from `modelsummary()`
+and `modelplot()`
+
+
+```{r}
+#| label: tab-modelsummary2
 models <- list("Model1" = mod1, "Model2" = mod2, "Model3" = mod3)
 modelsummary(models,
      coef_omit = "Intercept",
-     #  output = "markdown",
+     fmt = 2,
      stars = TRUE,
      shape = term ~ statistic,
      statistic = c("std.error", "p.value"),
      gof_map = c("rmse", "r.squared")
      )
-
 ```
 
-### Visualizing coefficients
+Note that the coefficients in @fig-modelplot1 are ordered from bottom to top, because the Y axis starts
+at the lower left corner. 
+```{r}
+#| label: fig-modelplot2
+#| out-width: "80%"
+#| fig-cap: "Plot of coefficients and their standard error bar for all three models"
+modelplot(models, 
+          coef_omit="Intercept", 
+          size=1.3, linewidth=2) +
+  ggtitle("Raw coefficients") +
+  geom_vline(xintercept = 0, linewidth=1.5) +
+  scale_y_discrete(limits=rev) +
+  theme(legend.position = "inside",
+        legend.position.inside = c(0.85, 0.2))
+```
+
 
 ## Spread-level plot
 
