@@ -3,8 +3,8 @@
 ---
   
 data(Prestige, package="carData")
-# make an ordered factor
-Prestige$type <- factor(Prestige$type, levels=c("bc", "wc", "prof")) # reorder levels
+# make an ordered factor? NO - this gives linear/quad
+#Prestige$type <- factor(Prestige$type, levels=c("bc", "wc", "prof")) # reorder levels
 #head(Prestige)
 
 library(dplyr)
@@ -85,11 +85,11 @@ mod2_std <- lm(prestige ~ education + women + income + type,
 mod3_std <- lm(prestige ~ education + women + income * type,
                data=Prestige_std)
 
-models <- list("mod1" = mod1_std, "mod2" = mod2_std, "mod3" = mod3_std)
+models <- list("Model1" = mod1_std, "Model2" = mod2_std, "Model3" = mod3_std)
 modelplot(models, 
           coef_omit="Intercept", size=1.3) +
   ggtitle("Standardized coefficients") +
-  geom_vline(xintercept = 0, size=1.5) +
+  geom_vline(xintercept = 0, linewidth=1.5) +
   scale_y_discrete(limits=rev) +
   theme_bw(base_size = 16) +
   theme(legend.position = "inside",
@@ -103,11 +103,11 @@ modelplot(list("mod1" = mod1, "mod2" = mod2, "mod3" = mod3),
   ggtitle("Standardized coefficients") +
   geom_vline(xintercept = 0, linewidth=1.5) +
   scale_y_discrete(limits=rev) +
-  theme_bw(base_size = 16) +
   theme(legend.position = "inside",
         legend.position.inside = c(0.85, 0.2))
 
 # Use GGally::ggcoef_compare
+# This is based on ggstats::ggcoef_compare()
 
 library(GGally)
 library(broom.helpers)

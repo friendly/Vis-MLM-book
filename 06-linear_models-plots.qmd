@@ -1,5 +1,6 @@
 ```{r include=FALSE}
 source("R/common.R")
+knitr::opts_chunk$set(fig.path = "figs/ch06/")
 ```
 
 # Plots for univariate response models {#sec-linear-models-plots}
@@ -65,6 +66,7 @@ library(car)
 library(ggplot2)
 library(easystats)
 library(modelsummary)
+library(dplyr)
 ```
 
 
@@ -224,7 +226,7 @@ mod3 <- lm(prestige ~ education + women + income * type,
 ```
 
 From our earlier analyses (@sec-prestige) we saw that the marginal relationship between `income` and `prestige` was nonlinear @fig-Prestige-scatterplot-income1), and was better represented in a linear model using
-`log(income)` (@sec-log-scale) shown in @fig-Prestige-scatterplot2. However, this possibly non-linear relationship could also be explained by stratifying (@sec-stratifying) the data by `type` of occupation (@fig-Prestige-scatterplot3)
+`log(income)` (@sec-log-scale) shown in @fig-Prestige-scatterplot2. However, this possibly non-linear relationship could also be explained by stratifying (@sec-stratifying) the data by `type` of occupation (@fig-Prestige-scatterplot3).
 
 
 
@@ -244,17 +246,28 @@ broom::tidy(mod1)
 The **modelsummary** package (@R-modelsummary) is an easy to use,
 very general package to summarize data and statistical models in R. The main function
 `modelsummary()` can produce highly customizable tables of coefficients
-in a wide variety of formats, including HTML, PDF, LaTeX, Markdown, and MS Word.
-```{r modelsummary1}
+in a wide variety of output formats, including HTML, PDF, LaTeX, Markdown, and MS Word.
+You can select the statistics displayed for any model term with the `estimate` and
+`statistic` arguments. 
+```{r}
+#| label: tbl-modelsummary1
+#| tbl-cap: Table of coefficients for the main effects model.
 modelsummary(list("Model1" = mod1),
   coef_omit = "Intercept",
-#  stars = TRUE,
   shape = term ~ statistic,
   estimate = "{estimate} [{conf.low}, {conf.high}]",
   statistic = c("std.error", "p.value"),
   fmt = fmt_statistic("estimate" = 3, "conf.low" = 4, "conf.high" = 4),
-   gof_omit = ".")
+  gof_omit = ".")
 ```
+
+`gof_omit` allows you to omit or select the goodness-of-fit statistics and other model information
+available from those listed by `get_gof()`:
+
+```{r}
+get_gof(mod1)
+```
+
 
 
 ### Visualizing coefficients
@@ -275,14 +288,19 @@ But this plot is disappointing and misleading because it show the **raw** coeffi
 From the plot, it looks like only `education` has a non-zero effect, but the effect of `income` is also
 highly significant. The problem is that the magnitude of the coefficient $\hat{b}_{\text{education}}$
 is more than 40,000 times that of the other coefficients, because education is measured years,
-while income is measured id dollars.
+while income is measured in dollars. 
+The 95% confidence interval for $\hat{b}_{\text{income}} = [0.0008, 0.0019]$, but this is invisible in the plot.
 
 Before figuring out how to fix this issue, I show the comparable displays from `modelsummary()`
-and `modelplot()`
+and `modelplot()` for all three models.
+When you give `modelsummary()` a list of models, it displays their coefficients side-by-side
+as shown in @tbl-modelsummary2. 
+
 
 
 ```{r}
-#| label: tab-modelsummary2
+#| label: tbl-modelsummary2
+#| tbl-cap: Table of coefficients for three models.
 models <- list("Model1" = mod1, "Model2" = mod2, "Model3" = mod3)
 modelsummary(models,
      coef_omit = "Intercept",
@@ -294,12 +312,19 @@ modelsummary(models,
      )
 ```
 
-Note that the coefficients in @fig-modelplot1 are ordered from bottom to top, because the Y axis starts
-at the lower left corner. 
+Note that a factor predictor (like `type` here) with $d$ levels is represented by $d-1$ coefficients
+in main effects and in interactions with quantitative variables. These levels are coded with _treatment contrasts_ by default. Also by default, the first level is set as the reference level in alphabetical order.
+Here the reference level is blue collar (`bc`), so the coefficient `typeprof = 5.91`
+indicates that professional occupations on average are rated 5.91 greater on the Prestige scale
+than blue collar workers.
+
+Note also that unlike the table,
+the coefficients in @fig-modelplot1 are ordered from bottom to top, because the Y axis starts
+at the lower left corner. In @fig-modelplot2  I use `scale_y_discrete()` to reverse the order.
 ```{r}
 #| label: fig-modelplot2
-#| out-width: "80%"
-#| fig-cap: "Plot of coefficients and their standard error bar for all three models"
+#| out-width: "90%"
+#| fig-cap: "Plot of raw coefficients and their confidence intervals for all three models"
 modelplot(models, 
           coef_omit="Intercept", 
           size=1.3, linewidth=2) +
@@ -310,13 +335,76 @@ modelplot(models,
         legend.position.inside = c(0.85, 0.2))
 ```
 
+### More useful coefficient plots
+
+The problem with plots of raw coefficients shown in @fig-modelplot1 and @fig-modelplot2
+is that the coefficients for different predictors are not directly comparable because
+they are measured in different units.
+
+One alternative is to plot the _standardized coefficients_. These are interpreted
+as the standardized change in prestige for a one standard deviation change in the
+predictors.
+
+One way to do this is to transform all variables to standardized ($z$) scores.
+The syntax below uses `scale` to transform all the numeric variables.
+Then, we re-fit the models using the standardized data.
+
+```{r standardize}
+Prestige_std <- Prestige |>
+  as_tibble() |>
+  mutate(across(where(is.numeric), scale))
+
+mod1_std <- lm(prestige ~ education + income + women, data=Prestige_std)
+
+mod2_std <- lm(prestige ~ education + women + income + type, data=Prestige_std)
+
+mod3_std <- lm(prestige ~ education + women + income * type, data=Prestige_std)
+```
+
+The plot in @fig-modelplot3 now shows the significant effect of income in all three models.
+As well, it offers a more sensitive comparison of the coefficients of other terms
+across models; for example `women` is not significant in models 1 and 2, but becomes
+significant in Model 3 when the interaction of `income * type` is included.
+```{r}
+#| label: fig-modelplot3
+#| out-width: "90%"
+#| fig-cap: "Plot of standardized coefficients and their confidence intervals for all three models"
+models <- list("Model1" = mod1_std, "Model2" = mod2_std, "Model3" = mod3_std)
+modelplot(models, 
+          coef_omit="Intercept", size=1.3) +
+  ggtitle("Standardized coefficients") +
+  geom_vline(xintercept = 0, linewidth = 1.5) +
+  scale_y_discrete(limits=rev) +
+  theme(legend.position = "inside",
+        legend.position.inside = c(0.85, 0.2))
+```
+
+It turns out there is an easier way to get plots of standardized coefficients.
+`modelsummary()` extracts coefficients from model objects using the `parameters` package, 
+and that package offers several options for standardization: 
+See [model parameters documentation](https://easystats.github.io/parameters/reference/model_parameters.default.html).
+We can pass the `standardize="refit"` (or other) argument directly to `modelsummary()` or `modelplot()`, and that argument will be forwarded to `parameters`. The plot produced by the code below is identical to @fig-modelplot3 and is not shown.
+
+```{r}
+#| eval: false
+modelplot(list("mod1" = mod1, "mod2" = mod2, "mod3" = mod3),
+          standardize = "refit",
+          coef_omit="Intercept", size=1.3) +
+  ggtitle("Standardized coefficients") +
+  geom_vline(xintercept = 0, linewidth=1.5) +
+  scale_y_discrete(limits=rev) +
+  theme(legend.position = "inside",
+        legend.position.inside = c(0.85, 0.2))
+```
+
+
 
 ## Spread-level plot
 
 
-## Added-variable plots 
+## Added-variable plots {#sec-avplots}
 
-As we've seen (**TODO*: Where) simple, _marginal_ scatterplots of a response $y$ against _each_ of several predictors $x_1, x_2, \dots$ can be misleading because each one ignores the other predictors.
+As we've seen (**TODO**: Where) simple, _marginal_ scatterplots of a response $y$ against _each_ of several predictors $x_1, x_2, \dots$ can be misleading because each one ignores the other predictors.
 However, the general linear model fit by `lm()` estimates all effects together and so the coefficients pertain to the _partial_ effect of a given predictor, _adjusting_ for the effects of all others.
 
 The _added-variable_ plot (also called _partial regression_ plot) is the multivariate analog of a
