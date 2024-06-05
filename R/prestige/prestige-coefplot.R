@@ -106,6 +106,20 @@ modelplot(list("mod1" = mod1, "mod2" = mod2, "mod3" = mod3),
   theme(legend.position = "inside",
         legend.position.inside = c(0.85, 0.2))
 
+
+library(ggstats)
+ggcoef_model(mod2) +
+  labs(x = "Standarized Coefficient")
+
+models <- list(
+  "Base model"      = mod1_std,
+  "Add type"        = mod2_std,
+  "Add interaction" = mod3_std)
+
+ggcoef_compare(models) +
+  labs(x = "Standarized Coefficient")
+
+
 # Use GGally::ggcoef_compare
 # This is based on ggstats::ggcoef_compare()
 
@@ -116,4 +130,42 @@ ggcoef_compare(models) +
   xlab("Standardized Beta") 
 
 
+#' ## More meaningful units
+#' A better substantative comparison of the coefficients could use understandable scales for the
+#' predictors, e.g., months of education, $50,000 income or 10% of women's participation.
+#' 
+#' Note that the effect of this is just to multiply the coefficients and their standard errors by a factor. 
+#' The statistical conclusions of significance are unchanged.
 
+Prestige_scaled <- Prestige |>
+  mutate(education = 12 * education,
+         income = income / 100,
+         women = women / 10)
+
+mod1_scaled <- lm(prestige ~ education + income + women,
+                  data=Prestige_scaled)
+mod2_scaled <- lm(prestige ~ education + income + women + type,
+                  data=Prestige_scaled)
+
+arm::display(mod1_scaled, detail = TRUE)
+
+ggcoef_model(mod1_scaled,
+  signif_stars = FALSE,
+  variable_labels = c(education = "education\n(months)",
+                      income = "income\n(/$100K)",
+                      women = "women\n(/10%)")
+             ) +
+  xlab("Coefficients for prestige with scaled predictors")
+
+models <- list(
+  "Base model"      = mod1_std,
+  "Add type"        = mod2_std
+#  "Add interaction" = mod3_std
+  )
+
+ggcoef_compare(models,
+   variable_labels = c(education = "education\n(months)",
+                       income = "income\n(/$100K)",
+                       women = "women\n(/10%)")
+) +
+  xlab("Coefficients for prestige with scaled predictors")
