@@ -148,6 +148,7 @@ mod2_scaled <- lm(prestige ~ education + income + women + type,
                   data=Prestige_scaled)
 
 arm::display(mod1_scaled, detail = TRUE)
+arm::display(mod2_scaled, detail = TRUE)
 
 ggcoef_model(mod1_scaled,
   signif_stars = FALSE,
@@ -158,9 +159,9 @@ ggcoef_model(mod1_scaled,
   xlab("Coefficients for prestige with scaled predictors")
 
 models <- list(
-  "Base model"      = mod1_std,
-  "Add type"        = mod2_std
-#  "Add interaction" = mod3_std
+  "Base model"      = mod1_scaled,
+  "Add type"        = mod2_scaled
+#  "Add interaction" = mod3_scaled
   )
 
 ggcoef_compare(models,
