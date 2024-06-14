@@ -48,6 +48,8 @@ knitr::opts_knit$set(
             scap='fig.scap'),
             eval.after = c('fig.cap','fig.scap'))
 
+# suppress "Registered S3 method overwritten by GGally"
+Sys.setenv(`_R_S3_METHOD_REGISTRATION_NOTE_OVERWRITES_` = "false")
 
 # wrap hook
 # from: https://github.com/yihui/knitr-examples/blob/master/077-wrap-output.Rmd
