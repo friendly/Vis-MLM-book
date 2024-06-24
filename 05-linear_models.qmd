@@ -234,7 +234,8 @@ y & = & \beta_0 + \beta_1 x_1 +  \beta_2 x_2 +  \beta_1 x_1 *  \beta_2 x_2 \\
 \end{eqnarray*}
 
 which means that the coefficient for $x_1$ in the model is not constant for all values of
-$x_2$, but rather changes with the value of $x_2$.
+$x_2$, but rather changes with the value of $x_2$. If $\beta_2 > 0$, the slope for
+$x_1$ increases with $x_2$ and vice-versa.
 
 `y ~ A * B` for factors is similar, expanding to `y ~ A + B + A:B`, but the columns in the model matrix
 represent contrasts among the factor levels as describe above. The main effects, `A` and `B` 
@@ -250,7 +251,13 @@ allow separate slopes and intercepts for the groups.
 
 The `^` exponent operator indicates _powers of a term expression_ to a specified degree. Thus the term
 `(A + B)^2` is identical to `(A + B) * (A + B)` which expands to the main effects of `A`, `B` and
-their interaction, also identical to `A * B`.
+their interaction, also identical to `A * B`. In general, the product of parenthesized terms
+expands as in ordinary algebra,
+
+```{r eval=FALSE}
+y ~ (A + B) * (C + D) -> A + B + C + D + A:C + A:D + B:C + B:D
+```
+
 
 Powers get more interesting with more terms, so `(A + B + C)^2` is the same as `(A + B + C) * (A + B + C)`,
 which includes  main effects of `A`, `B` and `C` as well as all two-way interactions,
@@ -276,12 +283,21 @@ with all variables except `x6` as predictors as
 y ~ . - x6
 ```
 
-To test what we've covered above,
+To test what we've covered above, 
 
-* what do you think the model formula `y ~ .^2` means in a data set containing variables `x1, x2, x3,` and `x4`?
-* What about the same formula with factors `A, B, C, D`?[^ans]
+* What do you think the model formula `y ~ .^2` means in a data set containing variables `x1, x2, x3,` and `x4`?
 
-[^ans]: (a) `y ~ .^2 -> y ~ x1 + x2 + x3 + x4 + x1:x2 + x1:x3 + x1:x4` 
+* What about the formula with `y ~ .^2 - A:B:C:D` with factors `A, B, C, D`?
+
+You can work out questions like these using `terms()` for a `"formula"` object.
+The labels of these terms can then be turned back into a formula using `as.formula()`:
+```{r terms-formula}
+f <- formula(y ~ (x1 + x2 + x3 + x4)^2)
+terms = attr(terms(f), "term.labels")
+as.formula(sprintf("y ~ %s", paste(terms, collapse=" + "))) 
+```
+
+#### Model matrices
                             
 
 ## Regression
