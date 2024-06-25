@@ -118,9 +118,16 @@ $$
 \begin{align*}
 \mathbf{y} & = \beta_0 + \beta_1 \mathbf{x}_1 + \beta_2 \mathbf{x}_2 + \cdots + \beta_p \mathbf{x}_p + \mathbf{\epsilon} \\
            & = \left[ \mathbf{1},\; \mathbf{x}_1,\; \mathbf{x}_2,\; \dots ,\; \mathbf{x}_p \right] \; \boldsymbol{\beta} + \boldsymbol{\epsilon} \\
-           & = \LARGE{\sizedmat{X}{n \times (p+1)}\; \sizedmat{\boldsymbol{\beta}}{(p+1) \times 1} + \boldsymbol{\epsilon}}
 \end{align*}
 $$ {#eq-glm}
+
+           <!-- & = \LARGE{\sizedmat{X}{n \times (p+1)}\; \sizedmat{\boldsymbol{\beta}}{(p+1) \times 1} + \boldsymbol{\epsilon}} -->
+
+or, expressed in matrices,
+
+$$
+\LARGE{\sizedmat{y}{n \times 1} = \sizedmat{X}{n \times (p+1)}\; \sizedmat{\boldsymbol{\beta}}{(p+1) \times 1} + \boldsymbol{\epsilon}}
+$$
 
 The matrix $\mathbf{X}$ is called the _model matrix_ and contains the numerical representations of the predictor variables called _regressors_. The essential thing about a linear model
 is that it is linear in the **parameters** $\beta_i$. That is,
@@ -222,11 +229,11 @@ y ~ x + A             # one-way ANCOVA
 y ~ (A + B + C)^2     # three-way ANOVA, incl. all two-way interactions
 ```
 
-#### Crossing {.nonnumber}
+#### Crossing {.unnnumbered}
 The `*` operator has special meaning used to specify the crossing of variables and factors and `:` specifies interactions (products of variables).
 So, the model `y ~ x1 * x2` is expanded to give `y ~ x1 + x2 + x1:x2`
 and the interaction term `x1:x2` is calculated as $x_1 \times x_2$.
-In algebraic notation (omitting the error term) this give
+In algebraic notation (omitting the error term) this works out to the model,
 
 \begin{eqnarray*}
 y & = & \beta_0 + \beta_1 x_1 +  \beta_2 x_2 +  \beta_1 x_1 *  \beta_2 x_2 \\
@@ -247,7 +254,7 @@ but with a common slope for `x`. Adding an interaction of `x:A` in the model `y 
 allow separate slopes and intercepts for the groups.
 
 
-#### Powers {.nonnumber}
+#### Powers {.unnnumbered}
 
 The `^` exponent operator indicates _powers of a term expression_ to a specified degree. Thus the term
 `(A + B)^2` is identical to `(A + B) * (A + B)` which expands to the main effects of `A`, `B` and
@@ -289,17 +296,42 @@ To test what we've covered above,
 
 * What about the formula with `y ~ .^2 - A:B:C:D` with factors `A, B, C, D`?
 
-You can work out questions like these using `terms()` for a `"formula"` object.
-The labels of these terms can then be turned back into a formula using `as.formula()`:
+You can work out questions like these or explore model formulae
+using `terms()` for a `"formula"` object.
+The labels of these terms can then be concatenated to a string and turned back into a formula using `as.formula()`:
 ```{r terms-formula}
 f <- formula(y ~ (x1 + x2 + x3 + x4)^2)
 terms = attr(terms(f), "term.labels")
+
+terms |> paste(collapse = " + ")
+# convert back to a formula
 as.formula(sprintf("y ~ %s", paste(terms, collapse=" + "))) 
 ```
 
-#### Model matrices
-                            
+#### Model matrices {.unnnumbered}
 
+As noted above, a model formula is used to generate the $n \times (p+1)$ model matrix, $\mathbf{X}$, typically containing the column of 1s for the intercept $\beta_0$ in the model, followed by 
+$p$ columns representing the regressors $\mathbf{x}_1, \mathbf{x}_2, \dots , \mathbf{x}_p$.
+Internally, `lm()` uses `stats::model.matrix()` and you can use this to explore how factors,
+interactions and other model terms are represented in a model object.
+
+For a small example, here are a few observations representing income (`inc`) and `type` of occupation.
+`model.matrix()` takes a _one-sided_ formula with the terms on the right-hand side.
+
+```{r model-mat}
+set.seed(42)
+inc <- round(runif(n=9, 20, 40))
+type <- rep(c("bc", "wc", "prof"), each =3)
+
+mm <- model.matrix(~ inc + type) 
+data.frame(type, mm)
+```
+
+As you can see, `type`, with 2 degrees of freedom is represented by two dummy (0/1) variables,
+`typeprof` and `typewc`. Together, these represent _treatment contrasts_ (comparisons) between the
+baseline group `type=="bc"`, which is coded (0, 0) and each of the others: `type=="prof"`,
+coded (1, 0) and `type=="wc"`, codes (0, 1).
+ 
 ## Regression
 
 ## ANOVA
