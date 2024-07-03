@@ -17,3 +17,33 @@ avPlots(mod0, terms = ~education + income,
 )
 
 avPlot3d(mod0, "education", "income")
+
+mod1 <- lm(prestige ~ education + income + type,
+           data=Prestige)
+
+#' ## avPlots
+avPlots(mod1, terms = ~education + income,
+        ellipse = TRUE,
+        pch = 19,
+        id = list(n = 2, cex = 0.7),
+        main = "Added-variable plots for prestige"
+)
+
+# add loess.smooth to each
+res <- avPlot(mod1, "education",
+              ellipse = TRUE,
+              pch = 19,
+              cex.lab = 1.5)
+smooth <- loess.smooth(res[,1], res[,2])
+lines(smooth, col = "red", lwd = 2)
+
+res <- avPlot(mod1, "income",
+              ellipse = TRUE,
+              pch = 19,
+              cex.lab = 1.5)
+smooth <- loess.smooth(res[,1], res[,2])
+lines(smooth, col = "red", lwd = 2)
+
+
+
+
