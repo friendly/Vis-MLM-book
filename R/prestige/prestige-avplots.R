@@ -1,4 +1,5 @@
 data(Prestige, package="carData")
+library(car)
 #' `type` is really an ordered factor. Make it so.
 Prestige$type <- ordered(Prestige$type, levels=c("bc", "wc", "prof")) # reorder levels
 
@@ -7,7 +8,6 @@ mod0 <- lm(prestige ~ education + income + women + type,
            data=Prestige)
 
 #' ## avPlots
-library(car)
 avPlots(mod0, terms = ~education + income,
         ellipse = TRUE,
         pch = 19,
@@ -45,5 +45,8 @@ smooth <- loess.smooth(res[,1], res[,2])
 lines(smooth, col = "red", lwd = 2)
 
 
-
+crPlots(mod1, terms = ~education + income,
+        smooth = TRUE,
+        id = list(n=2, cex = 0.7))
+        
 
