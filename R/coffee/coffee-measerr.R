@@ -5,9 +5,7 @@
 library("spida2")   ## for coffee data 
 
 library(car)		# for dataEllipse, confidenceEllipse
-
-coffee <- coffee[,-5]  # get old example variable out of the way
-#coffee$Stressx <- coffee$Stress2  # get old example variable out of the way
+load(here::here("data", "coffee.RData"))
 
 SD <- sd(coffee$Stress)
 n<-nrow(coffee)

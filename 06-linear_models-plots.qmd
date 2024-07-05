@@ -477,11 +477,52 @@ effects, they are not large in relation to the scale of `prestige` which ranges 
 
 ## Added-variable plots {#sec-avplots}
 
-As we've seen (**TODO**: Coffee data) simple, _marginal_ scatterplots of a response $y$ against _each_ of several predictors $x_1, x_2, \dots$ can be misleading because each one ignores the other predictors.
-However, the general linear model fit by `lm()` estimates all effects together and so the coefficients pertain to the _partial_ effect of a given predictor, _adjusting_ for the effects of all others.
+In multiple regression problems, it is most often useful to construct a scatterplot matrix
+and examine the plot of the response vs. each of the predictors as well as those
+of the predictors against each other.
+However, the simple, _marginal_ scatterplots of a response $y$ against _each_ of several predictors $x_1, x_2, \dots$ can be misleading because each one ignores the other predictors.
 
-The _added-variable_ plot ("AV plot", also called _partial regression_ plot, @LarsenMcCleary:72; @Cook:93) is the multivariate analog of a
-a simple marginal scatterplot, designed to visualize directly the partial relation $y$ and the predictors
+To see this consider a toy dataset, `coffee`, giving measures of coffee consumption,
+occupational stress and an index of heart problems in a sample of $n=20$ graduate students
+and professors.
+
+```{r}
+#| label: fig-coffee-spm
+#| out-width: "100%"
+#| fig-cap: "Scatterplot matrix showing pairwise relations among `Heart` ($y$), `Coffee` consumption ($x_1$) and `Stress` ($x_2$), with linear regression lines and 68% data ellipses for the bivariate relations"
+load(here::here("data", "coffee.RData"))
+
+scatterplotMatrix(~ Heart + Coffee + Stress, 
+  data=coffee,
+  smooth = FALSE,
+  ellipse = list(levels=0.68, fill.alpha = 0.1),
+  pch = 19, cex.labels = 2.5)
+```
+
+The message from these marginal plots in @fig-coffee-spm
+seems to be that coffee is bad for your heart,
+stress is bad for your heart, and stress is also strongly
+related to coffee consumption. Yet, when we fit a model with both variables together,
+we get the following results:
+
+```{r fit-both}
+fit.both   <- lm(Heart ~ Coffee + Stress, data=coffee)
+lmtest::coeftest(fit.both)
+```
+
+The coefficients suggest that stress is indeed bad for your heart,
+but the negative (though non-significant) coefficient for coffee suggests that coffee is good for you.How can this be? Does that mean I should drink more coffee, while avoiding stress?
+
+The reason for this apparent paradox is that
+the general linear model fit by `lm()` estimates all effects together and so the coefficients pertain to the _partial_ effect of a given predictor, _adjusting_ for the effects of all others.
+That is, the coefficient for coffee ($\beta_1 = -0.41$) estimates the effect of coffee for
+people with _same_ level of stress. In the marginal scatterplot, the positive slope for coffee
+(1.10) ignores the correlation of coffee and stress.
+
+A solution to this problem is
+the _added-variable_ plot ("AV plot", also called _partial regression_ plot, @LarsenMcCleary:72; @Cook:93).
+This is a multivariate analog of a
+a simple marginal scatterplot, designed to visualize directly the partial relation between $y$ and the predictors
 $x_1, x_2, \dots$ in a multiple regression model. You can think of this as a magic window that hides
 the relations of all other variables with each of the $y$ and $x_i$ shown in a given added-variable plot,
 giving an unobstructed view of the net relation between $y$ and $x_i$ with the effect of
@@ -489,21 +530,25 @@ all other variables removed. In effect, it reduces the problem of viewing the co
 in $p$-dimensional space to a sequence of $p$ 2D plots, each of which tells the story of one
 predictor, unentangled with the others.
 
-The construction of an AV plot is conceptually very simple. For variable $x_i$, imagine that we fit
-two supplementary regressions:
+The construction of an AV plot is conceptually very simple. For variable $x_i$, imagine that we fit two supplementary regressions:
 
-* Regress $y$ on $\mathbf{X_{(-i)}}$, the model matrix of all of the regressors except $x_i$. 
-By definition, the residuals from this regression,  $r_y(x_i) = y \,\vert\, \text{others}$,
-are the part of $y$ that cannot be
+* Regress $\mathbf{y}$ on $\mathbf{X_{(-i)}}$, the model matrix of all of the regressors except $x_i$. 
+By definition, the residuals from this regression, 
+$\mathbf{y}^\star \equiv \mathbf{y} \,\vert\, \text{others} = \mathbf{y} - \widehat{\mathbf{y}} \,\vert\, \mathbf{X_{(-i)}}$,
+<!-- $r_y(x_i) = y - \widehat{y}_{\mathbf{X_{(-i)}}} \equiv y \,\vert\, \text{others}$, -->
+are the part of $\mathbf{y}$ that cannot be
 explained by all the other regression terms. These residuals are necessarily uncorrelated
 with the other predictors.
 
 * Regress $x_i$ on the other predictors, $\mathbf{X_{(-i)}}$ and again obtain the residuals.
-These residuals, $r_x(x_i) = x_i \,\vert\, \text{others}$, give the part of $x_i$ that cannot be explained by the others, and so are uncorrelated with them.
+These residuals, 
+$\mathbf{x}_i^\star \equiv \mathbf{x}_i \,\vert\, \text{others} = \mathbf{x}_i - \widehat{\mathbf{x}_i} \,\vert\, \mathbf{X_{(-i)}}$
+<!-- $r_x(x_i) =  x_i \,\vert\, \text{others}$,  -->
+give the part of $x_i$ that cannot be explained by the others, and so are uncorrelated with them.
 
-The AV plot is then just a simple scatterplot of these residuals, $y \,\vert\, \text{others}$
-on the vertical axis, and $x_i \,\vert\, \text{others}$ on the horizontal.
-In practice, it is unnecessary to run the auxilliary regressions this way.
+The AV plot is then just a simple scatterplot of these residuals, $\mathbf{y}^\star$
+on the vertical axis, and $\mathbf{x}^\star$ on the horizontal.
+In practice, it is unnecessary to run the auxilliary regressions this way [@VellemanWelsh:81].
 Both can be calculated using `stats::lsfit()` roughly as follows:
 
 ```{r AVcalc}
@@ -514,14 +559,38 @@ response <- model.response(model)
 x <- X[, -variable]
 y <- cbind(X[, variable], response)
 fit <- lsfit(x, y, intercept = FALSE)
-resids <- fit$residuals
+resids <- residuals(fit)
 return(resids)
 ```
 
-Note that `y` here contains both the current predictor, $x_i$ and the response $y$, so the
+Note that `y` here contains both the current predictor, $\mathbf{x}_i$ and the response $\mathbf{y}$, so the
 residuals `resids` have two columns, one for $x_i \,\vert\, \text{others}$
 and one for $y \,\vert\, \text{others}$.
 
+Added-variable plots are produced using `car::avPlot()` (for one predictor) or
+`avPlots()` for any number of model terms. The `id` argument controls
+which points are identified in the plots; `n=2` labels the two points
+that are furthest from the mean on the horizontal axis _and_ the two with the largest
+absolute residuals.
+
+```{r}
+#| label: fig-coffee-avPlots
+#| out-width: "100%"
+#| fig-cap: "Added-variable plots for Coffee and Stress in the multiple regression model"
+avPlots(fit.both,
+  ellipse = list(levels = 0.68, fill=TRUE, fill.alpha = 0.1),
+  pch = 19,
+  id = list(n = 2),
+  cex.lab = 1.5,
+  main = "Added-variable plots for Coffee data")
+```
+
+The data ellipses for $\mathbf{x}_i^\star$ and $\mathbf{y}^\star$ summarize the conditional
+(or partial) relations of the response to each predictor controlling for all other predictors
+in each plot.  The essential idea is that the data ellipse for $(\mathbf{x}_i^\star, \mathbf{y}^\star)$ has the identical relation to the estimate $\hat{b}_i$ in a
+multiple regressioon as the data ellipse of $(\mathbf{x}, \mathbf{y})$ has to a simple regression.
+
+### Properties of AV plots
 AV plots are particularly interesting and useful for the following noteworthy properties:
 
 * The slope of the simple regression in the AV plot for variable $x_i$ is identical to the slope
@@ -531,26 +600,21 @@ $b_i$ for that variable in the full multiple regression model.
 see the degree of fit for observations directly, in relation to the various predictors, which is not
 the case for marginal scatterplots.
 
-* Consequentially, the standard deviation of the (vertical) residuals in the AV plot is the same as $s = \sqrt(MSE)$ in the full model and the standard error of a coefficient is $\text{SE}(b_i) = s / \sqrt{\Sigma r_x(x_i)^2}$.
+* Consequentially, the standard deviation of the (vertical) residuals in the AV plot is the same as $s = \sqrt(MSE)$ in the full model and the standard error of a coefficient is $\text{SE}(b_i) = s / \sqrt{\Sigma (\mathbf{x}_i^\star)^2}$.
 
-* The horizontal positions, $x_i \,\vert\, \text{others}$, of points adjust for all other predictors, and so we can see points at the extreme left and right as unusual in relation to the others. If these points are also badly fitted (large residuals), we can see their influence on the fitted relation in the full model. AV plots thus provide visual displays of leverage and influence on each of the regression coefficients.
+* The horizontal positions, $\mathbf{x}_i^\star$, of points adjust for all other predictors, and so we can see points at the extreme left and right as unusual in relation to the others. If these points are also badly fitted (large residuals), we can see their influence on the fitted relation in the full model. AV plots thus provide visual displays of leverage and influence on each of the regression coefficients.
 
+* The correlation of $\mathbf{x}_i^\star$ and $\mathbf{y}^\star$ shown by the shape of the data ellipses is the _partial correlation_ between $\mathbf{x}_i$ and $\mathbf{y}_i$
+with other predictors partialled out.
 
+```{r}
+#| label: fig-coffee-av-marginal
+#| echo: false
+#| out-width: 100%
+#| fig-cap: Added-variable $+$ marginal plots for Stress and Coffee in the multiple regression predicting Heart disease. Each panel shows the 68% conditional data ellipse for $x_k^\star, y^\star$ residuals (shaded, blue) as well as the marginal 68% data ellipse for the $(x_k, y)$ variables, shifted to the origin. Arrows connect the mean-centered marginal points (red points) to the residual points (black points).
+knitr::include_graphics("images/coffee-av-marginal.png")
+```
 
-
-
-
-<!--
-An added-variable plot displays a scatterplot of a transformation of an independent
-variable (say, x1) and the dependent variable (y) that nets out the influence of all
-the other independent variables. The fitted regression line between these transformed
-variables has the same slope as the coefficient on x1 in the full regression model, which
-includes all the independent variables.
-An added-variable plot is a visually compelling method for showing a partial corre-
-lation between x1 and y. A confidence interval shows how precisely the sample data fit
-that correlation. An added-variable plot is the multivariate analogue of using a simple
-scatterplot with a regression fit in a univariate context
--->
 
 
 ## Marginal effect plots
