@@ -542,8 +542,7 @@ with the other predictors.
 
 * Regress $x_i$ on the other predictors, $\mathbf{X_{(-i)}}$ and again obtain the residuals.
 These residuals, 
-$\mathbf{x}_i^\star \equiv \mathbf{x}_i \,\vert\, \text{others} = \mathbf{x}_i - \widehat{\mathbf{x}_i} \,\vert\, \mathbf{X_{(-i)}}$
-<!-- $r_x(x_i) =  x_i \,\vert\, \text{others}$,  -->
+$\mathbf{x}_i^\star \equiv \mathbf{x}_i \,\vert\, \text{others} = \mathbf{x}_i - \widehat{\mathbf{x}}_i \,\vert\, \mathbf{X_{(-i)}}$
 give the part of $x_i$ that cannot be explained by the others, and so are uncorrelated with them.
 
 The AV plot is then just a simple scatterplot of these residuals, $\mathbf{y}^\star$
@@ -571,7 +570,10 @@ Added-variable plots are produced using `car::avPlot()` (for one predictor) or
 `avPlots()` for any number of model terms. The `id` argument controls
 which points are identified in the plots; `n=2` labels the two points
 that are furthest from the mean on the horizontal axis _and_ the two with the largest
-absolute residuals.
+absolute residuals. For instance, in @fig-coffee-avPlots, observations 5 and 13 are flagged
+because their conditional $\mathbf{x}_i^\star$ values are extreme; observation 17 has a 
+much larger value of $\mathbf{y}^\star = \text{Heart} \,\vert\, \text{others}$.
+
 
 ```{r}
 #| label: fig-coffee-avPlots
@@ -588,7 +590,8 @@ avPlots(fit.both,
 The data ellipses for $\mathbf{x}_i^\star$ and $\mathbf{y}^\star$ summarize the conditional
 (or partial) relations of the response to each predictor controlling for all other predictors
 in each plot.  The essential idea is that the data ellipse for $(\mathbf{x}_i^\star, \mathbf{y}^\star)$ has the identical relation to the estimate $\hat{b}_i$ in a
-multiple regressioon as the data ellipse of $(\mathbf{x}, \mathbf{y})$ has to a simple regression.
+multiple regression as the data ellipse of $(\mathbf{x}, \mathbf{y})$ has to the3 slope in
+a simple regression.
 
 ### Properties of AV plots
 AV plots are particularly interesting and useful for the following noteworthy properties:
@@ -597,15 +600,35 @@ AV plots are particularly interesting and useful for the following noteworthy pr
 $b_i$ for that variable in the full multiple regression model.
 
 * The residuals in this plot are the same as the residuals using all predictors. This means you can
-see the degree of fit for observations directly, in relation to the various predictors, which is not
+see the degree of fit for observations directly in relation to the various predictors, which is not
 the case for marginal scatterplots.
 
-* Consequentially, the standard deviation of the (vertical) residuals in the AV plot is the same as $s = \sqrt(MSE)$ in the full model and the standard error of a coefficient is $\text{SE}(b_i) = s / \sqrt{\Sigma (\mathbf{x}_i^\star)^2}$.
+* Consequentially, the standard deviation of the (vertical) residuals in the AV plot is the same as $s = \sqrt(MSE)$ in the full model and the standard error of a coefficient is $\text{SE}(b_i) = s / \sqrt{\Sigma (\mathbf{x}_i^\star)^2}$. This is shown by the size of the shadow of the data ellipses on
+the vertical axis in @fig-coffee-avPlots.
 
 * The horizontal positions, $\mathbf{x}_i^\star$, of points adjust for all other predictors, and so we can see points at the extreme left and right as unusual in relation to the others. If these points are also badly fitted (large residuals), we can see their influence on the fitted relation in the full model. AV plots thus provide visual displays of leverage and influence on each of the regression coefficients.
 
 * The correlation of $\mathbf{x}_i^\star$ and $\mathbf{y}^\star$ shown by the shape of the data ellipses is the _partial correlation_ between $\mathbf{x}_i$ and $\mathbf{y}_i$
 with other predictors partialled out.
+
+The relation of the conditional data ellipses in AV plots to those in marginal plots of the same variables
+provides further insight into what it means to "control for" other variables.
+@fig-coffee-av-marginal shows the same added-variable plots for Heart disease on Stress and Coffee
+as in @fig-coffee-avPlots (with a zoomed-out scaling), but here we also overlay the
+marginal data ellipses for $(\mathbf{x}_i, \mathbf{y})$,
+and marginal regression lines for Stress and Coffee separately. Drawing arrows connecting the
+original data points to their positions in the AV plot shows what happens when we condition on
+or partial out the other variable.
+
+The most obvious feature of @fig-coffee-av-marginal
+is that Coffee has a negative slope in the conditional AV plot but a positive slope in the marginal
+plot. This is an example of Simpson's paradox in a regression context.
+
+Less obvious is the relation between the marginal and AVP ellipses. In 3D, the marginal
+data ellipse is the shadow of the ellipsoid for $(\mathbf{y}, \mathbf{x}_1, \mathbf{x}_2)$ on one of the coordinate planes,
+while the AV plot is a slide through the ellipsoid where either $\mathbf{x}_1$ or $\mathbf{x}_2$
+is held constant.
+
 
 ```{r}
 #| label: fig-coffee-av-marginal

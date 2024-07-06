@@ -103,13 +103,13 @@ png(file="images/coffee-av-marginal.png", width=14, height=7, res=200, units="in
 
 op <- par(mar=c(4, 4, 1, 1) + 0.4,
           mfrow = c(1,2))
-avPlot(fit.both, variable="Coffee", 
+res <- avPlot(fit.both, variable="Coffee", 
        xlim=c(-70,70), ylim=c(-70,70), 
        pch=16, cex=1.4, cex.lab=1.5,
        main="AV + Marginal plot: Coffee",
        col.lines = "blue", lwd = 2.5)
-res <- lsfit(mod.mat[, -2], cbind(mod.mat[, 2], coffee$Heart), 
-             intercept = FALSE) |> residuals()
+# res <- lsfit(mod.mat[, -2], cbind(mod.mat[, 2], coffee$Heart), 
+#              intercept = FALSE) |> residuals()
 dataEllipse(res[,1], res[,2], level=lev, 
             add=TRUE, fill=TRUE, fill.alpha=0.2, 
             col = "blue", cex = 1, plot.points = TRUE)
@@ -140,6 +140,42 @@ with(coffee, {
 
 par(op)
 dev.off()
+
+# try again, simplifying code above
+
+res <- avPlot(fit.both, variable="Coffee", 
+  xlim=c(-70,70), ylim=c(-70,70), 
+  pch=16, cex=1.4, cex.lab=1.5,
+  main="AV + Marginal plot: Coffee",
+  col.lines = "blue", lwd = 2.5,
+  ellipse=list(levels=lev, fill=TRUE, fill.alpha=0.2, col = "blue"))
+with(coffee, {
+  marginalEllipse(Coffee, Heart, col="red", lwd=2, add=TRUE, levels=lev, cex=1.2)
+  points(dev(Coffee), dev(Heart), pch=16, col = "red")
+  arrows(dev(Coffee), dev(Heart), res[,1], res[,2],
+         col = grey(.10), angle=12, length=.18)
+  })
+
+res <- avPlot(fit.both, variable="Stress", 
+              xlim=c(-70,70), ylim=c(-70,70), 
+              pch=16, cex=1.4, cex.lab=1.5,
+              main="AV + Marginal plot: Stress",
+              col.lines = "blue", lwd = 2.5,
+              ellipse=list(levels=lev, fill=TRUE, fill.alpha=0.2, col = "blue"))
+with(coffee, {
+  marginalEllipse(Stress, Heart, col="red", lwd=2, add=TRUE, levels=lev, cex=1.2)
+  points(dev(Stress), dev(Heart), pch=16, col = "red")
+  arrows(dev(Stress), dev(Heart), res[,1], res[,2],
+         col = grey(.10), angle=12, length=.18)
+})
+
+
+
+
+# shape::Arrows(dev(Stress), dev(Heart), .95*res[,1], .95*res[,2], 
+#        col = grey(.10), #angle=12, 
+#        arr.length=.15, arr.width = .3, arr.type="triangle")
+
 
 #########################################
 # modified avPlots.R to allow ellipse=
