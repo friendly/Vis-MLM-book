@@ -48,9 +48,28 @@ smooth <- loess.smooth(res[,1], res[,2])
 lines(smooth, col = "red", lwd = 2.5)
 par(op)
 
+# Component + Residual plot
 
 crPlots(mod1, terms = ~education + income,
         smooth = TRUE,
-        id = list(n=2, cex = 0.7))
+        pch = 19,
+        id = list(n=2))
+
+crPlot(mod1, "income",
+       smooth = TRUE,
+       pch = 19,
+       col.lines = c("blue", "red"),
+       id = list(n=2, cex = 1.2),
+       cex.lab = 1.5)
+
+crPlot(mod1, "income",
+       smooth = TRUE,
+       order = 2,
+       pch = 19,
+       col.lines = c("blue", "red"),
+       id = list(n=2, cex = 1.2),
+       cex.lab = 1.5)
+
+
         
 

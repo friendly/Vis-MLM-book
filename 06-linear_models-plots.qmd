@@ -520,7 +520,8 @@ people with _same_ level of stress. In the marginal scatterplot, the positive sl
 (1.10) ignores the correlation of coffee and stress.
 
 A solution to this problem is
-the _added-variable_ plot ("AV plot", also called _partial regression_ plot, @LarsenMcCleary:72; @Cook:93).
+the _added-variable_ plot ("AV plot", also called _partial regression_ plot, MostellerTukey-1977).
+@LarsenMcCleary:72; @Cook:93).
 This is a multivariate analog of a
 a simple marginal scatterplot, designed to visualize directly the partial relation between $y$ and the predictors
 $x_1, x_2, \dots$ in a multiple regression model. You can think of this as a magic window that hides
@@ -606,7 +607,7 @@ the case for marginal scatterplots.
 * Consequentially, the standard deviation of the (vertical) residuals in the AV plot is the same as $s = \sqrt(MSE)$ in the full model and the standard error of a coefficient is $\text{SE}(b_i) = s / \sqrt{\Sigma (\mathbf{x}_i^\star)^2}$. This is shown by the size of the shadow of the data ellipses on
 the vertical axis in @fig-coffee-avPlots.
 
-* The horizontal positions, $\mathbf{x}_i^\star$, of points adjust for all other predictors, and so we can see points at the extreme left and right as unusual in relation to the others. If these points are also badly fitted (large residuals), we can see their influence on the fitted relation in the full model. AV plots thus provide visual displays of leverage and influence on each of the regression coefficients.
+* The horizontal positions, $\mathbf{x}_i^\star$, of points adjust for all other predictors, and so we can see points at the extreme left and right as unusual in relation to the others. If these points are also badly fitted (large residuals), we can see their influence on the fitted relation in the full model. AV plots thus provide visual displays of (partial) _leverage_ and _influence_ on each of the regression coefficients.
 
 * The correlation of $\mathbf{x}_i^\star$ and $\mathbf{y}^\star$ shown by the shape of the data ellipses is the _partial correlation_ between $\mathbf{x}_i$ and $\mathbf{y}_i$
 with other predictors partialled out.
@@ -661,7 +662,7 @@ Finally, @fig-coffee-mcplot also shows how conditioning on other predictors work
 observations, where each point of  $(\mathbf{x}_i^\star, \mathbf{y}^\star)$ is the image of $(\mathbf{x}_i, \vec{y})$ along the path of the marginal regression. The variability in the response and in the focal
 predictor are both reduced, leaving only the uncontaminated relation of $\mathbf{y}$ with $\mathbf{x}_i$.
 
-These plots are similar in spirit to the ARES plot ("_A_dding _RE_gressors _S_moothly") proposed
+These plots are similar in spirit to the ARES plot ("Adding REgressors Smoothly") proposed
 by @CookWeisberg-1994, but their idea was an interactive animation,
 displaying a smooth transition between the fit of a marginal model and
 the fit of a larger model. They used linear interpolation controlled by a slider,
@@ -695,13 +696,11 @@ avPlots(mod1,
 
 The influential points for physicians and general managers could just be unusual, or
 suggest that the relation of income to prestige is nonlinear. A rough test of this
-is to fit a smoothed curve through the points in the AV plot.
+is to fit a smoothed curve through the points in the AV plot as shown in @fig-prestige-av-income.
 
 ```{r}
 #| label: fig-prestige-av-income
-#| fig-width: 10
-#| fig-height: 10
-#| out-width: "80%"
+#| out-width: "75%"
 #| fig-cap: "Added-variable plot for income, with a loess smooth."
 op <- par(mar=c(4, 4, 1, 0) + 0.5)
 res <- avPlot(mod1, "income",
@@ -710,6 +709,27 @@ res <- avPlot(mod1, "income",
               cex.lab = 1.5)
 smooth <- loess.smooth(res[,1], res[,2])
 lines(smooth, col = "red", lwd = 2.5)
+```
+
+However, this use of AV plots to diagnose nonlinearity or suggest transformations can be misleading 
+[@Cook-1996]. Curvature in these plots is an indication of some model deficiency,
+but unless the predictors are uncorrelated, cannot determine the form of a possible
+transformation of the predictors.
+
+### Component + Residual plots
+
+```{r}
+#| label: fig-prestige-crplot
+#| out-width: "75%"
+#| fig-cap: "Component + residual plot for income..."
+crPlot(mod1, "income",
+       smooth = TRUE,
+       order = 2,
+       pch = 19,
+       col.lines = c("blue", "red"),
+       id = list(n=2, cex = 1.2),
+       cex.lab = 1.5)
+
 ```
 
 
