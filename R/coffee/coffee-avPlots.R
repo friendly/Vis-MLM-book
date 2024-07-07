@@ -28,8 +28,24 @@ avPlots(fit.both,
         main = "Added-variable plots for Coffee data")
 
 
-# show the conditional relations
+###########################################
+#' show the conditional relations
 
+#' Marginal - conditional plots
+#' 
+
+mcPlots(fit.both, 
+        ellipse = list(levels=lev, fill=TRUE, fill.alpha=0.2),
+        id = list(n=2),
+        pch = c(16, 16),
+        col.marginal = "red",
+        col.conditional = "blue",
+        col.arrows = "black",
+        cex.lab = 1.5)
+
+
+#' Doing it the long way....
+#' 
 mod.mat <- model.matrix(fit.both)
 
 # utility functions
@@ -108,8 +124,6 @@ res <- avPlot(fit.both, variable="Coffee",
        pch=16, cex=1.4, cex.lab=1.5,
        main="AV + Marginal plot: Coffee",
        col.lines = "blue", lwd = 2.5)
-# res <- lsfit(mod.mat[, -2], cbind(mod.mat[, 2], coffee$Heart), 
-#              intercept = FALSE) |> residuals()
 dataEllipse(res[,1], res[,2], level=lev, 
             add=TRUE, fill=TRUE, fill.alpha=0.2, 
             col = "blue", cex = 1, plot.points = TRUE)
@@ -120,14 +134,12 @@ with(coffee, {
          col = grey(.10), angle=15, length=.1)
   })
 
-avPlot(fit.both, variable="Stress", 
+res <- avPlot(fit.both, variable="Stress", 
        xlim=c(-70,70), ylim=c(-70,70), 
        pch=16, cex=1.2, cex.lab=1.5,
 	     main="AV + Marginal plot: Stress",
        col.lines = "blue", lwd = 2.5
 )
-res <- lsfit(mod.mat[, -3], cbind(mod.mat[, 3], coffee$Heart), 
-             intercept = FALSE) |> residuals()
 dataEllipse(res[,1], res[,2], level=lev, 
             add=TRUE, fill=TRUE, fill.alpha=0.2, 
             col = "blue", cex = 1, plot.points = FALSE)
@@ -178,21 +190,9 @@ with(coffee, {
 
 
 #########################################
-# modified avPlots.R to allow ellipse=
 
-avPlot(fit.both, variable="Stress", 
-       xlim=c(-70,70), ylim=c(-70,70), 
-       pch=16,
-       main="Added variable + Marginal plot: Stress",
-       ellipse=list(levels=lev, fill=TRUE, fill.alpha=0.2, col = "red"),
-       col.lines = "red")
-with(coffee, marginalEllipse(Stress, Heart, col="blue", lwd=2, add=TRUE, levels=lev))
 
-avPlot(fit.both, variable="Coffee", 
-       xlim=c(-70,70), ylim=c(-70,70), 
-       pch=16,
-	main="Added variable + Marginal plot: Coffee",
-	ellipse=list(levels=lev, fill=TRUE, fill.alpha=0.2, col = "red"),
-	col.lines = "red")
-with(coffee, marginalEllipse(Coffee, Heart, col="blue", lwd=2, add=TRUE, levels=lev))
+
+
+
 

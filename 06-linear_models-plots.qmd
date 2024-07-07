@@ -571,8 +571,8 @@ Added-variable plots are produced using `car::avPlot()` (for one predictor) or
 which points are identified in the plots; `n=2` labels the two points
 that are furthest from the mean on the horizontal axis _and_ the two with the largest
 absolute residuals. For instance, in @fig-coffee-avPlots, observations 5 and 13 are flagged
-because their conditional $\mathbf{x}_i^\star$ values are extreme; observation 17 has a 
-much larger value of $\mathbf{y}^\star = \text{Heart} \,\vert\, \text{others}$.
+because their conditional $\mathbf{x}_i^\star$ values are extreme; observation 17 has a
+large absolute residual, $\mathbf{y}^\star = \text{Heart} \,\vert\, \text{others}$.
 
 
 ```{r}
@@ -611,37 +611,107 @@ the vertical axis in @fig-coffee-avPlots.
 * The correlation of $\mathbf{x}_i^\star$ and $\mathbf{y}^\star$ shown by the shape of the data ellipses is the _partial correlation_ between $\mathbf{x}_i$ and $\mathbf{y}_i$
 with other predictors partialled out.
 
-The relation of the conditional data ellipses in AV plots to those in marginal plots of the same variables
+### Marginal - conditional plots
+The relation of the _conditional_ data ellipses in AV plots to those in _marginal_ plots of the same variables
 provides further insight into what it means to "control for" other variables.
-@fig-coffee-av-marginal shows the same added-variable plots for Heart disease on Stress and Coffee
+@fig-coffee-mcplot shows the same added-variable plots for Heart disease on Stress and Coffee
 as in @fig-coffee-avPlots (with a zoomed-out scaling), but here we also overlay the
 marginal data ellipses for $(\mathbf{x}_i, \mathbf{y})$ (centered at the means),
 and marginal regression lines for Stress and Coffee separately. Drawing arrows connecting the
 original data points to their positions in the AV plot shows what happens when we condition on
 or partial out the other variable.
 
+These _marginal - conditional plots_ are produced by `car::mcPlot()` (for one regressor)
+and `car::mcPlots()` (for several). The plots for the marginal and conditional relations
+can be compared separately using the same scales for both, or overlaid as shown here.
+The points labeled here are only those with large absolute residuals $\mathbf{y}^\star$ in the vertical
+direction.
 
 ```{r}
-#| label: fig-coffee-av-marginal
-#| echo: false
-#| out-width: 100%
-#| fig-cap: Added-variable $+$ marginal plots for Coffee and Stress in the multiple regression predicting Heart disease. Each panel shows the 68% conditional data ellipse for $x_i^\star, y^\star$ residuals (shaded, blue) as well as the marginal 68% data ellipse for the $(x_i, y)$ variables, shifted to the origin. Arrows connect the mean-centered marginal points (red points) to the residual points (black points).
-knitr::include_graphics("images/coffee-av-marginal.png")
+#| label: fig-coffee-mcplot
+#| fig-width: 12
+#| fig-height: 6
+#| out-width: "100%"
+#| fig-cap: Marginal $+$ conditional (added-variable) plots for Coffee and Stress in the multiple regression predicting Heart disease. Each panel shows the 68% conditional data ellipse for $x_i^\star, y^\star$ residuals (shaded, blue) as well as the marginal 68% data ellipse for the $(x_i, y)$ variables, shifted to the origin. Arrows connect the mean-centered marginal points (red) to the residual points (blue).
+mcPlots(fit.both, 
+  ellipse = list(levels=0.68, fill=TRUE, fill.alpha=0.2),
+  id = list(n=2),
+  pch = c(16, 16),
+  col.marginal = "red", col.conditional = "blue",
+  col.arrows = "black",
+  cex.lab = 1.5)
 ```
 
-The most obvious feature of @fig-coffee-av-marginal
+
+
+The most obvious feature of @fig-coffee-mcplot
 is that Coffee has a negative slope in the conditional AV plot but a positive slope in the marginal
-plot. This is an example of Simpson's paradox in a regression context.
+plot. This is an example of Simpson's paradox in a regression context: marginal and conditional relations
+can have opposite signs.
+\index{Simpson's paradox}
 
 Less obvious is the relation between the marginal and AVP ellipses. In 3D, the marginal
 data ellipse is the shadow of the ellipsoid for $(\mathbf{y}, \mathbf{x}_1, \mathbf{x}_2)$ on one of the coordinate planes,
 while the AV plot is a slice through the ellipsoid where either $\mathbf{x}_1$ or $\mathbf{x}_2$
 is held constant.
-Thus, the AVP ellipse must be contained in the marginal ellipse, as we can see in @fig-coffee-av-marginal.
+Thus, the AVP ellipse must be contained in the marginal ellipse, as we can see in @fig-coffee-mcplot.
 If there are only two $x$s, then the AVP ellipse must touch the marginal ellipse at two points.
 
-Finally, @fig-coffee-av-marginal also shows how conditioning on other predictors works for individual
-observations, where each point of  $(\mathbf{x}_i^\star, \mathbf{y}^\star)$ is the image of $(\mathbf{x}_i, \vec{y})$ along the path of the marginal regression. 
+Finally, @fig-coffee-mcplot also shows how conditioning on other predictors works for individual
+observations, where each point of  $(\mathbf{x}_i^\star, \mathbf{y}^\star)$ is the image of $(\mathbf{x}_i, \vec{y})$ along the path of the marginal regression. The variability in the response and in the focal
+predictor are both reduced, leaving only the uncontaminated relation of $\mathbf{y}$ with $\mathbf{x}_i$.
+
+These plots are similar in spirit to the ARES plot ("_A_dding _RE_gressors _S_moothly") proposed
+by @CookWeisberg-1994, but their idea was an interactive animation,
+displaying a smooth transition between the fit of a marginal model and
+the fit of a larger model. They used linear interpolation controlled by a slider,
+whose value, $\lambda \in [0, 1]$, was the weight given to the smaller marginal model.
+
+### Prestige data
+
+For a substantive example, let's return to the model for income, education and women in the
+`Prestige` data. The plot in @fig-prestige-avplot shows the strong positive relations of
+income and education to prestige in the full model, and the negligible relation of
+percent women. But, in the plot for income, two occupations (physicians and general managers)
+with high income strongly pull the regression line down from what can be seen in
+the orientation of the conditional data ellipse.
+
+```{r}
+#| label: fig-prestige-avplot
+#| fig-width: 10
+#| fig-height: 10
+#| out-width: "100%"
+#| fig-cap: "Added-variable plot for the quantitative predictors in the `Prestige` data."
+mod1 <- lm(prestige ~ education + income + women,
+           data=Prestige)
+
+avPlots(mod1, 
+  ellipse = list(levels = 0.68),
+  id = list(n = 2, cex = 1.2),
+  pch = 19,
+  cex.lab = 1.5,
+  main = "Added-variable plots for prestige")
+```
+
+The influential points for physicians and general managers could just be unusual, or
+suggest that the relation of income to prestige is nonlinear. A rough test of this
+is to fit a smoothed curve through the points in the AV plot.
+
+```{r}
+#| label: fig-prestige-av-income
+#| fig-width: 10
+#| fig-height: 10
+#| out-width: "80%"
+#| fig-cap: "Added-variable plot for income, with a loess smooth."
+op <- par(mar=c(4, 4, 1, 0) + 0.5)
+res <- avPlot(mod1, "income",
+              ellipse = list(levels = 0.68),
+              pch = 19,
+              cex.lab = 1.5)
+smooth <- loess.smooth(res[,1], res[,2])
+lines(smooth, col = "red", lwd = 2.5)
+```
+
 
 ## Marginal effect plots
 
