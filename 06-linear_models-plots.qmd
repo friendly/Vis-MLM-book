@@ -5,6 +5,14 @@ knitr::opts_chunk$set(fig.path = "figs/ch06/")
 
 {{< include latex/latex-commands.qmd >}}
 
+```{r}
+#| eval: false
+#| echo: false
+# what are figure defaults?
+knitr::opts_chunk$get(c("fig.width", "fig.height", "fig.align")) |> unlist()
+```
+
+
 # Plots for univariate response models {#sec-linear-models-plots}
 
 For a univariate linear model fit using `lm()`, `glm()` and similar functions, the standard `plot()`
@@ -139,7 +147,7 @@ par(op)
 Some points to note:
 
 * A few observations (minister, reporter, conductor) are flagged in multiple panels
-* The red trend line in the scale-location plot indicates that residual variance is not constant, but rather increases from both ends. This is a consequence of the fact that `prestige` is measured as a percentage, bounded at [0, 100], and the standard deviation of a percentage $p$ is proportional to $\sqrt{p \times (1-p)}$.
+* The `r colorize("red")` trend line in the scale-location plot indicates that residual variance is not constant, but rather increases from both ends. This is a consequence of the fact that `prestige` is measured as a percentage, bounded at [0, 100], and the standard deviation of a percentage $p$ is proportional to $\sqrt{p \times (1-p)}$.
 
 #### Example: Canadian occupational prestige {#sec-prestige2}
 
@@ -475,7 +483,7 @@ effects, they are not large in relation to the scale of `prestige` which ranges 
 ## Spread-level plot
 
 
-## Added-variable plots {#sec-avplots}
+## Added-variable and related plots {#sec-avplots}
 
 In multiple regression problems, it is most often useful to construct a scatterplot matrix
 and examine the plot of the response vs. each of the predictors as well as those
@@ -699,6 +707,8 @@ is to fit a smoothed curve through the points in the AV plot as shown in @fig-pr
 
 ```{r}
 #| label: fig-prestige-av-income
+#| fig-width: 7
+#| fig-height: 6
 #| out-width: "75%"
 #| fig-cap: "Added-variable plot for income, with a loess smooth."
 op <- par(mar=c(4, 4, 1, 0) + 0.5)
@@ -711,7 +721,7 @@ lines(smooth, col = "red", lwd = 2.5)
 ```
 
 However, this use of AV plots to diagnose nonlinearity or suggest transformations can be misleading 
-[@Cook-1996]. Curvature in these plots is an indication of some model deficiency,
+[@Cook-1996]. Curvature in these plots is an indication of _some_ model deficiency,
 but unless the predictors are uncorrelated, they cannot determine the form of a possible
 transformation of the predictors.
 
@@ -731,13 +741,20 @@ and residuals $\mathbf{e}$ in this plot are the same as those in the full model.
 
 C+R plots are produced by `car::crPlots()` and `car::crPlot()`.
 @fig-prestige-crplot shows this just for income in the model `mod1`.
+(These plots for education and women show no strong evidence of curvilinearity.)
+The dashed blue line is the linear _partial fit_, $\hat{b}_i \mathbf{x}_i$,
+whose slope $\hat{b}_2 = 0.0013$ is the same as that for income in `mod1`.
+The solid `r colorize("red")` curve is the loess smooth through the points.
+The same points are identified as noteworthy as in AV plot in @fig-prestige-av-income.
 
 ```{r}
 #| label: fig-prestige-crplot
+#| fig-width: 7
+#| fig-height: 6
 #| out-width: "75%"
 #| results: hide
 #| fig-keep: all
-#| fig-cap: "Component + residual plot for income..."
+#| fig-cap: "Component + residual plot for income in the model for the quantitative predictors of prestige. The dashed line (blue) is the partial linear fit for income. The solid (red) curve is the loess smooth."
 crPlot(mod1, "income",
        smooth = TRUE,
        order = 2,
@@ -746,6 +763,12 @@ crPlot(mod1, "income",
        id = list(n=2, cex = 1.2),
        cex.lab = 1.5) 
 ```
+
+The partial relation between prestige and income is clearly curved, so it would be appropriate
+to transform income or to include a polynomial (quadratic) term and refit
+the model. As suggested earlier (**where**?) it makes sense statistically and substantively
+to model the effect of income on a log scale, so then the slope for `log(income)`
+would measure the increment in prestige for a constant _percentage increase_ in income.
 
 
 ## Marginal effect plots

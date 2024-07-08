@@ -50,10 +50,11 @@ par(op)
 
 # Component + Residual plot
 
-crPlots(mod1, terms = ~education + income,
+crPlots(mod1, terms = ~education + income + women,
         smooth = TRUE,
         pch = 19,
-        id = list(n=2))
+        id = list(n=2),
+        layout = c(2,2))
 
 crPlot(mod1, "income",
        smooth = TRUE,
@@ -71,5 +72,11 @@ crPlot(mod1, "income",
        cex.lab = 1.5)
 
 
-        
+crPlot(mod1, "women",
+       order = 2,
+       pch = 19,
+       col.lines = c("blue", "red"),
+       id = list(n=2, cex = 1.2),
+       cex.lab = 1.5)
+
 

@@ -31,7 +31,9 @@ knitr::opts_chunk$set(
   warning = FALSE,
   error = FALSE,
   fig.align = 'center',
-  fig.path = "figs/"
+  fig.path = "figs/",
+  fig.width = 7,
+  fig.height = 5
   # fig.retina = 0.8, # figures are either vectors or 300 dpi diagrams
   # out.width = "70%",
   # fig.width = 6,
