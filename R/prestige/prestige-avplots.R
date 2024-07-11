@@ -79,4 +79,11 @@ crPlot(mod1, "women",
        id = list(n=2, cex = 1.2),
        cex.lab = 1.5)
 
+# test quadratic effect of women
+
+mod2 <- lm(prestige ~ education + income + poly(women,2),
+           data=Prestige)
+Anova(mod2)
+
+anova(mod1, mod2)
 
