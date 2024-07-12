@@ -3,7 +3,7 @@
 #' ---
 
 library("car")
-library("effects")  # effect plots
+library(effects)  # effect plots
 library(dplyr)
 library(lattice)
 data(Prestige, package="carData")
@@ -96,6 +96,8 @@ predictorEffects(prestige.mod3, ~women,
 # try marginaleffects
 
 library(marginaleffects)
+
+plot_predictions(prestige.mod2, condition = "education", points = .4)
 
 #pred <- predictions(prestige.mod3)
 plot_predictions(prestige.mod3, condition = "education", points = .4)
