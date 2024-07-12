@@ -23,7 +23,7 @@ _Added-variable plots_ (also called _partial regression plots_) allow you to vis
 between the response and a predictor by adjusting (controlling for) all other predictors.
 
 * in this same situation, you can more easily understand their separate impact
-on the response by plotting the _marginal effects_ of one or more focal variables, averaging
+on the response by plotting the _marginal predicted effects_ of one or more focal variables, averaging
 over other variables not shown in a given plot. 
 
 * when there are highly correlated predictors, some specialized plots are useful to
@@ -32,6 +32,27 @@ understand the nature of _multicolinearity_.
 The classic reference on regression diagnostics is @Belsley-etal:80.
 My favorite modern texts are the brief @Fox2020 and the more complete @FoxWeisberg:2018,
 both of which are supported by the **car** package [@R-car].
+
+**Packages**
+
+In this chapter I use the following packages. Load them now:
+
+```{r load-pkgs}
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(car)
+library(effects)
+library(ggeffects)
+library(marginaleffects)
+```
+
+```{r bib-pkgs}
+#| echo: false
+# to generate .bib items
+library(ggeffects)
+library(marginaleffects)
+```
 
 ## The "regression quartet"
 
@@ -787,12 +808,33 @@ Imagine that in a model we have a particular subset of predictors (_focal predic
 on the response variable we wish to visualize. The essence of an effect display is that we calculate
 the predicted values (and standard errors) of the response for the model term(s) involving the
 focal predictors (and all low-order relatives, e.g, main effects that are marginal to an interaction)
-as those predictors are allowed to vary over their range.
+as those predictors are allowed to vary over a grid covering their range.
 
-For a given plot, the other, non-focal variables are "controlled" 
+For a given plot, the other, non-focal variables are "controlled"  
 by being fixed at typical values.
-For example, a quantitative predictor could be fixed at it's mean or median value.
+For example, a quantitative predictor could be fixed at it's mean, median or some representative value.
+A factor could be fixed at equal proportions of its levels or its proportions in the data.
+The result, when plotted, shows the predicted effects of the focal variables,
+either with multiple lines or in a faceted display, but with all the other variables controlled,
+adjusted for or averaged over. For interaction effects all low-order relatives are typically included
+in the fitted values for the term being graphed.
 
+In practical terms, the focal variables varied over their ranges and the other variables held
+fixed define a scoring data frame $\mathbf{X}^\bullet$ and the fitted values for a model term
+are calculated as 
+$\widehat{\mathbf{y}}^\bullet = \mathbf{X}^\bullet \hat{\mathbf{b}}$
+using `predict(model, newdata = X, se.fit = TRUE)`, which also calculates the standard errors
+Consequently, predictor effect values can be obtained for any modelling function that has
+`predict()` and `vcov()` methods.
+
+As @FoxWeisberg2018 note, effect displays can be combined with partial residuals to visualize both
+fit and potential lack of fit simultaneously, by plotting residuals from a model around
+2D slices of the fitted response surface.
+
+There are several implementations of effect displays in R, whose details, terminology
+and ease of use vary.
+**ggeffects** [@R-ggeffects]
+**marginaleffects** [@R-marginaleffects]
 
 
 
