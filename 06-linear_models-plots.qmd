@@ -710,10 +710,10 @@ the orientation of the conditional data ellipse.
 #| fig-height: 10
 #| out-width: "100%"
 #| fig-cap: "Added-variable plot for the quantitative predictors in the `Prestige` data."
-mod1 <- lm(prestige ~ education + income + women,
+prestige.mod1 <- lm(prestige ~ education + income + women,
            data=Prestige)
 
-avPlots(mod1, 
+avPlots(prestige.mod1, 
   ellipse = list(levels = 0.68),
   id = list(n = 2, cex = 1.2),
   pch = 19,
@@ -732,7 +732,7 @@ is to fit a smoothed curve through the points in the AV plot as shown in @fig-pr
 #| out-width: "75%"
 #| fig-cap: "Added-variable plot for income, with a loess smooth."
 op <- par(mar=c(4, 4, 1, 0) + 0.5)
-res <- avPlot(mod1, "income",
+res <- avPlot(prestige.mod1, "income",
               ellipse = list(levels = 0.68),
               pch = 19,
               cex.lab = 1.5)
@@ -760,10 +760,10 @@ The C+R plot has the same desirable properties as the AV plot: The slope $\hat{b
 and residuals $\mathbf{e}$ in this plot are the same as those in the full model.
 
 C+R plots are produced by `car::crPlots()` and `car::crPlot()`.
-@fig-prestige-crplot shows this just for income in the model `mod1`.
+@fig-prestige-crplot shows this just for income in the model `prestige.mod1`.
 (These plots for education and women show no strong evidence of curvilinearity.)
 The dashed `r colorize("blue")` line is the linear _partial fit_, $\hat{b}_i \mathbf{x}_i$,
-whose slope $\hat{b}_2 = 0.0013$ is the same as that for income in `mod1`.
+whose slope $\hat{b}_2 = 0.0013$ is the same as that for income in `prestige.mod1`.
 The solid `r colorize("red")` curve is the loess smooth through the points.
 The same points are identified as noteworthy as in AV plot in @fig-prestige-av-income.
 
@@ -775,7 +775,7 @@ The same points are identified as noteworthy as in AV plot in @fig-prestige-av-i
 #| results: hide
 #| fig-keep: all
 #| fig-cap: "Component + residual plot for income in the model for the quantitative predictors of prestige. The dashed line (blue) is the partial linear fit for income. The solid (red) curve is the loess smooth."
-crPlot(mod1, "income",
+crPlot(prestige.mod1, "income",
        smooth = TRUE,
        order = 2,
        pch = 19,
@@ -790,6 +790,34 @@ the model. As suggested earlier (**where**?) it makes sense statistically and su
 to model the effect of income on a log scale, so then the slope for `log(income)`
 would measure the increment in prestige for a constant _percentage increase_ in income.
 
+The effect of percent women on prestige seen in @fig-prestige-avplot appears very small
+and essentially linear. However, if we wished to examine this more closely,
+we could use the C+R plot in @fig-prestige-crplot-women.
+
+```{r}
+#| label: fig-prestige-crplot-women
+#| fig-width: 7
+#| fig-height: 6
+#| out-width: "75%"
+#| results: hide
+#| fig-keep: all
+#| fig-cap: "Component + residual plot for women in the model for the quantitative predictors of prestige."
+crPlot(prestige.mod1, "women",
+       pch = 19,
+       col.lines = c("blue", "red"),
+       id = list(n=2, cex = 1.2),
+       cex.lab = 1.5)
+```
+
+This shows a slight degree of curvature, with modestly larger values in the extremes.
+If we wished to test this statistically, we could fit a model with a quadratic effect of
+women, and compare that to the linear-only effect using `anova()`.
+```{r prestige-mod2}
+prestige.mod2 <- lm(prestige ~ education + income + poly(women,2),
+           data=Prestige)
+
+anova(prestige.mod1, prestige.mod2)
+```
 
 ## Effect displays
 
@@ -819,11 +847,11 @@ either with multiple lines or in a faceted display, but with all the other varia
 adjusted for or averaged over. For interaction effects all low-order relatives are typically included
 in the fitted values for the term being graphed.
 
-In practical terms, the focal variables varied over their ranges and the other variables held
-fixed define a scoring data frame $\mathbf{X}^\bullet$ and the fitted values for a model term
-are calculated as 
+In practical terms, a scoring matrix $\mathbf{X}^\bullet$ is defined by
+the focal variables varied over their ranges and the other variables held
+fixed.  The fitted values for a model term are then calculated as 
 $\widehat{\mathbf{y}}^\bullet = \mathbf{X}^\bullet \hat{\mathbf{b}}$
-using 
+using the equivalent of
 ```{r}
 #| eval: false
 predict(model, newdata = X, se.fit = TRUE) 
@@ -836,7 +864,7 @@ over 100 different model types in various packages.
 As @FoxWeisberg2018 note, effect displays can be combined with partial residuals to visualize _both_
 fit and potential lack of fit simultaneously, by plotting residuals from a model around
 2D slices of the fitted response surface. This adds the benefits of C+R plots, in that we can
-see the impact of unmodeled curvilinearity and interactions to those of predictor effect displays.
+see the impact of unmodeled curvilinearity and interactions in addition to those of predictor effect displays.
 
 There are several implementations of effect displays in R, whose details, terminology
 and ease of use vary:
@@ -844,6 +872,12 @@ and ease of use vary:
 **marginaleffects** [@R-marginaleffects] is similar and also provides estimation of marginal slopes, contrasts, odds ratios, etc. Both have `plot()` methods based on `ggplot2`.
 My favorite is the **effects** [@R-effects] package, which alone provides partial residuals,
 and is somewhat easier to use, though it uses **lattice** graphics.
+
+
+
+
+See [Predictor Effects Graphics Gallery](https://cran.r-project.org/web/packages/effects/vignettes/predictor-effects-gallery.pdf)
+for details of the computations for effect displays.
 
 
 <!-- ## Outliers, leverage influence -->

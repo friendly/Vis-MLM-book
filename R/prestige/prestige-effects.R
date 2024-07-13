@@ -6,6 +6,8 @@ library("car")
 library(effects)  # effect plots
 library(dplyr)
 library(lattice)
+library(marginaleffects)
+
 data(Prestige, package="carData")
 
 #Prestige$type <- ordered(Prestige$type, levels=c("bc", "wc", "prof")) # make ordered factor
@@ -13,13 +15,47 @@ Prestige$type <- factor(Prestige$type, levels=c("bc", "wc", "prof")) #  just reo
 
 prestige.mod2 <- lm(prestige ~ education + women +
                     log(income)*type, data=Prestige)
-summary(prestige.mod2)
+Anova(prestige.mod2)
+
+# mechanics of effects
+
+X <- expand.grid(
+  education = seq(8, 16, 2),
+  income = mean(Prestige$income),
+  women = mean(Prestige$women),
+  type = "wc") |> print(digits = 3)
+
+pred <- predict(prestige.mod3, newdata=X, se.fit = TRUE)
+cbind(X, fit = pred$fit, se = pred$se.fit) |> print(digits=3)
+
+# simpler with marginal effects
+datagrid(education = seq(8, 16, 2),
+        income = mean(Prestige$income),
+        women = mean(Prestige$women),
+        type = "wc")
+
+# doesn't give the same as predict()
+predictions(prestige.mod2, newdata = X)
+
+predictorEffect("education", prestige.mod2, 
+                 focal.levels = seq(8, 16, 2)) |>
+  as.data.frame()
+
+Effect("education", prestige.mod2, 
+                xlevels = list(education = seq(8, 16, 2,),
+                               type = "wc")) |>
+  as.data.frame()
 
 
+# simplest plot
 plot(allEffects(prestige.mod2))
+
+
 
 #' Effect of `education` averaged over others
 mod2.eff1 <- predictorEffect("education", prestige.mod2)
+#as.data.frame(mod2.eff1)
+
 plot(mod2.eff1)
 
 #' Effect of `education`, but showing partial residuals. In some cases, this will help spot influential cases
