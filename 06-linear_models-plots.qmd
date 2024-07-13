@@ -819,6 +819,10 @@ prestige.mod2 <- lm(prestige ~ education + income + poly(women,2),
 anova(prestige.mod1, prestige.mod2)
 ```
 
+This model ignores the `type` of occupation ("bc", "wc", "prof")
+as well as any possible interactions of type with other predictors. We examine this next,
+using effect displays.
+
 ## Effect displays
 
 For two predictors it is possible, even if awkward,
@@ -861,6 +865,24 @@ Consequently, predictor effect values can be obtained for _any_ modelling functi
 `predict()` and `vcov()` methods. To date, effect displays are available for
 over 100 different model types in various packages.
 
+To illustrate the mechanics for the effect of education in the `prestige.mod1` model,
+construct a data frame varying education, but fixing income and women at their means:
+
+```{r effect-calc}
+X <- expand.grid(
+  education = seq(8, 16, 2),
+  income = mean(Prestige$income),
+  women = mean(Prestige$women)) |> print(digits = 3)
+```
+
+`predict()` then give the fitted values for a simple effect plot of prestige against education.
+`predict.lm()` returns list, so it is necessary to massage this to a data frame for graphing.
+```{r}
+pred <- predict(prestige.mod1, newdata=X, se.fit = TRUE)
+cbind(X, fit = pred$fit, se = pred$se.fit) |> print(digits=3)
+```
+
+
 As @FoxWeisberg2018 note, effect displays can be combined with partial residuals to visualize _both_
 fit and potential lack of fit simultaneously, by plotting residuals from a model around
 2D slices of the fitted response surface. This adds the benefits of C+R plots, in that we can
@@ -872,12 +894,48 @@ and ease of use vary:
 **marginaleffects** [@R-marginaleffects] is similar and also provides estimation of marginal slopes, contrasts, odds ratios, etc. Both have `plot()` methods based on `ggplot2`.
 My favorite is the **effects** [@R-effects] package, which alone provides partial residuals,
 and is somewhat easier to use, though it uses **lattice** graphics.
-
-
-
-
 See [Predictor Effects Graphics Gallery](https://cran.r-project.org/web/packages/effects/vignettes/predictor-effects-gallery.pdf)
 for details of the computations for effect displays.
+
+To illustrate effect plots, I consider a more complex model, 
+allowing a quadratic effect of women, representing income on a $\log_{10}$ scale,
+and allowing this to interact with type of occupation.
+
+```{r}
+prestige.mod3 <- lm(prestige ~ education + poly(women,2) +
+                      log10(income)*type, data=Prestige)
+
+# test model terms
+Anova(prestige.mod3)
+
+# examine coefficients
+lmtest::coeftest(prestige.mod3)
+```
+
+For education:
+```{r}
+#| label: fig-prestige-effplot-educ
+#| out-width: "75%"
+#| fig-cap: Predictor effect plot for education ...
+predictorEffects(prestige.mod3, ~ education,
+                 residuals = TRUE,
+                 confidence.level = 0.68) |>
+  plot(partial.residuals = list(pch = 16, col="blue"),
+       id=list(n=4, col="black")) 
+```
+
+for income:
+
+```{r}
+#| label: fig-prestige-effplot-inc
+#| out-width: "75%"
+#| fig-cap: Predictor effect plot for income ...
+predictorEffects(prestige.mod3, ~ income,
+                 confidence.level = 0.68) |>
+  plot(lines=list(multiline=TRUE, lwd=3),
+       confint=list(style="bands"),
+       key.args = list(x=.7, y=.35)) 
+```
 
 
 <!-- ## Outliers, leverage influence -->

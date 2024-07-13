@@ -13,31 +13,40 @@ data(Prestige, package="carData")
 #Prestige$type <- ordered(Prestige$type, levels=c("bc", "wc", "prof")) # make ordered factor
 Prestige$type <- factor(Prestige$type, levels=c("bc", "wc", "prof")) #  just reorder levels
 
+
+prestige.mod1 <- lm(prestige ~ education + income + women, data=Prestige)
+
 prestige.mod2 <- lm(prestige ~ education + women +
-                    log(income)*type, data=Prestige)
+                    log10(income)*type, data=Prestige)
 Anova(prestige.mod2)
+
+# try quadratic in women
+prestige.mod3 <- lm(prestige ~ education + poly(women,2) +
+                      log10(income)*type, data=Prestige)
+
+#Anova(prestige.mod3)
+
+lmtest::coeftest(prestige.mod3)
 
 # mechanics of effects
 
 X <- expand.grid(
   education = seq(8, 16, 2),
   income = mean(Prestige$income),
-  women = mean(Prestige$women),
-  type = "wc") |> print(digits = 3)
+  women = mean(Prestige$women)) |> print(digits = 3)
 
-pred <- predict(prestige.mod3, newdata=X, se.fit = TRUE)
+pred <- predict(prestige.mod1, newdata=X, se.fit = TRUE)
 cbind(X, fit = pred$fit, se = pred$se.fit) |> print(digits=3)
 
 # simpler with marginal effects
 datagrid(education = seq(8, 16, 2),
         income = mean(Prestige$income),
-        women = mean(Prestige$women),
-        type = "wc")
+        women = mean(Prestige$women))
 
-# doesn't give the same as predict()
-predictions(prestige.mod2, newdata = X)
 
-predictorEffect("education", prestige.mod2, 
+predictions(prestige.mod1, newdata = X)
+
+predictorEffect("education", prestige.mod1, 
                  focal.levels = seq(8, 16, 2)) |>
   as.data.frame()
 
@@ -82,17 +91,6 @@ predictorEffects(prestige.mod2, ~ women,
 
 #' Effect of `income` (by `type`) averaged over others
 
-# plot(predictorEffect("income", prestige.mod2, 
-#                      confidence.level = 0.68),
-#      lines=list(multiline=TRUE, lwd=3),
-#      confint=list(style="bands"),
-#      key.args = list(x=.7, y=.35))
-
-# plot(predictorEffects(prestige.mod2, ~ income,
-#                       confidence.level = 0.68),
-#      lines=list(multiline=TRUE, lwd=3),
-#      confint=list(style="bands"),
-#      key.args = list(x=.7, y=.35))
 
 predictorEffects(prestige.mod2, ~ income,
                       confidence.level = 0.68) |>
@@ -101,32 +99,56 @@ predictorEffects(prestige.mod2, ~ income,
      key.args = list(x=.7, y=.35))
 
 
-
-plot(predictorEffects(prestige.mod2, ~ type,
-                      confidence.level = 0.68,
-                      xlevels = 4), 
-     lines=list(multiline=TRUE),
-     axes=list(grid=TRUE),
-     confint=list(style="bars"))
-
 predictorEffects(prestige.mod2, ~ type,
                       confidence.level = 0.68,
-                      xlevels = 4) |>
+                      xlevels = 3) |>
   plot(lines=list(multiline=TRUE),
-     axes=list(grid=TRUE),
-     confint=list(style="bars"),
-     key.args = list(space = "top", columns = 4))
+       confint=list(style="bars"), 
+       symbols = list(cex = 1.5, pch = 16),
+       key.args = list(space = "top", columns = 3))
 
 
+##################################################
 # try quadratic in women
 prestige.mod3 <- lm(prestige ~ education + poly(women,2) +
-                      log(income)*type, data=Prestige)
+                      log10(income)*type, data=Prestige)
 Anova(prestige.mod3)
 
+
+predictorEffects(prestige.mod3, ~ education,
+                 residuals = TRUE,
+                 confidence.level = 0.68) |>
+  plot(partial.residuals = list(pch = 16, col="blue"),
+       id=list(n=4, col="black")) 
+
+
+predictorEffects(prestige.mod3, ~ income,
+                 confidence.level = 0.68) |>
+  plot(lines=list(multiline=TRUE, lwd=3),
+       confint=list(style="bands"),
+       key.args = list(x=.7, y=.35)) 
+
 predictorEffects(prestige.mod3, ~women,
-                      residuals = TRUE) |>
+                 residuals = TRUE) |>
   plot(partial.residuals = list(pch = 16, col="blue", cex=0.8),
        id=list(n=4, col="black"))
+
+predictorEffects(prestige.mod3, ~ type,
+                 confidence.level = 0.68,
+                 xlevels = 3) |>
+  plot(lines=list(multiline=TRUE),
+       confint=list(style="bars"), 
+       symbols = list(cex = 1.5, pch = 16),
+       key.args = list(space = "top", columns = 3))
+
+# plot them together
+predictorEffects(prestige.mod3, ~ education + women,
+                 residuals = TRUE,
+                 confidence.level = 0.68) |>
+  plot(partial.residuals = list(pch = 16, col="blue"),
+       id=list(n=4, col="black")) 
+
+
 
 
 # try marginaleffects
