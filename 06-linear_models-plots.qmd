@@ -835,9 +835,14 @@ in the model, when some effects are curvilinear,
 or when the main substantive interest is focused understanding on one or more
 main effects or interaction terms in the presence of others.
 The method of _effect displays_, largely introduced by John Fox [@Fox:87;@Fox:03:effects;@FoxWeisberg2018]
-is a generally useful solution to this problem. These plots are nearly always easier to understand than
+is a generally useful solution to this problem. [^effects]
+These plots are nearly always easier to understand than
 tables of coefficients.
 
+[^effects]: Earlier, but less general expression of these ideas go back to the use of
+**adjusted means** in analysis of covariance [@Fisher-1936]
+or **least squares means** or **population marginal means**
+in analysis of variance [@Searle-etal:80]
 
 The idea of effect displays is quite simple, but very general and handles models of arbitrary complexity.
 Imagine that in a model we have a particular subset of predictors (_focal predictors_) whose effects
@@ -958,7 +963,7 @@ lmtest::coeftest(prestige.mod3)
 
 It is easiest to produce effect displays for all terms in the model using `allEffects()`,
 accepting all defaults. This gives (@fig-prestige-allEffects) effect plots for the main effects of education and income and the interaction of income with type, with the non-focal variables held fixed.
-Each plot shows the fitted regression relation and a pointwise confidence band using the
+Each plot shows the fitted regression relation and a 95% pointwise confidence band using the
 standard errors. Rug plots at the bottom show the locations of observations for the horizontal 
 focal variable.
 
@@ -967,7 +972,7 @@ focal variable.
 #| fig-height: 8
 #| fig-width: 8
 #| out-width: "100%"
-#| fig-cap: Predictor effect plot for all terms in the model
+#| fig-cap: Predictor effect plot for all terms in the model with 95% confidence bands.
 allEffects(prestige.mod3) |>
   plot()
 ```
@@ -975,7 +980,7 @@ allEffects(prestige.mod3) |>
 The effect for women, holding education, income and type constant looks to be quite strong.
 But note that these plots use different vertical scales for prestige in each plot and the
 range in the plot for women is much smaller than in the others.
-The interaction is graphs showing separate curves for the three levels of type.
+The interaction is graphed showing separate curves for the three levels of type.
 
 For a more detailed look, it is useful to make separate plots for the predictors in the model,
 which allows customizing options for calculation and display.
@@ -988,7 +993,7 @@ and point identification of those points with the largest Mahalanobis distances 
 
 ```{r}
 #| label: fig-prestige-effplot-educ
-#| out-width: "75%"
+#| out-width: "80%"
 #| fig-cap: Predictor effect plot for education displaying partial residuals. The blue line shows the slice of the fitted regression surface where other variables are held fixed. The red curve shows a loess smooth of the partial residuals.
 lattice::trellis.par.set(par.xlab.text=list(cex=1.5),
                          par.ylab.text=list(cex=1.5))
@@ -1000,10 +1005,11 @@ predictorEffects(prestige.mod3, ~ education,
 ```
 
 The effect plot for women in this model is shown in @fig-prestige-effplot-women.
-This uses the same vertical scale as in @fig-prestige-effplot-educ.
+This uses the same vertical scale as in @fig-prestige-effplot-educ,
+showing a more modest effect of percent women.
 ```{r}
 #| label: fig-prestige-effplot-women
-#| out-width: "75%"
+#| out-width: "80%"
 #| fig-cap: Predictor effect plot for women with partial residuals
 predictorEffects(prestige.mod3, ~women,
                  residuals = TRUE) |>
@@ -1011,11 +1017,12 @@ predictorEffects(prestige.mod3, ~women,
        id=list(n=4, col="black"))
 ```
 
+<!--
 for income:
 
 ```{r}
 #| label: fig-prestige-effplot-inc
-#| out-width: "75%"
+#| out-width: "80%"
 #| fig-cap: Predictor effect plot for income ...
 predictorEffects(prestige.mod3, ~ income,
                  confidence.level = 0.68) |>
@@ -1023,6 +1030,7 @@ predictorEffects(prestige.mod3, ~ income,
        confint=list(style="bands"),
        key.args = list(x=.7, y=.35)) 
 ```
+-->
 
 
 Because of the interaction with `type`, the fitted effects for `income` are calculated
@@ -1030,12 +1038,14 @@ for the three types of occupation. It is easiest to compare these in the a singl
 plot (using `multiline = TRUE`),
 rather than in separate panels as in @fig-prestige-allEffects.
 Income is represented as `log10(income)` in the model `prestige.mod3`, and it is also easier to
-understand the interaction by plotting income on a log scale.  ...
+understand the interaction by plotting income on a log scale, using the `axes` argument to
+specify a transformation of the $x$ axis. I use 68% confidence bands here to make the differences
+among type more apparent.
 
 ```{r}
 #| label: fig-prestige-effplot-inc-log
-#| out-width: "75%"
-#| fig-cap: Predictor effect plot for income ...
+#| out-width: "80%"
+#| fig-cap: Predictor effect plot for income, plotted on a log scale.
 predictorEffects(prestige.mod3, ~ income,
                  confidence.level = 0.68) |>
   plot(lines=list(multiline=TRUE, lwd=3),
@@ -1045,6 +1055,11 @@ predictorEffects(prestige.mod3, ~ income,
        key.args = list(x=.7, y=.35)) 
 ```
 
+This provides a clear interpretation of the interaction, represented by the coefficients shown above for
+`log10(income):typewc` and `log10(income):typeprof` in the model. For all three occupation types,
+prestige increases linearly with log income, meaning that increasing income by 10% (say)
+gives and increase of $40.33 / 10 = 4.033$ in prestige. The slope for professional workers
+is less steep, suggesting that for these workers, prestige increases less with multiples of income.
 
 
 <!-- ## Outliers, leverage influence -->
