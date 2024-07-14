@@ -114,6 +114,11 @@ prestige.mod3 <- lm(prestige ~ education + poly(women,2) +
                       log10(income)*type, data=Prestige)
 Anova(prestige.mod3)
 
+## allEffects
+
+allEffects(prestige.mod3) |>
+  plot()
+
 
 predictorEffects(prestige.mod3, ~ education,
                  residuals = TRUE,
@@ -127,6 +132,23 @@ predictorEffects(prestige.mod3, ~ income,
   plot(lines=list(multiline=TRUE, lwd=3),
        confint=list(style="bands"),
        key.args = list(x=.7, y=.35)) 
+
+predictorEffects(prestige.mod3, ~ income) |>
+  plot(lines=list(multiline=TRUE, lwd=3),
+       confint=list(style="bands"),
+       key.args = list(x=.7, y=.35)) 
+
+# plot income on log scale
+
+
+predictorEffects(prestige.mod3, ~ income,
+                 confidence.level = 0.68) |>
+  plot(lines=list(multiline=TRUE, lwd=3),
+       confint=list(style="bands"),
+       axes=list(
+          x=list(income=list(transform=list(trans=log, inverse=exp)))),
+       key.args = list(x=.7, y=.35)) 
+
 
 predictorEffects(prestige.mod3, ~women,
                  residuals = TRUE) |>

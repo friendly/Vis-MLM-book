@@ -197,9 +197,9 @@ occupations, but with attention to the scales of measurement and possibly more c
 
 ```{r prestige}
 data(Prestige, package="carData")
-# `type` is really an ordered factor. Make it so.
-# Prestige$type <- ordered(Prestige$type,
-#                          levels=c("bc", "wc", "prof"))
+# Reorder levels of type
+Prestige$type <- factor(Prestige$type, 
+                        levels=c("bc", "wc", "prof")) 
 str(Prestige)
 ```
 
@@ -786,7 +786,7 @@ crPlot(prestige.mod1, "income",
 
 The partial relation between prestige and income is clearly curved, so it would be appropriate
 to transform income or to include a polynomial (quadratic) term and refit
-the model. As suggested earlier (**where**?) it makes sense statistically and substantively
+the model. As suggested earlier (@sec-prestige) it makes sense statistically and substantively
 to model the effect of income on a log scale, so then the slope for `log(income)`
 would measure the increment in prestige for a constant _percentage increase_ in income.
 
@@ -825,15 +825,19 @@ using effect displays.
 
 ## Effect displays
 
+
 For two predictors it is possible, even if awkward,
 to display the fitted response surface in a 3D plot or faceted 2D views
-in what I call a _full model plot_,
-even if one or both predictors have curvilinear effects. For more than two predictors
+in what I call a _full model plot_.
+For more than two predictors
 such displays become cumbersome if not impractical, particularly when there are interactions
-in the model, or when the main substantive interest is focused understanding on one or more
+in the model, when some effects are curvilinear,
+or when the main substantive interest is focused understanding on one or more
 main effects or interaction terms in the presence of others.
 The method of _effect displays_, largely introduced by John Fox [@Fox:87;@Fox:03:effects;@FoxWeisberg2018]
-is a generally useful solution to this problem.
+is a generally useful solution to this problem. These plots are nearly always easier to understand than
+tables of coefficients.
+
 
 The idea of effect displays is quite simple, but very general and handles models of arbitrary complexity.
 Imagine that in a model we have a particular subset of predictors (_focal predictors_) whose effects
@@ -855,7 +859,7 @@ In practical terms, a scoring matrix $\mathbf{X}^\bullet$ is defined by
 the focal variables varied over their ranges and the other variables held
 fixed.  The fitted values for a model term are then calculated as 
 $\widehat{\mathbf{y}}^\bullet = \mathbf{X}^\bullet \hat{\mathbf{b}}$
-using the equivalent of
+using the equivalent of:
 ```{r}
 #| eval: false
 predict(model, newdata = X, se.fit = TRUE) 
@@ -876,11 +880,12 @@ X <- expand.grid(
   print(digits = 3)
 ```
 
-`predict()` then give the fitted values for a simple effect plot of prestige against education.
+`predict()` then gives the fitted values for a simple effect plot of prestige against education.
 `predict.lm()` returns list, so it is necessary to massage this to a data frame for graphing.
 ```{r}
 pred <- predict(prestige.mod1, newdata=X, se.fit = TRUE)
-cbind(X, fit = pred$fit, se = pred$se.fit) |> print(digits=3)
+cbind(X, fit = pred$fit, se = pred$se.fit) |> 
+  print(digits=3)
 ```
 
 
@@ -890,42 +895,120 @@ fit and potential lack of fit simultaneously, by plotting residuals from a model
 see the impact of unmodeled curvilinearity and interactions in addition to those of predictor effect displays.
 
 There are several implementations of effect displays in R, whose details, terminology
-and ease of use vary:
+and ease of use vary. Among these,
 **ggeffects** [@R-ggeffects] calculates adjusted predicted values under several methods for conditioning.
 **marginaleffects** [@R-marginaleffects] is similar and also provides estimation of marginal slopes, contrasts, odds ratios, etc. Both have `plot()` methods based on `ggplot2`.
 My favorite is the **effects** [@R-effects] package, which alone provides partial residuals,
 and is somewhat easier to use, though it uses **lattice** graphics.
-See [Predictor Effects Graphics Gallery](https://cran.r-project.org/web/packages/effects/vignettes/predictor-effects-gallery.pdf)
+See the vignette [Predictor Effects Graphics Gallery](https://cran.r-project.org/web/packages/effects/vignettes/predictor-effects-gallery.pdf)
 for details of the computations for effect displays.
+
+The main functions for computing fitted effects are `predictorEffect()` (for one predictor) and
+`predictorEffects()` (for one or more). For a model `mod` with formula `y ~ x1 + x2 + x3 + x1:x2`
+`predictorEffects(mod, ~ x1)` recognizes that an interaction is present and
+calculates the fitted values for combinations of `x1` and `x2`. This returns an object of
+class `"eff"` which can be graphed using the `plot.eff()` method.
+The effect displays for several predictors can be plotted together,
+as with `avplots()` (@fig-prestige-avplot) by including them in the plot formula,
+e.g., `predictorEffects(mod, ~ x1 + x3)`.
+Another function, `allEffects()` calculates the effects for each high-order term in the model,
+so `allEffects(mod) |> plot()` is handy for getting a visual overview of a fitted model.
+
+### Prestige data
 
 To illustrate effect plots, I consider a more complex model, 
 allowing a quadratic effect of women, representing income on a $\log_{10}$ scale,
 and allowing this to interact with type of occupation.
-
-```{r}
+`Anova()` provides the Type II tests of each of the model terms.
+```{r prestige-mod3}
 prestige.mod3 <- lm(prestige ~ education + poly(women,2) +
-                      log10(income)*type, data=Prestige)
+                       log10(income)*type, data=Prestige)
 
 # test model terms
 Anova(prestige.mod3)
+```
 
-# examine coefficients
+The fitted coefficients, standard errors and $t$-tests from `coeftest()` are shown below.
+The coefficient for education means that an
+increase of one year of education, holding other predictors fixed,
+gives an expected increase of 2.96 in prestige.
+The other coefficients are more difficult to understand.
+For example, the effect of women is represented by
+two coefficients for the linear and quadratic components of `poly(women, 2)`.
+The interpretation of coefficients of terms involving `type` 
+depend on the contrasts used. Here, with the default treatment contrasts,
+they represent comparisons with `type = "bc"` as the reference level.
+It is not obvious how to understand the interaction effects like
+`log10(income):typeprof`.
+
+<!-- Note that in this model, the linear effect of `women` is highly significant -->
+<!-- and the quadratic effect is nearly so. -->
+<!-- The coefficient for `log10(income) = 40.33` means that multiplying income by -->
+<!-- 10 gives an expected increase of over 40 in the prestige of an occupation. -->
+<!-- With `type = "bc"` as the reference level, the coefficient for -->
+<!-- `typeprof` means that professional occupations are rated 74.3 higher -->
+<!-- than blue collar ones; the interaction coefficient for -->
+<!-- `log10(income):typeprof` pertains to the difference in slope -->
+<!-- for professional vs. blue collar. -->
+
+
+```{r prestige-mod3-coef}
 lmtest::coeftest(prestige.mod3)
 ```
 
-For education:
+It is easiest to produce effect displays for all terms in the model using `allEffects()`,
+accepting all defaults. This gives (@fig-prestige-allEffects) effect plots for the main effects of education and income and the interaction of income with type, with the non-focal variables held fixed.
+Each plot shows the fitted regression relation and a pointwise confidence band using the
+standard errors. Rug plots at the bottom show the locations of observations for the horizontal 
+focal variable.
+
+```{r}
+#| label: fig-prestige-allEffects
+#| fig-height: 8
+#| fig-width: 8
+#| out-width: "100%"
+#| fig-cap: Predictor effect plot for all terms in the model
+allEffects(prestige.mod3) |>
+  plot()
+```
+
+The effect for women, holding education, income and type constant looks to be quite strong.
+But note that these plots use different vertical scales for prestige in each plot and the
+range in the plot for women is much smaller than in the others.
+The interaction is graphs showing separate curves for the three levels of type.
+
+For a more detailed look, it is useful to make separate plots for the predictors in the model,
+which allows customizing options for calculation and display.
+Partial residuals for the observations are computed by using `residuals = TRUE` in the call
+to `predictorEffects()`. As with C+R plots, a smooth loess curve gives a visual assessment of
+linearity for a given predictor.
+A wide variety of graphing options are available in the call to `plot()`.
+@fig-prestige-effplot-educ shows the effect display for education with partial residuals
+and point identification of those points with the largest Mahalanobis distances from the centroid.
+
 ```{r}
 #| label: fig-prestige-effplot-educ
 #| out-width: "75%"
-#| fig-cap: Predictor effect plot for education ...
+#| fig-cap: Predictor effect plot for education displaying partial residuals. The blue line shows the slice of the fitted regression surface where other variables are held fixed. The red curve shows a loess smooth of the partial residuals.
 lattice::trellis.par.set(par.xlab.text=list(cex=1.5),
                          par.ylab.text=list(cex=1.5))
 
 predictorEffects(prestige.mod3, ~ education,
-                 residuals = TRUE,
-                 confidence.level = 0.68) |>
+                 residuals = TRUE) |>
   plot(partial.residuals = list(pch = 16, col="blue"),
        id=list(n=4, col="black")) 
+```
+
+The effect plot for women in this model is shown in @fig-prestige-effplot-women.
+This uses the same vertical scale as in @fig-prestige-effplot-educ.
+```{r}
+#| label: fig-prestige-effplot-women
+#| out-width: "75%"
+#| fig-cap: Predictor effect plot for women with partial residuals
+predictorEffects(prestige.mod3, ~women,
+                 residuals = TRUE) |>
+  plot(partial.residuals = list(pch = 16, col="blue", cex=0.8),
+       id=list(n=4, col="black"))
 ```
 
 for income:
@@ -941,16 +1024,27 @@ predictorEffects(prestige.mod3, ~ income,
        key.args = list(x=.7, y=.35)) 
 ```
 
-for women:
+
+Because of the interaction with `type`, the fitted effects for `income` are calculated
+for the three types of occupation. It is easiest to compare these in the a single
+plot (using `multiline = TRUE`),
+rather than in separate panels as in @fig-prestige-allEffects.
+Income is represented as `log10(income)` in the model `prestige.mod3`, and it is also easier to
+understand the interaction by plotting income on a log scale.  ...
+
 ```{r}
-#| label: fig-prestige-effplot-women
+#| label: fig-prestige-effplot-inc-log
 #| out-width: "75%"
-#| fig-cap: Predictor effect plot for women ...
-predictorEffects(prestige.mod3, ~women,
-                 residuals = TRUE) |>
-  plot(partial.residuals = list(pch = 16, col="blue", cex=0.8),
-       id=list(n=4, col="black"))
+#| fig-cap: Predictor effect plot for income ...
+predictorEffects(prestige.mod3, ~ income,
+                 confidence.level = 0.68) |>
+  plot(lines=list(multiline=TRUE, lwd=3),
+       confint=list(style="bands"),
+       axes=list(
+          x=list(income=list(transform=list(trans=log, inverse=exp)))),
+       key.args = list(x=.7, y=.35)) 
 ```
+
 
 
 <!-- ## Outliers, leverage influence -->
