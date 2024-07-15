@@ -912,10 +912,12 @@ See the vignette [Predictor Effects Graphics Gallery](https://cran.r-project.org
 for details of the computations for effect displays.
 
 The main functions for computing fitted effects are `predictorEffect()` (for one predictor) and
-`predictorEffects()` (for one or more). For a model `mod` with formula `y ~ x1 + x2 + x3 + x1:x2`
+`predictorEffects()` (for one or more). For a model `mod` with formula `y ~ x1 + x2 + x3 + x1:x2`, the call to
 `predictorEffects(mod, ~ x1)` recognizes that an interaction is present and
-calculates the fitted values for combinations of `x1` and `x2`. This returns an object of
+calculates the fitted values for combinations of `x1` and `x2`, holding `x3` fixed at its average value.
+This returns an object of
 class `"eff"` which can be graphed using the `plot.eff()` method.
+
 The effect displays for several predictors can be plotted together,
 as with `avplots()` (@fig-prestige-avplot) by including them in the plot formula,
 e.g., `predictorEffects(mod, ~ x1 + x3)`.
@@ -966,9 +968,9 @@ lmtest::coeftest(prestige.mod3)
 
 It is easiest to produce effect displays for all terms in the model using `allEffects()`,
 accepting all defaults. This gives (@fig-prestige-allEffects) effect plots for the main effects of education and income and the interaction of income with type, with the non-focal variables held fixed.
-Each plot shows the fitted regression relation and a 95% pointwise confidence band using the
+Each plot shows the fitted regression relation and a default 95% pointwise confidence band using the
 standard errors. Rug plots at the bottom show the locations of observations for the horizontal 
-focal variable.
+focal variable, which is useful when the observations are not otherwise plotted.
 
 ```{r}
 #| label: fig-prestige-allEffects
@@ -980,7 +982,8 @@ allEffects(prestige.mod3) |>
   plot()
 ```
 
-The effect for women, holding education, income and type constant looks to be quite strong.
+The effect for women, holding education, income and type constant looks to be quite strong and
+curved upwards.
 But note that these plots use different vertical scales for prestige in each plot and the
 range in the plot for women is much smaller than in the others.
 The interaction is graphed showing separate curves for the three levels of type.
@@ -988,16 +991,21 @@ The interaction is graphed showing separate curves for the three levels of type.
 For a more detailed look, it is useful to make separate plots for the predictors in the model,
 which allows customizing options for calculation and display.
 Partial residuals for the observations are computed by using `residuals = TRUE` in the call
-to `predictorEffects()`. As with C+R plots, a smooth loess curve gives a visual assessment of
+to `predictorEffects()`. The slope of the fitted line (in `r colorize("blue")`)
+is exactly coefficient for education in the full model.
+As with C+R plots, a smooth loess curve (in `r colorize("red")`) gives a visual assessment of
 linearity for a given predictor.
 A wide variety of graphing options are available in the call to `plot()`.
 @fig-prestige-effplot-educ shows the effect display for education with partial residuals
 and point identification of those points with the largest Mahalanobis distances from the centroid.
 
+
+<!-- #| fig-cap: Predictor effect plot for education displaying partial residuals. The blue line shows the slice of the fitted regression surface where other variables are held fixed. The red curve shows a loess smooth of the partial residuals. -->
+
 ```{r}
 #| label: fig-prestige-effplot-educ
 #| out-width: "80%"
-#| fig-cap: Predictor effect plot for education displaying partial residuals. The blue line shows the slice of the fitted regression surface where other variables are held fixed. The red curve shows a loess smooth of the partial residuals.
+#| fig-cap: !expr paste("Predictor effect plot for education displaying partial residuals. The", blue, "line shows the slice of the fitted regression surface where other variables are held fixed. The", red, "curve shows a loess smooth of the partial residuals.")
 lattice::trellis.par.set(par.xlab.text=list(cex=1.5),
                          par.ylab.text=list(cex=1.5))
 
@@ -1058,15 +1066,16 @@ predictorEffects(prestige.mod3, ~ income,
        key.args = list(x=.7, y=.35)) 
 ```
 
-This provides a clear interpretation of the interaction, represented by the coefficients shown above for
-`log10(income):typewc` and `log10(income):typeprof` in the model. For all three occupation types,
-prestige increases linearly with log income, meaning that increasing income by 10% (say)
+@fig-prestige-effplot-inc-log provides a clear interpretation of the interaction, represented by the coefficients shown above for
+`log10(income):typewc` and `log10(income):typeprof` in the model. Averaging over three occupation types,
+prestige increases linearly with log income with a coefficient of 40.33. This means that increasing income by 10% (say)
 gives an increase of $40.33 / 10 = 4.033$ in prestige. The slope for professional workers
-is less steep, suggesting that for these workers, prestige increases less with multiples of income.
+is less steep: the coefficient for  `log10(income):typeprof` is -17.725.
+For these workers compared with blue collar jobs, prestige increases 1.77 less with a 10% increase in income. The difference in slopes for blue collar and white collar jobs is negligible.
 
 
 <!-- ## Outliers, leverage influence -->
-```{r child="child/05-leverage.qmd"}
+```{r child="child/06-leverage.qmd"}
 
 ```
 

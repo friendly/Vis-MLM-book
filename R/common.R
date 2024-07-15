@@ -91,6 +91,11 @@ colorize <- function(text, color) {
   } else text
 }
 
+# define some color names for use in figure captions.
+red <- colorize('red')
+blue <- colorize('blue')
+green <- colorize("green")
+
 
 
 if (knitr::is_latex_output()) {
