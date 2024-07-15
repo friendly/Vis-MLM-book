@@ -1,0 +1,128 @@
+---
+title: "How to use colored text in Quarto figure captions"
+format:
+  html:
+    toc: true
+  pdf:
+    toc: true
+---
+  
+In figure captions, it is often useful to say refer to colored objects by printing
+the words in their colors.
+How can I do this with output in HTML or PDF?
+
+Define a function to colorize text, that can be used in HTML or PDF output
+
+```{r colorize}
+# colorize text: use inline as `r colorize(text, color)` to print `text` in a given `color`
+# can also be used to color a color name, as in r colorize("red")`
+colorize <- function(text, color) {
+  if (missing(color)) color <- text
+  if (knitr::is_latex_output()) {
+    sprintf("\\textcolor{%s}{%s}", color, text)
+  } else if (knitr::is_html_output()) {
+    sprintf("<span style='color: %s;'>%s</span>", color, text)
+  } else text
+}
+```
+
+In normal text, I can use `colorize()` to
+print text in `r colorize("red")`, `r colorize("blue")`, `r colorize("green")`, ... 
+
+But not in a figure caption.
+
+This works but the text is not colored in the caption of @fig-test
+
+````qmd
+#| label: fig-test
+#| out-width: "70%"
+#| fig-cap: Some points should be red, some blue, some green
+cols <- c("red", "blue", "green")
+plot(1:10, pch=16, cex = 3, col = cols)
+````
+
+```{r}
+#| label: fig-test
+#| out-width: "70%"
+#| fig-cap: Some points should be red, some blue, some green
+cols <- c("red", "blue", "green")
+plot(1:10, pch=16, cex = 3, col = cols)
+```
+
+## Inline expression in a caption
+`colorize()` doesn't work in a caption. The expression is not evaluated, and just prints in the caption
+as a literal, in code font.
+
+````qmd
+#| label: fig-test2
+#| out-width: "70%"
+#| fig-cap: Some points are `r colorize("red")`, some are `r colorize("blue")`, some are `r colorize("green")`
+cols <- c("red", "blue", "green")
+plot(1:10, pch=16, cex = 3, col = cols)
+````
+
+```{r}
+#| label: fig-test2
+#| out-width: "70%"
+#| fig-cap: Some points are `r colorize("red")`, some are `r colorize("blue")`, some are `r colorize("green")`
+cols <- c("red", "blue", "green")
+plot(1:10, pch=16, cex = 3, col = cols)
+```
+
+## Try !expr
+One solution: use the YAML `!expr` "tag" literal in `fig-cap`:
+
+````qmd
+#| label: fig-test3
+#| out-width: "70%"
+#| fig-cap: !expr paste("Some points are", colorize('red'), "some are", colorize('blue'), "some are", colorize("green"))
+cols <- c("red", "blue", "green")
+plot(1:10, pch=16, cex = 3, col = cols)
+````
+
+
+```{r}
+#| label: fig-test3
+#| out-width: "70%"
+#| fig-cap: !expr paste("Some points are", colorize('red'), "some are", colorize('blue'), "some are", colorize("green"))
+cols <- c("red", "blue", "green")
+plot(1:10, pch=16, cex = 3, col = cols)
+```
+
+## Can we simplify this?
+
+Define color names as global variables and use `glue::glue()`
+```{r}
+red <- colorize('red')
+blue <- colorize('blue')
+green <- colorize("green")
+library(glue)
+```
+
+````qmd
+#| label: fig-test4
+#| out-width: "70%"
+#| fig-cap: !expr glue("Some points are ", {red}, " some are ", {blue}, "some are ", {green})
+cols <- c("red", "blue", "green")
+plot(1:10, pch=16, cex = 3, col = cols)
+````
+Voila! This is much easier to type in captions, but need to add spaces
+
+```{r}
+#| label: fig-test4
+#| out-width: "70%"
+#| fig-cap: !expr glue("Some points are ", {red}, " some are ", {blue}, " some are ", {green})
+plot(1:10, pch=16, cex = 3, col = cols)
+```
+
+## Final solution
+
+Use the color name variables, but just use `paste()`
+
+````qmd
+#| label: fig-test4
+#| out-width: "70%"
+#| fig-cap: !expr paste("Some points are", red, "some are", blue, "some are", green)
+plot(1:10, pch=16, cex = 3, col = cols)
+````
+
