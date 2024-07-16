@@ -7,6 +7,7 @@
 library(ggplot2) 
 library(tidyverse)
 library(broom)
+library(car)
 ggplot2:: theme_set(theme_bw(base_size = 16))
 
 data(Davis, package="carData")
@@ -23,6 +24,9 @@ Davis |>
   summarise(r = cor(weight, repwt))
 
 #' ## Fit models by sex
+
+davis.modF <- lm(repwt ~ weight, data = Davis, subset = sex=="F")
+davis.modM <- lm(repwt ~ weight, data = Davis, subset = sex=="M")
 
 mods <- list(
   modF = lm(repwt ~ weight, data = Davis, subset = sex=="F"),
@@ -72,9 +76,12 @@ p3 <- Davis |>
 
 
 # influence plot
+
+influencePlot(davis.modF)
+
 davis.mod <- lm(repwt ~ weight * sex, data=Davis)  
 
-car::influencePlot(davis.mod)
+influencePlot(davis.mod)
 
 Davis[12,]
 
