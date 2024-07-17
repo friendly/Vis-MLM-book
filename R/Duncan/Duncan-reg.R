@@ -171,6 +171,8 @@ check_model(duncan.mod, check=c("linearity", "qq", "homogeneity", "outliers"))
 
 check_model(duncan.mod1)
 
+
+
 # return a list of single plots that can be plotted individually
 diagnostic_plots <- plot(check_model(duncan.mod, panel = FALSE))
 

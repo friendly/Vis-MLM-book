@@ -44,7 +44,11 @@ library(tidyr)
 library(car)
 library(effects)
 library(ggeffects)
+library(ggstats)
 library(marginaleffects)
+library(easystats)
+library(performance)
+library(modelsummary)
 ```
 
 ```{r bib-pkgs}
@@ -84,18 +88,9 @@ The base-R `plot(model)` plots are done much better in a variety of packages.
 I illustrate some versions from the **car** [@R-car] and **performance** [@Ludecke-etal-performance] packages,
 part of the **easystats** [@R-easystats] suite of packages.
 
-**Packages**:
-```{r}
-library(car)
-library(ggplot2)
-library(easystats)
-library(modelsummary)
-library(dplyr)
-library(ggstats)
-```
 
 
-#### Example: Duncan's occupational prestige {.unnumbered}
+### Example: Duncan's occupational prestige 
 
 In a classic study in sociology, @Duncan:61 used data from the U.S. Census in 1950 to study how one could
 predict the prestige of occupational categories --- which is hard to measure ---
@@ -144,6 +139,96 @@ this result.
 car::linearHypothesis(duncan.mod, "income = education")
 ```
 
+Equivalently, the linear hypothesis that $\beta_{\text{Inc}} = \beta_{\text{Educ}}$ can be tested
+with a Wald test for difference between these coefficients, expressed as
+$H_0 : \mathbf{C} \mathbf{\beta} = 0$, using $\mathbf{C} = (0, -1, 1)$.
+
+```{r duncan-wald}
+wtest <- spida2::wald(duncan.mod, c(0, -1, 1))[[1]]
+wtest$estimate
+```
+
+We can visualize this test and confidence intervals using a joint confidence ellipse for the
+coefficients for income and education in the model `duncan.mod`. In @fig-duncan-beta-diff
+the size of the ellipse is set to $\sqrt{F^{0.95}_{1,\nu}} = t^{0.95}_{\nu}$, so that
+its shadows on the horizontal and vertical axes correspond to 1D 95% confidence intervals.
+In this plot, the line through the origin with slope $= 1$ corresponds to
+equal coefficients for income and education and the line with slope $= -1$
+corresponds to their difference, $\beta_{\text{Educ}} - \beta_{\text{Inc}}$.
+The orthogonal projection of the coefficient vector 
+$(\widehat{\beta}_{\text{Inc}}, \widehat{\beta}_{\text{Educ}})$ (the center of the ellipse)
+is the point estimate of $\widehat{\beta}_{\text{Educ}} - \widehat{\beta}_{\text{Inc}}$
+and the shadow of the ellipse along this axis is the 95% confidence interval for the difference
+in slopes.
+
+
+```{r echo=-1}
+#| label: fig-duncan-beta-diff
+#| code-fold: true
+#| out-width: "80%"
+#| fig-width: 8
+#| fig-height: 7
+#| fig-cap: "Joint 95% confidence ellipse for $(\\beta_{\\text{Inc}}, \\beta_{\\text{Educ}}), together with their 1D shadows, which give 95% confidence intervals for the separate coefficients and the linear hypothesis that the coefficients are equal. Projecting the confidence ellipse along the line with unit slope gives a confidence interval for the difference between coefficients, shown by the dark red line."
+op <- par(mar = c(4,4, 1, 0)+ .3)
+confidenceEllipse(duncan.mod, col = "blue",
+  levels = 0.95, dfn = 1,
+  fill = TRUE, fill.alpha = 0.2,
+  xlim = c(-.4, 1),
+  ylim = c(-.4, 1), asp = 1,
+  cex.lab = 1.3,
+  grid = FALSE,
+  xlab = expression(paste("Income coefficient, ", beta[Inc])),
+  ylab = expression(paste("Education coefficient, ", beta[Educ])))
+
+abline(h=0, v=0, lwd = 2)
+
+# confidence intervals for each coefficient
+beta <- coef( duncan.mod )[-1]
+CI <- confint(duncan.mod)       # confidence intervals
+lines( y = c(0,0), x = CI["income",] , lwd = 5, col = 'blue')
+lines( x = c(0,0), y = CI["education",] , lwd = 5, col = 'blue')
+points(rbind(beta), col = 'black', pch = 16, cex=1.5)
+points(diag(beta) , col = 'black', pch = 16, cex=1.4)
+arrows(beta[1], beta[2], beta[1], 0, angle=8, len=0.2)
+arrows(beta[1], beta[2], 0, beta[2], angle=8, len=0.2)
+
+# add line for equal slopes
+abline(a=0, b = 1, lwd = 2)
+text(0.8, 0.8, expression(beta[Educ] == beta[Inc]), 
+     srt=45, pos=3, cex = 1.5)
+
+# add line for difference in slopes
+col <- "darkred"
+x <- c(-1.5, .5)
+lines(x=x, y=-x)
+text(-.1, -.1, expression(~beta["Educ"] - ~beta["Inc"]), 
+     col=col, cex=1.5, srt=-45)
+
+# confidence interval for b1 - b2
+wtest <- spida2::wald(duncan.mod, c(0, -1, 1))[[1]]
+lower <- wtest$estimate$Lower /2
+upper <- wtest$estimate$Upper / 2
+lines(-c(lower, upper), c(lower,upper), lwd=6, col=col)
+
+# projection of (b1, b2) on b1-b2 axis
+beta <- coef( duncan.mod )[-1]
+bdiff <- beta %*% c(1, -1)/2
+points(bdiff, -bdiff, pch=16, cex=1.3)
+arrows(beta[1], beta[2], bdiff, -bdiff, 
+       angle=8, len=0.2, col=col, lwd = 2)
+```
+
+
+<!-- ```{r} -->
+<!-- #| label: fig-duncan-beta-diff-include -->
+<!-- #| echo: false -->
+<!-- #| out-width: "80%" -->
+<!-- #| fig-cap: "Joint 95% confidence ellipse for $(\beta_{\text{Inc}}, \beta_{\text{Educ}}), together with their 1D shadows, which give 95% confidence intervals for the separate coefficients and the linear hypothesis that the coefficients are equal." -->
+<!-- knitr::include_graphics("images/Duncan-beta-diff.png") -->
+<!-- ``` -->
+
+
+#### Diagnostic plots
 But, should Duncan be **so** happy? It is unlikely that he ran any model diagnostics or plotted
 his model; we do so now. Here is the regression quartet for this model. Each plot shows
 some trend lines, and importantly, labels some observations that stand out and might deserve attention.
@@ -163,7 +248,21 @@ Some points to note:
 * A few observations (minister, reporter, conductor) are flagged in multiple panels
 * The `r colorize("red")` trend line in the scale-location plot indicates that residual variance is not constant, but rather increases from both ends. This is a consequence of the fact that `prestige` is measured as a percentage, bounded at [0, 100], and the standard deviation of a percentage $p$ is proportional to $\sqrt{p \times (1-p)}$.
 
-#### Example: Canadian occupational prestige {#sec-prestige2}
+Similar, but nicer diagnostic plots are provided by `performance::check_model()`
+which uses `ggplot2` for graphics. These include helpful captions indicating
+what should be observed for each for a good-fitting model. However, they don't have
+as good facilities for labeling unusual observations as the base R `plot()` or
+functions in the `car` package.
+
+```{r}
+#| label: fig-duncan-check-model
+#| out-width: "100%"
+#| fig-cap: "Diagnostic plots for the `Duncan` data, using `check_model()`"
+check_model(duncan.mod, check=c("linearity", "qq", "homogeneity", "outliers"))
+```
+
+
+### Example: Canadian occupational prestige 
 
 <!-- **CUT THIS EXAMPLE** -->
 
