@@ -18,12 +18,12 @@ Beyond this,
 * tables of model coefficients, standard errors and test statistics can often be usefully 
 supplemented or even replaced by suitable _coeficient plots_ providing essentially the same information.
 
-* when there are two or more predictors, standard plots of $y$ vs. each $x$ ignore the other predictors in the model.
+* when there are two or more predictors, standard plots of $y$ vs. each $x$ can be misleading because they ignore the other predictors in the model.
 _Added-variable plots_ (also called _partial regression plots_) allow you to visualize _partial_ relations
-between the response and a predictor by adjusting (controlling for) all other predictors.
+between the response and a predictor by adjusting (controlling for) all other predictors. _Component + residual_ plots help to diagnose nonlinearity.
 
 * in this same situation, you can more easily understand their separate impact
-on the response by plotting the _marginal predicted effects_ of one or more focal variables, averaging
+on the response by plotting the marginal _predicted effects_ of one or more focal variables, averaging
 over other variables not shown in a given plot. 
 
 * when there are highly correlated predictors, some specialized plots are useful to
@@ -38,17 +38,17 @@ both of which are supported by the **car** package [@R-car].
 In this chapter I use the following packages. Load them now:
 
 ```{r load-pkgs}
-library(ggplot2)
-library(dplyr)
-library(tidyr)
 library(car)
+library(dplyr)
+library(easystats)
 library(effects)
 library(ggeffects)
+library(ggplot2)
 library(ggstats)
 library(marginaleffects)
-library(easystats)
-library(performance)
 library(modelsummary)
+library(performance)
+library(tidyr)
 ```
 
 ```{r bib-pkgs}
@@ -167,6 +167,7 @@ in slopes.
 ```{r echo=-1}
 #| label: fig-duncan-beta-diff
 #| code-fold: true
+#| code-summary: See the code
 #| out-width: "80%"
 #| fig-width: 8
 #| fig-height: 7
@@ -203,7 +204,7 @@ text(0.8, 0.8, expression(beta[Educ] == beta[Inc]),
 col <- "darkred"
 x <- c(-1.5, .5)
 lines(x=x, y=-x)
-text(-.1, -.1, expression(~beta["Educ"] - ~beta["Inc"]), 
+text(-.15, -.15, expression(~beta["Educ"] - ~beta["Inc"]), 
      col=col, cex=1.5, srt=-45)
 
 # confidence interval for b1 - b2
@@ -218,6 +219,12 @@ bdiff <- beta %*% c(1, -1)/2
 points(bdiff, -bdiff, pch=16, cex=1.3)
 arrows(beta[1], beta[2], bdiff, -bdiff, 
        angle=8, len=0.2, col=col, lwd = 2)
+
+# calibrate the diff axis
+ticks <- seq(-0.3, 0.3, by=0.2)
+ticklen <- 0.02
+segments(ticks, -ticks, ticks-sqrt(2)*ticklen, -ticks-sqrt(2)*ticklen)
+text(ticks-2.4*ticklen, -ticks-2.4*ticklen, ticks, srt=-45)
 ```
 
 
@@ -247,10 +254,12 @@ par(op)
 
 Some points to note:
 
-* A few observations (minister, reporter, conductor) are flagged in multiple panels
-* The `r colorize("red")` trend line in the scale-location plot indicates that residual variance is not constant, but rather increases from both ends. This is a consequence of the fact that `prestige` is measured as a percentage, bounded at [0, 100], and the standard deviation of a percentage $p$ is proportional to $\sqrt{p \times (1-p)}$.
+* A few observations (minister, reporter, conductor, contractor) are flagged in multiple panels.
+It turns out that the observations for minister and reporter noted in the residuals vs. leverage plot are highly influential and largely responsible for Duncan's finding that the slopes for income and
+education could be considered equal.
+* The `r colorize("red")` trend line in the scale-location plot indicates that residual variance is not constant, but rather increases from both ends. This is a consequence of the fact that `prestige` is measured as a percentage, bounded at [0, 100], and the standard deviation of a percentage $p$ is proportional to $\sqrt{p \times (1-p)}$ which is maximal at $p = 0.5.
 
-Similar, but nicer diagnostic plots are provided by `performance::check_model()`
+Similar, but nicer-looking diagnostic plots are provided by `performance::check_model()`
 which uses `ggplot2` for graphics. These include helpful captions indicating
 what should be observed for each for a good-fitting model. However, they don't have
 as good facilities for labeling unusual observations as the base R `plot()` or
@@ -259,23 +268,21 @@ functions in the `car` package.
 ```{r}
 #| label: fig-duncan-check-model
 #| out-width: "100%"
-#| fig-cap: "Diagnostic plots for the `Duncan` data, using `check_model()`"
+#| fig-cap: "Diagnostic plots for the `Duncan` data, using `check_model()`."
 check_model(duncan.mod, check=c("linearity", "qq", "homogeneity", "outliers"))
 ```
 
 
+
 ### Example: Canadian occupational prestige 
 
-<!-- **CUT THIS EXAMPLE** -->
+<!-- **TODO**:  Already introduced in @sec-prestige Pair this down & integrate with that -->
 
-**TODO**:  Already introduced in @sec-prestige Pair this down & integrate with that
-
-These examples use the data on the prestige of 102 occupational categories and other measures from the
-1971 Canadian Census, recorded in `carData::Prestige`.[^prestige-src]
+Following @Duncan:61, occupational prestige was studied in a Canadian context by Bernard Blishen
+and others at York University, giving the dataset `carData::Prestige` which we looked at
+in @sec-prestige.
 It differs from the `Duncan` dataset primarily in that the main variables---prestige, income and education
 were revamped to better reflect the underlying constructs in more meaningful units.
-
-[^prestige-src]: The dataset was collected by Bernard Blishen, William Carroll and Catherine Moore, but apparently unpublished. A version updated to the 1981 census is described in @Blishen-etal-1987.
 
 * `prestige`: Rather than a simple percentage of "good+" ratings, this uses a wider and more reliable scale
 from @Pineo-Porter-1967 on a scale from 10--90.
@@ -285,16 +292,18 @@ percent exceeding a given threshold ($3500)
 
 * `education` is measured as the average education of occupational incumbents, years.
 
-The dataset again includes `type` of occupation with the same levels `"bc"` (blue collar), `"wc"` (white collar) and `"prof"` (professional),
+The dataset again includes `type` of occupation with the same levels `"bc"` (blue collar), `"wc"` (white collar) and `"prof"` (professional)[^reorder-type],
 but in addition includes the percent of `women` in these
 occupational categories.
 
+[^reorder-type]: Note that the factor `type` in the dataset has its levels ordered alphabetically.
+For analysis and graphing it is useful to reorder the levels in the natural increasing order.
+An alternative is to make `type` an _ordered_ factor, but this would represent it
+using polynomial contrasts.
+
 Our interest again is in understanding how `prestige` 
 is related to census measures of the average education, income, percent women of incumbents in those
-occupations, but with attention to the scales of measurement and possibly more complex relationships ...
-
-<!-- **TODO**: These data should be introduced earlier with descriptive plots, scatterplots, ... -->
-
+occupations, but with attention to the scales of measurement and possibly more complex relationships.
 
 ```{r prestige}
 data(Prestige, package="carData")
@@ -313,10 +322,11 @@ prestige.mod <- lm(prestige ~ education + income + women + type,
 
 `plot(model)` produces four separate plots. For a quick look, I like to arrange them in a single 2x2 figure.
 
-```{r fig-plot-prestige-mod}
+```{r}
+#| label: fig-plot-prestige-mod
 #| out-width: "100%"
 #| fig-show: hold
-#| fig-cap: "Regression quartet of diagnostic plots for the `Prestige` data. Several possibly unusual observations are labeled."
+#| fig-cap: "Regression quartet of diagnostic plots for the `Prestige` data. Several possibly unusual observations are labeled in each plot."
 op <- par(mfrow = c(2,2), 
           mar=c(4,4,3,1)+.1)
 plot(prestige.mod, lwd=2, cex.lab=1.4)
@@ -359,7 +369,7 @@ From our earlier analyses (@sec-prestige) we saw that the marginal relationship 
 
 ### Displaying coefficients
 
-`summary()` gives the complete precis of a fitted model, with information about the estimated coefficients, redisuals and goodness-of fit statistics like $R^2$. But if you only want to see the coefficients,
+`summary()` gives the complete precis of a fitted model, with information about the estimated coefficients, residuals and goodness-of fit statistics like $R^2$. But if you only want to see the coefficients,
 standard errors, etc. `lmtest::coeftest()` gives these results in the familiar format for console output.
 `broom::tidy()` places these in a tidy format common to many modeling functions which is useful for 
 futher processing (e.g., comparing models).
@@ -593,9 +603,9 @@ ggcoef_model(mod1_scaled,
 
 So, on average, each additional month of education increases the prestige rating by 0.34 units,
 while an additional $100,000 of income increases it by 0.13 units. While these are significant
-effects, they are not large in relation to the scale of `prestige` which ranges 14.8 -- 87.2.
+effects, they are not large in relation to the scale of `prestige` which ranges 14.8---87.2.
 
-## Spread-level plot
+<!-- ## Spread-level plot -->
 
 
 ## Added-variable and related plots {#sec-avplots}

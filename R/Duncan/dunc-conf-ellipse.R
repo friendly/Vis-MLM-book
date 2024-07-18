@@ -44,7 +44,7 @@ text(0.8, 0.8, expression(beta[Educ] == beta[Inc]),
 col <- "darkred"
 x <- c(-1.5, .5)
 lines(x=x, y=-x)
-text(-.1, -.1, expression(~beta["Educ"] - ~beta["Inc"]), 
+text(-.15, -.15, expression(~beta["Educ"] - ~beta["Inc"]), 
      col=col, cex=1.5, srt=-45)
 
 # confidence interval for b1 - b2
@@ -59,5 +59,11 @@ bdiff <- beta %*% c(1, -1)/2
 points(bdiff, -bdiff, pch=16, cex=1.3)
 arrows(beta[1], beta[2], bdiff, -bdiff, 
        angle=8, len=0.2, col=col, lwd = 2)
+
+# calibrate the diff axis
+ticks <- seq(-0.3, 0.3, by=0.2)
+ticklen <- 0.02
+segments(ticks, -ticks, ticks-sqrt(2)*ticklen, -ticks-sqrt(2)*ticklen)
+text(ticks-2.4*ticklen, -ticks-2.4*ticklen, ticks, srt=-45)
 
 par(op)
