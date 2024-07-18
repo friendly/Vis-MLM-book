@@ -3,7 +3,9 @@
 In small to moderate samples, "unusual" observations can have dramatic effects on a fitted
 regression model, as we saw in the analysis of Davis's data on
 reported and measured weight (@sec-davis) where one erroneous observations hugely
-altered the fitted line.
+altered the fitted line. As well, it turns out that two observations in Duncan's data
+are unusual enough that removing them alters his conclusion that income and education
+have nearly equal effects on occupational prestige.
 
 An observation can be unusual in three archetypal ways, with different consequences:
 
@@ -12,7 +14,7 @@ An observation can be unusual in three archetypal ways, with different consequen
 * Unusual in the predictor(s) $\mathbf{x}$, but typical in $y$ --- an otherwise well-fitted point. This case also does litle
 harm, and in fact can be considered to improve precision, a "good leverage" point.
 
-* Unusual in **both** $\mathbf{x}$ and $y$ --- This is the case, a "bad leverage" point, revealed in the analysis of Davis's data, @fig-ch02-davis-reg1, where the one erroneous point for women was highly influential, pulling the regression line towards it and affecting the estimated coefficient as well as all the fitted values.
+* Unusual in **both** $\mathbf{x}$ and $y$ --- This is the case, a "bad leverage" point, revealed in the analysis of Davis's data, @fig-ch02-davis-reg1, where the one erroneous point for women was highly influential, pulling the regression line towards it and affecting the estimated coefficient as well as all the fitted values. In addition, subsets of observations can be _jointly_ influential, in that their effects combine, or can mask each other's influence.
 
 Influential cases are the ones that matter most. As suggested above, to be influential an observation must be
 unusual in **both** $\mathbf{x}$ and $y$, and affects the estimated coefficients, thereby also altering the
@@ -28,7 +30,7 @@ in the general case. The $Y_\text{residual}$ is best measured by a _studentized_
 obtained by omitting each case $i$ in turn and calculating its residual from the coefficients obtained
 from the remaining cases.
 
-### The leverage-influence quartet
+### The leverage-influence quartet {#sec:lev-inf-quartet}
 
 These ideas can be illustrated in the "leverage-influence quartet" by considering a standard simple linear regression
 for a sample and then adding one additional point reflecting the three situations described above.
@@ -309,5 +311,45 @@ The first equation gives the signed difference in fitted values in units of the 
 the second version [@Belsley-etal:80] represents that as a product of residual and leverage.
 A rule of thumb is that an observation is deemed to be influential if $| \text{DFFITS}_i | > 2 \sqrt{(p+1) / n}$.
 
+Influence can also be assessed in terms of the change in the estimated coefficients
+$\mathbf{b} = \widehat{\mathbf{\beta}}$ versus their values $\mathbf{b}_{(-i)}$
+when case $i$ is removed.
+Cook's distance, $D_i$, summarizes the size of the difference as a weighted sum of squares
+of $\mathbf{b} - \mathbf{b}_{(-i)}$ [@Cook:77].
 
+### Influence plots
+
+Two kinds of plots are used to ...
+* index plot of Cook's D
+* influencePlot
+
+Back to the example of @sec:lev-inf-quartet:
+
+```{r}
+#| label: fig-levdemo-infl
+#| fig-cap: Influence plot for the demonstration data.
+once <- both[c(1:16, 62, 63, 64),]
+once.mod <- lm(y ~ x, data=once)
+res <- influencePlot(once.mod, 
+                     id = list(cex = 1.5),
+                     fill.alpha = 0.5)
+```
+
+
+### Duncan data
+
+```{r}
+#| label: fig-duncan-infl
+#| fig-cap: Influence plot for the Duncan data.
+inf <- influencePlot(duncan.mod, id = list(n=3),
+                     cex.lab = 1.5)
+```
+
+Why are these points flagged?
+
+```{r}
+merge(Duncan, inf, by="row.names", all.x = FALSE) |> 
+  arrange(desc(CookD)) |> 
+  print(digits=3)
+```
 

@@ -2,6 +2,7 @@
 #' title: Leverage and influence demo
 #' ---
 library(tidyverse)
+library(car)
 
 #' ## Four copies of the same data set
 set.seed(42)
@@ -56,16 +57,6 @@ ggplot(levdemo, aes(x = x, y = y, color = case)) +
 
 library(car) # needs: car 3.1.4
 
-# Try to override car internal label.ellipse -- doesn't work
-# label.ellipse <- heplots::label.ellipse
-#fixInNamespace(label.ellipse, "car")
-
-#source("C:/Dropbox/R/functions/Ellipse.R")
-# rlang::env_unlock(env = asNamespace('car'))
-# rlang::env_binding_unlock(env = asNamespace('car'))
-# assign('dataEllipse', dataEllipse, envir = asNamespace('car'))
-# rlang::env_binding_lock(env = asNamespace('car'))
-# rlang::env_lock(asNamespace('car'))
 
 colors <- c("black", "blue", "darkgreen", "red")
 with(both,
@@ -114,3 +105,18 @@ confidenceEllipse(models$model[[1]], col=colors[1], levels=0.5, xlim = c(0, 50),
 confidenceEllipse(models$model[[2]], col=colors[2], levels=0.5, xlim = c(0, 50), ylim = c(0.2, 1.2))
 confidenceEllipse(models$model[[3]], col=colors[3], levels=0.5, xlim = c(0, 50))
 confidenceEllipse(models$model[[4]], col=colors[4], levels=0.5, xlim = c(0, 50))
+
+#' influence plot
+
+# -- NB: both contains 4 copies of obs
+
+once <- both[c(1:16, 62, 63, 64),]
+once.mod <- lm(y ~ x, data=once)
+res <- influencePlot(once.mod, 
+                     id = list(cex = 1.5),
+                     fill.alpha = 0.5)
+
+influenceIndexPlot(once.mod, 
+                   var = c("Cook", "Studentized"),
+                   pch = 16)
+

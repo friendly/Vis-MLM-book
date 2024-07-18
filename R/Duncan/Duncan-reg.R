@@ -63,6 +63,13 @@ avPlots(duncan.mod,
         pch = 16, cex = 0.9,
         cex.lab = 1.5)
 
+# > Duncan[c(6, 9, 16, 27),]
+# type income education prestige
+# minister    prof     21        84       87
+# reporter      wc     67        87       52
+# conductor     wc     76        34       38
+# RR.engineer   bc     81        28       67
+
 # show the leverage of the unusual points
 res <- avPlot(duncan.mod, "income",
               ellipse = list(levels = 0.68),
@@ -110,12 +117,11 @@ update(fit, data = Duncan[-big, ]) |> abline(col = "red", lwd=2)
 
 
 # influence plot
-inf <- influencePlot(duncan.mod, id = list(n=3))
+inf <- influencePlot(duncan.mod, id = list(n=3),
+                     cex.lab = 1.5)
 
 # which are influential?
-#cbind(Duncan[row.names(Duncan) %in% rownames(inf),], inf)
-
-merge(Duncan, inf, by="row.names", all.x = FALSE)
+merge(Duncan, inf, by="row.names", all.x = FALSE) |> print(digits=3)
 
 #' Coefficient plots
 #' 
