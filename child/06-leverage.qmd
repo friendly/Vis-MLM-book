@@ -30,7 +30,7 @@ in the general case. The $Y_\text{residual}$ is best measured by a _studentized_
 obtained by omitting each case $i$ in turn and calculating its residual from the coefficients obtained
 from the remaining cases.
 
-### The leverage-influence quartet {#sec:lev-inf-quartet}
+### The leverage-influence quartet {#sec-lev-inf-quartet}
 
 These ideas can be illustrated in the "leverage-influence quartet" by considering a standard simple linear regression
 for a sample and then adding one additional point reflecting the three situations described above.
@@ -315,24 +315,49 @@ Influence can also be assessed in terms of the change in the estimated coefficie
 $\mathbf{b} = \widehat{\mathbf{\beta}}$ versus their values $\mathbf{b}_{(-i)}$
 when case $i$ is removed.
 Cook's distance, $D_i$, summarizes the size of the difference as a weighted sum of squares
-of $\mathbf{b} - \mathbf{b}_{(-i)}$ [@Cook:77].
+of $\mathbf{d} =\mathbf{b} - \mathbf{b}_{(-i)}$ [@Cook:77].
+
+$$
+D_i = \mathbf{d}\trans \, (\mathbf{X}\trans \mathbf{X}) \,\mathbf{d} / (p+1) \hat{\sigma}^2
+$$
+This can be re-expressed in terms of the components of residual and leverage
+
+$$
+D_i = \frac{e^\star_{(-i)}}{p+1} \times \frac{h_i}{(1- h_i)^2}
+$$
+
+Cook's distance is in the metric of an $F$ distribution with $p%  and $n − p$  degrees of freedom,
+so values $D_i > 4/n are considered large.
 
 ### Influence plots
 
-Two kinds of plots are used to ...
-* index plot of Cook's D
-* influencePlot
+The most common plot to detect influence is a plot of the studentized residuals
+versus hat values, as shown in @fig-levdemo-infl for the demonstration dataset
+constructed in @sec-lev-inf-quartet. In this plot, notable cutoffs for hatvalues
+at $2 \bar{h}$ and $3 \bar{h}$ are shown by dashed vertical lines
+and horizontal cutoffs for studentize residuals are shown at values of $\pm 2$.
 
-Back to the example of @sec:lev-inf-quartet:
+
+The demonstration data of @sec-lev-inf-quartet has four copies of the same
+$(x, y)$ data, three of which have an unusual observation.
+The influence plot in @fig-levdemo-infl for the unique observations, including
+the three unusual cases.
 
 ```{r}
 #| label: fig-levdemo-infl
 #| fig-cap: Influence plot for the demonstration data.
 once <- both[c(1:16, 62, 63, 64),]
 once.mod <- lm(y ~ x, data=once)
-res <- influencePlot(once.mod, 
-                     id = list(cex = 1.5),
-                     fill.alpha = 0.5)
+inf <- influencePlot(once.mod, 
+                     id = list(cex = 0.01),
+                     fill.alpha = 0.5,
+                     cex.lab = 1.5, xpd = TRUE)
+# custom labels
+unusual <- bind_cols(once[17:19,], inf) |> print(digits=3)
+with(unusual, {
+  casetype <- gsub("\\d ", "", case)
+  text(Hat, StudRes, label = casetype, pos = c(4, 2, 3), cex=1.5)
+})
 ```
 
 

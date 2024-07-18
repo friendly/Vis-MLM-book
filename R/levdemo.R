@@ -112,11 +112,18 @@ confidenceEllipse(models$model[[4]], col=colors[4], levels=0.5, xlim = c(0, 50))
 
 once <- both[c(1:16, 62, 63, 64),]
 once.mod <- lm(y ~ x, data=once)
-res <- influencePlot(once.mod, 
-                     id = list(cex = 1.5),
-                     fill.alpha = 0.5)
+inf <- influencePlot(once.mod, 
+                     id = list(cex = 0.01),
+                     fill.alpha = 0.5,
+                     cex.lab = 1.5, xpd = TRUE)
+
+unusual <- bind_cols(once[17:19,], inf) |> print(digits=3)
+
+with(unusual, {
+  casetype <- gsub("\\d ", "", case)
+  text(Hat, StudRes, label = casetype, pos = c(4, 2, 3), cex=1.5)
+})
 
 influenceIndexPlot(once.mod, 
                    var = c("Cook", "Studentized"),
                    pch = 16)
-

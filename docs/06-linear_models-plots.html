@@ -329,7 +329,7 @@ window.Quarto = {
   <li>
 <a href="#sec-leverage" id="toc-sec-leverage" class="nav-link" data-scroll-target="#sec-leverage"><span class="header-section-number">6.6</span> Outliers, leverage and influence</a>
   <ul class="collapse">
-<li><a href="#sec:lev-inf-quartet" id="toc-sec:lev-inf-quartet" class="nav-link" data-scroll-target="#sec\:lev-inf-quartet"><span class="header-section-number">6.6.1</span> The leverage-influence quartet</a></li>
+<li><a href="#sec-lev-inf-quartet" id="toc-sec-lev-inf-quartet" class="nav-link" data-scroll-target="#sec-lev-inf-quartet"><span class="header-section-number">6.6.1</span> The leverage-influence quartet</a></li>
   <li><a href="#measuring-leverage" id="toc-measuring-leverage" class="nav-link" data-scroll-target="#measuring-leverage"><span class="header-section-number">6.6.2</span> Measuring leverage</a></li>
   <li><a href="#outliers-measuring-residuals" id="toc-outliers-measuring-residuals" class="nav-link" data-scroll-target="#outliers-measuring-residuals"><span class="header-section-number">6.6.3</span> Outliers: Measuring residuals</a></li>
   <li><a href="#measuring-influence" id="toc-measuring-influence" class="nav-link" data-scroll-target="#measuring-influence"><span class="header-section-number">6.6.4</span> Measuring influence</a></li>
@@ -1790,7 +1790,7 @@ Figure&nbsp;6.20: Predictor effect plot for income, plotted on a log scale.
 <p><span class="math display">\[
 \text{Influence}_{\text{coefficients}} \;=\; X_\text{leverage} \;\times\; Y_\text{residual}
 \]</span> As described below, leverage is proportional to the squared distance <span class="math inline">\((x_i - \bar{x})^2\)</span> of an observation <span class="math inline">\(x_i\)</span> from its mean in simple regression and to the squared Mahalanobis distance in the general case. The <span class="math inline">\(Y_\text{residual}\)</span> is best measured by a <em>studentized</em> residual, obtained by omitting each case <span class="math inline">\(i\)</span> in turn and calculating its residual from the coefficients obtained from the remaining cases.</p>
-<section id="sec:lev-inf-quartet" class="level3" data-number="6.6.1"><h3 data-number="6.6.1" class="anchored" data-anchor-id="sec:lev-inf-quartet">
+<section id="sec-lev-inf-quartet" class="level3" data-number="6.6.1"><h3 data-number="6.6.1" class="anchored" data-anchor-id="sec-lev-inf-quartet">
 <span class="header-section-number">6.6.1</span> The leverage-influence quartet</h3>
 <p>These ideas can be illustrated in the “leverage-influence quartet” by considering a standard simple linear regression for a sample and then adding one additional point reflecting the three situations described above. Below, I generate a sample of <span class="math inline">\(N = 15\)</span> points with <span class="math inline">\(x\)</span> uniformly distributed between (40, 60) and <span class="math inline">\(y \sim 10 + 0.75 x + \mathcal{N}(0, 1.25^2)\)</span>, duplicated four times.</p>
 <div class="cell" data-layout-align="center">
@@ -2001,17 +2001,37 @@ In practice for classical linear models, it is unnecessary to actually re-fit th
    &amp; = &amp; e^\star_{(-i)} \times \sqrt{\frac{h_i}{1-h_i}} \;\; .
 \end{eqnarray*}\]</span></p>
 <p>The first equation gives the signed difference in fitted values in units of the standard deviation of that difference weighted by leverage; the second version <span class="citation" data-cites="Belsley-etal:80">(<a href="90-references.html#ref-Belsley-etal:80" role="doc-biblioref">Belsley et al., 1980</a>)</span> represents that as a product of residual and leverage. A rule of thumb is that an observation is deemed to be influential if <span class="math inline">\(| \text{DFFITS}_i | &gt; 2 \sqrt{(p+1) / n}\)</span>.</p>
-<p>Influence can also be assessed in terms of the change in the estimated coefficients <span class="math inline">\(\mathbf{b} = \widehat{\mathbf{\beta}}\)</span> versus their values <span class="math inline">\(\mathbf{b}_{(-i)}\)</span> when case <span class="math inline">\(i\)</span> is removed. Cook’s distance, <span class="math inline">\(D_i\)</span>, summarizes the size of the difference as a weighted sum of squares of <span class="math inline">\(\mathbf{b} - \mathbf{b}_{(-i)}\)</span> <span class="citation" data-cites="Cook:77">(<a href="90-references.html#ref-Cook:77" role="doc-biblioref">Cook, 1977</a>)</span>.</p>
+<p>Influence can also be assessed in terms of the change in the estimated coefficients <span class="math inline">\(\mathbf{b} = \widehat{\mathbf{\beta}}\)</span> versus their values <span class="math inline">\(\mathbf{b}_{(-i)}\)</span> when case <span class="math inline">\(i\)</span> is removed. Cook’s distance, <span class="math inline">\(D_i\)</span>, summarizes the size of the difference as a weighted sum of squares of <span class="math inline">\(\mathbf{d} =\mathbf{b} - \mathbf{b}_{(-i)}\)</span> <span class="citation" data-cites="Cook:77">(<a href="90-references.html#ref-Cook:77" role="doc-biblioref">Cook, 1977</a>)</span>.</p>
+<p><span class="math display">\[
+D_i = \mathbf{d}^\mathsf{T}\, (\mathbf{X}^\mathsf{T}\mathbf{X}) \,\mathbf{d} / (p+1) \hat{\sigma}^2
+\]</span> This can be re-expressed in terms of the components of residual and leverage</p>
+<p><span class="math display">\[
+D_i = \frac{e^\star_{(-i)}}{p+1} \times \frac{h_i}{(1- h_i)^2}
+\]</span></p>
+<p>Cook’s distance is in the metric of an <span class="math inline">\(F\)</span> distribution with $p% and <span class="math inline">\(n − p\)</span> degrees of freedom, so values $D_i &gt; 4/n are considered large.</p>
 </section><section id="influence-plots" class="level3" data-number="6.6.5"><h3 data-number="6.6.5" class="anchored" data-anchor-id="influence-plots">
 <span class="header-section-number">6.6.5</span> Influence plots</h3>
-<p>Two kinds of plots are used to … * index plot of Cook’s D * influencePlot</p>
-<p>Back to the example of <span class="citation" data-cites="sec:lev-inf-quartet">(<a href="90-references.html#ref-sec:lev-inf-quartet" role="doc-biblioref"><strong>sec:lev-inf-quartet?</strong></a>)</span>:</p>
+<p>The most common plot to detect influence is a plot of the studentized residuals versus hat values, as shown in <a href="#fig-levdemo-infl" class="quarto-xref">Figure&nbsp;<span>6.25</span></a> for the demonstration dataset constructed in <a href="#sec-lev-inf-quartet" class="quarto-xref"><span>Section 6.6.1</span></a>. In this plot, notable cutoffs for hatvalues at <span class="math inline">\(2 \bar{h}\)</span> and <span class="math inline">\(3 \bar{h}\)</span> are shown by dashed vertical lines and horizontal cutoffs for studentize residuals are shown at values of <span class="math inline">\(\pm 2\)</span>.</p>
+<p>The demonstration data of <a href="#sec-lev-inf-quartet" class="quarto-xref"><span>Section 6.6.1</span></a> has four copies of the same <span class="math inline">\((x, y)\)</span> data, three of which have an unusual observation. The influence plot in <a href="#fig-levdemo-infl" class="quarto-xref">Figure&nbsp;<span>6.25</span></a> for the unique observations, including the three unusual cases.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb54" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">once</span> <span class="op">&lt;-</span> <span class="va">both</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">16</span>, <span class="fl">62</span>, <span class="fl">63</span>, <span class="fl">64</span><span class="op">)</span>,<span class="op">]</span></span>
 <span><span class="va">once.mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">x</span>, data<span class="op">=</span><span class="va">once</span><span class="op">)</span></span>
-<span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/car/man/influencePlot.html">influencePlot</a></span><span class="op">(</span><span class="va">once.mod</span>, </span>
-<span>                     id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>cex <span class="op">=</span> <span class="fl">1.5</span><span class="op">)</span>,</span>
-<span>                     fill.alpha <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="va">inf</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/car/man/influencePlot.html">influencePlot</a></span><span class="op">(</span><span class="va">once.mod</span>, </span>
+<span>                     id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>cex <span class="op">=</span> <span class="fl">0.01</span><span class="op">)</span>,</span>
+<span>                     fill.alpha <span class="op">=</span> <span class="fl">0.5</span>,</span>
+<span>                     cex.lab <span class="op">=</span> <span class="fl">1.5</span>, xpd <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="co"># custom labels</span></span>
+<span><span class="va">unusual</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_cols.html">bind_cols</a></span><span class="op">(</span><span class="va">once</span><span class="op">[</span><span class="fl">17</span><span class="op">:</span><span class="fl">19</span>,<span class="op">]</span>, <span class="va">inf</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span>digits<span class="op">=</span><span class="fl">3</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 3 × 7</span></span>
+<span><span class="co">#&gt;   case            x     y id    StudRes    Hat CookD</span></span>
+<span><span class="co">#&gt; * &lt;fct&gt;       &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;   &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1 2 Outlier      52    65 O        3.11 0.0591 0.201</span></span>
+<span><span class="co">#&gt; 2 3 Leverage     75    65 L        1.52 0.422  0.784</span></span>
+<span><span class="co">#&gt; 3 4 Influence    70    40 OL      -4.93 0.262  1.82</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/with.html">with</a></span><span class="op">(</span><span class="va">unusual</span>, <span class="op">{</span></span>
+<span>  <span class="va">casetype</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html">gsub</a></span><span class="op">(</span><span class="st">"\\d "</span>, <span class="st">""</span>, <span class="va">case</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/graphics/text.html">text</a></span><span class="op">(</span><span class="va">Hat</span>, <span class="va">StudRes</span>, label <span class="op">=</span> <span class="va">casetype</span>, pos <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span>, cex<span class="op">=</span><span class="fl">1.5</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div id="fig-levdemo-infl" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-levdemo-infl-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
