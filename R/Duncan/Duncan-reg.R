@@ -60,6 +60,7 @@ qqPlot(duncan.mod, id = list(n=3), simulate = TRUE)
 
 avPlots(duncan.mod,
         ellipse = list(levels = 0.68, fill = TRUE, fill.alpha = 0.1),
+        id = list(method = "mahal", n=3),
         pch = 16, cex = 0.9,
         cex.lab = 1.5)
 
@@ -70,9 +71,14 @@ avPlots(duncan.mod,
 # conductor     wc     76        34       38
 # RR.engineer   bc     81        28       67
 
-# show the leverage of the unusual points
+
+#' ## show the leverage of the unusual points
+
+par(mar = c(4, 5, 4, 1)+.1,
+    mfrow = c(1,2))
 res <- avPlot(duncan.mod, "income",
               ellipse = list(levels = 0.68),
+              id = list(method = "mahal", n=3),
               pch = 16,
               cex.lab = 1.5) |>
   as.data.frame()
@@ -81,12 +87,12 @@ info <- cbind(res, fitted = fitted(fit),
              resids = residuals(fit),
              hat = hatvalues(fit),
              cookd = cooks.distance(fit))
-#head(res)
 
-big <- which(info$cookd > .30)
+# noteworthy points in this plot
+big <- which(info$cookd > .20)
 with(info, {
   arrows(income[big], fitted[big], income[big], prestige[big], 
-         angle = 12, length = .18, lwd = 2, col = "red")
+         angle = 12, length = .18, lwd = 2, col = "gray")
   })
 
 # remove the unusual points
@@ -96,6 +102,7 @@ update(fit, data = Duncan[-big, ]) |> abline(col = "red", lwd=2)
 # same for education
 res <- avPlot(duncan.mod, "education",
               ellipse = list(levels = 0.68),
+              id = list(method = "mahal", n=3),
               pch = 16,
               cex.lab = 1.5) |>
   as.data.frame()
@@ -105,14 +112,16 @@ info <- cbind(res, fitted = fitted(fit),
              hat = hatvalues(fit),
              cookd = cooks.distance(fit))
 
-big <- which(info$cookd > .3)
+big <- which(info$cookd > .2)
 with(info, {
   arrows(education[big], fitted[big], education[big], prestige[big], 
-         angle = 12, length = .18, lwd = 2, col = "red")
+         angle = 12, length = .18, lwd = 2, col = "gray")
 })
+
 # remove the unusual points
 update(fit, data = Duncan[-big, ]) |> abline(col = "red", lwd=2)
 
+par(op)
 
 
 

@@ -149,7 +149,7 @@ text(extra[, c("x", "y")],
      col = colors, pos = 2, offset = 0.5)
 ```
 
-### Measuring leverage
+#### Measuring leverage
 
 Leverage is thus an index of the _potential_ impact of an observation on the model due to its'
 atypical value in the X space of the predictor(s). It is commonly measured by the "hat" value, $h_i$,
@@ -224,8 +224,7 @@ X <- X |>
 
 Plotting `x1` and `x2` with data ellipses shows the relation of leverage to squared distance from the mean.
 The `r colorize("blue", "blue")` point looks to be farther from the `r colorize("mean", "green")`, but 
-the `r colorize("red", "red")` point is actually very much further by Mahalanobis squared distance, which takes the
-correlation into account; it thus has much greater leverage.
+the `r colorize("red", "red")` point is actually very much further by Mahalanobis squared distance, which takes the correlation into account; it thus has much greater leverage.
 
 
 ```{r}
@@ -267,7 +266,7 @@ $D^2$ and leverage are about five times as great!
 X |> slice_tail(n=2)
 ```
 
-### Outliers: Measuring residuals
+#### Outliers: Measuring residuals
 
 From the discussion in @sec-leverage, outliers for the response $y$ are those observations for which the
 residual $e_i = y_i - \hat{y}_i$ are unusually large in magnitude. However, as demonstrated in @fig-levdemo,
@@ -295,7 +294,7 @@ model fitted to the full data set and the hat (projection) matrix
 $\mathbf{H} = (\mathbf{X}\trans \mathbf{X})^{-1} \mathbf{X}\trans$ from which $\widehat{\mathbf{b}} = \mathbf{H} \mathbf{y}$.
 
 
-### Measuring influence
+#### Measuring influence
 
 As described at the start of this section, the actual influence of a given case depends multiplicatively
 on its' leverage and residual. But how can we measure it?
@@ -352,13 +351,17 @@ $(x, y)$ data, three of which have an unusual observation.
 The influence plot in @fig-levdemo-infl subsets the data to give
 the $19 = 15 + 4$ unique observations, including
 the three unusual cases.
+As can be seen, the high "Leverage" point has 
+has less influence than the point labeled "Influence", which has moderate
+leverage but a large absolute residual.
+
 
 ```{r}
 #| label: fig-levdemo-infl
 #| code-fold: true
 #| code-summary: See the code
-#| fig-cap: Influence plot for the demonstration data. The impact of the three unusual points on Cook's D is clearly seen.
-once <- both[c(1:16, 62, 63, 64),]
+#| fig-cap: Influence plot for the demonstration data. The areas of the bubble symbols are proportional to Cook's $D$. The impact of the three unusual points on Cook's $D$ is clearly seen.
+once <- both[c(1:16, 62, 63, 64),]      # unique observations
 once.mod <- lm(y ~ x, data=once)
 inf <- influencePlot(once.mod, 
                      id = list(cex = 0.01),
@@ -377,17 +380,21 @@ with(unusual, {
 
 ### Duncan data {#sec-duncan-influence}
 
-Let's return to the `Duncan` data used as an example in @sec-example-duncan where a few points stood out as unusual
-in the basic diagnostic plots (@fig-duncan-plot-model).
+Let's return to the `Duncan` data used as an example in @sec-example-duncan where a few points stood out as unusual in the basic diagnostic plots (@fig-duncan-plot-model).
+The influence plot in @fig-duncan-infl helps to make sense of these noteworthy observations.
+The default method for identifying points in `influencePlot()`
+labels points with any of large studentized residuals, hat-values or Cook's distances.
 
 ```{r}
 #| label: fig-duncan-infl
-#| fig-cap: Influence plot for the Duncan data.
+#| fig-cap: Influence plot for the model predicting occupational prestige in Duncan's data. Cases with large studentized residuals, hat-values or Cook's distances are labeled.
 inf <- influencePlot(duncan.mod, id = list(n=3),
                      cex.lab = 1.5)
 ```
 
-Why are these points flagged?
+`influencePlot()` returns (invisibly) the influence diagnostics for the cases identified in the
+plot. It is often useful to look at data values for these cases to understand why each of these
+was flagged.
 
 ```{r}
 merge(Duncan, inf, by="row.names", all.x = FALSE) |> 
@@ -395,4 +402,22 @@ merge(Duncan, inf, by="row.names", all.x = FALSE) |>
   print(digits=3)
 ```
 
-Added-variable plots:
+* _minister_ has by far the largest influence, because it has an extremely positive residual and a large hat value. Looking at the data, we see that ministers have very low income, so their prestige is under-predicted. The large hat value reflects the fact that ministers have low income combined with very high education.
+
+* _conductor_ has the next largest Cook's $D$. It has a large hat value because its combination of relatively high income and low education is unusual in the data.
+
+* Among the others, _reporter_ has a relatively large negative residual---its prestige is far less than the model predicts---but its low leverage make it not highly influential.
+_railroad engineer_ has an extremely large hat value because its income is very high in relation to education. But this case is well-predicted and has a small residual, so its leverage is not large.
+
+### Influence in added-variable plots
+
+The properties of added-variable plots discussed in @sec-avplots make them also useful for understanding why cases are influential because they control for other predictors in each plot, and therefore
+show the _partial_ contributions of each observation to hat values and residuals. 
+
+```{r}
+#| label: fig-duncan-av-influence
+#| out-width: "100%"
+#| fig-cap: Added variable plots for the Duncan model, highlighting the impact of two observations in each plot.
+knitr::include_graphics("images/duncan-av-influence.png")
+```
+
