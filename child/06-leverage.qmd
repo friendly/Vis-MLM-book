@@ -83,7 +83,7 @@ regression line with the original data, but specify `data = both` for that with 
 ```{r}
 #| label: fig-levdemo
 #| out-width: 100%
-#| fig-cap: 'Leverage influence quartet with data 50% ellipses. Case (1) original data; (2) adding one low-leverage outlier, "O"; (3) adding one "good" leverage point, "L"; (4) adding one "bad" leverage point, "OL". The dashed line is the fitted line for the original data, while the solid line reflects the additional point. The data ellipses show the effect of the additional point on precision.'
+#| fig-cap: !expr paste('Leverage influence quartet with data 50% ellipses. Case (1) original data; (2) adding one low-leverage outlier, "O"; (3) adding one "good" leverage point, "L"; (4) adding one "bad" leverage point, "OL". The dashed', blue, 'line is the fitted line for the original data, while the solid', red, 'line reflects the additional point. The data ellipses show the effect of the additional point on precision.')
 ggplot(levdemo, aes(x = x, y = y)) +
   geom_point(color = "blue", size = 2) +
   geom_smooth(data = both, 
@@ -97,6 +97,7 @@ ggplot(levdemo, aes(x = x, y = y)) +
   facet_wrap(~case, labeller = label_both) +
   theme_bw(base_size = 14)
 ```
+
 
 The standard version of this graph shows only the fitted regression lines in each panel.
 As can be seen, the fitted line doesn't change very much in panels (2) and (3); only
@@ -226,10 +227,11 @@ The `r colorize("blue", "blue")` point looks to be farther from the `r colorize(
 the `r colorize("red", "red")` point is actually very much further by Mahalanobis squared distance, which takes the
 correlation into account; it thus has much greater leverage.
 
+
 ```{r}
 #| label: fig-hatvalues-demo1
 #| fig-show: "hold"
-#| fig-cap: 'Data ellipses for a bivariate normal sample with correlation 0.7, and two additional noteworthy points. The blue point looks to be farther from the mean, but the red point is actually more than 5 times further by Mahalanobis squared distance, and thus has much greater leverage.'
+#| fig-cap: !expr paste('Data ellipses for a bivariate normal sample with correlation 0.7, and two additional noteworthy points. The', blue, 'point looks to be farther from the mean, but the', red, 'point is actually more than 5 times further by Mahalanobis squared distance, and thus has much greater leverage.)'
 par(mar = c(4, 4, 1, 1) + 0.1)
 dataEllipse(X$x1, X$x2, 
             levels = c(0.40, 0.68, 0.95),
@@ -287,7 +289,10 @@ This is just the ordinary residual $e_i$ divided by a factor that increases with
 but decreases with leverage.  It can be shown that these studentized residuals follow a $t$ distribution
 with $n - p -2$ degrees of freedom, so a value $|e^\star_{(-i)}| > 2$ can be considered large enough to
 pay attention to.  
-In practice for classical linear models, it is unnecessary to actually re-fit the model $n$ times ...
+In practice for classical linear models, it is unnecessary to actually re-fit the model $n$ times.
+@VellemanWelsh:81 show that all these leave-one-out quantities can be calculated from the
+model fitted to the full data set and the hat (projection) matrix
+$\mathbf{H} = (\mathbf{X}\trans \mathbf{X})^{-1} \mathbf{X}\trans$ from which $\widehat{\mathbf{b}} = \mathbf{H} \mathbf{y}$.
 
 
 ### Measuring influence
@@ -326,43 +331,54 @@ $$
 D_i = \frac{e^\star_{(-i)}}{p+1} \times \frac{h_i}{(1- h_i)^2}
 $$
 
-Cook's distance is in the metric of an $F$ distribution with $p%  and $n − p$  degrees of freedom,
-so values $D_i > 4/n are considered large.
+Cook's distance is in the metric of an $F$ distribution with $p$  and $n − p$  degrees of freedom,
+so values $D_i > 4/n$ are considered large.
 
 ### Influence plots
 
-The most common plot to detect influence is a plot of the studentized residuals
-versus hat values, as shown in @fig-levdemo-infl for the demonstration dataset
+The most common plot to detect influence is a bubble plot of the studentized residuals
+versus hat values, with the size (area) of the plotting symbol proportional to Cook's $D$.
+These plots are constructed using `car::influencePlot()` which also fills the
+bubble symbols with color whose opacity is proportional to Cook's $D$.
+
+This is shown in @fig-levdemo-infl for the demonstration dataset
 constructed in @sec-lev-inf-quartet. In this plot, notable cutoffs for hatvalues
 at $2 \bar{h}$ and $3 \bar{h}$ are shown by dashed vertical lines
-and horizontal cutoffs for studentize residuals are shown at values of $\pm 2$.
+and horizontal cutoffs for studentized residuals are shown at values of $\pm 2$.
 
 
 The demonstration data of @sec-lev-inf-quartet has four copies of the same
 $(x, y)$ data, three of which have an unusual observation.
-The influence plot in @fig-levdemo-infl for the unique observations, including
+The influence plot in @fig-levdemo-infl subsets the data to give
+the $19 = 15 + 4$ unique observations, including
 the three unusual cases.
 
 ```{r}
 #| label: fig-levdemo-infl
-#| fig-cap: Influence plot for the demonstration data.
+#| code-fold: true
+#| code-summary: See the code
+#| fig-cap: Influence plot for the demonstration data. The impact of the three unusual points on Cook's D is clearly seen.
 once <- both[c(1:16, 62, 63, 64),]
 once.mod <- lm(y ~ x, data=once)
 inf <- influencePlot(once.mod, 
                      id = list(cex = 0.01),
                      fill.alpha = 0.5,
-                     cex.lab = 1.5, xpd = TRUE)
+                     cex.lab = 1.5)
 # custom labels
-unusual <- bind_cols(once[17:19,], inf) |> print(digits=3)
+unusual <- bind_cols(once[17:19,], inf) |> 
+  print(digits=3)
 with(unusual, {
   casetype <- gsub("\\d ", "", case)
-  text(Hat, StudRes, label = casetype, pos = c(4, 2, 3), cex=1.5)
+  text(Hat, StudRes, label = casetype,
+       pos = c(4, 2, 3), cex=1.5)
 })
 ```
 
 
-### Duncan data
+### Duncan data {#sec-duncan-influence}
 
+Let's return to the `Duncan` data used as an example in @sec-example-duncan where a few points stood out as unusual
+in the basic diagnostic plots (@fig-duncan-plot-model).
 ```{r}
 #| label: fig-duncan-infl
 #| fig-cap: Influence plot for the Duncan data.
@@ -378,3 +394,4 @@ merge(Duncan, inf, by="row.names", all.x = FALSE) |>
   print(digits=3)
 ```
 
+Added-variable plots:
