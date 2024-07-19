@@ -71,6 +71,16 @@ avPlots(duncan.mod,
 # conductor     wc     76        34       38
 # RR.engineer   bc     81        28       67
 
+# delete minister, conductor
+duncan.mod2 <- update(duncan.mod, subset = - whichNames(c("minister", "conductor"), Duncan))
+
+avPlots(duncan.mod2,
+        ellipse = list(levels = 0.68, fill = TRUE, fill.alpha = 0.1),
+        id = list(method = "mahal", n=3),
+        pch = 16, cex = 0.9,
+        cex.lab = 1.5)
+
+
 
 #' ## show the leverage of the unusual points
 
@@ -92,7 +102,7 @@ info <- cbind(res, fitted = fitted(fit),
 big <- which(info$cookd > .20)
 with(info, {
   arrows(income[big], fitted[big], income[big], prestige[big], 
-         angle = 12, length = .18, lwd = 2, col = "gray")
+         angle = 12, length = .18, lwd = 2, col = "darkgreen")
   })
 
 # remove the unusual points
@@ -115,7 +125,7 @@ info <- cbind(res, fitted = fitted(fit),
 big <- which(info$cookd > .2)
 with(info, {
   arrows(education[big], fitted[big], education[big], prestige[big], 
-         angle = 12, length = .18, lwd = 2, col = "gray")
+         angle = 12, length = .18, lwd = 2, col = "darkgreen")
 })
 
 # remove the unusual points
