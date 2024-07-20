@@ -86,6 +86,8 @@ avPlots(duncan.mod2,
 duncan.mod2 <- update(duncan.mod, 
                       subset = - whichNames(c("minister", "conductor"), Duncan))
 
+duncan.mod2 <- update(duncan.mod, subset = -c(6, 16))
+
 par(mar = c(4, 5, 4, 1)+.1,
     mfrow = c(1,2))
 res <- avPlot(duncan.mod, "income",
