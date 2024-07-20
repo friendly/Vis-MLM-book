@@ -21,10 +21,12 @@ p <- 2
 hat <- seq(0.02, 0.30, 0.02)
 resid <- seq(-2, 2, 0.10)
 #cookd <- outer(hat, resid, cook(hat, resid, p))
-cookd <- outer(hat, resid, function(hat, resid) {(hat/(1-hat)) * resid / (p+1)})
+cookd <- outer(hat, resid, function(hat, resid) {(hat/(1-hat)) * resid^2 / (p+1)})
 
-pal <- colorRampPalette(c("lightyellow"), "orange")
-filled.contour(hat, resid, cookd, color.palette = pal(5),
+col2rgb()
+pal <- colorRampPalette(c("lightyellow", "darkorange"))
+filled.contour(hat, resid, cookd, 
+               color.palette = pal,
                xlab = "Hat value",
                ylab = "Studentized residual")
 
