@@ -2081,7 +2081,7 @@ Figure&nbsp;6.26: Influence plot for the model predicting occupational prestige 
 </ul></section><section id="influence-in-added-variable-plots" class="level3" data-number="6.6.4"><h3 data-number="6.6.4" class="anchored" data-anchor-id="influence-in-added-variable-plots">
 <span class="header-section-number">6.6.4</span> Influence in added-variable plots</h3>
 <p>The properties of added-variable plots discussed in <a href="#sec-avplots" class="quarto-xref"><span>Section 6.4</span></a> make them also useful for understanding why cases are influential because they control for other predictors in each plot, and therefore show the <em>partial</em> contributions of each observation to hat values and residuals. As a consequence, we can see directly the how individual cases become individually or jointly influential.</p>
-<p>The Duncan data provides a particularly instructive example of this. <a href="#fig-duncan-av-influence" class="quarto-xref">Figure&nbsp;<span>6.27</span></a> shows the AV plots for both income and education in the model <code>duncan.mod</code>, with some annotations added. I want to focus here on the <em>joint</em> influence of the occupations minister and conductor which were seen to be the most influential in <a href="#fig-duncan-infl" class="quarto-xref">Figure&nbsp;<span>6.26</span></a>.</p>
+<p>The Duncan data provides a particularly instructive example of this. <a href="#fig-duncan-av-influence" class="quarto-xref">Figure&nbsp;<span>6.27</span></a> shows the AV plots for both income and education in the model <code>duncan.mod</code>, with some annotations added. I want to focus here on the <em>joint</em> influence of the occupations minister and conductor which were seen to be the most influential in <a href="#fig-duncan-infl" class="quarto-xref">Figure&nbsp;<span>6.26</span></a>. The <span style="color: green;">green</span> vertical lines show their residuals in each panel and the <span style="color: red;">red</span> show the regression lines when these two observations are deleted.</p>
 <p>The basic AV plots are produced using the call to <code><a href="https://rdrr.io/pkg/car/man/avPlots.html">avPlots()</a></code> below. To avoid clutter, I use the argument <code>id = list(method = "mahal", n=3)</code> so that only the three points with the greatest Mahalanobis distances from the centroid in each plot are labeled. These are the cases with the largest leverage seen in <a href="#fig-duncan-infl" class="quarto-xref">Figure&nbsp;<span>6.26</span></a>.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb57" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/car/man/avPlots.html">avPlots</a></span><span class="op">(</span><span class="va">duncan.mod</span>,</span>
@@ -2091,20 +2091,46 @@ Figure&nbsp;6.26: Influence plot for the model predicting occupational prestige 
 <span>  cex.lab <span class="op">=</span> <span class="fl">1.5</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb58" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/include_graphics.html">include_graphics</a></span><span class="op">(</span><span class="st">"images/duncan-av-influence.png"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div id="fig-duncan-av-influence" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-duncan-av-influence-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <img src="images/duncan-av-influence.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-duncan-av-influence-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;6.27: Added variable plots for the Duncan model, highlighting the impact of the observations for min ister and conductor in each plot. The red line in each panel shows the partial regression line omitting these observations.
+Figure&nbsp;6.27: Added variable plots for the Duncan model, highlighting the impact of the observations for min ister and conductor in each plot. The red line in each panel shows the regression line omitting these observations.
 </figcaption></figure>
 </div>
 </div>
 </div>
-<p>The two cases—minister and conductor— are the most highly influential, and …</p>
-<p><strong>TODO</strong>: The regression lines omitting these cases aren’t correct. Fix this.</p>
+<p>The two cases—minister and conductor— are the most highly influential, but as we can see in <a href="#fig-duncan-av-influence" class="quarto-xref">Figure&nbsp;<span>6.27</span></a> their influence combines because they are at opposite sides of the horizontal axis and their residuals are of opposite signs They act together to decrease the slope for income and increase that for education.</p>
+<div class="cell" data-layout-align="center">
+<details class="code-fold"><summary>Code for income AV plot</summary><div class="sourceCode" id="cb58" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/car/man/avPlots.html">avPlot</a></span><span class="op">(</span><span class="va">duncan.mod</span>, <span class="st">"income"</span>,</span>
+<span>              ellipse <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>levels <span class="op">=</span> <span class="fl">0.68</span><span class="op">)</span>,</span>
+<span>              id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>method <span class="op">=</span> <span class="st">"mahal"</span>, n<span class="op">=</span><span class="fl">3</span><span class="op">)</span>,</span>
+<span>              pch <span class="op">=</span> <span class="fl">16</span>,</span>
+<span>              cex.lab <span class="op">=</span> <span class="fl">1.5</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">prestige</span> <span class="op">~</span> <span class="va">income</span>, data <span class="op">=</span> <span class="va">res</span><span class="op">)</span></span>
+<span><span class="va">info</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">res</span>, fitted <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/fitted.values.html">fitted</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>, </span>
+<span>             resids <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/residuals.html">residuals</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>,</span>
+<span>             hat <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/influence.measures.html">hatvalues</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>,</span>
+<span>             cookd <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/influence.measures.html">cooks.distance</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># noteworthy points in this plot</span></span>
+<span><span class="va">big</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html">which</a></span><span class="op">(</span><span class="va">info</span><span class="op">$</span><span class="va">cookd</span> <span class="op">&gt;</span> <span class="fl">.20</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/with.html">with</a></span><span class="op">(</span><span class="va">info</span>, <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/graphics/arrows.html">arrows</a></span><span class="op">(</span><span class="va">income</span><span class="op">[</span><span class="va">big</span><span class="op">]</span>, <span class="va">fitted</span><span class="op">[</span><span class="va">big</span><span class="op">]</span>, <span class="va">income</span><span class="op">[</span><span class="va">big</span><span class="op">]</span>, <span class="va">prestige</span><span class="op">[</span><span class="va">big</span><span class="op">]</span>, </span>
+<span>         angle <span class="op">=</span> <span class="fl">12</span>, length <span class="op">=</span> <span class="fl">.18</span>, lwd <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">"darkgreen"</span><span class="op">)</span></span>
+<span>  <span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># line w/o the unusual points</span></span>
+<span><span class="va">duncan.mod2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/update.html">update</a></span><span class="op">(</span><span class="va">duncan.mod</span>, </span>
+<span>    subset <span class="op">=</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/pkg/car/man/which.names.html">whichNames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"minister"</span>, <span class="st">"conductor"</span><span class="op">)</span>, <span class="va">Duncan</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">bs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">duncan.mod2</span><span class="op">)</span><span class="op">[</span><span class="st">"income"</span><span class="op">]</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html">abline</a></span><span class="op">(</span>a<span class="op">=</span><span class="fl">0</span>, b<span class="op">=</span><span class="va">bs</span>, col <span class="op">=</span> <span class="st">"red"</span>, lwd<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
 <p><strong>Package summary</strong></p>
 <div class="cell" data-layout-align="center">
 <pre data-code-line-numbers=""><code>#&gt; Writing packages to  C:/R/Projects/Vis-MLM-book/bib/pkgs.txt

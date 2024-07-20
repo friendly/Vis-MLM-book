@@ -71,8 +71,6 @@ avPlots(duncan.mod,
 # conductor     wc     76        34       38
 # RR.engineer   bc     81        28       67
 
-# delete minister, conductor
-duncan.mod2 <- update(duncan.mod, subset = - whichNames(c("minister", "conductor"), Duncan))
 
 avPlots(duncan.mod2,
         ellipse = list(levels = 0.68, fill = TRUE, fill.alpha = 0.1),
@@ -83,6 +81,10 @@ avPlots(duncan.mod2,
 
 
 #' ## show the leverage of the unusual points
+
+# delete minister, conductor
+duncan.mod2 <- update(duncan.mod, 
+                      subset = - whichNames(c("minister", "conductor"), Duncan))
 
 par(mar = c(4, 5, 4, 1)+.1,
     mfrow = c(1,2))
@@ -105,8 +107,9 @@ with(info, {
          angle = 12, length = .18, lwd = 2, col = "darkgreen")
   })
 
-# remove the unusual points
-update(fit, data = Duncan[-big, ]) |> abline(col = "red", lwd=2)
+# line w/o the unusual points
+bs <- coef(duncan.mod2)["income"]
+abline(a=0, b=bs, col = "red", lwd=2)
 
 
 # same for education
@@ -128,8 +131,9 @@ with(info, {
          angle = 12, length = .18, lwd = 2, col = "darkgreen")
 })
 
-# remove the unusual points
-update(fit, data = Duncan[-big, ]) |> abline(col = "red", lwd=2)
+# line w/o the unusual points
+bs <- coef(duncan.mod2)["education"]
+abline(a=0, b=bs, col = "red", lwd=2)
 
 par(op)
 
