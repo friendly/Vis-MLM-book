@@ -19,25 +19,26 @@ In the second case, student "aptitude" or "achievement" reflects competency in d
 
 In this context, there are multiple techniques that can be applied depending on the structure of the variables at hand. For instance, with one or more continuous predictors and multiple response variables, one could use multivariate regression to obtain estimates useful for prediction. Instead, if the predictors are categorical, multivariate analysis of variance (MANOVA) can be applied to test for differences between groups. Again, this is akin to multiple regression and ANOVA in the univariate context -- the same underlying model is utilized, but the tests for terms in the model are multivariate ones for the collection of all response variables, rather than univariate ones for a single response.
 
-**TODO** Use `\Epsilon` = $\Epsilon$ here, which is defined as `\boldsymbol{\large\varepsilon}` for residuals.
-Could also use a larger version, `\boldsymbol{\Large\varepsilon}` =
-$\boldsymbol{\Large\varepsilon}$ if that makes a difference.
+<!-- **TODO** Use `\Epsilon` = $\Epsilon$ here, which is defined as `\boldsymbol{\large\varepsilon}` for residuals. -->
+<!-- Could also use a larger version, `\boldsymbol{\Large\varepsilon}` = -->
+<!-- $\boldsymbol{\Large\varepsilon}$ if that makes a difference. -->
 
+## Structure of the MLM
 In each of these cases, the underlying MLM is given most compactly using the matrix equation, <!-- $$ --> 
 <!-- \newcommand{\sizedmat}[2]{\mathord{\mathop{\mathbf{#1}\limits_{(#2)}}} --> 
 <!-- $$ -->
 
 $$
 \sizedmat{Y}{n \times p} = 
-\sizedmat{X}{n \times q} \, \sizedmat{B}{q \times p} + \sizedmat{U}{n \times p} \:\: ,
+\sizedmat{X}{n \times q} \, \sizedmat{B}{q \times p} + \sizedmat{\Epsilon}{n \times p} \:\: ,
 $$
 
 where
 
 -   $\mathbf{Y} = (\mathbf{y}_1 , \mathbf{y}_2, \dots , \mathbf{y}_p )$ is the matrix of $n$ observations on $p$ responses;
 -   $\mathbf{X}$ is the model matrix with columns for $q$ regressors, which typically includes an initial column of 1s for the intercept;
--   $\mathbf{B}$ is a matrix of regression coefficients, one column for each response variable; and 
--   $\mathbf{U}$ is a matrix of errors in predicting $\mathbf{Y}$.
+-   $\mathbf{B} = ( \mathbf{b}_1 , \mathbf{b}_2 , \dots , \mathbf{b}_p )$ is a matrix of regression coefficients, one column for each response variable; and 
+-   $\Epsilon$ is a matrix of errors in predicting $\mathbf{Y}$.
 
 The structure of the model matrix $\mathbf{X}$ is the same as the univariate linear model, and may contain, therefore, 
 
@@ -48,21 +49,48 @@ The structure of the model matrix $\mathbf{X}$ is the same as the univariate lin
 * interaction terms, involving either quantitative or categorical predictors, e.g., `age * sex`, `treatment * sex`.
 
 ### Assumptions
-The assumptions of the multivariate linear model entirely concern the behavior of the errors (residuals). 
-Let $\mathbf{u}_{i}^{\prime}$ represent the $i$th row of $\mathbf{U}$. Then it is assumed that 
+Just as in univariate models, the assumptions of the multivariate linear model entirely concern the behavior of the errors (residuals). 
+Let $\mathbf{\epsilon}_{i}^{\prime}$ represent the $i$th row of $\Epsilon$. Then it is assumed that:
 
-* The residuals, $\mathbf{u}_{i}^{\prime}$ are distributed as multivariate normal, 
+* The residuals, $\mathbf{\epsilon}_{i}^{\prime}$ are distributed as multivariate normal, 
 $\mathcal{N}_{p}(\mathbf{0},\boldsymbol{\Sigma})$, 
 where $\mathbf{\Sigma}$ 
-is a non-singular error-covariance matrix;
-* The error-covariance matrix $\mathbf{\Sigma}$ is constant across all observations and grouping factors;
-* $\mathbf{u}_{i}^{\prime}$ and $\mathbf{u}_{j}^{\prime}$ are independent for $i\neq j$; and 
-* The predictors, $\mathbf{X}$, are fixed or independent of $\mathbf{U}$. 
+is a non-singular error-covariance matrix. This can be assessed visually using a $\chi^2$ QQ plot
+of Mahalanobis squared distance against their corresponding $\chi^2_p$ values.
+* The error-covariance matrix $\mathbf{\Sigma}$ is constant across all observations and grouping factors.
+Graphical methods to determine if this assumption is met are described in @sec-eqcov.
+* $\mathbf{\epsilon}_{i}^{\prime}$ and $\mathbf{\epsilon}_{j}^{\prime}$ are independent for $i\neq j$; and 
+* The predictors, $\mathbf{X}$, are fixed or independent of $\Epsilon$. 
 
 These statements are simply the
 multivariate analogs of the assumptions of normality, constant variance and independence
 of the errors in univariate models.
 
+### Fitting the model
+
+The least squares (and also maximum likelihood) solution for the coefficients $\mathbf{B}$ is given by
+
+$$
+\widehat{\mathbf{B}} = (\mathbf{X}\trans \mathbf{X})^{-1} \mathbf{X}\trans \mathbf{Y} \period
+$$
+
+This is precisely the same as fitting the separate responses $\mathbf{y}_1 , \mathbf{y}_2 , \dots , \mathbf{y}_p $,
+and placing the estimated coefficients $\widehat{\mathbf{b}}_i$ as columns in $\widehat{\mathbf{B}}$
+
+$$
+\widehat{\mathbf{B}} = [ \widehat{\mathbf{b}}_1, \widehat{\mathbf{b}}_2, \dots , \widehat{\mathbf{b}}_p] \period
+$$
+In R, we fit the multivariate linear model simply by giving a collection of response variables `y1, y2, ...`
+on the left-hand side of the model formula, wrapped in `cbind()` which combines them to form a matrix response.
+
+```{r mlm-lm}
+#| eval: false
+lm( cbind(y1, y2, y3) ~ x1 + x2 + ..., data=)
+```
+
+### Sums of squares
+
+In univariate response models, statistical tests and model summaries (like $R^2$) ...
 
 ## ANOVA $\rightarrow$ MANOVA
 
