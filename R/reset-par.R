@@ -5,6 +5,13 @@
 #library(constructive)
 #construct(par())
 
+# reset_par <- eval(parse(text = c(
+#   "function () {",
+#   # indent
+#   paste0("  ", constructive::construct(par())$code),
+#   "}"
+# )))
+
 # check these against R gui
 reset_par <- function(){
   list(
