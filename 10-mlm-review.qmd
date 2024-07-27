@@ -6,22 +6,27 @@ source("R/common.R")
 
 # Multivariate Linear Model {#sec-mlm-review}
 
-The general Multivariate Linear Model (MLM) can be understood as a simple extension of the univariate linear model, with the main difference being that there are multiple response variables considered together, instead of just one, analysed alone.
+@sec-Hotelling introduced the essential ideas of multivariate analysis in the context of a two-group design
+using Hotelling's $T^2. Here, I extend this to the to the general
+Multivariate Linear Model (MLM). This can be understood as a simple extension of the univariate linear model, with the main difference being that there are multiple response variables considered together, instead of just one, analysed alone.
 These outcomes might reflect several different ways or scales for measuring an underlying theoretical construct,
 or they might represent different aspects of some phenomenon that are better understood when studied jointly.
 
-For example, in the first case, there are numerous psychological scales used to assess depression or anxiety
+For example, in the first case of different measures, there are numerous psychological scales used to assess depression or anxiety
 and it may be important to include more than one measure to ensure that the construct has been measured adequately.
-In the second case, student "aptitude" or "achievement" reflects competency in different various subjects
+In the second case of various aspects, student "aptitude" or "achievement" reflects competency in different various subjects
 (reading, math, history, science, ...) that are better studied together.
 
 
 
-In this context, there are multiple techniques that can be applied depending on the structure of the variables at hand. For instance, with one or more continuous predictors and multiple response variables, one could use multivariate regression to obtain estimates useful for prediction. Instead, if the predictors are categorical, multivariate analysis of variance (MANOVA) can be applied to test for differences between groups. Again, this is akin to multiple regression and ANOVA in the univariate context -- the same underlying model is utilized, but the tests for terms in the model are multivariate ones for the collection of all response variables, rather than univariate ones for a single response.
+In this context, there are multiple techniques that can be applied depending on the structure of the variables at hand. For instance, with one or more continuous predictors and multiple response variables, one could use multivariate multiple regression (MMRA) to obtain estimates useful for prediction. Instead, if the predictors are categorical, multivariate analysis of variance (MANOVA) can be applied to test for differences between groups. Again, this is akin to multiple regression and ANOVA in the univariate context -- the same underlying model is utilized, but the tests for terms in the model are multivariate ones for the collection of all response variables, rather than univariate ones for a single response.
 
 <!-- **TODO** Use `\Epsilon` = $\Epsilon$ here, which is defined as `\boldsymbol{\large\varepsilon}` for residuals. -->
 <!-- Could also use a larger version, `\boldsymbol{\Large\varepsilon}` = -->
 <!-- $\boldsymbol{\Large\varepsilon}$ if that makes a difference. -->
+
+Before considering the details and examples that apply to MANOVA and MMRA, it is useful to consider the 
+features of the multivariate linear model of which these cases are examples.
 
 ## Structure of the MLM
 In each of these cases, the underlying MLM is given most compactly using the matrix equation, <!-- $$ --> 
@@ -167,27 +172,59 @@ can all be converted to $F$ statistics, which are exact when $s \le 2$, and appr
 As well, each has an analog of the $R^2$-like partial $\eta^2$ measure, giving the partial association
 accounted for by each term in the MLM.
 
-<!-- Does the `parse-latex` filter work? -->
+Does the `parse-latex` filter work?
 
-<!-- ```{=latex} -->
-<!-- \begin{center} -->
-<!-- \begin{tabular}{|l|l|l|l|} -->
-<!--   \hline -->
-<!--   % after \\: \hline or \cline{col1-col2} \cline{col3-col4} ... -->
-<!--   Criterion & Formula &  Partial $\eta^2$   \\ -->
-<!--   \hline -->
-<!--   Wilks's $\Lambda$ & $\Lambda = \prod^s_i \frac{1}{1+\lambda_i}$ &  $\eta^2 = 1-\Lambda^{1/s}$   \\ -->
-<!--   Pillai trace & $V = \sum^s_i \frac{\lambda_i}{1+\lambda_i}$ &  $\eta^2 = \frac{V}{s} $   \\ -->
-<!--   Hotelling-Lawley trace & $H = \sum^s_i \lambda_i$ & $\eta^2 = \frac{H}{H+s}$   \\ -->
-<!--   Roy maximum root & $R = \lambda_1$  &  $ \eta^2 = \frac{\lambda_1}{1+\lambda_1}  \\ -->
-<!--   \hline -->
-<!-- \end{tabular} -->
-<!-- \end{center} -->
-<!-- ``` -->
+```{=latex}
+\begin{center}
+\begin{tabular}{|l|l|l|l|}
+  \hline
+  % after \\: \hline or \cline{col1-col2} \cline{col3-col4} ...
+  Criterion & Formula &  Partial $\eta^2$   \\
+  \hline
+  Wilks's $\Lambda$ & $\Lambda = \prod^s_i \frac{1}{1+\lambda_i}$ &  $\eta^2 = 1-\Lambda^{1/s}$   \\
+  Pillai trace & $V = \sum^s_i \frac{\lambda_i}{1+\lambda_i}$ &  $\eta^2 = \frac{V}{s} $   \\
+  Hotelling-Lawley trace & $H = \sum^s_i \lambda_i$ & $\eta^2 = \frac{H}{H+s}$   \\
+  Roy maximum root & $R = \lambda_1$  &  $ \eta^2 = \frac{\lambda_1}{1+\lambda_1}  \\
+  \hline
+\end{tabular}
+\end{center}
+```
 
 
 ## ANOVA $\rightarrow$ MANOVA
 
+Multivariate analysis of variance (MANOVA) generalizes the familiar ANOVA model to situations where there are two or more response variables.
+Unlike ANOVA, which focuses on discerning statistical differences in one continuous dependent variable influenced by an independent variable (or grouping variable), MANOVA considers several dependent variables at once. It integrates these variables into a single, composite variable through a weighted linear combination, allowing for a comprehensive analysis of how these dependent variables collectively vary with respect to the levels of the independent variable. Essentially, MANOVA investigates whether the grouping variable explains significant variations in the combined dependent variables.
+
+The situation is illustrated in @fig-manova-diagram where there are two response measures, $Y_1$ and $Y_2$
+with data collected for three groups. For concreteness, $Y_1$ might be a score on a math test and $Y_2$ might be a
+reading score. Let's also say that group 1 has been studying Shakespeare, while group 2 has concentrated on physics,
+but group 3 has done nothing beyond the normal curriculum.
+
+
+```{r}
+#| label: fig-manova-diagram
+#| echo: false
+#| out-width: "75%"
+#| fig-cap: "Data from simple MANOVA design involving three groups and two response measures, $Y_1$ and $Y_2$, summarized by their data ellipses."
+knitr::include_graphics(here::here("images", "manova-diagram-anno.png"))
+```
+
+As shown in the figure, the centroids, $(\mu_{1g}, \mu_{2g})$, clearly differ---the data ellipses barely overlap.
+A multivariate analysis would show a highly difference among groups.
+From a rough visual inspection, it might be the case that means differ on the math test $Y_1$, with the
+physics group out-performing the other two. On the reading test $Y_2$ however it might turn out that the three
+group means don't differ significantly in an ANOVA, although the Shakespeare group comes out best by a small amount.
+Doing separate ANOVAs on these variables would miss what is so obvious from @fig-manova-diagram.
+
+
+```{r}
+#| label: fig-manova-response-dimensions
+#| echo: false
+#| out-width: "100%"
+#| fig-cap: "A simple MANOVA design involving three groups and two response measures, $Y_1$ and $Y_2$, but with different patterns of the differences among the group means."
+knitr::include_graphics(here::here("images", "manova-response-dimensions.png"))
+```
 
 
 ## MRA -> MMRA
