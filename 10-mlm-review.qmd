@@ -7,7 +7,7 @@ source("R/common.R")
 # Multivariate Linear Model {#sec-mlm-review}
 
 @sec-Hotelling introduced the essential ideas of multivariate analysis in the context of a two-group design
-using Hotelling's $T^2. Here, I extend this to the to the general
+using Hotelling's $T^2$. Here, I extend this to the to the general
 Multivariate Linear Model (MLM). This can be understood as a simple extension of the univariate linear model, with the main difference being that there are multiple response variables considered together, instead of just one, analysed alone.
 These outcomes might reflect several different ways or scales for measuring an underlying theoretical construct,
 or they might represent different aspects of some phenomenon that are better understood when studied jointly.
@@ -28,6 +28,8 @@ In this context, there are multiple techniques that can be applied depending on 
 Before considering the details and examples that apply to MANOVA and MMRA, it is useful to consider the 
 features of the multivariate linear model of which these cases are examples.
 
+**Packages**
+
 ## Structure of the MLM
 In each of these cases, the underlying MLM is given most compactly using the matrix equation, <!-- $$ --> 
 <!-- \newcommand{\sizedmat}[2]{\mathord{\mathop{\mathbf{#1}\limits_{(#2)}}} --> 
@@ -37,6 +39,7 @@ $$
 \sizedmat{Y}{n \times p} = 
 \sizedmat{X}{n \times q} \, \sizedmat{B}{q \times p} + \sizedmat{\Epsilon}{n \times p} \:\: ,
 $$
+{#eq-mlm}
 
 where
 
@@ -71,7 +74,7 @@ These statements are simply the
 multivariate analogs of the assumptions of normality, constant variance and independence
 of the errors in univariate models.
 
-### Fitting the model
+## Fitting the model
 
 The least squares (and also maximum likelihood) solution for the coefficients $\mathbf{B}$ is given by
 
@@ -103,10 +106,10 @@ elements. For the MLM this is expressed as
 
 \begin{eqnarray*}
 \underset{(p\times p)}{\mathbf{SSP}_{T}}
-& = & \mathbf{Y}^{\prime} \mathbf{Y} - n \overline{\mathbf{y}}\,\overline{\mathbf{y}}^{\prime} \\
-& = & \left(\widehat {\mathbf{Y}}^{\prime}\widehat{\mathbf{Y}} - n\overline{\mathbf{y}}\,\overline{\mathbf{y}}^{\prime} \right) + \widehat{\Epsilon}^{\prime}\widehat{\Epsilon} \\
-& = &  \mathbf{SSP}_{H} + \mathbf{SSP}_{E} \\
-& \equiv & \mathbf{H} + \mathbf{E} \comma
+& = && \mathbf{Y}^{\prime} \mathbf{Y} - n \overline{\mathbf{y}}\,\overline{\mathbf{y}}^{\prime} \\
+& = && \left(\widehat {\mathbf{Y}}^{\prime}\widehat{\mathbf{Y}} - n\overline{\mathbf{y}}\,\overline{\mathbf{y}}^{\prime} \right) + \widehat{\Epsilon}^{\prime}\widehat{\Epsilon} \\
+& = &&  \mathbf{SSP}_{H} + \mathbf{SSP}_{E} \\
+& \equiv && \mathbf{H} + \mathbf{E} \comma
 \end{eqnarray*}
 
 <!-- $$ -->
@@ -121,6 +124,7 @@ where
 $\overline{\mathbf{y}}$ is the $(p\times 1)$ vector of means for the response variables; $\widehat{\mathbf{Y}} = \mathbf{X}\widehat{\mathbf{B}}$ is the matrix of fitted values; and $\widehat{\Epsilon} = \mat{Y} -\widehat{\mat{Y}}$ is the matrix of residuals. 
 This is the decomposition that we visualize in HE plots,
 where the size and direction of $\mathbf{H}$ and $\mathbf{E}$ can be represented as ellipsoids.
+
 
 The univariate $F$ test statistic, 
 $$F = \frac{\text{SS}_H/\text{df}_h}{\text{SS}_E/\text{df}_e} = \frac{\mathsf{Var}(H)}{\mathsf{Var}(E)} \comma
@@ -139,7 +143,7 @@ $$
 \H \E^{-1} \; \lambda_i = \lambda_i \mathbf{v}_i \period
 $$
 However, when the hypothesized model terms have $\text{df}_h$ degrees of freedom (columns of the $\mathbf{X} matrix for that term), $\H$ is of rank $\text{df}_h$,
-so only $s=\min(p, df_h)$ eigenvalues can be non-zero.
+so only $s=\min(p, \text{df}_h)$ eigenvalues can be non-zero.
 
 <!-- This -->
 <!-- has a direct multivariate analog in terms of -->
@@ -150,6 +154,13 @@ so only $s=\min(p, df_h)$ eigenvalues can be non-zero.
 <!--  \det{ ( \mathbf{H}\mathbf{E}^{-1} - \lambda \mathbf{I} )} = 0 \Longrightarrow  -->
 <!--  \mathbf{H}\mathbf{E}^{-1} \lambda_i = \lambda_i \mathbf{v}_i \period -->
 <!-- $$ -->
+
+The overall multivariate test for the model in @eq-mlm is essentially a test of the hypothesis
+$H_0: \mathbf{B} = 0$ (excluding the row for the intercept). 
+Equivalently, this is a test based on the _incremental_ $\mathbf{SSP}_{H}$ for the hypothesized
+terms in the model---that is, the difference between the $\mathbf{SSP}_{H}$ for the full model
+and the null, intercept-only model.
+The same idea can be applied to test the difference between any pair of _nested_ models---the added contribution of terms in a larger model relative to a smaller model containing a subet of terms.
 
 ### Test statistics
 
@@ -172,23 +183,26 @@ can all be converted to $F$ statistics, which are exact when $s \le 2$, and appr
 As well, each has an analog of the $R^2$-like partial $\eta^2$ measure, giving the partial association
 accounted for by each term in the MLM.
 
-Does the `parse-latex` filter work?
+<!-- Does the `parse-latex` filter work? -->
 
-```{=latex}
-\begin{center}
-\begin{tabular}{|l|l|l|l|}
-  \hline
-  % after \\: \hline or \cline{col1-col2} \cline{col3-col4} ...
-  Criterion & Formula &  Partial $\eta^2$   \\
-  \hline
-  Wilks's $\Lambda$ & $\Lambda = \prod^s_i \frac{1}{1+\lambda_i}$ &  $\eta^2 = 1-\Lambda^{1/s}$   \\
-  Pillai trace & $V = \sum^s_i \frac{\lambda_i}{1+\lambda_i}$ &  $\eta^2 = \frac{V}{s} $   \\
-  Hotelling-Lawley trace & $H = \sum^s_i \lambda_i$ & $\eta^2 = \frac{H}{H+s}$   \\
-  Roy maximum root & $R = \lambda_1$  &  $ \eta^2 = \frac{\lambda_1}{1+\lambda_1}  \\
-  \hline
-\end{tabular}
-\end{center}
-```
+<!-- ```{=latex} -->
+<!-- \begin{center} -->
+<!-- \begin{tabular}{|l|l|l|l|} -->
+<!--   \hline -->
+<!--   % after \\: \hline or \cline{col1-col2} \cline{col3-col4} ... -->
+<!--   Criterion & Formula &  Partial $\eta^2$   \\ -->
+<!--   \hline -->
+<!--   Wilks's $\Lambda$ & $\Lambda = \prod^s_i \frac{1}{1+\lambda_i}$ &  $\eta^2 = 1-\Lambda^{1/s}$   \\ -->
+<!--   Pillai trace & $V = \sum^s_i \frac{\lambda_i}{1+\lambda_i}$ &  $\eta^2 = \frac{V}{s} $   \\ -->
+<!--   Hotelling-Lawley trace & $H = \sum^s_i \lambda_i$ & $\eta^2 = \frac{H}{H+s}$   \\ -->
+<!--   Roy maximum root & $R = \lambda_1$  &  $ \eta^2 = \frac{\lambda_1}{1+\lambda_1}  \\ -->
+<!--   \hline -->
+<!-- \end{tabular} -->
+<!-- \end{center} -->
+<!-- ``` -->
+
+### Testing contrasts and linear hypotheses
+
 
 
 ## ANOVA $\rightarrow$ MANOVA
@@ -212,23 +226,42 @@ knitr::include_graphics(here::here("images", "manova-diagram-anno.png"))
 
 As shown in the figure, the centroids, $(\mu_{1g}, \mu_{2g})$, clearly differ---the data ellipses barely overlap.
 A multivariate analysis would show a highly difference among groups.
-From a rough visual inspection, it might be the case that means differ on the math test $Y_1$, with the
+From a rough visual inspection, it seems that means differ on the math test $Y_1$, with the
 physics group out-performing the other two. On the reading test $Y_2$ however it might turn out that the three
 group means don't differ significantly in an ANOVA, although the Shakespeare group comes out best by a small amount.
 Doing separate ANOVAs on these variables would miss what is so obvious from @fig-manova-diagram.
 
+@fig-manova-response-dimensions illustrates a second important advantage of performing
+a multivariate analysis over separate ANOVAS: that of determining the number of dimensions or aspects
+along which groups differ. In the panel on the left, the means of the three groups increase nearly
+linearly on the combination of $Y_1$ and $Y_2$, to their differences can be ascribed to a single
+dimension. For example, the groups here might be patients diagnosed as normal, mild schizophrenia
+and profound schizophrenia, and the measures could be tests of memory and attention.
+The obvious multivariate interpretation from the figure is that of increasing impairment
+of cognitive functioning across the groups. Note also the positive association within each group:
+those who perform better on the memory task also do better on attention.
 
 ```{r}
 #| label: fig-manova-response-dimensions
 #| echo: false
 #| out-width: "100%"
-#| fig-cap: "A simple MANOVA design involving three groups and two response measures, $Y_1$ and $Y_2$, but with different patterns of the differences among the group means."
-knitr::include_graphics(here::here("images", "manova-response-dimensions.png"))
+#| fig-cap: "A simple MANOVA design involving three groups and two response measures, $Y_1$ and $Y_2$, but with different patterns of the differences among the group means. The red arrows suggest interpretations in terms of dimensions or aspects of the response variables."
+knitr::include_graphics(here::here("images", "manova-response-dimensions-anno.png"))
 ```
 
+In contrast, the right panel of @fig-manova-response-dimensions shows a situation where the group means
+have a low correlation. Data like this might arise in a study of parental competency, where there are
+are measure of the degree of caring ($Y_1$) and time spent in play ($Y_2$) by fathers and groups consisting of fathers of children with no disability, or a physical disability or a mental ability.
+As can be seen in @fig-manova-response-dimensions fathers of the disabled children differ from those
+of the not disabled group in two different directions corresponding to being higher on either
+$Y_1$ or $Y_2$. The `r colorize("red")` arrows suggest that the differences among groups could be
+interpreted in terms of two uncorrelated dimensions, perhaps labeled overall competancy and emphasis
+on physical activity.
 
-## MRA -> MMRA
 
-## ANCOVA -> MANCOVA
+
+## MRA $\rightarrow$ MMRA
+
+## ANCOVA $\rightarrow$ MANCOVA
 
 ## Repeated measures designs
