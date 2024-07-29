@@ -7,6 +7,11 @@ library(tidyr)
 library(broom)
 data(Parenting, package="heplots")
 
+covEllipses(cbind(caring, play) ~ group, data=Parenting,
+            pooled = FALSE,
+            level = 0.50)
+
+
 #' ## Initial view: side-by-side boxplots for a multivariate response
 
 parenting_long <- Parenting |>
