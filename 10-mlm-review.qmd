@@ -50,28 +50,37 @@ where
 The structure of the model matrix $\mathbf{X}$ is the same as the univariate linear model, and may contain, therefore, 
 
 * quantitative predictors, such as `age`, `income`, years of `education`
-* transformed predictors like $\sqrt{\text{age}}$ or $\log{\text{income}}$
+* transformed predictors like $\sqrt{\text{age}}$ or $\log{(\text{income})}$
 * polynomial terms: $\text{age}^2$, $\text{age}^3, \dots$ (using `poly(age, k)` in R)
 * categorical predictors ("factors"), such as treatment (Control, Drug A, drug B), or sex; internally a factor with `k` levels is transformed to `k-1` dummy (0, 1) variables, representing comparisons with a reference level, typically the first.
 * interaction terms, involving either quantitative or categorical predictors, e.g., `age * sex`, `treatment * sex`.
 
 ### Assumptions
-Just as in univariate models, the assumptions of the multivariate linear model entirely concern the behavior of the errors (residuals). 
+Just as in univariate models, the assumptions of the multivariate linear model almost entirely concern the behavior of the errors (residuals). 
 Let $\mathbf{\epsilon}_{i}^{\prime}$ represent the $i$th row of $\Epsilon$. Then it is assumed that:
 
-* The residuals, $\mathbf{\epsilon}_{i}^{\prime}$ are distributed as multivariate normal, 
+* **Normality**: The residuals, $\mathbf{\epsilon}_{i}^{\prime}$ are distributed as multivariate normal, 
 $\mathcal{N}_{p}(\mathbf{0},\boldsymbol{\Sigma})$, 
 where $\mathbf{\Sigma}$ 
 is a non-singular error-covariance matrix. This can be assessed visually using a $\chi^2$ QQ plot
 of Mahalanobis squared distance against their corresponding $\chi^2_p$ values.
-* The error-covariance matrix $\mathbf{\Sigma}$ is constant across all observations and grouping factors.
+* **Homoscedasticity**: The error-covariance matrix $\mathbf{\Sigma}$ is constant across all observations and grouping factors.
 Graphical methods to determine if this assumption is met are described in @sec-eqcov.
-* $\mathbf{\epsilon}_{i}^{\prime}$ and $\mathbf{\epsilon}_{j}^{\prime}$ are independent for $i\neq j$; and 
+* **Independence**: $\mathbf{\epsilon}_{i}^{\prime}$ and $\mathbf{\epsilon}_{j}^{\prime}$ are independent for $i\neq j$; and 
 * The predictors, $\mathbf{X}$, are fixed or independent of $\Epsilon$. 
 
 These statements are simply the
 multivariate analogs of the assumptions of normality, constant variance and independence
-of the errors in univariate models.
+of the errors in univariate models. Note that it is unnecessary to assume that the predictors 
+(regressors, columns of $\mathbf{X}$) are normally distributed. 
+
+Implicit in the above is perhaps the most important assumption---that the model has been correctly specified. This means:
+
+* **Linearity**: The form of the relations between each $\mathbf{y}$ and the $\mathbf{x}$s is correct. Typically this means that the relations are _linear_, but if not, we have specified a correct transformation of $\mathbf{y}$ and/or $\mathbf{x}$.
+
+* **Completeness**: No relevant predictors have been omitted from the model.
+
+* **Additive effects**:  The combined effect of different predictors is the sum of their individual effects.
 
 ## Fitting the model
 
@@ -165,7 +174,8 @@ The same idea can be applied to test the difference between any pair of _nested_
 
 The import of the above is that when there are $p > 1$ response variables, and we are testing
 a hypothesis comprising $\text{df}_h >1$ coefficients or degrees of freedom, there are $s > 1$
-possible dimensions in which $\H$ can be large relative to $\E$. There are several test
+possible dimensions in which $\H$ can be large relative to $\E$, each measured by the
+eigenvalue $\lambda_i$. There are several test
 statistics that combine these into a single measure. 
 
 $$
@@ -177,28 +187,31 @@ $$
 \end{align*}
 $$
 
-Each of these statistics have different distributions under the null hypothesis, but they
+These correspond to different kinds of "means" of the $\lambda_i$: arithmetic, geometric, harmonic
+and supremum. See @Friendly-etal:ellipses:2013 for the geometry behind these measures.
+
+Each of these statistics have different sampling distributions under the null hypothesis, but they
 can all be converted to $F$ statistics, which are exact when $s \le 2$, and approximations otherwise.
 As well, each has an analog of the $R^2$-like partial $\eta^2$ measure, giving the partial association
 accounted for by each term in the MLM.
 
-<!-- Does the `parse-latex` filter work? -->
+Does the `parse-latex` filter work?
 
-<!-- ```{=latex} -->
-<!-- \begin{center} -->
-<!-- \begin{tabular}{|l|l|l|l|} -->
-<!--   \hline -->
-<!--   % after \\: \hline or \cline{col1-col2} \cline{col3-col4} ... -->
-<!--   Criterion & Formula &  Partial $\eta^2$   \\ -->
-<!--   \hline -->
-<!--   Wilks's $\Lambda$ & $\Lambda = \prod^s_i \frac{1}{1+\lambda_i}$ &  $\eta^2 = 1-\Lambda^{1/s}$   \\ -->
-<!--   Pillai trace & $V = \sum^s_i \frac{\lambda_i}{1+\lambda_i}$ &  $\eta^2 = \frac{V}{s} $   \\ -->
-<!--   Hotelling-Lawley trace & $H = \sum^s_i \lambda_i$ & $\eta^2 = \frac{H}{H+s}$   \\ -->
-<!--   Roy maximum root & $R = \lambda_1$  &  $ \eta^2 = \frac{\lambda_1}{1+\lambda_1}  \\ -->
-<!--   \hline -->
-<!-- \end{tabular} -->
-<!-- \end{center} -->
-<!-- ``` -->
+```{=latex}
+\begin{center}
+\begin{tabular}{|l|l|l|l|}
+  \hline
+  % after \\: \hline or \cline{col1-col2} \cline{col3-col4} ...
+  Criterion & Formula &  Partial $\eta^2$   \\
+  \hline
+  Wilks's $\Lambda$ & $\Lambda = \prod^s_i \frac{1}{1+\lambda_i}$ &  $\eta^2 = 1-\Lambda^{1/s}$   \\
+  Pillai trace & $V = \sum^s_i \frac{\lambda_i}{1+\lambda_i}$ &  $\eta^2 = \frac{V}{s} $   \\
+  Hotelling-Lawley trace & $H = \sum^s_i \lambda_i$ & $\eta^2 = \frac{H}{H+s}$   \\
+  Roy maximum root & $R = \lambda_1$  &  $ \eta^2 = \frac{\lambda_1}{1+\lambda_1}$  \\
+  \hline
+\end{tabular}
+\end{center}
+```
 
 ### Testing contrasts and linear hypotheses
 
@@ -207,7 +220,7 @@ in $\mathbf{B}$.  Suppose we want to test the hypothesis that a subset of rows (
 and/or columns (responses) simultaneously have null effects.
 This can be expressed in the general linear test,
 $$
-H_0 : \mathbf{C}_{h \times q} \, \vec{B}_{q \times p} = \mat{0}_{h \times p} \comma
+H_0 : \mathbf{C}_{h \times q} \, \mathbf{B}_{q \times p} = \mathbf{0}_{h \times p} \comma
 $$
 where $\mathbf{C}$ is a  full rank $h \le q$ hypothesis matrix of constants, that selects 
 subsets or linear combinations (contrasts) of the coefficients in $\mathbf{B}$ to be tested
@@ -222,10 +235,10 @@ $$
 $${#eq-hmat}
 
 where there are $s = \min(h, p)$ non-zero eigenvalues of $\mat{H}\mat{E}^{-1}$.
-In @eq-hmat $\mathbd{H}$ measures the (Mahalanobis) squared distances (and cross products) among
+In @eq-hmat $\mathbf{H}$ measures the (Mahalanobis) squared distances (and cross products) among
 the linear combinations $\mathbf{C} \widehat{\mathbf{B}}$ from the origin under the null hypothesis.
 An animated display of these ideas and the relations between data ellipses and HE plots can be seen at
-http://www.datavis.ca/gallery/animation/manova/.
+[https://www.datavis.ca/gallery/animation/manova/](https://www.datavis.ca/gallery/animation/manova/).
 
 
 
