@@ -66,8 +66,8 @@ is a non-singular error-covariance matrix. This can be assessed visually using a
 of Mahalanobis squared distance against their corresponding $\chi^2_p$ values.
 * **Homoscedasticity**: The error-covariance matrix $\mathbf{\Sigma}$ is constant across all observations and grouping factors.
 Graphical methods to determine if this assumption is met are described in @sec-eqcov.
-* **Independence**: $\mathbf{\epsilon}_{i}^{\prime}$ and $\mathbf{\epsilon}_{j}^{\prime}$ are independent for $i\neq j$; and 
-* The predictors, $\mathbf{X}$, are fixed or independent of $\Epsilon$. 
+* **Independence**: $\mathbf{\epsilon}_{i}^{\prime}$ and $\mathbf{\epsilon}_{j}^{\prime}$ are independent for $i\neq j$, so knowing the data for case $i$ gives no information about case $j$ (as would be true if the data consisted of pairs of husbands and wives); 
+* The predictors, $\mathbf{X}$, are fixed and measured without error or independent of $\Epsilon$. 
 
 These statements are simply the
 multivariate analogs of the assumptions of normality, constant variance and independence
@@ -78,7 +78,7 @@ Implicit in the above is perhaps the most important assumption---that the model 
 
 * **Linearity**: The form of the relations between each $\mathbf{y}$ and the $\mathbf{x}$s is correct. Typically this means that the relations are _linear_, but if not, we have specified a correct transformation of $\mathbf{y}$ and/or $\mathbf{x}$.
 
-* **Completeness**: No relevant predictors have been omitted from the model.
+* **Completeness**: No relevant predictors have been omitted from the model. 
 
 * **Additive effects**:  The combined effect of different predictors is the sum of their individual effects.
 
@@ -115,7 +115,7 @@ elements. For the MLM this is expressed as
 \begin{eqnarray*}
 \underset{(p\times p)}{\mathbf{SSP}_{T}}
 & = && \mathbf{Y}^{\prime} \mathbf{Y} - n \overline{\mathbf{y}}\,\overline{\mathbf{y}}^{\prime} \\
-& = && \left(\widehat {\mathbf{Y}}^{\prime}\widehat{\mathbf{Y}} - n\overline{\mathbf{y}}\,\overline{\mathbf{y}}^{\prime} \right) + \widehat{\Epsilon}^{\prime}\widehat{\Epsilon} \\
+& = && \left(\widehat {\mathbf{Y}}^{\prime}\widehat{\mathbf{Y}} - n\overline{\mathbf{y}}\,\overline{\mathbf{y}}^{\prime} \right) + \widehat{\Epsilon^{\prime}}\widehat{\Epsilon} \\
 & = &&  \mathbf{SSP}_{H} + \mathbf{SSP}_{E} \\
 & \equiv && \mathbf{H} + \mathbf{E} \comma
 \end{eqnarray*}
@@ -149,9 +149,12 @@ The solution gives the $\lambda_i$ as the eigenvalues, with vectors $\mathbf{v}_
 eigenvectors,
 $$
 \H \E^{-1} \; \lambda_i = \lambda_i \mathbf{v}_i \period
-$$
-However, when the hypothesized model terms have $\text{df}_h$ degrees of freedom (columns of the $\mathbf{X} matrix for that term), $\H$ is of rank $\text{df}_h$,
-so only $s=\min(p, \text{df}_h)$ eigenvalues can be non-zero.
+$${#eq-he-eigen}
+
+However, when the hypothesized model terms have $\text{df}_h$ degrees of freedom (columns of the $\mathbf{X}$ matrix for that term), $\H$ is of rank $\text{df}_h$,
+so only $s=\min(p, \text{df}_h)$ eigenvalues can be non-zero. For example, a test for
+a hypothesis about a single quantitative predictor $\mathbf{x}$, has $\text{df}_h = 1$ degree of freedom
+and $\rank{H} = 1$; for a factor with $g$ groups, $\text{df}_h = \rank{H} = g-1$.
 
 <!-- This -->
 <!-- has a direct multivariate analog in terms of -->
@@ -168,25 +171,36 @@ $H_0: \mathbf{B} = 0$ (excluding the row for the intercept).
 Equivalently, this is a test based on the _incremental_ $\mathbf{SSP}_{H}$ for the hypothesized
 terms in the model---that is, the difference between the $\mathbf{SSP}_{H}$ for the full model
 and the null, intercept-only model.
-The same idea can be applied to test the difference between any pair of _nested_ models---the added contribution of terms in a larger model relative to a smaller model containing a subet of terms.
+The same idea can be applied to test the difference between any pair of _nested_ models---the added contribution of terms in a larger model relative to a smaller model containing a subset of terms.
+
+The eigenvectors $\mathbf{v}_i$ in @eq-he-eigen are also important. These are the weights for the
+variables in a linear combination 
+$v_{i1} \mathbf{y}_1 + v_{i2} \mathbf{y}_2 + \cdots + v_{ip} \mathbf{y}_p$ which produces the largest
+univariate $F$ statistic for the $i$-th dimension. We exploit this in canonical discriminant analysis
+and the corresponding canonical HE plots (**ref**).
 
 ### Test statistics
 
-The import of the above is that when there are $p > 1$ response variables, and we are testing
+In the univariate case, the overall $F$-test of $H_0: \boldsymbol{\beta} = \mathbf{0}$
+is the uniformly most powerful invariant test when the assumptions are met. There is nothing better.
+This is not the case in the MLM.
+
+The reason is that when there are $p > 1$ response variables, and we are testing
 a hypothesis comprising $\text{df}_h >1$ coefficients or degrees of freedom, there are $s > 1$
 possible dimensions in which $\H$ can be large relative to $\E$, each measured by the
 eigenvalue $\lambda_i$. There are several test
-statistics that combine these into a single measure. 
+statistics that combine these into a single measure, shown in @tbl-mstats.
 
-$$
-\begin{align*}
-\text{Wilks's Lambda} \quad & \Lambda = \prod^s_i \frac{1}{1+\lambda_i} \quad\quad  && \eta^2 = 1-\Lambda^{1/s} \\
-\text{Pillai trace} \quad &   V = \sum^s_i \frac{\lambda_i}{1+\lambda_i} \quad  && \eta^2 = \frac{V}{s}     \\
-\text{Hotelling-Lawley trace} \quad &  H = \sum^s_i \lambda_i \quad\quad   && \eta^2 = \frac{H}{H+s}   \\
-\text{Roy's maximum root} \quad &  R = \lambda_1   \quad\quad         &&  \eta^2 = \frac{\lambda_1}{1+\lambda_1}  \\
-\end{align*}
-$$
-Using the `parse-latex` filter
+
+<!-- $$ -->
+<!-- \begin{align*} -->
+<!-- \text{Wilks's Lambda} \quad & \Lambda = \prod^s_i \frac{1}{1+\lambda_i} \quad\quad  && \eta^2 = 1-\Lambda^{1/s} \\ -->
+<!-- \text{Pillai trace} \quad &   V = \sum^s_i \frac{\lambda_i}{1+\lambda_i} \quad  && \eta^2 = \frac{V}{s}     \\ -->
+<!-- \text{Hotelling-Lawley trace} \quad &  H = \sum^s_i \lambda_i \quad\quad   && \eta^2 = \frac{H}{H+s}   \\ -->
+<!-- \text{Roy's maximum root} \quad &  R = \lambda_1   \quad\quad         &&  \eta^2 = \frac{\lambda_1}{1+\lambda_1}  \\ -->
+<!-- \end{align*} -->
+<!-- $$ -->
+
 
 ::: {#tbl-mstats}
 
@@ -205,7 +219,7 @@ Using the `parse-latex` filter
 \end{tabular}
 \end{center}
 ```
-Test statistics for multivariate tests
+Test statistics for multivariate tests combine the size of dimensions of $\mathbf{H}\mathbf{E}^{-1}$ into a single measure.
 :::
 
 
@@ -245,6 +259,27 @@ the linear combinations $\mathbf{C} \widehat{\mathbf{B}}$ from the origin under 
 An animated display of these ideas and the relations between data ellipses and HE plots can be seen at
 [https://www.datavis.ca/gallery/animation/manova/](https://www.datavis.ca/gallery/animation/manova/).
 
+For example, ...
+
+$$
+\mathcal{H}_0 : \mathbf{C} \mathbf{B} = 
+\begin{bmatrix}
+0 & 1 & 1 & 0
+\end{bmatrix}
+\begin{pmatrix}
+	\beta_{01} & \beta_{02} & \beta_{03} \\ 
+	\beta_{11} & \beta_{12} & \beta_{13} \\ 
+	\beta_{21} & \beta_{22} & \beta_{23} \\ 
+	\beta_{31} & \beta_{32} & \beta_{33} 
+\end{pmatrix}
+=
+\begin{bmatrix}
+	\beta_{11} & \beta_{12} & \beta_{13} \\ 
+	\beta_{21} & \beta_{22} & \beta_{23} \\ 
+\end{bmatrix}
+= 
+\mathbf{0}_{(2 \times 3)}
+$$
 
 
 ## ANOVA $\rightarrow$ MANOVA
