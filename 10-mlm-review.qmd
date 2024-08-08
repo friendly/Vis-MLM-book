@@ -376,11 +376,15 @@ Is there a consistent order of groups across these three aspects of parenting?
 
 More specific questions are: (a) Do the fathers of normal children differ from the other two groups
 on average? (b) Do the physical and mental groups differ? These can be tested using contrasts,
-and were specified in the `Parenting` dataset.
+and are specified by assigning a matrix to `contrasts(Parenting$group); each column is
+a contrast whose values sum to zero. They are given labels `group1` (normal vs. other)
+and `group2` (physical vs. mental) in some output.
 
 ```{r parenting-contrasts}
 data(Parenting, package="heplots")
-contrasts(Parenting$group)
+C <- matrix(c(1, -.5, -.5,
+              0,  1,  -1), nrow = 3, ncol = 2) |> print()
+contrasts(Parenting$group) <- C
 ```
 
 
@@ -400,6 +404,7 @@ parenting_long <- Parenting |>
 ggplot(parenting_long, aes(x=group, y=value, fill=group)) +
   geom_boxplot(outlier.size=2.5, alpha=.9) + 
   stat_summary(fun=mean, color="white", geom="point", size=2) +
+  scale_fill_hue(direction = -1) +
   labs(y = "Scale value", x = "Group") +
   facet_wrap(~ variable) +
   theme_bw(base_size = 14) + 
@@ -417,21 +422,40 @@ homogeneity of the variances and covariance matrices $\mathbf{S}_i$, I show only
 #| label: fig-parenting-covEllipses
 #| out-width: "90%"
 #| fig-cap: Boxplots of scores on the three parenting scales 
+colors <- scales::hue_pal()(3) |> rev()     # match color use in ggplot
 covEllipses(cbind(caring, play, emotion) ~ group, data=Parenting,
   variables = 1:3,
+  fill = TRUE, fill.alpha = 0.2,
   pooled = FALSE,
   level = 0.50, 
-  fill = TRUE, fill.alpha = 0.2)
+  col = colors)
 ```
 
 If these were all the same, the data ellipses should have roughly the same size and orientation,
-but that is not the  case in @fig-parenting-covEllipses. ...
+but that is not the  case in @fig-parenting-covEllipses. The normal group shows greater variability
+overall and the correlations among the measures differ somewhat from group to group.
+We'll assess later whether this makes a difference in the conclusions that can be drawn (@sec-eqcov).
 
 
 Let's proceed to fit the multivariate model predicting all three scales from `group`:
 
 ```{r parenting-mod}
-parenting.mod <- lm(cbind(caring, play, emotion) ~ group, data=Parenting)
+parenting.mod <- lm(cbind(caring, play, emotion) ~ group, 
+                    data=Parenting)
+coef(parenting.mod)
+```
+
+`car::Anova()` gives the overall test of the `group` effect, using Pillai's trace for the test...
+
+```{r}
+Anova(parenting.mod)
+```
+
+The `summary()` method ... gives more details, including the $\mathbf{H}$ and $\mathbf{E}$ matrices
+and all four test statistics.
+
+```{r}
+Anova(parenting.mod) |> summary()
 ```
 
 

@@ -8,16 +8,21 @@ library(tidyr)
 library(broom)
 data(Parenting, package="heplots")
 
+colors <- scales::hue_pal()(3) |> rev()  
+#colors <- scales::hue_pal()(3)
+
 covEllipses(cbind(caring, play) ~ group, data=Parenting,
+            fill = TRUE, fill.alpha = 0.2,
             pooled = FALSE,
             level = 0.50, 
-            fill = TRUE, fill.alpha = 0.2)
+            col = colors)
 
 covEllipses(cbind(caring, play, emotion) ~ group, data=Parenting,
             variables = 1:3,
+            fill = TRUE, fill.alpha = 0.2,
             pooled = FALSE,
             level = 0.50, 
-            fill = TRUE, fill.alpha = 0.2)
+            col = colors)
 
 
 #' ## Initial view: side-by-side boxplots for a multivariate response
@@ -26,8 +31,9 @@ parenting_long <- Parenting |>
   tidyr::pivot_longer(cols=caring:play, names_to = "variable")
 
 ggplot(parenting_long, aes(x=group, y=value, fill=group)) +
-  geom_boxplot(outlier.size=2.5, alpha=.9) + 
+  geom_boxplot(outlier.size=2.5, alpha=.8) + 
   stat_summary(fun=mean, colour="white", geom="point", size=2) +
+  scale_fill_hue(direction = -1) +
   labs(y = "Scale value", x = "Group") +
   facet_wrap(~ variable) +
   theme_bw(base_size = 14) + 
@@ -47,8 +53,21 @@ ggplot(parenting_long, aes(x=group, y=value, fill=group)) +
 #' ## Run the MANOVA
 
 # NB: order responses so caring, play are first
+
+# make contrasts be differences in means
+
+C <- matrix(c(1, -.5, -.5,
+              0,  1,  -1), nrow = 3, ncol = 2) |> print()
+contrasts(Parenting$group) <- C
+
 parenting.mod <- lm(cbind(caring, play, emotion) ~ group, data=Parenting)
+coef(parenting.mod)
+
 Anova(parenting.mod)
+
+Anova(parenting.mod) |> summary()
+
+
 
 #' test linear hypotheses (contrasts)
 contrasts(Parenting$group)   # display the contrasts

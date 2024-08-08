@@ -559,7 +559,7 @@ Figure&nbsp;10.2: A simple MANOVA design involving three groups and two response
 </div>
 </div>
 </div>
-<p>In contrast, the right panel of <a href="#fig-manova-response-dimensions" class="quarto-xref">Figure&nbsp;<span>10.2</span></a> shows a situation where the group means have a low correlation. Data like this might arise in a study of parental competency, where there are are measure of the degree of caring (<span class="math inline">\(Y_1\)</span>) and time spent in play (<span class="math inline">\(Y_2\)</span>) by fathers and groups consisting of fathers of children with no disability, or a physical disability or a mental ability. As can be seen in <a href="#fig-manova-response-dimensions" class="quarto-xref">Figure&nbsp;<span>10.2</span></a> fathers of the disabled children differ from those of the not disabled group in two different directions corresponding to being higher on either <span class="math inline">\(Y_1\)</span> or <span class="math inline">\(Y_2\)</span>. The <span style="color: red;">red</span> arrows suggest that the differences among groups could be interpreted in terms of two uncorrelated dimensions, perhaps labeled overall competancy and emphasis on physical activity.</p>
+<p>In contrast, the right panel of <a href="#fig-manova-response-dimensions" class="quarto-xref">Figure&nbsp;<span>10.2</span></a> shows a situation where the group means have a low correlation. Data like this might arise in a study of parental competency, where there are are measure of the degree of caring (<span class="math inline">\(Y_1\)</span>) and time spent in play (<span class="math inline">\(Y_2\)</span>) by fathers and groups consisting of fathers of children with no disability, or a physical disability or a mental ability. As can be seen in <a href="#fig-manova-response-dimensions" class="quarto-xref">Figure&nbsp;<span>10.2</span></a> fathers of the disabled children differ from those of the not disabled group in two different directions corresponding to being higher on either <span class="math inline">\(Y_1\)</span> or <span class="math inline">\(Y_2\)</span>. The <span style="color: red;">red</span> arrows suggest that the differences among groups could be interpreted in terms of two uncorrelated dimensions, perhaps labeled overall competency and emphasis on physical activity. (The pattern in <a href="#fig-manova-response-dimensions" class="quarto-xref">Figure&nbsp;<span>10.2</span></a> (right) is contrived for the sake of illustration; it does not reflect the data analyzed in the example below.)</p>
 <section id="example-father-parenting-data" class="level3" data-number="10.3.1"><h3 data-number="10.3.1" class="anchored" data-anchor-id="example-father-parenting-data">
 <span class="header-section-number">10.3.1</span> Example: Father parenting data</h3>
 <p>I use a simple example of a three-group multivariate design to illustrate the basic ideas of fitting MLMs in R and testing hypotheses. Visualization methods using HE plots are discussed in <span class="citation" data-cites="REF">(<a href="90-references.html#ref-REF" role="doc-biblioref"><strong>REF?</strong></a>)</span>.</p>
@@ -574,14 +574,16 @@ Figure&nbsp;10.2: A simple MANOVA design involving three groups and two response
 </ul>
 <p>The dataset <code>Parenting</code> comprises 60 fathers selected from three <code>group</code>s of <span class="math inline">\(n = 20\)</span> each: (a) fathers of a child with <em>no disabilities</em>; (b) fathers with a <em>physically</em> disabled child; (c) fathers with a <em>mentally</em> disabled child. The design is thus a three-group MANOVA, with three response variables.</p>
 <p>The main questions concern whether the group means differ on these scales, and the nature of these differences. That is, do the means differ significantly on all three measures? Is there a consistent order of groups across these three aspects of parenting?</p>
-<p>More specific questions are: (a) Do the fathers of normal children differ from the other two groups on average? (b) Do the physical and mental groups differ? These can be tested using contrasts, and were specified in the <code>Parenting</code> dataset.</p>
+<p>More specific questions are: (a) Do the fathers of normal children differ from the other two groups on average? (b) Do the physical and mental groups differ? These can be tested using contrasts, and are specified by assigning a matrix to <code>contrasts(Parenting$group); each column is a contrast whose values sum to zero. They are given labels</code>group1<code>(normal vs. other) and</code>group2` (physical vs.&nbsp;mental) in some output.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb3" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">Parenting</span>, package<span class="op">=</span><span class="st">"heplots"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/stats/contrasts.html">contrasts</a></span><span class="op">(</span><span class="va">Parenting</span><span class="op">$</span><span class="va">group</span><span class="op">)</span></span>
-<span><span class="co">#&gt;                     [,1] [,2]</span></span>
-<span><span class="co">#&gt; Normal                 2    0</span></span>
-<span><span class="co">#&gt; Physical Disability   -1    1</span></span>
-<span><span class="co">#&gt; Mental Disability     -1   -1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="va">C</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">.5</span>, <span class="op">-</span><span class="fl">.5</span>,</span>
+<span>              <span class="fl">0</span>,  <span class="fl">1</span>,  <span class="op">-</span><span class="fl">1</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">3</span>, ncol <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt;      [,1] [,2]</span></span>
+<span><span class="co">#&gt; [1,]  1.0    0</span></span>
+<span><span class="co">#&gt; [2,] -0.5    1</span></span>
+<span><span class="co">#&gt; [3,] -0.5   -1</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/contrasts.html">contrasts</a></span><span class="op">(</span><span class="va">Parenting</span><span class="op">$</span><span class="va">group</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">C</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Before setting up a model and testing, it is well-advised to examine the data graphically. The simplest plots are side-by-side boxplots (or violin plots) for the three responses. With <code>ggplot2</code>, this is easily done by reshaping the data to long format and using faceting. In <a href="#fig-parenting-boxpl" class="quarto-xref">Figure&nbsp;<span>10.3</span></a>, I’ve also plotted the group means with white dots.</p>
 <div class="cell" data-layout-align="center">
@@ -591,6 +593,7 @@ Figure&nbsp;10.2: A simple MANOVA design involving three groups and two response
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">parenting_long</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">group</span>, y<span class="op">=</span><span class="va">value</span>, fill<span class="op">=</span><span class="va">group</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_boxplot.html">geom_boxplot</a></span><span class="op">(</span>outlier.size<span class="op">=</span><span class="fl">2.5</span>, alpha<span class="op">=</span><span class="fl">.9</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/stat_summary.html">stat_summary</a></span><span class="op">(</span>fun<span class="op">=</span><span class="va">mean</span>, color<span class="op">=</span><span class="st">"white"</span>, geom<span class="op">=</span><span class="st">"point"</span>, size<span class="op">=</span><span class="fl">2</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_hue.html">scale_fill_hue</a></span><span class="op">(</span>direction <span class="op">=</span> <span class="op">-</span><span class="fl">1</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>y <span class="op">=</span> <span class="st">"Scale value"</span>, x <span class="op">=</span> <span class="st">"Group"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html">facet_wrap</a></span><span class="op">(</span><span class="op">~</span> <span class="va">variable</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">14</span><span class="op">)</span> <span class="op">+</span> </span>
@@ -610,11 +613,13 @@ Figure&nbsp;10.3: Boxplots of scores on the three parenting scales
 <p>In this figure, differences among the groups on <code>play</code> are most apparent, with fathers of non-disabled children scoring highest. Differences among the groups on <code>emotion</code> are very small, but one high outlier for the fathers of mentally disabled children is apparent. On <code>caring</code>, fathers of children with a physical disability stand out as highest.</p>
 <p>For exploratory purposes, you might also make a scatterplot matrix. Here, because the MLM assumes homogeneity of the variances and covariance matrices <span class="math inline">\(\mathbf{S}_i\)</span>, I show only the data ellipses in scatterplot matrix format, using <code>heplots:covEllipses()</code> (with 50% coverage, for clarity):</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb5" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://friendly.github.io/heplots/reference/covEllipses.html">covEllipses</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">caring</span>, <span class="va">play</span>, <span class="va">emotion</span><span class="op">)</span> <span class="op">~</span> <span class="va">group</span>, data<span class="op">=</span><span class="va">Parenting</span>,</span>
+<div class="sourceCode" id="cb5" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">colors</span> <span class="op">&lt;-</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/pal_hue.html">hue_pal</a></span><span class="op">(</span><span class="op">)</span><span class="op">(</span><span class="fl">3</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/rev.html">rev</a></span><span class="op">(</span><span class="op">)</span>     <span class="co"># match color use in ggplot</span></span>
+<span><span class="fu"><a href="https://friendly.github.io/heplots/reference/covEllipses.html">covEllipses</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">caring</span>, <span class="va">play</span>, <span class="va">emotion</span><span class="op">)</span> <span class="op">~</span> <span class="va">group</span>, data<span class="op">=</span><span class="va">Parenting</span>,</span>
 <span>  variables <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span>,</span>
+<span>  fill <span class="op">=</span> <span class="cn">TRUE</span>, fill.alpha <span class="op">=</span> <span class="fl">0.2</span>,</span>
 <span>  pooled <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  level <span class="op">=</span> <span class="fl">0.50</span>, </span>
-<span>  fill <span class="op">=</span> <span class="cn">TRUE</span>, fill.alpha <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>  col <span class="op">=</span> <span class="va">colors</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div id="fig-parenting-covEllipses" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-parenting-covEllipses-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -626,10 +631,57 @@ Figure&nbsp;10.4: Boxplots of scores on the three parenting scales
 </div>
 </div>
 </div>
-<p>If these were all the same, the data ellipses should have roughly the same size and orientation, but that is not the case in <a href="#fig-parenting-covEllipses" class="quarto-xref">Figure&nbsp;<span>10.4</span></a>. …</p>
+<p>If these were all the same, the data ellipses should have roughly the same size and orientation, but that is not the case in <a href="#fig-parenting-covEllipses" class="quarto-xref">Figure&nbsp;<span>10.4</span></a>. The normal group shows greater variability overall and the correlations among the measures differ somewhat from group to group. We’ll assess later whether this makes a difference in the conclusions that can be drawn (<a href="eqcov.html" class="quarto-xref"><span>Chapter 13</span></a>).</p>
 <p>Let’s proceed to fit the multivariate model predicting all three scales from <code>group</code>:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb6" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">parenting.mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">caring</span>, <span class="va">play</span>, <span class="va">emotion</span><span class="op">)</span> <span class="op">~</span> <span class="va">group</span>, data<span class="op">=</span><span class="va">Parenting</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb6" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">parenting.mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">caring</span>, <span class="va">play</span>, <span class="va">emotion</span><span class="op">)</span> <span class="op">~</span> <span class="va">group</span>, </span>
+<span>                    data<span class="op">=</span><span class="va">Parenting</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">parenting.mod</span><span class="op">)</span></span>
+<span><span class="co">#&gt;             caring   play emotion</span></span>
+<span><span class="co">#&gt; (Intercept)  5.883  4.633  5.9167</span></span>
+<span><span class="co">#&gt; group1      -0.383  2.417 -0.0667</span></span>
+<span><span class="co">#&gt; group2       1.775 -0.225 -0.6000</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><code><a href="https://rdrr.io/pkg/car/man/Anova.html">car::Anova()</a></code> gives the overall test of the <code>group</code> effect, using Pillai’s trace for the test…</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb7" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova</a></span><span class="op">(</span><span class="va">parenting.mod</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Type II MANOVA Tests: Pillai test statistic</span></span>
+<span><span class="co">#&gt;       Df test stat approx F num Df den Df Pr(&gt;F)    </span></span>
+<span><span class="co">#&gt; group  2     0.948     16.8      6    112  9e-14 ***</span></span>
+<span><span class="co">#&gt; ---</span></span>
+<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The <code><a href="https://rdrr.io/r/base/summary.html">summary()</a></code> method … gives more details, including the <span class="math inline">\(\mathbf{H}\)</span> and <span class="math inline">\(\mathbf{E}\)</span> matrices and all four test statistics.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb8" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova</a></span><span class="op">(</span><span class="va">parenting.mod</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Type II MANOVA Tests:</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Sum of squares and products for error:</span></span>
+<span><span class="co">#&gt;         caring  play emotion</span></span>
+<span><span class="co">#&gt; caring   199.8 -45.8    35.2</span></span>
+<span><span class="co">#&gt; play     -45.8 182.7    80.6</span></span>
+<span><span class="co">#&gt; emotion   35.2  80.6   408.0</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ------------------------------------------</span></span>
+<span><span class="co">#&gt;  </span></span>
+<span><span class="co">#&gt; Term: group </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Sum of squares and products for the hypothesis:</span></span>
+<span><span class="co">#&gt;         caring    play emotion</span></span>
+<span><span class="co">#&gt; caring   130.4 -43.767 -41.833</span></span>
+<span><span class="co">#&gt; play     -43.8 177.233   0.567</span></span>
+<span><span class="co">#&gt; emotion  -41.8   0.567  14.533</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Multivariate Tests: group</span></span>
+<span><span class="co">#&gt;                  Df test stat approx F num Df den Df  Pr(&gt;F)    </span></span>
+<span><span class="co">#&gt; Pillai            2     0.948     16.8      6    112 9.0e-14 ***</span></span>
+<span><span class="co">#&gt; Wilks             2     0.274     16.7      6    110 1.3e-13 ***</span></span>
+<span><span class="co">#&gt; Hotelling-Lawley  2     1.840     16.6      6    108 1.8e-13 ***</span></span>
+<span><span class="co">#&gt; Roy               2     1.108     20.7      3     56 3.8e-09 ***</span></span>
+<span><span class="co">#&gt; ---</span></span>
+<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section></section><section id="mra-rightarrow-mmra" class="level2" data-number="10.4"><h2 data-number="10.4" class="anchored" data-anchor-id="mra-rightarrow-mmra">
 <span class="header-section-number">10.4</span> MRA <span class="math inline">\(\rightarrow\)</span> MMRA</h2>
