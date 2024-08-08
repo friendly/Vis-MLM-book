@@ -3,43 +3,46 @@ library(car)
 library(heplots)
 library(reshape2)
 library(ggplot2)
+library(dplyr)
 library(tidyr)
 library(broom)
 data(Parenting, package="heplots")
 
 covEllipses(cbind(caring, play) ~ group, data=Parenting,
             pooled = FALSE,
-            level = 0.50)
+            level = 0.50, 
+            fill = TRUE, fill.alpha = 0.2)
+
+covEllipses(cbind(caring, play, emotion) ~ group, data=Parenting,
+            variables = 1:3,
+            pooled = FALSE,
+            level = 0.50, 
+            fill = TRUE, fill.alpha = 0.2)
 
 
 #' ## Initial view: side-by-side boxplots for a multivariate response
 
 parenting_long <- Parenting |>
-  tidyr::pivot_longer(cols=caring:play)
+  tidyr::pivot_longer(cols=caring:play, names_to = "variable")
 
-ggplot(parenting.long, aes(x=group, y=value, fill=group)) +
-  geom_boxplot(outlier.size=2.5, alpha=.5) + 
+ggplot(parenting_long, aes(x=group, y=value, fill=group)) +
+  geom_boxplot(outlier.size=2.5, alpha=.9) + 
   stat_summary(fun=mean, colour="white", geom="point", size=2) +
+  labs(y = "Scale value", x = "Group") +
   facet_wrap(~ variable) +
-  theme_bw() + 
+  theme_bw(base_size = 14) + 
   theme(legend.position="top") +
   theme(axis.text.x = element_text(angle = 15, hjust = 1)) 
 
-ggplot(parenting.long, aes(x=group, y=value, fill=group)) +
+ggplot(parenting_long, aes(x=group, y=value, fill=group)) +
   geom_violin(scale = "width", alpha = 0.5) +
   geom_boxplot(width = 0.4, fill = "white", outlier.size=3, alpha=.6) + 
   stat_summary(fun=mean, colour="black", geom="point", size=4, shape = "+") +
+  labs(y = "Scale value", x = "Group") +
   facet_wrap(~ variable) +
-  theme_bw() + 
+  theme_bw(base_size = 14) + 
   theme(legend.position="top") +
   theme(axis.text.x = element_text(angle = 15, hjust = 1)) 
-
-#' One-way ANOVAs for each response
-glance(parenting.mod)
-
-glance(parenting.mod) |>
-  select(response, r.squared, fstatistic, p.value)
-
 
 #' ## Run the MANOVA
 
@@ -51,6 +54,25 @@ Anova(parenting.mod)
 contrasts(Parenting$group)   # display the contrasts
 print(linearHypothesis(parenting.mod, "group1"), SSP=FALSE)
 print(linearHypothesis(parenting.mod, "group2"), SSP=FALSE)
+
+# Contrasts: C B = 0
+C <- model.matrix(parenting.mod) |> as.data.frame() |> distinct() |> t()
+B <- coef(parenting.mod)
+
+C %*% B
+
+#' One-way ANOVAs for each response
+
+glance(parenting.mod)
+
+glance(parenting.mod) |>
+  select(response, r.squared, fstatistic, p.value)
+
+#' Box's M
+boxM(parenting.mod)
+
+boxM(parenting.mod) |> plot()
+
 
 #' ## Figure 4: compare effect and significance scaling
 

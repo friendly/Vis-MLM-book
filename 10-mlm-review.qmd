@@ -1,5 +1,6 @@
 ```{r include=FALSE}
 source("R/common.R")
+knitr::opts_chunk$set(fig.path = "figs/ch10/")
 ```
 
 {{< include latex/latex-commands.qmd >}}
@@ -29,6 +30,17 @@ Before considering the details and examples that apply to MANOVA and MMRA, it is
 features of the multivariate linear model of which these cases are examples.
 
 **Packages**
+
+In this chapter I use the following packages. Load them now:
+
+```{r load-pkgs}
+library(broom)
+library(car)
+library(dplyr)
+library(ggplot2)
+library(heplots)
+library(tidyr)
+```
 
 ## Structure of the MLM
 In each of these cases, the underlying MLM is given most compactly using the matrix equation, <!-- $$ --> 
@@ -62,12 +74,14 @@ Let $\mathbf{\epsilon}_{i}^{\prime}$ represent the $i$th row of $\Epsilon$. Then
 * **Normality**: The residuals, $\mathbf{\epsilon}_{i}^{\prime}$ are distributed as multivariate normal, 
 $\mathcal{N}_{p}(\mathbf{0},\boldsymbol{\Sigma})$, 
 where $\mathbf{\Sigma}$ 
-is a non-singular error-covariance matrix. This can be assessed visually using a $\chi^2$ QQ plot
+is a non-singular error-covariance matrix. 
+<!-- mshapiro.test( )[in the mvnormtest package] can be used to perform the Shapiro-Wilk test for multivariate normality -->
+This can be assessed visually using a $\chi^2$ QQ plot
 of Mahalanobis squared distance against their corresponding $\chi^2_p$ values.
 * **Homoscedasticity**: The error-covariance matrix $\mathbf{\Sigma}$ is constant across all observations and grouping factors.
 Graphical methods to determine if this assumption is met are described in @sec-eqcov.
 * **Independence**: $\mathbf{\epsilon}_{i}^{\prime}$ and $\mathbf{\epsilon}_{j}^{\prime}$ are independent for $i\neq j$, so knowing the data for case $i$ gives no information about case $j$ (as would be true if the data consisted of pairs of husbands and wives); 
-* The predictors, $\mathbf{X}$, are fixed and measured without error or independent of $\Epsilon$. 
+* The predictors, $\mathbf{X}$, are fixed and measured without error or at least they are independent of the errors, $\Epsilon$. 
 
 These statements are simply the
 multivariate analogs of the assumptions of normality, constant variance and independence
@@ -338,8 +352,87 @@ are measure of the degree of caring ($Y_1$) and time spent in play ($Y_2$) by fa
 As can be seen in @fig-manova-response-dimensions fathers of the disabled children differ from those
 of the not disabled group in two different directions corresponding to being higher on either
 $Y_1$ or $Y_2$. The `r colorize("red")` arrows suggest that the differences among groups could be
-interpreted in terms of two uncorrelated dimensions, perhaps labeled overall competancy and emphasis
-on physical activity.
+interpreted in terms of two uncorrelated dimensions, perhaps labeled overall competency and emphasis
+on physical activity. (The pattern in @fig-manova-response-dimensions (right) is contrived for the sake of illustration; it does not reflect the data analyzed in the example below.)
+
+### Example: Father parenting data
+
+I use a simple example of a three-group multivariate design
+to illustrate the basic ideas of fitting MLMs in R and testing hypotheses.
+Visualization methods using HE plots are discussed in @REF.
+
+The dataset `heplots::Parenting` come from an exercise (10B) in @Meyers-etal:2006 and are probably contrived, but are modeled on a real study in which
+fathers were assessed on three subscales of a *Perceived Parenting Competence Scale*,
+
+* `caring`, caretaking responsibilities;
+* `emotion`, emotional support provided to the child; and
+* `play`, recreational time spent with the child.
+
+The dataset `Parenting` comprises 60 fathers selected from three `group`s of $n = 20$ each: (a) fathers of a child with _no disabilities_; (b) fathers with a _physically_ disabled child; (c) fathers with a _mentally_ disabled child. 
+The design is thus a three-group MANOVA, with three response variables. 
+
+The main questions concern whether the group means differ on these scales, and the nature of these differences. That is, do the means differ significantly on all three measures?
+Is there a consistent order of groups across these three aspects of parenting?
+
+More specific questions are: (a) Do the fathers of normal children differ from the other two groups
+on average? (b) Do the physical and mental groups differ? These can be tested using contrasts,
+and were specified in the `Parenting` dataset.
+
+```{r parenting-contrasts}
+data(Parenting, package="heplots")
+contrasts(Parenting$group)
+```
+
+
+Before setting up a model and testing, it is well-advised to examine the data graphically.
+The simplest plots are side-by-side boxplots (or violin plots)
+for the three responses. With `ggplot2`,
+this is easily done by reshaping the data to long format and using faceting.
+In @fig-parenting-boxpl, I've also plotted the group means with white dots.
+
+```{r}
+#| label: fig-parenting-boxpl
+#| out-width: "90%"
+#| fig-cap: Boxplots of scores on the three parenting scales 
+parenting_long <- Parenting |>
+  tidyr::pivot_longer(cols=caring:play, names_to = "variable")
+
+ggplot(parenting_long, aes(x=group, y=value, fill=group)) +
+  geom_boxplot(outlier.size=2.5, alpha=.9) + 
+  stat_summary(fun=mean, color="white", geom="point", size=2) +
+  labs(y = "Scale value", x = "Group") +
+  facet_wrap(~ variable) +
+  theme_bw(base_size = 14) + 
+  theme(legend.position="top") +
+  theme(axis.text.x = element_text(angle = 15, hjust = 1)) 
+```
+
+In this figure, differences among the groups on `play` are most apparent, with fathers of non-disabled
+children scoring highest. Differences among the groups on `emotion` are very small, but one high outlier for the fathers of mentally disabled children is apparent. On `caring`, fathers of children with a physical disability stand out as highest.
+
+For exploratory purposes, you might also make a scatterplot matrix. Here, because the MLM assumes
+homogeneity of the variances and covariance matrices $\mathbf{S}_i$, I show only the data ellipses in scatterplot matrix format, using `heplots:covEllipses()` (with 50% coverage, for clarity):
+
+```{r}
+#| label: fig-parenting-covEllipses
+#| out-width: "90%"
+#| fig-cap: Boxplots of scores on the three parenting scales 
+covEllipses(cbind(caring, play, emotion) ~ group, data=Parenting,
+  variables = 1:3,
+  pooled = FALSE,
+  level = 0.50, 
+  fill = TRUE, fill.alpha = 0.2)
+```
+
+If these were all the same, the data ellipses should have roughly the same size and orientation,
+but that is not the  case in @fig-parenting-covEllipses. ...
+
+
+Let's proceed to fit the multivariate model predicting all three scales from `group`:
+
+```{r parenting-mod}
+parenting.mod <- lm(cbind(caring, play, emotion) ~ group, data=Parenting)
+```
 
 
 
