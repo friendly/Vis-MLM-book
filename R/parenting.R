@@ -71,8 +71,12 @@ Anova(parenting.mod) |> summary()
 
 #' test linear hypotheses (contrasts)
 contrasts(Parenting$group)   # display the contrasts
-print(linearHypothesis(parenting.mod, "group1"), SSP=FALSE)
-print(linearHypothesis(parenting.mod, "group2"), SSP=FALSE)
+linearHypothesis(parenting.mod, "group1") |> print(SSP=FALSE)
+linearHypothesis(parenting.mod, "group2") |> print(SSP=FALSE)
+
+# test the overall hypothesis, B = 0
+linearHypothesis(parenting.mod, c("group1", "group2")) |> print(SSP=FALSE)
+
 
 # Contrasts: C B = 0
 C <- model.matrix(parenting.mod) |> as.data.frame() |> distinct() |> t()
@@ -86,6 +90,10 @@ glance(parenting.mod)
 
 glance(parenting.mod) |>
   select(response, r.squared, fstatistic, p.value)
+
+summary.aov(parenting.mod)
+
+etasq(parenting.mod)
 
 #' Box's M
 boxM(parenting.mod)
