@@ -49,23 +49,38 @@ In each of these cases, the underlying MLM is given most compactly using the mat
 
 $$
 \sizedmat{Y}{n \times p} = 
-\sizedmat{X}{n \times q} \, \sizedmat{B}{q \times p} + \sizedmat{\Epsilon}{n \times p} \:\: ,
+\sizedmat{X}{n \times (q+1)} \, \sizedmat{B}{(q+1) \times p} + \sizedmat{\Epsilon}{n \times p} \:\: ,
 $${#eq-mlm}
 
 where
 
--   $\mathbf{Y} = (\mathbf{y}_1 , \mathbf{y}_2, \dots , \mathbf{y}_p )$ is the matrix of $n$ observations on $p$ responses;
--   $\mathbf{X}$ is the model matrix with columns for $q$ regressors, which typically includes an initial column of 1s for the intercept;
--   $\mathbf{B} = ( \mathbf{b}_1 , \mathbf{b}_2 , \dots , \mathbf{b}_p )$ is a matrix of regression coefficients, one column for each response variable; and 
+-   $\mathbf{Y} = (\mathbf{y}_1 , \mathbf{y}_2, \dots , \mathbf{y}_j, \dots, \mathbf{y}_p )$ is the matrix of $n$ observations on $p$ responses;
+-   $\mathbf{X}$ is the model matrix with columns $\mathbf{x}_i$ for $q$ regressors, which typically includes an initial column $\mathbf{x}_0$ of 1s for the intercept;
+-   $\mathbf{B} = ( \mathbf{b}_1 , \mathbf{b}_2 , \dots \mathbf{b}_j \dots, \mathbf{b}_p )$ is a matrix of regression coefficients, one column $\mathbf{b}_j$ for each response variable; 
 -   $\Epsilon$ is a matrix of errors in predicting $\mathbf{Y}$.
+
+When it is useful to refer symbolically to the _rows_ $\mathbf{b}_i^\top$ of coefficients for the regressors 
+$x_0, x_1, x_2, \dots, x_i, \dots x_q$, these are expressed as  $\mathbf{B} = ( \mathbf{b}_0^\top^\top , \mathbf{b}_1^\top , \dots \mathbf{b}_j^\top \dots, \mathbf{b}_p )^\top$, or more explicitly
+
+$$
+\sizedmat{B}{(q+1) \times p} =
+\begin{pmatrix} 
+  b_{0}^\top \\ 
+  b_{1}^\top  \\ 
+  \vdots \\
+  b_{i}^\top  \\
+  \vdots \\
+  b_{q}^\top  \\ 
+\end{pmatrix}
+$$
 
 The structure of the model matrix $\mathbf{X}$ is the same as the univariate linear model, and may contain, therefore, 
 
-* quantitative predictors, such as `age`, `income`, years of `education`
-* transformed predictors like $\sqrt{\text{age}}$ or $\log{(\text{income})}$
-* polynomial terms: $\text{age}^2$, $\text{age}^3, \dots$ (using `poly(age, k)` in R)
-* categorical predictors ("factors"), such as treatment (Control, Drug A, drug B), or sex; internally a factor with `k` levels is transformed to `k-1` dummy (0, 1) variables, representing comparisons with a reference level, typically the first.
-* interaction terms, involving either quantitative or categorical predictors, e.g., `age * sex`, `treatment * sex`.
+* **quantitative** predictors, such as `age`, `income`, years of `education`
+* **transformed predictors** like $\sqrt{\text{age}}$ or $\log{(\text{income})}$
+* **polynomial terms**: $\text{age}^2$, $\text{age}^3, \dots$ (using `poly(age, k)` in R)
+* **categorical predictors** ("factors"), such as treatment (Control, Drug A, drug B), or sex; internally a factor with `k` levels is transformed to `k-1` dummy (0, 1) variables, representing comparisons with a reference level, typically the first.
+* **interaction terms**, involving either quantitative or categorical predictors, e.g., `age * sex`, `treatment * sex`.
 
 ### Assumptions
 Just as in univariate models, the assumptions of the multivariate linear model almost entirely concern the behavior of the errors (residuals). 
@@ -75,9 +90,12 @@ Let $\mathbf{\epsilon}_{i}^{\prime}$ represent the $i$th row of $\Epsilon$. Then
 $\mathcal{N}_{p}(\mathbf{0},\boldsymbol{\Sigma})$, 
 where $\mathbf{\Sigma}$ 
 is a non-singular error-covariance matrix. 
+Statistical tests of multivariate normality of the residuals include the Shapiro-Wilk [@ShapiroWilk1965]
+and Mardia [@Mardia:1970:MMS]
+tests (in the **MVN** package);
 <!-- mshapiro.test( )[in the mvnormtest package] can be used to perform the Shapiro-Wilk test for multivariate normality -->
-This can be assessed visually using a $\chi^2$ QQ plot
-of Mahalanobis squared distance against their corresponding $\chi^2_p$ values.
+however this is often better assessed visually using a $\chi^2$ QQ plot
+of Mahalanobis squared distance against their corresponding $\chi^2_p$ values using `heplots::cqplot()`.
 * **Homoscedasticity**: The error-covariance matrix $\mathbf{\Sigma}$ is constant across all observations and grouping factors.
 Graphical methods to determine if this assumption is met are described in @sec-eqcov.
 * **Independence**: $\mathbf{\epsilon}_{i}^{\prime}$ and $\mathbf{\epsilon}_{j}^{\prime}$ are independent for $i\neq j$, so knowing the data for case $i$ gives no information about case $j$ (as would be true if the data consisted of pairs of husbands and wives); 
@@ -100,11 +118,11 @@ Implicit in the above is perhaps the most important assumption---that the model 
 
 The least squares (and also maximum likelihood) solution for the coefficients $\mathbf{B}$ is given by
 
-$$
-\widehat{\mathbf{B}} = (\mathbf{X}\trans \mathbf{X})^{-1} \mathbf{X}\trans \mathbf{Y} \period
-$$
+<!-- $$ -->
+<!-- \widehat{\mathbf{B}} = (\mathbf{X}\trans \mathbf{X})^{-1} \mathbf{X}\trans \mathbf{Y} \period -->
+<!-- $$ -->
 
-**Try with \top**
+
 $$
 \widehat{\mathbf{B}} = (\mathbf{X}^\top \mathbf{X})^{-1} \mathbf{X}^\top \mathbf{Y} \period
 $$
@@ -279,28 +297,28 @@ that neither $x_2$ nor $x_3$ contribute at all to the predicting the $y$s in ter
 the coefficients for the corresponding rows of $\mathbf{B}$ are zero using a 1-row $\mathbf{C}$ matrix that
 simply selects those rows:
 
-$$
-\mathcal{H}_0 : \mathbf{C} \mathbf{B} = 
-\begin{bmatrix}
-0 & 1 & 1 & 0
-\end{bmatrix}
-\begin{pmatrix}
-	\beta_{0,y_1} & \beta_{0,y_2} & \beta_{0,y_3} \\ 
-	\beta_{1,y_1} & \beta_{1,y_2} & \beta_{1,y_3} \\ 
-	\beta_{2,y_1} & \beta_{2,y_2} & \beta_{2,y_3} \\ 
-	\beta_{3,y_1} & \beta_{3,y_2} & \beta_{3,y_3} 
-\end{pmatrix}
-=
-\begin{bmatrix}
-	\beta_{1,y_1} & \beta_{1,y_2} & \beta_{1,y_3} \\ 
-	\beta_{2,y_1} & \beta_{2,y_2} & \beta_{2,y_3} \\ 
-\end{bmatrix}
-= 
-\mathbf{0}_{(2 \times 3)}
-$$
+<!-- $$ -->
+<!-- \mathcal{H}_0 : \mathbf{C} \mathbf{B} =  -->
+<!-- \begin{bmatrix} -->
+<!-- 0 & 1 & 1 & 0 -->
+<!-- \end{bmatrix} -->
+<!-- \begin{pmatrix} -->
+<!-- 	\beta_{0,y_1} & \beta_{0,y_2} & \beta_{0,y_3} \\  -->
+<!-- 	\beta_{1,y_1} & \beta_{1,y_2} & \beta_{1,y_3} \\  -->
+<!-- 	\beta_{2,y_1} & \beta_{2,y_2} & \beta_{2,y_3} \\  -->
+<!-- 	\beta_{3,y_1} & \beta_{3,y_2} & \beta_{3,y_3}  -->
+<!-- \end{pmatrix} -->
+<!-- = -->
+<!-- \begin{bmatrix} -->
+<!-- 	\beta_{1,y_1} & \beta_{1,y_2} & \beta_{1,y_3} \\  -->
+<!-- 	\beta_{2,y_1} & \beta_{2,y_2} & \beta_{2,y_3} \\  -->
+<!-- \end{bmatrix} -->
+<!-- =  -->
+<!-- \mathbf{0}_{(2 \times 3)} -->
+<!-- $$ -->
 
 \begin{eqnarray*}
-\mathcal{H}_0 : \mathbf{C} \mathbf{B} & = &
+\mathcal{H}_0 : \mathbf{C} \mathbf{B} & = 
 \begin{bmatrix}
 0 & 1 & 1 & 0
 \end{bmatrix}
@@ -309,8 +327,8 @@ $$
 	\beta_{1,y_1} & \beta_{1,y_2} & \beta_{1,y_3} \\ 
 	\beta_{2,y_1} & \beta_{2,y_2} & \beta_{2,y_3} \\ 
 	\beta_{3,y_1} & \beta_{3,y_2} & \beta_{3,y_3} 
-\end{pmatrix} \\
-& = &
+\end{pmatrix} \\ \\
+& = 
 \begin{bmatrix}
 	\beta_{1,y_1} & \beta_{1,y_2} & \beta_{1,y_3} \\ 
 	\beta_{2,y_1} & \beta_{2,y_2} & \beta_{2,y_3} \\ 
@@ -404,7 +422,8 @@ and `"group2"` (physical vs. mental) in some output.
 ```{r parenting-contrasts}
 data(Parenting, package="heplots")
 C <- matrix(c(1, -.5, -.5,
-              0,  1,  -1), nrow = 3, ncol = 2) |> print()
+              0,  1,  -1), 
+            nrow = 3, ncol = 2) |> print()
 contrasts(Parenting$group) <- C
 ```
 
@@ -418,19 +437,26 @@ In @fig-parenting-boxpl, I've also plotted the group means with white dots.
 ```{r}
 #| label: fig-parenting-boxpl
 #| out-width: "90%"
-#| fig-cap: Boxplots of scores on the three parenting scales 
+#| fig-cap: Faceted boxplots of scores on the three parenting scales, showing also the mean for each. 
 parenting_long <- Parenting |>
   tidyr::pivot_longer(cols=caring:play, names_to = "variable")
 
-ggplot(parenting_long, aes(x=group, y=value, fill=group)) +
-  geom_boxplot(outlier.size=2.5, alpha=.9) + 
-  stat_summary(fun=mean, color="white", geom="point", size=2) +
-  scale_fill_hue(direction = -1) +
+ggplot(parenting_long, 
+       aes(x=group, y=value, fill=group)) +
+  geom_boxplot(outlier.size=2.5, 
+               alpha=.5, 
+               outlier.alpha = 0.9) + 
+  stat_summary(fun=mean, 
+               color="white", 
+               geom="point", 
+               size=2) +
+  scale_fill_hue(direction = -1) +     # reverse default colors
   labs(y = "Scale value", x = "Group") +
   facet_wrap(~ variable) +
   theme_bw(base_size = 14) + 
   theme(legend.position="top") +
-  theme(axis.text.x = element_text(angle = 15, hjust = 1)) 
+  theme(axis.text.x = element_text(angle = 15,
+                                   hjust = 1)) 
 ```
 
 In this figure, differences among the groups on `play` are most apparent, with fathers of non-disabled
@@ -442,8 +468,8 @@ homogeneity of the variances and covariance matrices $\mathbf{S}_i$, I show only
 ```{r}
 #| label: fig-parenting-covEllipses
 #| out-width: "90%"
-#| fig-cap: Boxplots of scores on the three parenting scales 
-colors <- scales::hue_pal()(3) |> rev()     # match color use in ggplot
+#| fig-cap: Bivariate data ellipses for pairs of the three responses, showing the means, correlations and variances for the three groups.
+colors <- scales::hue_pal()(3) |> rev()  # match color use in ggplot
 covEllipses(cbind(caring, play, emotion) ~ group, data=Parenting,
   variables = 1:3,
   fill = TRUE, fill.alpha = 0.2,
@@ -452,34 +478,68 @@ covEllipses(cbind(caring, play, emotion) ~ group, data=Parenting,
   col = colors)
 ```
 
-If these were all the same, the data ellipses should have roughly the same size and orientation,
+If the covariance matrices were all the same, the data ellipses would have roughly the same size and orientation,
 but that is not the  case in @fig-parenting-covEllipses. The normal group shows greater variability
-overall and the correlations among the measures differ somewhat from group to group.
+overall and the correlations among the measures differ somewhat from group to group. 
 We'll assess later whether this makes a difference in the conclusions that can be drawn (@sec-eqcov).
-
+The group centroids also differ, but the pattern is not particularly clear.
+We'll see an easier to understand view in HE plots and their canonical discriminant cousins.
 
 Let's proceed to fit the multivariate model predicting all three scales from the `group` factor:
 
 ```{r parenting-mod}
 parenting.mod <- lm(cbind(caring, play, emotion) ~ group, 
-                    data=Parenting)
-coef(parenting.mod)
+                    data=Parenting) |> print()
 ```
 
-`car::Anova()` gives the overall test of the `group` effect, using Pillai's trace for the test...
+The coefficients in this model are the values of the contrasts set up above. `group1` is the mean of the typical
+group minus the average of the other two, which is negative on `caring` and `emotion` but positive for `play`.
+`group2` is the difference in means for the physical vs. mental groups.
 
-```{r}
+Before doing multivariate tests, it is useful to see what would happen if we ran univariate ANOVAs on each
+of the responses. This can be extracted from an MLM using `stats::summary.aov()`:
+
+```{r parenting-summary-aov}
+summary.aov(parenting.mod)
+```
+
+From this, one might conclude that there are differences only in `caring` and `play` and therefore ignore
+`emotion`, but this would be short-sighted. 
+`car::Anova()` gives the overall multivariate test $\mathcal{H}_0: \mathbf{B} = 0$ of the `group` effect. Note that
+this has a much smaller $p$-value than any of the univariate $F$ tests.
+
+```{r parenting-Anova}
 Anova(parenting.mod)
 ```
 
-The `summary()` method ... gives more details, including the $\mathbf{H}$ and $\mathbf{E}$ matrices
-and all four test statistics.
-
+`Anova()` returns an object of class `"Anova.mlm"`
+The `summary()` method for this gives more details, including all four test statistics.
+These tests have `s = \min(p, \text{df}_h) = \min(3,2) = 2` dimensions and the $F$ approximations are not
+equivalent here. 
 ```{r}
-Anova(parenting.mod) |> summary()
+Anova(parenting.mod) |> 
+  summary() |> 
+  print(SSP=FALSE)
 ```
 
+The `summary()` method by default prints the SSH = $\mathbf{H}$ and SSE = $\mathbf{E}$ matrices, but I suppressed
+them above. They can be extracted from the object using `purrr::pluck()`:
 
+```{r}
+H <- parenting.summary |> 
+  purrr::pluck("multivariate.tests", "group", "SSPH") |> 
+  print()
+E <- parenting.summary |> 
+  purrr::pluck("multivariate.tests", "group", "SSPE") |> 
+  print()
+```
+
+**Linear hypotheses & contrasts**
+
+```{r}
+linearHypothesis(parenting.mod, "group1") |> print(SSP=FALSE)
+linearHypothesis(parenting.mod, "group2") |> print(SSP=FALSE)
+```
 
 ## MRA $\rightarrow$ MMRA
 

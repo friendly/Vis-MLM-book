@@ -31,7 +31,7 @@ parenting_long <- Parenting |>
   tidyr::pivot_longer(cols=caring:play, names_to = "variable")
 
 ggplot(parenting_long, aes(x=group, y=value, fill=group)) +
-  geom_boxplot(outlier.size=2.5, alpha=.8) + 
+  geom_boxplot(outlier.size=2.5, alpha=.5, outlier.alpha=.9) + 
   stat_summary(fun=mean, colour="white", geom="point", size=2) +
   scale_fill_hue(direction = -1) +
   labs(y = "Scale value", x = "Group") +
@@ -57,16 +57,31 @@ ggplot(parenting_long, aes(x=group, y=value, fill=group)) +
 # make contrasts be differences in means
 
 C <- matrix(c(1, -.5, -.5,
-              0,  1,  -1), nrow = 3, ncol = 2) |> print()
+              0,  1,  -1), nrow = 3, ncol = 2) |>
+  print()
+
 contrasts(Parenting$group) <- C
 
 parenting.mod <- lm(cbind(caring, play, emotion) ~ group, data=Parenting)
+
+# coeficients are contrasts
 coef(parenting.mod)
 
 Anova(parenting.mod)
 
-Anova(parenting.mod) |> summary()
+Anova(parenting.mod) |> summary() 
+Anova(parenting.mod) |> summary() |> print(SSP=FALSE)
 
+Anova(parenting.mod) |> summary() -> parenting.summary
+
+# extracting H & E
+parenting.summary$multivariate.tests$group$SSPH
+parenting.summary$multivariate.tests$group$SSPE
+
+# do this with pluck
+library(purrr)
+H <- parenting.summary |> pluck("multivariate.tests", "group", "SSPH") |> print()
+E <- parenting.summary |> pluck("multivariate.tests", "group", "SSPE") |> print()
 
 
 #' test linear hypotheses (contrasts)
