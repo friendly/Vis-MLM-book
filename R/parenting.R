@@ -92,6 +92,12 @@ linearHypothesis(parenting.mod, "group2") |> print(SSP=FALSE)
 # test the overall hypothesis, B = 0
 linearHypothesis(parenting.mod, c("group1", "group2")) |> print(SSP=FALSE)
 
+# components
+lh <- linearHypothesis(parenting.mod, "group1")
+names(lh)
+lh$SSPH
+
+
 
 # contrast means
 # means <- Parenting |>

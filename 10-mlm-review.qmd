@@ -492,7 +492,7 @@ We'll see an easier to understand view in HE plots and their canonical discrimin
 
 Let's proceed to fit the multivariate model predicting all three scales from the `group` factor.
 `lm()` for a multivariate response returns an object of class `"mlm"`, for which there are many
-methods (use `methods(class="mlm") to find them).
+methods (use `methods(class="mlm")` to find them).
 
 ```{r parenting-mod}
 parenting.mod <- lm(cbind(caring, play, emotion) ~ group, 
@@ -504,12 +504,19 @@ group minus the average of the other two, which is negative on `caring` and `emo
 `group2` is the difference in means for the physical vs. mental groups.
 
 Before doing multivariate tests, it is useful to see what would happen if we ran univariate ANOVAs on each
-of the responses. This can be extracted from an MLM using `stats::summary.aov()`:
+of the responses. These can be extracted from an MLM using `stats::summary.aov()`:
 
 ```{r parenting-summary-aov}
 summary.aov(parenting.mod)
 ```
-If you like, you can also extract the univariate model fit statistics from the `"mlm"`
+If you like, you can also extract the univariate model fit statistics from the `"mlm" using the
+`broom::glance()` method for a multivariate model object.
+
+```{r}
+glance(parenting.mod) |>
+  select(response, r.squared, fstatistic, p.value)
+```
+
 
 From this, one might conclude that there are differences only in `caring` and `play` and therefore ignore
 `emotion`, but this would be short-sighted. 
@@ -569,7 +576,8 @@ linearHypothesis(parenting.mod, "group2") |>
 ```
 
 `linearHypothesis()` is very general. The second argument (`hypothesis.matrix`) corresponds to 
-$\mathbf{C}$, and can be specified as numeric matrix giving the linear combinations of coefficients by rows to be tested, or a character vector giving the hypothesis in symbolic form.
+$\mathbf{C}$, and can be specified as numeric matrix giving the linear combinations of coefficients by rows to be tested, or a character vector giving the hypothesis in symbolic form; `"group1"`
+is equivalent to `"group1 = 0"`.
 
 Because the contrasts used here are orthogonal, they comprise the overall test of 
 $\mathbf{B} = \mathbf{0}$ which implies that the means of the three groups are all equal.
