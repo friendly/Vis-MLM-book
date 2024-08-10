@@ -1,7 +1,7 @@
 #' ## Load packages and the data
 library(car)
 library(heplots)
-library(reshape2)
+#library(reshape2)
 library(ggplot2)
 library(dplyr)
 library(tidyr)
@@ -93,11 +93,33 @@ linearHypothesis(parenting.mod, "group2") |> print(SSP=FALSE)
 linearHypothesis(parenting.mod, c("group1", "group2")) |> print(SSP=FALSE)
 
 
+# contrast means
+# means <- Parenting |>
+#   group_by(group) |>
+#   summarize_all("mean")
+
+# Parenting |> group_by(group) |>
+#   summarise(across(everything(),mean))
+
+means <- Parenting |>
+  summarise(across(everything(),mean), .by = group)
+
+
 # Contrasts: C B = 0
-C <- model.matrix(parenting.mod) |> as.data.frame() |> distinct() |> t()
+C <- model.matrix(parenting.mod) |> as.data.frame() |> distinct() 
 B <- coef(parenting.mod)
 
-C %*% B
+t(C) %*% B
+
+# write out symbolic matrices [use dev version]
+library(matlib)
+source("C:/Dropbox/R/projects/matlib/dev/symbolicMatrix.R")
+Fractions <- matlib:::Fractions
+symbolicMatrix("\\bar{y}", 3, 3)
+cont <- matrix(c(1, -.5, -.5, 0, 1, -1), 2,3, byrow=TRUE)
+symbolicMatrix(cont, 2, 3, fractions=TRUE)
+
+as.matrix(C) %*% as.matrix(means |> select(-group))
 
 #' One-way ANOVAs for each response
 

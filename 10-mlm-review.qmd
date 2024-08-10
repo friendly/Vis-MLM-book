@@ -289,8 +289,8 @@ $${#eq-hmat}
 where there are $s = \min(h, p)$ non-zero eigenvalues of $\mat{H}\mat{E}^{-1}$.
 In @eq-hmat, $\mathbf{H}$ measures the (Mahalanobis) squared distances (and cross products) among
 the linear combinations $\mathbf{C} \widehat{\mathbf{B}}$ from the origin under the null hypothesis.
-An animated display of these ideas and the relations between data ellipses and HE plots can be seen at
-[https://www.datavis.ca/gallery/animation/manova/](https://www.datavis.ca/gallery/animation/manova/).
+<!-- An animated display of these ideas and the relations between data ellipses and HE plots can be seen at -->
+<!-- [https://www.datavis.ca/gallery/animation/manova/](https://www.datavis.ca/gallery/animation/manova/). -->
 
 For example, with three responses $y_1, y_2, y_3$ and three predictors $x_1, x_2, x_3$, we can test the hypothesis
 that neither $x_2$ nor $x_3$ contribute at all to the predicting the $y$s in terms of the hypothesis that
@@ -414,7 +414,7 @@ The main questions concern whether the group means differ on these scales, and t
 Is there a consistent order of groups across these three aspects of parenting?
 
 More specific questions are: (a) Do the fathers of typical children differ from the other two groups
-on average? (b) Do the physical and mental groups differ? These can be tested using contrasts,
+on average? (b) Do the physical and mental groups differ? These questions can be tested using contrasts,
 and are specified by assigning a matrix to `contrasts(Parenting$group)`; each column is
 a contrast whose values sum to zero. They are given labels `"group1"` (normal vs. other)
 and `"group2"` (physical vs. mental) in some output.
@@ -427,6 +427,7 @@ C <- matrix(c(1, -.5, -.5,
 contrasts(Parenting$group) <- C
 ```
 
+#### Exploratory plots {.unnumbered}
 
 Before setting up a model and testing, it is well-advised to examine the data graphically.
 The simplest plots are side-by-side boxplots (or violin plots)
@@ -437,6 +438,8 @@ In @fig-parenting-boxpl, I've also plotted the group means with white dots.
 ```{r}
 #| label: fig-parenting-boxpl
 #| out-width: "90%"
+#| code-fold: true
+#| code-summary: "See the ggplot code"
 #| fig-cap: Faceted boxplots of scores on the three parenting scales, showing also the mean for each. 
 parenting_long <- Parenting |>
   tidyr::pivot_longer(cols=caring:play, names_to = "variable")
@@ -485,7 +488,11 @@ We'll assess later whether this makes a difference in the conclusions that can b
 The group centroids also differ, but the pattern is not particularly clear.
 We'll see an easier to understand view in HE plots and their canonical discriminant cousins.
 
-Let's proceed to fit the multivariate model predicting all three scales from the `group` factor:
+#### Testing the model {.nunumbered}
+
+Let's proceed to fit the multivariate model predicting all three scales from the `group` factor.
+`lm()` for a multivariate response returns an object of class `"mlm"`, for which there are many
+methods (use `methods(class="mlm") to find them).
 
 ```{r parenting-mod}
 parenting.mod <- lm(cbind(caring, play, emotion) ~ group, 
@@ -502,6 +509,7 @@ of the responses. This can be extracted from an MLM using `stats::summary.aov()`
 ```{r parenting-summary-aov}
 summary.aov(parenting.mod)
 ```
+If you like, you can also extract the univariate model fit statistics from the `"mlm"`
 
 From this, one might conclude that there are differences only in `caring` and `play` and therefore ignore
 `emotion`, but this would be short-sighted. 
@@ -514,17 +522,17 @@ Anova(parenting.mod)
 
 `Anova()` returns an object of class `"Anova.mlm"` which has various methods.
 The `summary()` method for this gives more details, including all four test statistics.
-These tests have `s = \min(p, \text{df}_h) = \min(3,2) = 2` dimensions and the $F$ approximations are not
-equivalent here. 
+These tests have $s = \min(p, \text{df}_h) = \min(3,2) = 2$ dimensions and the $F$ approximations are not
+equivalent here. All four tests are highly significant
 ```{r}
 parenting.summary <- Anova(parenting.mod) |>  summary() 
-print(parent.summary, SSP=FALSE)
+print(parenting.summary, SSP=FALSE)
 ```
 
 The `summary()` method by default prints the SSH = $\mathbf{H}$ and SSE = $\mathbf{E}$ matrices, but I suppressed
 them above. They can be extracted from the object using `purrr::pluck()`:
 
-```{r}
+```{r par-summary-pluck}
 H <- parenting.summary |> 
   purrr::pluck("multivariate.tests", "group", "SSPH") |> 
   print()
@@ -533,12 +541,48 @@ E <- parenting.summary |>
   print()
 ```
 
-**Linear hypotheses & contrasts**
 
-```{r}
-linearHypothesis(parenting.mod, "group1") |> print(SSP=FALSE)
-linearHypothesis(parenting.mod, "group2") |> print(SSP=FALSE)
+#### Linear hypotheses & contrasts {.unnumbered}
+
+With three or more groups or with a more complex MANOVA design, contrasts provide a way of
+testing questions of substantive interest regarding differences among group means.
+
+The test of the contrast comparing the typical group to the average of the others is the test 
+using the contrast $c_1 = (1, -\frac12, -\frac12)$ which produces the coefficients labeled
+`"group1"`. The function `car::linearHypothesis()` carries out the multivariate test
+that these are all zero. This is a 1 df test, and all four test statistics produce the same
+$F$ and $p$-values.
+
+```{r parenting-lin-hyp1}
+coef(parenting.mod)["group1",]
+linearHypothesis(parenting.mod, "group1") |> 
+  print(SSP=FALSE)
 ```
+
+Similarly, the difference between the physical and mental groups uses the contrast $c_2 = (0, 1, -1)$
+and the test that these means are equal is given by `linearHypothesis()` applied to 
+`group2`. 
+```{r parenting-lin-hyp2}
+coef(parenting.mod)["group2",]
+linearHypothesis(parenting.mod, "group2") |> 
+  print(SSP=FALSE)
+```
+
+`linearHypothesis()` is very general. The second argument (`hypothesis.matrix`) corresponds to 
+$\mathbf{C}$, and can be specified as numeric matrix giving the linear combinations of coefficients by rows to be tested, or a character vector giving the hypothesis in symbolic form.
+
+Because the contrasts used here are orthogonal, they comprise the overall test of 
+$\mathbf{B} = \mathbf{0}$ which implies that the means of the three groups are all equal.
+The test below gives the same results as `Anova(parenting.mod)`.
+
+```{r parenting-lin-hyp3}
+linearHypothesis(parenting.mod, c("group1", "group2")) |> 
+  print(SSP=FALSE)
+```
+
+
+
+
 
 ## MRA $\rightarrow$ MMRA
 
