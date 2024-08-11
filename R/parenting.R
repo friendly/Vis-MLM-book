@@ -138,6 +138,15 @@ summary.aov(parenting.mod)
 
 etasq(parenting.mod)
 
+# broom::tidy  Extract univariate tests of contrasts from mlm object
+tidy(parenting.mod) |>
+  mutate(response = factor(response, levels=unique(response))) |>    # keep variable order
+  filter(term != "(Intercept)") |>
+  arrange(response) |>
+  mutate(signif = noquote(gtools::stars.pval(p.value))) |>
+  mutate(p.value = noquote(scales::pvalue(p.value))) 
+
+
 #' Box's M
 boxM(parenting.mod)
 

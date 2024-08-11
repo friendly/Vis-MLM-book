@@ -5,7 +5,7 @@ knitr::opts_chunk$set(fig.path = "figs/ch10/")
 
 {{< include latex/latex-commands.qmd >}}
 
-# Multivariate Linear Model {#sec-mlm-review}
+# Multivariate Linear Models {#sec-mlm-review}
 
 @sec-Hotelling introduced the essential ideas of multivariate analysis in the context of a two-group design
 using Hotelling's $T^2$. Here, I extend this to the to the general
@@ -337,6 +337,80 @@ simply selects those rows:
 \mathbf{0}_{(2 \times 3)}
 \end{eqnarray*}
 
+In MANOVA designs, it is often desirable to follow up a significant effect for a factor
+with subsequent tests to determine which groups differ. While you can simply test
+for all pairwise differences among groups (using Bonferonni or other corrections for multiplicity),
+a more substantively-driven approach uses planned comparisons or _contrasts_ among the
+factor levels.
+
+For a factor with $g$ groups, a contrast is simply a comparison of the mean of one subset of groups against the mean of another
+subset. This is specified as a weighted sum, $L$ of the means with weights $\mathbf{c}$ that
+sum to zero,
+
+$$
+L = \mathbf{c}^\top \boldsymbol{\mu} = \sum_i c_i \mu_i \quad\text{such that}\quad \Sigma c_i = 0
+$$
+Two contrasts, $\mathbf{c}_1$ and $\mathbf{c}_2$ are _orthogonal_ if the sum of products
+of their weights is zero, i.e., $\mathbf{c}_1^\top \mathbf{c}_2 = \Sigma c_{1i} \times c_{2i} = 0$.
+When contrasts are placed as columns of a matrix $\mathbf{C}$, they are all mutually orthogonal
+if $\mathbf{C}^\top \mathbf{C}$ is a diagonal matrix.
+Orthogonal contrasts correspond to statistically independent tests.
+
+For example, with $g=4$ groups representing the combinations of two drugs, A and B
+given at low and high doses, we might want to compare
+(a) the average of the drug A groups vs. the average of drug B;
+(b) low vs. high for drug A;
+(c) low vs. high for drug B. The contrasts that do this are:
+
+\begin{eqnarray*}
+L_1 & = (\mu_1 + \mu_2) - (\mu_1 + \mu_2) & \rightarrow & \mathbf{c}_1 = 
+    \begin{pmatrix} 
+     1 &  1 & -1 & -1 
+    \end{pmatrix} \\
+L_2 & = \mu_1 - \mu_2                     & \rightarrow & \mathbf{c}_2 = 
+    \begin{pmatrix} 
+     1 &  -1 & 0 & 0 
+    \end{pmatrix} \\
+L_3 & = \mu_3 - \mu_4                     & \rightarrow & \mathbf{c}_3 = 
+    \begin{pmatrix} 
+     0 &  0 & 1 & -1 
+    \end{pmatrix}
+\end{eqnarray*}
+
+Note that these correspond to _nested dichotomies_ among the four groups:
+first we compare groups (1 and 2) against groups (3 and 4), then subsequently
+within each of these sets. Such contrasts are always orthogonal, and therefore 
+correspond to statistically independent tests.
+
+In R, contrasts for a factor are specified as columns of matrix, each of which sums to zero.
+For this example, we can set this up by creating each as a vector and joining them
+as columns using `cbind()`:
+
+```{r contrasts}
+c1 <- c(1,  1, -1, -1)    # A1,A2 vs. B1,B2
+c2 <- c(1, -1,  0,  0)    # A1 vs. A2
+c3 <- c(0,  0,  1, -1)    # B1 vs. B2
+C <- cbind(c1,c2,c3) 
+rownames(C) <- outer(LETTERS[1:2], 1:2, paste0) |> t() |> c()
+C
+# show they are mutually orthogonal
+t(C) %*% C
+```
+
+
+For multivariate tests, when all contrasts are pairwise orthogonal,
+the overall test of a factor with
+$\text{df}_h = g-1$ degrees of freedom can be broken down into $g-1$ separate 1 df
+tests.  This gives rise to a set of $\text{df}_h$ rank 1 $\mathbf{H}$ matrices
+that additively decompose the overall hypothesis SSCP matrix,
+
+$$
+\mathbf{H} = \mathbf{H}_1 + \mathbf{H}_2 + \cdots + \mathbf{H}_{\text{df}_h} \comma
+$$
+exactly as the univariate $\text{SS}_H$ can be decomposed using orthogonal contrasts in an ANOVA.
+
+
+
 
 
 ## ANOVA $\rightarrow$ MANOVA
@@ -557,7 +631,7 @@ testing questions of substantive interest regarding differences among group mean
 The test of the contrast comparing the typical group to the average of the others is the test 
 using the contrast $c_1 = (1, -\frac12, -\frac12)$ which produces the coefficients labeled
 `"group1"`. The function `car::linearHypothesis()` carries out the multivariate test
-that these are all zero. This is a 1 df test, and all four test statistics produce the same
+that these are all zero. This is a 1 df test, so all four test statistics produce the same
 $F$ and $p$-values.
 
 ```{r parenting-lin-hyp1}
