@@ -313,6 +313,9 @@ window.Quarto = {
 <a href="#anova-rightarrow-manova" id="toc-anova-rightarrow-manova" class="nav-link" data-scroll-target="#anova-rightarrow-manova"><span class="header-section-number">10.3</span> ANOVA <span class="math inline">\(\rightarrow\)</span> MANOVA</a>
   <ul class="collapse">
 <li><a href="#example-father-parenting-data" id="toc-example-father-parenting-data" class="nav-link" data-scroll-target="#example-father-parenting-data"><span class="header-section-number">10.3.1</span> Example: Father parenting data</a></li>
+  <li><a href="#ordered-factors" id="toc-ordered-factors" class="nav-link" data-scroll-target="#ordered-factors"><span class="header-section-number">10.3.2</span> Ordered factors</a></li>
+  <li><a href="#example-adolescent-mental-health" id="toc-example-adolescent-mental-health" class="nav-link" data-scroll-target="#example-adolescent-mental-health"><span class="header-section-number">10.3.3</span> Example: Adolescent mental health</a></li>
+  <li><a href="#two-way-manova" id="toc-two-way-manova" class="nav-link" data-scroll-target="#two-way-manova"><span class="header-section-number">10.3.4</span> Two-way MANOVA</a></li>
   </ul>
 </li>
   <li><a href="#mra-rightarrow-mmra" id="toc-mra-rightarrow-mmra" class="nav-link" data-scroll-target="#mra-rightarrow-mmra"><span class="header-section-number">10.4</span> MRA <span class="math inline">\(\rightarrow\)</span> MMRA</a></li>
@@ -336,6 +339,7 @@ window.Quarto = {
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org">dplyr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org">ggplot2</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="http://friendly.github.io/heplots/">heplots</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://patchwork.data-imaginist.com">patchwork</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyr.tidyverse.org">tidyr</a></span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="structure-of-the-mlm" class="level2" data-number="10.1"><h2 data-number="10.1" class="anchored" data-anchor-id="structure-of-the-mlm">
@@ -563,15 +567,15 @@ L = \mathbf{c}^\top \boldsymbol{\mu} = \sum_i c_i \mu_i \quad\text{such that}\qu
 \]</span> Two contrasts, <span class="math inline">\(\mathbf{c}_1\)</span> and <span class="math inline">\(\mathbf{c}_2\)</span> are <em>orthogonal</em> if the sum of products of their weights is zero, i.e., <span class="math inline">\(\mathbf{c}_1^\top \mathbf{c}_2 = \Sigma c_{1i} \times c_{2i} = 0\)</span>. When contrasts are placed as columns of a matrix <span class="math inline">\(\mathbf{C}\)</span>, they are all mutually orthogonal if <span class="math inline">\(\mathbf{C}^\top \mathbf{C}\)</span> is a diagonal matrix. Orthogonal contrasts correspond to statistically independent tests.</p>
 <p>For example, with <span class="math inline">\(g=4\)</span> groups representing the combinations of two drugs, A and B given at low and high doses, we might want to compare (a) the average of the drug A groups vs.&nbsp;the average of drug B; (b) low vs.&nbsp;high for drug A; (c) low vs.&nbsp;high for drug B. The contrasts that do this are:</p>
 <p><span class="math display">\[\begin{aligned}
-L_1 &amp; = (\mu_1 + \mu_2) - (\mu_1 + \mu_2) &amp; \rightarrow &amp; \mathbf{c}_1 =
+L_1 &amp; = (\mu_1 + \mu_2) - (\mu_1 + \mu_2) &amp; \rightarrow\: &amp; \mathbf{c}_1 =
     \begin{pmatrix}
      1 &amp;  1 &amp; -1 &amp; -1
     \end{pmatrix} \\
-L_2 &amp; = \mu_1 - \mu_2                     &amp; \rightarrow &amp; \mathbf{c}_2 =
+L_2 &amp; = \mu_1 - \mu_2                     &amp; \rightarrow\: &amp; \mathbf{c}_2 =
     \begin{pmatrix}
      1 &amp;  -1 &amp; 0 &amp; 0
     \end{pmatrix} \\
-L_3 &amp; = \mu_3 - \mu_4                     &amp; \rightarrow &amp; \mathbf{c}_3 =
+L_3 &amp; = \mu_3 - \mu_4                     &amp; \rightarrow\: &amp; \mathbf{c}_3 =
     \begin{pmatrix}
      0 &amp;  0 &amp; 1 &amp; -1
     \end{pmatrix}
@@ -583,19 +587,26 @@ L_3 &amp; = \mu_3 - \mu_4                     &amp; \rightarrow &amp; \mathbf{c}
 <span><span class="va">c2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span>,  <span class="fl">0</span>,  <span class="fl">0</span><span class="op">)</span>    <span class="co"># A1 vs. A2</span></span>
 <span><span class="va">c3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>,  <span class="fl">0</span>,  <span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span>    <span class="co"># B1 vs. B2</span></span>
 <span><span class="va">C</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">c1</span>,<span class="va">c2</span>,<span class="va">c3</span><span class="op">)</span> </span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="va">C</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/outer.html">outer</a></span><span class="op">(</span><span class="va">LETTERS</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">2</span>, <span class="va">paste0</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/t.html">t</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="va">C</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/outer.html">outer</a></span><span class="op">(</span><span class="va">LETTERS</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">2</span>, <span class="va">paste0</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/t.html">t</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">C</span></span>
 <span><span class="co">#&gt;    c1 c2 c3</span></span>
 <span><span class="co">#&gt; A1  1  1  0</span></span>
 <span><span class="co">#&gt; A2  1 -1  0</span></span>
 <span><span class="co">#&gt; B1 -1  0  1</span></span>
 <span><span class="co">#&gt; B2 -1  0 -1</span></span>
+<span></span>
 <span><span class="co"># show they are mutually orthogonal</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/t.html">t</a></span><span class="op">(</span><span class="va">C</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html">%*%</a></span> <span class="va">C</span></span>
 <span><span class="co">#&gt;    c1 c2 c3</span></span>
 <span><span class="co">#&gt; c1  4  0  0</span></span>
 <span><span class="co">#&gt; c2  0  2  0</span></span>
 <span><span class="co">#&gt; c3  0  0  2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>For a dataset, <code>data</code>, with this factor as <code>group</code>, you can set up the analyses to use these contrasts by assigning the matrix <code>C</code> to <code><a href="https://rdrr.io/r/stats/contrasts.html">contrasts()</a></code>:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb4" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/contrasts.html">contrasts</a></span><span class="op">(</span><span class="va">data</span><span class="op">$</span><span class="va">group</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">C</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>For multivariate tests, when all contrasts are pairwise orthogonal, the overall test of a factor with <span class="math inline">\(\text{df}_h = g-1\)</span> degrees of freedom can be broken down into <span class="math inline">\(g-1\)</span> separate 1 df tests. This gives rise to a set of <span class="math inline">\(\text{df}_h\)</span> rank 1 <span class="math inline">\(\mathbf{H}\)</span> matrices that additively decompose the overall hypothesis SSCP matrix,</p>
 <p><span class="math display">\[
@@ -649,7 +660,7 @@ Figure&nbsp;10.2: A simple MANOVA design involving three groups and two response
 <p>The main questions concern whether the group means differ on these scales, and the nature of these differences. That is, do the means differ significantly on all three measures? Is there a consistent order of groups across these three aspects of parenting?</p>
 <p>More specific questions are: (a) Do the fathers of typical children differ from the other two groups on average? (b) Do the physical and mental groups differ? These questions can be tested using contrasts, and are specified by assigning a matrix to <code>contrasts(Parenting$group)</code>; each column is a contrast whose values sum to zero. They are given labels <code>"group1"</code> (normal vs.&nbsp;other) and <code>"group2"</code> (physical vs.&nbsp;mental) in some output.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb4" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">Parenting</span>, package<span class="op">=</span><span class="st">"heplots"</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb5" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">Parenting</span>, package<span class="op">=</span><span class="st">"heplots"</span><span class="op">)</span></span>
 <span><span class="va">C</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">.5</span>, <span class="op">-</span><span class="fl">.5</span>,</span>
 <span>              <span class="fl">0</span>,  <span class="fl">1</span>,  <span class="op">-</span><span class="fl">1</span><span class="op">)</span>, </span>
 <span>            nrow <span class="op">=</span> <span class="fl">3</span>, ncol <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
@@ -662,7 +673,7 @@ Figure&nbsp;10.2: A simple MANOVA design involving three groups and two response
 <section id="exploratory-plots" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="exploratory-plots">Exploratory plots</h4>
 <p>Before setting up a model and testing, it is well-advised to examine the data graphically. The simplest plots are side-by-side boxplots (or violin plots) for the three responses. With <code>ggplot2</code>, this is easily done by reshaping the data to long format and using faceting. In <a href="#fig-parenting-boxpl" class="quarto-xref">Figure&nbsp;<span>10.3</span></a>, I’ve also plotted the group means with white dots.</p>
 <div class="cell" data-layout-align="center">
-<details class="code-fold"><summary>See the ggplot code</summary><div class="sourceCode" id="cb5" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">parenting_long</span> <span class="op">&lt;-</span> <span class="va">Parenting</span> <span class="op">|&gt;</span></span>
+<details class="code-fold"><summary>See the ggplot code</summary><div class="sourceCode" id="cb6" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">parenting_long</span> <span class="op">&lt;-</span> <span class="va">Parenting</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html">pivot_longer</a></span><span class="op">(</span>cols<span class="op">=</span><span class="va">caring</span><span class="op">:</span><span class="va">play</span>, names_to <span class="op">=</span> <span class="st">"variable"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">parenting_long</span>, </span>
@@ -695,7 +706,7 @@ Figure&nbsp;10.3: Faceted boxplots of scores on the three parenting scales, show
 <p>In this figure, differences among the groups on <code>play</code> are most apparent, with fathers of non-disabled children scoring highest. Differences among the groups on <code>emotion</code> are very small, but one high outlier for the fathers of mentally disabled children is apparent. On <code>caring</code>, fathers of children with a physical disability stand out as highest.</p>
 <p>For exploratory purposes, you might also make a scatterplot matrix. Here, because the MLM assumes homogeneity of the variances and covariance matrices <span class="math inline">\(\mathbf{S}_i\)</span>, I show only the data ellipses in scatterplot matrix format, using <code>heplots:covEllipses()</code> (with 50% coverage, for clarity):</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb6" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">colors</span> <span class="op">&lt;-</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/pal_hue.html">hue_pal</a></span><span class="op">(</span><span class="op">)</span><span class="op">(</span><span class="fl">3</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/rev.html">rev</a></span><span class="op">(</span><span class="op">)</span>  <span class="co"># match color use in ggplot</span></span>
+<div class="sourceCode" id="cb7" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">colors</span> <span class="op">&lt;-</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/pal_hue.html">hue_pal</a></span><span class="op">(</span><span class="op">)</span><span class="op">(</span><span class="fl">3</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/rev.html">rev</a></span><span class="op">(</span><span class="op">)</span>  <span class="co"># match color use in ggplot</span></span>
 <span><span class="fu"><a href="https://friendly.github.io/heplots/reference/covEllipses.html">covEllipses</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">caring</span>, <span class="va">play</span>, <span class="va">emotion</span><span class="op">)</span> <span class="op">~</span> <span class="va">group</span>, data<span class="op">=</span><span class="va">Parenting</span>,</span>
 <span>  variables <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span>,</span>
 <span>  fill <span class="op">=</span> <span class="cn">TRUE</span>, fill.alpha <span class="op">=</span> <span class="fl">0.2</span>,</span>
@@ -718,7 +729,7 @@ Figure&nbsp;10.4: Bivariate data ellipses for pairs of the three responses, show
 <span class="header-section-number">10.3.1.1</span> Testing the model</h4>
 <p>Let’s proceed to fit the multivariate model predicting all three scales from the <code>group</code> factor. <code><a href="https://rdrr.io/r/stats/lm.html">lm()</a></code> for a multivariate response returns an object of class <code>"mlm"</code>, for which there are many methods (use <code>methods(class="mlm")</code> to find them).</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb7" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">parenting.mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">caring</span>, <span class="va">play</span>, <span class="va">emotion</span><span class="op">)</span> <span class="op">~</span> <span class="va">group</span>, </span>
+<div class="sourceCode" id="cb8" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">parenting.mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">caring</span>, <span class="va">play</span>, <span class="va">emotion</span><span class="op">)</span> <span class="op">~</span> <span class="va">group</span>, </span>
 <span>                    data<span class="op">=</span><span class="va">Parenting</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Call:</span></span>
@@ -733,7 +744,7 @@ Figure&nbsp;10.4: Bivariate data ellipses for pairs of the three responses, show
 <p>The coefficients in this model are the values of the contrasts set up above. <code>group1</code> is the mean of the typical group minus the average of the other two, which is negative on <code>caring</code> and <code>emotion</code> but positive for <code>play</code>. <code>group2</code> is the difference in means for the physical vs.&nbsp;mental groups.</p>
 <p>Before doing multivariate tests, it is useful to see what would happen if we ran univariate ANOVAs on each of the responses. These can be extracted from an MLM using <code><a href="https://rdrr.io/r/stats/summary.aov.html">stats::summary.aov()</a></code>:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb8" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/summary.aov.html">summary.aov</a></span><span class="op">(</span><span class="va">parenting.mod</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb9" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/summary.aov.html">summary.aov</a></span><span class="op">(</span><span class="va">parenting.mod</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  Response caring :</span></span>
 <span><span class="co">#&gt;             Df Sum Sq Mean Sq F value Pr(&gt;F)    </span></span>
 <span><span class="co">#&gt; group        2    130    65.2    18.6  6e-07 ***</span></span>
@@ -755,7 +766,7 @@ Figure&nbsp;10.4: Bivariate data ellipses for pairs of the three responses, show
 </div>
 <p>If you like, you can also extract the univariate model fit statistics from the <code>"mlm" using the</code>broom::glance()` method for a multivariate model object.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb9" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://generics.r-lib.org/reference/glance.html">glance</a></span><span class="op">(</span><span class="va">parenting.mod</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<div class="sourceCode" id="cb10" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://generics.r-lib.org/reference/glance.html">glance</a></span><span class="op">(</span><span class="va">parenting.mod</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">response</span>, <span class="va">r.squared</span>, <span class="va">fstatistic</span>, <span class="va">p.value</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 3 × 4</span></span>
 <span><span class="co">#&gt;   response r.squared fstatistic       p.value</span></span>
@@ -766,7 +777,7 @@ Figure&nbsp;10.4: Bivariate data ellipses for pairs of the three responses, show
 </div>
 <p>From this, one might conclude that there are differences only in <code>caring</code> and <code>play</code> and therefore ignore <code>emotion</code>, but this would be short-sighted. <code><a href="https://rdrr.io/pkg/car/man/Anova.html">car::Anova()</a></code> gives the overall multivariate test <span class="math inline">\(\mathcal{H}_0: \mathbf{B} = 0\)</span> of the <code>group</code> effect. Note that this has a much smaller <span class="math inline">\(p\)</span>-value than any of the univariate <span class="math inline">\(F\)</span> tests.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb10" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova</a></span><span class="op">(</span><span class="va">parenting.mod</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb11" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova</a></span><span class="op">(</span><span class="va">parenting.mod</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Type II MANOVA Tests: Pillai test statistic</span></span>
 <span><span class="co">#&gt;       Df test stat approx F num Df den Df Pr(&gt;F)    </span></span>
@@ -776,7 +787,7 @@ Figure&nbsp;10.4: Bivariate data ellipses for pairs of the three responses, show
 </div>
 <p><code><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova()</a></code> returns an object of class <code>"Anova.mlm"</code> which has various methods. The <code><a href="https://rdrr.io/r/base/summary.html">summary()</a></code> method for this gives more details, including all four test statistics. These tests have <span class="math inline">\(s = \min(p, \text{df}_h) = \min(3,2) = 2\)</span> dimensions and the <span class="math inline">\(F\)</span> approximations are not equivalent here. All four tests are highly significant</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb11" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">parenting.summary</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova</a></span><span class="op">(</span><span class="va">parenting.mod</span><span class="op">)</span> <span class="op">|&gt;</span>  <span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="op">)</span> </span>
+<div class="sourceCode" id="cb12" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">parenting.summary</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova</a></span><span class="op">(</span><span class="va">parenting.mod</span><span class="op">)</span> <span class="op">|&gt;</span>  <span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="op">)</span> </span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">parenting.summary</span>, SSP<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Type II MANOVA Tests:</span></span>
@@ -796,7 +807,7 @@ Figure&nbsp;10.4: Bivariate data ellipses for pairs of the three responses, show
 </div>
 <p>The <code><a href="https://rdrr.io/r/base/summary.html">summary()</a></code> method by default prints the SSH = <span class="math inline">\(\mathbf{H}\)</span> and SSE = <span class="math inline">\(\mathbf{E}\)</span> matrices, but I suppressed them above. They can be extracted from the object using <code><a href="https://purrr.tidyverse.org/reference/pluck.html">purrr::pluck()</a></code>:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb12" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">H</span> <span class="op">&lt;-</span> <span class="va">parenting.summary</span> <span class="op">|&gt;</span> </span>
+<div class="sourceCode" id="cb13" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">H</span> <span class="op">&lt;-</span> <span class="va">parenting.summary</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/pluck.html">pluck</a></span><span class="op">(</span><span class="st">"multivariate.tests"</span>, <span class="st">"group"</span>, <span class="st">"SSPH"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         caring    play emotion</span></span>
@@ -815,7 +826,7 @@ Figure&nbsp;10.4: Bivariate data ellipses for pairs of the three responses, show
 <p>With three or more groups or with a more complex MANOVA design, contrasts provide a way of testing questions of substantive interest regarding differences among group means.</p>
 <p>The test of the contrast comparing the typical group to the average of the others is the test using the contrast <span class="math inline">\(c_1 = (1, -\frac12, -\frac12)\)</span> which produces the coefficients labeled <code>"group1"</code>. The function <code><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">car::linearHypothesis()</a></code> carries out the multivariate test that these are all zero. This is a 1 df test, so all four test statistics produce the same <span class="math inline">\(F\)</span> and <span class="math inline">\(p\)</span>-values.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb13" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">parenting.mod</span><span class="op">)</span><span class="op">[</span><span class="st">"group1"</span>,<span class="op">]</span></span>
+<div class="sourceCode" id="cb14" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">parenting.mod</span><span class="op">)</span><span class="op">[</span><span class="st">"group1"</span>,<span class="op">]</span></span>
 <span><span class="co">#&gt;  caring    play emotion </span></span>
 <span><span class="co">#&gt; -0.3833  2.4167 -0.0667</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">linearHypothesis</a></span><span class="op">(</span><span class="va">parenting.mod</span>, <span class="st">"group1"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
@@ -832,7 +843,7 @@ Figure&nbsp;10.4: Bivariate data ellipses for pairs of the three responses, show
 </div>
 <p>Similarly, the difference between the physical and mental groups uses the contrast <span class="math inline">\(c_2 = (0, 1, -1)\)</span> and the test that these means are equal is given by <code><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">linearHypothesis()</a></code> applied to <code>group2</code>.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb14" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">parenting.mod</span><span class="op">)</span><span class="op">[</span><span class="st">"group2"</span>,<span class="op">]</span></span>
+<div class="sourceCode" id="cb15" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">parenting.mod</span><span class="op">)</span><span class="op">[</span><span class="st">"group2"</span>,<span class="op">]</span></span>
 <span><span class="co">#&gt;  caring    play emotion </span></span>
 <span><span class="co">#&gt;   1.775  -0.225  -0.600</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">linearHypothesis</a></span><span class="op">(</span><span class="va">parenting.mod</span>, <span class="st">"group2"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
@@ -850,7 +861,7 @@ Figure&nbsp;10.4: Bivariate data ellipses for pairs of the three responses, show
 <p><code><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">linearHypothesis()</a></code> is very general. The second argument (<code>hypothesis.matrix</code>) corresponds to <span class="math inline">\(\mathbf{C}\)</span>, and can be specified as numeric matrix giving the linear combinations of coefficients by rows to be tested, or a character vector giving the hypothesis in symbolic form; <code>"group1"</code> is equivalent to <code>"group1 = 0"</code>.</p>
 <p>Because the contrasts used here are orthogonal, they comprise the overall test of <span class="math inline">\(\mathbf{B} = \mathbf{0}\)</span> which implies that the means of the three groups are all equal. The test below gives the same results as <code>Anova(parenting.mod)</code>.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb15" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">linearHypothesis</a></span><span class="op">(</span><span class="va">parenting.mod</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"group1"</span>, <span class="st">"group2"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<div class="sourceCode" id="cb16" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">linearHypothesis</a></span><span class="op">(</span><span class="va">parenting.mod</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"group1"</span>, <span class="st">"group2"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span>SSP<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Multivariate Tests: </span></span>
@@ -862,7 +873,103 @@ Figure&nbsp;10.4: Bivariate data ellipses for pairs of the three responses, show
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-</section></section></section><section id="mra-rightarrow-mmra" class="level2" data-number="10.4"><h2 data-number="10.4" class="anchored" data-anchor-id="mra-rightarrow-mmra">
+</section></section><section id="ordered-factors" class="level3" data-number="10.3.2"><h3 data-number="10.3.2" class="anchored" data-anchor-id="ordered-factors">
+<span class="header-section-number">10.3.2</span> Ordered factors</h3>
+<p>When groups are defined by an ordered factor, such as level of physical fitness (rated 1–5) or grade in school, it is tempting to treat that as a numeric variable and use a multivariate regression model. This would assume that the effect of that factor is linear and if not, we might consider adding polynomial terms. A different strategy, often preferable, is to make the group variable an <em>ordered factor</em>, for which R assigns <em>polynomial contrasts</em>. This gives separate tests of the linear, quadratic, cubic, … trends of the response, without the need to specify them separately in the model</p>
+</section><section id="example-adolescent-mental-health" class="level3" data-number="10.3.3"><h3 data-number="10.3.3" class="anchored" data-anchor-id="example-adolescent-mental-health">
+<span class="header-section-number">10.3.3</span> Example: Adolescent mental health</h3>
+<p>The dataset <code><a href="https://friendly.github.io/heplots/reference/AddHealth.html">heplots::AddHealth</a></code> contains a large cross-sectional sample of participants from grades 7–12 from the National Longitudinal Study of Adolescent Health, described by <span class="citation" data-cites="Warne2014">Warne (<a href="90-references.html#ref-Warne2014" role="doc-biblioref">2014</a>)</span>. It contains responses to two Likert-scale (1–5) items, <code>anxiety</code> and <code>depression</code>. <code>grade</code> is an <em>ordered</em> factor, which means that the default contrasts are taken as orthogonal polynomials with linear (<code>grade.L</code>), quadratic (<code>grade.Q</code>), up to 5th degree (<code>grade^5</code>) trends, which decompose the total effect of grade.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb17" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">AddHealth</span>, package<span class="op">=</span><span class="st">"heplots"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span><span class="op">(</span><span class="va">AddHealth</span><span class="op">)</span></span>
+<span><span class="co">#&gt; 'data.frame':    4344 obs. of  3 variables:</span></span>
+<span><span class="co">#&gt;  $ grade     : Ord.factor w/ 6 levels "7"&lt;"8"&lt;"9"&lt;"10"&lt;..: 5 4 6 1 2 2 2 3 3 3 ...</span></span>
+<span><span class="co">#&gt;  $ depression: int  0 0 0 0 0 0 0 0 1 2 ...</span></span>
+<span><span class="co">#&gt;  $ anxiety   : int  0 0 0 1 1 0 0 1 1 0 ...</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The research questions are:</p>
+<ul>
+<li>How do the means for anxiety and depression vary separately with grade? Is there evidence for linear and nonlinear trends?</li>
+<li>How do anxiety and depression vary <em>jointly</em> with grade?</li>
+<li>How does the _association* of anxiety and depression vary with age?</li>
+</ul>
+<p>The first question can be answered by fitting separate linear models for each response (e.g., <code>lm(anxiety ~ grade))</code>). However the second question is more interesting because it considers the two responses together and takes their correlation into account. This would be fit as the MLM:</p>
+<p><span class="math display">\[
+\mathbf{y} = \boldsymbol{\beta}_0 + \boldsymbol{\beta}_1 x + \boldsymbol{\beta}_2 x^2 + \cdots \boldsymbol{\beta}_5 x^5
+\]</span>{#eq:AH-mod}</p>
+<p>or, expressed in terms of the variables,</p>
+<p><span class="math display">\[
+\begin{eqnarray*}
+\begin{bmatrix} y_{\text{anx}} \\y_{\text{dep}} \end{bmatrix} &amp; = &amp;
+\begin{bmatrix} \beta_{0,\text{anx}} \\ \beta_{0,\text{dep}} \end{bmatrix} +
+\begin{bmatrix} \beta_{1,\text{anx}} \\ \beta_{1,\text{dep}} \end{bmatrix} \text{grade} +
+\begin{bmatrix} \beta_{2,\text{anx}} \\ \beta_{2,\text{dep}} \end{bmatrix} \text{grade}^2 + \cdots
+\begin{bmatrix} \beta_{5,\text{anx}} \\ \beta_{5,\text{dep}} \end{bmatrix} \text{grade}^5
+\end{eqnarray*}
+\]</span></p>
+<section id="exploratory-plots-1" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="exploratory-plots-1">Exploratory plots</h4>
+<p>Some exploratory analysis is useful before fitting and visualizing models. As a first step, we find the means, standard deviations, and standard errors of the means.</p>
+<div class="cell" data-layout-align="center">
+<details class="code-fold"><summary>Show the code</summary><div class="sourceCode" id="cb18" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org">ggplot2</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org">dplyr</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">means</span> <span class="op">&lt;-</span> <span class="va">AddHealth</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">grade</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html">summarise</a></span><span class="op">(</span></span>
+<span>    n <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/context.html">n</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>    dep_sd <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/sd.html">sd</a></span><span class="op">(</span><span class="va">depression</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>    anx_sd <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/sd.html">sd</a></span><span class="op">(</span><span class="va">anxiety</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>    dep_se <span class="op">=</span> <span class="va">dep_sd</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">sqrt</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span>,</span>
+<span>    anx_se <span class="op">=</span> <span class="va">anx_sd</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">sqrt</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span>,</span>
+<span>    depression <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">depression</span><span class="op">)</span>,</span>
+<span>    anxiety <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">anxiety</span><span class="op">)</span> <span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/relocate.html">relocate</a></span><span class="op">(</span><span class="va">depression</span>, <span class="va">anxiety</span>, .after <span class="op">=</span> <span class="va">grade</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 6 × 8</span></span>
+<span><span class="co">#&gt;   grade depression anxiety     n dep_sd anx_sd dep_se anx_se</span></span>
+<span><span class="co">#&gt;   &lt;ord&gt;      &lt;dbl&gt;   &lt;dbl&gt; &lt;int&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1 7          0.881   0.751   622   1.11   1.05 0.0447 0.0420</span></span>
+<span><span class="co">#&gt; 2 8          1.08    0.804   664   1.19   1.06 0.0461 0.0411</span></span>
+<span><span class="co">#&gt; 3 9          1.17    0.934   778   1.19   1.08 0.0426 0.0387</span></span>
+<span><span class="co">#&gt; 4 10         1.27    0.956   817   1.23   1.11 0.0431 0.0388</span></span>
+<span><span class="co">#&gt; 5 11         1.37    1.12    790   1.20   1.16 0.0428 0.0411</span></span>
+<span><span class="co">#&gt; 6 12         1.34    1.10    673   1.14   1.11 0.0439 0.0426</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Now, plot the means with <span class="math inline">\(\pm 1\)</span> error bars. It appears that average level of both depression and anxiety increase steadily with grade, except for grades 11 and 12 which don’t differ much.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb19" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">p1</span> <span class="op">&lt;-</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">means</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">grade</span>, y <span class="op">=</span> <span class="va">anxiety</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">4</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_line</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>group <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>, linewidth <span class="op">=</span> <span class="fl">1.2</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_linerange.html">geom_errorbar</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>ymin <span class="op">=</span> <span class="va">anxiety</span> <span class="op">-</span> <span class="va">anx_se</span>, </span>
+<span>                   ymax <span class="op">=</span> <span class="va">anxiety</span> <span class="op">+</span> <span class="va">anx_se</span><span class="op">)</span>,</span>
+<span>                width <span class="op">=</span> <span class="fl">.2</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">15</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p2</span> <span class="op">&lt;-</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">means</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">grade</span>, y <span class="op">=</span> <span class="va">depression</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">4</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_line</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>group <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>, linewidth <span class="op">=</span> <span class="fl">1.2</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_linerange.html">geom_errorbar</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>ymin <span class="op">=</span> <span class="va">depression</span> <span class="op">-</span> <span class="va">dep_se</span>, </span>
+<span>                    ymax <span class="op">=</span> <span class="va">depression</span> <span class="op">+</span> <span class="va">dep_se</span><span class="op">)</span>,</span>
+<span>                width <span class="op">=</span> <span class="fl">.2</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">15</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p1</span> <span class="op">+</span> <span class="va">p2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-addhealth-means-each" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-addhealth-means-each-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/ch10/fig-addhealth-means-each-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-addhealth-means-each-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;10.5: Means of anxiety and depression by grade, with <span class="math inline">\(\pm 1\)</span> standard error bars.
+</figcaption></figure>
+</div>
+</div>
+</div>
+</section><section id="fit-the-mlm" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="fit-the-mlm">Fit the MLM</h4>
+</section></section><section id="two-way-manova" class="level3" data-number="10.3.4"><h3 data-number="10.3.4" class="anchored" data-anchor-id="two-way-manova">
+<span class="header-section-number">10.3.4</span> Two-way MANOVA</h3>
+</section></section><section id="mra-rightarrow-mmra" class="level2" data-number="10.4"><h2 data-number="10.4" class="anchored" data-anchor-id="mra-rightarrow-mmra">
 <span class="header-section-number">10.4</span> MRA <span class="math inline">\(\rightarrow\)</span> MMRA</h2>
 </section><section id="ancova-rightarrow-mancova" class="level2" data-number="10.5"><h2 data-number="10.5" class="anchored" data-anchor-id="ancova-rightarrow-mancova">
 <span class="header-section-number">10.5</span> ANCOVA <span class="math inline">\(\rightarrow\)</span> MANCOVA</h2>
@@ -882,6 +989,9 @@ Meyers, L. S., Gamst, G., &amp; Guarino, A. J. (2006). <em>Applied multivariate 
 </div>
 <div id="ref-ShapiroWilk1965" class="csl-entry" role="listitem">
 Shapiro, S. S., &amp; Wilk, M. B. (1965). An analysis of variance test for normality (complete samples). <em>Biometrika</em>, <em>52</em>(3–4), 591–611. <a href="https://doi.org/10.1093/biomet/52.3-4.591">https://doi.org/10.1093/biomet/52.3-4.591</a>
+</div>
+<div id="ref-Warne2014" class="csl-entry" role="listitem">
+Warne, F. T. (2014). A primer on multivariate analysis of variance(MANOVA) for behavioral scientists. <em>Practical Assessment, Research &amp; Evaluation</em>, <em>19</em>(1). <a href="https://scholarworks.umass.edu/pare/vol19/iss1/17/">https://scholarworks.umass.edu/pare/vol19/iss1/17/</a>
 </div>
 </div>
 </section></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
