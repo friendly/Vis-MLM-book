@@ -580,7 +580,7 @@ Let's proceed to fit the multivariate model predicting all three scales from the
 methods (use `methods(class="mlm")` to find them).
 
 ```{r parenting-mod}
-parenting.mod <- lm(cbind(caring, play, emotion) ~ group, 
+parenting.mlm <- lm(cbind(caring, play, emotion) ~ group, 
                     data=Parenting) |> print()
 ```
 
@@ -592,13 +592,13 @@ Before doing multivariate tests, it is useful to see what would happen if we ran
 of the responses. These can be extracted from an MLM using `stats::summary.aov()`:
 
 ```{r parenting-summary-aov}
-summary.aov(parenting.mod)
+summary.aov(parenting.mlm)
 ```
 If you like, you can also extract the univariate model fit statistics from the `"mlm" using the
 `broom::glance()` method for a multivariate model object.
 
 ```{r}
-glance(parenting.mod) |>
+glance(parenting.mlm) |>
   select(response, r.squared, fstatistic, p.value)
 ```
 
@@ -609,7 +609,7 @@ From this, one might conclude that there are differences only in `caring` and `p
 this has a much smaller $p$-value than any of the univariate $F$ tests.
 
 ```{r parenting-Anova}
-Anova(parenting.mod)
+Anova(parenting.mlm)
 ```
 
 `Anova()` returns an object of class `"Anova.mlm"` which has various methods.
@@ -617,7 +617,7 @@ The `summary()` method for this gives more details, including all four test stat
 These tests have $s = \min(p, \text{df}_h) = \min(3,2) = 2$ dimensions and the $F$ approximations are not
 equivalent here. All four tests are highly significant
 ```{r}
-parenting.summary <- Anova(parenting.mod) |>  summary() 
+parenting.summary <- Anova(parenting.mlm) |>  summary() 
 print(parenting.summary, SSP=FALSE)
 ```
 
@@ -646,8 +646,8 @@ that these are all zero. This is a 1 df test, so all four test statistics produc
 $F$ and $p$-values.
 
 ```{r parenting-lin-hyp1}
-coef(parenting.mod)["group1",]
-linearHypothesis(parenting.mod, "group1") |> 
+coef(parenting.mlm)["group1",]
+linearHypothesis(parenting.mlm, "group1") |> 
   print(SSP=FALSE)
 ```
 
@@ -655,8 +655,8 @@ Similarly, the difference between the physical and mental groups uses the contra
 and the test that these means are equal is given by `linearHypothesis()` applied to 
 `group2`. 
 ```{r parenting-lin-hyp2}
-coef(parenting.mod)["group2",]
-linearHypothesis(parenting.mod, "group2") |> 
+coef(parenting.mlm)["group2",]
+linearHypothesis(parenting.mlm, "group2") |> 
   print(SSP=FALSE)
 ```
 
@@ -666,10 +666,10 @@ is equivalent to `"group1 = 0"`.
 
 Because the contrasts used here are orthogonal, they comprise the overall test of 
 $\mathbf{B} = \mathbf{0}$ which implies that the means of the three groups are all equal.
-The test below gives the same results as `Anova(parenting.mod)`.
+The test below gives the same results as `Anova(parenting.mlm)`.
 
 ```{r parenting-lin-hyp3}
-linearHypothesis(parenting.mod, c("group1", "group2")) |> 
+linearHypothesis(parenting.mlm, c("group1", "group2")) |> 
   print(SSP=FALSE)
 ```
 
@@ -712,7 +712,7 @@ be fit as the MLM:
 
 $$
 \mathbf{y} = \boldsymbol{\beta}_0 + \boldsymbol{\beta}_1 x + \boldsymbol{\beta}_2 x^2 + \cdots \boldsymbol{\beta}_5 x^5
-$${#eq:AH-mod}
+$${#eq-AH-mod}
 
 or, expressed in terms of the variables,
 
@@ -724,7 +724,10 @@ $$
 \begin{bmatrix} \beta_{2,\text{anx}} \\ \beta_{2,\text{dep}} \end{bmatrix} \text{grade}^2 + \cdots
 \begin{bmatrix} \beta_{5,\text{anx}} \\ \beta_{5,\text{dep}} \end{bmatrix} \text{grade}^5
 \end{eqnarray*}
-$$
+$${#eq-AH-mod2}
+
+With`grade` represented as an ordered factor, the values of $x$ in
+@eq-AH-mod are those of the orthogonal polynomials given by `poly(grade,5)`.
 
 #### Exploratory plots {.unnumbered}
 
@@ -752,7 +755,7 @@ means <- AddHealth |>
 ```
 
 Now, plot the means with $\pm 1$ error bars. It appears that average level of both depression
-and anxiety increase steadily with grade, except for grades 11 and 12 which don't differ much.
+and anxiety increase steadily with grade, except for grades 11 and 12 which don't differ much. Alternatively, we could describe this as relationships that seem largely linear, with a hint of curvature at the upper end.
 
 ```{r}
 #| label: fig-addhealth-means-each
@@ -765,22 +768,94 @@ p1 <-ggplot(data = means, aes(x = grade, y = anxiety)) +
   geom_line(aes(group = 1), linewidth = 1.2) +
   geom_errorbar(aes(ymin = anxiety - anx_se, 
                    ymax = anxiety + anx_se),
-                width = .2) +
-  theme_bw(base_size = 15)
+                width = .2) 
 
 p2 <-ggplot(data = means, aes(x = grade, y = depression)) +
   geom_point(size = 4) +
   geom_line(aes(group = 1), linewidth = 1.2) +
   geom_errorbar(aes(ymin = depression - dep_se, 
                     ymax = depression + dep_se),
-                width = .2) +
-  theme_bw(base_size = 15)
+                width = .2) 
 
 p1 + p2
 ```
 
+It is also useful to within-group correlations using `covEllipses()`, as shown in
+@fig-addhealth-covellipse. This also plots the bivariate means showing the
+form of the association , treating anxiety and depression as multivariate outcomes.
+(Because the variability of the scores within groups is so large compared to the range of the means, I show the data ellipses with coverage of only 10%.)
+
+```{r , echo = -1}
+#| label: fig-addhealth-covellipse
+#| fig-width: 6
+#| fig-height: 6
+#| out-width: "70%"
+#| fig-cap: "Within-group covariance ellipses for the `grade` groups."
+op <- par(mar = c(5,4,1,1)+0.1)
+covEllipses(AddHealth[, 3:2], group = AddHealth$grade,
+            pooled = FALSE, level = 0.1,
+            center.cex = 2.5, cex = 1.5, cex.lab = 1.5,
+            fill = TRUE, fill.alpha = 0.05)
+```
+
 
 #### Fit the MLM {.unnumbered}
+
+Now, let's fit the MLM for both responses jointly in relation to `grade`. The null hypothesis is that the means for anxiety and depression are the same at all six grades,
+$$
+\HO : \mathbf{\mu}_7 = \mathbf{\mu}_8 = \cdots = \mathbf{\mu}_{12} \; ,
+$$
+or equivalently, that all coefficients except the intercept in the model \@ref(eq:AH-mod) are zero,
+$$
+\HO : \boldsymbol{\beta}_1 =  \boldsymbol{\beta}_2  = \cdots =  \boldsymbol{\beta}_5 = \boldsymbol{0} \; .
+$$
+We fit the MANOVA model, and test the grade effect using `car::Anova()`.
+The effect of `grade` is highly significant, as we could tell from @fig-addhealth-means-each.
+
+
+```{r addhealth-mlm}
+AH.mlm <- lm(cbind(anxiety, depression) ~ grade, data = AddHealth)
+
+# overall test of `grade`
+Anova(AH.mlm)
+```
+
+However, the overall test, with 5 degrees of freedom is diffuse, in that it can be rejected if any pair of means differ. Given that `grade` is an ordered factor, it makes sense to examine narrower hypotheses
+of linear and nonlinear trends, `car::linearHypothesis()` on the coefficients
+of model `AH.mlm`.
+
+```{r}
+coef(AH.mlm) |> names()
+```
+
+
+The joint test of the linear coefficients $\boldsymbol{\beta}_1 = (\beta_{1,\text{anx}},  \beta_{1,\text{dep}})\^top$ for anxiety and depression, 
+$H_0 : \boldsymbol{\beta}_1 = \boldsymbol{0}$ is highly significant,
+```{r addhealth-linhyp1}
+## linear effect
+linearHypothesis(AH.mlm, "grade.L") |> print(SSP = FALSE)
+```
+
+The test of the quadratic coefficients $H_0 : \boldsymbol{\beta}_2 = \boldsymbol{0}$
+indicates significant curvature in trends across grade, as we saw in the plots of their means in @fig-addhealth-means-each. One interpretation might be that
+depression and anxiety after increasing steadily up to grade eleven could level off thereafter.
+```{r addhealth-linhyp2}
+## quadratic effect
+linearHypothesis(AH.mlm, "grade.Q") |> print(SSP = FALSE)
+```
+
+An advantage of linear hypotheses is that we can test several terms _jointly_.
+Of interest here is the hypothesis that all higher order terms beyond the quadratic are zero,
+$H_0 : \boldsymbol{\beta}_3 =  \boldsymbol{\beta}_4 =  \boldsymbol{\beta}_5 = \boldsymbol{0}$. Using `linearHypothesis` you can supply a vector of
+coefficient names to be tested for their joint effect when dropped from the model.
+
+```{r addhealth-linhyp3}
+rownames(coef(AH.mlm))
+## joint test of all higher terms
+linearHypothesis(AH.mlm, rownames(coef(AH.mlm))[3:5]) |> print(SSP = FALSE)
+```
+
+
 
 ### Two-way MANOVA
 

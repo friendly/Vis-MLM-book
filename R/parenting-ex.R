@@ -41,20 +41,20 @@ ggplot(parenting.long, aes(x=group, y=value, fill=group)) +
 #' ## Run the MANOVA
 
 # NB: order responses so caring, play are first
-parenting.mod <- lm(cbind(caring, play, emotion) ~ group, data=Parenting)
-Anova(parenting.mod)
+parenting.mlm <- lm(cbind(caring, play, emotion) ~ group, data=Parenting)
+Anova(parenting.mlm)
 
 #' test linear hypotheses (contrasts)
 contrasts(Parenting$group)   # display the contrasts
-print(linearHypothesis(parenting.mod, "group1"), SSP=FALSE)
-print(linearHypothesis(parenting.mod, "group2"), SSP=FALSE)
+print(linearHypothesis(parenting.mlm, "group1"), SSP=FALSE)
+print(linearHypothesis(parenting.mlm, "group2"), SSP=FALSE)
 
 
 
 #' ## Figure 4: compare effect and significance scaling
 
 op <- par(mar=c(4,4,1,1)+0.1)
-res <- heplot(parenting.mod,
+res <- heplot(parenting.mlm,
 		fill=TRUE, fill.alpha=c(0.3, 0.1),
 		lty = c(0,1),
 		cex=1.3, cex.lab=1.5)
@@ -64,7 +64,7 @@ par(op)
 #dev.copy2pdf(file="parenting-HE2.pdf")
 
 op <- par(mar=c(4,4,1,1)+0.1)
-res <- heplot(parenting.mod, size="effect",
+res <- heplot(parenting.mlm, size="effect",
               fill=TRUE, fill.alpha=c(0.3, 0.1), 
               lty = c(0,1),
               cex=1.3, cex.lab=1.5, label.pos=c(1,2),
@@ -80,7 +80,7 @@ hyp <- list("N:MP" = "group1", "M:P" = "group2")
 
 # Fig 5: make a prettier heplot plot
 op <- par(mar=c(4,4,1,1)+0.1)
-heplot(parenting.mod, hypotheses=hyp, asp=1, 
+heplot(parenting.mlm, hypotheses=hyp, asp=1, 
        fill=TRUE, fill.alpha=c(0.3,0.1), 
        col=c("red", "blue"), 
        lty=c(0,0,1,1), label.pos=c(1,1,3,2),
@@ -89,17 +89,17 @@ par(op)
 #dev.copy2pdf(file="parenting-HE3.pdf")
 
 #' ## other HE plots not shown in paper
-pairs(parenting.mod, fill=TRUE, fill.alpha=c(0.3, 0.1))
+pairs(parenting.mlm, fill=TRUE, fill.alpha=c(0.3, 0.1))
 
 # This 3D plot should be interactive: zoom and rotate under mouse control
 
 #+ webgl=TRUE
-heplot3d(parenting.mod, wire=FALSE)
+heplot3d(parenting.mlm, wire=FALSE)
 
 #' ## Canonical discriminant analysis
 
 library(candisc)
-parenting.can <- candisc(parenting.mod)
+parenting.can <- candisc(parenting.mlm)
 heplot(parenting.can)
 
 #' ## Figure 6
