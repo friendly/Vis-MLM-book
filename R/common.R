@@ -50,6 +50,19 @@ knitr::opts_knit$set(
             scap='fig.scap'),
             eval.after = c('fig.cap','fig.scap'))
 
+# provide a new chunk option, `out.lines` to limit the number of lines produced.
+# from: https://blog.djnavarro.net/posts/2023-12-30_knitr-hooks/
+custom_hook_output <- function(x, options) {
+  n <- options$out.lines
+  if(!is.null(n)) {
+    x <- xfun::split_lines(x)
+    if (length(x) > n) x <- c(head(x, n), "....\n")
+    x <- paste(x, collapse = "\n")
+  }
+  default_hook_output(x, options)
+}
+
+
 # suppress "Registered S3 method overwritten by GGally"
 Sys.setenv(`_R_S3_METHOD_REGISTRATION_NOTE_OVERWRITES_` = "false")
 

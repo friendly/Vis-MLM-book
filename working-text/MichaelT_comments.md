@@ -1,0 +1,220 @@
+# Chapter 2 Comments
+
+Section 2.1.1 -- a different word from 'rough' to better describe the juxtaposition? **DONE**
+
+- Maybe change the section header to better highlight the point that this is for debunking? These biases seems so implicit even today that without careful reading, one may be impressed that these notions are to be maintained **@MT: What would be better?**
+- Quarto formatting is a bit off in web-format, it's showing ` ::: {.cell layout-align=“center”}` **Fixed; need a blank line b4 code**
+- Someway to disable ligatures on R-pipe (|>)? I think this may confuse those unfamiliar with fonts **Use `monofont: "Fira mono"`, not `monofont: "Fira code"` **
+
+Figure 2.3
+- Maybe add an alpha, distinguish lines by linetype based on sex, and make points hollowed out?
+
+- Add TODO regarding Chapter XX, to put the actual number
+- Fix _both_ to actual formatting
+- Add TODO regarding sections 2.4, 2.5 and 2.6
+
+- Packages used here? `report` library?
+
+# Chapter 3
+
+Section 3.1.1
+- Definition of pointwise confidence bands and contrasting appropriate with inappropriate interpretations would be nice
+
+Figure 3.3 
+- Maybe adjust the colors/linetype to better show how the LOESS smooth closely matches the quadratic fit?
+
+Figure 3.4 and 3.5 and 3.7
+- Distinguish by shape/linetype as well?
+- Also adjust using alpha?
+
+Mathematics in Section 3.2
+- Perhaps greater elaboration on the mathematics and/or instantiating it in terms of concrete R code could be helpful? Or perhaps where to look for a more elaborate description? It's a bit terse
+
+Figure 3.10 
+- It would be nice if the graph could be elaborated, such that each of the things about 'horizontal/vertical tangents' to the concentric ellipses, major and minor axes and more were labelled. 
+	- It's not easy for everyone to immediately recognize what is meant by something like major/minor axes versus central cross.
+	- It would be a lot more work, but from a pedagogical point of view, I think it'd be nice if it was shown how the complete graph can be constructed piece-by-piece and how each individual piece contributes to the meaningof the larger graph. 
+- Latex right before section 3.2.2 is incomplete -- not rendering correctly:  $\(\sqrt{\mathbf{v}_1}, \sqrt{\mathbf{v}_1\), …$
+
+- Figure 3.1 can be made to be be the same text size and etc as the other graphs? It seems unusually small for some reason
+
+Section 3.2.3 and 3.2.3.1 -- for the in-text R code perhaps the coefficients can be called by name instead of by number? `coef(lm(prestige ~ income, data=Prestige))["COEFFICIENT NAME"]` instead of `coef(lm(prestige ~ income, data=Prestige))[2]`.
+
+- R code for Figure 3.14 seems a bit off?
+- Why not make everything in ggplot2? 
+
+- Maybe also add Representational Similarity Analysis and even network diagrams as another summary of bivariate relationships?
+
+- y-axis text is sqquished up in Figure 3.31 
+
+# Chapter 4
+
+## PCA
+
+- Generalized PCA? 
+- The capitalization for each of the bullet points of `It was but a small step to recognize that for two variables, $x$ and $y$:...` is a bit odd/inconsistent
+- Perhaps making Figure 4.4 go into a continuous loop of a GIF would be better? The way it jumps from the beginning to the end makes it unclear for me what to focus my attention on and by the time I focus on something, the GIF resets and I forget what I was looking at.
+	- It's also a bit ambiguous what the 'horizontal and vertical' dimensions are in a moving 3D graph
+- I like Figure 4.5. I wonder if it'd be possible to make everything in one visualization framework? GGplot2? Or is this unnecessary?
+- The language in Chapter 4 -- particularly 4.2.2 -- is quite metaphorical and vivid. I'm worried that this may distract the reader from what the main point is trying to be conveyed. Is there a way to balance style and directness?
+- The mathematics of PCA seems like a big of a leap
+- Perhaps supplementing it with visual explanations and a concrete example with a low number of dimensions might make it more intuitive?
+
+
+## 4.2.3
+
+- Could be nice to clarify whether the data need to already be centered/scaled or whether the function can handle it.
+- Would be nice to clarify what `center` and `scale` are in the output of `prcomp()`
+
+
+## 4.2.4
+
+> "The typical rough guidance is that the last point to fall on this line represents the last component to extract, the idea being that beyond this, the amount of additional variance explained is non-meaningful."
+- This could be rephrased
+
+## 4.2.5
+
+Figure 4.8 -- perhaps the legend could have the letter 'a' removed?
+
+- Ore we could make the legend be similar with Figure 4.12 
+
+- Shouldn't Figure 4.8 have its y-axis lengthened to really show that the two components are uncorrelated?
+- Y-axis seems to be mislabeled in Figure 4.8
+
+- I'm a bit confused about multiplying the principal component loadings by -1. Should I only multiply by -1 if all of the loadings are negative? And if I multiply by -1, should it be to all of the principal components? 
+- Because only the first 2 and 4th loadings are negative for PC2, the rest are positive. 
+
+- Perhaps elaborate on what "the cosine of the angle between two variable vectors" means?
+
+## 4.3
+
+intro seems incomplete? `...` ? 
+
+### 4.3.1
+
+- `i`, `r` and `p` could be more explicitly defined?
+- Perhaps some concrete visual illustration of the ideas of eigenvectors, eigenvalues and orthonormality and how they relate to some data could be pedagogically helpful?
+- Could we consider going beyond the biplot, to cases where multiple principal components may be visualized at once? Perhaps via a parallel coordinate plot?
+- Perhaps we could use the idea of simulating your own data and show how to vary the simulation in order to get particular principal component results?
+	- For example, how to simulate data from a two factor model with 10 indicators each? What would these indicators look like with principal components? 
+	- Or maybe generate data from a composite model (Cho and Choi, 2020; Behaviormetrika)?
+- TODO is missing a preceding `*`
+
+### 4.3.3
+
+I suspect that Figure 4.11 might not be scaled correctly?
+
+- It would be nice to have an explanation for why `The correlation circle indicates that these components are uncorrelated and have equal variance in the display.` and under what circumstances you would think that the components are correlated and not have equal variance. 
+
+Figure 4.12 seems a bit crowded between the mix of letters and lines, perhaps we could adjust alpha and do some dodging
+- It may be nice if we could arrange the legend for the regions to correspond to the direction that they point to. Because right now the 'Northeast' is at the 'Southeast of the plot'
+- 'Murder' is also cutoff
+
+Figure 4.13 -- 'larceny' is cutoff
+
+
+### 4.3.5
+
+Perhaps some more background for why Figure 4.15 is true and how it relates to multiple linear regression could be good?
+
+- Maybe elaborate on why the multivariate regression on the principal components excluded the intercept?
+- So is using supplementary variables the same or different from principal components regression? I'm confused.
+- Because if it's the same, then why not just use `prcomp()`, then perform `lm()` on the principal components...? Or perhaps using the `pls::pcr()`?
+	- Is it because there's an easy transition into plotting the results and because it's not introducing a new package?
+
+- Could the following be elaborated?
+
+> Note that these coefficients are the same as the correlations between the supplementary variables and the scores on the principal components, up to a scaling factor for each dimension. This provides a general way to relate dimensions found in other methods to the original data variables using vectors as in biplot techniques.
+
+**Maybe it would be better to put all of the TODOs into the Github Issues page that way it's easier to sort through and consider all of them?**
+
+## Section 4.4
+
+### Section 4.4.1
+
+- Perhaps explain what 'nonmetric' means and why that's advantageous?
+
+### SEction 4.4.2
+
+> t-SNE defines a similar probability distribution over the points _i$ in the low-dimensional map, and it minimizes the Kullback–Leibler divergence (KL divergence) between the two distributions with respect to the locations of the points in the map
+
+- Perhaps there's a latex error? $q_{ij}$ maybe?
+
+
+#### Section 4.4.2.1
+
+So just to confirm, are the differences between PCA and t-SNE (rotation) specific to this data or in general? I thought some stronger statement on when we should consider each technique would be nice.
+
+## Section 4.5
+
+Caption for Figure 4.26 is missing
+
+## Section 4.7
+- The animation for Figure 4.32 is uncharacteristcally slow compared to all the other animations...
+
+
+# Chapter 5
+
+This chapter feels like it should come first in the book
+
+So far, my impression is that restructuring the book to resemble a 'workflow' view of how to address particular multivariate data problems would be helpful.
+
+## Section 5.1
+
+Can multivariate logistic regression not be used when p = 1... and is quantitative?
+
+Isn't the bottom right for p > 1 and q >1 also the log-linear model?
+
+Does ANCOVA refer to any GLM model with both continuous and discrete predictors?
+
+## Section 5.2
+
+I think the latex renderred a bit incorrectly?
+
+### 5.2.1.1
+
+- Doesn't the default for factors involve a deviation from baseline as opposed to the individual mean for each level of the factor? Perhaps a note about how that affects interpretation of `y ~ x + A` would be helpful, or how to remove the intercept, maybe?
+
+# Chapter 6
+
+## 6.1
+
+"This provides an assessment of homogeneity of variance, which appears as a tendency for scale to vary with location." 
+- Perhaps you mean, "an assessment of violations to homogeneity of variance. Violations appear as a tendency for scale to vary with location."? The former implies that scale varying with location is a good thing?
+
+### 6.1.1
+
+Maybe make the unit diagonal in Figure 6.1 dashed and in some other color for contrast?
+
+Figure 6.1 is quite amazing!
+
+## 6.3
+
+### 6.3.3 
+
+I wonder if it'd be excessive to try something like a specification curve of a multiverse analysis
+
+## 6.4
+
+Is the added variable related to the partial correlations? It seems like the two ideas should be awfully related to each other... 
+
+Oh it is, Section 6.4.1!. I think we'd bit a bit remiss to not at least mention the gaussian graphical model and mixed graphical models, in passing then, because it shows all the partial correlations between all pairs of variables.
+
+Arjun recently made a whole speech about accumulated local effects. Is this something pertinent to this chapter?
+
+Although added-variable plots and its associations are well-explained, it doesn't seem like there was much backtracking to the original MLR's mystifying coefficients?
+- Are the signs of the coefficients related to some sort of collider-bias thing going on?
+
+Perhaps you could discuss how average marginal effects compare with effects plots?
+
+## 6.5
+
+I get the impression that one should just skip AV plots and go to effect displays? Is this accurate?
+
+### 6.6.1
+
+"’;.[;p;khnThe analogous formula is"
+
+- Typo
+
+There's a real armada of regression diagnostics included here. Given all the tools that one takes with them before they even begin modelling these days -- DAGs, scatterplot matrices, dimension reduction, etc--what do you make of regression diagnostics within an analytical workflow? Are they still necessary?

@@ -51,14 +51,14 @@ p1 <- Davis |>
     geom_smooth(method = "lm", formula = y~x, se = FALSE) +
     labs(x = "Measured weight (kg)", y = "Reported weight (kg)") +
     theme_bw(base_size = 14) +
-    theme(legend.position = c(.8, .8))
+    theme(legend.position.inside = c(.8, .8))
 
 p2 <- Davis |>
   ggplot(aes(y = weight, x = repwt, color = sex, shape=sex)) +
     geom_point(size = 2) +
     labs(y = "Measured weight (kg)", x = "Reported weight (kg)") +
     geom_smooth(method = "lm", formula = y~x, se = FALSE) +
-    theme(legend.position = c(.8, .8))
+    theme(legend.position.inside = c(.8, .8))
 
 # highlight the discrepant point  
 library(ggforce)
