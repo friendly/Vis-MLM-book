@@ -1,7 +1,7 @@
 #' ## Load packages and the data
 library(car)
 library(heplots)
-library(reshape2)
+#library(reshape2)
 library(ggplot2)
 library(dplyr)
 library(tidyr)
@@ -62,17 +62,17 @@ C <- matrix(c(1, -.5, -.5,
 
 contrasts(Parenting$group) <- C
 
-parenting.mod <- lm(cbind(caring, play, emotion) ~ group, data=Parenting)
+parenting.mlm <- lm(cbind(caring, play, emotion) ~ group, data=Parenting)
 
 # coeficients are contrasts
-coef(parenting.mod)
+coef(parenting.mlm)
 
-Anova(parenting.mod)
+Anova(parenting.mlm)
 
-Anova(parenting.mod) |> summary() 
-Anova(parenting.mod) |> summary() |> print(SSP=FALSE)
+Anova(parenting.mlm) |> summary() 
+Anova(parenting.mlm) |> summary() |> print(SSP=FALSE)
 
-Anova(parenting.mod) |> summary() -> parenting.summary
+Anova(parenting.mlm) |> summary() -> parenting.summary
 
 # extracting H & E
 parenting.summary$multivariate.tests$group$SSPH
@@ -86,40 +86,77 @@ E <- parenting.summary |> pluck("multivariate.tests", "group", "SSPE") |> print(
 
 #' test linear hypotheses (contrasts)
 contrasts(Parenting$group)   # display the contrasts
-linearHypothesis(parenting.mod, "group1") |> print(SSP=FALSE)
-linearHypothesis(parenting.mod, "group2") |> print(SSP=FALSE)
+linearHypothesis(parenting.mlm, "group1") |> print(SSP=FALSE)
+linearHypothesis(parenting.mlm, "group2") |> print(SSP=FALSE)
 
 # test the overall hypothesis, B = 0
-linearHypothesis(parenting.mod, c("group1", "group2")) |> print(SSP=FALSE)
+linearHypothesis(parenting.mlm, c("group1", "group2")) |> print(SSP=FALSE)
+
+# components
+lh <- linearHypothesis(parenting.mlm, "group1")
+names(lh)
+lh$SSPH
+
+
+
+# contrast means
+# means <- Parenting |>
+#   group_by(group) |>
+#   summarize_all("mean")
+
+# Parenting |> group_by(group) |>
+#   summarise(across(everything(),mean))
+
+means <- Parenting |>
+  summarise(across(everything(),mean), .by = group)
 
 
 # Contrasts: C B = 0
-C <- model.matrix(parenting.mod) |> as.data.frame() |> distinct() |> t()
-B <- coef(parenting.mod)
+C <- model.matrix(parenting.mlm) |> as.data.frame() |> distinct() 
+B <- coef(parenting.mlm)
 
-C %*% B
+t(C) %*% B
+
+# write out symbolic matrices [use dev version]
+library(matlib)
+source("C:/Dropbox/R/projects/matlib/dev/symbolicMatrix.R")
+Fractions <- matlib:::Fractions
+symbolicMatrix("\\bar{y}", 3, 3)
+cont <- matrix(c(1, -.5, -.5, 0, 1, -1), 2,3, byrow=TRUE)
+symbolicMatrix(cont, 2, 3, fractions=TRUE)
+
+as.matrix(C) %*% as.matrix(means |> select(-group))
 
 #' One-way ANOVAs for each response
 
-glance(parenting.mod)
+glance(parenting.mlm)
 
-glance(parenting.mod) |>
+glance(parenting.mlm) |>
   select(response, r.squared, fstatistic, p.value)
 
-summary.aov(parenting.mod)
+summary.aov(parenting.mlm)
 
-etasq(parenting.mod)
+etasq(parenting.mlm)
+
+# broom::tidy  Extract univariate tests of contrasts from mlm object
+tidy(parenting.mlm) |>
+  mutate(response = factor(response, levels=unique(response))) |>    # keep variable order
+  filter(term != "(Intercept)") |>
+  arrange(response) |>
+  mutate(signif = noquote(gtools::stars.pval(p.value))) |>
+  mutate(p.value = noquote(scales::pvalue(p.value))) 
+
 
 #' Box's M
-boxM(parenting.mod)
+boxM(parenting.mlm)
 
-boxM(parenting.mod) |> plot()
+boxM(parenting.mlm) |> plot()
 
 
 #' ## Figure 4: compare effect and significance scaling
 
 op <- par(mar=c(4,4,1,1)+0.1)
-res <- heplot(parenting.mod,
+res <- heplot(parenting.mlm,
               fill=TRUE, fill.alpha=c(0.3, 0.1),
               lty = c(0,1),
               cex=1.3, cex.lab=1.5)
@@ -129,7 +166,7 @@ par(op)
 #dev.copy2pdf(file="parenting-HE2.pdf")
 
 op <- par(mar=c(4,4,1,1)+0.1)
-res <- heplot(parenting.mod, size="effect",
+res <- heplot(parenting.mlm, size="effect",
               fill=TRUE, fill.alpha=c(0.3, 0.1), 
               lty = c(0,1),
               cex=1.3, cex.lab=1.5, label.pos=c(1,2),
@@ -145,7 +182,7 @@ hyp <- list("N:MP" = "group1", "M:P" = "group2")
 
 # Fig 5: make a prettier heplot plot
 op <- par(mar=c(4,4,1,1)+0.1)
-heplot(parenting.mod, hypotheses=hyp, asp=1, 
+heplot(parenting.mlm, hypotheses=hyp, asp=1, 
        fill=TRUE, fill.alpha=c(0.3,0.1), 
        col=c("red", "blue"), 
        lty=c(0,0,1,1), label.pos=c(1,1,3,2),
@@ -154,17 +191,17 @@ par(op)
 #dev.copy2pdf(file="parenting-HE3.pdf")
 
 #' ## other HE plots not shown in paper
-pairs(parenting.mod, fill=TRUE, fill.alpha=c(0.3, 0.1))
+pairs(parenting.mlm, fill=TRUE, fill.alpha=c(0.3, 0.1))
 
 # This 3D plot should be interactive: zoom and rotate under mouse control
 
 #+ webgl=TRUE
-heplot3d(parenting.mod, wire=FALSE)
+heplot3d(parenting.mlm, wire=FALSE)
 
 #' ## Canonical discriminant analysis
 
 library(candisc)
-parenting.can <- candisc(parenting.mod)
+parenting.can <- candisc(parenting.mlm)
 parenting.can
 
 heplot(parenting.can)

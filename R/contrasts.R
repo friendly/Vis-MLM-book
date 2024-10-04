@@ -20,3 +20,21 @@ matplot(GramSchmidt(M),
         lwd = 2,
         xlab = "X",
         ylab = "Coefficient")
+
+
+# contrasts
+library(matlib)
+c1 <- c(1,1,-1,-1)
+c2 <- c(1, -1, 0, 0)
+c3 <- c(0, 0, 1, -1)
+#symbolicMatrix(matrix(c1, nrow=1))
+
+C <- cbind(c1,c2,c3) 
+#rownames(C) <- paste0("gp", 1:4)
+rownames(C) <- outer(LETTERS[1:2], 1:2, paste0) |> t() |> c()
+C
+t(C) %*% C
+
+
+
+

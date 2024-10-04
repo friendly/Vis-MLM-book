@@ -5,7 +5,7 @@ knitr::opts_chunk$set(fig.path = "figs/ch10/")
 
 {{< include latex/latex-commands.qmd >}}
 
-# Multivariate Linear Model {#sec-mlm-review}
+# Multivariate Linear Models {#sec-mlm-review}
 
 @sec-Hotelling introduced the essential ideas of multivariate analysis in the context of a two-group design
 using Hotelling's $T^2$. Here, I extend this to the to the general
@@ -39,6 +39,7 @@ library(car)
 library(dplyr)
 library(ggplot2)
 library(heplots)
+library(patchwork)
 library(tidyr)
 ```
 
@@ -289,8 +290,8 @@ $${#eq-hmat}
 where there are $s = \min(h, p)$ non-zero eigenvalues of $\mat{H}\mat{E}^{-1}$.
 In @eq-hmat, $\mathbf{H}$ measures the (Mahalanobis) squared distances (and cross products) among
 the linear combinations $\mathbf{C} \widehat{\mathbf{B}}$ from the origin under the null hypothesis.
-An animated display of these ideas and the relations between data ellipses and HE plots can be seen at
-[https://www.datavis.ca/gallery/animation/manova/](https://www.datavis.ca/gallery/animation/manova/).
+<!-- An animated display of these ideas and the relations between data ellipses and HE plots can be seen at -->
+<!-- [https://www.datavis.ca/gallery/animation/manova/](https://www.datavis.ca/gallery/animation/manova/). -->
 
 For example, with three responses $y_1, y_2, y_3$ and three predictors $x_1, x_2, x_3$, we can test the hypothesis
 that neither $x_2$ nor $x_3$ contribute at all to the predicting the $y$s in terms of the hypothesis that
@@ -336,6 +337,90 @@ simply selects those rows:
 = 
 \mathbf{0}_{(2 \times 3)}
 \end{eqnarray*}
+
+In MANOVA designs, it is often desirable to follow up a significant effect for a factor
+with subsequent tests to determine which groups differ. While you can simply test
+for all pairwise differences among groups (using Bonferonni or other corrections for multiplicity),
+a more substantively-driven approach uses planned comparisons or _contrasts_ among the
+factor levels.
+
+For a factor with $g$ groups, a contrast is simply a comparison of the mean of one subset of groups against the mean of another
+subset. This is specified as a weighted sum, $L$ of the means with weights $\mathbf{c}$ that
+sum to zero,
+
+$$
+L = \mathbf{c}^\top \boldsymbol{\mu} = \sum_i c_i \mu_i \quad\text{such that}\quad \Sigma c_i = 0
+$$
+Two contrasts, $\mathbf{c}_1$ and $\mathbf{c}_2$ are _orthogonal_ if the sum of products
+of their weights is zero, i.e., $\mathbf{c}_1^\top \mathbf{c}_2 = \Sigma c_{1i} \times c_{2i} = 0$.
+When contrasts are placed as columns of a matrix $\mathbf{C}$, they are all mutually orthogonal
+if $\mathbf{C}^\top \mathbf{C}$ is a diagonal matrix.
+Orthogonal contrasts correspond to statistically independent tests.
+
+For example, with $g=4$ groups representing the combinations of two drugs, A and B
+given at low and high doses, we might want to compare
+(a) the average of the drug A groups vs. the average of drug B;
+(b) low vs. high for drug A;
+(c) low vs. high for drug B. The contrasts that do this are:
+
+\begin{eqnarray*}
+L_1 & = (\mu_1 + \mu_2) - (\mu_1 + \mu_2) & \rightarrow\: & \mathbf{c}_1 = 
+    \begin{pmatrix} 
+     1 &  1 & -1 & -1 
+    \end{pmatrix} \\
+L_2 & = \mu_1 - \mu_2                     & \rightarrow\: & \mathbf{c}_2 = 
+    \begin{pmatrix} 
+     1 &  -1 & 0 & 0 
+    \end{pmatrix} \\
+L_3 & = \mu_3 - \mu_4                     & \rightarrow\: & \mathbf{c}_3 = 
+    \begin{pmatrix} 
+     0 &  0 & 1 & -1 
+    \end{pmatrix}
+\end{eqnarray*}
+
+Note that these correspond to _nested dichotomies_ among the four groups:
+first we compare groups (1 and 2) against groups (3 and 4), then subsequently
+within each of these sets. Such contrasts are always orthogonal, and therefore 
+correspond to statistically independent tests.
+
+In R, contrasts for a factor are specified as columns of matrix, each of which sums to zero.
+For this example, we can set this up by creating each as a vector and joining them
+as columns using `cbind()`:
+
+```{r contrasts}
+c1 <- c(1,  1, -1, -1)    # A1,A2 vs. B1,B2
+c2 <- c(1, -1,  0,  0)    # A1 vs. A2
+c3 <- c(0,  0,  1, -1)    # B1 vs. B2
+C <- cbind(c1,c2,c3) 
+rownames(C) <- outer(LETTERS[1:2], 1:2, paste0) |> 
+  t() |> 
+  c()
+C
+
+# show they are mutually orthogonal
+t(C) %*% C
+```
+
+For a dataset, `data`, with this factor as `group`, you can set up the analyses to use these
+contrasts by assigning the matrix `C` to `contrasts()`:
+
+```{r eval=FALSE}
+contrasts(data$group) <- C
+```
+
+
+For multivariate tests, when all contrasts are pairwise orthogonal,
+the overall test of a factor with
+$\text{df}_h = g-1$ degrees of freedom can be broken down into $g-1$ separate 1 df
+tests.  This gives rise to a set of $\text{df}_h$ rank 1 $\mathbf{H}$ matrices
+that additively decompose the overall hypothesis SSCP matrix,
+
+$$
+\mathbf{H} = \mathbf{H}_1 + \mathbf{H}_2 + \cdots + \mathbf{H}_{\text{df}_h} \comma
+$$
+exactly as the univariate $\text{SS}_H$ can be decomposed using orthogonal contrasts in an ANOVA.
+
+
 
 
 
@@ -414,7 +499,7 @@ The main questions concern whether the group means differ on these scales, and t
 Is there a consistent order of groups across these three aspects of parenting?
 
 More specific questions are: (a) Do the fathers of typical children differ from the other two groups
-on average? (b) Do the physical and mental groups differ? These can be tested using contrasts,
+on average? (b) Do the physical and mental groups differ? These questions can be tested using contrasts,
 and are specified by assigning a matrix to `contrasts(Parenting$group)`; each column is
 a contrast whose values sum to zero. They are given labels `"group1"` (normal vs. other)
 and `"group2"` (physical vs. mental) in some output.
@@ -427,6 +512,7 @@ C <- matrix(c(1, -.5, -.5,
 contrasts(Parenting$group) <- C
 ```
 
+#### Exploratory plots {.unnumbered}
 
 Before setting up a model and testing, it is well-advised to examine the data graphically.
 The simplest plots are side-by-side boxplots (or violin plots)
@@ -437,6 +523,8 @@ In @fig-parenting-boxpl, I've also plotted the group means with white dots.
 ```{r}
 #| label: fig-parenting-boxpl
 #| out-width: "90%"
+#| code-fold: true
+#| code-summary: "See the ggplot code"
 #| fig-cap: Faceted boxplots of scores on the three parenting scales, showing also the mean for each. 
 parenting_long <- Parenting |>
   tidyr::pivot_longer(cols=caring:play, names_to = "variable")
@@ -485,10 +573,14 @@ We'll assess later whether this makes a difference in the conclusions that can b
 The group centroids also differ, but the pattern is not particularly clear.
 We'll see an easier to understand view in HE plots and their canonical discriminant cousins.
 
-Let's proceed to fit the multivariate model predicting all three scales from the `group` factor:
+#### Testing the model {.nunumbered}
+
+Let's proceed to fit the multivariate model predicting all three scales from the `group` factor.
+`lm()` for a multivariate response returns an object of class `"mlm"`, for which there are many
+methods (use `methods(class="mlm")` to find them).
 
 ```{r parenting-mod}
-parenting.mod <- lm(cbind(caring, play, emotion) ~ group, 
+parenting.mlm <- lm(cbind(caring, play, emotion) ~ group, 
                     data=Parenting) |> print()
 ```
 
@@ -497,11 +589,19 @@ group minus the average of the other two, which is negative on `caring` and `emo
 `group2` is the difference in means for the physical vs. mental groups.
 
 Before doing multivariate tests, it is useful to see what would happen if we ran univariate ANOVAs on each
-of the responses. This can be extracted from an MLM using `stats::summary.aov()`:
+of the responses. These can be extracted from an MLM using `stats::summary.aov()`:
 
 ```{r parenting-summary-aov}
-summary.aov(parenting.mod)
+summary.aov(parenting.mlm)
 ```
+If you like, you can also extract the univariate model fit statistics from the `"mlm" using the
+`broom::glance()` method for a multivariate model object.
+
+```{r}
+glance(parenting.mlm) |>
+  select(response, r.squared, fstatistic, p.value)
+```
+
 
 From this, one might conclude that there are differences only in `caring` and `play` and therefore ignore
 `emotion`, but this would be short-sighted. 
@@ -509,23 +609,22 @@ From this, one might conclude that there are differences only in `caring` and `p
 this has a much smaller $p$-value than any of the univariate $F$ tests.
 
 ```{r parenting-Anova}
-Anova(parenting.mod)
+Anova(parenting.mlm)
 ```
 
-`Anova()` returns an object of class `"Anova.mlm"`
+`Anova()` returns an object of class `"Anova.mlm"` which has various methods.
 The `summary()` method for this gives more details, including all four test statistics.
-These tests have `s = \min(p, \text{df}_h) = \min(3,2) = 2` dimensions and the $F$ approximations are not
-equivalent here. 
+These tests have $s = \min(p, \text{df}_h) = \min(3,2) = 2$ dimensions and the $F$ approximations are not
+equivalent here. All four tests are highly significant
 ```{r}
-Anova(parenting.mod) |> 
-  summary() |> 
-  print(SSP=FALSE)
+parenting.summary <- Anova(parenting.mlm) |>  summary() 
+print(parenting.summary, SSP=FALSE)
 ```
 
 The `summary()` method by default prints the SSH = $\mathbf{H}$ and SSE = $\mathbf{E}$ matrices, but I suppressed
 them above. They can be extracted from the object using `purrr::pluck()`:
 
-```{r}
+```{r par-summary-pluck}
 H <- parenting.summary |> 
   purrr::pluck("multivariate.tests", "group", "SSPH") |> 
   print()
@@ -534,12 +633,234 @@ E <- parenting.summary |>
   print()
 ```
 
-**Linear hypotheses & contrasts**
+
+#### Linear hypotheses & contrasts {.unnumbered}
+
+With three or more groups or with a more complex MANOVA design, contrasts provide a way of
+testing questions of substantive interest regarding differences among group means.
+
+The test of the contrast comparing the typical group to the average of the others is the test 
+using the contrast $c_1 = (1, -\frac12, -\frac12)$ which produces the coefficients labeled
+`"group1"`. The function `car::linearHypothesis()` carries out the multivariate test
+that these are all zero. This is a 1 df test, so all four test statistics produce the same
+$F$ and $p$-values.
+
+```{r parenting-lin-hyp1}
+coef(parenting.mlm)["group1",]
+linearHypothesis(parenting.mlm, "group1") |> 
+  print(SSP=FALSE)
+```
+
+Similarly, the difference between the physical and mental groups uses the contrast $c_2 = (0, 1, -1)$
+and the test that these means are equal is given by `linearHypothesis()` applied to 
+`group2`. 
+```{r parenting-lin-hyp2}
+coef(parenting.mlm)["group2",]
+linearHypothesis(parenting.mlm, "group2") |> 
+  print(SSP=FALSE)
+```
+
+`linearHypothesis()` is very general. The second argument (`hypothesis.matrix`) corresponds to 
+$\mathbf{C}$, and can be specified as numeric matrix giving the linear combinations of coefficients by rows to be tested, or a character vector giving the hypothesis in symbolic form; `"group1"`
+is equivalent to `"group1 = 0"`.
+
+Because the contrasts used here are orthogonal, they comprise the overall test of 
+$\mathbf{B} = \mathbf{0}$ which implies that the means of the three groups are all equal.
+The test below gives the same results as `Anova(parenting.mlm)`.
+
+```{r parenting-lin-hyp3}
+linearHypothesis(parenting.mlm, c("group1", "group2")) |> 
+  print(SSP=FALSE)
+```
+
+### Ordered factors
+
+When groups are defined by an ordered factor, such as level of physical fitness (rated 1--5) or 
+grade in school, it is tempting to treat that as a numeric variable and use a 
+multivariate regression model.
+This would assume that the effect of that factor is linear and if not, we might consider adding
+polynomial terms.
+A different strategy, often preferable, is to make the group variable an _ordered factor_,
+for which R assigns _polynomial contrasts_. This gives separate tests of the linear,
+quadratic, cubic, ... trends of the response, without the need to specify them separately
+in the model
+
+### Example: Adolescent mental health 
+
+The dataset `heplots::AddHealth` contains a large cross-sectional sample of participants from grades 7--12
+from the National Longitudinal Study of Adolescent Health, described by @Warne2014.
+It contains responses to two Likert-scale (1--5) items, `anxiety` and `depression`.
+`grade` is an _ordered_ factor, which means that the default contrasts are taken as
+orthogonal polynomials with linear (`grade.L`), quadratic (`grade.Q`), up to 5th degree (`grade^5`)
+trends, which decompose the total effect of grade.
+
+
+```{r addhealth-str}
+data(AddHealth, package="heplots")
+str(AddHealth)
+```
+The research questions are:
+
+* How do the means for anxiety and depression vary separately with grade? Is there evidence for linear and nonlinear trends?
+* How do anxiety and depression vary _jointly_ with grade?
+* How does the _association* of anxiety and depression vary with age?
+
+The first question can be answered by fitting separate linear models for each response
+(e.g., `lm(anxiety ~ grade))`). However the second question is more interesting because it 
+considers the two responses together and takes their correlation into account. This would
+be fit as the MLM:
+
+$$
+\mathbf{y} = \boldsymbol{\beta}_0 + \boldsymbol{\beta}_1 x + \boldsymbol{\beta}_2 x^2 + \cdots \boldsymbol{\beta}_5 x^5
+$${#eq-AH-mod}
+
+or, expressed in terms of the variables,
+
+$$
+\begin{eqnarray*}
+\begin{bmatrix} y_{\text{anx}} \\y_{\text{dep}} \end{bmatrix} & = &
+\begin{bmatrix} \beta_{0,\text{anx}} \\ \beta_{0,\text{dep}} \end{bmatrix} +
+\begin{bmatrix} \beta_{1,\text{anx}} \\ \beta_{1,\text{dep}} \end{bmatrix} \text{grade} +
+\begin{bmatrix} \beta_{2,\text{anx}} \\ \beta_{2,\text{dep}} \end{bmatrix} \text{grade}^2 + \cdots
+\begin{bmatrix} \beta_{5,\text{anx}} \\ \beta_{5,\text{dep}} \end{bmatrix} \text{grade}^5
+\end{eqnarray*}
+$${#eq-AH-mod2}
+
+With`grade` represented as an ordered factor, the values of $x$ in
+@eq-AH-mod are those of the orthogonal polynomials given by `poly(grade,5)`.
+
+#### Exploratory plots {.unnumbered}
+
+Some exploratory analysis is useful before fitting and visualizing models.
+As a first step, we find the means, standard deviations, and standard errors of the means.
+
+```{r addhealth-means}
+#| code-fold: true
+#| code-summary: Show the code
+library(ggplot2)
+library(dplyr)
+
+means <- AddHealth |>
+  group_by(grade) |>
+  summarise(
+    n = n(),
+    dep_sd = sd(depression, na.rm = TRUE),
+    anx_sd = sd(anxiety, na.rm = TRUE),
+    dep_se = dep_sd / sqrt(n),
+    anx_se = anx_sd / sqrt(n),
+    depression = mean(depression),
+    anxiety = mean(anxiety) ) |> 
+  relocate(depression, anxiety, .after = grade) |>
+  print()
+```
+
+Now, plot the means with $\pm 1$ error bars. It appears that average level of both depression
+and anxiety increase steadily with grade, except for grades 11 and 12 which don't differ much. Alternatively, we could describe this as relationships that seem largely linear, with a hint of curvature at the upper end.
 
 ```{r}
-linearHypothesis(parenting.mod, "group1") |> print(SSP=FALSE)
-linearHypothesis(parenting.mod, "group2") |> print(SSP=FALSE)
+#| label: fig-addhealth-means-each
+#| out-width: "100%"
+#| fig-width: 7
+#| fig-height: 4
+#| fig-cap: "Means of anxiety and depression by grade, with $\\pm 1$ standard error bars."
+p1 <-ggplot(data = means, aes(x = grade, y = anxiety)) +
+  geom_point(size = 4) +
+  geom_line(aes(group = 1), linewidth = 1.2) +
+  geom_errorbar(aes(ymin = anxiety - anx_se, 
+                   ymax = anxiety + anx_se),
+                width = .2) 
+
+p2 <-ggplot(data = means, aes(x = grade, y = depression)) +
+  geom_point(size = 4) +
+  geom_line(aes(group = 1), linewidth = 1.2) +
+  geom_errorbar(aes(ymin = depression - dep_se, 
+                    ymax = depression + dep_se),
+                width = .2) 
+
+p1 + p2
 ```
+
+It is also useful to within-group correlations using `covEllipses()`, as shown in
+@fig-addhealth-covellipse. This also plots the bivariate means showing the
+form of the association , treating anxiety and depression as multivariate outcomes.
+(Because the variability of the scores within groups is so large compared to the range of the means, I show the data ellipses with coverage of only 10%.)
+
+```{r , echo = -1}
+#| label: fig-addhealth-covellipse
+#| fig-width: 6
+#| fig-height: 6
+#| out-width: "70%"
+#| fig-cap: "Within-group covariance ellipses for the `grade` groups."
+op <- par(mar = c(5,4,1,1)+0.1)
+covEllipses(AddHealth[, 3:2], group = AddHealth$grade,
+            pooled = FALSE, level = 0.1,
+            center.cex = 2.5, cex = 1.5, cex.lab = 1.5,
+            fill = TRUE, fill.alpha = 0.05)
+```
+
+
+#### Fit the MLM {.unnumbered}
+
+Now, let's fit the MLM for both responses jointly in relation to `grade`. The null hypothesis is that the means for anxiety and depression are the same at all six grades,
+$$
+\HO : \mathbf{\mu}_7 = \mathbf{\mu}_8 = \cdots = \mathbf{\mu}_{12} \; ,
+$$
+or equivalently, that all coefficients except the intercept in the model \@ref(eq:AH-mod) are zero,
+$$
+\HO : \boldsymbol{\beta}_1 =  \boldsymbol{\beta}_2  = \cdots =  \boldsymbol{\beta}_5 = \boldsymbol{0} \; .
+$$
+We fit the MANOVA model, and test the grade effect using `car::Anova()`.
+The effect of `grade` is highly significant, as we could tell from @fig-addhealth-means-each.
+
+
+```{r addhealth-mlm}
+AH.mlm <- lm(cbind(anxiety, depression) ~ grade, data = AddHealth)
+
+# overall test of `grade`
+Anova(AH.mlm)
+```
+
+However, the overall test, with 5 degrees of freedom is diffuse, in that it can be rejected if any pair of means differ. Given that `grade` is an ordered factor, it makes sense to examine narrower hypotheses
+of linear and nonlinear trends, `car::linearHypothesis()` on the coefficients
+of model `AH.mlm`.
+
+```{r}
+coef(AH.mlm) |> names()
+```
+
+
+The joint test of the linear coefficients $\boldsymbol{\beta}_1 = (\beta_{1,\text{anx}},  \beta_{1,\text{dep}})\^top$ for anxiety and depression, 
+$H_0 : \boldsymbol{\beta}_1 = \boldsymbol{0}$ is highly significant,
+```{r addhealth-linhyp1}
+## linear effect
+linearHypothesis(AH.mlm, "grade.L") |> print(SSP = FALSE)
+```
+
+The test of the quadratic coefficients $H_0 : \boldsymbol{\beta}_2 = \boldsymbol{0}$
+indicates significant curvature in trends across grade, as we saw in the plots of their means in @fig-addhealth-means-each. One interpretation might be that
+depression and anxiety after increasing steadily up to grade eleven could level off thereafter.
+```{r addhealth-linhyp2}
+## quadratic effect
+linearHypothesis(AH.mlm, "grade.Q") |> print(SSP = FALSE)
+```
+
+An advantage of linear hypotheses is that we can test several terms _jointly_.
+Of interest here is the hypothesis that all higher order terms beyond the quadratic are zero,
+$H_0 : \boldsymbol{\beta}_3 =  \boldsymbol{\beta}_4 =  \boldsymbol{\beta}_5 = \boldsymbol{0}$. Using `linearHypothesis` you can supply a vector of
+coefficient names to be tested for their joint effect when dropped from the model.
+
+```{r addhealth-linhyp3}
+rownames(coef(AH.mlm))
+## joint test of all higher terms
+linearHypothesis(AH.mlm, rownames(coef(AH.mlm))[3:5]) |> print(SSP = FALSE)
+```
+
+
+
+### Two-way MANOVA
+
+
+
 
 ## MRA $\rightarrow$ MMRA
 

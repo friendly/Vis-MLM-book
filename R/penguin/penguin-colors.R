@@ -1,9 +1,11 @@
 #' ---
 #' title: penguin colors
+#' author: Michael Friendly
 #' ---
 
 # Create consistent sets of colors for penguins examples
 # These specific colors are taken from https://github.com/srvanderplas/ggpcp-paper/blob/main/index.R
+# See the image at: https://allisonhorst.github.io/palmerpenguins/reference/figures/lter_penguins.png
 
 peng.colors <- function(shade=c("medium", "light", "dark")) {
   
