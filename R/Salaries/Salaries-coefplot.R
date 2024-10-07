@@ -59,7 +59,8 @@ modelplot(models,
           size = 1, linewidth = 1) +
   geom_vline(xintercept = 0, linetype = 2, linewidth=1) +
   scale_y_discrete(limits=rev) +
-  theme(legend.position = c(0.8, 0.2))
+  theme(legend.position = "inside",
+        legend.position.inside = c(0.8, 0.2))
 
 # standardized coefficients
 modelplot(models, 
@@ -68,7 +69,8 @@ modelplot(models,
           size = 1, linewidth = 1) +
   geom_vline(xintercept = 0, linetype = 2, linewidth=1) +
   scale_y_discrete(limits=rev) +
-  theme(legend.position = c(0.8, 0.2))
+  theme(legend.position = "inside",
+        legend.position.inside = c(0.8, 0.2))
 
 
 

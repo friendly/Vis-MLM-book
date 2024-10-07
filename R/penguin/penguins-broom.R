@@ -16,7 +16,8 @@ ggplot(data=peng, aes(x=body_mass, y=bill_length, color=species, fill=species)) 
   geom_smooth(method = "lm", size=1.5) +
   stat_ellipse(size=1.5) +
   theme_bw(base_size=16) +
-  theme(legend.position = c(.8, .2))
+  theme(legend.position = "inside",
+        legend.position.inside = c(0.8, 0.2))
 
 
 #' ## fit model for bill_length
@@ -57,7 +58,8 @@ models |>
     geom_point(alpha=0.4) +
     geom_smooth(method = "lm", size = 2, alpha=0.3) +
     theme_bw(base_size = 16) +
-    theme(legend.position = c(.85, .3))
+    theme(legend.position = "inside",
+          legend.position.inside = c(0.85, 0.3))
 
 #' Do the same for species, sex  
 models <- peng |>
@@ -81,7 +83,8 @@ models |>
   geom_point(alpha=0.4) +
   geom_smooth(method = "lm", size = 2, alpha=0.3) +
   theme_bw(base_size = 16) +
-  theme(legend.position = c(.85, .3))
+  theme(legend.position = "inside",
+        legend.position.inside = c(0.85, 0.3))
 
 models |> 
   summarise(broom::augment(model), .groups = "keep") |> 
@@ -92,9 +95,8 @@ models |>
   geom_point(alpha=0.4) +
   geom_smooth(method = "loess", size = 2, level=0.68, alpha=0.2) +
   theme_bw(base_size = 16) +
-  theme(legend.position = c(.85, .3))
-
-
+  theme(legend.position = "inside",
+        legend.position.inside = c(0.85, 0.3))
 
 
 

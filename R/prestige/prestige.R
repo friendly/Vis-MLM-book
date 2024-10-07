@@ -196,7 +196,8 @@ modelplot(list("mod0" = mod0_std, "mod1" = mod1_std),
   geom_vline(xintercept = 0, size=1.5) +
   scale_y_discrete(limits=rev) +
   theme_bw(base_size = 16) +
-  theme(legend.position = c(0.9, 0.2))
+  theme(legend.position = "inside",
+        legend.position.inside = c(0.9, 0.2))
 
 
 

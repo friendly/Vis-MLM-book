@@ -68,9 +68,6 @@ legend_pos <- theme(legend.position = "inside",
                     legend.position.inside = c(.8, .8), 
                     legend.justification = c(0, 1))
 
-theme(legend.position = "inside",
-      legend.position.inside = c(.8, .8))
-
 
 # color by: rank
 gg2 <-

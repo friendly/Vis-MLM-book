@@ -50,5 +50,6 @@ ggplot(data=subset(Prestige, !is.na(type)),
   geom_point(size=2) +
   geom_smooth(method = "lm", se=FALSE, size=2) +
   theme_bw(base_size = 18) +
-  theme(legend.position = c(0.87, 0.25))
+  theme(legend.position = "inside",
+        legend.position.inside = c(0.87, 0.25))
 
