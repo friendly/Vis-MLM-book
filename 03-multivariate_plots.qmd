@@ -106,9 +106,11 @@ The most obvious, but perhaps naive, predictor of `salary` is
 `years.since.phd`. For simplicity, I'll refer to this as years of
 "experience." Before looking at differences between males and females,
 we would want consider faculty `rank` (related also to `yrs.service`)
-and `discipline`, recorded here as `A` ("theoretical" departments) or
-`B` ("applied" departments). But, for a basic plot, we will ignore these
+and `discipline`, recorded here as `"A"` ("theoretical" departments) or
+`"B"` ("applied" departments). But, for a basic plot, we will ignore these
 for now to focus on what can be learned from plot annotations.
+
+<!-- figure-code: `R/Salaries-scatterplots.R`  -->
 
 ```{r}
 #| label: fig-Salaries-scat
@@ -123,18 +125,20 @@ gg1 <- ggplot(Salaries,
   labs(x = "Years since PhD",
        y = "Salary") 
 
-gg1
+gg1 + geom_rug(position = "jitter", alpha = 1/2)
 ```
 
 There is quite a lot we can see "just by looking" at this simple plot,
 but the main things are:
 
--   Salary increases generally from 0 - 40 years since the PhD;
+-   Salary increases generally from 0 - 40 years since the PhD, but then maybe begins to drop off (partial retirement?);
 -   Variability in salary increases among those with the same
     experience, a "fan-shaped" pattern that signals a violation of
     homogeneity of variance in simple regression;
 -   Data beyond 50 years is thin, but there are some quite low salaries
-    there.
+    there. Adding rug plots to the X and Y axes is a simple but effective way to show the
+    marginal distributios of the observations. Jitter and transparency helps to avoid overplotting
+    due to discrete values.
 
 ### Smoothers
 
@@ -158,10 +162,10 @@ degree $k$.
 #| fig-cap: "Scatterplot of Salary vs. years since PhD, showing linear and quadratic smooths with 95% confidence bands."
 gg1 + 
   geom_smooth(method = "lm", formula = "y ~ x", 
-              color = "red", fill= "red",
+              color = "red", fill= "pink",
               linewidth = 2) +
   geom_smooth(method = "lm", formula = "y ~ poly(x,2)", 
-              color = "darkgreen", fill = "darkgreen",
+              color = "darkgreen", fill = "lightgreen",
               linewidth = 2) 
 ```
 
@@ -179,9 +183,20 @@ You can think of this as showing what a linear (or quadratic) regression
 It is useful to also show some indication of *uncertainty* (or
 inversely, *precision*) associated with the predicted values. Both
 the linear and quadratic trends are shown in @fig-Salaries-lm with 95%
-pointwise confidence bands. These are necessarily narrower in the center
+pointwise confidence bands.[^pointwise] These are necessarily narrower in the center
 of the range of $x$ where there is typically more data; they get wider
 toward the highest values of experience where the data are thinner.
+
+[^pointwise]: 
+Confidence bands allow us to visualize the uncertainty around a fitted regression curve,
+which can be of two types: _pointwise intervals_ or _simultaneous intervals_.
+The default setting in ``ggplot2::geom_smooth()` calculates pointwise intervals 
+(using `stats::predict.lm(..., interval="confidence")` at a confidence level $1-\alpha$ for the predicted response at _each value_ $x_i$ of a predictor, and have the frequentist interpretation that over repeated sampling only $100\;\alpha$ of the predictions at $x_i$ will be outside that interval. 
+In contrast, simultaneous intervals are calculated so that $1 - \alpha$ is the probability that _all of them_ cover their corresponding true values simultaneously. These are necessarily wider than pointwise intervals.
+Commonly used methods for constructing simultaneous confidence bands in regression are the Bonferroni and Scheffé methods, which control the family-wise error rate over all values of $x_i$.
+See [](https://en.wikipedia.org/wiki/Confidence_and_prediction_bands) for precise definitions of these terms.
+These are different from a _prediction band_, which is used to represent the uncertainty about the value of a **new** data-point on the curve, but subject to the additional variance reflected in one observation.
+
 
 #### Non-parametric smoothers {.unnumbered}
 
@@ -203,7 +218,7 @@ span can be determined by $k$-fold cross-validation to minimize a
 measure of overall error of approximation).
 
 Non-parametric regression is a broad topic; see @Fox:2016:ARA, Ch. 18 for
-a more general treatment and @Wood:2006 for generalized additive models,
+a more general treatment including smoothing splines, and @Wood:2006 for generalized additive models,
 fit using `method = "gam"` in **ggplot2**, which is the default when the
 largest group has more than 1,000 observations.
 
@@ -216,7 +231,8 @@ but has a slightly wider confidence band.
 #| label: fig-Salaries-loess
 #| out-width: "80%"
 #| code-fold: show
-#| fig-cap: "Scatterplot of Salary vs. years since PhD, adding the loess smooth."
+#| fig-cap: !expr glue("Scatterplot of Salary vs. years since PhD, adding the loess smooth. The loess smooth curve and confidence band in {green} is nearly indistinguishable from a quadratic fit in {blue}.)
+
 gg1 + 
   geom_smooth(method = "loess", formula = "y ~ x", 
               color = "blue", fill = scales::muted("blue"),
@@ -284,7 +300,7 @@ Conditioning displays (originally called *coplots*
 separate panels for subsets of the data broken down by one or more
 factors, or, for quantitative variables, subdivided into a factor with
 several overlapping intervals (*shingles*). The first implementation was
-in *Trellis* plots @Becker:1996:VDC;@Cleveland:85.
+in *Trellis* plots [@Becker:1996:VDC;@Cleveland:85].
 
 Trellis displays were extended in the **lattice** package [@R-lattice],
 which offered:
@@ -326,12 +342,13 @@ scale_salary <-   scale_y_continuous(
                                  scale = 0.001, 
                                  suffix = "K")) 
 # position the legend inside the plot
-legend_pos <- theme(legend.position = c(.1, 0.95), 
+legend_pos <- theme(legend.position = "inside",
+                    legend.position.inside = c(.1, 0.95), 
                     legend.justification = c(0, 1))
 
 ggplot(Salaries, 
        aes(x = yrs.since.phd, y = salary, 
-           color = rank)) +
+           color = rank, shape = rank)) +
   geom_point() +
   scale_salary +
   labs(x = "Years since PhD",
@@ -343,11 +360,11 @@ ggplot(Salaries,
 ```
 
 Well, there is a different story here. Salaries generally occupy
-separate levels, increasing with academic rank. The horizontal extents
+separate vertical levels, increasing with academic rank. The horizontal extents
 of the smoothed curves show their ranges. Within each rank there is some
 initial increase after promotion, and then some tendency to decline with
 increasing years. But, by and large, years since the PhD doesn't make
-that much difference once we've taken academic rank into account.
+as much difference once we've taken academic rank into account.
 
 What about the `discipline` which is classified, perhaps peculiarly, as
 "theoretical" vs. "applied"? The values are just `"A"` and `"B"`,
@@ -359,8 +376,9 @@ so I map these to more meaningful labels before making the plot.
 #| code-fold: show
 #| fig-cap: "Scatterplot of Salary vs. years since PhD, grouped by discipline."
 Salaries <- Salaries |>
-  mutate(discipline = factor(discipline, 
-                             labels = c("A: Theoretical", "B: Applied")))
+  mutate(discipline = 
+           factor(discipline, 
+                  labels = c("A: Theoretical", "B: Applied")))
 
 Salaries |>
   ggplot(aes(x = yrs.since.phd, y = salary, color = discipline)) +
@@ -376,7 +394,7 @@ Salaries |>
 
 The story in @fig-Salaries-discipline is again different. Faculty in
 applied disciplines on average earn about 10,000\$ more per year on
-average than their theoretical colleagues.
+average than their theoretical colleagues. 
 
 ```{r discipline-means}
 Salaries |>
@@ -388,6 +406,12 @@ For both groups, there is an approximately linear relation up to about
 30--40 years, but the smoothed curves then diverge into the region
 where the data is thinner.
 
+This result is more surprising than
+differences among faculty ranks. The effect of annotation with
+smoothed curves as visual summaries is apparent, and provides a stimulus
+to think about _why_ these differences (if they are real) exist
+between theoretical and applied professors, and maybe _should_
+theoreticians be paid more!
 
 
 ### Conditioning
@@ -421,7 +445,8 @@ plot, a linear smooth is used to represent the trend.
 #| code-fold: show
 #| fig-cap: "Scatterplot of Salary vs. years since PhD, grouped by rank, with separate panels for discipline."
 Salaries |>
-  ggplot(aes(x = yrs.since.phd, y = salary, color = rank)) +
+  ggplot(aes(x = yrs.since.phd, y = salary, 
+             color = rank, shape = rank)) +
   geom_point() +
   scale_salary +
   labs(x = "Years since PhD",
@@ -987,7 +1012,8 @@ ggplot(peng,
               linewidth = 1.5, se = FALSE, alpha=0.1) +
   stat_ellipse(geom = "polygon", level = 0.95, alpha = 0.2) +
   theme_penguins("dark") +
-  theme(legend.position = c(0.85, 0.15))
+  theme(legend.position = "inside",
+        legend.position.inside = c(0.85, 0.15))
 ```
 
 Overall, the three species occupy different regions of this 2D space and for each species the relation between bill length and depth appears reasonably linear. Given this, we can suppress plotting the
@@ -1014,7 +1040,8 @@ ggplot(peng,
   stat_ellipse(geom = "polygon", level = 0.68, alpha = 0.2) +
   stat_ellipse(geom = "polygon", level = 0.40, alpha = 0.2) +
   theme_penguins("dark") +
-  theme(legend.position = c(0.85, 0.15))
+  theme(legend.position = "inside",
+        legend.position.inside = c(0.85, 0.15))
 ```
 
 #### Nonparamtric bivariate density plots
@@ -1060,7 +1087,8 @@ p1 <- ggplot(peng,
   ggtitle("geom_density_2d") +
   theme_bw(base_size = 14) + 
   theme_penguins() +
-  theme(legend.position = c(0.85, 0.15))
+  theme(legend.position = "inside",
+        legend.position.inside = c(0.85, 0.15))
 
 p2 <- ggplot(peng, 
        aes(x = bill_length, y = bill_depth,
@@ -1126,7 +1154,7 @@ important in @sec-eqcov when we want to test the assumption of equality of
 error covariances in multivariate models.
 
 The `ggplot2` code for the panels in this figure are shown below. Note that for components that will be the same across panels, you can define elements
-(e.g., `labels`, `theme_penguins()`, `legend.position`) once, and then re-use
+(e.g., `labels`, `theme_penguins()`, `legend_position`) once, and then re-use
 these across several graphs.
 
 ::: {.panel-tabset}
@@ -1159,7 +1187,7 @@ plt1
 
 ```{r}
 #| eval: false
-legend.position <-
+legend_position <-
   theme(legend.position = "inside",
         legend.position.inside = c(0.83, 0.16))
 
@@ -1177,7 +1205,7 @@ plt2 <- ggplot(data = peng,
   ggtitle("By species") +
   labels +
   theme_penguins("dark") +
-  legend.position 
+  legend_position 
 
 plt2
 ```
@@ -1207,7 +1235,7 @@ plt3 <- ggplot(data = peng.centered,
   labels +
   ggtitle("Within species") +
   theme_penguins("dark") +
-  legend.position 
+  legend_position 
 
 plt3
 ```

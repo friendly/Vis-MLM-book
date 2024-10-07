@@ -53,7 +53,8 @@ ggplot(data = df5,
        aes(x = Experience, y = Income, color = Gender)) +
   geom_point(size = 2.5) +
   geom_line(aes(y = fit), linewidth = 1.5) +
-  theme(legend.position = c(.8, .2))
+  theme(legend.position = "inside",
+        legend.position.inside = c(0.8, 0.2))
 
 # mod6
 ggplot(data = workers,
@@ -62,7 +63,8 @@ ggplot(data = workers,
   geom_smooth(aes(color = Gender),
               method = "lm", formula = y~x, se = FALSE,
               linewidth = 1.5) +
-  theme(legend.position = c(.8, .2))
+  theme(legend.position = "inside",
+        legend.position.inside = c(0.8, 0.2))
 
 
 # mod3

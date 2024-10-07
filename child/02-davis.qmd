@@ -10,6 +10,7 @@ for men and women should also be close to 1.0. The dataset is `car::Davis`.
 
 She was therefore very surprise to see the following numerical results: For men,
 the correlation was nearly perfect, but not so for women.
+<!-- figure-code: R/Davis-reg.R -->
 
 ```{r davis-cor}
 data(Davis, package="carData")
@@ -34,7 +35,7 @@ Davis |>
 
 ```
 
-What could be wrong here?, the client asked. The consultant replied with the obvious question:
+"What could be wrong here?", the client asked. The consultant replied with the obvious question:
 
 > _Did you plot your data?_
 
@@ -47,14 +48,21 @@ down to a slope of only 0.26.
 #| fig-cap: "Regression for Davis' data on reported weight and measures weight for men and women.
 #|    Separate regression lines, predicting reported weight from measured weight are shown for males and females.
 #|    One highly unusual point is highlighted."
+
+# shorthand to position legend inside the figure
+legend_inside <- function(position) {
+  theme(legend.position = "inside",
+        legend.position.inside = position)
+}
+
 Davis |>
   ggplot(aes(x = weight, y = repwt, 
-             color = sex, shape=sex)) +
+             color = sex, shape = sex, linetype = sex)) +
   geom_point(size = ifelse(Davis$weight==166, 6, 2)) +
-  labs(y = "Measured weight (kg)", 
-       x = "Reported weight (kg)") +
   geom_smooth(method = "lm", formula = y~x, se = FALSE) +
-  theme(legend.position = c(.8, .8))
+  labs(x = "Measured weight (kg)", y = "Reported weight (kg)") +
+  scale_linetype_manual(values = c(F = "longdash", M = "solid")) +
+  legend_inside(c(.8, .8))
 ```
 
 In this example, it was arguable that $x$ and $y$ axes should be reversed, 
@@ -64,14 +72,14 @@ In `ggplot` this can easily be done by reversing the `x` and `y` aesthetics.
 ```{r}
 #| label: fig-ch02-davis-reg2
 #| fig-cap: "Regression for Davis' data on reported weight and measures weight for men and women.
-#|    Separate regression lines, predicting measured weight from re[ported] weight are shown for males and females.
+#|    Separate regression lines, predicting measured weight from reported weight are shown for males and females.
 #|    The highly unusual point no longer has an effect on the fitted lines."
 Davis |>
   ggplot(aes(y = weight, x = repwt, color = sex, shape=sex)) +
   geom_point(size = ifelse(Davis$weight==166, 6, 2)) +
   labs(y = "Measured weight (kg)", x = "Reported weight (kg)") +
-  geom_smooth(method = "lm", formula = y~x, se = FALSE) +
-  theme(legend.position = c(.8, .8))
+    geom_smooth(method = "lm", formula = y~x, se = FALSE) +
+  legend_inside(c(.8, .8))
 ```
 
 In @fig-ch02-davis-reg2, this discrepant observation again stands out like a sore thumb, but
@@ -79,7 +87,7 @@ it makes very little difference in the fitted line for females.
 The reason is that this point is well within the range of the $x$ variable (`repwt`).
 To impact the slope of the regression line, an observation must be unusual in_both_ $x$ and $y$.
 We take up the topic of how to detect influential observations and what to do about them in 
-Chapter XX.
+@sec-linear-models-plots.
 
 The value of such plots is not only that they can reveal possible problems with an analysis,
 but also help identify their reasons and suggest corrective action.

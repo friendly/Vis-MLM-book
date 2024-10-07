@@ -15,6 +15,8 @@ gg1 <-ggplot(Salaries,
        y = "Salary") +
   theme_bw(base_size = 14) 
 gg1
+# better: show rug plots
+gg1 + geom_rug(position = "jitter", alpha = 1/2)
 
 # show just linear & quadratic
 gg1 + 
@@ -64,14 +66,16 @@ scale_salary <-   scale_y_continuous(
                                  scale = 0.001, 
                                  suffix = "K")) 
 # position the legend inside the plot
-legend_pos <- theme(legend.position = c(.1, 0.95), 
+legend_pos <- theme(legend.position = "inside",
+                    legend.position.inside = c(.8, .8), 
                     legend.justification = c(0, 1))
 
 
 # color by: rank
 gg2 <-
 ggplot(Salaries, 
-             aes(x = yrs.since.phd, y = salary, color = rank)) +
+       aes(x = yrs.since.phd, y = salary, 
+           color = rank, shape = rank)) +
   geom_point() +
   scale_salary +
   labs(x = "Years since PhD",

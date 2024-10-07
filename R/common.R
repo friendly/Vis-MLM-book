@@ -50,6 +50,19 @@ knitr::opts_knit$set(
             scap='fig.scap'),
             eval.after = c('fig.cap','fig.scap'))
 
+# provide a new chunk option, `out.lines` to limit the number of lines produced.
+# from: https://blog.djnavarro.net/posts/2023-12-30_knitr-hooks/
+custom_hook_output <- function(x, options) {
+  n <- options$out.lines
+  if(!is.null(n)) {
+    x <- xfun::split_lines(x)
+    if (length(x) > n) x <- c(head(x, n), "....\n")
+    x <- paste(x, collapse = "\n")
+  }
+  default_hook_output(x, options)
+}
+
+
 # suppress "Registered S3 method overwritten by GGally"
 Sys.setenv(`_R_S3_METHOD_REGISTRATION_NOTE_OVERWRITES_` = "false")
 
@@ -75,6 +88,14 @@ knit_hooks$set(output = function(x, options) {
 
 ggplot2::theme_set(ggplot2::theme_bw(base_size = 16))
 
+# shorthands
+
+legend_inside <- function(position) {
+  theme(legend.position = "inside",
+        legend.position.inside = position)
+}
+
+
 
 # ------------
 # Extra stuff
@@ -92,10 +113,14 @@ colorize <- function(text, color) {
 }
 
 # define some color names for use in figure captions.
+# use as: 
+#    #| fig-cap: !expr glue::glue("Some points are ", {red}, " some are ", {blue}, "some are ", {green})
+
 red <- colorize('red')
+pink <- colorize("pink")
 blue <- colorize('blue')
 green <- colorize("green")
-
+lightgreen <- colorize("lightgreen")
 
 
 if (knitr::is_latex_output()) {

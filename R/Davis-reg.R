@@ -45,20 +45,32 @@ Davis |>
 
   
 #' ## show the regression lines both ways
+
+# shorthand to position legend inside the figure
+legend_inside <- function(position) {
+  theme(legend.position = "inside",
+        legend.position.inside = position)
+}
+
 p1 <- Davis |>
-  ggplot(aes(x = weight, y = repwt, color = sex, shape=sex)) +
-    geom_point(size = 2) +
-    geom_smooth(method = "lm", formula = y~x, se = FALSE) +
-    labs(x = "Measured weight (kg)", y = "Reported weight (kg)") +
-    theme_bw(base_size = 14) +
-    theme(legend.position = c(.8, .8))
+  ggplot(aes(x = weight, y = repwt, 
+             color = sex, shape = sex, linetype = sex)) +
+  geom_point(size = ifelse(Davis$weight==166, 6, 2)) +
+  geom_smooth(method = "lm", formula = y~x, se = FALSE) +
+  labs(x = "Measured weight (kg)", y = "Reported weight (kg)") +
+  scale_linetype_manual(values = c(F = "longdash", M = "solid")) +
+  legend_inside(c(.8, .8))
+  # theme(legend.position = "inside",
+  #       legend.position.inside = c(.8, .8))
 
 p2 <- Davis |>
   ggplot(aes(y = weight, x = repwt, color = sex, shape=sex)) +
-    geom_point(size = 2) +
-    labs(y = "Measured weight (kg)", x = "Reported weight (kg)") +
+  geom_point(size = ifelse(Davis$weight==166, 6, 2)) +
+  labs(y = "Measured weight (kg)", x = "Reported weight (kg)") +
     geom_smooth(method = "lm", formula = y~x, se = FALSE) +
-    theme(legend.position = c(.8, .8))
+  legend_inside(c(.8, .8))
+  # theme(legend.position = "inside",
+  #       legend.position.inside = c(.8, .8))
 
 # highlight the discrepant point  
 library(ggforce)
