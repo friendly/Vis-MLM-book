@@ -88,6 +88,14 @@ knit_hooks$set(output = function(x, options) {
 
 ggplot2::theme_set(ggplot2::theme_bw(base_size = 16))
 
+# shorthands
+
+legend_inside <- function(position) {
+  theme(legend.position = "inside",
+        legend.position.inside = position)
+}
+
+
 
 # ------------
 # Extra stuff
@@ -105,10 +113,14 @@ colorize <- function(text, color) {
 }
 
 # define some color names for use in figure captions.
+# use as: 
+#    #| fig-cap: !expr glue::glue("Some points are ", {red}, " some are ", {blue}, "some are ", {green})
+
 red <- colorize('red')
+pink <- colorize("pink")
 blue <- colorize('blue')
 green <- colorize("green")
-
+lightgreen <- colorize("lightgreen")
 
 
 if (knitr::is_latex_output()) {
