@@ -64,8 +64,12 @@ scale_salary <-   scale_y_continuous(
                                  scale = 0.001, 
                                  suffix = "K")) 
 # position the legend inside the plot
-legend_pos <- theme(legend.position = c(.1, 0.95), 
+legend_pos <- theme(legend.position = "inside",
+                    legend.position.inside = c(.8, .8), 
                     legend.justification = c(0, 1))
+
+theme(legend.position = "inside",
+      legend.position.inside = c(.8, .8))
 
 
 # color by: rank
