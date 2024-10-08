@@ -27,7 +27,8 @@ scatterplot(prestige ~ income, data=Prestige,
   regLine = list(col = "red", lwd=3),
   smooth = list(smoother=loessLine, 
                 lty.smooth = 1, lwd.smooth=3,
-                col.smooth = "darkgreen", col.var = "darkgreen"),
+                col.smooth = "darkgreen", 
+                col.var = "darkgreen"),
   ellipse = list(levels = 0.68),
   id = list(n=4, method = "mahal", col="black", cex=1.2))
 
@@ -38,13 +39,14 @@ scatterplot(prestige ~ income, data=Prestige,
   regLine = list(col = "red", lwd=3),
   smooth = list(smoother=loessLine,
                 lty.smooth = 1, lwd.smooth=3,
-                col.smooth = "darkgreen", col.var = "darkgreen"),
+                col.smooth = "darkgreen", 
+                col.var = "darkgreen"),
   ellipse = list(levels = 0.68), 
   id = list(n=4, method = "mahal", col="black", cex=1.2))
 
 # slopes for linear and log income
 coef(lm(prestige ~ income, data=Prestige))
-1000 * coef(lm(prestige ~ income, data=Prestige))[2]
+1000 * coef(lm(prestige ~ income, data=Prestige))["income"]
 
 coef(lm(prestige ~ log(income), data=Prestige))[2]
 exp(coef(lm(prestige ~ log(income), data=Prestige))[2])

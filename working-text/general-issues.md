@@ -78,3 +78,5 @@ A number of things refer to the necessity to produce both a printed PDF and an o
   or maybe a bold typewriter font?
   In pure LaTeX, `.Rnw` files I defined a `\pkg{}` macro used consistently through out the book. Not sure what
   to do here.
+  
+  - Figure sizes: Should be made more consistent.  

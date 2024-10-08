@@ -114,7 +114,7 @@ for now to focus on what can be learned from plot annotations.
 
 ```{r}
 #| label: fig-Salaries-scat
-#| out-width: "80%"
+#| out-width: "90%"
 #| fig-cap: "Naive scatterplot of Salary vs. years since PhD, ignoring other variables, and without graphical annotations."
 library(ggplot2)
 gg1 <- ggplot(Salaries, 
@@ -453,7 +453,7 @@ Salaries |>
        y = "Salary") +
   geom_smooth(aes(fill = rank),
               method = "lm", formula = "y ~ x", 
-              linewidth = 2) +
+              linewidth = 2, alpha = 1/4) +
   facet_wrap(~ discipline) +
   legend_pos
 ```
@@ -486,15 +486,12 @@ Salaries |>
        y = "Salary") +
   geom_smooth(aes(fill = sex),
               method = "lm", formula = "y ~ x",
-              linewidth = 2) +
+              linewidth = 2, alpha = 1/4) +
   facet_grid(discipline ~ rank) +
   theme_bw(base_size = 14) + 
   legend_pos
 ```
 
-
-<!-- ```{r child="child/03-data-ellipse.qmd"} -->
-<!-- ``` -->
 
 ## Data Ellipses {#sec-data-ellipse}
 
@@ -524,15 +521,15 @@ into account.
 #| echo: false
 #| fig-align: center
 #| out-width: "60%"
-#| fig-cap: "2D data with curves of constant distance from the centroid. The blue solid ellipse shows a contour of constant Mahalanobis distance, taking the correlation into account; the dashed red circle is a contour of equal Euclidean distance. Given the data points,  Which of the points **A** and **B** is further from the mean (X)? _Source_: Re-drawn from [Ou Zhang](https://ouzhang.rbind.io/2020/11/16/outliers-part4/)"
+#| fig-cap: !expr glue::glue("2D data with curves of constant distance from the centroid. The {blue} solid ellipse shows a contour of constant Mahalanobis distance, taking the correlation into account; the dashed {red} circle is a contour of equal Euclidean distance. Given the data points,  Which of the points **A** and **B** is further from the mean (X)? _Source_: Re-drawn from [Ou Zhang](https://ouzhang.rbind.io/2020/11/16/outliers-part4/)")
 knitr::include_graphics("images/mahalanobis.png")
 ```
 
 To illustrate, @fig-mahalanobis shows a scatterplot with labels for two points, "A" and "B".
 Which is further from the mean, "X"? 
-A contour of constant Euclidean distance, shown by the red dashed circle,
+A contour of constant Euclidean distance, shown by the `{r} red` dashed circle,
 ignores the apparent negative correlation, so point "A" is further.
-The blue ellipse for Mahalanobis distance 
+The `{r} blue` ellipse for Mahalanobis distance 
 takes the correlation into account, so point "B" has a greater distance from the mean.
 
 Mathematically, Euclidean (squared) distance for $p$ variables, $j = 1, 2, \dots , p$,
@@ -548,8 +545,12 @@ $\mathbf{S} = ({n-1})^{-1} \sum_{i=1}^n (\mathbf{y}_i - \bar{\mathbf{y}})^\texts
 Mahalanobis' distance takes the correlations into account simply by using the covariances
 as well as the variances,
 $$
-D_M^2 (\mathbf{y}) = (\mathbf{y} - \bar{\mathbf{y}})^\textsf{T} S^{-1} (\mathbf{y} - \bar{\mathbf{y}}) \; .
-$$
+D_M^2 (\mathbf{y}) = (\mathbf{y} - \bar{\mathbf{y}})^\mathsf{T} S^{-1} (\mathbf{y} - \bar{\mathbf{y}}) \; .
+$$ {#eq-Dsq}
+
+In @eq-Dsq, the inverse $S^{-1}$ serves to "divide" the matrix $(\mathbf{y} - \bar{\mathbf{y}})^\mathsf{T} (\mathbf{y} - \bar{\mathbf{y}})$ of squared distances 
+by the variances (and covariances) of the variables, as in the univariate case.
+
 For $p$ variables, the data _ellipsoid_ $\mathcal{E}_c$ of
 size $c$ is a $p$-dimensional ellipse,
 defined as the set of points $\mathbf{y} = (y_1, y_2, \dots y_p)$
@@ -593,6 +594,7 @@ He made a semi-graphic table of the frequencies of 928 observations of the avera
 height of father and mother versus the height of their child, shown in @fig-galton-corr.
 He then drew smoothed contour lines of equal frequencies and had the wonderful
 visual insight that these formed concentric shapes that were tolerably close to ellipses.
+
 He then calculated summaries,  $\text{Ave}(Y | X)$, and, for symmetry, $\text{Ave}(X | Y)$, and plotted these as lines of means on his diagram. Lo and behold, he had a second visual
 insight: the lines of means of ($Y | X$) and ($X | Y$) corresponded approximately to
 the loci of  horizontal and vertical tangents to the concentric ellipses. 
@@ -625,7 +627,8 @@ knitr::include_graphics("images/galton-ellipse-r.jpg")
 
 * The ellipses have the mean vector $(\bar{x}, \bar{y})$ as their center.
 
-* The lengths of arms of the central cross show the standard deviations of the variables, which correspond to the shadows of the ellipse covering 40\% of the data. These are the bivariate analogs of 
+* The lengths of arms of the `{r} blue` dashed central cross 
+show the standard deviations of the variables, which correspond to the shadows of the ellipse covering 40\% of the data. These are the bivariate analogs of 
 the standard intervals $\bar{x} \pm 1 s_x$ and $\bar{y} \pm 1 s_y$.
 
 * More generally, shadows (projections) on the coordinate axes, or any linear combination of them,
@@ -685,7 +688,7 @@ with(Galton,
 
 Finally, as Galton noted in his diagram, the principal major and minor axes of the ellipse have important statistical properties. @Pearson:1901 would later show that
 their directions are determined by the eigenvectors $\mathbf{v}_1, \mathbf{v}_2, \dots$ of the covariance matrix $\mathbf{S}$ and their radii by the
-square roots, $\sqrt{\mathbf{v}_1}, \sqrt{\mathbf{v}_1$, \dots$ of the corresponding
+square roots, $\sqrt{\mathbf{v}_1}, \sqrt{\mathbf{v}_1}, \dots$ of the corresponding
 eigenvalues.
 
 
@@ -706,12 +709,13 @@ appropriate in residual plots.
 
 These examples use the data on the prestige of 102 occupational categories and other measures from the
 1971 Canadian Census, recorded in `carData::Prestige`.[^prestige-src]
-Our interest is in understanding how `prestige` (the Pineo-Porter [@PineoPorter2008] prestige score for an occupational category, derived from a social survey)
+Our interest is in understanding how `prestige` (the @PineoPorter2008 prestige score for an occupational category, derived from a social survey)
 is related to census measures of the average education, income, percent women of incumbents in those occupations.
 Occupation `type` is a factor with levels `"bc"` (blue collar), `"wc"` (white collar) and `"prof"` (professional).
 
 [^prestige-src]: The dataset was collected by Bernard Blishen, William Carroll and Catherine Moore, but apparently unpublished. A version updated to the 1981 census is described in @Blishen-etal-1987.
 
+<!-- code: R/prestige.R -->
 
 ```{r prestige}
 data(Prestige, package="carData")
@@ -729,13 +733,14 @@ the linear regression line, loess smooth and the 68% data ellipse.
 ```{r}
 #| label: fig-Prestige-scatterplot-income1
 #| out-width: "80%"
-#| fig-cap: "Scatterplot of prestige vs. income, showing the linear regression line (red), the loess smooth with a confidence envelope (darkgreen) and a 68% data ellipse."
+#| fig-cap: !expr glue::glue("Scatterplot of prestige vs. income, showing the linear regression line ({red}), the loess smooth with a confidence envelope ({darkgreen}) and a 68% data ellipse. Points with the 4 largest $D^2$ values are labeled.")
 scatterplot(prestige ~ income, data=Prestige,
   pch = 16, cex.lab = 1.25,
   regLine = list(col = "red", lwd=3),
   smooth = list(smoother=loessLine, 
                 lty.smooth = 1, lwd.smooth=3,
-                col.smooth = "darkgreen", col.var = "darkgreen"),
+                col.smooth = "darkgreen", 
+                col.var = "darkgreen"),
   ellipse = list(levels = 0.68),
   id = list(n=4, method = "mahal", col="black", cex=1.2))
 ```
@@ -751,20 +756,21 @@ There is a lot that can be seen here:
 from the boxplot appears to be reasonably symmetric. The smoothed curve is quite
 close to the linear regression, according to which `prestige` increases
 on average 
-`coef(lm(prestige ~ education, data=Prestige))[2]` =
-`r coef(lm(prestige ~ education, data=Prestige))[2]` with each year of education.
+`coef(lm(prestige ~ education, data=Prestige))["income"]` =
+`r coef(lm(prestige ~ education, data=Prestige))["income"]` with each year of education.
 
 ```{r echo = -1}
 #| label: fig-Prestige-scatterplot-educ1
 #| out-width: "80%"
-#| fig-cap: "Scatterplot of prestige vs. education, showing the linear regression line (red), the loess smooth with a confidence envelope (darkgreen) and a 68% data ellipse."
+#| fig-cap: !expr glue::glue("Scatterplot of prestige vs. education, showing the linear regression line ({red}), the loess smooth with a confidence envelope ({darkgreen}) and a 68% data ellipse.")
 par(mar = c(4,4,1,1)+.1)
 scatterplot(prestige ~ education, data=Prestige,
   pch = 16, cex.lab = 1.25,
   regLine = list(col = "red", lwd=3),
   smooth = list(smoother=loessLine, 
                 lty.smooth = 1, lwd.smooth=3,
-                col.smooth = "darkgreen", col.var = "darkgreen"),
+                col.smooth = "darkgreen", 
+                col.var = "darkgreen"),
   ellipse = list(levels = 0.68),
   id = list(n=4, method = "mahal", col="black", cex=1.2))
 ```
@@ -783,7 +789,7 @@ in the linear model `m`, you can use `method = which(abs(rstandard(m)) > 2)`.
 ```{r echo = -1}
 #| label: fig-Prestige-scatterplot-educ2
 #| out-width: "80%"
-#| fig-cap: "Scatterplot of prestige vs. education, labeling points whose absolute stanardized residual is > 2."
+#| fig-cap: "Scatterplot of prestige vs. education, labeling points whose absolute standardized residual is > 2."
 par(mar = c(4,4,1,1)+.1)
 m <- lm(prestige ~ education, data=Prestige)
 scatterplot(prestige ~ education, data=Prestige,
@@ -791,7 +797,8 @@ scatterplot(prestige ~ education, data=Prestige,
             boxplots = FALSE,
             regLine = list(col = "red", lwd=3),
             smooth = list(smoother=loessLine,
-                          lty.smooth = 1, col.smooth = "black", lwd.smooth=3,
+                          lty.smooth = 1, lwd.smooth=3,
+                          col.smooth = "black", 
                           col.var = "darkgreen"),
             ellipse = list(levels = 0.68),
             id = list(n=4, method = which(abs(rstandard(m))>2), 
@@ -806,21 +813,22 @@ or **percentage increase** in income has a constant impact on prestige, as oppos
 the **additive** interpretation for income itself.
 
 For example, the slope of the linear regression line in @fig-Prestige-scatterplot-income1
-is given by  `coef(lm(prestige ~ income, data=Prestige))[2]` = 
-`r coef(lm(prestige ~ income, data=Prestige))[2]`. Multiplying this by 1000
+is given by  `coef(lm(prestige ~ income, data=Prestige))["income"]` = 
+`r coef(lm(prestige ~ income, data=Prestige))["income"]`. Multiplying this by 1000
 says that a $1000 increase in `income` is associated with with an average
 increase of `prestige` of 2.9.
 
 In the plot below, `scatterplot(..., log = "x")` re-scales the x-axis to the
-$\log_e()$ scale. The slope, `coef(lm(prestige ~ log(income), data=Prestige))[2]` =
-`r coef(lm(prestige ~ log(income), data=Prestige))[2]` says that a 1%
+$\log_e()$ scale. The slope, `coef(lm(prestige ~ log(income), data=Prestige))["log(income)"]` =
+`r coef(lm(prestige ~ log(income), data=Prestige))["log(income)"]` says that a 1%
 increase in salary is associated with an average change of 21.55 / 100 
 in prestige.
+
+<!-- removed: #| source-line-numbers: "2" -->
 
 ```{r echo = -1}
 #| label: fig-Prestige-scatterplot2
 #| out-width: "80%"
-#| source-line-numbers: "2"
 #| fig-cap: "Scatterplot of prestige vs. log(income)."
 par(mar = c(4,4,1,1)+.1)
 scatterplot(prestige ~ income, data=Prestige,
@@ -844,7 +852,7 @@ between income and prestige if we stratified by type of occupation, fitting
 separate regressions and smooths for blue collar, white collar and professional
 incumbents in these occupations. 
 
-The formula `prestige ~ income | type`
+The formula `prestige ~ income | type` (read: income _given_ type)
 is a natural way to specify grouping by `type`; separate linear regressions
 and smooths are calculated for each group, applying the
 color and point shapes specified by the `col` and `pch` arguments.

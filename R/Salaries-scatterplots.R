@@ -165,7 +165,7 @@ Salaries |>
        y = "Salary") +
   geom_smooth(aes(fill = rank),
               method = "lm", formula = "y ~ x", 
-              linewidth = 2) +
+              linewidth = 2, alpha = 1/4) +
   facet_wrap(~ discipline) +
   theme_bw(base_size = 14) + 
   legend_pos
