@@ -121,6 +121,7 @@ pink <- colorize("pink")
 blue <- colorize('blue')
 green <- colorize("green")
 lightgreen <- colorize("lightgreen")
+darkgreen <- colorize("darkgreen")
 
 
 if (knitr::is_latex_output()) {
