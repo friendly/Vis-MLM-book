@@ -29,11 +29,15 @@ abline(h = mu[2], v = mu[1], lty = 2, col = "grey")
 ellipse.axes(S, mu, 
              radius = radius,
              labels = TRUE,
-             col = "red", lwd = 2)
+             col = "red", lwd = 2,
+             cex = 1.5)
 par(op)
 
+op <- par(mar = c(4, 4, 0, 0) + 0.1)
 plot(Income ~ Experience, data=workers,
      pch = 16, cex = 2,
+     xlim = c(-10, 40),
+     ylim = c(20, 80),
      asp = 1)
 
 
@@ -43,12 +47,15 @@ ell.lines <- dellplus(workers$Experience, workers$Income,
      box=TRUE
     )
 str(ell.lines)
-lines(ell.lines)
+#lines(ell.lines)
 
 S <- cov(workers[, 3:2])
 mu <- colMeans(workers[, 3:2])
 
-lines(ellplus(mu, S))
+lines(ellplus(mu, S, 
+              radius = sqrt(qchisq(0.68, 2))
+      ))
+par(op)
 
 # show conjugate axes for PCA factorization
 pca.fac <- function(x) {
@@ -57,6 +64,8 @@ pca.fac <- function(x) {
   ret
 }
 
-lines( ellplus(mu, shape = S, box=TRUE, diameters=TRUE, fac=pca.fac), col = 'red')
+lines( ellplus(mu, shape = S,
+               radius = sqrt(qchisq(0.68, 2)),
+               box=TRUE, diameters=TRUE, fac=pca.fac), col = 'red')
 
       
