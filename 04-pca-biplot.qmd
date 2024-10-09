@@ -107,6 +107,7 @@ library(FactoMineR)
 library(factoextra)
 library(car)
 library(ggpubr)
+library(matlib)
 ```
 
 
@@ -226,7 +227,7 @@ squared length and energy, the positions of the `r colorize("red")` points on th
 <div align="center">
 <iframe width="412" height="364" src="images/pca-springs-cropped.gif"></iframe>
 </div>
-Animation of PCA fitted by springs. The `r colorize("blue")` data points are connected to their projections on the `r colorize("red")` line by springs perpendicular to that line. From an initial position, the springs pull that line in proportion to their squared distances, until the line finally settles down to the position where the forces are balanced and the minimum is achieved. _Source_: Amoeba, https://bit.ly/46tAicu.
+Animation of PCA fitted by springs. The `r colorize("blue")` data points are connected to their projections on the `r colorize("red")` line by springs perpendicular to that line. From an initial position, the springs pull that line in proportion to their squared distances, until the line finally settles down to the position where the forces are balanced and the minimum is achieved. _Source_: Amoeba, [https://bit.ly/46tAicu].
 
 :::
 
@@ -250,8 +251,10 @@ diagonal matrix $\mathbf{\Lambda}$, whose diagonal elements ($\lambda_i$) are th
 
 To explain this, it is helpful to use a bit of matrix math:
 
-\begin{align*}
-\mathbf{S}_{p \times p} & = \mathbf{V}_{p \times p} \quad\quad \mathbf{\Lambda}_{p \times p} \quad\quad \mathbf{V}_{p \times p}^\mathsf{T} \\
+\begin{align}
+\mathbf{S}_{p \times p} & = \mathbf{V}_{p \times p} \phantom{0000000000} 
+                            \mathbf{\Lambda}_{p \times p} \phantom{0000000000}
+                            \mathbf{V}_{p \times p}^\mathsf{T} \\
            & = \left( \mathbf{v}_1, \, \mathbf{v}_2, \,\dots, \, \mathbf{v}_p \right)
            \begin{pmatrix}
              \lambda_1 &  &  & \\ 
@@ -268,7 +271,7 @@ To explain this, it is helpful to use a bit of matrix math:
             \end{pmatrix}
            \\
            & = \lambda_1 \mathbf{v}_1 \mathbf{v}_1^\mathsf{T} + \lambda_2 \mathbf{v}_2 \mathbf{v}_2^\mathsf{T} + \cdots + \lambda_p \mathbf{v}_p \mathbf{v}_p^\mathsf{T}
-\end{align*}
+\end{align} {#eq-S-eigen}
 
 In this equation,
 
@@ -306,6 +309,117 @@ of the eigenvalues.
  knitr::include_graphics("images/pca-rotation.png")
 ```
 <!-- UDI: I like this figure, but I would change the blue curved arrow. What do you think? I can put together a few drafts using Inkscape. Let me know if you agree and if you have any suggestions. -->
+
+#### Example: Workers' experience and income {.unnumbered}
+
+For a small example, consider the relation between years of experience and income in a small (contrived) sample 
+($n = 10$) of workers in a factory. The dataset `workers` contains these and other variables.
+In a wider context, we might want to fit a regression model to predict `Income`, but here we focus on
+a PCA of just these two variables.
+
+```{r workers-data}
+load(here::here("data", "workers.RData"))
+head(workers)
+```
+
+Let's start with a simple scatterplot of `Income` vs. `Experience`, with points labeled by `Name`
+(and colored by `Gender`). There's a fairly strong correlation 
+($r$ = `r with(workers, cor(Income, Experience))`). How does a PCA capture this?
+
+<!-- fig.source: R/workers-pca.R -->
+
+```{r}
+#| label: fig-workers-scat
+#| out-width: "80%"
+#| fig-cap: "Scatterplot of Income vs. Experience for the `workers` data."
+vars <- c("Experience", "Income")
+plot(workers[, vars],
+     pch = 16, cex = 1.5,
+     cex.lab = 1.5)
+text(workers[, vars], 
+     labels = workers$Name,
+     col = ifelse(workers$Gender == "Female", "red", "blue"),
+     pos = 3, xpd = TRUE)
+```
+
+First , calculate the vector of means ($\bar{\mathbf{x}}$) and covariance matrix $\mathbf{S}$.
+```{r workers-cov}
+mu <- colMeans(workers[, vars]) |> print()
+S <- cov(workers[, vars]) |> print()
+```
+
+Eigenvalues and eigenvectors are calculated by `eigen()`. This returns a list with components
+`values` for the $\lambda_i$ and `vectors` for $\mathbf{V}$.
+
+```{r workers-eigen}
+S.eig <- eigen(S)
+Lambda <- S.eig$values |> print()
+V <- S.eig$vectors |> print()
+```
+
+Using these, you can express the eigenvalue decomposition of $\mathbf{S}$ in @eq-S-eigen with
+`latexMatrix()` and `Eqn` from the **matlib** package [@R-matlib] as:
+
+```{r results = 'asis', echo=-1}
+op <- options(digits = 5)
+rownames(S) <- colnames(S) <- c("Exp", "Inc")
+spacer <- "\\phantom{00000000000000}"
+Eqn("\\mathbf{S} & = \\mathbf{V} spacer 
+     \\mathbf{\\Lambda} spacer  
+     \\mathbf{V}^\\top", Eqn_newline(),
+    latexMatrix(S), "& =", 
+    latexMatrix(V), "  ", diag(Lambda), "  ", latexMatrix(V, transpose=TRUE),
+    align = TRUE)
+```
+
+Then, you can visualize the geometry of PCA as in @fig-pca-rotation (left)
+by plotting the data ellipse for the points, along with the 
+PCA axes (`heplots::ellipse.axes()`). @fig-workers-pca also shows the 
+bounding box of the data ellipse. 
+
+<!-- Nasty conflict loading `spida2`: labs() conflicts with ggplot2 -->
+
+```{r echo=-1}
+#| label: fig-workers-pca
+#| out-width: 90%
+#| fig-cap: "Geometry of the PCA for the `workers` data, showing the data ellipse, the
+#|    eigenvectors of $\\mathbf{S}$, whose half-lengths are the square roots $\\sqrt{\\lambda_i}$ of the eigenvalues,
+#|    and the bounding box of the ellipse."
+op <- par(mar = c(4, 4, 0, 0) + 0.1)
+# calculate conjugate axes for PCA factorization
+pca.fac <- function(x) {
+  xx <- svd(x)
+  ret <- t(xx$v) * sqrt(pmax( xx$d,0))
+  ret
+}
+
+dataEllipse(Income ~ Experience, data=workers,
+    pch = 16, cex = 1.5, 
+    center.pch = "+", center.cex = 2,
+    cex.lab = 1.5,
+    levels = 0.68,
+    grid = FALSE,
+    xlim = c(-10, 40),
+    ylim = c(10, 80),
+    asp = 1)
+abline(h = mu[2], v = mu[1], lty = 2, col = "grey")
+
+# axes of the ellipse = PC1, PC2
+radius <- sqrt(2 * qf(0.68, 2, nrow(workers)-1 ))
+heplots::ellipse.axes(S, mu, 
+     radius = radius,
+     labels = TRUE,
+     col = "red", lwd = 2,
+     cex = 1.8)
+
+# bounding box of the ellipse
+lines(spida2::ellplus(mu, S, radius = radius,
+              box = TRUE, fac = pca.fac),
+      col = "darkgreen",
+      lwd = 2, lty="longdash")
+```
+
+
 
 ### Finding principal components
 
@@ -734,6 +848,7 @@ ggbiplot(crime.pca,
 In this dataset the states are grouped by region and we saw some differences among regions in the plot (@fig-crime-scores-plot12) of component scores.
 `ggbiplot()` provides options to include a `groups =` variable, used to
 color the observation points and also to draw their data ellipses, facilitating interpretation.
+
 ```{r}
 #| label: fig-crime-biplot2
 #| out-width: "80%"
@@ -1799,7 +1914,7 @@ Animation of rotation from data space to PCA space.
 ```{r}
 #| echo: false
 #| results: asis
-cat("Packages used here:\n")
+cat("**Packages used here**:\n\n")
 write_pkgs(file = .pkg_file)
 ```
     

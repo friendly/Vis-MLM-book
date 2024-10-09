@@ -17,6 +17,14 @@ A number of things refer to the necessity to produce both a printed PDF and an o
 
 * Handling links : In many cases I've used `[]()` markdown for hyperlinks, but these would better be footnotes in the PDF version.
 
+* **Appendices**: Perhaps the book needs:
+
+  - Brief review of matrix algebra, or could this just be a reference to something else, e.g., Fox (2021), 
+  _A mathematical primer for social statistics_, Chapter 1.
+  
+
+  
+
 * **PDF version**: Unable to compile
 
   - I'm using Windows 10, where MikTeX was always my LaTeX system. I was able to install LaTeX packages into a `localtexmf` directory and be prompted by MikTeX to install/update packages. 
@@ -68,15 +76,34 @@ A number of things refer to the necessity to produce both a printed PDF and an o
   better if the code is not shown initially.
 
 * **color in figure captions**: See [How to use colored text in Quarto figure captions](test/caption-colors.qmd)
+  I've been using `colorize()` defined in `R/common.R`, which is loaded in every chapter file.
+  **NB**: `colorize()` provides a way to generate different text depending on HTML vs. PDF
 
-* **Exercises**: I intend to have exercises for each chapter, but haven't really started on this. Make some notes if any ideas come to you.
+* **Exercises**: I intend to have exercises for each chapter, but haven't really started on this. 
+  Make **some notes** if any ideas come to you.
 
 * **Fiddley details**:
 
   - References to packages: generally I refer to the first use of a package in the text with the package name in bold and
   citation: `**lattice** package [@R-lattice]`. But I should probably be using a mono typewriter font, e.g., `lattice`,
-  or maybe a bold typewriter font?
-  In pure LaTeX, `.Rnw` files I defined a `\pkg{}` macro used consistently through out the book. Not sure what
-  to do here.
+  or maybe a bold typewriter font? Or maybe also colored. But I don't know how to define CSS or latex styles for these.
   
-  - Figure sizes: Should be made more consistent.  
+  In pure LaTeX, `.Rnw` files I defined a `\pkg{}` macro used consistently through out my DDAR book. Not sure what
+  to do here. I suppose I could define a function to be used inline as ``r pkg("lattice")`` :
+
+```
+pkg <- function(package, cite) {
+  ref <- paste0("**", package, "**")
+  if (cite) ref <- paste0(ref, " [@R-", package, "]")
+  cat(ref)
+}
+```
+
+  Note that there is a system in place defined in `R/common.R` using `write_pkgs(file = .pkg_file)` to automatically
+  generate BibTeX entries in `bib/packages.bib` from those included via `library()` in the text.
+  
+  - Figure sizes: Should be made more consistent. I've generally sized them to sort of "look right" in the HTML version, but
+  it would be better to adopt some general rules
+  
+  - Coding style: Should adopt a general style for variable & function names, e.g., `crime` data -> `crime.pca`;
+  

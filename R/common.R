@@ -9,7 +9,7 @@
 # --------------
 
 # set a seed for all chapters
-set.seed(47)
+set.seed(47) # The one TRUE seed
 
 options(
   digits = 3,
@@ -63,10 +63,7 @@ custom_hook_output <- function(x, options) {
 }
 
 
-# suppress "Registered S3 method overwritten by GGally"
-Sys.setenv(`_R_S3_METHOD_REGISTRATION_NOTE_OVERWRITES_` = "false")
-
-# wrap hook
+# wrap chunk output hook
 # from: https://github.com/yihui/knitr-examples/blob/master/077-wrap-output.Rmd
 library(knitr)
 hook_output = knit_hooks$get('output')
@@ -141,9 +138,18 @@ $\\newcommand*{\\diag}[1]{\\ensuremath{\\mathrm{diag}\\, #1}}$
 # packages
 # -------------
 
-# packages to be cited here. Code at the end automatically updates packages.bib
-# These should be packages not used in actual code via `library()` or
-# `require()`. Packages only referenced via `data()` need to be listed here.
+# References to package in text
+# TODO: add styles (color, font); do it differently for PDF output
+pkg <- function(package, cite) {
+  ref <- paste0("**", package, "**")
+  if (cite) ref <- paste0(ref, " [@R-", package, "]")
+  cat(ref)
+}
+
+
+# packages to be cited here. Code at the end automatically updates `packages.bib`
+# These should be packages not used in actual code via `library()` or `require()`. 
+# Packages only referenced via `data()` need to be listed here.
 .to.cite <- c(
   "rgl",
   "animation",
