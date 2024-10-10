@@ -8,7 +8,8 @@ library(car)
 library(heplots)
 library(matlib)
 
-load(here::here("data", "workers.RData"))
+#load(here::here("data", "workers.RData"))
+#data(workers, package = "matlib")    # doesn't have Name variable
 str(workers)
 
 vars <- c("Experience", "Income")
@@ -22,6 +23,8 @@ text(workers[, vars],
 
 workers.pca <- prcomp(workers[, vars]) |> print()    
 
+# standardized (scaled) solution
+prcomp(workers[, vars], scale = TRUE)
 
 # covariance matrix & mean
 mu <- colMeans(workers[, vars]) |> print()
@@ -31,6 +34,20 @@ S <- cov(workers[, vars]) |> print()
 S.eig <- eigen(S)
 Lambda <- S.eig$values |> print()
 V <- S.eig$vectors |> print()
+
+#total variances of the variables = sum of eigenvalues
+sum(diag(S))
+sum(Lambda)
+
+# proportion of variance of each PC
+100 * Lambda / sum(Lambda)
+
+# calculate principal components
+as.matrix(workers[, vars]) %*% V
+
+# prcomp() returns these as `x`, but centered
+as.matrix(workers[, vars]) %*% V |> scale(center = TRUE, scale = FALSE)
+workers.pca$x
 
 op <- options(digits = 5)
 rownames(S) <- colnames(S) <- c("Exp", "Inc")
