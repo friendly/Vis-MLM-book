@@ -138,12 +138,14 @@ $\\newcommand*{\\diag}[1]{\\ensuremath{\\mathrm{diag}\\, #1}}$
 # packages
 # -------------
 
-# References to package in text
+# References to package inline in text
+#   Use as: `r pkg("lattice")` or `r pkg("lattice", cite=TRUE)`
 # TODO: add styles (color, font); do it differently for PDF output
+
 pkg <- function(package, cite=FALSE) {
   ref <- paste0("**", package, "**")
   if (cite) ref <- paste0(ref, " [@R-", package, "]")
-  cat(ref)
+  ref
 }
 
 

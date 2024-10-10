@@ -22,6 +22,8 @@ A number of things refer to the necessity to produce both a printed PDF and an o
   - Brief review of matrix algebra, or could this just be a reference to something else, e.g., Fox (2021), 
   _A mathematical primer for social statistics_, Chapter 1.
   
+  - Table of notation for matrices, vectors, expectation ($\mathcal{E}()), ...
+  
 
   
 
