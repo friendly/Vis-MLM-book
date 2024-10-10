@@ -140,7 +140,7 @@ $\\newcommand*{\\diag}[1]{\\ensuremath{\\mathrm{diag}\\, #1}}$
 
 # References to package in text
 # TODO: add styles (color, font); do it differently for PDF output
-pkg <- function(package, cite) {
+pkg <- function(package, cite=FALSE) {
   ref <- paste0("**", package, "**")
   if (cite) ref <- paste0(ref, " [@R-", package, "]")
   cat(ref)

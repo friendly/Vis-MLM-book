@@ -8,16 +8,16 @@ library(car)
 library(heplots)
 library(matlib)
 
-#load(here::here("data", "workers.RData"))
-#data(workers, package = "matlib")    # doesn't have Name variable
-str(workers)
+load(here::here("data", "workers.RData"))
+data(workers, package = "matlib")    # doesn't have Name variable
+head(workers)
 
 vars <- c("Experience", "Income")
 plot(workers[, vars],
      pch = 16, cex = 1.5,
      cex.lab = 1.5)
 text(workers[, vars], 
-     labels = workers$Name,
+     labels = rownames(workers),
      col = ifelse(workers$Gender == "Female", "red", "blue"),
      pos = 3, xpd = TRUE)
 
@@ -45,9 +45,27 @@ sum(Lambda)
 # calculate principal components
 as.matrix(workers[, vars]) %*% V
 
+PC <- as.matrix(workers[, vars]) %*% V
+colnames(PC) <- paste0("PC", 1:2)
+head(PC)
+
+
 # prcomp() returns these as `x`, but centered
 as.matrix(workers[, vars]) %*% V |> scale(center = TRUE, scale = FALSE)
 workers.pca$x
+
+# standardized PCA
+prcomp(workers[, vars], scale. = TRUE)
+# same as:
+workers[, vars] |> prcomp(scale. = TRUE) |> invisible()
+scale(workers[, vars]) |> prcomp() |> invisible()
+
+# why are these not the same:
+workers.spca <- prcomp(workers[, vars], scale. = TRUE) |> print()
+# as:
+eigen(scale(workers[, vars]) |> cor())
+
+
 
 op <- options(digits = 5)
 rownames(S) <- colnames(S) <- c("Exp", "Inc")

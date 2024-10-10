@@ -275,26 +275,27 @@ To explain this, it is helpful to use a bit of matrix math:
 In this equation,
 
 1. The last line follows because $\mathbf{\Lambda}$ is a diagonal matrix, so $\mathbf{S}$ is expressed as a sum of outer products of each $\mathbf{v}_i$ with itself, times the eigenvalue $\lambda_i$. 
-* The columns of $\mathbf{V}$ are the eigenvectors of $\mathbf{S}$. They are orthogonal
+
+2. The columns of $\mathbf{V}$ are the eigenvectors of $\mathbf{S}$. They are orthogonal
 and of unit length, so $\mathbf{V}^\mathsf{T} \mathbf{V} = \mathbf{I}$ and thus
 they represent orthogonal (uncorrelated) directions in data space. 
 
-2. The columns $\mathbf{v}_i$ are the weights applied to the variables to produce the scores on
+3. The columns $\mathbf{v}_i$ are the weights applied to the variables to produce the scores on
 the principal components. For example, the first principal component is the weighted sum:
 
 $$
 \text{PC}_1 = v_{11} \mathbf{x}_1 + v_{12} \mathbf{x}_2 + \cdots + v_{1p} \mathbf{x}_p \period
 $$
-3. The matrix of _all_ scores on the principal components can be calculated by multiplying the data matrix $\mathbf{X}$ by the eigenvectors, $\mathbf{PC} = \mathbf{X} \mathbf{V}$.
+4. The matrix of _all_ scores on the principal components can be calculated by multiplying the data matrix $\mathbf{X}$ by the eigenvectors, $\mathbf{PC} = \mathbf{X} \mathbf{V}$.
 
-* The eigenvalues, $\lambda_1, \lambda_2, \dots, \lambda_p$ are the variances of the the components, because
+5. The eigenvalues, $\lambda_1, \lambda_2, \dots, \lambda_p$ are the variances of the the components, because
 $\mathbf{v}_i^\mathsf{T} \;\mathbf{S} \; \mathbf{v}_i = \lambda_i$.
 
-4. It is usually the case that the variables $\mathbf{x}_1, \mathbf{x}_2, \dots, \mathbf{x}_p$ are linearly
+6. It is usually the case that the variables $\mathbf{x}_1, \mathbf{x}_2, \dots, \mathbf{x}_p$ are linearly
 independent, which means that none of these is an exact linear combination of the others. In this case,
 all eigenvalues $\lambda_i$ are positive and the covariance matrix $\mathbf{S}$ is said to have **rank** $p$.
 
-5. Here is the key fact: If, as usual, the eigenvalues are arranged in order, so that $\lambda_1 > \lambda_2 > \dots > \lambda_p$, then the first $d$ components give a $d$-dimensional approximation to $\mathbf{S}$, which accounts for $\Sigma_i^d \lambda_i$ of the $\Sigma_i^p \lambda_i$ total variance, usually interpreted as the proportion,
+7. Here is a key fact: If, as usual, the eigenvalues are arranged in order, so that $\lambda_1 > \lambda_2 > \dots > \lambda_p$, then the first $d$ components give a $d$-dimensional approximation to $\mathbf{S}$, which accounts for $\Sigma_i^d \lambda_i$ of the $\Sigma_i^p \lambda_i$ total variance, usually interpreted as the proportion,
 $(\Sigma_i^d \lambda_i) / (\Sigma_i^p \lambda_i)$.
 
 For the case of two variables, $\mathbf{x}_1$ and $\mathbf{x}_2$ @fig-pca-rotation shows the
@@ -315,12 +316,12 @@ of the eigenvalues.
 #### Example: Workers' experience and income {.unnumbered}
 
 For a small example, consider the relation between years of experience and income in a small (contrived) sample 
-($n = 10$) of workers in a factory. The dataset `workers` contains these and other variables.
+($n = 10$) of workers in a factory. The dataset `matlib::workers` contains these and other variables.
 In a wider context, we might want to fit a regression model to predict `Income`, but here we focus on
 a PCA of just these two variables.
 
 ```{r workers-data}
-load(here::here("data", "workers.RData"))
+data(workers, package = "matlib") 
 head(workers)
 ```
 
@@ -341,18 +342,18 @@ plot(workers[, vars],
      pch = 16, cex = 1.5,
      cex.lab = 1.5)
 text(workers[, vars], 
-     labels = workers$Name,
+     labels = rownames(workers),
      col = ifelse(workers$Gender == "Female", "red", "blue"),
      pos = 3, xpd = TRUE)
 ```
 
-First , calculate the vector of means ($\bar{\mathbf{x}}$) and covariance matrix $\mathbf{S}$.
+To carry out a PCA of these variables, first calculate the vector of means ($\bar{\mathbf{x}}$) and covariance matrix $\mathbf{S}$.
 ```{r workers-cov}
 mu <- colMeans(workers[, vars]) |> print()
 S <- cov(workers[, vars]) |> print()
 ```
 
-Eigenvalues and eigenvectors are calculated by `eigen()`. This returns a list with components
+The eigenvalues and eigenvectors of `S` are calculated by `eigen()`. This returns a list with components
 `values` for the $\lambda_i$ and `vectors` for $\mathbf{V}$.
 
 ```{r workers-eigen}
@@ -482,7 +483,8 @@ scaling determines whether the correlation matrix is analyzed, so that
 each variable contributes equally to the total variance that is to be accounted for
 versus analysis of the covariance matrix, where each variable contributes its
 own variance to the total. Analysis of the covariance matrix makes little sense
-when the variables are measured on different scales.[^pca-scales]
+when the variables are measured on different scales[^pca-scales], unless you want to
+interpret total variance on the scales of the different variables.
 
 [^pca-scales]: For example, if two variables in the analysis are height and weight, changing the unit of height from inches to centimeters would multiply its variance by $2.54^2$; changing weight from pounds to kilograms would divide its variance by $2.2^2$.
 
@@ -495,6 +497,30 @@ in most cases the default is OK.
 
 [^prcomp-scale]: The unfortunate default `scale. = FALSE` was for consistency with S, the precursor to R 
 but in general scaling is usually advisable.
+
+To illustrate, the analysis of the `workers` data presented above used `scale. = FALSE` by default, so 
+the eigenvalues reflected the variances of Experience and Income. The analogous result, using standardized
+variables ($z$-scores) can be computed in any of the forms shown below, using either `scale. = FALSE`
+or standardizing first using `scale()`:
+
+```{r workers-pca-std}
+prcomp(workers[, vars], scale. = TRUE)
+
+# same as (output suppressed):
+workers[, vars] |> prcomp(scale. = TRUE) |> invisible()
+workers[, vars] |> scale() |> prcomp() |> invisible()
+```
+
+<!--
+In this form, each of Experience and Income have variance = 1, and the `"Standard deviations"` reported
+(eigenvalues) sum to `p=2`.
+**NOT TRUE**
+
+```{r}
+prcomp(workers[, vars], scale. = TRUE)$sdev |> sum()
+```
+-->
+
 
 <!-- By default .. -->
 
