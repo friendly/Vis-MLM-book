@@ -100,6 +100,16 @@ legend_inside <- function(position) {
 
 # colorize text: use inline as `r colorize(text, color)` to print `text` in a given `color`
 # can also be used to color a color name, as in r colorize("red")`
+
+#' Render text in color using LaTeX or CSS styles
+#'
+#' @param text  Text to display, a character string
+#' @param color Color to use, a valid color designation
+#'
+#' @return 
+#' @export
+#'
+#' @examples
 colorize <- function(text, color) {
   if (missing(color)) color <- text
   if (knitr::is_latex_output()) {
@@ -140,9 +150,12 @@ $\\newcommand*{\\diag}[1]{\\ensuremath{\\mathrm{diag}\\, #1}}$
 
 # References to package inline in text
 #   Use as: `r pkg("lattice")` or `r pkg("lattice", cite=TRUE)`
+#   Assumes the bibtex key will be of the form: R-package
 # TODO: add styles (color, font); do it differently for PDF output
+#   Want to be able to use bold (**...**), italic (_ ... _) or bold-italic (*** ... ***)
 
-pkg <- function(package, cite=FALSE) {
+pkg <- function(package, cite=FALSE, color=NULL) {
+  pkgname <- if(is.null(color)) package else colorize(package, color)
   ref <- paste0("**", package, "**")
   if (cite) ref <- paste0(ref, " [@R-", package, "]")
   ref

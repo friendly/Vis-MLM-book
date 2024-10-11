@@ -8,8 +8,8 @@ library(car)
 library(heplots)
 library(matlib)
 
-load(here::here("data", "workers.RData"))
-data(workers, package = "matlib")    # doesn't have Name variable
+#load(here::here("data", "workers.RData"))
+data(workers, package = "matlib")   
 head(workers)
 
 vars <- c("Experience", "Income")
