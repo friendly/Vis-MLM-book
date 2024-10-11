@@ -482,9 +482,9 @@ The important options for analysis include:
 
 It nearly always makes sense to center the variables. The choice of
 scaling determines whether the correlation matrix is analyzed, so that
-each variable contributes equally to the total variance that is to be accounted for
+each variable contributes _equally_ to the total variance that is to be accounted for
 versus analysis of the covariance matrix, where each variable contributes its
-own variance to the total. Analysis of the covariance matrix makes little sense
+_own variance_ to the total. Analysis of the covariance matrix makes little sense
 when the variables are measured on different scales[^pca-scales], unless you want to
 interpret total variance on the scales of the different variables.
 
@@ -494,7 +494,7 @@ You don't need to scale your data in advance, but be aware of the options:
 `prcomp()` has default options `center = TRUE, scale. = FALSE`[^prcomp-scale]
 so in most cases you should specify `scale. = TRUE`.
 I mostly use this.
-`princomp()` has only the option `cor = FALSE` which centers the data and uses the covariance matrix, so
+The older `princomp()` has only the option `cor = FALSE` which centers the data and uses the covariance matrix, so
 in most cases the default is OK. 
 
 [^prcomp-scale]: The unfortunate default `scale. = FALSE` was for consistency with S, the precursor to R 
@@ -513,18 +513,24 @@ workers[, vars] |> prcomp(scale. = TRUE) |> invisible()
 workers[, vars] |> scale() |> prcomp() |> invisible()
 ```
 
-<!--
+
 In this form, each of Experience and Income have variance = 1, and the `"Standard deviations"` reported
-(eigenvalues) sum to `p=2`.
-**NOT TRUE**
+are the square roots ($\sqrt{\lambda}_i$) of the eigenvalues $\lambda_i$ of the correlation matrix $\mathbf{R}$.
+The eigenvalues of a correlation matrix always sum to $p$, the number of variables.
+This fact prompted the rough _rule of thumb_ to extract principal componends whose eigenvalues exceed 1.0,
+which is their average value, $\bar{\lambda} = (\Sigma^p \lambda_i) / p = p / p$.
+
 
 ```{r}
-prcomp(workers[, vars], scale. = TRUE)$sdev |> sum()
+prcomp(workers[, vars], scale. = TRUE)$sdev
+
+# eiven values of correlation matrix
+R <- cor(workers[, vars])
+R.eig <- eigen(R)
+Lambda <- R.eig$values |> print()
+sum(Lambda)
 ```
--->
 
-
-<!-- By default .. -->
 
 #### Example: Crime data {.unnumbered}
 

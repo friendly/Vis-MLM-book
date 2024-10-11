@@ -26,6 +26,9 @@ workers.pca <- prcomp(workers[, vars]) |> print()
 # standardized (scaled) solution
 prcomp(workers[, vars], scale = TRUE)
 
+R <- cor(workers[, vars])
+eigen(R)
+
 # covariance matrix & mean
 mu <- colMeans(workers[, vars]) |> print()
 S <- cov(workers[, vars]) |> print()
