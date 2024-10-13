@@ -381,7 +381,8 @@ Using these, you can express the eigenvalue decomposition of $\mathbf{S}$ in @eq
 
 ```{r results = 'asis'}
 options(digits = 4)
-rownames(S) <- colnames(S) <- c("Exp", "Inc")
+rownames(S) <- colnames(S) <- c("\\small \\text{Exp}", 
+                                "\\small \\text{Inc}")
 spacer <- "\\phantom{00000000000000}"
 Eqn("\\mathbf{S} & = \\mathbf{V}", spacer,
     "\\mathbf{\\Lambda}", spacer,  
@@ -390,6 +391,12 @@ Eqn("\\mathbf{S} & = \\mathbf{V}", spacer,
     latexMatrix(V), "  ", diag(Lambda), "  ", latexMatrix(V, transpose=TRUE),
     align = TRUE)
 ```
+
+<!-- Phil's version:
+Eqn("\\mathbf{S} & = & \\mathbf{V} & &\\mathbf{\\Lambda} & &\\mathbf{V}^\\top", Eqn_newline(),
+    latexMatrix(S), "& = & ", latexMatrix(V), "& &", diag(Lambda), "& &", latexMatrix(V, transpose=TRUE),
+    align = TRUE)
+-->
 
 The "scores" on the principal components can be calculated (point (5) above) as $\mathbf{PC} = \mathbf{X} \mathbf{V}$:
 
@@ -912,8 +919,11 @@ Here, I use the **ggbiplot** package, which aims to provide a simple interface t
 ### Example: Crime data
 
 A basic biplot of the `crime` data, using standardized principal components and labeling the observation by their state abbreviation is shown in @fig-crime-biplot1.
-The correlation circle indicates that these components are uncorrelated and have
-equal variance in the display.
+The correlation circle reflects the data ellipse of the standardized components. This reminds us that
+these components are uncorrelated and have equal variance in the display.
+
+<!-- code: R/crime/crime-ggbiplot.R -->
+
 ```{r}
 #| label: fig-crime-biplot1
 #| out-width: "80%"
@@ -947,7 +957,8 @@ ggbiplot(crime.pca,
    ellipse.prob = 0.5, ellipse.alpha = 0.1,
    circle = TRUE,
    varname.size = 4,
-   varname.color = "black") +
+   varname.color = "black",
+   clip = "off") +
   labs(fill = "Region", color = "Region") +
   theme_minimal(base_size = 14) +
   theme(legend.direction = 'horizontal', legend.position = 'top')
@@ -983,7 +994,8 @@ ggbiplot(crime.pca,
          ellipse.prob = 0.5, ellipse.alpha = 0.1,
          circle = TRUE,
          varname.size = 4,
-         varname.color = "black") +
+         varname.color = "black",
+         clip = "off") +
   labs(fill = "Region", color = "Region") +
   theme_minimal(base_size = 14) +
   theme(legend.direction = 'horizontal', legend.position = 'top')
@@ -1065,17 +1077,21 @@ relations among a set of variables, you can use other available data to help int
 what is shown in the biplot. In a sense, this is what I did above in @fig-crime-biplot2 and @fig-crime-biplot3
 using `region` as a grouping variable and summarizing the variability in the scores for states with their data ellipses by region. 
 
-When we have other quantitative variables on the same observations, these can be represented as supplementary
-variables in the same space, by what amounts to regressions of these new variables on the scores for the principal component dimensions. For example, the left panel of @fig-supp-regession depicts the vector geometry of a regression 
+When we have other quantitative variables on the same observations, these can be represented as supplementary variables in the same space. Geometrically, this amounts to projecting
+the new variables on the space of the principal components.
+It is carried out by regressions of these supplementary variables on the scores for the principal component dimensions. 
+
+For example, the left panel of @fig-supp-regession depicts the vector geometry of a regression 
 of a variable $\mathbf{y}$ on two predictors, $\mathbf{x}_1$ and $\mathbf{x}_2$. The fitted vector,
-$\widehat{\mathbf{y}}$, is the perpendicular projection of $\mathbf{y}$ onto the plane of $\mathbf{x}_1$ and $\mathbf{x}_2$. In the same way, in the right panel the supplementary variable is projected into the plane
-of two principal component axes. The fitted vector shows how that additional variable relates to the biplot dimensions.
+$\widehat{\mathbf{y}}$, is the perpendicular projection of $\mathbf{y}$ onto the plane of $\mathbf{x}_1$ and $\mathbf{x}_2$. In the same way, in the right panel, a `r colorize("supplementary variable", "green")` is projected into the plane
+of two principal component axes shown as an ellipse.
+The black fitted vector shows how that additional variable relates to the biplot dimensions.
 
 ```{r}
 #| label: fig-supp-regession
 #| echo: false
 #| out-width: "90%"
-#| fig-cap: "Fitting supplementary variables in a biplot is analogous to regression on the principal component dimensions. _Source_: @Aluja-etal-2018, Figure 2.11"
+#| fig-cap: "Fitting supplementary variables in a biplot is analogous (right) to regression on the principal component dimensions (left). _Source_: @Aluja-etal-2018, Figure 2.11"
 knitr::include_graphics("images/pca4ds-figure-2-11.png")
 ```
 
@@ -1120,7 +1136,7 @@ The essential difference between the result of `prcomp()` used earlier to get th
 and the result of `PCA()` with supplementary variables is that the `crime.PCA_sup` object now contains
 a `quanti.sup` component containing the coordinates for the supplementary variables in PCA space. 
 
-These can be calculated directly as a the coefficients of a multivariate regression of the standardized supplementary variables on the PCA scores for the dimensions, with no intercept to force the fitted vectors to go through the origin. For example, in the plot below (@fig-crime-factominer), the vector for Income has
+These can be calculated directly as a the coefficients of a multivariate regression of the _standardized_ supplementary variables on the PCA scores for the dimensions, with no intercept---which forces the fitted vectors to go through the origin. For example, in the plot below (@fig-crime-factominer), the vector for Income has
 coordinates (0.192, -0.530) on the first two PCA dimensions.
 
 ```{r reg-data}
@@ -1135,7 +1151,8 @@ sup.mod <- lm(cbind(Income, Illiteracy, Life_Exp, HS_Grad) ~
 (coefs <- t(coef(sup.mod)))
 ```
 
-Note that these coefficients are the same as the correlations between the supplementary variables
+Note that, because the supplementary variables are standardized, 
+these coefficients are the same as the correlations between the supplementary variables
 and the scores on the principal components, up to a scaling factor for each dimension. This provides a
 general way to relate dimensions found in other methods to the original data variables using vectors
 as in biplot techniques.
@@ -1149,7 +1166,7 @@ R / coefs
 
 
 
-The `PCA()` result can be plotted using `FactoMiner::plot()`
+The `PCA()` result can then be plotted using `FactoMiner::plot()`
 or various `factoextra` functions like `fviz_pca_var()` for a plot of the variable vectors or
 `fviz_pca_biplot()` for a biplot. When a `quanti.sup` component is present, supplementary variables are
 also shown in the displays.
@@ -1327,11 +1344,13 @@ from their interpoint distances via an application of the SVD.
 
 The break-through for nonlinear methods came from Roger Shepard and William Kruskal
 [@Shepard1962a; @Shepard1962b; @Kruskal1964] who recognized that a more general,
-nonmetric version (nMDS) could be achieved using only the rank order of input distances $d_{ij}$
+_nonmetric_ version (nMDS) could be achieved using only the _rank order_ of input distances $d_{ij}$
 among objects. nMDS maps these into a low-D spatial representation of points, $\mathbf{x}_i, \mathbf{x}_j$
 whose fitted distances, $\hat{d}_{ij} = \lVert\mathbf{x}_i - \mathbf{x}_j\rVert$ matches
-the order of the $d_{ij}$ as closely as possible. @BorgGroenen2005 give a comprehensive
-overview of modern developments in MDS.
+the order of the $d_{ij}$ as closely as possible. 
+That is, rather than assume that the observed distances are linearly related to the fitted \hat{d}_{ij}$,
+nMDS assumes only that their order is the same.
+@BorgGroenen2005 and @Borg2018 give a comprehensive overview of modern developments in MDS.
 
 The impetus for MDS stemmed largely from psychology and the behavioral sciences,
 where simple experimental measures of
@@ -1469,7 +1488,7 @@ These conditional probabilities are made symmetric via averaging, giving
 $p_{ij} = \frac{p_{j\mid i} + p_{i\mid j}}{2n}$.
 
 t-SNE defines a similar probability distribution $q_{ij}$
-over the points \mathbf{y}_i$
+over the points $\mathbf{y}_i$
 in the low-dimensional map, and it minimizes the Kullback–Leibler divergence (KL divergence) between the two distributions with respect to the locations of the points in the map,
 
 $$
@@ -1530,7 +1549,8 @@ PCA (@fig-diabetes-ggbiplot), MDS (@fig-diabetes-mds), and t-SNE (@fig-diabetes-
 How are these similar, and how do they differ?
 
 One way is to view them side by side as shown in @fig-diabetes-pca-tsne. To an initial glance,
-the t-SNE solution looks like a rotated version of the PCA solution.
+the t-SNE solution looks like a rotated version of the PCA solution, but there are differences in
+the shapes of the clusters as well.
 
 ```{r}
 #| label: fig-diabetes-pca-tsne

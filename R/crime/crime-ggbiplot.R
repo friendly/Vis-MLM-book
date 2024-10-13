@@ -88,7 +88,8 @@ ggbiplot(crime.pca,
          ellipse.prob = 0.5, ellipse.alpha = 0.1,
          circle = TRUE,
          varname.size = 4,
-         varname.color = "black") +
+         varname.color = "black",
+         clip = "off") +
   labs(fill = "Region", color = "Region") +
   theme_minimal(base_size = 14) +
   theme(legend.direction = 'horizontal', legend.position = 'top')
@@ -105,7 +106,8 @@ ggbiplot(crime.pca,
          ellipse.prob = 0.5, ellipse.alpha = 0.1,
          circle = TRUE,
          varname.size = 4,
-         varname.color = "black") +
+         varname.color = "black", 
+         clip = "off") +
   labs(fill = "Region", color = "Region") +
   theme_minimal(base_size = 14) +
   theme(legend.direction = 'horizontal', legend.position = 'top')
