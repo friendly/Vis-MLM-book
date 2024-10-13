@@ -1468,16 +1468,23 @@ vs. "unsupervised" settings, a variety of new algorithms have been proposed for 
 task of finding low-D representations of high-D data. Among these,
 t-distributed Stochastic Neighbor Embedding (t-SNE) developed by @MaatenHinton2008
 is touted as method for revealing
-local structure and clustering better in possibly complex high-D data and at different scales.
+_local structure_ and clustering better in possibly complex high-D data and at different scales.
+
+t-SNE differs from MDS in what it tries to preserve in the mapping to low-D space:
+Multidimensional scaling aims to preserve the distances between pairs of data points, focusing on pairs of _distant points_ in the original space. t-SNE, on the other hand focuses on preserving _neighboring_ data points. Data points that are close in the original data space will be tight in the t-SNE embeddings.
+
 
 <!-- Simpler description, from: https://www.displayr.com/using-t-sne-to-visualize-data-before-prediction/ -->
-<!-- The t-SNE algorithm models the probability distribution of neighbors around each point. Here, the term neighbors refers to the set of points which are closest to each point. In the original, high-dimensional space this is modeled as a Gaussian distribution. In the 2-dimensional output space this is modeled as a t-distribution. The goal of the procedure is to find a mapping onto the 2-dimensional space that minimizes the differences between these two distributions over all points. The fatter tails of a t-distribution compared to a Gaussian help to spread the points more evenly in the 2-dimensional space. -->
+
+"The t-SNE algorithm models the probability distribution of neighbors around each point. Here, the term _neighbors_ refers to the set of points which are closest to each point. In the original, high-dimensional space, this is modeled as a Gaussian distribution. In the 2-dimensional output space this is modeled as a $t$-distribution. The goal of the procedure is to find a mapping onto the 2-dimensional space that minimizes the differences between these two distributions over all points. The fatter tails of a $t$-distribution compared to a Gaussian help to spread the points more evenly in the 2-dimensional space."
+(Jake Hoare, [How t-SNE works and Dimensionality Reduction](https://www.displayr.com/using-t-sne-to-visualize-data-before-prediction/)).
+
 
 t-SNE also uses the idea of mapping distance measures into a low-D space,
 but converts Euclidean distances into conditional probabilities.
 Stochastic neighbor embedding means that t-SNE constructs a probability distribution over pairs of high-dimensional objects in such a way that similar objects are assigned a higher probability while dissimilar points are assigned a lower probability.
 
-As van der Maaten and Hinton explained: "The similarity of datapoint $\mathbf{x}_{j}$ to datapoint  $\mathbf{x}_{i}$ is the conditional probability, $p_{j|i}$, that x i $\mathbf{x}_{i}$ would pick  $\mathbf{x}_{j}$ as its neighbor if neighbors were picked in proportion to their probability density under a Gaussian distribution centered at $\mathbf{x}_{i}$." For $i \ne j$, they define
+As van der Maaten and Hinton explained: "The similarity of datapoint $\mathbf{x}_{j}$ to datapoint  $\mathbf{x}_{i}$ is the conditional probability, $p_{j|i}$, that $\mathbf{x}_{i}$ would pick  $\mathbf{x}_{j}$ as its neighbor if neighbors were picked in proportion to their probability density under a Gaussian distribution centered at $\mathbf{x}_{i}$." For $i \ne j$, they define:
 
 $$
 p_{j\mid i} = \frac{\exp(-\lVert\mathbf{x}_i - \mathbf{x}_j\rVert^2 / 2\sigma_i^2)}{\sum_{k \neq i} \exp(-\lVert\mathbf{x}_i - \mathbf{x}_k\rVert^2 / 2\sigma_i^2)} \;. 
@@ -1706,7 +1713,7 @@ The plot shows the variables as widely dispersed. There is a collection at the l
 #| fig-width: 8
 #| fig-height: 8
 #| out-width: "70%"
-#| fig-cap: "Biplot of the `mtcars` data ..."
+#| fig-cap: "Biplot of the `mtcars` data. The order of the variables around the circle, starting from \"gear\" (say) arranges them so that the most similar variables are adjacent in graphical displays."
 mtcars.pca <- prcomp(mtcars, scale. = TRUE)
 ggbiplot(mtcars.pca,
          circle = TRUE,
@@ -1720,10 +1727,10 @@ In `corrplot()` principal component variable ordering is implemented using the `
 [package vignette](https://cran.r-project.org/web/packages/corrplot/vignettes/corrplot-intro.html).
 
 
-@fig-mtcars-corrplot-pcaorder shows the result. A nice feature of `corrplot()` is the ability to manually highlight blocks of variables that have a similar pattern of signs by outlining them with
+@fig-mtcars-corrplot-pcaorder shows the result of ordering the variables by this method. 
+A nice feature of `corrplot()` is the ability to manually highlight blocks of variables that have a similar pattern of signs by outlining them with
 rectangles. From the biplot, the two main clusters of positively correlated variables seemed clear,
-and are outlined in the plot using `corrplot::corrRect()`. What became clear in the corrplot is that `qsec`, the time to drive a quarter-mile from a dead start didn't fit this pattern, so I highlighted it
-separately.
+and are outlined in the plot using `corrplot::corrRect()`. What became clear in the corrplot is that `qsec`, the time to drive a quarter-mile from a dead start didn't quite fit this pattern, so I highlighted it separately.
 
 ```{r}
 #| label: fig-mtcars-corrplot-pcaorder
@@ -1771,7 +1778,7 @@ than pure prediction, it has the disadvantage that the components may be hard to
 An interesting class of problems have to do with image processing, where an image of size
 width $\times$ height in pixels can be represented by a $w \times h$ array of 
 greyscale values $x_{ij}$ in the range of [0, 1] or $h \times w \times 3$ array $x_{ijk}$
-of (red, green, blue) color values. For example a single $640 \times 640$ photo is comprised of about 400K
+of (`r red`, `r green`, `r blue`) color values. For example a single $640 \times 640$ photo is comprised of about 400K
 pixels in B/W and 1200K pixels in color.
 
 The uses here include
