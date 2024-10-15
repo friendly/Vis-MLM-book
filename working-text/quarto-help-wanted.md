@@ -16,5 +16,9 @@ but I can't even get a LaTeX/PDF version to build reliably.
 
 * I'm using Windows 10, where MikTeX was always my LaTeX system. I was able to install LaTeX packages into a `localtexmf` directory and be prompted by MikTeX to install/update packages. 
   Quarto doesn't seem to support MikTeX for this purpose, but prefers `tinytex` based on the TexLive distribution. I don't know how to set this up.
+  
+* I have ideas for the book design in LaTeX that go beyond what is provided by the default `krantz.cls` style. These include extensive use of 
+color in the text, custom section headers and callouts, ...
 
 * HTML and PDF output: CRC Press allows me to have an online version of the book and there I can include, e.g., animated GIF images that would not be part of the printed version.
+I need some help with setting things up so that some text and figures can be done differently in the HTML and PDF versions.

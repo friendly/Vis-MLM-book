@@ -8,7 +8,8 @@ knitr::opts_chunk$set(fig.path = "figs/ch05/")
 # Overview of Linear models {#sec-linear-models}
 
 Although this book is primarily about multivariate models, it is useful to have an overview of the range of available
-techniques to see their relations and to appreciate how easily univariate response models generalize to multivariate ones.
+techniques for univariate response models
+to see their uses and to appreciate how easily univariate models generalize to multivariate ones.
 Hence, this chapter reviews the characteristics of the standard univariate methods for explaining or predicting
 a single outcome variable from a set of predictors.
 
@@ -29,7 +30,7 @@ or multinomial regression, fit using `glm()`.
 @fig-techniques summarizes a variety of methods for linear models, classified by number of predictors and number of response variables, and whether these are quantitative vs. discrete. For the present purposes, the key columns are the first two, for the case
 of one or more quantitative outcome variables. 
 
-**TODO**: This should be a table, but that's not working
+<!-- **TODO**: This should be a table, but that's not working -->
 
 ```{r}
 #| label: fig-techniques
@@ -39,30 +40,32 @@ of one or more quantitative outcome variables.
 knitr::include_graphics("images/techniques-table.png")
 ```
 
-when the predictors are also quantitative, simple regression ($p=1$) generalizes to multivariate regression with two or more outcomes, for example predicting weight and body mass index jointly from a person's height.
+When the _predictors_ are also quantitative, simple regression ($p=1$) generalizes to multivariate regression with two or more outcomes ($q > 1$). For example we might want to predict weight and body mass index _jointly_ from a person's height.
+
 The situation is more interesting when there are $p>1$ predictors. The most common multivariate generalization is 
-multivariate multiple regression (MMRA), where each outcome is regressed on the predictors, as if done separately for each outcome,
+_multivariate multiple regression_ (MMRA), where each outcome is regressed on the predictors, as if done separately for each outcome,
 but using multivariate tests that take correlations among the predictors into account.
 Other methods for this case include canonical correlation analysis, which tries to explain all relations between $\mathbf{Y}$ and
 a set of $\mathbf{x}$s through maximally correlated linear combinations of each.
 
-When the predictor variables are all categorical, like gender or level of education, methods like the simple $t$-test,
+When the predictor variables are all discrete or categorical, such as gender or level of education, methods like the simple $t$-test,
 one-way ANOVA and factorial ANOVA with $q=1$ outcome measures all have simple extensions to the case of $q>1$ outcomes.
 
 Not shown in @fig-techniques are rows for cases where predictor variables include 
-a mixture quantitative and discrete factors. 
+a mixture quantitative and discrete factors. These have two "flavors", depending on our emphasis.
 
 * **Analysis of covariance** (ANCOVA) is the
 term for models where the main emphasis on on comparing means of different groups,
 but where there are one or more quantitative predictors (for example a pre-test score
 on the outcome variable) that need to be taken into account, so we can assess the differences
 among groups _controlling_ or _adjusting_ for those predictors, which are called
-_covariates_.
+_covariates_. (Strictly speaking, ANCOVA models typically assume that the regression
+slopes are the same for all groups.)
 
 * **Homogeneity of regression** treats the same type of data, 
 but the main interest is on the regression relation between $\mathbf{y}$ and a set of
 quantitative $\mathbf{x}$s, but there is also one or more grouping factors.
-In this case, we want to determine if the same regression relation applies in all groups
+In this case, we want to determine if the _same regression_ relation applies in all groups
 or whether the groups differ in their intercepts and/or slopes. 
 Another term for this class of questions is **moderator** effects, which refers to
 interactions between the quantitative predictors and group factors.
@@ -70,18 +73,18 @@ interactions between the quantitative predictors and group factors.
 ::: {.callout-note title="History Corner"}
 
 Why are there so many different names for regression vs. ANOVA concepts, statistics and techniques? In regression, we use notation like $x_1, x_2, ...$ to refer to _predictors_ in a model, while in ANOVA, factors $A, B, ...$ are called _main effects_. In regression applications, we often test _linear hypotheses_, are interested in _coefficients_ and
-evaluate a model with and $R^2$ statistic, while in ANOVA we may test _contrasts_ among factor levels, and use $F$-tests
+evaluate a model with an $R^2$ statistic, while in ANOVA we may test _contrasts_ among factor levels, and use $F$-tests
 to evaluate models.
 
-Well, like twins separated at birth, they grew up in homes in different places and with different parents, who were free to choose their own names. 
+Well, like twins separated at birth, they grew up in homes in different places and with different parents, who were each free to choose their own names, not recognizing their shared DNA.
 
-Methods of regression began with Francis Galton's 
+Methods of regression began in evolutionary biology with Francis Galton's 
 [-@Galton:1886; -@Galton:1889] studies of heritability of traits, trying to understand how
 strongly the physical characteristics of one generation of living things resembled those in the next generation.
 From a study of the diameters of sweet peas in parent plants and their size in the next generation, and another on the relationship between heights of human parents and their offspring, he developed the fundamental ideas
 of regression. Karl Pearson [-@Pearson:1896]
 
-Analysis of variance methods were raised on farms, notably the Rothamsted Experimental Station, where R. A. Fisher
+In contrast, analysis of variance methods were raised on farms, notably the Rothamsted Experimental Station, where R. A. Fisher
 analyzed vast amounts of data on crop experiments designed to determine the conditions (soil condition, fertilizer treatments) that gave the greatest yields, while controlling for extraneous determiners (plots of planting).
 With multiple factors determining the outcome, 
 Fisher [-@Fisher1923], in an experiment on yields of different varieties of potatoes
@@ -90,10 +93,38 @@ devised the method of breaking down the total variance into portions attributabl
 and presented the first ANOVA table. The method became well-known after Fisher's [-@Fisher:25]
 _Statistical Methods for Research Workers_.
 
-The great synthesis of regression and ANOVA did not take place until the 1960s ...
+The great synthesis of regression and ANOVA did not take place until the 1960s.
+At that time, methods for computing were beginning to move from programmable desk calculators
+to mainframe computers, largely using a collection of separate FORTRAN programs, designed for
+regression, one-way ANOVA, two-way ANOVA, models with interactions, and so forth.
+To complete an analysis, as a graduate student I often had to use three or more different programs.
+
+Then, something remarkable happened on two fronts: theory and computation.
+First, in quick succession textbooks by @Scheffe1960, @Graybill1961, @Winer1962 ...
+began to layout a general theory of linear models that encompassed all of these separate models,
+giving the "General Linear Model" a well-deserved name.
+Second, two symposiums, one at IBM Yorkdown Heights (@IBM1965) and the other at the University of Georgia (@BradsharFindley1967)
+resulted in the first general programs to handle all these cases in an understandable way.
+
+A bit of matrix algebra thrown into the mix showed that most of the ideas for univariate models
+could be extended to multiple response variables, and so the "Multivariate Linear Model" was born.
+R. Darrell Bock [@Bock1966] sketched a flowchart of the computational steps, which was implemented at the University of Chicago
+by Jeremy Finn [@Finn1967] in the MULTIVARIANCE program. A group at the University of North Carolina
+headed by Elliot Cramer developed their MANOVA program @Clyde-etal-1966 and Willard Dixon at UCLA
+[@Dixon1965] developed the BMD programs incorporating these ideas.
+
+<!--
+...
 Graybill, Winer, Bock  ... -> Symposium 1967
 
 Birth of the general linear models : https://files.eric.ed.gov/fulltext/ED026737.pdf
+
+Bock1966: flowchart -> Jeremy Finn (1967) MULTIVARIANCE
+Elliot Cramer (UNC) -> Clyde, Cramer & Shering (1966) MANOVA
+Dixon, UCLA (1965): BMD
+-->
+
+
 
 :::
 
