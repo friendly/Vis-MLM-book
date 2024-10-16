@@ -12,6 +12,8 @@ complete with visual tables of contents and indices for Subject, Author, Example
 In the new book, using Quarto, I can easily produce an HTML version and publish this to a [GitHub site](https://friendly.github.io/Vis-MLM-book/),
 but I can't even get a LaTeX/PDF version to build reliably. 
 
+NB: There is a Quarto-CRC starter at: https://github.com/bgreenwell/quarto-crc
+
 ## Problems I need help with
 
 * I'm using Windows 10, where MikTeX was always my LaTeX system. I was able to install LaTeX packages into a `localtexmf` directory and be prompted by MikTeX to install/update packages. 
