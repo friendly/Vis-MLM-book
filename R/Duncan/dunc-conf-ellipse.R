@@ -2,6 +2,7 @@
 #' title: Duncan data Confidence ellipse
 #' ---
 
+library(car)
 data(Duncan, package = "carData")
 car::some(Duncan)
 
@@ -23,7 +24,10 @@ confidenceEllipse(duncan.mod, col = "blue",
   xlab = expression(paste("Income coefficient, ", beta[Inc])),
   ylab = expression(paste("Education coefficient, ", beta[Educ])))
 
-abline(h=0, v=0, lwd = 2)
+# add line for equal slopes
+abline(a=0, b = 1, lwd = 2, col = "green")
+text(0.8, 0.8, expression(beta[Educ] == beta[Inc]), 
+     srt=45, pos=3, cex = 1.5, col = "green")
 
 # confidence intervals for each coefficient
 beta <- coef( duncan.mod )[-1]
