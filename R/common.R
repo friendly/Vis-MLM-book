@@ -102,6 +102,13 @@ legend_inside <- function(position) {
 # can also be used to color a color name, as in r colorize("red")`
 
 #' Render text in color using LaTeX or CSS styles
+#' 
+#' This function uses `\textcolor{}{}` from the `xcolor` package for LaTeX output
+#' or a CSS `<span>` for HTML output.
+#' 
+#' Note that a color not defined in the `xcolor` package will trigger a latex error.
+#' e.g., `darkgreen` is not defined but can use:
+#'    \definecolor{darkgreen}{RGB}{1,50,32}
 #'
 #' @param text  Text to display, a character string
 #' @param color Color to use, a valid color designation

@@ -50,6 +50,13 @@ A number of things refer to the necessity to produce both a printed PDF and an o
     code-block-bg: 'E8FFFF'  #'#f1f1f1'
 ```
 
+Currently, I have both MikTeX and TexLive installed:
+
+```
+C:\Users\friendly\AppData\Local\Programs\MiKTeX\miktex\bin\x64\
+C:\Users\friendly\AppData\Roaming\TinyTeX\bin\windows;
+```
+
   - A good model for this might be Rohan Alexander's [Tellling Stories with Data](https://tellingstorieswithdata.com/)
   whose [source code is on GitHub](https://github.com/RohanAlexander/telling_stories/).
 
