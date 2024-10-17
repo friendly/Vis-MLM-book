@@ -463,3 +463,144 @@ Figure 8.4
 
 Overall, I feel like there could have been more data-viz here and that there should probably be many options to choose from. I suspect that one could place this chapter before the one on dimension reduction. Perhaps we could start the book by introducing the central theme as "How to tackle large datasets with multiple response variables". Then, we could lead into collinearity as one of the common issues that one faces in large datasets.
 
+# Chapter 9
+
+## Section 9.1
+
+> Hotelling’s $T^2$ (Hotelling, 1931) is an analog the square of a univariate 
+ statistic, extended to the
+ 
+ - Missing "analog to the square"?
+ - Incomplete sentence
+ 
+ 
+ > Consider the basic one-sample t-test, where we wish to test the hypothesis that the mean $\bar{x}$ of a set of $N$ measures on a test of basic math, with standard deviation  does not differ from an assumed mean $\mu_0 = 150$ for a population
+ 
+- Would it be better to call them measurements instead of measures in this context? As measures seems to imply multiple different response variables to me.
+
+I suspect the denominator of your equation for $t^2$ may be missing a square
+
+$$
+t^2 = \frac{N(\bar{x}-\mu_0)^2}{s}
+$$
+
+to
+
+$$
+t^2 = \frac{N(\bar{x}-\mu_0)^2}{s^2}
+$$
+
+> Then, a hypothesis test for the means on basic math (BM) and word problems (WP) is the test of the means of these two variables jointly equal their separate values
+
+- Do you mean 'separate values', as in the null population values that we assumed *a priori*?
+
+Figure 9.1 is missing the author source in the figure description
+
+- My immediate reaction upon reading $T^2$ is to wonder whether Stein's paradox may be relevant.
+
+- If I understand you correctly, $D^2_M$ is the squared Mahalonobis distances, right? Perhaps a note regarding this equivalence would be helpful.
+    - Perhaps even a separate note regarding why the squared Mahalonobis distance is equal to $(\bar{x}-\mu_0)^T S^{-1}(\bar{x} - \mu_0)$ might be nice
+
+
+## Section 9.2
+
+- Just to clarify, would the matrix $X$ refer to different response variables or different predictor variables? I think you mean different response variables based on the context. But $X$ and especially $x_p$ are so often used to refer to predictor variables, that I think this is causing some sort of cognitive dissonance within me.
+
+- Is there a $T^2$ analogue for paired t-tests and Welch's t-test?
+
+My understanding/recollection is that the dis-advantage of the ANOVA $F$ test is that it can be insignificant even when one of the predictors have significant differences; and that it can be significant when one of the predictors does not have significant differences (?). Does this also apply to $T^2$?
+
+> You can carry out the test that the means for both variables are jointly equal using either
+
+- Do you mean that the means for both variables are jointly equal *between groups*?
+
+> To see the differences between the groups on both variables together, we draw their data (68%) ellipses, using `heplots::covEllpses()`
+
+- Typo `heplots::covEllipses()`?
+
+> We can see that:
+>   - Group 1 > Group 2 on Basic Math, but worse on Word Problems
+>   - Group 2 > Group 1 on Word Problems, but worse on Basic Math
+>   - Within each group, those who do better on Basic Math also do better on Word Problems
+
+I guess what confuses me is, can you assign a p-value or effect size to how much "Group 1 > Group 2 on Basic Math, but worse on Word Problems"? And are these p-values/effect-sizes separate from "Group 2 > Group 1 on Word Problems, but worse on Basic Math" and "Within each group, those who do better on Basic Math also do better on Word Problems"? 
+
+Because my impression is that the $T^2$'s significance motivates the data visualization, but then what of the parameter estimates (If any?). For meta-analyses, effect-size interpretation and decision-making, it seems like the parameter estimates are quite important. 
+
+
+>  Hotelling’s $T^2$, the “size” of the difference between the means (labeled “1” and “2”) is assessed relative to the pooled within-group covariance matrix $S_p$, which is just a size-weighted average of the two within-sample matrices, $S_1$ and $S_2$.
+
+What would the more general formula for multiple response variables be?
+
+## Section 9.3
+
+Would there be a way to more clearly show the relevance of the $H$ and $E$ R objects to Figure 9.4? 
+
+```{r, eval = FALSE}
+dot <- function(x, y) sum(x*y)
+project_on <- function(a, p1, p2) {
+    a <- as.numeric(a)
+    p1 <- as.numeric(p1)
+    p2 <- as.numeric(p2)
+    dot <- function(x,y) sum( x * y)    
+    t <- dot(p2-p1, a-p1) / dot(p2-p1, p2-p1)
+    C <- p1 + t*(p2-p1)
+    C
+}
+```
+
+Why is the `dot` function written twice here?
+
+> Then, we run the same code as before to plot the data ellipses, and follow this with a call to heplot() using the option add=TRUE which adds to an existing plot.
+
+If I understand you correctly, is there a difference between a data ellipse and a 'model-based' ellipse? If so, I feel like this could given extra emphasis.
+
+```{r, eval = FALSE}
+covEllipses(mathscore[,c("BM", "WP")], mathscore$group,
+            pooled=FALSE, # ?
+            col = colors,
+            cex=2, cex.lab=1.5,
+            asp=1, 
+            xlab="Basic math", ylab="Word problems"
+            )
+```
+
+Why is pooled set to false here? Intuitively, I would've thought that they would be pooled because Hotelling's $T^2$ uses the pooled variance?
+
+
+## Section 9.4
+
+> The coefficients give $w = -0.84BM + 0.75WP$. 
+
+- Do you mean $-0.084BM + 0.075WP$?
+
+> To round this out, we can calculate the discriminant scores by multiplying the matrix $X$ by the vector $a = ...$ of the discriminant weights.
+
+- I'm confused about why we would want to round this out and what this has to do with the vector of discriminant weights?
+
+- I do appreciate that it's related to $T^2$, but I guess I'm confused about what to take away from Fisher's Discriminant Analysis and how/when I should be using it. 
+
+## Section 9.5
+
+### Section 9.5.1
+
+- Considering how we spent some time on t-SNE, perhaps we could explore whether t-SNE might also be a helpful complement to PCA biplots?
+
+```{r, eval = FALSE}
+banknote.pca <- reflect(banknote.pca)
+```
+
+
+I don't know how much work this would be, but I get the impression that explicitly referring what libraries these functions come from, could help in replicating the textbook code quickly, as opposed to copying all the code and running from the top to see what happens. So for example, having `ggbiplot::reflect()` as opposed to just `reflect()` would help in knowing what is needed to replicate this exact code block.
+
+This package seems promising: https://cran.rstudio.com/web/packages/origin/origin.pdf
+
+> While all of the individual tests are highly significant, the average of the univariate $F$s is only 236. The multivariate test gains power by taking the correlations of the size measures into account.
+
+- Do we ever have to worry about conditioning on a mediator/confounder when running a multivariate test?
+
+## Section 9.6
+
+> and there are different different calculations for a single measure corresponding to the various test statistics
+
+- Double 'different'
