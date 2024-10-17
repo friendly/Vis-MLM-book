@@ -25,9 +25,9 @@ confidenceEllipse(duncan.mod, col = "blue",
   ylab = expression(paste("Education coefficient, ", beta[Educ])))
 
 # add line for equal slopes
-abline(a=0, b = 1, lwd = 2, col = "green", lty = 3)
+abline(a=0, b = 1, lwd = 2, col = "darkgreen")
 text(0.8, 0.8, expression(beta[Educ] == beta[Inc]), 
-     srt=45, pos=3, cex = 1.5, col = "green")
+     srt=45, pos=3, cex = 1.5, col = "darkgreen")
 
 # confidence intervals for each coefficient
 beta <- coef( duncan.mod )[-1]
