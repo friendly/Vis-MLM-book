@@ -13,11 +13,11 @@ A number of things refer to the necessity to produce both a printed PDF and an o
   I wished I had done things differently. In Ch 10, MLM Review, I'm wishing that I did not defer the introduction
   of HE plots until Ch 11, MLM-viz, for example.
   
-* Break chapters into parts. Suggest logical division points; modify `_quarto.yml`.
+* Break chapters into parts. Suggest logical division points; modify `_quarto.yml`. See `working-text/Parts.txt`.
 
 * Handling links : In many cases I've used `[]()` markdown for hyperlinks, but these would better be footnotes in the PDF version.
 
-* **Appendices**: Perhaps the book needs:
+## Appendices: Perhaps the book needs:
 
   - Brief review of matrix algebra, or could this just be a reference to something else, e.g., Fox (2021), 
   _A mathematical primer for social statistics_, Chapter 1.
@@ -27,13 +27,15 @@ A number of things refer to the necessity to produce both a printed PDF and an o
 
   
 
-* **PDF version**: Unable to compile
+## PDF version: Unable to compile
 
   - I'm using Windows 10, where MikTeX was always my LaTeX system. I was able to install LaTeX packages into a `localtexmf` directory and be prompted by MikTeX to install/update packages. 
   Quarto doesn't seem to support MikTeX for this purpose, but prefers `tinytex` based on the TexLive distribution. I don't know how to set this up.
   
-  - More generally, the PDF version needs to use the CRC house style, `\documentclass{krantz}`, and this needs to be set up in `_quarto.yml` together
-  with various LaTeX style files.  Currently I have:
+  - Started discussion of this on [Quarto-dev Discussions](https://github.com/quarto-dev/quarto-cli/discussions/11087), where I describe
+  the problem, and how I solved (sort of) on my home desktop. 
+  
+  - More generally, the PDF version needs to use the CRC house style, `\documentclass{krantz}`, and this needs to be set up in `_quarto.yml` together with various LaTeX style files.  Currently I have:
 
 ```
   pdf:
@@ -43,7 +45,7 @@ A number of things refer to the necessity to produce both a printed PDF and an o
     include-before-body: latex/before-body.tex
     include-after-body: latex/after-body.tex
     keep-tex: true
-    latex-tinytex: true
+    latex-tinytex: false
     geometry:
       - top=20mm
       - left=25mm
@@ -57,16 +59,23 @@ C:\Users\friendly\AppData\Local\Programs\MiKTeX\miktex\bin\x64\
 C:\Users\friendly\AppData\Roaming\TinyTeX\bin\windows;
 ```
 
+
   - A good model for this might be Rohan Alexander's [Tellling Stories with Data](https://tellingstorieswithdata.com/)
   whose [source code is on GitHub](https://github.com/RohanAlexander/telling_stories/).
 
   
   - May need to try to hire someone as a consultant on this issue. How to find someone? Post on LinkdIn? X?, BlueSky?
+  Posted a note on https://github.com/quarto-dev/quarto-cli/discussions/11087 
   
-  - Indexing: I've just started to add `\index{}` entries to the text. At some point, need to go thru and add these throughout.
+  - Need a `Makefile` to create the HTML and PDF versions. 
+  
+  
+  
+  - Indexing: I've just started to add `\index{}` entries to the text. At some point, need to go thru and add these throughout. 
+    - How to create an Author index? Previously, this was done automatically from the citations to references.
   
 
-* **HTML version**:
+## HTML version
 
   - Some features, like animated GIFs can only appear in the online version. Other things might only appear in the PDF version.
   Need to use [conditional blocks](https://quarto.org/docs/authoring/conditional.html). A good model for doing this
@@ -91,26 +100,43 @@ C:\Users\friendly\AppData\Roaming\TinyTeX\bin\windows;
 * **Exercises**: I intend to have exercises for each chapter, but haven't really started on this. 
   Make **some notes** if any ideas come to you.
 
-* **Fiddley details**:
+## References to packages
 
-  - References to packages: generally I refer to the first use of a package in the text with the package name in bold and
+  - Generally I refer to the first use of a package in the text with the package name in bold and
   citation: `**lattice** package [@R-lattice]`. But I should probably be using a mono typewriter font, e.g., `lattice`,
   or maybe a bold typewriter font? Or maybe also colored. But I don't know how to define CSS or latex styles for these.
   
-  In pure LaTeX, `.Rnw` files I defined a `\pkg{}` macro used consistently through out my DDAR book. Not sure what
-  to do here. I suppose I could define a function to be used inline as ``r pkg("lattice")`` :
+  In pure LaTeX, `.Rnw` files I defined a `\pkg{}` macro used consistently through out my DDAR book. This (a) printed the
+  package name in mono font; (b) cited the package (c) added index entries for `pkgname`, `packages | pkgname`:
 
 ```
-pkg <- function(package, cite) {
-  ref <- paste0("**", package, "**")
-  if (cite) ref <- paste0(ref, " [@R-", package, "]")
-  cat(ref)
+\def\pkg#1{\textsf{#1}\ixp{#1}\citex{#1}\xspace}
+\def\citex#1{\expandafter\ifx\csname cit:#1\endcsname\relax
+      \expandafter\gdef\csname cit:#1\endcsname{}%
+      ~\citep{#1}%
+   \else
+      \nocite{#1}%
+   \fi
 }
 ```
+  
+  - How to do this in Quarto? currently, in `R/common.R`, I have:
+
+```
+pkg <- function(package, cite=FALSE, color=NULL) {
+  pkgname <- if(is.null(color)) package else colorize(package, color)
+  ref <- paste0("**", package, "**")
+  if (cite) ref <- paste0(ref, " [@R-", package, "]")
+  ref
+}
+```
+
+  This needs to do things differfently for PDF output.
 
   Note that there is a system in place defined in `R/common.R` using `write_pkgs(file = .pkg_file)` to automatically
   generate BibTeX entries in `bib/packages.bib` from those included via `library()` in the text.
   
+## Consistency
   - Figure sizes: Should be made more consistent. I've generally sized them to sort of "look right" in the HTML version, but
   it would be better to adopt some general rules
   
