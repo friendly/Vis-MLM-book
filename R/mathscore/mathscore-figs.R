@@ -1,5 +1,3 @@
-# folder <- "C:/Dropbox/Documents/6140/R"
-# folder <- "C:/Users/friendly/Dropbox/Documents/6140/R"
 
 data(mathscore, package="heplots")
 
