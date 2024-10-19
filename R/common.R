@@ -98,8 +98,10 @@ legend_inside <- function(position) {
 # Extra stuff
 # ------------
 
-# colorize text: use inline as `r colorize(text, color)` to print `text` in a given `color`
+#' colorize text: 
+# use inline as `r colorize(text, color)` to print `text` in a given `color`
 # can also be used to color a color name, as in r colorize("red")`
+#
 
 #' Render text in color using LaTeX or CSS styles
 #' 
@@ -113,10 +115,11 @@ legend_inside <- function(position) {
 #' @param text  Text to display, a character string
 #' @param color Color to use, a valid color designation
 #'
-#' @return 
+#' @return A character string
 #' @export
 #'
 #' @examples
+#' See the `r color`
 colorize <- function(text, color) {
   if (missing(color)) color <- text
   if (knitr::is_latex_output()) {
@@ -163,7 +166,7 @@ $\\newcommand*{\\diag}[1]{\\ensuremath{\\mathrm{diag}\\, #1}}$
 
 pkg <- function(package, cite=FALSE, color=NULL) {
   pkgname <- if(is.null(color)) package else colorize(package, color)
-  ref <- paste0("**", package, "**")
+  ref <- paste0("`", package, "`")
   if (cite) ref <- paste0(ref, " [@R-", package, "]")
   ref
 }

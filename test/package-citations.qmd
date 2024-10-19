@@ -1,0 +1,96 @@
+---
+title: "Package citations and references"
+bibliography: ../bib/pkgs.bib
+---
+
+<!-- bibliography: "`r here::here("bib", "pkgs.bib")`" -->
+
+
+## Problem
+
+In the book I refer to the _first_ use of a package in the text with the package name in bold and
+citation: `**lattice** package [@R-lattice]`; thereafter, I just use **lattice**.
+All packages used in the book have their BibTeX references
+in `bib/packages.bib`, and the keys are all of the form `R-pkgname`.
+
+I would prefer to have the package name appear in (a) a distinctive font, and (b) in color, 
+(c) be able to generate the citations, (d) and generate index entries.
+I'd like be able to do this in the text via an inline expression of the form `r pkg(pkgname)`.
+This should work for both HTML and PDF output. How can I do this?
+
+## LaTex / Rnw solution
+In a previous book, written as `.Rnw`, I could do this with LaTeX macros, `\pkg{}`, `ixp{}`.
+(Color would also have been easy)
+
+```
+% R packages:  indexed under both package name and packages!
+\newcommand{\ixp}[1]{%
+   \index{#1@\textsf{#1} package}%
+   \index{package!#1@\textsf{#1}}%
+	}
+
+% data sets: 
+\newcommand{\ixd}[1]{%
+        \index{data sets!#1}}
+
+% R package citations
+\def\pkg#1{\textsf{#1}\ixp{#1}\citex{#1}\xspace}
+\def\citex#1{\expandafter\ifx\csname cit:#1\endcsname\relax
+      \expandafter\gdef\csname cit:#1\endcsname{}%
+      ~\citep{#1}%
+   \else
+      \nocite{#1}%
+   \fi
+}
+```
+
+```{r}
+source(here::here("R", "common.R"))
+```
+
+# Colored text
+
+In [How to use colored text in Quarto figure captions](https://raw.githubusercontent.com/friendly/Vis-MLM-book/refs/heads/master/test/caption-colors.html)
+I discuss using colored text for both HTML and PDF output, using this function:
+
+
+```{r colorize}
+colorize <- function(text, color) {
+  if (missing(color)) color <- text
+  if (knitr::is_latex_output()) {
+    sprintf("\\textcolor{%s}{%s}", color, text)
+  } else if (knitr::is_html_output()) {
+    sprintf("<span style='color: %s;'>%s</span>", color, text)
+  } else text
+}
+
+```
+
+So, in normal text, I can use `colorize()` to
+print text in `r colorize("red")`, `r colorize("blue")`, `r colorize("green")`, ... 
+
+# Packages
+
+Here's what I have so far:
+
+```{r}
+pkg <- function(package, cite=FALSE, color="brown") {
+  pkgname <- if(is.null(color)) package else colorize(package, color)
+  ref <- paste0("`", package, "`")
+  if (cite) ref <- paste0(ref, " [@R-", package, "]")
+  if (knitr::is_latex_output()) {
+    ref <- paste0(ref, "\\index{`",package, "`}\\index{package!`", package, "`}")
+      }
+
+  ref
+}
+```
+
+So, I can now refer to `r pkg("ggplot2", cite=TRUE)` which I like better than `r pkg("lattice", cite=TRUE)`.
+But I don't want a citation for `r pkg("car", cite=TRUE)`.
+
+## References
+
+
+
+
