@@ -35,6 +35,9 @@ plot(a, b, col = col,
      asp = 1)
 par(op)
 
+x <- a
+y <- b
+op <- par(mar = c(5, 5, 1, 1) + .1)
 plot(0,0, type ="n",
      xlab = "x",
      ylab = "y",
@@ -49,13 +52,35 @@ eqn <- c("y = x - 2",
          "y = 1")
 angle <- c(45, -45, 0)
 xl <- c(-0.5, 2,  1)
-yl <- c(-2.2, -1.4, 1.2)
+yl <- c(-2.0, -1.2, 1.)
+pos <- c(4, 4, 3)
 for (i in 1:3) {
 text(x = xl[i], y = yl[i], 
      label = eqn[i], 
      col = col[i], 
      srt = angle[i],
-     pos = 4,
+     pos = pos[i],
      cex = 1.5)
 }
+par(op)
+
+
+# try with workers data 
+data(workers, package = "matlib")   
+head(workers)
+
+vars <- c("Experience", "Income")
+plot(workers[, vars],
+     pch = 16, cex = 1.5,
+     cex.lab = 1.5)
+
+workers.mod <- lm(Income ~ Experience, data = workers)
+X <- model.matrix(workers.mod)
+y <- workers[, "Experience"]
+
+# show each equation as a line
+# labels = rownames(X) doesn't work
+plotEqn(X, y,
+        vars = c(expression(beta[0]), expression(beta[1])),
+        ylim = c(0.8, 1.3))
 
