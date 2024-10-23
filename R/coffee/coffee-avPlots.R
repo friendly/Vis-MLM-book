@@ -4,7 +4,7 @@
 library(car)
 # modified avPlots.R to allow ellipse=
 #source("c:/R/fox/avPlots.R")
-load(here::here("data", "coffee.RData"))
+data(coffee, package="matlib")
 
 scatterplotMatrix(~ Heart + Coffee + Stress, 
                   data=coffee,

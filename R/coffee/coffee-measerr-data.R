@@ -12,7 +12,7 @@ library(RColorBrewer)
 
 # data(coffee, package="spida2")
 # coffee <- coffee[, -5]  # get old Stress2 example variable out of the way
-load(here::here("data", "coffee.RData"))
+data(coffee, package="matlib")
 
 
 # Add a N(0, SD) error, but keep the mean unchanged

@@ -7,7 +7,7 @@
 require(p3d)     # ellipse functions
 require(car)     # dataEllipse, etc.  (needs car 2.0+)
 
-load(here::here("data", "coffee.RData"))
+data(coffee, package="matlib")
 
 ###########
 # fig 14: Scatterplot matrix

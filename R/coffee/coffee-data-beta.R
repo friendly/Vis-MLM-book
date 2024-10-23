@@ -1,4 +1,4 @@
-load(here::here("data", "coffee.RData"))
+data(coffee, package="matlib")
 
 library(car)
 library(dplyr)

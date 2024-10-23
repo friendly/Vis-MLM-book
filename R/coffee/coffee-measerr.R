@@ -5,7 +5,7 @@
 library("spida2")   ## for coffee data 
 
 library(car)		# for dataEllipse, confidenceEllipse
-load(here::here("data", "coffee.RData"))
+data(coffee, package="matlib")
 
 SD <- sd(coffee$Stress)
 n<-nrow(coffee)
