@@ -9,7 +9,7 @@ library(car)
 library(heplots)
 library(candisc)
 
-load(here::here("data", "peng.RData"))
+data(peng, package="heplots")
 source("R/penguin/penguin-colors.R")
 
 # use penguin colors

@@ -9,7 +9,8 @@ library(car)
 library(ggdensity)
 library(patchwork)
 
-load(here::here("data", "peng.RData"))
+#load(here::here("data", "peng.RData"))
+data(peng, package="heplots")
 #str(peng)
 
 source("R/penguin/penguin-colors.R")

@@ -8,19 +8,8 @@ library(tidyr)
 library(rgl)
 library(car)
 
-data(penguins, package = "palmerpenguins")
 
-penguins <- penguins |>
-  drop_na()
-
-#' Select variables
-peng <- penguins |>
-  select(species, starts_with("bill"), body_mass_g) |>
-  rename_with(~ stringr::str_remove(., '_mm$|_g$'))
-str(peng)
-#' 
-
-load(here::here("data", "peng.RData"))
+data(peng, package="heplots")
 # just keep bill dimensions and body_mass
 #species <- peng[,1]
 peng <- peng[, c(1,3,4,6)]

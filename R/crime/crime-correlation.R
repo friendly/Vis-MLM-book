@@ -6,7 +6,7 @@ library(corrplot)
 library(corrgram)
 library(dplyr)
 
-load(here::here("data", "crime.RData"))
+data(crime, package="ggbiplot")
 
 # similar to Fig 3.24
 crime |>

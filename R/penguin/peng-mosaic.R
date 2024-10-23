@@ -2,7 +2,8 @@
 #' title: Penguins data, mosaic plots
 #' ---
 
-load(here::here("data", "peng.RData"))
+#load(here::here("data", "peng.RData"))
+data(peng, package="heplots")
 source("R/penguin-colors.R")
 
 library(vcdExtra)

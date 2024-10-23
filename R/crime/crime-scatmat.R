@@ -2,7 +2,7 @@ library(dplyr)
 library(ggplot2)
 library(car)
 
-load(here::here("data", "crime.RData"))
+data(crime, package="ggbiplot")
 
 
 # scatterplotMatrix(crime[, 2:8],

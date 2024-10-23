@@ -7,7 +7,8 @@ library(ggplot2)
 library(ggpcp)
 library(dplyr)
 
-load(here::here("data", "peng.RData"))
+#load(here::here("data", "peng.RData"))
+data(peng, package="heplots")
 source("R/penguin/penguin-colors.R")
 cols <- peng.colors()
 

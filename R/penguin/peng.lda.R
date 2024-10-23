@@ -1,5 +1,5 @@
 
-load(here::here("data", "peng.RData"))
+data(peng, package="heplots")
 source("R/penguin/penguin-colors.R")
 
 # use penguin colors

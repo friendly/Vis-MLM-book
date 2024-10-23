@@ -7,7 +7,7 @@ library(car)
 library(ggplot2)
 library(heplots)
 
-load(here::here("data", "workers.RData"))
+data(workers, package = "matlib")
 str(workers)
 
 

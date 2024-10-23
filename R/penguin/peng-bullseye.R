@@ -1,6 +1,7 @@
 # Bullseye plots -- https://cran.r-project.org/web/packages/bullseye/vignettes/vis_pairwise.html
 
-load(here::here("data", "peng.RData"))
+#load(here::here("data", "peng.RData"))
+data(peng, package="heplots")
 source("R/penguin/penguin-colors.R")
 
 library(bullseye)

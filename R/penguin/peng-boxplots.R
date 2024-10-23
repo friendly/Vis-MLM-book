@@ -3,7 +3,8 @@ library(tidyr)
 library(ggplot2)
 
 
-load(here::here("data", "peng.RData"))
+#load(here::here("data", "peng.RData"))
+data(peng, package="heplots")
 source("R/penguin/penguin-colors.R")
 
 peng_long <- peng |> 

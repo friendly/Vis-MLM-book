@@ -1,7 +1,7 @@
 library(rgl)
 library(bpca)
 
-load(here::here("data", "peng.RData"))
+data(peng, package="heplots")
 
 
 # just keep bill dimensions and body_mass
