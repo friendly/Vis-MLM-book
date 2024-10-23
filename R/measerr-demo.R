@@ -68,14 +68,14 @@ df <- bind_rows(
   mutate(name = fct_inorder(name)) 
 
 ggplot(df, aes(x,y)) +
-  geom_point(alpha = 0.3) +
+  geom_point(alpha = 0.2) +
   stat_ellipse(geom = "polygon", 
                color = "blue",fill= "blue", 
-               alpha=0.1, linewidth = 1.1) +
+               alpha=0.05, linewidth = 1.1) +
   geom_smooth(method="lm", formula = y~x, fullrange=TRUE, level=0.995,
               color = "red", fill = "red", alpha = 0.2) +
   facet_wrap(~name) +
-  theme_bw(base_size = 14)
+  theme_bw(base_size = 16)
 
 # get coefficients and std. errors for models
 model_stats <- df |>
@@ -87,6 +87,8 @@ model_stats <- df |>
          r = sqrt(summary(model)$r.squared)) |>
   mutate(errX = stringr::str_detect(name, " x"),
          errY = stringr::str_detect(name, " y")) |>
+  mutate(errX = factor(errX, levels = c("TRUE", "FALSE")),
+         errY = factor(errY, levels = c("TRUE", "FALSE"))) |>
   relocate(errX, errY, r, .after = name) |>
   select(-data) |>
   print()
@@ -100,29 +102,38 @@ model_stats <- df |>
 #   relocate(errX, errY, r, .after = name) |>
 #   print()
 
-p1 <- ggplot(data=mod_stats, aes(x = errX, y = r, 
-                           group = errY, color = errY, shape = errY)) +
+legend_inside <- function(position) {
+  theme(legend.position = "inside",
+        legend.position.inside = position)
+}
+
+p1 <- ggplot(data=model_stats, 
+             aes(x = errX, y = r, 
+                 group = errY, color = errY, 
+                 shape = errY, linetype = errY)) +
   geom_point(size = 4) +
   geom_line(linewidth = 1.2) +
   labs(x = "Error on X?",
        y = "Model R ",
        color = "Error on Y?",
-       shape = "Error on Y?") +
-  theme_bw(base_size = 14) +
-  theme(legend.position = "inside",
-        legend.position.inside = c(.8, .8))
+       shape = "Error on Y?",
+       linetype = "Error on Y?") +
+  theme_bw(base_size = 16) +
+  legend_inside(c(0.2, 0.9))
 
-p2 <- ggplot(data=mod_stats, aes(x = errX, y = sigma, 
-                           group = errY, color = errY, shape = errY)) +
+p2 <- ggplot(data=model_stats, 
+             aes(x = errX, y = sigma, 
+                 group = errY, color = errY, 
+                 shape = errY, linetype = errY)) +
   geom_point(size = 4) +
   geom_line(linewidth = 1.2) +
   labs(x = "Error on X?",
-     y = "Model residual standard error",
-     color = "Error on Y?",
-     shape = "Error on Y?") +
-  theme_bw(base_size = 14) +
-  theme(legend.position = "inside",
-        legend.position.inside = c(.8, .8))
+       y = "Model residual standard error",
+       color = "Error on Y?",
+       shape = "Error on Y?",
+       linetype = "Error on Y?") +
+  theme_bw(base_size = 16) +
+  legend_inside(c(0.8, 0.9))
 
 p1 + p2
 

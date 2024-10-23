@@ -26,6 +26,7 @@ library(tidyr)
 library(patchwork)
 library(car)
 library(matlib)
+library(forcats)
 ```
 
 
@@ -359,12 +360,9 @@ with variance $\sigma^2_\nu$.
 Let's simulate an example where the true relation is $y = 0.2 + 0.3 x$ with error standard deviation $\sigma = 0.5$.
 I'll take $x$ to be uniformly distributed in [0, 10] and calculate $y$ as normally distributed around that linear relation.
 
-```{r measerr-demo1}
-library(dplyr)
-library(ggplot2)
-library(forcats)
-library(patchwork)
+<!-- fig.code: R/measerr-demo.R -->
 
+```{r measerr-demo1}
 set.seed(123)
 n <- 300
 
@@ -411,19 +409,21 @@ df <- bind_rows(
 
 Then, we can plot the data in `df` with points, regression lines and a data ellipse, faceting by
 `name` to give the **measurement error quartet**.
+
+<!-- fig.code: R/measerr-demo.R -->
+
 ```{r}
 #| label: fig-measerr-demo
 #| out-width: "100%"
 #| fig-cap: "**The measurement error quartet**: Each plot shows the linear regression of _y_ on _x_, but where additional error variance has been added to _y_ or _x_ or both. The widths of the confidence bands and the vertical extent of the data ellipses show the effect on precision."
 ggplot(df, aes(x, y)) +
-  geom_point(alpha = 0.3) +
+  geom_point(alpha = 0.2) +
   stat_ellipse(geom = "polygon", 
                color = "blue",fill= "blue", 
-               alpha=0.1, linewidth = 1.1) +
+               alpha=0.05, linewidth = 1.1) +
   geom_smooth(method="lm", formula = y~x, fullrange=TRUE, level=0.995,
               color = "red", fill = "red", alpha = 0.2) +
   facet_wrap(~name) +
-  theme_bw(base_size = 14)
 ```
 
 Comparing the plots in the first row, you can see that when additional error is added to $y$, the regression slope remains essentially unchanged, illustrating that the estimate is unbiased. However, the confidence bounds on the regression line become wider, and the data ellipse becomes fatter in the $y$ direction, illustrating the loss of precision.
@@ -433,11 +433,13 @@ $$
 \widehat{\beta}_{x^\star} \longrightarrow \frac{\beta}{1+\sigma^2_\eta /\sigma^2_x} \; ,
 $$
 where $\beta$ here refers to the regression slope and $\longrightarrow$ means "converges to", as the sample size gets large.
-Thus, as $\sigma^2_\eta$ increases, $\widehat{\beta}_{x^\star}$ becomes less than \beta$.
+Thus, as $\sigma^2_\eta$ increases, $\widehat{\beta}_{x^\star}$ becomes less than $\beta$.
 
 Beyond plots like @fig-measerr-demo, we can see the effects of error in $x$ or $y$ on the model summary
 statistics such as the correlation $r_{xy}$ or MSE by extracting these from the fitted models.
 This is easily done using `dplyr::nest_by(name)` and fitting the regression model to each subset, from which we can obtain the model statistics using `sigma()`, `coef()` and so forth.
+A bit of `dplyr::mutate()` magic is used to construct indicators `errX` and `errY`
+giving whether or not error was added to $x$ and/or $y$.
 
 ```{r measerr-stats}
 model_stats <- df |>
@@ -449,6 +451,8 @@ model_stats <- df |>
          r = sqrt(summary(model)$r.squared)) |>
   mutate(errX = stringr::str_detect(name, " x"),
          errY = stringr::str_detect(name, " y")) |>
+  mutate(errX = factor(errX, levels = c("TRUE", "FALSE")),
+         errY = factor(errY, levels = c("TRUE", "FALSE"))) |>
   relocate(errX, errY, r, .after = name) |>
   select(-data) |>
   print()
@@ -457,36 +461,39 @@ model_stats <- df |>
 We plot the model $R = r_{xy}$ and the estimated residual standard error in @fig-measerr-stats below.
 The lines connecting the points are approximately parallel, indicating that errors of measurement
 in $x$ and $y$ have nearly additive effects on model summaries.
+
+<!-- fig.code: R/measerr-demo.R -->
+
 ```{r}
 #| label: fig-measerr-stats
-#| out-width: "80%"
+#| out-width: "100%"
 #| code-fold: false
 #| fig-cap: "Model statistics for the combinations of additional error variance in x or y or both. Left: model R; right: Residual standard error."
 p1 <- ggplot(data=model_stats, 
              aes(x = errX, y = r, 
-                 group = errY, color = errY, shape = errY)) +
+                 group = errY, color = errY, 
+                 shape = errY, linetype = errY)) +
   geom_point(size = 4) +
   geom_line(linewidth = 1.2) +
   labs(x = "Error on X?",
        y = "Model R ",
        color = "Error on Y?",
-       shape = "Error on Y?") +
-  theme_bw(base_size = 14) +
-  theme(legend.position = "inside",
-        legend.position.inside = c(.75, .7))
+       shape = "Error on Y?",
+       linetype = "Error on Y?") +
+  legend_inside(c(0.2, 0.9))
 
 p2 <- ggplot(data=model_stats, 
              aes(x = errX, y = sigma, 
-                 group = errY, color = errY, shape = errY)) +
+                 group = errY, color = errY, 
+                 shape = errY, linetype = errY)) +
   geom_point(size = 4) +
   geom_line(linewidth = 1.2) +
   labs(x = "Error on X?",
-     y = "Model residual standard error",
-     color = "Error on Y?",
-     shape = "Error on Y?") +
-  theme_bw(base_size = 14) +
-  theme(legend.position = "inside",
-        legend.position.inside = c(.75, .7))
+       y = "Model residual standard error",
+       color = "Error on Y?",
+       shape = "Error on Y?",
+       linetype = "Error on Y?") +
+  legend_inside(c(0.8, 0.9))
 
 p1 + p2
 ```
@@ -539,7 +546,6 @@ regression of Heart disease on Coffee alone.
 knitr::include_graphics("images/coffee-measerr.png")
 ```
 
-**Package summary**
 
 ```{r}
 #| echo: false
