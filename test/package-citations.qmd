@@ -1,10 +1,15 @@
 ---
 title: "Package citations and references"
-bibliography: ../bib/pkgs.bib
+bibliography: 
+  - ../bib/pkgs.bib
+  - ../bib/packages.bib
 ---
 
 <!-- bibliography: "`r here::here("bib", "pkgs.bib")`" -->
 
+```{r include=FALSE}
+source("../R/common.R")
+```
 
 ## Problem
 
@@ -13,14 +18,17 @@ citation: `**lattice** package [@R-lattice]`; thereafter, I just use **lattice**
 All packages used in the book have their BibTeX references
 in `bib/packages.bib`, and the keys are all of the form `R-pkgname`.
 
-I would prefer to have the package name appear in (a) a distinctive font, and (b) in color, 
-(c) be able to generate the citations, (d) and generate index entries.
-I'd like be able to do this in the text via an inline expression of the form `r pkg(pkgname)`.
+I would prefer to have the package name appear in (a) a distinctive font, (b) in color if possible, 
+(c) be able to generate the citations as needed, (d) and automatically generate index entries.
+
+I'd like be able to do this in the text via an inline expression of the form "r pkg(package)".
 This should work for both HTML and PDF output. How can I do this?
 
 ## LaTex / Rnw solution
 In a previous book, written as `.Rnw`, I could do this with LaTeX macros, `\pkg{}`, `ixp{}`.
-(Color would also have been easy)
+Package names are printed in the font `\textsf{}`, a sans-serif font; monospaced (typewriter)
+would be `\texttt{}`
+(Color would also have been easy.)
 
 ```
 % R packages:  indexed under both package name and packages!
@@ -44,7 +52,7 @@ In a previous book, written as `.Rnw`, I could do this with LaTeX macros, `\pkg{
 }
 ```
 
-```{r}
+```{r common}
 source(here::here("R", "common.R"))
 ```
 
@@ -71,12 +79,16 @@ print text in `r colorize("red")`, `r colorize("blue")`, `r colorize("green")`, 
 
 # Packages
 
-Here's what I have so far:
+Here's what I have so far. I don't know how to change the font or color of the package name in the text.
 
-```{r}
+Trying to change the color of the `pkgname` doesn't work in HTML or in PDF, probably because 
+the `paste0("`", pkgname, "`")`
+just treats the text inside as is. Is there a way to use a distinctive font without this?
+
+```{r pkg}
 pkg <- function(package, cite=FALSE, color="brown") {
   pkgname <- if(is.null(color)) package else colorize(package, color)
-  ref <- paste0("`", package, "`")
+  ref <- paste0("`", pkgname, "`")
   if (cite) ref <- paste0(ref, " [@R-", package, "]")
   if (knitr::is_latex_output()) {
     ref <- paste0(ref, "\\index{`",package, "`}\\index{package!`", package, "`}")
@@ -86,8 +98,13 @@ pkg <- function(package, cite=FALSE, color="brown") {
 }
 ```
 
+
 So, I can now refer to `r pkg("ggplot2", cite=TRUE)` which I like better than `r pkg("lattice", cite=TRUE)`.
-But I don't want a citation for `r pkg("car", cite=TRUE)`.
+But I don't want a citation for `r pkg("car", cite=FALSE)`, so I used `cite=FALSE`.
+
+
+
+
 
 ## References
 

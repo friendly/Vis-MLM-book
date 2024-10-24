@@ -164,10 +164,14 @@ $\\newcommand*{\\diag}[1]{\\ensuremath{\\mathrm{diag}\\, #1}}$
 # TODO: add styles (color, font); do it differently for PDF output
 #   Want to be able to use bold (**...**), italic (_ ... _) or bold-italic (*** ... ***)
 
-pkg <- function(package, cite=FALSE, color=NULL) {
+pkg <- function(package, cite=FALSE, color="brown") {
   pkgname <- if(is.null(color)) package else colorize(package, color)
   ref <- paste0("`", package, "`")
   if (cite) ref <- paste0(ref, " [@R-", package, "]")
+  if (knitr::is_latex_output()) {
+    ref <- paste0(ref, "\\index{`",package, "`}\\index{package!`", package, "`}")
+  }
+  
   ref
 }
 
