@@ -34,6 +34,7 @@ crime |>
            upper = "pie",
            tl.col = "black",
            tl.srt = 0,
+           tl.cex = 1.3,
            addCoef.col = "black",
            addCoefasPercent = TRUE)
 
