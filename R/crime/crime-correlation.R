@@ -8,37 +8,64 @@ library(dplyr)
 
 data(crime, package="ggbiplot")
 
+crime.cor <- crime |>
+  dplyr::select(where(is.numeric)) |> 
+  cor()
+
 # similar to Fig 3.24
-crime |>
-  select(where(is.numeric)) |>
-  corrgram(lower.panel = panel.ellipse,
-           upper.panel = panel.ellipse,
-           diag.panel = panel.density)
+corrgram(crime.cor, 
+         lower.panel = panel.ellipse,
+         upper.panel = panel.ellipse,
+         diag.panel = panel.density)
 
 # show representation of ellipse and correlation value
-crime |>
-  select(where(is.numeric)) |>
-  cor() |>
-  corrplot(diag = FALSE, 
-           method = "ellipse",
-           tl.col = "black",
-           tl.srt = 0,
-           addCoef.col = "black",
-           addCoefasPercent = TRUE)
 
-crime |>
-  select(where(is.numeric)) |>
-  cor() |>
-  corrplot.mixed(
-           lower = "ellipse",
-           upper = "pie",
-           tl.col = "black",
-           tl.srt = 0,
-           tl.cex = 1.3,
-           addCoef.col = "black",
-           addCoefasPercent = TRUE)
+corrplot(crime.cor,
+  diag = FALSE, 
+  method = "ellipse",
+  tl.col = "black",
+  tl.srt = 0,
+  addCoef.col = "black",
+  addCoefasPercent = TRUE)
+
+# use correlation ordering ("AOE")
+corrplot(crime.cor,
+   diag = FALSE, 
+   order = "AOE",
+   method = "ellipse",
+   tl.col = "black",
+   tl.srt = 0,
+   addCoef.col = "black",
+   addCoefasPercent = TRUE)
 
 
+corrplot.mixed(crime.cor,
+   lower = "ellipse",
+   upper = "pie",
+   tl.col = "black",
+   tl.srt = 0,
+   tl.cex = 1.25,
+   addCoef.col = "black",
+   addCoefasPercent = TRUE)
+
+corrplot.mixed(crime.cor,
+  order = "AOE",          #"FPC",
+  lower = "ellipse",
+  upper = "ellipse",
+  tl.col = "black",
+  tl.srt = 0,
+  tl.cex = 1.25,
+  addCoef.col = "black",
+  addCoefasPercent = TRUE)
+
+ord <- corrMatOrder(crime.cor, order = "AOE")
+rownames(crime.cor)[ord]
+
+library(seriation)
+
+ord <- seriate(crime.cor, method = "PCA_angle")
+# what's the order ?
+permute(crime.cor, ord) |> rownames()
 
 
 

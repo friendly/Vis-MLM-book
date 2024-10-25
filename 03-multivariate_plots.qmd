@@ -1487,7 +1487,7 @@ the nonparametric smooth doesn't differ much from the linear regression
 line. Exceptions to this appear mainly in the columns for `robbery` and
 `auto` (auto theft).
 
-### Corrgrams {#sec-corrgram}
+## Corrgrams {#sec-corrgram}
 
 What if you want to summarize the data even further, for example to show
 only the value of the correlation for each pair of variables? A
@@ -1502,7 +1502,9 @@ ordering the levels of factors and variables in graphic displays to make
 important features most apparent. For variables, this means that we can
 arrange the variables in a matrix-like display in such a way as to make
 the pattern of relationships easiest to see. Methods to achieve this
-include using principal components and cluster analysis to put the most
+include using principal components 
+and cluster analysis
+to put the most
 related variables together as described in @sec-pca-biplot.
 
 ```{r}
@@ -1521,38 +1523,42 @@ panels as illustrated in @fig-corrgram-renderings. For example, a
 corrgram similar to @fig-crime-spm can be produced as follows (not shown
 here):
 
-```{r}
+```{r corrgram}
 #| eval: false
-crime |>
-  select(where(is.numeric)) |>
-  corrgram(lower.panel = panel.ellipse,
-           upper.panel = panel.ellipse,
-           diag.panel = panel.density)
+crime.cor <- crime |>
+  dplyr::select(where(is.numeric)) |> 
+  cor()
+
+corrgram(crime.cor, 
+         lower.panel = panel.ellipse,
+         upper.panel = panel.ellipse,
+         diag.panel = panel.density)
 ```
 
-`corrplot::corrplot()` provides the rendering methods
+With the **corrplot** package, `corrplot()` provides the rendering methods
 `c("circle", "square", "ellipse", "number", "shade", "color", "pie")`,
 but only one can be used at a time. The function
-`corrplot::corrplot.mixed()` allows different options to be selected for
-the lower and upper triangles. The iconic shape is colored with a
+`corrplot.mixed()` allows different options to be selected for
+the lower and upper triangles. The iconic rendering shape is colored with a
 gradient in relation to the correlation value.
+For comparison, @fig-crime-corrplot uses ellipses below the diagonal and
+filled pie charts below the diagonal using a gradient of the fill color
+in both cases.
 
 ```{r}
 #| label: fig-crime-corrplot
 #| fig-width: 8
 #| fig-height: 8
 #| out-width: "100%"
-#| fig-cap: "Corrplot of the `crime` data, showing the correlation between each pair of variables with an ellipse (lower) and a pie chart symbol (upper), all shaded in proportion to the correlation value, also shown numerically."
-crime |>
-  select(where(is.numeric)) |>
-  cor() |>
-  corrplot.mixed(
-           lower = "ellipse",
-           upper = "pie",
-           tl.col = "black",
-           tl.srt = 0,
-           addCoef.col = "black",
-           addCoefasPercent = TRUE)
+#| fig-cap: "Mixed corrplot of the `crime` data, showing the correlation between each pair of variables with an ellipse (lower) and a pie chart symbol (upper), all shaded in proportion to the correlation value, also shown numerically."
+corrplot.mixed(crime.cor,
+   lower = "ellipse",
+   upper = "pie",
+   tl.col = "black",
+   tl.srt = 0,
+   tl.cex = 1.25,
+   addCoef.col = "black",
+   addCoefasPercent = TRUE)
 ```
 
 The combination of renderings shown in @fig-crime-corrplot is
@@ -1561,6 +1567,50 @@ see with the pie symbols than with the ellipses; for example, compare
 the values for murder with larceny and auto theft in row 1, columns 6-7
 with those in column 1, rows 6-7, where the former are easier to
 distinguish. The shading color adds another visual cue.
+
+The variables in @fig-crime-spm and @fig-crime-corrplot are arranged
+by their order in the dataset, which is not often the most useful.
+A better idea is to arrange the variables so that the most highly
+correlated variables are adjacent. 
+
+A general method described in @sec-var-order orders the variables according to the
+angles of the eigenvectors from a principal components analysis
+around a unit circle. `corrMatOrder()` provides several methods
+(`order = c("AOE", "FPC", "hclust", "alphabet")`),
+of which this is
+`order = "AOE"`. Using this in `corrplot()` produces @fig-crime-corrplot-AOE.
+
+```{r corMatOrder}
+ord <- corrMatOrder(crime.cor, order = "AOE")
+rownames(crime.cor)[ord]
+```
+
+
+<!-- other orders: FPC (PC1), hclust (with various clustering methods), alphabet, original -->
+<!-- calculated with corrMatOrder() -->
+
+
+```{r}
+#| label: fig-crime-corrplot-AOE
+#| fig-width: 8
+#| fig-height: 8
+#| out-width: "100%"
+#| fig-cap: "Corrplot of the `crime` data with the variables reordered according to the angles of variable eigenvectors."
+corrplot.mixed(crime.cor,
+  order = "AOE", 
+  lower = "ellipse",
+  upper = "ellipse",
+  tl.col = "black",
+  tl.srt = 0,
+  tl.cex = 1.25,
+  addCoef.col = "black",
+  addCoefasPercent = TRUE)
+```
+
+In this case, where the correlations among the crime variables are all positive, the effect of
+variable re-ordering is subtle, but ...
+@fig-mtcars-corrplot-varorder and @fig-mtcars-corrplot-pcaorder provide a more dramatic example.
+
 
 Variations of corrgrams are worthy replacements for a numeric table of
 correlations, which are often presented in publications only for
