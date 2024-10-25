@@ -20,6 +20,9 @@ corrgram(crime.cor,
 
 # show representation of ellipse and correlation value
 
+crime.cor <- crime |>
+  dplyr::select(where(is.numeric)) |> 
+  cor()
 corrplot(crime.cor,
   diag = FALSE, 
   method = "ellipse",
