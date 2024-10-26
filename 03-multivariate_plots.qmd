@@ -1489,9 +1489,13 @@ line. Exceptions to this appear mainly in the columns for `robbery` and
 
 ## Corrgrams {#sec-corrgram}
 
-What if you want to summarize the data even further, for example to show
-only the value of the correlation for each pair of variables? A
-**corrgram** [@Friendly:02:corrgram] is a visual display of a
+What if you want to summarize the data even further simple visual thinning. 
+For example with many variables you might want to show
+only the value of the correlation for each pair of variables,
+but do so in a way to help see patterns in the correlations
+that would be invisible in just a table.
+
+A **corrgram** [@Friendly:02:corrgram] is a visual display of a
 correlation matrix, where the correlation can be rendered in a variety
 of ways to show the direction and magnitude: circular "pac-man" (or pie)
 symbols, ellipses, colored vars or shaded rectangles, as shown in
@@ -1575,11 +1579,12 @@ A better idea is to arrange the variables so that the most highly
 correlated variables are adjacent. 
 
 A general method described in @sec-var-order orders the variables according to the
-angles of the eigenvectors from a principal components analysis
-around a unit circle. `corrMatOrder()` provides several methods
-(`order = c("AOE", "FPC", "hclust", "alphabet")`),
-of which this is
-`order = "AOE"`. Using this in `corrplot()` produces @fig-crime-corrplot-AOE.
+angles of the first two eigenvectors from a principal components analysis (PCA)
+around a unit circle. 
+The function `corrMatOrder()` provides several methods
+(`order = c("AOE", "FPC", "hclust", "alphabet")`) for doing this, and PCA ordering is
+`order = "AOE"`. Murder and auto theft are still first and last, but some of the
+intermediate crimes have been rearranged.
 
 ```{r corMatOrder}
 ord <- corrMatOrder(crime.cor, order = "AOE")
@@ -1590,13 +1595,13 @@ rownames(crime.cor)[ord]
 <!-- other orders: FPC (PC1), hclust (with various clustering methods), alphabet, original -->
 <!-- calculated with corrMatOrder() -->
 
-
+Using this ordering in `corrplot()` produces @fig-crime-corrplot-AOE.
 ```{r}
 #| label: fig-crime-corrplot-AOE
 #| fig-width: 8
 #| fig-height: 8
 #| out-width: "100%"
-#| fig-cap: "Corrplot of the `crime` data with the variables reordered according to the angles of variable eigenvectors."
+#| fig-cap: "Corrplot of the `crime` data with the variables reordered according to the angles of variable eigenvectors. Correlations are rendered with ellipses shaded in proportion to their magnitude."
 corrplot.mixed(crime.cor,
   order = "AOE", 
   lower = "ellipse",
@@ -1609,8 +1614,9 @@ corrplot.mixed(crime.cor,
 ```
 
 In this case, where the correlations among the crime variables are all positive, the effect of
-variable re-ordering is subtle, but ...
-@fig-mtcars-corrplot-varorder and @fig-mtcars-corrplot-pcaorder provide a more dramatic example.
+variable re-ordering is subtle, but note that there is now a slightly pronounced pattern of highest
+correlations near the diagonal, and decreasing away from the diagonal
+@fig-mtcars-corrplot-varorder and @fig-mtcars-corrplot-pcaorder in @sec-var-order provide a more dramatic example of variable ordering using this method.
 
 
 Variations of corrgrams are worthy replacements for a numeric table of
@@ -1619,38 +1625,25 @@ archival value. Including the numeric value (rounded here, for
 presentation purposes), makes this an attractive alternative to boring
 tables of correlations.
 
-**TODO**: Add example showing correlation ordering -- e.g., `mtcars`
-data.<!--# How's something like the code I added below? -->
-
-```{r}
-#| echo: false
-#| include: false
-#| label: fig-mtcars-corrplot-ordering
-#| fig-width: 8
-#| fig-height: 8
-#| out-width: "100%"
-#| fig-cap: "Corrplot of the `mtcars` data, showing the ordered correlation between each pair of variables with a circle (upper) and a numerical correlation value (lower), all shaded in proportion to the correlation magnitude and direction."
-#| 
-library(corrplot)
-corrplot.mixed(cor(mtcars[,1:5]),
-               lower = "number", 
-               order = 'FPC',
-               upper = 'circle',
-               tl.col = "black")
-```
 
 ## Generalized pairs plots {#sec-ggpairs}
 
 When a dataset contains one or more discrete variables, the traditional
-pairs plot cannot cope, using only color and/or point symbols to
-represent categorical variables. In the context of mosaic displays and
-loglinear models, representing $n$-way frequency tables by rectangular
-tiles depicting cell frequencies, I [@Friendly:94a] proposed an analog
-of the scatterplot matrix using mosaic plots for each pair of variables.
-The **vcd** package [@R-vcd] implements very general `pairs()` methods
-for `"table"` objects. See my book *Discrete Data Analysis with R*
-[@FriendlyMeyer:2016:DDAR] and the **vcdExtra** [@R-vcdExtra] package
-for mosaic plots and mosaic matrices.
+pairs plot cannot cope, because the discrete categories would plot
+as many overlaid points. This cannot be represented
+using only color and/or point symbols in a meaningful scatterplot.
+
+But the associations between
+categorical variables in a frequency table
+_can_ be shown in _mosaic displays_ [@Friendly:94a], using
+an array of tiles whose areas are depict the cell frequencies.
+For an $n$-way frequency, an analog of the scatterplot matrix
+uses mosaic plots for each pair of variables.
+The **vcd** [@R-vcd] implements very general `pairs()` methods
+for `"table"` objects and **vcdExtra** [@R-vcdExtra] extends this
+to wide classes of loglinear models [@Friendly:99:EMD]
+See @Friendly:99:EMD and my book *Discrete Data Analysis with R*
+[@FriendlyMeyer:2016:DDAR] for mosaic plots and mosaic matrices.
 
 For example, we can tabulate the distributions of penguin species by sex
 and the island where they were observed using `xtabs()`. `ftable()`
