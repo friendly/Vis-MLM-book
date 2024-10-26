@@ -21,20 +21,39 @@ pvPlot <- function(X, vars = 1:2,
   res <- X[, vars]
   res[, 1] <- lsfit(X[, others], X[, v1])$residuals
   res[, 2] <- lsfit(X[, others], X[, v2])$residuals
-  plot(res, 
-       col = col, pch = pch, cex = cex, ...)
+  # plot(res, 
+  #      col = col, pch = pch, cex = cex, ...)
+
+  xlab <- paste(vars[1], "residual")
+  ylab <- paste(vars[2], "residual")
+  labels <- rownames(X)
+  car::scatterplot(res[, 1], res[, 2],
+          xlab = xlab, ylab = ylab,
+          pch = pch, col = col, cex = cex,
+          smooth = FALSE, boxplots = FALSE,
+          grid = FALSE,
+          id = list(n=5, labels = labels)
+        )
   if (axes)
     abline(h = 0, v = 0, col = "gray")
+  
   invisible(res)
 }
 
 if(FALSE) {
+
+# Scatterplots for the two largest partial correlations in the crime data
   data(crime, package = "ggbiplot")
-  res <- crime |>
+  crime <- crime |>
     tibble::column_to_rownames("st") |>
-    dplyr::select(where(is.numeric)) |>
-    pvPlot(vars = c("burglary", "larceny"))
+    dplyr::select(where(is.numeric))
+
+
+  pvPlot(crime, vars = c("burglary", "larceny"))
+  pvPlot(crime, vars = c("robbery", "auto"))
   
+
+  res <- pvPlot(crime, vars = c("burglary", "larceny"))
   head(res)
   car::scatterplot(larceny ~ burglary, data = res, 
                    xlab = "burglary residual",
@@ -48,5 +67,7 @@ if(FALSE) {
        label = paste("partial r =", 
                      round(cor(res[,1], res[,2]), 3)),
        pos = 4)
+  
+  
   
 }
