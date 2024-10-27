@@ -6,18 +6,31 @@
 # see also: pairs version
 # https://stackoverflow.com/questions/35591033/plot-scatterplot-matrix-with-partial-correlation-coefficients-in-r
 
-pvPlot <- function(X, vars = 1:2,
-                   col = "black", 
-                   pch = 16, 
-                   cex = par("cex"),
-                   axes = TRUE,
-                   ...) {
+pvPlot <- function(
+   X, vars = 1:2,
+   labels,
+   id = FALSE, 
+   ellipse=FALSE, 
+   col = "black", 
+   pch = 16, 
+   cex = par("cex"),
+   axes = TRUE,
+   show.partial = TRUE,
+   ...) {
+
   nv <- ncol(X)
   nr <- nrow(X)
+  
+  # variables, as names, even if vars is numeric
+  all <- names(X)
+  vars <- if(is.numeric(vars)) names(X)[vars] else vars
+  others <- setdiff(all, vars)
+
+  # variables for this plot  
   v1 <- vars[1]
   v2 <- vars[2]
-  all <- if(is.numeric(vars)) seq_along(nv) else names(X)
-  others <- setdiff(all, vars)
+
+  # get the partial residuals fitting each var from all the others
   res <- X[, vars]
   res[, 1] <- lsfit(X[, others], X[, v1])$residuals
   res[, 2] <- lsfit(X[, others], X[, v2])$residuals
@@ -26,16 +39,25 @@ pvPlot <- function(X, vars = 1:2,
 
   xlab <- paste(vars[1], "residual")
   ylab <- paste(vars[2], "residual")
-  labels <- rownames(X)
+  labels <- if (missing(labels)) rownames(X) else labels
   car::scatterplot(res[, 1], res[, 2],
-          xlab = xlab, ylab = ylab,
-          pch = pch, col = col, cex = cex,
-          smooth = FALSE, boxplots = FALSE,
-          grid = FALSE,
-          id = list(n=5, labels = labels)
-        )
+    xlab = xlab, ylab = ylab,
+    pch = pch, col = col, cex = cex,
+    ellipse = ellipse,
+    smooth = FALSE, boxplots = FALSE,
+    grid = FALSE,
+    id = list(n=5, labels = labels),
+    ...)
+
   if (axes)
     abline(h = 0, v = 0, col = "gray")
+  if (show.partial) {
+    pcor <- round(cor(res[,1], res[,2]), 3)
+    usr <- par("usr")        # save old user/default/system coordinates
+    par(usr = c(0, 1, 0, 1)) # new relative user coordinates
+    text(0.025, 0.95, label = paste("partial r =", pcor),  pos = 4)
+    par(usr = usr)           # restore original user coordinates
+  }
   
   invisible(res)
 }
@@ -44,29 +66,39 @@ if(FALSE) {
 
 # Scatterplots for the two largest partial correlations in the crime data
   data(crime, package = "ggbiplot")
-  crime <- crime |>
+  crime.num <- crime |>
     tibble::column_to_rownames("st") |>
     dplyr::select(where(is.numeric))
 
+op <- par(mar = c(5, 5, 1, 1)+.5)
 
-  pvPlot(crime, vars = c("burglary", "larceny"))
-  pvPlot(crime, vars = c("robbery", "auto"))
+png(filename = "images/crime-pvPlot1.png", height = 500, width = 500)
+  pvPlot(crime.num, vars = c("burglary", "larceny"), 
+         ellipse = list(levels = 0.68, fill.alpha = 0.1, robust = FALSE),
+         cex.lab = 1.5)
+dev.off()
   
-
-  res <- pvPlot(crime, vars = c("burglary", "larceny"))
-  head(res)
-  car::scatterplot(larceny ~ burglary, data = res, 
-                   xlab = "burglary residual",
-                   ylab = "larceny residual",
-                   pch = 16, col = "black",
-                   smooth = FALSE, boxplots = FALSE,
-                   grid = FALSE,
-                   id = list(n=5))
-  abline(h = 0, v = 0, col = "gray")
-  text(-600, 1300, 
-       label = paste("partial r =", 
-                     round(cor(res[,1], res[,2]), 3)),
-       pos = 4)
+png(filename = "images/crime-pvPlot2.png", height = 500, width = 500)
+pvPlot(crime.num, vars = c("robbery", "auto"), 
+         ellipse = list(levels = 0.68, fill.alpha = 0.1, robust = FALSE),
+         cex.lab = 1.5)
+dev.off()
+par(op)
+  
+  # res <- pvPlot(crime, vars = c("burglary", "larceny"))
+  # head(res)
+  # car::scatterplot(larceny ~ burglary, data = res, 
+  #                  xlab = "burglary residual",
+  #                  ylab = "larceny residual",
+  #                  pch = 16, col = "black",
+  #                  smooth = FALSE, boxplots = FALSE,
+  #                  grid = FALSE,
+  #                  id = list(n=5))
+  # abline(h = 0, v = 0, col = "gray")
+  # text(-600, 1300, 
+  #      label = paste("partial r =", 
+  #                    round(cor(res[,1], res[,2]), 3)),
+  #      pos = 4)
   
   
   

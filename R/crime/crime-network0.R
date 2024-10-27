@@ -20,17 +20,21 @@ rownames(crime.cor)[ord]
 crime.cor <- crime.cor[ord, ord]
 
 # ### "association graph": network of correlations
-qgraph(crime.cor, 
-       title = "Crime data\ncorrelations", title.cex = 1.25,
+q1 <- qgraph(crime.cor, 
+       title = "Crime data:\ncorrelations", title.cex = 1.5,
        graph = "cor",
        minimum = "sig", sampleSize = nrow(crime), alpha = 0.01,
        color = grey(.9), vsize = 12,
        labels = rownames(crime.cor),
        posCol = "blue")
 
+png(filename = "images/crime-cor.png", height = 540, width = 540)
+plot(q1)
+dev.off()
+
 # compare with spring
-qgraph(crime.cor, 
-       title = "Crime data\ncorrelations\n(spring layout)", title.cex = 1.25,
+q2 <- qgraph(crime.cor, 
+       title = "Crime data:\ncorrelations\n(spring layout)", title.cex = 1.5,
        graph = "cor",
        minimum = "sig", sampleSize = nrow(crime), alpha = 0.01,
        color = grey(.9), vsize = 12,
@@ -38,18 +42,51 @@ qgraph(crime.cor,
        layout = "spring", repulsion = 1.2,
        posCol = "blue")
 
+png(filename = "images/crime-cor-spring.png", height = 540, width = 540)
+plot(q2)
+dev.off()
+
 
 # ### "concentration graph": network of partial correlations
 # Correlations between variables that cannot be explained by other variables in the network
 
-qgraph(crime.cor, 
-       title = "Crime data\npartial correlations", title.cex = 1.25,
+q3 <- qgraph(crime.cor, 
+       title = "Crime data:\npartial correlations", title.cex = 1.5,
        graph = "pcor",
        minimum = "sig", sampleSize = nrow(crime), alpha = 0.05,
        color = grey(.9), vsize = 14,
        labels = rownames(crime.cor),
        edge.labels = TRUE, edge.label.cex = 1.7,
        posCol = "blue")
+
+png(filename = "images/crime-partial.png", height = 540, width = 540)
+plot(q3)
+dev.off()
+
+q4 <- qgraph(crime.cor, 
+       title = "Crime data:\npartial correlations", title.cex = 1.5,
+       graph = "pcor",
+       minimum = "sig", sampleSize = nrow(crime), alpha = 0.05,
+       color = grey(.9), vsize = 14,
+       labels = rownames(crime.cor),
+       edge.labels = TRUE, edge.label.cex = 1.7,
+       layout = "spring", repulsion = 1.2,
+       posCol = "blue")
+
+png(filename = "images/crime-partial-spring.png", height = 540, width = 540)
+plot(q4)
+dev.off()
+
+png(filename = "images/crime-cor-partial-spring.png", height = 500, width = 1000)
+op <- par(mfrow = c(1, 2))
+plot(q2)
+plot(q4)
+dev.off()
+
+# using igraph
+library(igraph)
+qgraph:::as.igraph.qgraph(q1) |>
+  plot()
 
 
 #' ### variable ordering: reorder variables by PC1 & PC2 angles
