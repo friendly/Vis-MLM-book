@@ -39,7 +39,7 @@ avPlot(model, "x1", ellipse = TRUE)
 # Create a custom added variable plot using ggplot2 for better visualization
 av_data <- data.frame(
   x = resid(lm(x1 ~ x2, data = data)),
-  y = resid(lm(y ~ x2, data = data))
+  y = resid(lm(y ~ x2, data = data)),
   hat <- hatvalues(model)
 )
 
