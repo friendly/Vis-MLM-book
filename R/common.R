@@ -98,6 +98,14 @@ legend_inside <- function(position) {
 # Extra stuff
 # ------------
 
+# Inline expressions of the form `r Rexpr(expr)` to give "expr = value", e.g., 
+# `r Rexpr(cor(x, y))` giving "cor(x, y) = 0.53" (but rounded)
+
+Rexpr = function(expr, digits = 3) {
+  value <- eval(parse(text=expr)) |> round(digits)
+  paste(expr, " = ", value)
+}
+
 #' colorize text: 
 # use inline as `r colorize(text, color)` to print `text` in a given `color`
 # can also be used to color a color name, as in r colorize("red")`
@@ -164,12 +172,28 @@ $\\newcommand*{\\diag}[1]{\\ensuremath{\\mathrm{diag}\\, #1}}$
 # TODO: add styles (color, font); do it differently for PDF output
 #   Want to be able to use bold (**...**), italic (_ ... _) or bold-italic (*** ... ***)
 
-pkg <- function(package, cite=FALSE, color="brown") {
-  pkgname <- if(is.null(color)) package else colorize(package, color)
-  ref <- paste0("`", package, "`")
+# See: Demonstration of how to use other fonts in an Rmarkdown document 
+#      https://gist.github.com/richarddmorey/27e74bcbf28190d150d266ae141f5117
+
+# attributes for displaying the package name
+pkgname_font = "bold" # or: plain, ital, boldital
+pkgname_face = "mono"
+pkgname_color ="brown"
+
+pkg <- function(package, cite=FALSE) {
+  pkgname <- dplyr::case_when(
+    pkgname_font == "ital"      ~ paste0("_", package, "_"),
+    pkgname_font == "bold"      ~ paste0("**", package, "**"),
+    pkgname_font == "boldital"  ~ paste0("***", package, "***"),
+    .default = package
+  )
+#  pkgname <- if(is.null(color)) package else colorize(package, color)
+  ref <- pkgname
+  if (!is.null(pkgname_color)) ref <- colorize(pkgname, pkgname_color)
   if (cite) ref <- paste0(ref, " [@R-", package, "]")
   if (knitr::is_latex_output()) {
-    ref <- paste0(ref, "\\index{`",package, "`}\\index{package!`", package, "`}")
+    ref <- paste0(ref, "\\index{`", package, "`}",
+                       "\\index{package!`", package, "`}")
   }
   
   ref
