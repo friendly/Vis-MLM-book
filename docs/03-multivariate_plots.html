@@ -1557,13 +1557,18 @@ Figure&nbsp;3.30: Mosaic pairs plot for the combinations of species, sex and isl
 </ul>
 <p>In the <strong>ggplot2</strong> framework, these displays are implemented using the <code><a href="https://ggobi.github.io/ggally/reference/ggpairs.html">ggpairs()</a></code> function from the <strong>GGally</strong> package <span class="citation" data-cites="R-GGally">(<a href="95-references.html#ref-R-GGally" role="doc-biblioref">Schloerke et al., 2024</a>)</span>. This allows different plot types to be shown in the lower and upper triangles and in the diagonal cells of the plot matrix. As well, aesthetics such as color and shape can be used within the plots to distinguish groups directly. As illustrated below, you can define custom functions to control exactly what is plotted in any panel.</p>
 <p>The basic, default plot shows scatterplots for pairs of continuous variables in the lower triangle and the values of correlations in the upper triangle. A combination of a discrete and continuous variables is plotted as histograms in the lower triangle and boxplots in the upper triangle. <a href="#fig-peng-ggpairs1" class="quarto-xref">Figure&nbsp;<span>3.31</span></a> includes <code>sex</code> to illustrate the combinations.</p>
+<!-- fig.code: R/peng/peng-ggally.R -->
 <div class="cell" data-layout-align="center">
 <details open="" class="code-fold"><summary>Code</summary><div class="sourceCode" id="cb42" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://ggobi.github.io/ggally/reference/ggpairs.html">ggpairs</a></span><span class="op">(</span><span class="va">peng</span>, columns<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">3</span><span class="op">:</span><span class="fl">6</span>, <span class="fl">7</span><span class="op">)</span>,</span>
 <span>        <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>color<span class="op">=</span><span class="va">species</span>, alpha<span class="op">=</span><span class="fl">0.5</span><span class="op">)</span>,</span>
 <span>        progress <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_penguins</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>axis.text.x <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_text</a></span><span class="op">(</span>angle <span class="op">=</span> <span class="op">-</span><span class="fl">45</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details><div class="cell-output-display">
+</details>
+</div>
+<!-- this figure now frozen because it takes too long and caching creates git problems -->
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
 <div id="fig-peng-ggpairs1" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-peng-ggpairs1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <img src="figs/ch03/fig-peng-ggpairs1-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
@@ -1574,7 +1579,6 @@ Figure&nbsp;3.31: Basic <code><a href="https://ggobi.github.io/ggally/reference/
 </div>
 </div>
 </div>
-<!--# I changed the x-axis labels' sizes because they overlapped when rendered -->
 <p>To my eye, printing the values of correlations in the upper triangle is often a waste of graphic space. But this example shows something peculiar and interesting if you look closely: In all pairs among the penguin size measurements, there are positive correlations within each species, as we can see in <a href="#fig-peng-spm" class="quarto-xref">Figure&nbsp;<span>3.25</span></a>. Yet, in three of these panels, the overall correlation ignoring species is negative. For example, the overall correlation between bill depth and flipper length is <span class="math inline">\(r = -0.579\)</span> in row 2, column 3; the scatterplot in the diagonally opposite cell, row 3, column 2 shows the data. These cases, of differing signs for an overall correlation, ignoring a group variable and the within group correlations are examples of <strong>Simpson’s Paradox</strong>, explored later in Chapter XX. <!--# TODO: add chapter number when known --></p>
 <p>The last row and column, for <code>sex</code> in <a href="#fig-peng-ggpairs1" class="quarto-xref">Figure&nbsp;<span>3.31</span></a>, provides an initial glance at the issue of sex differences among penguin species that motivated the collection of these data. We can go further by also examining differences among species and island, but first we need to understand how to display exactly what we want for each pairwise plot.</p>
 <p><code><a href="https://ggobi.github.io/ggally/reference/ggpairs.html">ggpairs()</a></code> is extremely general in that for each of the <code>lower</code>, <code>upper</code> and <code>diag</code> sections you can assign any of a large number of built-in functions (of the form <code>ggally_NAME</code>), or your own custom function for what is plotted, depending on the types of variables in each plot.</p>
@@ -1625,6 +1629,7 @@ Figure&nbsp;3.31: Basic <code><a href="https://ggobi.github.io/ggally/reference/
 <span><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Then, to show what can be done, <a href="#fig-peng-ggpairs7" class="quarto-xref">Figure&nbsp;<span>3.32</span></a> uses <code>my_panel1()</code> for the scatterplots in the 4 x 4 block of plots in the upper left. The combination of the continuous body size measures and the discrete factors <code>species</code>, <code>island</code> and <code>sex</code> are shown in upper triangle by boxplots but by faceted histograms in the lower portion. The factors are shown as rectangles with area proportional to count (poor-man’s mosaic plots) above the diagonal and as faceted bar plots below.</p>
+<!-- fig.code: R/peng/peng-ggally.R -->
 <div class="cell" data-layout-align="center">
 <details open="" class="code-fold"><summary>Code</summary><div class="sourceCode" id="cb47" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://ggobi.github.io/ggally/reference/ggpairs.html">ggpairs</a></span><span class="op">(</span><span class="va">peng</span>, columns<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">3</span><span class="op">:</span><span class="fl">6</span>, <span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">7</span><span class="op">)</span>,</span>
 <span>        mapping <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>color<span class="op">=</span><span class="va">species</span>, fill <span class="op">=</span> <span class="va">species</span>, alpha<span class="op">=</span><span class="fl">0.2</span><span class="op">)</span>,</span>
@@ -1635,7 +1640,11 @@ Figure&nbsp;3.31: Basic <code><a href="https://ggobi.github.io/ggally/reference/
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>panel.grid.major <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_blank</a></span><span class="op">(</span><span class="op">)</span>, </span>
 <span>        panel.grid.minor <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_blank</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>axis.text.x <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_text</a></span><span class="op">(</span>angle <span class="op">=</span> <span class="op">-</span><span class="fl">45</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details><div class="cell-output-display">
+</details>
+</div>
+<!-- this figure now frozen because it takes too long and caching creates git problems -->
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
 <div id="fig-peng-ggpairs7" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-peng-ggpairs7-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <img src="figs/ch03/fig-peng-ggpairs7-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
@@ -1646,7 +1655,6 @@ Figure&nbsp;3.32: Customized <code><a href="https://ggobi.github.io/ggally/refer
 </div>
 </div>
 </div>
-<!--# I changed the x-axis labels' sizes and angle because they overlapped when rendered -->
 <p>There is certainly a lot going on in <a href="#fig-peng-ggpairs7" class="quarto-xref">Figure&nbsp;<span>3.32</span></a>, but it does show a high-level overview of all the variables (except <code>year</code>) in the penguins dataset.</p>
 </section><section id="sec-parcoord" class="level2" data-number="3.6"><h2 data-number="3.6" class="anchored" data-anchor-id="sec-parcoord">
 <span class="header-section-number">3.6</span> Parallel coordinate plots</h2>
@@ -1684,9 +1692,6 @@ History Corner
 <code><a href="https://rdrr.io/pkg/ggpcp/man/pcp_arrange.html">pcp_arrange()</a></code>: methods for breaking ties in factor variables to space them out.</li>
 </ul>
 <p>Then, it provides <code>geom_pcp_*()</code> functions to control the display of axes with appropriate aesthetics, labels for categorical factors and so forth. <a href="#fig-peng-ggpcp1" class="quarto-xref">Figure&nbsp;<span>3.33</span></a> illustrates this type of display, using sex and species in addition to the quantitative variables for the penguin data.</p>
-<!-- WARN: 03-multivariate_plots.html: Unable to resolve crossref @fig-peng-ggpcp1 
-     Does this have something to do with cache?
--->
 <div class="cell" data-layout-align="center">
 <details open="" class="code-fold"><summary>Code</summary><div class="sourceCode" id="cb48" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">peng</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/ggpcp/man/pcp_select.html">pcp_select</a></span><span class="op">(</span><span class="va">bill_length</span><span class="op">:</span><span class="va">body_mass</span>, <span class="va">sex</span>, <span class="va">species</span><span class="op">)</span> <span class="op">|&gt;</span></span>
