@@ -187,17 +187,32 @@ pkg <- function(package, cite=FALSE) {
     pkgname_font == "boldital"  ~ paste0("***", package, "***"),
     .default = package
   )
-#  pkgname <- if(is.null(color)) package else colorize(package, color)
   ref <- pkgname
   if (!is.null(pkgname_color)) ref <- colorize(pkgname, pkgname_color)
   if (cite) ref <- paste0(ref, " [@R-", package, "]")
   if (knitr::is_latex_output()) {
-    ref <- paste0(ref, "\\index{`", package, "`}",
-                       "\\index{package!`", package, "`}")
+    ref <- paste0(ref, "\\index{`", package, "`}")
   }
-  
   ref
 }
+
+# Same, but say `pkgname` package cite
+package <- function(package, cite=FALSE) {
+  pkgname <- dplyr::case_when(
+    pkgname_font == "ital"      ~ paste0("_", package, "_"),
+    pkgname_font == "bold"      ~ paste0("**", package, "**"),
+    pkgname_font == "boldital"  ~ paste0("***", package, "***"),
+    .default = package
+  )
+  ref <- pkgname
+  if (!is.null(pkgname_color)) ref <- colorize(pkgname, pkgname_color)
+  if (cite) ref <- paste0(ref, "package [@R-", package, "]")
+  if (knitr::is_latex_output()) {
+    ref <- paste0(ref, "\\index{`", package, "`}")
+  }
+  ref
+}
+
 
 
 # packages to be cited here. Code at the end automatically updates `packages.bib`
