@@ -16,7 +16,6 @@ crime.cor <- crime |>
 # PCA ordering
 ord <- corrMatOrder(crime.cor, order = "AOE")
 rownames(crime.cor)[ord]
-
 crime.cor <- crime.cor[ord, ord]
 
 # ### "association graph": network of correlations
@@ -26,6 +25,8 @@ q1 <- qgraph(crime.cor,
        minimum = "sig", sampleSize = nrow(crime), alpha = 0.01,
        color = grey(.9), vsize = 12,
        labels = rownames(crime.cor),
+       # curveAll = TRUE, # logical indicating if all edges should be curved
+       # curveDefault = 0.5, # default is 1
        posCol = "blue")
 
 png(filename = "images/crime-cor.png", height = 540, width = 540)
@@ -34,12 +35,14 @@ dev.off()
 
 # compare with spring
 q2 <- qgraph(crime.cor, 
-       title = "Crime data:\ncorrelations\n(spring layout)", title.cex = 1.5,
+       title = "Crime data:\ncorrelations", title.cex = 1.5,
        graph = "cor",
        minimum = "sig", sampleSize = nrow(crime), alpha = 0.01,
        color = grey(.9), vsize = 12,
        labels = rownames(crime.cor),
        layout = "spring", repulsion = 1.2,
+       # curveAll = TRUE, # logical indicating if all edges should be curved
+       # curveDefault = 0.5, # default is 1
        posCol = "blue")
 
 png(filename = "images/crime-cor-spring.png", height = 540, width = 540)
