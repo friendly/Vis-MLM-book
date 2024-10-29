@@ -29,7 +29,9 @@ The dataset, `psych::bfi`, contains data from an online sample of $n=2800$ with 
 
 In this figure (taken from [Rodrigues (2021)](https://bit.ly/3A6kvq5)),
 the item nodes are labeled according to the OCEAN factor they are assumed to measure.
-For 25 items, there are $25 \times 24 / 2 = 300$ correlations, but here
+For 25 items, there are $25 \times 24 / 2 = 300$ correlations, way too much to see.
+A clearer picture arises when we reduce the number of edges shown according to some
+criterion. Here,
 edges are drawn _only_ between nodes where the correlation is considered significant
 by a method ("glasso") designed to make the graph optimally sparse.
 
@@ -40,6 +42,7 @@ by a method ("glasso") designed to make the graph optimally sparse.
 
 ```{r}
 #| label: fig-big5-qgraph-rodrigues
+#| echo: false
 #| out-width: "100%"
 #| fig-cap: "Network diagram of the correlations among 25 items from a Big-Five personality scale, 5 items for each scale. The magnitude of a correlation is shown by the thickness and transparency of the edge between two item nodes. The sign of a correlation is shown by edge color and style: solid blue for positive and dashed red for negative. _Source_: [Rodrigues (2021)](https://bit.ly/3A6kvq5)"
 knitr::include_graphics("images/big5-qgraph-rodrigues.png")
@@ -48,11 +51,12 @@ knitr::include_graphics("images/big5-qgraph-rodrigues.png")
 The edges shown in @fig-big5-qgraph-rodrigues reflect the Pearson correlation between a given pair of items by the visual attributes of color and line style: magnitude is shown by both the thickness and transparency of the edge; the sign of the correlation is shown by color and line type:
 solid `r blue` for positive correlations and dashed `r red` for negative ones.
 
-According to some theories the five personality factors should be largely non-overlapping,
+According to some theories, the five personality factors should be largely non-overlapping,
 so there should not be many edges connecting items of one factor with those of another.
-Yet, there are quite a few cross connections in @fig-big5-qgraph-rodrigues,
+Yet, there are quite a few cross-factor connections in @fig-big5-qgraph-rodrigues,
 so perhaps the theory is wrong, or, more likely, the 25 items are not good representatives of
-these underlying dimensions.
+these underlying dimensions. The network diagram shown here is a visual tool for thought
+and refinement 
 
 Network diagrams stem from mathematical graph theory (refs:) of the properties
 of nodes and edges used to represent pairwise relationships, ...
@@ -61,11 +65,19 @@ of nodes and edges used to represent pairwise relationships, ...
 
 -> packages: qgraph, ...
 
+### Crime data
+
 For the present purposes, let's see what network diagrams can tell us about the crime data
-analyzed earlier.
+analyzed earlier. Here, I first reorder the variables as in @fig-crime-corrplot-AOE.
+In the call to `qgraph()`, the argument `minimum = "sig"` says to show only the edges
+for significant correlations (at $\alpha = 0.01$ here)
 
 ```{r}
-#| label: fig-crime-cor-code
+#| label: fig-crime-cor
+#| out-width: "80%"
+#| fig-width: 7
+#| fig-height: 7
+#| fig-cap: "Network diagram depicting the correlations among the crime variables. Only edges for correlations that are significant at the $\\alpha = 0.01$ level are displayed."
 library(qgraph)
 ord <- corrMatOrder(crime.cor, order = "AOE")
 rownames(crime.cor)[ord]
@@ -81,10 +93,45 @@ qgraph(crime.cor,
   posCol = "blue")
 ```
 
+<!--
 ```{r}
-#| label: fig-crime-cor
+#| label: fig-crime-cor-image
 #| out-width: "80%"
 #| fig-cap: "Network diagram depicting the correlations among the crime variables."
 knitr::include_graphics("images/crime-cor.png")
 ```
+-->
+
+### Partial correlations
+
+Among the more important statistical applications of network graph theory is the idea
+that the inverse of a correlation matrix, $\mathbf{R}^{-1}$, reflect _partial_
+correlations of variables, with the association of all other variables removed,
+and that a network diagram of partial correlations can reveal further structure.
+
+...
+
+
+```{r}
+#| label: fig-crime-partial-spring
+#| out-width: "80%"
+#| fig-width: 7
+#| fig-height: 7
+#| fig-cap: "Network diagram of partial correlations among the crime variables, controlling for all others. Variable nodes have been positioned by a \"spring\" layout method ... "
+qgraph(crime.cor, 
+       title = "Crime data:\npartial correlations", title.cex = 1.5,
+       graph = "pcor",
+       minimum = "sig", sampleSize = nrow(crime), alpha = 0.05,
+       color = grey(.9), vsize = 14,
+       labels = rownames(crime.cor),
+       edge.labels = TRUE, edge.label.cex = 1.7,
+       layout = "spring", repulsion = 1.2,
+       posCol = "blue")
+```
+
+@fig-crime-partial-spring shows that, once all other crime variables are controlled
+for each pair, there remain only a few partial correlations at the $\alpha = 0.05$ level.
+(Of these, only three are significant at $\alpha = 0.01$.)
+
+### Visualizing partial correlations
 
