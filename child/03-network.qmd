@@ -58,10 +58,13 @@ so perhaps the theory is wrong, or, more likely, the 25 items are not good repre
 these underlying dimensions. The network diagram shown here is a visual tool for thought
 and refinement 
 
-Network diagrams stem from mathematical graph theory (refs:) of the properties
-of nodes and edges used to represent pairwise relationships, ...
+Network diagrams stem from mathematical graph theory [@BondyMurty2008; @West2001] of the properties of nodes and edges used to represent pairwise relationships, ...
 
--> network science, network psychometrics, ...
+-> network science [@Barabasi2016network], network psychometrics, ...
+
+-> Graph layout: Because a network diagram can potentially reflect hundreds of variables,
+various layout algorithms have been developed to automatically
+position the nodes so as to generate aesthetically pleasing network visualizations that emphasize important structural properties, like clusters and central nodes.
 
 -> packages: qgraph, ...
 
@@ -70,7 +73,11 @@ of nodes and edges used to represent pairwise relationships, ...
 For the present purposes, let's see what network diagrams can tell us about the crime data
 analyzed earlier. Here, I first reorder the variables as in @fig-crime-corrplot-AOE.
 In the call to `qgraph()`, the argument `minimum = "sig"` says to show only the edges
-for significant correlations (at $\alpha = 0.01$ here)
+for significant correlations (at $\alpha = 0.01$ here).
+In @fig-crime-cor, the variable nodes are positioned around a circle
+(`layout = "circle"`), which is the default.
+
+<!-- fig.code: R/crime/crime-network.R -->
 
 ```{r}
 #| label: fig-crime-cor
@@ -87,6 +94,7 @@ crime.cor <- crime.cor[ord, ord]
 qgraph(crime.cor, 
   title = "Crime data:\ncorrelations", title.cex = 1.5,
   graph = "cor",
+  layout = "circle",
   minimum = "sig", sampleSize = nrow(crime), alpha = 0.01,
   color = grey(.9), vsize = 12,
   labels = rownames(crime.cor),
@@ -104,13 +112,43 @@ knitr::include_graphics("images/crime-cor.png")
 
 ### Partial correlations
 
-Among the more important statistical applications of network graph theory is the idea
-that the inverse of a correlation matrix, $\mathbf{R}^{-1}$, reflect _partial_
-correlations of variables, with the association of all other variables removed,
-and that a network diagram of partial correlations can reveal further structure.
+Among the more important statistical applications of network graph theory is the idea that you can also use them to study the the _partial_ (conditional)
+associations among variables with the contributions of all other variables
+removed in what are called Graphical Gaussian Models (GGMs)
+[@Lauritzen1996; @Hojsgaard2012graphical]. In a network diagram of these
+partial associations,
 
-...
+* The edges between nodes represent the _partial correlations_ between those variables.
 
+* The absence of an edge between two nodes indicates their variables are _conditionally independent_, given the other variables.
+
+So, whereas a network diagram of correlations shows _marginal associations_
+ignoring other variables, one of partial correlations allows you to visualize the _direct_ relationship between each pair of variables, removing the indirect effects that might be mediated through all other variables.
+
+For a set of variables $X = \{x_1, x_2, \dots, x_p \}$, the partial correlation
+between $x_i$ and $x_i$, controlling for all other variables
+$Z = X \setminus \{x_i, x_j\} = x_\text{others}$ is equivalent to the correlation between the _residuals_ of the linear regressions of $x_i$ on all other $\mathbf{Z}$ and $x_j$ on $\mathbf{Z}$.
+
+Mathematically, let $\hat{x}_i$ and $\hat{x}_j$ be the predicted values from the linear regressions of $x_i$ on $\mathbf{Z}$ and of $x_j$ on $\mathbf{Z}$, respectively. The partial correlation $p_{ij}$ between $x_i$ and $x_j$ controlling for $\mathbf{Z}$ is given by:
+$$
+p_{x_i,x_j|\mathbf{Z}} = r( x_i, x_j \mid \text{others}) = \text{cor}[ (x_i - \hat{x}_i),\; (x_j - \hat{x}_j)]
+$$ {#eq-parcor}
+
+But, rather than running all these linear regressions, they can all be computed
+from the inverse of the correlation matrix [@Whittaker1990, Ch. 5],
+a relation first noted by @Dempster1972.
+Let $\mathbf{R}$ be the correlation matrix, and $\mathbf{P}$ be the matrix of partial correlations. Then:
+$$
+\mathbf{P} = -\mathbf{R}^{-1} \comma
+$$
+where $\mathbf{R}^{-1}$ is the inverse of the correlation matrix $\mathbf{R}$.
+
+@fig-crime-partial-spring shows the partial correlation network for the
+crime data, using the `qgraph()` argument `graph = "pcor"`
+To provide a more interpretable result, the argument `layout = "spring"`
+positions the nodes using a force-embedded algorithm where
+edges act like springs, pulling connected nodes together
+and unconnected nodes repel each other, pushing them apart.
 
 ```{r}
 #| label: fig-crime-partial-spring
@@ -121,17 +159,66 @@ and that a network diagram of partial correlations can reveal further structure.
 qgraph(crime.cor, 
        title = "Crime data:\npartial correlations", title.cex = 1.5,
        graph = "pcor",
+       layout = "spring", repulsion = 1.2,
        minimum = "sig", sampleSize = nrow(crime), alpha = 0.05,
        color = grey(.9), vsize = 14,
        labels = rownames(crime.cor),
        edge.labels = TRUE, edge.label.cex = 1.7,
-       layout = "spring", repulsion = 1.2,
        posCol = "blue")
 ```
 
 @fig-crime-partial-spring shows that, once all other crime variables are controlled
 for each pair, there remain only a few partial correlations at the $\alpha = 0.05$ level.
-(Of these, only three are significant at $\alpha = 0.01$.)
+Of these, only the largest three in absolute value
+are significant at $\alpha = 0.01$.
+Thus, once all other variables are taken into account, what remains is mainly
+a strong positive association between burglary and larceny and a moderate one
+between auto theft and robbery.
+There also remains a moderate negative correlation between murder and larceny.
+The spring layout makes it clear that, with suppression of 
+weak edges, auto theft and robbery form a cluster separated from the other variables.
+
 
 ### Visualizing partial correlations
+
+Just as you can visualize marginal association between variables in a scatterplot,
+you can also visualize conditional association.
+A **partial variables plot** is simply a scatterplot of the partial residuals
+$e_i = (x_i - \hat{x}_i)$ from a regression of $x_i$ on the other variables $Z$
+against those $e_j = (x_j - \hat{x}_j)$ for another variable $x_j$.
+
+In this, you can use all the bells and whistles of standard scatterplots
+(regression lines, smooths, data ellipses, ...) to listen more attentively to the 
+story partial association has to tell.
+The function `pvPlot()` calculates the partial residuals and then calls
+`car::scatterplot()` for display. As written, the five most "unusual"
+observations by Mahalanobis $D^2$ are identified with their state labels.
+
+**TODO**: I'd like to put these two figures side-by-side and integrate the code chunks, but `car::scatterplot` doesn't seem to allow this.
+
+```{r echo = -1}
+#| label: fig-crime-pvPlot1
+#| fig-height: 6
+#| fig-height: 6
+#| out-width: "80%"
+#| fig-cap: "Partial variables plot for burglary and larceny in the network diagram for partial correlations of the crime variables."
+op <- par(mar = c(5, 5, 1, 1)+.5)
+source("R/pvPlot.R")
+pvPlot(crime.num, vars = c("burglary", "larceny"), 
+       ellipse = list(levels = 0.68, fill.alpha = 0.1, robust = FALSE),
+       cex.lab = 1.5)
+```
+
+```{r echo = -1}
+#| label: fig-crime-pvPlot2
+#| fig-height: 6
+#| fig-height: 6
+#| out-width: "80%"
+#| fig-cap: "Partial variables plot for robbery and auto theft in the network diagram for partial correlations of the crime variables."
+op <- par(mar = c(5, 5, 1, 1)+.5)
+pvPlot(crime.num, vars = c("robbery", "auto"),
+       ellipse = list(levels = 0.68, fill.alpha = 0.1, robust = FALSE),
+       cex.lab = 1.5)
+```
+
 

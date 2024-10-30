@@ -7,7 +7,8 @@
 # https://stackoverflow.com/questions/35591033/plot-scatterplot-matrix-with-partial-correlation-coefficients-in-r
 
 pvPlot <- function(
-   X, vars = 1:2,
+   X, 
+   vars = 1:2,
    labels,
    id = FALSE, 
    ellipse=FALSE, 
@@ -51,11 +52,12 @@ pvPlot <- function(
 
   if (axes)
     abline(h = 0, v = 0, col = "gray")
+
   if (show.partial) {
     pcor <- round(cor(res[,1], res[,2]), 3)
     usr <- par("usr")        # save old user/default/system coordinates
     par(usr = c(0, 1, 0, 1)) # new relative user coordinates
-    text(0.025, 0.95, label = paste("partial r =", pcor),  pos = 4)
+    text(0.025, 0.95, label = paste("partial r =", pcor),  pos = 4, cex = 1.25)
     par(usr = usr)           # restore original user coordinates
   }
   
@@ -70,36 +72,24 @@ if(FALSE) {
     tibble::column_to_rownames("st") |>
     dplyr::select(where(is.numeric))
 
-op <- par(mar = c(5, 5, 1, 1)+.5)
-
 png(filename = "images/crime-pvPlot1.png", height = 500, width = 500)
-  pvPlot(crime.num, vars = c("burglary", "larceny"), 
-         ellipse = list(levels = 0.68, fill.alpha = 0.1, robust = FALSE),
-         cex.lab = 1.5)
+
+op <- par(mar = c(5, 5, 1, 1)+.5)
+ellipse.args <- list(levels = 0.68, fill.alpha = 0.1, robust = FALSE)
+pvPlot(crime.num, vars = c("burglary", "larceny"), 
+       ellipse = list(levels = 0.68, fill.alpha = 0.1, robust = FALSE),
+       cex.lab = 1.5)
+par(op)
 dev.off()
   
 png(filename = "images/crime-pvPlot2.png", height = 500, width = 500)
+op <- par(mar = c(5, 5, 1, 1)+.5)
 pvPlot(crime.num, vars = c("robbery", "auto"), 
          ellipse = list(levels = 0.68, fill.alpha = 0.1, robust = FALSE),
          cex.lab = 1.5)
-dev.off()
 par(op)
+dev.off()
   
-  # res <- pvPlot(crime, vars = c("burglary", "larceny"))
-  # head(res)
-  # car::scatterplot(larceny ~ burglary, data = res, 
-  #                  xlab = "burglary residual",
-  #                  ylab = "larceny residual",
-  #                  pch = 16, col = "black",
-  #                  smooth = FALSE, boxplots = FALSE,
-  #                  grid = FALSE,
-  #                  id = list(n=5))
-  # abline(h = 0, v = 0, col = "gray")
-  # text(-600, 1300, 
-  #      label = paste("partial r =", 
-  #                    round(cor(res[,1], res[,2]), 3)),
-  #      pos = 4)
-  
-  
+
   
 }
