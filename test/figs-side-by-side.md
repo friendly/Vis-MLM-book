@@ -1,5 +1,19 @@
 My env: Quarto 1.3.450 / R version 4.3.2
 
+Answered in: https://github.com/quarto-dev/quarto-cli/discussions/8719
+Use: 
+
+````
+#| label: fig-whatever
+#| layout-ncol: 3
+#| fig-cap: My main caption
+#| fig-subcap: true
+plot(1)
+plot(2)
+plot(3)
+````
+
+
 For a book project using Quarto I'm trying to place figures side-by-side from R code.
 This always worked perfectly with `knitr/rmarkdown` using `fig.show="hold", out.width="49%"`
 The Quarto documentation https://quarto.org/docs/authoring/figures.html shows
