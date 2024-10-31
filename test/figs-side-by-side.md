@@ -1,18 +1,6 @@
 My env: Quarto 1.3.450 / R version 4.3.2
 
-Answered in: https://github.com/quarto-dev/quarto-cli/discussions/8719
-Use: 
-
-````
-#| label: fig-whatever
-#| layout-ncol: 3
-#| fig-cap: My main caption
-#| fig-subcap: true
-plot(1)
-plot(2)
-plot(3)
-````
-
+## Problem
 
 For a book project using Quarto I'm trying to place figures side-by-side from R code.
 This always worked perfectly with `knitr/rmarkdown` using `fig.show="hold", out.width="49%"`
@@ -66,3 +54,45 @@ I also tried using `include_graphics()` with the figures generated from the prev
 knitr::include_graphics(c("figs/ch03/fig-proj-vectors-1.png",
                           "figs/ch03/fig-proj-vectors-2.png"))
 ```
+
+## Answers
+
+Answered in: https://github.com/quarto-dev/quarto-cli/discussions/8719
+Use: 
+
+````
+#| label: fig-whatever
+#| layout-ncol: 3
+#| fig-cap: My main caption
+#| fig-subcap: true
+plot(1)
+plot(2)
+plot(3)
+````
+
+Answered in: https://forum.posit.co/t/how-to-stack-two-images-horizontally-in-r-markdown/18941/9
+
+Or, just use markdown, but then how to do captions
+
+![](figs/ch03/fig-proj-vectors-1.png){width=50%} ![](figs/ch03/fig-proj-vectors-2.png){width=50%}
+
+### magick package
+
+library(magick)
+p1 <- image_read("figs/ch03/fig-proj-vectors-1.png")
+p2 <- image_read("figs/ch03/fig-proj-vectors-2.png")
+# join them left to right
+p12 <- image_append(c(p1, p2), stack = FALSE)
+image_write(p12, path="images/proj-vectors-1-2.png", format="png")
+
+Do this in a chunk:
+
+png(tempfile("p1", ext = "png"))
+plot(1)
+dev.off()
+png(tempfile("p2", ext = "png"))
+plot(2)
+dev.off()
+image_append(c(p1, p2), stack = FALSE)
+
+
