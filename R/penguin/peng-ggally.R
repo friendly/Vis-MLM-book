@@ -14,11 +14,15 @@ col <- peng.colors("medium")
 pch <- 15:17
 theme_set(theme_bw(base_size = 14))
 
-# basic plot
+# basic plot Fig 3.31
+
 ggpairs(peng, columns=c(3:6, 7),
         aes(color=species, alpha=0.5),
         progress = FALSE) +
-  theme_penguins()
+  theme_penguins() +
+  theme(axis.text.x = element_text(angle = -45))
+
+
 
 # use ggally_ functions
 ggpairs(peng, columns=c(3:6, 7),
@@ -77,7 +81,7 @@ ggpairs(peng, columns=3:6,
   theme(panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank())
 
-# show catgegorical variables
+# show catgegorical variables Fig 3.7
 ggpairs(peng, columns=c(3:6, 1, 2, 7),
         mapping = aes(color=species, fill = species, alpha=0.2),
         lower = list(continuous = my_panel1),
@@ -85,7 +89,8 @@ ggpairs(peng, columns=c(3:6, 1, 2, 7),
         progress = FALSE) +
   theme_penguins() +
   theme(panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank())
+        panel.grid.minor = element_blank()) +
+  theme(axis.text.x = element_text(angle = -45))
 
 
 

@@ -10,13 +10,16 @@ knitr::opts_chunk$set(fig.path = "figs/ch08/")
 # Collinearity & Ridge Regression {#sec-collin}
 
 
+In univariate multiple regression models, we usually hope to have high correlations between the outcome $y$ and each of the
+predictors, $\mathbf{X} = [\mathbf{x}_1, \mathbf{x_2}, \dots]$, but high correlations _among_ the predictors can cause problems
+in estimating and testing their effects. Exactly the same problems can exist in multivariate response models,
+because they involve only the relations among the predictor variables.
+
 > Some of my collinearity diagnostics have large values, or small values, or whatever they are not supposed to be
 > * What is bad?
 > * If bad, what can I do about it?
 
-In univariate multiple regression models, we usually hope to have high correlations between the outcome $y$ and each of the
-predictors, $x_1, x_2, \dots$, but high correlations _among_ the predictors can cause problems
-in estimating and testing their effects. The quote above shows the a typical quandary of some researchers in trying
+The quote above shows the a typical quandary of some researchers in trying
 do understand these problems and and take steps to resolve them.
 This chapter illustrates the problems of collinearity,
 describes diagnostic measures to asses its effects, 
@@ -43,7 +46,7 @@ library(patchwork)
 ## What is collinearity?
 
 The chapter quote above is not untypical of researchers who have read standard treatments of linear models
-(eg.: ???)
+(e.g, @Graybill1961; @Hocking2013)
 and yet are still confused about what collinearity is, how to find its sources and how to correct them.
 In @FriendlyKwan:2009, we liken this problem to that of the reader of 
 Martin Hansford's
@@ -58,16 +61,18 @@ Collinearity diagnostics often provide a similar puzzle.
 Recall the standard classical linear model for a response variable $y$ with a collection of predictors
 in $\mathbf{X} = (\mathbf{x}_1, \mathbf{x}_2, ..., \mathbf{x}_p)$
 
-\begin{eqnarray*}
-\mathbf{y} & =&  \beta_0 + \beta_1 \mathbf{x}_1 + \beta_2 \mathbf{x}_2 + \cdots + \beta_p \mathbf{x}_p + \mathbf{\epsilon} \\
-         & = & \mathbf{X} \mathbf{\beta} + \mathbf{\epsilon} \; ,
-\end{eqnarray*}
+
+\begin{align*}
+\mathbf{y}  & =  \beta_0 + \beta_1 \mathbf{x}_1 + \beta_2 \mathbf{x}_2 + \cdots + \beta_p \mathbf{x}_p + \mathbf{\epsilon} \\
+            & =  \mathbf{X} \mathbf{\beta} + \mathbf{\epsilon} \; ,
+\end{align*}
+
 for which the ordinary least squares solution is:
 
 $$
 \widehat{\mathbf{b}} = (\mathbf{X}^\mathsf{T} \mathbf{X})^{-1} \; \mathbf{X}^\mathsf{T} \mathbf{y} \; ,
 $$
-with sampling variances and covariances $\text{Var} (\widehat{\mathbf{b}}) = \sigma^2 \times (\mathbf{X}^\mathsf{T} \mathbf{X})^{-1}$ and $\sigma^2$ is the variance of the residuals $\mathbf{\epsilon}$, estimated by the
+with sampling variances and covariances $\text{Var} (\widehat{\mathbf{b}}) = \sigma_\epsilon^2 \times (\mathbf{X}^\mathsf{T} \mathbf{X})^{-1}$ and $\sigma_\epsilon^2$ is the variance of the residuals $\mathbf{\epsilon}$, estimated by the
 mean squared error (MSE).
 
 In the limiting case, when one $x_i$ is _perfectly_
@@ -80,7 +85,8 @@ are 0.
 
 This extreme case reflects a situation when one or more predictors are effectively redundant, for example
 when you include two variables $x$ and $y$ and their sum $z = x + y$ in a model, or use _ipsatized_
-scores that sum to a constant. More generally, collinearity refers to the case when there are very high
+scores that sum to a constant (such as proportions of a total). 
+More generally, collinearity refers to the case when there are very high
 **multiple correlations** among the predictors, such as $R^2 (x_i | \text{other }x) \ge 0.9$. 
 Note that you can't tell simply by looking at the simple correlations. A large correlation
 $r_{ij}$ is _sufficient_ for collinearity, but not _necessary_ --- you can have variables
@@ -96,7 +102,7 @@ no (or few) of the individual predictors are. This is a puzzlement!
 * Beyond this, the least squares solution may have poor numerical accurracy [@Longley:1967], because
 the solution depends on the determinant $|\,\mathbf{X}^\mathsf{T} \mathbf{X}\,|$, which approaches 0
 as multiple correlations increase.
-* As well, recall that the coefficients $\hat{b}$ are **partial coefficients**, meaning the estimated
+* As well, recall that the coefficients $\hat{b}$ are **partial coefficients**, meaning that they estimate
 change $\Delta y$ in $y$ when $x$ changes by one unit $\Delta x$, but **holding all other variables
 constant**. Then, the model may be trying to estimate something that does not occur in the data.
 
@@ -143,7 +149,7 @@ and various true correlations between $x_1$ and $x_2$, $\rho_{12} = (0, 0.8, 0.9
 [^1]: This example is adapted from one by John Fox (2022), [Collinearity Diagnostics](https://socialsciences.mcmaster.ca/jfox/Courses/SORA-TABA/slides-collinearity.pdf)
 
 ::: {.column-margin}
-Working file: `R/collin-data-beta.R`
+R file: `R/collin-data-beta.R`
 :::
 
 First, we use `MASS:mvrnorm()` to construct a list of data frames `XY` with specified values
@@ -236,7 +242,7 @@ for (i in seq_along(rho)) {
 par(op)
 ```
 
-Recall (Section #sec-data-beta) that the confidence ellipse for $(\beta_1, \beta_2)$ is just a 90 degree rotation
+Recall (#sec-betaspace) that the confidence ellipse for $(\beta_1, \beta_2)$ is just a 90 degree rotation
 (and rescaling) of the data ellipse for $(x_1, x_2)$: it is wide (more variance) in any direction where the
 data ellipse is narrow. 
 
@@ -350,7 +356,7 @@ $\mathbf{R}^{-1}_{X}$.
 
 More generally, the matrix $\mathbf{R}^{-1}_{X} = (r^{ij})$, when standardized to a correlation matrix
 as $-r^{ij} / \sqrt{r^{ii} \; r^{jj}}$ gives the matrix of all partial correlations,
-$r_{ij \,|\, \textrm{others}}$.
+$r_{ij \,|\, \textrm{others}$.
 }
 
 :::
@@ -447,8 +453,8 @@ to encode other information.
 For collinearity diagnostics, these show: 
 
 * the condition indices,
-using using _squares_ whose background color is red for condition indices > 10,
-green for values > 5 and green otherwise, reflecting danger, warning and OK respectively.
+using _squares_ whose background color is `r colorize("red")` for condition indices > 10,
+`r colorize("brown")` for values > 5 and `r colorize("green")` otherwise, reflecting danger, warning and OK respectively.
 The value of the condition index is encoded within this using a white square whose side is proportional to the value
 (up to some maximum value, `cond.max` that fills the cell).
 
@@ -466,12 +472,11 @@ large variance proportions implicating two or more predictors.
 #| label: fig-cars-tableplot
 #| fig-keep: "last"
 #| out-width: 90%
-#| fig.cap: "Tableplot of condition indices and variance proportions for the Cars data. In column 1, the square   
-#|     symbols are scaled relative
-#|     to a maximum condition index of 30. In the remaining columns, variance
-#|     proportions (times 100) are shown as circles
+#| fig.cap: "Tableplot of condition indices and variance proportions for the Cars data. In column 1, the square symbols are scaled relative to a maximum condition index of 30. 
+#|     In the remaining columns, variance proportions (times 100) are shown as circles
 #|     scaled relative to a maximum of 100."
-tableplot(cd, title = "Tableplot of cars data", cond.max = 30 )
+tableplot(cd, title = "Tableplot of cars data", 
+          cond.max = 30 )
 ```
 
 
@@ -519,7 +524,7 @@ scores for the cars.
 #|  The projections of the variable vectors on the coordinate axes are proportional to
 #|  their variance proportions. To reduce graphic clutter, only the most outlying observations in predictor
 #|  space are identified by case labels.
-#|  An extreme outlier (case 20) appears in the lower left corner."
+#|  An extreme outlier (case 20) appears in the lower right corner."
 cars.pca$rotation <- -2.5 * cars.pca$rotation    # reflect & scale the variable vectors
 
 ggp <- fviz_pca_biplot(

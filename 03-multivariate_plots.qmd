@@ -1380,7 +1380,7 @@ off-diagonal panels.
 #| fig-width: 7
 #| fig-height: 7
 #| out-width: "100%"
-#| fig-cap: "Scatterplot matrix of the variables in the penguins dataset, stratified by species."
+#| fig-cap: "Scatterplot matrix of the quantitative variables in the penguins dataset, stratified by species."
 scatterplotMatrix(~ bill_length + bill_depth + flipper_length + body_mass | species,
   data = peng, 
   col = peng.colors("medium"), 
@@ -1487,11 +1487,15 @@ the nonparametric smooth doesn't differ much from the linear regression
 line. Exceptions to this appear mainly in the columns for `robbery` and
 `auto` (auto theft).
 
-### Corrgrams {#sec-corrgram}
+## Corrgrams {#sec-corrgram}
 
-What if you want to summarize the data even further, for example to show
-only the value of the correlation for each pair of variables? A
-**corrgram** [@Friendly:02:corrgram] is a visual display of a
+What if you want to summarize the data even further simple visual thinning. 
+For example with many variables you might want to show
+only the value of the correlation for each pair of variables,
+but do so in a way to help see patterns in the correlations
+that would be invisible in just a table.
+
+A **corrgram** [@Friendly:02:corrgram] is a visual display of a
 correlation matrix, where the correlation can be rendered in a variety
 of ways to show the direction and magnitude: circular "pac-man" (or pie)
 symbols, ellipses, colored vars or shaded rectangles, as shown in
@@ -1502,7 +1506,9 @@ ordering the levels of factors and variables in graphic displays to make
 important features most apparent. For variables, this means that we can
 arrange the variables in a matrix-like display in such a way as to make
 the pattern of relationships easiest to see. Methods to achieve this
-include using principal components and cluster analysis to put the most
+include using principal components 
+and cluster analysis
+to put the most
 related variables together as described in @sec-pca-biplot.
 
 ```{r}
@@ -1521,7 +1527,7 @@ panels as illustrated in @fig-corrgram-renderings. For example, a
 corrgram similar to @fig-crime-spm can be produced as follows (not shown
 here):
 
-```{r}
+```{r corrgram}
 #| eval: false
 crime |>
   select(where(is.numeric)) |>
@@ -1530,29 +1536,34 @@ crime |>
            diag.panel = panel.density)
 ```
 
-`corrplot::corrplot()` provides the rendering methods
+With the **corrplot** package, `corrplot()` provides the rendering methods
 `c("circle", "square", "ellipse", "number", "shade", "color", "pie")`,
 but only one can be used at a time. The function
-`corrplot::corrplot.mixed()` allows different options to be selected for
-the lower and upper triangles. The iconic shape is colored with a
+`corrplot.mixed()` allows different options to be selected for
+the lower and upper triangles. The iconic rendering shape is colored with a
 gradient in relation to the correlation value.
+For comparison, @fig-crime-corrplot uses ellipses below the diagonal and
+filled pie charts below the diagonal using a gradient of the fill color
+in both cases.
 
 ```{r}
 #| label: fig-crime-corrplot
 #| fig-width: 8
 #| fig-height: 8
 #| out-width: "100%"
-#| fig-cap: "Corrplot of the `crime` data, showing the correlation between each pair of variables with an ellipse (lower) and a pie chart symbol (upper), all shaded in proportion to the correlation value, also shown numerically."
-crime |>
-  select(where(is.numeric)) |>
-  cor() |>
-  corrplot.mixed(
-           lower = "ellipse",
-           upper = "pie",
-           tl.col = "black",
-           tl.srt = 0,
-           addCoef.col = "black",
-           addCoefasPercent = TRUE)
+#| fig-cap: "Mixed corrplot of the `crime` data, showing the correlation between each pair of variables with an ellipse (lower) and a pie chart symbol (upper), all shaded in proportion to the correlation value, also shown numerically."
+crime.cor <- crime |>
+  dplyr::select(where(is.numeric)) |> 
+  cor()
+
+corrplot.mixed(crime.cor,
+   lower = "ellipse",
+   upper = "pie",
+   tl.col = "black",
+   tl.srt = 0,
+   tl.cex = 1.25,
+   addCoef.col = "black",
+   addCoefasPercent = TRUE)
 ```
 
 The combination of renderings shown in @fig-crime-corrplot is
@@ -1562,44 +1573,77 @@ the values for murder with larceny and auto theft in row 1, columns 6-7
 with those in column 1, rows 6-7, where the former are easier to
 distinguish. The shading color adds another visual cue.
 
+The variables in @fig-crime-spm and @fig-crime-corrplot are arranged
+by their order in the dataset, which is not often the most useful.
+A better idea is to arrange the variables so that the most highly
+correlated variables are adjacent. 
+
+A general method described in @sec-var-order orders the variables according to the
+angles of the first two eigenvectors from a principal components analysis (PCA)
+around a unit circle. 
+The function `corrMatOrder()` provides several methods
+(`order = c("AOE", "FPC", "hclust", "alphabet")`) for doing this, and PCA ordering is
+`order = "AOE"`. Murder and auto theft are still first and last, but some of the
+intermediate crimes have been rearranged.
+
+```{r corMatOrder}
+ord <- corrMatOrder(crime.cor, order = "AOE")
+rownames(crime.cor)[ord]
+```
+
+
+<!-- other orders: FPC (PC1), hclust (with various clustering methods), alphabet, original -->
+<!-- calculated with corrMatOrder() -->
+
+Using this ordering in `corrplot()` produces @fig-crime-corrplot-AOE.
+```{r}
+#| label: fig-crime-corrplot-AOE
+#| fig-width: 8
+#| fig-height: 8
+#| out-width: "100%"
+#| fig-cap: "Corrplot of the `crime` data with the variables reordered according to the angles of variable eigenvectors. Correlations are rendered with ellipses shaded in proportion to their magnitude."
+corrplot.mixed(crime.cor,
+  order = "AOE", 
+  lower = "ellipse",
+  upper = "ellipse",
+  tl.col = "black",
+  tl.srt = 0,
+  tl.cex = 1.25,
+  addCoef.col = "black",
+  addCoefasPercent = TRUE)
+```
+
+In this case, where the correlations among the crime variables are all positive, the effect of
+variable re-ordering is subtle, but note that there is now a slightly pronounced pattern of highest
+correlations near the diagonal, and decreasing away from the diagonal.
+@fig-mtcars-corrplot-varorder and @fig-mtcars-corrplot-pcaorder in @sec-var-order provide a more dramatic example of variable ordering using this method.
+
+
 Variations of corrgrams are worthy replacements for a numeric table of
 correlations, which are often presented in publications only for
 archival value. Including the numeric value (rounded here, for
 presentation purposes), makes this an attractive alternative to boring
 tables of correlations.
 
-**TODO**: Add example showing correlation ordering -- e.g., `mtcars`
-data.<!--# How's something like the code I added below? -->
-
-```{r}
-#| echo: false
-#| include: false
-#| label: fig-mtcars-corrplot-ordering
-#| fig-width: 8
-#| fig-height: 8
-#| out-width: "100%"
-#| fig-cap: "Corrplot of the `mtcars` data, showing the ordered correlation between each pair of variables with a circle (upper) and a numerical correlation value (lower), all shaded in proportion to the correlation magnitude and direction."
-#| 
-library(corrplot)
-corrplot.mixed(cor(mtcars[,1:5]),
-               lower = "number", 
-               order = 'FPC',
-               upper = 'circle',
-               tl.col = "black")
-```
 
 ## Generalized pairs plots {#sec-ggpairs}
 
 When a dataset contains one or more discrete variables, the traditional
-pairs plot cannot cope, using only color and/or point symbols to
-represent categorical variables. In the context of mosaic displays and
-loglinear models, representing $n$-way frequency tables by rectangular
-tiles depicting cell frequencies, I [@Friendly:94a] proposed an analog
-of the scatterplot matrix using mosaic plots for each pair of variables.
+pairs plot cannot cope, because the discrete categories would plot
+as many overlaid points. This cannot be represented
+using only color and/or point symbols in a meaningful scatterplot.
+
+But the associations between
+categorical variables in a frequency table
+_can_ be shown in _mosaic displays_ [@Friendly:94a], using
+an array of tiles whose areas are depict the cell frequencies.
+For an $n$-way frequency, an analog of the scatterplot matrix
+uses mosaic plots for each pair of variables.
 The **vcd** package [@R-vcd] implements very general `pairs()` methods
-for `"table"` objects. See my book *Discrete Data Analysis with R*
-[@FriendlyMeyer:2016:DDAR] and the **vcdExtra** [@R-vcdExtra] package
-for mosaic plots and mosaic matrices.
+for `"table"` objects and **vcdExtra** [@R-vcdExtra] extends this
+to wide classes of loglinear models [@Friendly:99:EMD]
+See @Friendly:99:EMD and my book *Discrete Data Analysis with R*
+[@FriendlyMeyer:2016:DDAR] for mosaic plots and mosaic matrices.
 
 For example, we can tabulate the distributions of penguin species by sex
 and the island where they were observed using `xtabs()`. `ftable()`
@@ -1682,10 +1726,12 @@ plotted as histograms in the lower triangle and boxplots in the upper
 triangle. @fig-peng-ggpairs1 includes `sex` to illustrate the
 combinations.
 
+<!-- fig.code: R/peng/peng-ggally.R -->
+
 ```{r}
-#| label: fig-peng-ggpairs1
+#| label: peng-ggpairs1
+#| eval: false
 #| code-fold: show
-#| cache: true
 #| fig-width: 7
 #| fig-height: 7
 #| out-width: "100%"
@@ -1697,10 +1743,21 @@ ggpairs(peng, columns=c(3:6, 7),
   theme(axis.text.x = element_text(angle = -45))
 ```
 
-<!--# I changed the x-axis labels' sizes because they overlapped when rendered -->
+<!-- this figure now frozen because it takes too long and caching creates git problems -->
+
+```{r}
+#| label: fig-peng-ggpairs1
+#| echo: false
+#| fig-width: 7
+#| fig-height: 7
+#| out-width: "100%"
+#| fig-cap: "Basic `ggpairs()` plot of penguin size variables and sex, stratified by species."
+knitr::include_graphics("figs/ch03/fig-peng-ggpairs1-1.png")
+```
+
 
 To my eye, printing the values of correlations in the upper triangle is
-often a waste of graphic space. But this example shows something
+often a waste of graphic space. But in this example the correlations show something
 peculiar and interesting if you look closely: In all pairs among the
 penguin size measurements, there are positive correlations within each
 species, as we can see in @fig-peng-spm. Yet, in three of these panels,
@@ -1806,14 +1863,12 @@ boxplots but by faceted histograms in the lower portion. The factors are
 shown as rectangles with area proportional to count (poor-man's mosaic
 plots) above the diagonal and as faceted bar plots below.
 
+<!-- fig.code: R/peng/peng-ggally.R -->
+
 ```{r}
-#| label: fig-peng-ggpairs7
+#| label: peng-ggpairs7
 #| code-fold: show
-#| cache: true
-#| fig-width: 9
-#| fig-height: 9
-#| out-width: "100%"
-#| fig-cap: "Customized `ggpairs()` plot of penguin size variables, together with species, island and sex."
+#| eval: false
 ggpairs(peng, columns=c(3:6, 1, 2, 7),
         mapping = aes(color=species, fill = species, alpha=0.2),
         lower = list(continuous = my_panel1),
@@ -1825,11 +1880,25 @@ ggpairs(peng, columns=c(3:6, 1, 2, 7),
   theme(axis.text.x = element_text(angle = -45))
 ```
 
-<!--# I changed the x-axis labels' sizes and angle because they overlapped when rendered -->
+<!-- this figure now frozen because it takes too long and caching creates git problems -->
+
+```{r}
+#| label: fig-peng-ggpairs7
+#| echo: false
+#| fig-width: 9
+#| fig-height: 9
+#| out-width: "100%"
+#| fig-cap: "Customized `ggpairs()` plot of penguin size variables, together with species, island and sex."
+knitr::include_graphics("figs/ch03/fig-peng-ggpairs7-1.png")
+```
 
 There is certainly a lot going on in @fig-peng-ggpairs7, but it does
 show a high-level overview of all the variables (except `year`) in the
-penguins dataset.
+penguins dataset. It is probably easiest to "read" this figure by
+focusing on the four blocks for the combinations of 4 continuous and 3 categorical
+measures. In the upper left block, visual thinning of the scatterplots,
+showing only the data ellipses and regression lines gives a simple
+view as it did in @fig-peng-spm.
 
 ## Parallel coordinate plots {#sec-parcoord}
 
@@ -1902,9 +1971,13 @@ multiple variables, which can be quantitative, as in the original idea,
 or categorical factors, all to be shown along parallel axes.
 
 Here, I use the **ggpcp** package [@R-ggpcp], best described in
-@VanderPlas2023, who also review the modern history. This takes some
+@VanderPlas2023, who also review the modern history.[^other-pcp] This takes some
 getting used to, because they develop `pcp_*()` extensions of the
 `ggplot2` grammar of graphics framework to allow:
+
+[^other-pcp]: Other implementations of parallel coordinate plots in R include:
+`MASS::parcoord()`, `GGally::ggparcoord() and `PairViz::pcp()`.
+The **ggpcp** version used here is the most general.
 
 -   `pcp_select()`: selections of the variables to be plotted and their
     horizontal order on parallel axes,
@@ -1917,13 +1990,11 @@ axes with appropriate aesthetics, labels for categorical factors and so
 forth. @fig-peng-ggpcp1 illustrates this type of display, using sex and
 species in addition to the quantitative variables for the penguin data.
 
-<!-- WARN: 03-multivariate_plots.html: Unable to resolve crossref @fig-peng-ggpcp1 
-     Does this have something to do with cache?
---> 
+<!-- fig.code: R/peng/peng-ggpcp.R -->
+
 ```{r}
-#| label: fig-peng-ggpcp1
+#| label: fig-peng-ggpcp1-code
 #| code-fold: show
-#| cache: true
 #| eval: false
 #| fig-width: 9
 #| fig-height: 6
@@ -1942,10 +2013,16 @@ peng |>
   theme(axis.title.y = element_blank(), axis.text.y = element_blank(), 
         axis.ticks.y = element_blank(), legend.position = "none")
 ```
-<!-- cHEATING HERE because ggcpc plots take so long -->
+
+<!-- CHEATING HERE because ggcpc plots take so long & caching causes problems -->
+
 ```{r}
-#| label: inc-fig-peng-ggpcp1
+#| label: fig-peng-ggpcp1
 #| echo: false
+#| fig-width: 9
+#| fig-height: 6
+#| out-width: "100%"
+#| fig-cap: "Parallel coordinates plot of penguin size variables, together with sex and species."
 knitr::include_graphics("figs/fig-peng-ggpcp1-1.png")
 ```
 
@@ -1958,7 +2035,6 @@ islands to make it clearer which species occur on each island.
 ```{r}
 #| label: fig-peng-ggpcp2
 #| code-fold: show
-#| cache: true
 #| eval: false
 #| fig-width: 9
 #| fig-height: 6
@@ -1980,9 +2056,11 @@ peng1 |>
   scale_colour_manual(values = peng.colors()[c(2,1,3)]) +
   theme_bw() +
   labs(x = "", y = "") +
-  theme(axis.text.y = element_blank(), axis.ticks.y = element_blank(),
+  theme(axis.text.y = element_blank(), 
+        axis.ticks.y = element_blank(),
         legend.position = "none") 
 ```
+
 <!-- cHEATING HERE because ggcpc plots take so long -->
 ```{r}
 #| label: inc-fig-peng-ggpcp2
@@ -1990,15 +2068,22 @@ peng1 |>
 knitr::include_graphics("figs/fig-peng-ggpcp2-1.png")
 ```
 
-This plot emphasizes the relation between penguin species and the island
+The order of variables in this plot emphasizes the relation between penguin species and the island
 where they were observed and then shows the values of the quantitative
-body size measurements.
+body size measurements. More generally, quantitative variables can, and probably should,
+be ordered to place the most highly correlated variables adjacently to minimize 
+the degree of crossing lines from one variable to the next [@MartiLaguna2003].
+When variables are highly _negatively_ correlated (such as `bill_depth` and `flipper_length here),
+crossings can be reduced simply by reversing the scale of one of the variables, e.g.,
+by plotting `-bill_depth`.
+\index{ordering!variables}
 
-<!--# **TODO**: Use `-bill_depth` to reverse that scale .... -->
 
-```{r child="child/grand-tour.qmd"}
+```{r child="child/03-grand-tour.qmd"}
 ```
 
+```{r child="child/03-network.qmd"}
+```
 
 
 

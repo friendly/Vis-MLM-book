@@ -29,7 +29,7 @@ peng <- peng |>
 #   labs(x = "", y = "") +
 #   theme_penguins()
 
-# Use this for first ggpcp plot, Fig. 3-xx
+# Use this for first ggpcp plot, Fig. 3-33
 peng |>
   pcp_select(bill_length:body_mass, sex, species) |>
   pcp_scale(method = "uniminmax") |>
@@ -68,7 +68,8 @@ peng1 |>
   scale_colour_manual(values = peng.colors()[c(2,1,3)]) +
   theme_bw() +
   labs(x = "", y = "") +
-  theme(axis.text.y = element_blank(), axis.ticks.y = element_blank(),
+  theme(axis.text.y = element_blank(), 
+        axis.ticks.y = element_blank(),
         legend.position = "none") 
   
 
