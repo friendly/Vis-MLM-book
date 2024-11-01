@@ -6,6 +6,9 @@
 # see also: pairs version
 # https://stackoverflow.com/questions/35591033/plot-scatterplot-matrix-with-partial-correlation-coefficients-in-r
 
+# TODO: make show.partial take a list(loc = c(x,y), cex = )
+# TODO: make id take a list of options
+
 pvPlot <- function(
    X, 
    vars = 1:2,
@@ -41,13 +44,33 @@ pvPlot <- function(
   xlab <- paste(vars[1], "residual")
   ylab <- paste(vars[2], "residual")
   labels <- if (missing(labels)) rownames(X) else labels
+  
+  applyDefaults <- car:::applyDefaults
+  id <- applyDefaults(id, defaults=list(method="mahal", 
+                                       n=5, cex=1, 
+                                       col="black", 
+                                       location="lr"), type="id")
+  if (isFALSE(id)){
+    id.n <- 0
+    id.method <- "mahal"
+    labels <- id.cex <- id.col <- id.location <- NULL
+  }
+  else{
+    labels <- id$labels
+    id.method <- id$method
+    id.n <- if ("identify" %in% id.method) Inf else id$n
+    id.cex <- id$cex
+  #    id.col <- if (by.groups) id$col else id$col[1]
+    id.location <- id$location
+  }
+  
   car::scatterplot(res[, 1], res[, 2],
     xlab = xlab, ylab = ylab,
     pch = pch, col = col, cex = cex,
     ellipse = ellipse,
     smooth = FALSE, boxplots = FALSE,
     grid = FALSE,
-    id = list(n=5, labels = labels),
+    id = list(n=5, labels = labels),      # make it id = id, using our defaults
     ...)
 
   if (axes)
@@ -77,7 +100,8 @@ png(filename = "images/crime-pvPlot1.png", height = 500, width = 500)
 op <- par(mar = c(5, 5, 1, 1)+.5)
 ellipse.args <- list(levels = 0.68, fill.alpha = 0.1, robust = FALSE)
 pvPlot(crime.num, vars = c("burglary", "larceny"), 
-       ellipse = list(levels = 0.68, fill.alpha = 0.1, robust = FALSE),
+       ellipse = ellipse.args,
+       id = list(n=5),
        cex.lab = 1.5)
 par(op)
 dev.off()
@@ -85,11 +109,19 @@ dev.off()
 png(filename = "images/crime-pvPlot2.png", height = 500, width = 500)
 op <- par(mar = c(5, 5, 1, 1)+.5)
 pvPlot(crime.num, vars = c("robbery", "auto"), 
-         ellipse = list(levels = 0.68, fill.alpha = 0.1, robust = FALSE),
-         cex.lab = 1.5)
+       ellipse = ellipse.args,
+       id = list(n=5),
+       cex.lab = 1.5)
 par(op)
 dev.off()
   
+# combine them side-by-side
+
+p1 <- image_read("images/crime-pvPlot1.png")
+p2 <- image_read("images/crime-pvPlot2.png")
+# join them left to right
+p12 <- image_append(c(p1, p2), stack = FALSE)
+image_write(p12, path="images/crime-pvPlot-1-2.png", format="png")
 
   
 }
