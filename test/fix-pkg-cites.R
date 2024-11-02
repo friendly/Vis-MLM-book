@@ -1,3 +1,15 @@
+# Change package references to use \pkg{} or \package()
+
+# **pkgname** package [R-cite] -> `r pkg("pkgname", cite=TRUE)`
+# assuming the citation is #R-pkgname
+
+pat <- "\*\*(.*)\*\* package \[@(.*)\]"
+
+# **pkgname** package -> `r pkg("pkgname")`
+
+pat <- "\*\*(.*)\*\* package"
+
+
 # **pkgname** package [R-pkgname] -> `r package("pkgname", cite=TRUE)`
 # **pkgname** package [![] `r package("pkgname", cite=FALSE)`
 

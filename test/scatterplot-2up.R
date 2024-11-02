@@ -11,3 +11,10 @@ scatterplot(prestige ~ education, data = Prestige,
 par(op)
 
 
+op <- par(mfrow = c(1,2),
+          mar = c(5,5,1,1)+.1)
+dataEllipse(prestige ~ income, data = Prestige)
+dataEllipse(prestige ~ education, data = Prestige)
+par(op)
+
+
