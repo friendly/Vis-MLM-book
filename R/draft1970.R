@@ -110,20 +110,18 @@ lm(Rank ~ Day, data=means) |> coef()
 
 # using sample
 
-dates <- seq( as.Date("1971-01-01"), as.Date("1971-12-31"), by="+1 day")
-ranks <- sample(seq_along(dates))
-
-draft1971 <- data.frame(
-  date = seq( as.Date("1971-01-01"), as.Date("1971-12-31"), by="+1 day"),
-  rank = sample(seq_along(dates))
-)
-
-draft1971 <- tibble::tibble(
-  date = seq( as.Date("1971-01-01"), as.Date("1971-12-31"), by="+1 day"),
-  rank = sample(seq_along(dates))
-)
+set.seed(42)
+date = seq(as.Date("1971-01-01"), as.Date("1971-12-31"), by="+1 day")
+rank = sample(seq_along(date))
+draft1971 <- data.frame(date, rank)
 
 head(draft1971, 4)
 tail(draft1971, 4)
+
+me <- as.Date("1971-05-07")
+draft1971[draft1971$date == me,]
+
+
+
   
 
