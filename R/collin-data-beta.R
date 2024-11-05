@@ -36,7 +36,7 @@ for (i in seq_along(rho)) {
 
 # coefficients
 coefs <- sapply(mods, coef)
-colnames(coefs) <- c("Intercept", "b1", "b2")
+colnames(coefs) <- paste0("mod", 1:3, " (rho=", rho, ")")
 coefs
 
 # VIFs

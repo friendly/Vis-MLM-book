@@ -23,7 +23,7 @@ The quote above shows the a typical quandary of some researchers in trying
 do understand these problems and and take steps to resolve them.
 This chapter illustrates the problems of collinearity,
 describes diagnostic measures to asses its effects, 
-and presents some novel visual tools for these purposes using the  `r pkg("VisCollin")`package.
+and presents some novel visual tools for these purposes using the  `r pkg("VisCollin")` package.
 
 One class of solutions for collinearity involves _regularization methods_ such as ridge regression. 
 Another collection of graphical methods, generalized ridge trace plots, implemented 
@@ -63,16 +63,17 @@ in $\mathbf{X} = (\mathbf{x}_1, \mathbf{x}_2, ..., \mathbf{x}_p)$
 
 
 \begin{align*}
-\mathbf{y}  & =  \beta_0 + \beta_1 \mathbf{x}_1 + \beta_2 \mathbf{x}_2 + \cdots + \beta_p \mathbf{x}_p + \mathbf{\epsilon} \\
+\mathbf{y}  & =  \beta_0 + \beta_1 \mathbf{x}_1 + \beta_2 \mathbf{x}_2 + \cdots + \beta_p \mathbf{x}_p + \boldsymbol{\epsilon} \\
             & =  \mathbf{X} \mathbf{\beta} + \mathbf{\epsilon} \; ,
 \end{align*}
 
 for which the ordinary least squares solution is:
 
 $$
-\widehat{\mathbf{b}} = (\mathbf{X}^\mathsf{T} \mathbf{X})^{-1} \; \mathbf{X}^\mathsf{T} \mathbf{y} \; ,
+\widehat{\mathbf{b}} = (\mathbf{X}^\mathsf{T} \mathbf{X})^{-1} \; \mathbf{X}^\mathsf{T} \mathbf{y} \; .
 $$
-with sampling variances and covariances $\text{Var} (\widehat{\mathbf{b}}) = \sigma_\epsilon^2 \times (\mathbf{X}^\mathsf{T} \mathbf{X})^{-1}$ and $\sigma_\epsilon^2$ is the variance of the residuals $\mathbf{\epsilon}$, estimated by the
+The sampling variances and covariances of the estimated coefficients is
+$\text{Var} (\widehat{\mathbf{b}}) = \sigma_\epsilon^2 \times (\mathbf{X}^\mathsf{T} \mathbf{X})^{-1}$ and $\sigma_\epsilon^2$ is the variance of the residuals $\mathbf{\epsilon}$, estimated by the
 mean squared error (MSE).
 
 In the limiting case, when one $x_i$ is _perfectly_
@@ -84,36 +85,47 @@ $\mathbf{b} = (\mathbf{X}^\mathsf{T} \mathbf{X})^{-1} \mathbf{X} \mathbf{y}$;
 are 0.
 
 This extreme case reflects a situation when one or more predictors are effectively redundant, for example
-when you include two variables $x$ and $y$ and their sum $z = x + y$ in a model, or use _ipsatized_
-scores that sum to a constant (such as proportions of a total). 
+when you include two variables $x$ and $y$ and their sum $z = x + y$ in a model.
+For instance, a dataset may include variables for income, expenses, and savings. But
+income is the sum of expenses and savings, so not all three should be used as predictors.
+A more subtly case is the use _ipsatized_, defined as
+scores that sum to a constant, such as proportions of a total. You might have scores on
+tests of reading, math, spelling and geography. With ipsatized scores, any one of these
+is necessarily 1 $-$ sum of the others. 
+
 More generally, collinearity refers to the case when there are very high
 **multiple correlations** among the predictors, such as $R^2 (x_i | \text{other }x) \ge 0.9$. 
 Note that you can't tell simply by looking at the simple correlations. A large correlation
-$r_{ij}$ is _sufficient_ for collinearity, but not _necessary_ --- you can have variables
+$r_{ij}$ is _sufficient_ for collinearity, but not _necessary_---you can have variables
 $x_1, x_2, x_3$ for which the pairwise correlation are low, but the multiple correlation is high.
 
 The consequences are:
 
-* The estimated coefficients have large standard errors, $s(\hat{b_j})$. They are multiplied by
+* The estimated coefficients have large standard errors, $s(\hat{b}_j)$. They are multiplied by
 the square root of the variance inflation factor, $\sqrt{\text{VIF}}$, discussed below.
-* This deflates the $t$-statistics, $t = \hat{b_j} / s(\hat{b_j})$ by the same factor.
+* The large standard errors deflate the $t$-statistics, $t = \hat{b}_j / s(\hat{b}_j)$, by the same factor,
+so a coefficient that would significant if the predictors were uncorrelated becomes insignificant
+when collinearity is present.
 * Thus you may find a situation where an overall model is highly significant (large $F$-statistic), while
 no (or few) of the individual predictors are. This is a puzzlement!
 * Beyond this, the least squares solution may have poor numerical accurracy [@Longley:1967], because
 the solution depends on the determinant $|\,\mathbf{X}^\mathsf{T} \mathbf{X}\,|$, which approaches 0
 as multiple correlations increase.
-* As well, recall that the coefficients $\hat{b}$ are **partial coefficients**, meaning that they estimate
-change $\Delta y$ in $y$ when $x$ changes by one unit $\Delta x$, but **holding all other variables
+* There is an interpretive problem as well. Recall that the coefficients $\hat{b}$ are _partial coefficients_, meaning that they estimate
+change $\Delta y$ in $y$ when $x$ changes by one unit $\Delta x$, but holding **all other variables
 constant**. Then, the model may be trying to estimate something that does not occur in the data.
+(For example: predicting strength from the highly correlated height and weight)
 
 ### Visualizing collinearity
 
 Collinearity can be illustrated in data space for two predictors in terms of the stability of the
-regression plane for a linear model `Y = X1 + X2`. In @fig-collin-demo (adapted from @Fox:2016:ARA, Fig. 13.2):
+regression plane for a linear model `Y = X1 + X2`.  @fig-collin-demo (adapted from @Fox:2016:ARA, Fig. 13.2)
+shows three cases as 3D plots of $(X_1, X_2, Y)$, where the correlation of predictors can be
+observed in the $(X_1, X_2)$ plane.
 
 (a) shows a case where
 $X_1$ and $X_2$ are uncorrelated as can be seen in their scatter in the horizontal plane (`+` symbols).
-The regression plane is well-supported; a small change in Y for one observation won't make much difference.
+The gray regression plane is well-supported; a small change in Y for one observation won't make much difference.
 
 (b) In panel (b), $X_1$ and $X_2$ have a perfect correlation, $r (x_1, x_2) = 1.0$. The regression plane
 is not unique; in fact there are an infinite number of planes that fit the data equally well. Note that,
@@ -142,7 +154,7 @@ knitr::include_graphics("images/collin-demo.png")
 
 ### Data space and $\beta$ space
 It is also useful to visualize collinearity by comparing the representation in **data space** with the
-analogous view of the confidence ellipses for coefficients in **beta space**. To do so, we generate
+analogous view of the confidence ellipses for coefficients in **beta space**. To do so in this example, I generate
 data from a known model $y = 3 x_1 + 3 x_2 + \epsilon$ with $\epsilon \sim \mathcal{N} (0, 100)$
 and various true correlations between $x_1$ and $x_2$, $\rho_{12} = (0, 0.8, 0.97)$ [^1].
 
@@ -152,8 +164,10 @@ and various true correlations between $x_1$ and $x_2$, $\rho_{12} = (0, 0.8, 0.9
 R file: `R/collin-data-beta.R`
 :::
 
-First, we use `MASS:mvrnorm()` to construct a list of data frames `XY` with specified values
-for the means and covariance matrices and a corresponding list of models, `mods`.
+First, I use `MASS:mvrnorm()` to construct a list of three data frames `XY` with the same means
+and standard deviations, but with different correlations. In each case, the variable $y$ 
+is generated with true coefficients `beta` $ =(3, 3)$, and the fitted model for that value of
+`rho` is added to a corresponding list of models, `mods`.
 
 ```{r collin-data-beta-gen}
 #| code-fold: show
@@ -187,18 +201,18 @@ for (i in seq_along(rho)) {
   mods[[i]] <- lm(y ~ x1 + x2, data=XY[[i]])
 }
 ```
-The estimated coefficients in these models are:
+The estimated coefficients  can be extracted using `coef()` applied to each model:
 
 ```{r collin-data-beta-coefs}
 coefs <- sapply(mods, coef)
-colnames(coefs) <- c("Intercept", "b1", "b2")
+colnames(coefs) <- paste0("mod", 1:3, " (rho=", rho, ")")
 coefs
 ```
 
 
 
-Then, we define a function to plot the data ellipse (`car::dataEllipse()`) for each data frame and confidence ellipse
-(`car::dataEllipse()`) in the corresponding fitted model. In this figure, I specify the x, y limits for each plot
+Then, I define a function to plot the data ellipse (`car::dataEllipse()`) for each data frame and confidence ellipse
+(`car::dataEllipse()`) in the corresponding fitted model. In @fig-collin-data-beta, I specify the x, y limits for each plot
 so that the relative sizes of these ellipses are comparable, so that variance inflation can be assesed visually.
 
 ```{r}
@@ -206,7 +220,7 @@ so that the relative sizes of these ellipses are comparable, so that variance in
 #| code-fold: show
 #| out-width: "100%"
 #| fig-show: "hold"
-#| fig.cap: '95% Ddata ellipses for x1, x2 and the corresponding 95% confidence ellipses for their coefficients. 
+#| fig.cap: '95% Data ellipses for x1, x2 and the corresponding 95% confidence ellipses for their coefficients in the model predicting y. 
 #|    In the confidence ellipse plots, reference lines show the value (0,0) for the null hypothesis and "+" marks 
 #|    the true values for the coefficients. This figure adapts an example by John Fox (2022).'
 #|    
@@ -242,7 +256,7 @@ for (i in seq_along(rho)) {
 par(op)
 ```
 
-Recall (#sec-betaspace) that the confidence ellipse for $(\beta_1, \beta_2)$ is just a 90 degree rotation
+Recall (@sec-betaspace) that the confidence ellipse for $(\beta_1, \beta_2)$ is just a 90 degree rotation
 (and rescaling) of the data ellipse for $(x_1, x_2)$: it is wide (more variance) in any direction where the
 data ellipse is narrow. 
 
@@ -253,6 +267,11 @@ inflation, described in the following section.
 
 
 ## Measuring collinearity {#sec-measure-collin}
+
+This section first describes the _variance inflation factor_ (VIF) used to measure the
+effect of possible collinearity on each predictor and a collection of diagnostic measures
+designed to help interpret these. Then I describe some novel graphical methods to make these
+effects more readily understandable, to answer the "Where's Waldo" question posed at the outset.
 
 ### Variance inflation factors {#sec-vif}
 
@@ -284,7 +303,8 @@ $$
 $$
 In practice, it is often easier to think in terms of the square root, $\sqrt{\text{VIF}_j}$ as the
 multiplier of the standard errors. The denominator, $1-R^2_{j | \text{others}}$ is sometimes called
-**tolerance**, a term I don't find particularly useful.
+**tolerance**, a term I don't find particularly useful, but it is just the proportion of the 
+variance of $x_j$ that is not explainable from the others.
 
 For the cases shown in @fig-collin-data-beta the VIFs and their square roots are:
 
@@ -298,8 +318,11 @@ sqrt(vifs)
 
 
 Note that when there are terms in the model with more than one df, such as education with four levels
-(and hence 3 df) or a polynomial term specified as `poly(x, 3)`, the standard VIF calculation
-gives results that vary with how those terms are coded in the model. @FoxMonette:92 define
+(and hence 3 df) or a polynomial term specified as `poly(age, 3)`, that variable, education or age
+is represented by three separate $x$s in the model matrix, and the standard VIF calculation
+gives results that vary with how those terms are coded in the model. 
+
+@FoxMonette:92 define
 _generalized_, GVIFs as the inflation in the squared area of the confidence ellipse for the coefficients
 of such terms, relative to what would be obtained with uncorrelated data. Visually, this can be seen
 by comparing the areas of the ellipses in the bottom row of @fig-collin-data-beta.
