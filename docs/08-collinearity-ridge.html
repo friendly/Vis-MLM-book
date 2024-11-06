@@ -370,17 +370,16 @@ window.Quarto = {
   <li>
 <a href="#sec:ridge" id="toc-sec:ridge" class="nav-link" data-scroll-target="#sec\:ridge"><span class="header-section-number">8.4</span> Ridge regression</a>
   <ul class="collapse">
-<li><a href="#what-is-ridge-regression" id="toc-what-is-ridge-regression" class="nav-link" data-scroll-target="#what-is-ridge-regression"><span class="header-section-number">8.4.1</span> What is ridge regression?</a></li>
-  <li><a href="#univariate-ridge-trace-plots" id="toc-univariate-ridge-trace-plots" class="nav-link" data-scroll-target="#univariate-ridge-trace-plots"><span class="header-section-number">8.4.2</span> Univariate ridge trace plots</a></li>
-  <li><a href="#bivariate-ridge-trace-plots" id="toc-bivariate-ridge-trace-plots" class="nav-link" data-scroll-target="#bivariate-ridge-trace-plots"><span class="header-section-number">8.4.3</span> Bivariate ridge trace plots</a></li>
+<li><a href="#univariate-ridge-trace-plots" id="toc-univariate-ridge-trace-plots" class="nav-link" data-scroll-target="#univariate-ridge-trace-plots"><span class="header-section-number">8.4.1</span> Univariate ridge trace plots</a></li>
+  <li><a href="#bivariate-ridge-trace-plots" id="toc-bivariate-ridge-trace-plots" class="nav-link" data-scroll-target="#bivariate-ridge-trace-plots"><span class="header-section-number">8.4.2</span> Bivariate ridge trace plots</a></li>
   </ul>
 </li>
   </ul><div class="toc-actions"><ul><li><a href="https://github.com/friendly/vis-MLM-book/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content quarto-banner-title-block page-columns page-full" id="quarto-document-content"><!--- For HTML Only ---><!-- \require{newcommand} --><!-- %\renewcommand*{\det}[1]{\mathrm{det} (#1)} --><!-- %\renewcommand*{\det}[1]{|#1|} --><!-- \newcommand{\sizedmat}[2]{\mathord{\mathop{\mat{#1}}\limits_{(#2)}}} --><!-- \newcommand*{\E}{\mathcal{E}} --><!-- Index generation --><!-- % R packages:  indexed under both package name and packages! --><!-- % data sets:  --><!-- % R stuff --><p>In univariate multiple regression models, we usually hope to have high correlations between the outcome <span class="math inline">\(y\)</span> and each of the predictors, <span class="math inline">\(\mathbf{X} = [\mathbf{x}_1, \mathbf{x_2}, \dots]\)</span>, but high correlations <em>among</em> the predictors can cause problems in estimating and testing their effects. Exactly the same problems can exist in multivariate response models, because they involve only the relations among the predictor variables.</p>
-<p>The problem of high correlations among the predictors in a model is called <strong>collinearity</strong> (or multicollinearity), referring to the situation when two or more predictors are very nearly linearly related to each other (colinear). This chapter illustrates the nature of collinearity geometrically, describes diagnostic measures to asses its effects, and presents some novel visual tools for these purposes using the <span style="color: brown;"><strong>VisCollin</strong></span> package.</p>
-<p>One class of solutions for collinearity involves <em>regularization methods</em> such as ridge regression. Another collection of graphical methods, generalized ridge trace plots, implemented in the <span style="color: brown;"><strong>genridge</strong></span>` package, sheds further light on what is accomplished by this technique.</p>
+<p>The problem of high correlations among the predictors in a model is called <strong>collinearity</strong> (or multicollinearity), referring to the situation when two or more predictors are very nearly linearly related to each other (collinear). This chapter illustrates the nature of collinearity geometrically, using data and confidence ellipsoids. It describes diagnostic measures to asses these effects, and presents some novel visual tools for these purposes using the <span style="color: brown;"><strong>VisCollin</strong></span> package.</p>
+<p>One class of solutions for collinearity involves <em>regularization methods</em> such as ridge regression. Another collection of graphical methods, generalized ridge trace plots, implemented in the <span style="color: brown;"><strong>genridge</strong></span>` package, sheds further light on what is accomplished by this technique. More generally, the methods of this chapter are further examples of how data and confidence ellipsoids can be used to visualize bias <strong>and</strong> precision of regression estimates.</p>
 <p><strong>Packages</strong></p>
 <p>In this chapter we use the following packages. Load them now.</p>
 <div class="cell" data-layout-align="center">
@@ -807,7 +806,7 @@ As well, it turns out that outliers in the predictor space (also high leverage o
 <ul>
 <li><p><strong>Pure prediction</strong>: If we are only interested in predicting / explaining an outcome, and not the model coefficients or which are “significant”, collinearity can be largely ignored. The fitted values are unaffected by collinearity, even in the case of perfect collinearity as shown in <a href="#fig-collin-demo" class="quarto-xref">Figure&nbsp;<span>8.2</span></a> (b).</p></li>
 <li>
-<p><strong>structural collinearity</strong>: Sometimes collinearity results from structural relations among the variables that relate to how they have been defined.</p>
+<p><strong>Structural collinearity</strong>: Sometimes collinearity results from structural relations among the variables that relate to how they have been defined.</p>
 <ul>
 <li><p>For example, polynomial terms, like <span class="math inline">\(x, x^2, x^3\)</span> or interaction terms like <span class="math inline">\(x_1, x_2, x_1 * x_2\)</span> are necessarily correlated. A simple cure is to <em>center</em> the predictors at their means, using <span class="math inline">\(x - \bar{x}, (x - \bar{x})^2, (x - \bar{x})^3\)</span> or <span class="math inline">\((x_1 - \bar{x}_1), (x_2 - \bar{x}_2), (x_1 - \bar{x}_1) * (x_2 - \bar{x}_2)\)</span>. Centering removes the spurious ill-conditioning, thus reducing the VIFs. Note that in polynomial models, using <code>y ~ poly(x, 3)</code> to specify a cubic model generates <em>orthogonal</em> (uncorrelated) regressors, whereas in <code>y ~ x + I(x^2) + I(x^3)</code> the terms have built-in correlations.</p></li>
 <li><p>When some predictors share a common cause, as in GNP or population in time-series or cross-national data, you can reduce collinearity by re-defining predictors to reflect <em>per capita measures</em>. In a related example with sports data, when you have cumulative totals (e.g., runs, hits, homeruns in baseball) for players over years, expressing these measures as <em>per year</em> will reduce the common effect of longevity on these measures.</p></li>
@@ -816,15 +815,15 @@ As well, it turns out that outliers in the predictor space (also high leverage o
 <li>
 <p><strong>Model re-specification</strong>:</p>
 <ul>
-<li><p>Drop one or more regressors that have a high VIF if they are not deemed to be essential</p></li>
-<li><p>Replace highly correlated regressors with linear combination(s) of them. For example, two related variables, <span class="math inline">\(x_1\)</span> and <span class="math inline">\(x_2\)</span> can be replaced without any loss of information by replacing them with their sum and difference, <span class="math inline">\(z_1 = x_1 + x_2\)</span> and <span class="math inline">\(z_2 = x_1 - x_2\)</span>. For example, in a dataset on fitness, we may have correlated predictors of resting pulse rate and pulse rate while running. Transforming these to average pulse rate and their difference gives new variables which are interpretable and less correlated.</p></li>
+<li><p>Drop one or more regressors that have a high VIF, if they are not deemed to be essential to understanding the model. Care must be taken here to not omit variables which should be controlled or accounted for in interpretation.</p></li>
+<li><p>Replace highly correlated regressors with less correlated linear combination(s) of them. For example, two related variables, <span class="math inline">\(x_1\)</span> and <span class="math inline">\(x_2\)</span> can be replaced without any loss of information by replacing them with their sum and difference, <span class="math inline">\(z_1 = x_1 + x_2\)</span> and <span class="math inline">\(z_2 = x_1 - x_2\)</span>. For instance, in a dataset on fitness, we may have correlated predictors of resting pulse rate and pulse rate while running. Transforming these to average pulse rate and their difference gives new variables which are interpretable and less correlated.</p></li>
 </ul>
 </li>
 <li>
 <p><strong>Statistical remedies</strong>:</p>
 <ul>
 <li><p>Transform the predictors <span class="math inline">\(\mathbf{X}\)</span> to uncorrelated principal component scores <span class="math inline">\(\mathbf{Z} = \mathbf{X} \mathbf{V}\)</span>, and regress <span class="math inline">\(\mathbf{y}\)</span> on <span class="math inline">\(\mathbf{Z}\)</span>. These will have the identical overall model fit without loss of information. A related technique is <em>incomplete</em> principal components regression, where some of the smallest dimensions (those causing collinearity) are omitted from the model. The trade-off is that it may be more difficult to interpret what the model means, but this can be countered with a biplot, showing the projections of the original variables into the reduced space of the principal components.</p></li>
-<li><p>use <strong>regularization methods</strong> such as ridge regression and lasso, which correct for collinearity by introducing shrinking coefficients towards 0, introducing a small amount of bias, . See the <a href="https://CRAN.R-project.org/package=genridge">genridge</a> package and its <a href="https://friendly.github.io/genridge/"><code>pkgdown</code> documentation</a> for visualization methods.</p></li>
+<li><p>Use <strong>regularization methods</strong> such as ridge regression and lasso, which correct for collinearity by introducing shrinking coefficients towards 0, introducing a small amount of bias, . See the <a href="https://CRAN.R-project.org/package=genridge">genridge</a> package and its <a href="https://friendly.github.io/genridge/"><code>pkgdown</code> documentation</a> for visualization methods.</p></li>
 <li><p>use Bayesian regression; if multicollinearity prevents a regression coefficient from being estimated precisely, then a prior on that coefficient will help to reduce its posterior variance.</p></li>
 </ul>
 </li>
@@ -880,11 +879,13 @@ Figure&nbsp;8.6: Centering a predictor removes the nessessary correlation in a q
 </div>
 <p><strong>Example</strong>: Interactions</p>
 <p>The dataset <code><a href="https://friendly.github.io/genridge/reference/Acetylene.html">genridge::Acetylene</a></code> gives data from <span class="citation" data-cites="MarquardtSnee1975">Marquardt &amp; Snee (<a href="95-references.html#ref-MarquardtSnee1975" role="doc-biblioref">1975</a>)</span> on the <code>yield</code> of a chemical manufacturing process to produce acetylene in relation to reactor temperature (<code>temp</code>), the <code>ratio</code> of two components and the contact <code>time</code> in the reactor. A naive response surface model might suggest that yield is quadratic in time and there are potential interactions among all pairs of predictors.</p>
+<!-- fig.code: R/acetlyne-colldiag.R -->
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb16" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">Acetylene</span>, package <span class="op">=</span> <span class="st">"genridge"</span><span class="op">)</span></span>
-<span><span class="va">acetyl.mod0</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">yield</span> <span class="op">~</span> <span class="va">temp</span> <span class="op">+</span> <span class="va">ratio</span> <span class="op">+</span> <span class="va">time</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html">I</a></span><span class="op">(</span><span class="va">time</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span> <span class="op">+</span> </span>
-<span>                          <span class="va">temp</span><span class="op">:</span><span class="va">time</span> <span class="op">+</span> <span class="va">temp</span><span class="op">:</span><span class="va">ratio</span> <span class="op">+</span> <span class="va">time</span><span class="op">:</span><span class="va">ratio</span>,</span>
-<span>                  data<span class="op">=</span><span class="va">Acetylene</span><span class="op">)</span></span>
+<span><span class="va">acetyl.mod0</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span></span>
+<span>  <span class="va">yield</span> <span class="op">~</span> <span class="va">temp</span> <span class="op">+</span> <span class="va">ratio</span> <span class="op">+</span> <span class="va">time</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html">I</a></span><span class="op">(</span><span class="va">time</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>          <span class="va">temp</span><span class="op">:</span><span class="va">time</span> <span class="op">+</span> <span class="va">temp</span><span class="op">:</span><span class="va">ratio</span> <span class="op">+</span> <span class="va">time</span><span class="op">:</span><span class="va">ratio</span>,</span>
+<span>  data<span class="op">=</span><span class="va">Acetylene</span><span class="op">)</span></span>
 <span></span>
 <span><span class="op">(</span><span class="va">acetyl.vif0</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/car/man/vif.html">vif</a></span><span class="op">(</span><span class="va">acetyl.mod0</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;       temp      ratio       time  I(time^2)  temp:time temp:ratio </span></span>
@@ -932,12 +933,12 @@ Figure&nbsp;8.6: Centering a predictor removes the nessessary correlation in a q
 </div>
 </section><section id="sec:ridge" class="level2" data-number="8.4"><h2 data-number="8.4" class="anchored" data-anchor-id="sec:ridge">
 <span class="header-section-number">8.4</span> Ridge regression</h2>
-<section id="what-is-ridge-regression" class="level3" data-number="8.4.1"><h3 data-number="8.4.1" class="anchored" data-anchor-id="what-is-ridge-regression">
-<span class="header-section-number">8.4.1</span> What is ridge regression?</h3>
-</section><section id="univariate-ridge-trace-plots" class="level3" data-number="8.4.2"><h3 data-number="8.4.2" class="anchored" data-anchor-id="univariate-ridge-trace-plots">
-<span class="header-section-number">8.4.2</span> Univariate ridge trace plots</h3>
-</section><section id="bivariate-ridge-trace-plots" class="level3" data-number="8.4.3"><h3 data-number="8.4.3" class="anchored" data-anchor-id="bivariate-ridge-trace-plots">
-<span class="header-section-number">8.4.3</span> Bivariate ridge trace plots</h3>
+<p>Ridge regression is an instance of a class of techniques designed to obtain more favorable predictions at the expense of some increase in bias, compared to ordinary least squares (OLS) estimation. These methods began as a way of solving collinearity problems in OLS regression with highly correlated predictors <span class="citation" data-cites="HoerlKennard:1970a">(<a href="95-references.html#ref-HoerlKennard:1970a" role="doc-biblioref">Hoerl &amp; Kennard, 1970</a>)</span>. More recently they developed to a larger class of model selection methods, of which the LASSO method of <span class="citation" data-cites="Tibshriani:regr:1996">Tibshirani (<a href="95-references.html#ref-Tibshriani:regr:1996" role="doc-biblioref">1996</a>)</span> and LAR method of <span class="citation" data-cites="Efron-etal:leas:2004">Efron et al. (<a href="95-references.html#ref-Efron-etal:leas:2004" role="doc-biblioref">2004</a>)</span> are well-known instances. See, for example, the reviews in <span class="citation" data-cites="Vinod:1978">Vinod (<a href="95-references.html#ref-Vinod:1978" role="doc-biblioref">1978</a>)</span> and <span class="citation" data-cites="McDonald:2009">McDonald (<a href="95-references.html#ref-McDonald:2009" role="doc-biblioref">2009</a>)</span> for details and context omitted here.</p>
+<p>An essential idea behind these methods is that the OLS estimates are constrained in some way, shrinking them, on average, toward zero, to achieve increased predictive accuracy at the expense of some increase in bias. Another common characteristic is that they involve some tuning parameter (<span class="math inline">\(k\)</span>) or criterion to quantify the tradeoff between bias and variance. In many cases, analytical or computationally intensive methods have been developed to choose an optimal value of the tuning parameter, for example using generalized cross validation, bootstrap methods.</p>
+<section id="univariate-ridge-trace-plots" class="level3" data-number="8.4.1"><h3 data-number="8.4.1" class="anchored" data-anchor-id="univariate-ridge-trace-plots">
+<span class="header-section-number">8.4.1</span> Univariate ridge trace plots</h3>
+</section><section id="bivariate-ridge-trace-plots" class="level3" data-number="8.4.2"><h3 data-number="8.4.2" class="anchored" data-anchor-id="bivariate-ridge-trace-plots">
+<span class="header-section-number">8.4.2</span> Bivariate ridge trace plots</h3>
 <p><strong>Package summary</strong></p>
 <div class="cell" data-layout-align="center">
 <p><strong>Packages used here</strong>:</p>
@@ -952,6 +953,9 @@ Belsley, D. A. (1991). <em>Conditioning diagnostics: Collinearity and weak data 
 </div>
 <div id="ref-Belsley-etal:80" class="csl-entry" role="listitem">
 Belsley, D. A., Kuh, E., &amp; Welsch, R. E. (1980). <em>Regression diagnostics: Identifying influential data and sources of collinearity</em>. John Wiley; Sons.
+</div>
+<div id="ref-Efron-etal:leas:2004" class="csl-entry" role="listitem">
+Efron, B., Hastie, T., Johnstone, I., &amp; Tibshirani, R. (2004). Least angle regression. <em>The Annals of Statistics</em>, <em>32</em>(2), 407–499.
 </div>
 <div id="ref-Fox:2016:ARA" class="csl-entry" role="listitem">
 Fox, J. (2016). <em>Applied regression analysis and generalized linear models</em> (Third edition.). SAGE.
@@ -974,6 +978,9 @@ Graybill, F. A. (1961). <em>An introduction to linear statistical models</em>. M
 <div id="ref-Hocking2013" class="csl-entry" role="listitem">
 Hocking, R. R. (2013). <em>Methods and applications of linear models: Regression and the analysis of variance</em>. Wiley. <a href="https://books.google.ca/books?id=iq2J-1iS6HcC">https://books.google.ca/books?id=iq2J-1iS6HcC</a>
 </div>
+<div id="ref-HoerlKennard:1970a" class="csl-entry" role="listitem">
+Hoerl, A. E., &amp; Kennard, R. W. (1970). Ridge regression: <span>B</span>iased estimation for nonorthogonal problems. <em>Technometrics</em>, <em>12</em>, 55–67.
+</div>
 <div id="ref-Kwan-etal:2009" class="csl-entry" role="listitem">
 Kwan, E., Lu, I. R. R., &amp; Friendly, M. (2009). Tableplot: A new tool for assessing precise predictions. <em>Zeitschrift f<span>ü</span>r Psychologie / Journal of Psychology</em>, <em>217</em>(1), 38–48. <a href="https://doi.org/10.1027/0044-3409.217.1.38">https://doi.org/10.1027/0044-3409.217.1.38</a>
 </div>
@@ -985,6 +992,15 @@ Marquardt, D. W. (1970). Generalized inverses, ridge regression, biased linear e
 </div>
 <div id="ref-MarquardtSnee1975" class="csl-entry" role="listitem">
 Marquardt, D. W., &amp; Snee, R. D. (1975). Ridge regression in practice. <em>The American Statistician</em>, <em>29</em>(1), 3–20. <a href="https://doi.org/10.1080/00031305.1975.10479105">https://doi.org/10.1080/00031305.1975.10479105</a>
+</div>
+<div id="ref-McDonald:2009" class="csl-entry" role="listitem">
+McDonald, G. C. (2009). Ridge regression. <em>Wiley Interdisciplinary Reviews: Computational Statistics</em>, <em>1</em>(1), 93–100. <a href="https://doi.org/10.1002/wics.14">https://doi.org/10.1002/wics.14</a>
+</div>
+<div id="ref-Tibshriani:regr:1996" class="csl-entry" role="listitem">
+Tibshirani, R. (1996). Regression shrinkage and selection via the lasso. <em>Journal of the Royal Statistical Society, Series B: Methodological</em>, <em>58</em>, 267–288.
+</div>
+<div id="ref-Vinod:1978" class="csl-entry" role="listitem">
+Vinod, H. D. (1978). A survey of ridge regression and related techniques for improvements over ordinary least squares. <em>The Review of Economics and Statistics</em>, <em>60</em>(1), 121–131. <a href="http://www.jstor.org/stable/1924340">http://www.jstor.org/stable/1924340</a>
 </div>
 </div>
 </section></section><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><hr>
