@@ -15,13 +15,10 @@ predictors, $\mathbf{X} = [\mathbf{x}_1, \mathbf{x_2}, \dots]$, but high correla
 in estimating and testing their effects. Exactly the same problems can exist in multivariate response models,
 because they involve only the relations among the predictor variables.
 
-> Some of my collinearity diagnostics have large values, or small values, or whatever they are not supposed to be
-> * What is bad?
-> * If bad, what can I do about it?
-
-The quote above shows the a typical quandary of some researchers in trying
-do understand these problems and and take steps to resolve them.
-This chapter illustrates the problems of collinearity,
+The problem of high correlations among the predictors in a model is called **collinearity**
+(or multicollinearity), referring to the situation when two or more predictors
+are very nearly linearly related to each other (colinear).
+This chapter illustrates the nature of collinearity geometrically, 
 describes diagnostic measures to asses its effects, 
 and presents some novel visual tools for these purposes using the  `r pkg("VisCollin")` package.
 
@@ -45,9 +42,28 @@ library(patchwork)
 
 ## What is collinearity?
 
-The chapter quote above is not untypical of researchers who have read standard treatments of linear models
+Researchers who have read standard treatments of linear models
 (e.g, @Graybill1961; @Hocking2013)
-and yet are still confused about what collinearity is, how to find its sources and how to correct them.
+are often confused about what collinearity is, how to find its sources and how to take steps to resolve them.
+There are a number of important diagnostic measures that can help, but these are usually presented
+in a tabular display like @fig-collinearity-diagnostics-SPSS, which prompted this querry on
+an online forum:
+
+> Some of my collinearity diagnostics have large values, or small values, or whatever they are _not_ supposed to be
+>
+> * What is bad?
+> * If bad, what can I do about it?
+
+
+```{r}
+#| label: fig-collinearity-diagnostics-SPSS
+#| out-width: "100%"
+#| fig-cap: "Collinearity diagnostics for a multiple regression model from SPSS. _Source_: Arndt Regorz, How to interpret a Collinearity Diagnostics table in SPSS, https://bit.ly/3YRB82b"
+```
+
+The trouble with displays like @fig-collinearity-diagnostics-SPSS is that the important
+information is hidden in a sea of numbers, some of which are bad when large, others
+bad when they are small and a large bunch which are irrelevant.
 In @FriendlyKwan:2009, we liken this problem to that of the reader of 
 Martin Hansford's
 successful series of books, \emph{Where's Waldo}.
@@ -59,13 +75,13 @@ in the pictures made him very hard to find.
 Collinearity diagnostics often provide a similar puzzle: where should you look
 in traditional tabular displays?
 
-<!- This image based on: https://x.com/ErrorJustin/status/830205933598879744 -->
+<!-- This image based on: https://x.com/ErrorJustin/status/830205933598879744 -->
 
 ```{r}
 #| label: fig-wheres-waldo
 #| echo: false
 #| out-width: "100%"
-#| fig-cap: "A scene from one of the Where's Waldo books. Waldo wears a red-striped shirt, but far too many of the other figures in the scene have horizontal red stripes, making it very difficult to find him among all the distractors. This is often the problem with collinearity diagnostics."
+#| fig-cap: "A scene from one of the Where's Waldo books. Waldo wears a red-striped shirt, but far too many of the other figures in the scene have horizontal red stripes, making it very difficult to find him among all the distractors. This is often the problem with collinearity diagnostics. _Source_: Retrieved from https://bit.ly/48KPcOo"
 knitr::include_graphics("images/wheres-waldo.png")
 ```
 
@@ -178,7 +194,7 @@ R file: `R/collin-data-beta.R`
 
 First, I use `MASS:mvrnorm()` to construct a list of three data frames `XY` with the same means
 and standard deviations, but with different correlations. In each case, the variable $y$ 
-is generated with true coefficients `beta` $ =(3, 3)$, and the fitted model for that value of
+is generated with true coefficients `beta` $=(3, 3)$, and the fitted model for that value of
 `rho` is added to a corresponding list of models, `mods`.
 
 ```{r collin-data-beta-gen}
@@ -193,7 +209,8 @@ s <- c(1, 1)             # standard deviations
 rho <- c(0, 0.8, 0.97)   # correlations
 beta <- c(3, 3)          # true coefficients
 
-# Specify a covariance matrix, with standard deviations s[1], s[2] and correlation r
+# Specify a covariance matrix, with standard deviations
+#   s[1], s[2] and correlation r
 Cov <- function(s, r){
   matrix(c(s[1],    r * prod(s),
          r * prod(s), s[2]), nrow = 2, ncol = 2)
@@ -213,7 +230,7 @@ for (i in seq_along(rho)) {
   mods[[i]] <- lm(y ~ x1 + x2, data=XY[[i]])
 }
 ```
-The estimated coefficients  can be extracted using `coef()` applied to each model:
+The estimated coefficients can then be extracted using `coef()` applied to each model:
 
 ```{r collin-data-beta-coefs}
 coefs <- sapply(mods, coef)
@@ -224,8 +241,8 @@ coefs
 
 
 Then, I define a function to plot the data ellipse (`car::dataEllipse()`) for each data frame and confidence ellipse
-(`car::dataEllipse()`) in the corresponding fitted model. In @fig-collin-data-beta, I specify the x, y limits for each plot
-so that the relative sizes of these ellipses are comparable, so that variance inflation can be assesed visually.
+(`car::confidenceEllipse()`) for the coefficients in the corresponding fitted model. In the plots in @fig-collin-data-beta, I specify the x, y limits for each plot
+so that the relative sizes of these ellipses are comparable, so that variance inflation can be assessed visually.
 
 ```{r}
 #| label: fig-collin-data-beta
@@ -261,7 +278,6 @@ do_plots <- function(XY, mod, r) {
 op <- par(mar = c(4,4,1,1)+0.1,
           mfcol = c(2, 3),
           cex.lab = 1.5)
-
 for (i in seq_along(rho)) {
   do_plots(XY[[i]], mods[[i]], rho[i])
 }
@@ -316,7 +332,7 @@ $$
 In practice, it is often easier to think in terms of the square root, $\sqrt{\text{VIF}_j}$ as the
 multiplier of the standard errors. The denominator, $1-R^2_{j | \text{others}}$ is sometimes called
 **tolerance**, a term I don't find particularly useful, but it is just the proportion of the 
-variance of $x_j$ that is not explainable from the others.
+variance of $x_j$ that is _not_ explainable from the others.
 
 For the cases shown in @fig-collin-data-beta the VIFs and their square roots are:
 
@@ -329,12 +345,12 @@ sqrt(vifs)
 ```
 
 
-Note that when there are terms in the model with more than one df, such as education with four levels
+Note that when there are terms in the model with more than one degree of freedom, such as education with four levels
 (and hence 3 df) or a polynomial term specified as `poly(age, 3)`, that variable, education or age
 is represented by three separate $x$s in the model matrix, and the standard VIF calculation
 gives results that vary with how those terms are coded in the model. 
 
-@FoxMonette:92 define
+To allow for these cases, @FoxMonette:92 define
 _generalized_, GVIFs as the inflation in the squared area of the confidence ellipse for the coefficients
 of such terms, relative to what would be obtained with uncorrelated data. Visually, this can be seen
 by comparing the areas of the ellipses in the bottom row of @fig-collin-data-beta.
@@ -498,16 +514,21 @@ and are filled (by default) with shades ranging from white through pink to red. 
 are printed in the cells.
 
 
-The tableplot below (@fig-cars-tableplot) encodes all the information from the values of `colldiag()` printed above
-(but using `prop.col` color breaks such that variance proportions < 0.3 are shaded white).
+The tableplot below (@fig-cars-tableplot) encodes all the information from the values of `colldiag()` printed above. To aid perception, it uses `prop.col` color breaks such that variance proportions < 0.3 are shaded white.
 The visual message is that one should attend to collinearities with large condition indices **and**
 large variance proportions implicating two or more predictors.
+
+::: {.column-margin}
+R file: `R/cars-colldiag.R`
+:::
+
+<!-- fig.code: R/cars-colldiag.R -->
 
 ```{r}
 #| label: fig-cars-tableplot
 #| fig-keep: "last"
-#| out-width: 90%
-#| fig.cap: "Tableplot of condition indices and variance proportions for the Cars data. In column 1, the square symbols are scaled relative to a maximum condition index of 30. 
+#| out-width: 10%
+#| fig.cap: "Tableplot of condition indices and variance proportions for the `cars` data. In column 1, the square symbols are scaled relative to a maximum condition index of 30. 
 #|     In the remaining columns, variance proportions (times 100) are shown as circles
 #|     scaled relative to a maximum of 100."
 tableplot(cd, title = "Tableplot of cars data", 
