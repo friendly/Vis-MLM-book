@@ -38,12 +38,274 @@ advances in the role of visualization within scientific discovery, as illustrate
 through Francis Galton, and graphical excellence, embodied in state statistical
 atlases produced in France and elsewhere. See @Friendly:2008:golden; @FriendlyWainer:2021:TOGS for this history.
 
-```{r child="child/02-anscombe.qmd"}
+This chapter introduces the importance of graphing data through three nearly classic stories with the following themes:
+
+* **summary statistics are not enough**: Anscombe's Quartet demonstrates datasets that are indistinguishable
+by numerical summary statistics (mean, standard deviation, correlation), but whose relationships are
+vastly different.
+
+* **one lousy point can ruin your day**: A researcher is mystified by a difference between a correlation
+for men and women until she plots the data.
+
+* **finding the signal in noise**: The story of the US 1970 Draft Lottery shows how a weak, but
+reliable signal, reflecting bias in a process can be revealed by graphical enhancement
+and summarization.
+
+<!-- was: "child/02-anscombe.qmd" -->
+
+### Anscombe's Quartet {#sec-anscombe}
+
+In 1973, Francis Anscombe [@Anscombe:73] famously constructed a set of four datasets
+illustrate the importance of plotting the graphs before analyzing and model building, and the effect of unusual observations on fitted models.
+Now known as _Anscombe's Quartet_, these datasets had identical statistical properties: the same
+means, standard deviations, correlations and regression lines. 
+
+His purpose was to debunk three notions that had been prevalent at the time:
+
+*  Numerical calculations are exact, but graphs are coarse and limited by perception and resolution;
+* For any particular kind of statistical data there is just one set of calculations constituting a correct statistical analysis;
+* Performing intricate calculations is virtuous, whereas actually looking at the data is cheating.
+
+The dataset `datasets::anscombe` has 11 observations, recorded in wide format,
+with variables `x1:x4` and `y1:y4`.
+
+```{r anscombe-data}
+data(anscombe) 
+head(anscombe)
 ```
 
-```{r child="child/02-davis.qmd"}
+The following code transforms this data to long format and calculates some summary statistics
+for each `dataset`.
+
+
+```{r anscombe-long}
+anscombe_long <- anscombe |> 
+  pivot_longer(everything(), 
+               names_to = c(".value", "dataset"), 
+               names_pattern = "(.)(.)"
+  ) |>
+  arrange(dataset)
+
+anscombe_long |>
+  group_by(dataset) |>
+  summarise(xbar      = mean(x),
+            ybar      = mean(y),
+            r         = cor(x, y),
+            intercept = coef(lm(y ~ x))[1],
+            slope     = coef(lm(y ~ x))[2]
+         )
+```
+As we can see, all four datasets have nearly identical univariate and bivariate statistical
+measures. You can only see how they differ in graphs, which show their true natures to be vastly
+different.
+
+@fig-ch02-anscombe1 is an enhanced version of Anscombe's plot of these data, adding
+helpful annotations to show visually the underlying statistical summaries.
+
+```{r}
+#| label: fig-ch02-anscombe1
+#| echo: false
+#| fig-align: center
+#| out-width: "90%"
+#| fig-cap: "Scatterplots of Anscombe's Quartet. Each plot shows the fitted regression line
+#|     and a 68% data ellipse representing the correlation between $x$ and $y$. "
+knitr::include_graphics("figs/ch02/ch02-anscombe1.png")
 ```
 
+This figure is produced as follows, using a single call to `ggplot()`, faceted by `dataset`.
+As we will see later (@sec-data-ellipse), the data ellipse (produced by `stat_ellipse()`)
+reflects the correlation between the variables.
+
+```{r}
+#| eval: false
+desc <- tibble(
+  dataset = 1:4,
+  label = c("Pure error", "Lack of fit", "Outlier", "Influence")
+)
+
+ggplot(anscombe_long, aes(x = x, y = y)) +
+  geom_point(color = "blue", size = 4) +
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE,
+              color = "red", linewidth = 1.5) +
+  scale_x_continuous(breaks = seq(0,20,2)) +
+  scale_y_continuous(breaks = seq(0,12,2)) +
+  stat_ellipse(level = 0.5, color=col, type="norm") +
+  geom_label(data=desc, aes(label = label), x=6, y=12) +
+  facet_wrap(~dataset, labeller = label_both) 
+```
+
+The subplots are labeled with the statistical idea they reflect:
+
+* dataset 1: **Pure error**. This is the typical case with well-behaved data. Variation of the points around the line reflect only measurement error or unreliability in the response, $y$.
+
+* dataset 2: **Lack of fit**. The data is clearly curvilinear, and would be very well described by a quadratic, `y ~ poly(x, 2)`. This violates the assumption of linear regression that the fitted model has the correct form.
+
+* dataset 3: **Outlier**. One point, second from the right, has a very large residual. Because this point is near the extreme of $x$, it pulls the regression line towards it, as you can see by imagining a line through the remaining points.
+
+* dataset 4: **Influence**. All but one of the points have the same $x$ value. The one unusual point has sufficient influence to force the regression line to fit it **exactly**.
+
+One moral from this example:
+
+> **Linear regression only "sees" a line. It does its' best when the data are really linear. Because the line is fit by least squares, it pulls the line toward discrepant points to minimize the sum of squared residuals.**
+
+
+::: {.callout-note title="Datasaurus Dozen"}
+
+The method Anscombe used to compose his quartet is unknown, but it turns out that that there is
+a method to construct a wider collection of datasets with identical statistical properties.
+After all, in a bivariate dataset with $n$ observations, the correlation
+has $(n-2)$ degrees of freedom, so it is possible to choose $n-2$ of the $(x, y)$
+pairs to yield any given value.
+As it happens, it is also possible to create any number of datasets with the same means, 
+standard deviations and correlations with nearly any shape you like --- even a dinosaur!
+
+The _Datasaurus Dozen_ was first publicized by Alberto Cairo in a [blog post](http://www.thefunctionalart.com/2016/08/download-datasaurus-never-trust-summary.html)
+and are available in the `r package("datasauRus", cite=TRUE)`.
+As shown in @fig-datasaurus, the sets include a star, cross, circle, bullseye,
+horizontal and vertical lines, and, of course the "dino".
+The method [@MatejkaFitzmaurice2017] uses _simulated annealing_, an iterative process that
+perturbs the points in a scatterplot, moving them towards a given shape while keeping the statistical summaries close to the fixed target value. 
+
+The `r pkg("datasauRus")` package just contains the datasets, but
+a general method, called _statistical metamers_,
+for producing such datasets has been described by [Elio Campitelli](https://eliocamp.github.io/codigo-r/en/2019/01/statistical-metamerism/)
+and implemented in the `r pkg("metamer")` package.
+:::
+
+::: {.content-visible unless-format="pdf"}
+```{r}
+#| label: fig-datasaurus
+#| out-width: "90%"
+#| echo: false
+#| fig-cap: "Animation of the Dinosaur Dozen datasets. Source: [https://youtu.be/It4UA75z_KQ](https://youtu.be/It4UA75z_KQ)"
+knitr::include_graphics("images/DataSaurusDozen.gif")
+```
+:::
+
+::: {.callout-note title="Quartets"}
+
+The essential idea of a statistical "quartet" is to illustrate four quite different datasets
+or circumstances that seem superficially the same, but yet are paradoxically very different
+when you look behind the scenes.
+For example, in the context of causal analysis @Gelman-etal:2023, illustrated
+sets of four graphs, within each of which 
+all four represent the same average (latent) causal effect but with
+much different patterns of individual effects; @McGowan2023 provide another illustration
+with four seemingly identical data sets each generated by a different causal mechanism.
+As an example of machine learning models, @Biecek-etal:2023, introduced the "Rashamon Quartet",
+a synthetic dataset for which four models from different classes 
+(linear model, regression tree, random forest, neural network)
+have practically identical predictive performance.
+In all cases, the paradox is solved when
+their visualization reveals the distinct ways
+of understanding structure in the data.
+The [**quartets**](https://r-causal.github.io/quartets/) package contains these and other variations on this theme.
+:::
+
+<!-- was: "child/02-davis.qmd" -->
+
+
+### One lousy point can ruin your day {#sec-davis}
+
+In the mid 1980s, a consulting client had a strange problem.[^davis]
+She was conducting a study of the relation between body image and weight preoccupation in
+exercising and non-exercising people [@Davis:1990]. As part of the design, the researcher
+wanted to know if self-reported weight could be taken as a reliable indicator of
+true weight measured on a scale. It was expected that the correlations between reported
+and measured weight should be close to 1.0, and the slope of the regression lines
+for men and women should also be close to 1.0. The dataset is `car::Davis`.
+
+[^davis]: This story is told apocryphally. The consulting client actually did plot
+the data, but needed help making better graphs. 
+
+She was therefore very surprise to see the following numerical results: For men,
+the correlation was nearly perfect, but not so for women.
+<!-- figure-code: R/Davis-reg.R -->
+
+```{r davis-cor}
+data(Davis, package="carData")
+Davis <- Davis |>
+  drop_na()          # drop missing cases
+Davis |>
+  group_by(sex) |>
+  select(sex, weight, repwt) |>
+  summarise(r = cor(weight, repwt))
+```
+
+Similarly, the regression lines showed the expected slope for men, but that for women was only 0.26.
+
+```{r davis-lm}
+Davis |>
+  nest(data = -sex) |>
+  mutate(model = map(data, ~ lm(repwt ~ weight, data = .)),
+         tidied = map(model, tidy)) |>
+  unnest(tidied) |>
+  filter(term == "weight") |>
+  select(sex, term, estimate, std.error)
+
+```
+
+"What could be wrong here?", the client asked. The consultant replied with the obvious question:
+
+> _Did you plot your data?_
+
+The answer turned out to be one discrepant point, a female, whose measured weight was 166 kg
+(366 lbs!). This single point exerted so much influence that it pulled the fitted regression line
+down to a slope of only 0.26.
+
+```{r}
+#| label: fig-ch02-davis-reg1
+#| fig-cap: "Regression for Davis' data on reported weight and measures weight for men and women.
+#|    Separate regression lines, predicting reported weight from measured weight are shown for males and females.
+#|    One highly unusual point is highlighted."
+
+# shorthand to position legend inside the figure
+legend_inside <- function(position) {
+  theme(legend.position = "inside",
+        legend.position.inside = position)
+}
+
+Davis |>
+  ggplot(aes(x = weight, y = repwt, 
+             color = sex, shape = sex, linetype = sex)) +
+  geom_point(size = ifelse(Davis$weight==166, 6, 2)) +
+  geom_smooth(method = "lm", formula = y~x, se = FALSE) +
+  labs(x = "Measured weight (kg)", y = "Reported weight (kg)") +
+  scale_linetype_manual(values = c(F = "longdash", M = "solid")) +
+  legend_inside(c(.8, .8))
+```
+
+In this example, it was arguable that $x$ and $y$ axes should be reversed, 
+to determine how well measured weight can be predicted from reported weight.
+In `ggplot` this can easily be done by reversing the `x` and `y` aesthetics.
+
+```{r}
+#| label: fig-ch02-davis-reg2
+#| fig-cap: "Regression for Davis' data on reported weight and measures weight for men and women.
+#|    Separate regression lines, predicting measured weight from reported weight are shown for males and females.
+#|    The highly unusual point no longer has an effect on the fitted lines."
+Davis |>
+  ggplot(aes(y = weight, x = repwt, color = sex, shape=sex)) +
+  geom_point(size = ifelse(Davis$weight==166, 6, 2)) +
+  labs(y = "Measured weight (kg)", x = "Reported weight (kg)") +
+    geom_smooth(method = "lm", formula = y~x, se = FALSE) +
+  legend_inside(c(.8, .8))
+```
+
+In @fig-ch02-davis-reg2, this discrepant observation again stands out like a sore thumb, but
+it makes very little difference in the fitted line for females.
+The reason is that this point is well within the range of the $x$ variable (`repwt`).
+To impact the slope of the regression line, an observation must be unusual in_both_ $x$ and $y$.
+We take up the topic of how to detect influential observations and what to do about them in 
+@sec-linear-models-plots.
+
+The value of such plots is not only that they can reveal possible problems with an analysis,
+but also help identify their reasons and suggest corrective action.
+What went wrong here? Examination of the original data showed that this person switched
+the values, recording her reported weight in the box for measured weight and vice versa.
+
+```{r child="child/02-draft1970.qmd"}
+```
 
 ## Plots for data analysis
 

@@ -86,3 +86,42 @@ anova(draft.mod)
 # make the table version
 Draft1970$Risk <- cut(Draft1970$Rank, breaks=3, labels=c("High", "Med", "Low"))
 with(Draft1970, table(Month, Risk))
+
+# plot means
+
+means <- Draft1970 |>
+  group_by(Month) |>
+  summarize(Day = mean(Day),
+            se = sd(Rank/ sqrt(n())),
+            Rank = mean(Rank)) 
+
+ggplot(means, aes(x = Day, y = Rank)) +
+  geom_point(size = 4) +
+  geom_smooth(method = "lm", formula = y~x,
+              color = "blue", fill = "blue", alpha = 0.2) +
+  geom_errorbar(aes(ymin = Rank-se, ymax = Rank+se), width = 8) +
+  geom_text(data=months, aes(x=mid, y=100, label=month), nudge_x = 5) +
+  labs(x = "Average day of the year",
+       y = "Average lottery rank")
+
+with(means, cor(Day, Rank))
+
+lm(Rank ~ Day, data=means) |> coef()
+
+# using sample
+
+set.seed(42)
+date = seq(as.Date("1971-01-01"), as.Date("1971-12-31"), by="+1 day")
+rank = sample(seq_along(date))
+draft1971 <- data.frame(date, rank)
+
+head(draft1971, 4)
+tail(draft1971, 4)
+
+me <- as.Date("1971-05-07")
+draft1971[draft1971$date == me,]
+
+
+
+  
+

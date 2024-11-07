@@ -33,7 +33,7 @@ understand the nature of _multicolinearity_.
 
 The classic reference on regression diagnostics is @Belsley-etal:80.
 My favorite modern texts are the brief @Fox2020 and the more complete @FoxWeisberg:2018,
-both of which are supported by the **car** package [@R-car]. Some of the examples in
+both of which are supported by the `r package("car", cite=TRUE)`. Some of the examples in
 this chapter are inspired by @FoxWeisberg:2018.
 
 **Packages**
@@ -387,7 +387,7 @@ lmtest::coeftest(mod1)
 broom::tidy(mod1)
 ```
 
-The **modelsummary** package (@R-modelsummary) is an easy to use,
+The `r package("modelsummary", cite=TRUE)` is an easy to use,
 very general package to summarize data and statistical models in R. The main function
 `modelsummary()` can produce highly customizable tables of coefficients
 in a wide variety of output formats, including HTML, PDF, LaTeX, Markdown, and MS Word.
@@ -402,8 +402,7 @@ modelsummary(list("Model1" = mod1),
   estimate = "{estimate} [{conf.low}, {conf.high}]",
   statistic = c("std.error", "p.value"),
   fmt = fmt_statistic("estimate" = 3, "conf.low" = 4, "conf.high" = 4),
-  gof_omit = ".",
-  output = "tinytable")
+  gof_omit = ".")
 ```
 
 `gof_omit` allows you to omit or select the goodness-of-fit statistics and other model information
@@ -550,8 +549,7 @@ modelplot(list("mod1" = mod1, "mod2" = mod2, "mod3" = mod3),
         legend.position.inside = c(0.85, 0.2))
 ```
 
-The **ggstats** package (@R-ggstats) 
-package provides even nicer versions
+The `r package("ggstats", cite=TRUE)` provides even nicer versions
 of coefficient plots that handle factors in a more reasonable way, as levels within
 the factor. `ggcoef_model()` plots a single model and `ggcoef_compare()` plots 
 a list of models using sensible defaults. A small but nice feature is that it explicitly
@@ -659,20 +657,28 @@ but the negative (though non-significant) coefficient for coffee suggests that c
 
 The reason for this apparent paradox is that
 the general linear model fit by `lm()` estimates all effects together and so the coefficients pertain to the _partial_ effect of a given predictor, _adjusting_ for the effects of all others.
-That is, the coefficient for coffee ($\beta_1 = -0.41$) estimates the effect of coffee for
+That is, the coefficient for coffee ($\beta_{\text{Coffee}} = -0.41$) estimates the effect of coffee for
 people with _same_ level of stress. In the marginal scatterplot, the positive slope for coffee
 (1.10) ignores the correlation of coffee and stress.
+
+This is an example of _confounding_ in regression when an important predictor is omitted.
+Stress is positively associated with both coffee consumption and heart damage.
+When stress is omitted, the coefficient for coffee is biased because it "picks up"
+the relation with the omitted variable.
 
 A solution to this problem is
 the _added-variable_ plot ("AV plot", also called _partial regression_ plot, MostellerTukey-1977).
 This is a multivariate analog of a
 a simple marginal scatterplot, designed to visualize directly the partial relation between $y$ and the predictors
-$x_1, x_2, \dots$ in a multiple regression model. You can think of this as a magic window that hides
-the relations of all other variables with each of the $y$ and $x_i$ shown in a given added-variable plot,
-giving an unobstructed view of the net relation between $y$ and $x_i$ with the effect of
+$x_1, x_2, \dots$ in a multiple regression model. 
+
+You can think of this as a magic window that hides
+the relations of all other variables with each of the $y$ and $x_i$ shown in a given added-variable plot.
+This gives an unobstructed view of the net relation between $y$ and $x_i$ with the effect of
 all other variables removed. In effect, it reduces the problem of viewing the complete model
 in $p$-dimensional space to a sequence of $p$ 2D plots, each of which tells the story of one
-predictor, unentangled with the others.
+predictor, unentangled from the others. This is essentially the same idea as
+the partial variables plot (@sec-pvPlot) used to understand partial correlations.
 
 The construction of an AV plot is conceptually very simple. For variable $x_i$, imagine that we fit two supplementary regressions:
 
@@ -710,7 +716,7 @@ Note that `y` here contains both the current predictor, $\mathbf{x}_i$ and the r
 residuals `resids` have two columns, one for $x_i \,\vert\, \text{others}$
 and one for $y \,\vert\, \text{others}$.
 
-Added-variable plots are produced using `car::avPlot()` (for one predictor) or
+Added-variable plots are produced using `car::avPlot()` for one predictor or
 `avPlots()` for any number of model terms. The `id` argument controls
 which points are identified in the plots; `n=2` labels the two points
 that are furthest from the mean on the horizontal axis _and_ the two with the largest
@@ -734,7 +740,7 @@ avPlots(fit.both,
 The data ellipses for $\mathbf{x}_i^\star$ and $\mathbf{y}^\star$ summarize the conditional
 (or partial) relations of the response to each predictor controlling for all other predictors
 in each plot.  The essential idea is that the data ellipse for $(\mathbf{x}_i^\star, \mathbf{y}^\star)$ has the identical relation to the estimate $\hat{b}_i$ in a
-multiple regression as the data ellipse of $(\mathbf{x}, \mathbf{y})$ has to the3 slope in
+multiple regression as the data ellipse of $(\mathbf{x}, \mathbf{y})$ has to the slope in
 a simple regression.
 
 ### Properties of AV plots
@@ -1027,10 +1033,17 @@ see the impact of unmodeled curvilinearity and interactions in addition to those
 
 There are several implementations of effect displays in R, whose details, terminology
 and ease of use vary. Among these,
-**ggeffects** [@R-ggeffects] calculates adjusted predicted values under several methods for conditioning.
-**marginaleffects** [@R-marginaleffects] is similar and also provides estimation of marginal slopes, contrasts, odds ratios, etc. Both have `plot()` methods based on `ggplot2`.
-My favorite is the **effects** [@R-effects] package, which alone provides partial residuals,
-and is somewhat easier to use, though it uses **lattice** graphics.
+<!-- **ggeffects** [@R-ggeffects]  -->
+`r pkg("ggeffects", cite=TRUE)`
+calculates adjusted predicted values under several methods for conditioning.
+<!-- **marginaleffects** [@R-marginaleffects]  -->
+`r pkg("marginaleffects", cite=TRUE)`
+is similar and also provides estimation of marginal slopes, contrasts, odds ratios, etc. Both have `plot()` methods based on `ggplot2`. 
+My favorite is the 
+<!-- **effects** [@R-effects]  -->
+`r pkg("effects", cite=TRUE)`
+package, which alone provides partial residuals,
+and is somewhat easier to use, though it uses `r pkg("lattice")` graphics.
 See the vignette [Predictor Effects Graphics Gallery](https://cran.r-project.org/web/packages/effects/vignettes/predictor-effects-gallery.pdf)
 for details of the computations for effect displays.
 

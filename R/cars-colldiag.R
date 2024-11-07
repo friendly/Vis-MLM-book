@@ -5,7 +5,7 @@ library(VisCollin)
 library(car)         # for vif
 library(dplyr)
 
-data(cars)
+data(cars, package = "VisCollin")
 
 # correlation matrix of predictors
 
@@ -34,8 +34,7 @@ cd <- colldiag(cars.mod, add.intercept=FALSE, center=TRUE)
 # simplified display
 print(colldiag(cars.mod, add.intercept=FALSE, center=TRUE), fuzz=.3)
 
-
-tableplot.colldiag(cd)
+tableplot(cd)
 
 # Biplots
 # cars.numeric  <- cars[,sapply(cars,is.numeric)]

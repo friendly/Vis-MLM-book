@@ -15,19 +15,19 @@ predictors, $\mathbf{X} = [\mathbf{x}_1, \mathbf{x_2}, \dots]$, but high correla
 in estimating and testing their effects. Exactly the same problems can exist in multivariate response models,
 because they involve only the relations among the predictor variables.
 
-> Some of my collinearity diagnostics have large values, or small values, or whatever they are not supposed to be
-> * What is bad?
-> * If bad, what can I do about it?
-
-The quote above shows the a typical quandary of some researchers in trying
-do understand these problems and and take steps to resolve them.
-This chapter illustrates the problems of collinearity,
-describes diagnostic measures to asses its effects, 
-and presents some novel visual tools for these purposes using the **VisCollin** package.
+The problem of high correlations among the predictors in a model is called **collinearity**
+(or multicollinearity), referring to the situation when two or more predictors
+are very nearly linearly related to each other (collinear).
+This chapter illustrates the nature of collinearity geometrically, using data and confidence
+ellipsoids.
+It describes diagnostic measures to asses these effects, 
+and presents some novel visual tools for these purposes using the  `r pkg("VisCollin")` package.
 
 One class of solutions for collinearity involves _regularization methods_ such as ridge regression. 
-Another collection of graphical methods, generalized ridge trace plots, implemented in the **genridge** package,
-sheds further light on what is accomplished by this technique.
+Another collection of graphical methods, generalized ridge trace plots, implemented 
+in the `r pkg("genridge")`` package, sheds further light on what is accomplished by this technique.
+More generally, the methods of this chapter are further examples of how data and confidence
+ellipsoids can be used to visualize bias **and** precision of regression estimates.
 
 **Packages**
 
@@ -45,9 +45,28 @@ library(patchwork)
 
 ## What is collinearity?
 
-The chapter quote above is not untypical of researchers who have read standard treatments of linear models
+Researchers who have read standard treatments of linear models
 (e.g, @Graybill1961; @Hocking2013)
-and yet are still confused about what collinearity is, how to find its sources and how to correct them.
+are often confused about what collinearity is, how to find its sources and how to take steps to resolve them.
+There are a number of important diagnostic measures that can help, but these are usually presented
+in a tabular display like @fig-collinearity-diagnostics-SPSS, which prompted this querry on
+an online forum:
+
+> Some of my collinearity diagnostics have large values, or small values, or whatever they are _not_ supposed to be
+>
+> * What is bad?
+> * If bad, what can I do about it?
+
+
+```{r}
+#| label: fig-collinearity-diagnostics-SPSS
+#| out-width: "100%"
+#| fig-cap: "Collinearity diagnostics for a multiple regression model from SPSS. _Source_: Arndt Regorz, How to interpret a Collinearity Diagnostics table in SPSS, https://bit.ly/3YRB82b"
+```
+
+The trouble with displays like @fig-collinearity-diagnostics-SPSS is that the important
+information is hidden in a sea of numbers, some of which are bad when large, others
+bad when they are small and a large bunch which are irrelevant.
 In @FriendlyKwan:2009, we liken this problem to that of the reader of 
 Martin Hansford's
 successful series of books, \emph{Where's Waldo}.
@@ -56,23 +75,36 @@ people and things and a few Waldos--- a character wearing a red and white stripe
 shirt and hat, glasses, and carrying a walking stick or other paraphernalia.
 Waldo was never disguised, yet the complex arrangement of misleading visual cues
 in the pictures made him very hard to find.
-Collinearity diagnostics often provide a similar puzzle.
+Collinearity diagnostics often provide a similar puzzle: where should you look
+in traditional tabular displays?
+
+<!-- This image based on: https://x.com/ErrorJustin/status/830205933598879744 -->
+
+```{r}
+#| label: fig-wheres-waldo
+#| echo: false
+#| out-width: "100%"
+#| fig-cap: "A scene from one of the Where's Waldo books. Waldo wears a red-striped shirt, but far too many of the other figures in the scene have horizontal red stripes, making it very difficult to find him among all the distractors. This is often the problem with collinearity diagnostics. _Source_: Retrieved from https://bit.ly/48KPcOo"
+knitr::include_graphics("images/wheres-waldo.png")
+```
+
 
 Recall the standard classical linear model for a response variable $y$ with a collection of predictors
 in $\mathbf{X} = (\mathbf{x}_1, \mathbf{x}_2, ..., \mathbf{x}_p)$
 
 
 \begin{align*}
-\mathbf{y}  & =  \beta_0 + \beta_1 \mathbf{x}_1 + \beta_2 \mathbf{x}_2 + \cdots + \beta_p \mathbf{x}_p + \mathbf{\epsilon} \\
+\mathbf{y}  & =  \beta_0 + \beta_1 \mathbf{x}_1 + \beta_2 \mathbf{x}_2 + \cdots + \beta_p \mathbf{x}_p + \boldsymbol{\epsilon} \\
             & =  \mathbf{X} \mathbf{\beta} + \mathbf{\epsilon} \; ,
 \end{align*}
 
 for which the ordinary least squares solution is:
 
 $$
-\widehat{\mathbf{b}} = (\mathbf{X}^\mathsf{T} \mathbf{X})^{-1} \; \mathbf{X}^\mathsf{T} \mathbf{y} \; ,
+\widehat{\mathbf{b}} = (\mathbf{X}^\mathsf{T} \mathbf{X})^{-1} \; \mathbf{X}^\mathsf{T} \mathbf{y} \; .
 $$
-with sampling variances and covariances $\text{Var} (\widehat{\mathbf{b}}) = \sigma_\epsilon^2 \times (\mathbf{X}^\mathsf{T} \mathbf{X})^{-1}$ and $\sigma_\epsilon^2$ is the variance of the residuals $\mathbf{\epsilon}$, estimated by the
+The sampling variances and covariances of the estimated coefficients is
+$\text{Var} (\widehat{\mathbf{b}}) = \sigma_\epsilon^2 \times (\mathbf{X}^\mathsf{T} \mathbf{X})^{-1}$ and $\sigma_\epsilon^2$ is the variance of the residuals $\mathbf{\epsilon}$, estimated by the
 mean squared error (MSE).
 
 In the limiting case, when one $x_i$ is _perfectly_
@@ -84,36 +116,47 @@ $\mathbf{b} = (\mathbf{X}^\mathsf{T} \mathbf{X})^{-1} \mathbf{X} \mathbf{y}$;
 are 0.
 
 This extreme case reflects a situation when one or more predictors are effectively redundant, for example
-when you include two variables $x$ and $y$ and their sum $z = x + y$ in a model, or use _ipsatized_
-scores that sum to a constant (such as proportions of a total). 
+when you include two variables $x$ and $y$ and their sum $z = x + y$ in a model.
+For instance, a dataset may include variables for income, expenses, and savings. But
+income is the sum of expenses and savings, so not all three should be used as predictors.
+A more subtly case is the use _ipsatized_, defined as
+scores that sum to a constant, such as proportions of a total. You might have scores on
+tests of reading, math, spelling and geography. With ipsatized scores, any one of these
+is necessarily 1 $-$ sum of the others. 
+
 More generally, collinearity refers to the case when there are very high
 **multiple correlations** among the predictors, such as $R^2 (x_i | \text{other }x) \ge 0.9$. 
 Note that you can't tell simply by looking at the simple correlations. A large correlation
-$r_{ij}$ is _sufficient_ for collinearity, but not _necessary_ --- you can have variables
+$r_{ij}$ is _sufficient_ for collinearity, but not _necessary_---you can have variables
 $x_1, x_2, x_3$ for which the pairwise correlation are low, but the multiple correlation is high.
 
 The consequences are:
 
-* The estimated coefficients have large standard errors, $s(\hat{b_j})$. They are multiplied by
+* The estimated coefficients have large standard errors, $s(\hat{b}_j)$. They are multiplied by
 the square root of the variance inflation factor, $\sqrt{\text{VIF}}$, discussed below.
-* This deflates the $t$-statistics, $t = \hat{b_j} / s(\hat{b_j})$ by the same factor.
+* The large standard errors deflate the $t$-statistics, $t = \hat{b}_j / s(\hat{b}_j)$, by the same factor,
+so a coefficient that would significant if the predictors were uncorrelated becomes insignificant
+when collinearity is present.
 * Thus you may find a situation where an overall model is highly significant (large $F$-statistic), while
 no (or few) of the individual predictors are. This is a puzzlement!
 * Beyond this, the least squares solution may have poor numerical accurracy [@Longley:1967], because
 the solution depends on the determinant $|\,\mathbf{X}^\mathsf{T} \mathbf{X}\,|$, which approaches 0
 as multiple correlations increase.
-* As well, recall that the coefficients $\hat{b}$ are **partial coefficients**, meaning that they estimate
-change $\Delta y$ in $y$ when $x$ changes by one unit $\Delta x$, but **holding all other variables
+* There is an interpretive problem as well. Recall that the coefficients $\hat{b}$ are _partial coefficients_, meaning that they estimate
+change $\Delta y$ in $y$ when $x$ changes by one unit $\Delta x$, but holding **all other variables
 constant**. Then, the model may be trying to estimate something that does not occur in the data.
+(For example: predicting strength from the highly correlated height and weight)
 
 ### Visualizing collinearity
 
 Collinearity can be illustrated in data space for two predictors in terms of the stability of the
-regression plane for a linear model `Y = X1 + X2`. In @fig-collin-demo (adapted from @Fox:2016:ARA, Fig. 13.2):
+regression plane for a linear model `Y = X1 + X2`.  @fig-collin-demo (adapted from @Fox:2016:ARA, Fig. 13.2)
+shows three cases as 3D plots of $(X_1, X_2, Y)$, where the correlation of predictors can be
+observed in the $(X_1, X_2)$ plane.
 
 (a) shows a case where
 $X_1$ and $X_2$ are uncorrelated as can be seen in their scatter in the horizontal plane (`+` symbols).
-The regression plane is well-supported; a small change in Y for one observation won't make much difference.
+The gray regression plane is well-supported; a small change in Y for one observation won't make much difference.
 
 (b) In panel (b), $X_1$ and $X_2$ have a perfect correlation, $r (x_1, x_2) = 1.0$. The regression plane
 is not unique; in fact there are an infinite number of planes that fit the data equally well. Note that,
@@ -142,7 +185,7 @@ knitr::include_graphics("images/collin-demo.png")
 
 ### Data space and $\beta$ space
 It is also useful to visualize collinearity by comparing the representation in **data space** with the
-analogous view of the confidence ellipses for coefficients in **beta space**. To do so, we generate
+analogous view of the confidence ellipses for coefficients in **beta space**. To do so in this example, I generate
 data from a known model $y = 3 x_1 + 3 x_2 + \epsilon$ with $\epsilon \sim \mathcal{N} (0, 100)$
 and various true correlations between $x_1$ and $x_2$, $\rho_{12} = (0, 0.8, 0.97)$ [^1].
 
@@ -152,8 +195,10 @@ and various true correlations between $x_1$ and $x_2$, $\rho_{12} = (0, 0.8, 0.9
 R file: `R/collin-data-beta.R`
 :::
 
-First, we use `MASS:mvrnorm()` to construct a list of data frames `XY` with specified values
-for the means and covariance matrices and a corresponding list of models, `mods`.
+First, I use `MASS:mvrnorm()` to construct a list of three data frames `XY` with the same means
+and standard deviations, but with different correlations. In each case, the variable $y$ 
+is generated with true coefficients `beta` $=(3, 3)$, and the fitted model for that value of
+`rho` is added to a corresponding list of models, `mods`.
 
 ```{r collin-data-beta-gen}
 #| code-fold: show
@@ -167,7 +212,8 @@ s <- c(1, 1)             # standard deviations
 rho <- c(0, 0.8, 0.97)   # correlations
 beta <- c(3, 3)          # true coefficients
 
-# Specify a covariance matrix, with standard deviations s[1], s[2] and correlation r
+# Specify a covariance matrix, with standard deviations
+#   s[1], s[2] and correlation r
 Cov <- function(s, r){
   matrix(c(s[1],    r * prod(s),
          r * prod(s), s[2]), nrow = 2, ncol = 2)
@@ -187,26 +233,26 @@ for (i in seq_along(rho)) {
   mods[[i]] <- lm(y ~ x1 + x2, data=XY[[i]])
 }
 ```
-The estimated coefficients in these models are:
+The estimated coefficients can then be extracted using `coef()` applied to each model:
 
 ```{r collin-data-beta-coefs}
 coefs <- sapply(mods, coef)
-colnames(coefs) <- c("Intercept", "b1", "b2")
+colnames(coefs) <- paste0("mod", 1:3, " (rho=", rho, ")")
 coefs
 ```
 
 
 
-Then, we define a function to plot the data ellipse (`car::dataEllipse()`) for each data frame and confidence ellipse
-(`car::dataEllipse()`) in the corresponding fitted model. In this figure, I specify the x, y limits for each plot
-so that the relative sizes of these ellipses are comparable, so that variance inflation can be assesed visually.
+Then, I define a function to plot the data ellipse (`car::dataEllipse()`) for each data frame and confidence ellipse
+(`car::confidenceEllipse()`) for the coefficients in the corresponding fitted model. In the plots in @fig-collin-data-beta, I specify the x, y limits for each plot
+so that the relative sizes of these ellipses are comparable, so that variance inflation can be assessed visually.
 
 ```{r}
 #| label: fig-collin-data-beta
 #| code-fold: show
 #| out-width: "100%"
 #| fig-show: "hold"
-#| fig.cap: '95% Ddata ellipses for x1, x2 and the corresponding 95% confidence ellipses for their coefficients. 
+#| fig.cap: '95% Data ellipses for x1, x2 and the corresponding 95% confidence ellipses for their coefficients in the model predicting y. 
 #|    In the confidence ellipse plots, reference lines show the value (0,0) for the null hypothesis and "+" marks 
 #|    the true values for the coefficients. This figure adapts an example by John Fox (2022).'
 #|    
@@ -235,14 +281,13 @@ do_plots <- function(XY, mod, r) {
 op <- par(mar = c(4,4,1,1)+0.1,
           mfcol = c(2, 3),
           cex.lab = 1.5)
-
 for (i in seq_along(rho)) {
   do_plots(XY[[i]], mods[[i]], rho[i])
 }
 par(op)
 ```
 
-Recall (#sec-betaspace) that the confidence ellipse for $(\beta_1, \beta_2)$ is just a 90 degree rotation
+Recall (@sec-betaspace) that the confidence ellipse for $(\beta_1, \beta_2)$ is just a 90 degree rotation
 (and rescaling) of the data ellipse for $(x_1, x_2)$: it is wide (more variance) in any direction where the
 data ellipse is narrow. 
 
@@ -253,6 +298,11 @@ inflation, described in the following section.
 
 
 ## Measuring collinearity {#sec-measure-collin}
+
+This section first describes the _variance inflation factor_ (VIF) used to measure the
+effect of possible collinearity on each predictor and a collection of diagnostic measures
+designed to help interpret these. Then I describe some novel graphical methods to make these
+effects more readily understandable, to answer the "Where's Waldo" question posed at the outset.
 
 ### Variance inflation factors {#sec-vif}
 
@@ -284,7 +334,8 @@ $$
 $$
 In practice, it is often easier to think in terms of the square root, $\sqrt{\text{VIF}_j}$ as the
 multiplier of the standard errors. The denominator, $1-R^2_{j | \text{others}}$ is sometimes called
-**tolerance**, a term I don't find particularly useful.
+**tolerance**, a term I don't find particularly useful, but it is just the proportion of the 
+variance of $x_j$ that is _not_ explainable from the others.
 
 For the cases shown in @fig-collin-data-beta the VIFs and their square roots are:
 
@@ -297,9 +348,12 @@ sqrt(vifs)
 ```
 
 
-Note that when there are terms in the model with more than one df, such as education with four levels
-(and hence 3 df) or a polynomial term specified as `poly(x, 3)`, the standard VIF calculation
-gives results that vary with how those terms are coded in the model. @FoxMonette:92 define
+Note that when there are terms in the model with more than one degree of freedom, such as education with four levels
+(and hence 3 df) or a polynomial term specified as `poly(age, 3)`, that variable, education or age
+is represented by three separate $x$s in the model matrix, and the standard VIF calculation
+gives results that vary with how those terms are coded in the model. 
+
+To allow for these cases, @FoxMonette:92 define
 _generalized_, GVIFs as the inflation in the squared area of the confidence ellipse for the coefficients
 of such terms, relative to what would be obtained with uncorrelated data. Visually, this can be seen
 by comparing the areas of the ellipses in the bottom row of @fig-collin-data-beta.
@@ -356,7 +410,7 @@ $\mathbf{R}^{-1}_{X}$.
 
 More generally, the matrix $\mathbf{R}^{-1}_{X} = (r^{ij})$, when standardized to a correlation matrix
 as $-r^{ij} / \sqrt{r^{ii} \; r^{jj}}$ gives the matrix of all partial correlations,
-$r_{ij \,|\, \textrm{others}$.
+$r_{ij} \,|\, \text{others}$.
 }
 
 :::
@@ -463,16 +517,21 @@ and are filled (by default) with shades ranging from white through pink to red. 
 are printed in the cells.
 
 
-The tableplot below (@fig-cars-tableplot) encodes all the information from the values of `colldiag()` printed above
-(but using `prop.col` color breaks such that variance proportions < 0.3 are shaded white).
+The tableplot below (@fig-cars-tableplot) encodes all the information from the values of `colldiag()` printed above. To aid perception, it uses `prop.col` color breaks such that variance proportions < 0.3 are shaded white.
 The visual message is that one should attend to collinearities with large condition indices **and**
 large variance proportions implicating two or more predictors.
+
+::: {.column-margin}
+R file: `R/cars-colldiag.R`
+:::
+
+<!-- fig.code: R/cars-colldiag.R -->
 
 ```{r}
 #| label: fig-cars-tableplot
 #| fig-keep: "last"
-#| out-width: 90%
-#| fig.cap: "Tableplot of condition indices and variance proportions for the Cars data. In column 1, the square symbols are scaled relative to a maximum condition index of 30. 
+#| out-width: 10%
+#| fig.cap: "Tableplot of condition indices and variance proportions for the `cars` data. In column 1, the square symbols are scaled relative to a maximum condition index of 30. 
 #|     In the remaining columns, variance proportions (times 100) are shown as circles
 #|     scaled relative to a maximum of 100."
 tableplot(cd, title = "Tableplot of cars data", 
@@ -588,7 +647,7 @@ and not the model coefficients or which are "significant", collinearity can be l
 The fitted values are unaffected by collinearity, even in the case of perfect collinearity
 as shown in @fig-collin-demo (b). 
 
-* **structural collinearity**: Sometimes collinearity results from structural relations among the variables that relate to how they have been defined.
+* **Structural collinearity**: Sometimes collinearity results from structural relations among the variables that relate to how they have been defined.
 
   + For example, polynomial terms, like $x, x^2, x^3$ or interaction terms like $x_1, x_2, x_1 * x_2$
 are necessarily correlated. A simple cure is to _center_ the predictors at their means, using
@@ -604,11 +663,11 @@ using `y ~ poly(x, 3)` to specify a cubic model generates _orthogonal_ (uncorrel
   expressing these measures as _per year_ will reduce the common effect of longevity on these measures.
 
 * **Model re-specification**:
-  + Drop one or more regressors that have a high VIF if they are not deemed to be essential
+  + Drop one or more regressors that have a high VIF, if they are not deemed to be essential to understanding the model. Care must be taken here to not omit variables which should be controlled or accounted for in interpretation.
 
-  + Replace highly correlated regressors with linear combination(s) of them. For example, two related variables,
+  + Replace highly correlated regressors with less correlated linear combination(s) of them. For example, two related variables,
 $x_1$ and $x_2$ can be replaced without any loss of information by replacing them with their sum and
-difference, $z_1 = x_1 + x_2$ and $z_2 = x_1 - x_2$. For example, in a dataset on fitness, we may have
+difference, $z_1 = x_1 + x_2$ and $z_2 = x_1 - x_2$. For instance, in a dataset on fitness, we may have
 correlated predictors of resting pulse rate and pulse rate while running. Transforming these to 
 average pulse rate and their difference gives new variables which are interpretable and less correlated.
 
@@ -622,7 +681,7 @@ average pulse rate and their difference gives new variables which are interpreta
   with a biplot, showing the projections of the original variables into the reduced space of the principal
   components.
   
-  + use **regularization methods** such as ridge regression and lasso, which correct for collinearity by 
+  + Use **regularization methods** such as ridge regression and lasso, which correct for collinearity by 
   introducing shrinking coefficients towards 0, introducing
 a small amount of bias, . See the [genridge](https://CRAN.R-project.org/package=genridge) package and its [`pkgdown` documentation](https://friendly.github.io/genridge/) for visualization methods.
 
@@ -680,11 +739,14 @@ manufacturing process to produce acetylene in relation to reactor temperature (`
 `ratio` of two components and the contact `time` in the reactor. A naive response surface model
 might suggest that yield is quadratic in time and there are potential interactions among all pairs of predictors.
 
+<!-- fig.code: R/acetlyne-colldiag.R -->
+
 ```{r acetyl-mod0}
 data(Acetylene, package = "genridge")
-acetyl.mod0 <- lm(yield ~ temp + ratio + time + I(time^2) + 
-                          temp:time + temp:ratio + time:ratio,
-                  data=Acetylene)
+acetyl.mod0 <- lm(
+  yield ~ temp + ratio + time + I(time^2) + 
+          temp:time + temp:ratio + time:ratio,
+  data=Acetylene)
 
 (acetyl.vif0 <- vif(acetyl.mod0))
 ```
@@ -728,11 +790,77 @@ vif(acetyl.mod2, type = "term")
 
 ## Ridge regression {#sec:ridge}
 
-### What is ridge regression?
+Ridge regression is an instance of a class of techniques designed to obtain more favorable predictions at the expense of some increase in bias, compared to ordinary least squares (OLS) estimation. 
+These methods began as a way of solving collinearity problems in OLS regression with highly correlated predictors
+[@HoerlKennard:1970a].
+More recently they developed to a larger class of model selection methods, of which the
+LASSO method of @Tibshriani:regr:1996 and LAR method of @Efron-etal:leas:2004
+are well-known instances.  See, for example, the reviews in
+@Vinod:1978 and @McDonald:2009 for details and context omitted here.
 
-### Univariate ridge trace plots
 
-### Bivariate ridge trace plots
+An essential idea behind these methods is that the OLS estimates are constrained in some way, shrinking them, on average, toward zero, to achieve increased predictive accuracy
+at the expense of some increase in bias.
+Another common characteristic is that they involve some tuning parameter ($k$)
+or criterion to quantify the tradeoff between bias and variance.  In many cases, 
+analytical or computationally intensive methods have been developed to choose an optimal value 
+of the tuning parameter, for example using generalized cross validation, bootstrap methods.
+
+A common means to visualize the effects of shrinkage in these problems is to make
+what are called _univariate ridge trace plots_ (@sec-ridge-univar) showing how the estimated coefficients
+$\widehat{\boldsymbol{\beta}}_k$ change as the shrinkage criterion $k$ increases.
+(An example is shown in Fig XX below.)
+But this only provides a view of bias. It is the wrong graphic form for a multivariate
+problem where we want to visualize bias in the coefficients $\widehat{\boldsymbol{\beta}}_k$
+vs. their precision, as reflected in their estimated variances, 
+$\widehat{\textsf{Var}} (\widehat{\boldsymbol{\beta}}_k)$.
+A more useful graphic plots the confidence ellipses for the coefficients,
+showing both bias and precision (@sec-ridge-bivar).
+
+### Properties of rigde regression
+
+To provide some context, I summarize the properties of ridge regression below,
+comparing the OLS estimates with their ridge counterparts.
+To avoid unnecessary details related to the intercept, assume
+the predictors have been centered at their means and the unit vector is
+omitted from $\mathbf{X}$. 
+Further, to avoid scaling issues, we
+standardize the columns of $\mathbf{X}$ to unit length, so that $\mathbf{X}\trans \mathbf{X}$ is a also correlation matrix.
+
+The ordinary least squares estimates of coefficients and their estimated
+variance covariance matrix take the (hopefully now) familiar form
+
+\begin{array*}
+\widehat{\boldsymbol{\beta}}^{\mathrm{OLS}} & = & 
+    (\mathbf{X}\trans \mathbf{X})^{-1} \mathbf{X}\trans \mathbf{y} \comma \\
+\widehat{\Var} (\widehat{\boldsymbol{\beta}}^{\mathrm{OLS}}) & = & 
+    \widehat{\sigma}^2 (\mathbf{X}\trans \mathbf{X})^{-1}.
+\end{array*} {#eq-OLS-beta-var}
+
+As we saw ealier, one signal of the problem of collinearity is that the determinant
+$\det{\mathbf{X}\trans \mathbf{X}}$ approaches zero as the predictors become more
+collinear. The inverse $(\mathbf{X}\trans \mathbf{X})^{-1}$ becomes numerically unstable,
+or does not exist if the determinant becomes zero in the case of exact dependency
+of one variable on the others.
+
+Ridge regression uses a trick to avoid this. It adds a constant, $k$ to the diagonal elements,
+replacing $\mathbf{X}\trans \mathbf{X}$ with $\mathbf{X}\trans \mathbf{X} + k \mathbf{I}$
+in @eq-OLS-beta-var. This drives the determinant away from zero as $k$ increases.
+The ridge regression estimates then become,
+
+\begin{eqnarray}
+\widehat{\boldsymbol{\beta}}^{\mathrm{RR}}_k  & = &
+    (\mathbf{X}\trans \mathbf{X} + k \mathbf{I})^{-1} \mathbf{X}\trans \mathbf{y}  \\
+                                    & = & \mathbf{G}_k \, \widehat{\boldsymbol{\beta}}^{\mathrm{OLS}} \comma \\
+\widehat{\Var} (\widehat{\boldsymbol{\beta}}^{\mathrm{RR}}_k) & = & 
+     \widehat{\sigma}^2  \mathbf{G}_k (\mathbf{X}\trans \mathbf{X})^{-1} \mathbf{G}_k\trans \comma
+\end{eqnarray}
+where $\mat{G}_k = \left[\mat{I} + k (\mat{X}\trans \mat{X})^{-1} \right] ^{-1}$, the $(p \times p)$ _shrinkage_ matrix.
+
+
+### Univariate ridge trace plots {#sec-ridge-univar}
+
+### Bivariate ridge trace plots {#sec-ridge-bivar}
 
 
 

@@ -1,5 +1,5 @@
 
-## Network diagrams
+## Network diagrams {#sec-network}
 
 A major theme throughout this chapter has been to understand how to extend data visualization from
 simple bivariate scatterplots to increasingly more complex situations with larger datasets.
@@ -32,8 +32,8 @@ the item nodes are labeled according to the OCEAN factor they are assumed to mea
 For 25 items, there are $25 \times 24 / 2 = 300$ correlations, way too much to see.
 A clearer picture arises when we reduce the number of edges shown according to some
 criterion. Here,
-edges are drawn _only_ between nodes where the correlation is considered significant
-by a method ("glasso") designed to make the graph optimally sparse.
+edges are drawn _only_ between nodes where the correlation is considered important
+by a method ("glasso" = graphical LASSO) designed to make the graph optimally sparse.
 
 <!-- Actually, the psych::bfi data is:
 25 personality self report items taken from the International Personality Item Pool (ipip.ori.org) were included as part of the Synthetic Aperture Personality Assessment (SAPA) web based personality assessment project. The data from 2800 subjects are included here as a demonstration set for scale construction, factor analysis, and Item Response Theory analysis. Three additional demographic variables (sex, education, and age) are also included.
@@ -56,15 +56,33 @@ so there should not be many edges connecting items of one factor with those of a
 Yet, there are quite a few cross-factor connections in @fig-big5-qgraph-rodrigues,
 so perhaps the theory is wrong, or, more likely, the 25 items are not good representatives of
 these underlying dimensions. The network diagram shown here is a visual tool for thought
-and refinement 
+and refinement. See @Costantini2015 for a tutorial on network analysis of personality data in R.
 
-Network diagrams stem from mathematical graph theory [@BondyMurty2008; @West2001] of the properties of nodes and edges used to represent pairwise relationships, ...
+Network diagrams stem from mathematical graph theory [@BondyMurty2008; @West2001] of the abstract properties of nodes and edges used to represent pairwise relationships.
+These can be used to model many types of relations and processes in physical, biological, social and other sciences, where such properties as connectedness, centrality, cliques of connected nodes and so forth
+provide a vocabulary used to understand and explain complex systems.
 
--> network science [@Barabasi2016network], network psychometrics, ...
+For one example, @Grandjean2016 used network analysis to study the connections among 2500 Twitter
+users (nodes) who identified as belonging to a "digital humanities" community
+from the relations (edges) of who follows whom.
+Grandjean also used these methods to study the relationships among [characters in Shakespeare's tragedies](http://www.martingrandjean.ch/network-visualization-shakespeare/) in terms of 
+the characters (nodes) and edges representing how often they appeared in the same scene.
 
--> Graph layout: Because a network diagram can potentially reflect hundreds of variables,
-various layout algorithms have been developed to automatically
-position the nodes so as to generate aesthetically pleasing network visualizations that emphasize important structural properties, like clusters and central nodes.
+The wide applicability of these ideas has led to what is now called _network science_ [@Barabasi2016network]
+encompassing computer networks, biological networks, cognitive and semantic networks, and social networks.
+Recent developments in psychology led to a framework of _network psychometrics_ [@IsvoranuEpskamp2022],
+where, for example, symptoms of psychopathology (phobias, anxiety, substance abuse) can be
+conceptualized as an interconnected network of clusters and studied for possible causal relations [@Robinaugh2019].
+
+Because a network diagram can potentially reflect hundreds of variables,
+various [graph layout algorithms](https://en.wikipedia.org/wiki/Graph_drawing) have been developed to automatically
+position the nodes so as to generate aesthetically pleasing network visualizations that emphasize important structural properties, like clusters and central nodes, while minimizing visual clutter (many crossing lines) to promote understandability and usability.
+
+
+There are quite a few R packages for constructing network diagrams, both static and dynamic / interactive,
+and these differ considerably in how the information required for a graph is structured as
+R objects, and the flexibility to produce attractive graphs.
+Among these, `r pkg("igraph", cite=TRUE)` structures the data as a dataset of vertices and edges with properties
 
 -> packages: qgraph, ...
 
@@ -110,7 +128,10 @@ knitr::include_graphics("images/crime-cor.png")
 ```
 -->
 
-### Partial correlations
+In this figure, you can see the group of property crimes (auto theft, larceny, burglary) at the left
+separated from the violent crimes against persons at the right.
+
+### Partial correlations {#sec-partial-cor}
 
 Among the more important statistical applications of network graph theory is the idea that you can also use them to study the the _partial_ (conditional)
 associations among variables with the contributions of all other variables
@@ -128,6 +149,7 @@ ignoring other variables, one of partial correlations allows you to visualize th
 For a set of variables $X = \{x_1, x_2, \dots, x_p \}$, the partial correlation
 between $x_i$ and $x_i$, controlling for all other variables
 $Z = X \setminus \{x_i, x_j\} = x_\text{others}$ is equivalent to the correlation between the _residuals_ of the linear regressions of $x_i$ on all other $\mathbf{Z}$ and $x_j$ on $\mathbf{Z}$.
+(The notation $X \setminus \{x_i, x_j\}$ is read as "$X$ without the set $\{x_i, x_j\}$").
 
 Mathematically, let $\hat{x}_i$ and $\hat{x}_j$ be the predicted values from the linear regressions of $x_i$ on $\mathbf{Z}$ and of $x_j$ on $\mathbf{Z}$, respectively. The partial correlation $p_{ij}$ between $x_i$ and $x_j$ controlling for $\mathbf{Z}$ is given by:
 $$
@@ -137,11 +159,38 @@ $$ {#eq-parcor}
 But, rather than running all these linear regressions, they can all be computed
 from the inverse of the correlation matrix [@Whittaker1990, Ch. 5],
 a relation first noted by @Dempster1972.
-Let $\mathbf{R}$ be the correlation matrix, and $\mathbf{P}$ be the matrix of partial correlations. Then:
+Let $\mathbf{R}$ be the correlation matrix of the variables.
+Then, the matrix $\mathbf{P}$ of partial correlations
+can be obtained from the negative inverse, $-\mathbf{R}^{-1}$,
+standardized to a correlation matrix by dividing by the square root of
+product of its diagonal elements,
+$$
+P_{ij} = - \frac{R^{-1}_{ij}}{\sqrt{(R^{-1}_{ii} \cdot R^{-1}_{jj})}} \period
+$$
+
+
+<!-- Detrius from earlier descriptions ...
 $$
 \mathbf{P} = -\mathbf{R}^{-1} \comma
 $$
 where $\mathbf{R}^{-1}$ is the inverse of the correlation matrix $\mathbf{R}$.
+
+Let $\mathbf{S}$ be the covariance matrix of the variable, and $\mathbf{R}$ be the corresponding
+correlation matrix.
+Then the matrix of partial variances and covariances, $\mathbf{T}$ is
+
+$$
+\mathbf{T} = -\mathbf{S}^{-1} \period
+$$
+The diagonal elements 
+$R_{ij} = \frac{S_{ij}}{\sqrt{S_{ii} S_{jj}}}$
+-->
+
+The practical implications of this are:
+
+* If a partial correlation is close to zero, it suggests the relationship between two variables is primarily mediated through other variables.
+
+* Non-zero partial correlations indicate a direct relationship that persists after controlling for other variables.
 
 @fig-crime-partial-spring shows the partial correlation network for the
 crime data, using the `qgraph()` argument `graph = "pcor"`
@@ -180,7 +229,7 @@ The spring layout makes it clear that, with suppression of
 weak edges, auto theft and robbery form a cluster separated from the other variables.
 
 
-### Visualizing partial correlations
+### Visualizing partial correlations {#sec-pvPlot}
 
 Just as you can visualize _marginal_ association between variables in a scatterplot,
 you can also visualize _conditional_ association.
@@ -192,18 +241,20 @@ In this, you can use all the bells and whistles of standard scatterplots
 (regression lines, smooths, data ellipses, ...) to listen more attentively to the 
 story partial association has to tell.
 The function `pvPlot()` calculates the partial residuals and then calls
-`car::scatterplot()` for display. As written, the five most "unusual"
-observations by Mahalanobis $D^2$ are identified with their state labels.
+`car::dataEllipse()` for display. The five most "unusual"
+observations by Mahalanobis $D^2$ are identified with their abbreviated state labels.
+@fig-crime-pvPlots shows these plots for the variable pairs with the two 
+largest partial correlations.
 
-**TODO**: I'd like to put these two figures side-by-side and integrate the code chunks, but `car::scatterplot` doesn't seem to allow this.
+<!-- **TODO**: I'd like to put these two figures side-by-side and integrate the code chunks, but `car::scatterplot` doesn't seem to allow this. -->
 
-```{r echo = -1}
-#| label: fig-crime-pvPlot1
+```{r}
+#| label: fig-crime-pvPlots-code
+#| eval: false
 #| fig-height: 6
 #| fig-width: 6
 #| out-width: "80%"
 #| fig-cap: "Partial variables plot for burglary and larceny in the network diagram for partial correlations of the crime variables."
-op <- par(mar = c(5, 5, 1, 1)+.5)
 source("R/pvPlot.R")
 # select numeric, make `st` into rownames
 crime.num <- crime |>
@@ -211,20 +262,27 @@ crime.num <- crime |>
   dplyr::select(where(is.numeric))
 
 pvPlot(crime.num, vars = c("burglary", "larceny"), 
-       ellipse = list(levels = 0.68, fill.alpha = 0.1, robust = FALSE),
+       id = list(n=5),
        cex.lab = 1.5)
-```
-
-```{r echo = -1}
-#| label: fig-crime-pvPlot2
-#| fig-height: 6
-#| fig-width: 6
-#| out-width: "80%"
-#| fig-cap: "Partial variables plot for robbery and auto theft in the network diagram for partial correlations of the crime variables."
-op <- par(mar = c(5, 5, 1, 1)+.5)
 pvPlot(crime.num, vars = c("robbery", "auto"),
-       ellipse = list(levels = 0.68, fill.alpha = 0.1, robust = FALSE),
+       id = list(n=5),
        cex.lab = 1.5)
 ```
 
+```{r}
+#| label: fig-crime-pvPlots
+#| echo: false
+#| out-width: "100%"
+#| fig-cap: "Partial variables plots for burglary and larceny (left) and for robbery and auto theft (right) in the network diagram for partial correlations of the crime variables."
+knitr::include_graphics("images/crime-pvPlot-1-2.png")
+```
+
+In the pvPlot for burglary and larceny, you can see that the high partial correlation is largely
+driven by the extreme points at the left and and right sides. Once all other variables are
+taken into account, Arizona (AZ) and Hawaii (HI) have larger incidence of both crimes, while
+Arkansas (AK) are smaller on both. 
+
+In the pvPlot for robbery and auto theft, New York stands out as an
+influential, high-leverage point (see @sec-leverage); Massachusetts (MA) is noteworthy because
+auto theft in that state is considerably higher than what would be predicted from all other variables.
 
