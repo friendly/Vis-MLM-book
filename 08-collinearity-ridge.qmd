@@ -834,7 +834,7 @@ variance covariance matrix take the (hopefully now) familiar form
 \widehat{\boldsymbol{\beta}}^{\mathrm{OLS}} & = & 
     (\mathbf{X}\trans \mathbf{X})^{-1} \mathbf{X}\trans \mathbf{y} \comma \\
 \widehat{\Var} (\widehat{\boldsymbol{\beta}}^{\mathrm{OLS}}) & = & 
-    \widehat{\sigma}^2 (\mathbf{X}\trans \mathbf{X})^{-1}.
+    \widehat{\sigma}_{epsilon}^2 (\mathbf{X}\trans \mathbf{X})^{-1}.
 \end{align*} {#eq-OLS-beta-var}
 
 As we saw ealier, one signal of the problem of collinearity is that the determinant
@@ -856,8 +856,40 @@ The ridge regression estimates then become,
      \widehat{\sigma}^2  \mathbf{G}_k (\mathbf{X}\trans \mathbf{X})^{-1} \mathbf{G}_k\trans \comma
 \end{align*}
 
-where $\mat{G}_k = \left[\mat{I} + k (\mat{X}\trans \mat{X})^{-1} \right] ^{-1}$ is the $(p \times p)$ _shrinkage_ matrix.
+where $\mathbf{G}_k = \left[\mathbf{I} + k (\mathbf{X}\trans \mathbf{X})^{-1} \right] ^{-1}$ is the $(p \times p)$ _shrinkage_ matrix.
+Thus, as $k$ increases, $\mathbf{G}_k$ decreases, and drives $\widehat{\mathbf{\beta}}^{\mathrm{RR}}_k$ toward $\mathbf{0}$
+[@HoerlKennard:1970a].  
 
+Another insight, from the shrinkage literature is that ridge regression can be formulated as least squares regression, minimizing a residual sum of squares, $\text{RSS}(k)$, which adds a penalty for large coefficients,
+
+$$
+\text{RSS}(k) = (\mathbf{y}-\mathbf{X} \mathbf{\beta}) \trans  (\mathbf{y}-\mathbf{X} \boldsymbol{\beta}) + k \boldsymbol{\beta}\trans\boldsymbol{\beta} \quad\quad (k \ge 0)
+ \comma 
+$$ {#eq-ridgeRSS}
+where the penalty restrict the coefficients to some squared length $\boldsymbol{\beta}\trans \boldsymbol{\beta} \le t(k)$.
+
+The geometry of ridge regession is illustrated in @fig-ridge-demo for two coefficients
+$\boldsymbol{\beta} = (\beta_1, \beta_2)$. The `r colorize("circles", "blue")`,
+at the origin, having radii $\sqrt{t_k}$, show the constraint 
+that the sum of squares of coefficients,
+$\boldsymbol{\beta}\trans \boldsymbol{\beta}$ be less than $k$.
+The `r colorize("ellipses", "red")` show contours of the covariance ellipse of
+$\widehat{\boldsymbol{\beta}}^{\mathrm{OLS}}$.
+As the shrinkage constant $k$ increases, the center of these ellipses travel along
+the path illustrated toward $\boldsymbol{\beta} = \mathbf{0}$
+This path is called the _locus of osculation_, the path along which
+circles or ellipses first kiss as they expand [@Friendly-etal:ellipses:2013].
+
+```{r}
+#| label: fig-ridge-demo
+#| out-width: "80%"
+#| echo: false
+#| fig-cap: "Geometric interpretation of rigdge regression, using ellipsoids of the $\\text{RSS}(k)$ function. The blue circles at the origin show the constraint that the sum of squares of coefficients, $\\boldsymbol{\\beta}\\trans \\boldsymbol{\\beta}$ be less than $k$."
+knitr::include_graphics("images/ridge-demo.png")
+```
+
+<!-- The blue circles at the origin show the constraint that the sum of squares of coefficients, $\\boldsymbol{\\beta}\\trans \\boldsymbol{\\beta}$ be less than $k$. The red ellipses show the covariance ellipse of two coefficients $\\boldsymbol{\\beta}$
+-->
 
 ### Univariate ridge trace plots {#sec-ridge-univar}
 

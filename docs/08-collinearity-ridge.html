@@ -945,7 +945,7 @@ Figure&nbsp;8.6: Centering a predictor removes the nessessary correlation in a q
 \widehat{\boldsymbol{\beta}}^{\mathrm{OLS}} &amp; = &amp;
     (\mathbf{X}^\mathsf{T}\mathbf{X})^{-1} \mathbf{X}^\mathsf{T}\mathbf{y} \:\: ,\\
 \widehat{\mathsf{Var}} (\widehat{\boldsymbol{\beta}}^{\mathrm{OLS}}) &amp; = &amp;
-    \widehat{\sigma}^2 (\mathbf{X}^\mathsf{T}\mathbf{X})^{-1}.
+    \widehat{\sigma}_{epsilon}^2 (\mathbf{X}^\mathsf{T}\mathbf{X})^{-1}.
 \end{aligned} \tag{8.2}\]</span></span></p>
 <p>As we saw ealier, one signal of the problem of collinearity is that the determinant <span class="math inline">\(\mathrm{det}(\mathbf{X}^\mathsf{T}\mathbf{X})\)</span> approaches zero as the predictors become more collinear. The inverse <span class="math inline">\((\mathbf{X}^\mathsf{T}\mathbf{X})^{-1}\)</span> becomes numerically unstable, or does not exist if the determinant becomes zero in the case of exact dependency of one variable on the others.</p>
 <p>Ridge regression uses a trick to avoid this. It adds a constant, <span class="math inline">\(k\)</span> to the diagonal elements, replacing <span class="math inline">\(\mathbf{X}^\mathsf{T}\mathbf{X}\)</span> with <span class="math inline">\(\mathbf{X}^\mathsf{T}\mathbf{X} + k \mathbf{I}\)</span> in <a href="#eq-OLS-beta-var" class="quarto-xref">Equation&nbsp;<span>8.2</span></a>. This drives the determinant away from zero as <span class="math inline">\(k\)</span> increases. The ridge regression estimates then become,</p>
@@ -956,7 +956,27 @@ Figure&nbsp;8.6: Centering a predictor removes the nessessary correlation in a q
 \widehat{\mathsf{Var}} (\widehat{\boldsymbol{\beta}}^{\mathrm{RR}}_k) &amp; = &amp;
      \widehat{\sigma}^2  \mathbf{G}_k (\mathbf{X}^\mathsf{T}\mathbf{X})^{-1} \mathbf{G}_k^\mathsf{T}\:\: ,
 \end{aligned}\]</span></p>
-<p>where <span class="math inline">\(\mathbf{G}_k = \left[\mathbf{I} + k (\mathbf{X}^\mathsf{T}\mathbf{X})^{-1} \right] ^{-1}\)</span> is the <span class="math inline">\((p \times p)\)</span> <em>shrinkage</em> matrix.</p>
+<p>where <span class="math inline">\(\mathbf{G}_k = \left[\mathbf{I} + k (\mathbf{X}^\mathsf{T}\mathbf{X})^{-1} \right] ^{-1}\)</span> is the <span class="math inline">\((p \times p)\)</span> <em>shrinkage</em> matrix. Thus, as <span class="math inline">\(k\)</span> increases, <span class="math inline">\(\mathbf{G}_k\)</span> decreases, and drives <span class="math inline">\(\widehat{\mathbf{\beta}}^{\mathrm{RR}}_k\)</span> toward <span class="math inline">\(\mathbf{0}\)</span> <span class="citation" data-cites="HoerlKennard:1970a">(<a href="95-references.html#ref-HoerlKennard:1970a" role="doc-biblioref">Hoerl &amp; Kennard, 1970</a>)</span>.</p>
+<p>Another insight, from the shrinkage literature is that ridge regression can be formulated as least squares regression, minimizing a residual sum of squares, <span class="math inline">\(\text{RSS}(k)\)</span>, which adds a penalty for large coefficients,</p>
+<p><span id="eq-ridgeRSS"><span class="math display">\[
+\text{RSS}(k) = (\mathbf{y}-\mathbf{X} \mathbf{\beta}) ^\mathsf{T}(\mathbf{y}-\mathbf{X} \boldsymbol{\beta}) + k \boldsymbol{\beta}^\mathsf{T}\boldsymbol{\beta} \quad\quad (k \ge 0)
+\:\: ,
+\tag{8.3}\]</span></span> where the penalty restrict the coefficients to some squared length <span class="math inline">\(\boldsymbol{\beta}^\mathsf{T}\boldsymbol{\beta} \le t(k)\)</span>.</p>
+<p>The geometry of ridge regession is illustrated in <a href="#fig-ridge-demo" class="quarto-xref">Figure&nbsp;<span>8.7</span></a> for two coefficients <span class="math inline">\(\boldsymbol{\beta} = (\beta_1, \beta_2)\)</span>. The <span style="color: blue;">circles</span>, at the origin, having radii <span class="math inline">\(\sqrt{t_k}\)</span>, show the constraint that the sum of squares of coefficients, <span class="math inline">\(\boldsymbol{\beta}^\mathsf{T}\boldsymbol{\beta}\)</span> be less than <span class="math inline">\(k\)</span>. The <span style="color: red;">ellipses</span> show contours of the covariance ellipse of <span class="math inline">\(\widehat{\boldsymbol{\beta}}^{\mathrm{OLS}}\)</span>. As the shrinkage constant <span class="math inline">\(k\)</span> increases, the center of these ellipses travel along the path illustrated toward <span class="math inline">\(\boldsymbol{\beta} = \mathbf{0}\)</span> This path is called the <em>locus of osculation</em>, the path along which circles or ellipses first kiss as they expand <span class="citation" data-cites="Friendly-etal:ellipses:2013">(<a href="95-references.html#ref-Friendly-etal:ellipses:2013" role="doc-biblioref">Friendly et al., 2013</a>)</span>.</p>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div id="fig-ridge-demo" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-ridge-demo-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="images/ridge-demo.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-ridge-demo-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;8.7: Geometric interpretation of rigdge regression, using ellipsoids of the <span class="math inline">\(\text{RSS}(k)\)</span> function. The blue circles at the origin show the constraint that the sum of squares of coefficients, <span class="math inline">\(\boldsymbol{\beta}^\mathsf{T}\boldsymbol{\beta}\)</span> be less than <span class="math inline">\(k\)</span>.
+</figcaption></figure>
+</div>
+</div>
+</div>
+<!-- The blue circles at the origin show the constraint that the sum of squares of coefficients, $\\boldsymbol{\\beta}\\trans \\boldsymbol{\\beta}$ be less than $k$. The red ellipses show the covariance ellipse of two coefficients $\\boldsymbol{\\beta}$
+-->
 </section><section id="sec-ridge-univar" class="level3" data-number="8.4.2"><h3 data-number="8.4.2" class="anchored" data-anchor-id="sec-ridge-univar">
 <span class="header-section-number">8.4.2</span> Univariate ridge trace plots</h3>
 </section><section id="sec-ridge-bivar" class="level3" data-number="8.4.3"><h3 data-number="8.4.3" class="anchored" data-anchor-id="sec-ridge-bivar">
@@ -987,6 +1007,9 @@ Fox, J., &amp; Monette, G. (1992). Generalized collinearity diagnostics. <em>Jou
 </div>
 <div id="ref-FriendlyKwan:2009" class="csl-entry" role="listitem">
 Friendly, M., &amp; Kwan, E. (2009). Where’s <span>Waldo</span>: Visualizing collinearity diagnostics. <em>The American Statistician</em>, <em>63</em>(1), 56–65. <a href="https://doi.org/10.1198/tast.2009.0012">https://doi.org/10.1198/tast.2009.0012</a>
+</div>
+<div id="ref-Friendly-etal:ellipses:2013" class="csl-entry" role="listitem">
+Friendly, M., Monette, G., &amp; Fox, J. (2013). Elliptical insights: Understanding statistical methods through elliptical geometry. <em>Statistical Science</em>, <em>28</em>(1), 1–39. <a href="https://doi.org/10.1214/12-STS402">https://doi.org/10.1214/12-STS402</a>
 </div>
 <div id="ref-Gabriel:71" class="csl-entry" role="listitem">
 Gabriel, K. R. (1971). The biplot graphic display of matrices with application to principal components analysis. <em>Biometrics</em>, <em>58</em>(3), 453–467. <a href="https://doi.org/10.2307/2334381">https://doi.org/10.2307/2334381</a>
