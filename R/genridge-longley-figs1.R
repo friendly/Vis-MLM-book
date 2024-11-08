@@ -20,6 +20,14 @@ lridge <- ridge(Employed ~ GNP + Unemployed + Armed.Forces +
                 data=longley, lambda=lambda)
 lridge
 
+par(mar=c(4, 4, 1, 1)+ 0.1)
+traceplot(lridge, 
+          xlab = "Ridge constant (k)",
+          xlim = c(-0.02, 0.08), cex.lab=1.25)
+
+traceplot(lridge, 
+          X = "df",
+          xlim = c(4, 6.2), cex.lab=1.25)
 
 
 # Ridge regression: Longley data

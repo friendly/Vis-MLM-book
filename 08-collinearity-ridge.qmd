@@ -885,7 +885,7 @@ circles or ellipses first kiss as they expand [@Friendly-etal:ellipses:2013].
 #| label: fig-ridge-demo
 #| out-width: "80%"
 #| echo: false
-#| fig-cap: "Geometric interpretation of rigdge regression, using elliptical contours of the $\\text{RSS}(k)$ function. The blue circles at the origin show the constraint that the sum of squares of coefficients, $\\boldsymbol{\\beta}\\trans \\boldsymbol{\\beta}$ be less than $k$. The red ellipses show the covariance ellipse of two coefficients $\\boldsymbol{\\beta}$. Ridge regression finds the point $\\widehat{\\boldsymbol{\\beta}}^{\\mathrm{RR}}_k$ where the OLS contours just kiss the contraint region."
+#| fig-cap: "Geometric interpretation of rigdge regression, using elliptical contours of the $\\text{RSS}(k)$ function. The blue circles at the origin show the constraint that the sum of squares of coefficients, $\\boldsymbol{\\beta}\\trans \\boldsymbol{\\beta}$ be less than $k$. The red ellipses show the covariance ellipse of two coefficients $\\boldsymbol{\\beta}$. Ridge regression finds the point $\\widehat{\\boldsymbol{\\beta}}^{\\mathrm{RR}}_k$ where the OLS contours just kiss the contraint region. _Source: @@Friendly-etal:ellipses:2013."
 knitr::include_graphics("images/ridge-demo.png")
 ```
 
@@ -952,6 +952,7 @@ including
 `r pkg("MASS")` (the `lm.ridge()` function),
 `r pkg("glmnet", cite=TRUE)`, and
 `r pkg("penalized", cite=TRUE)`, but none of these provides insightful graphical displays.
+
 Here, I focus in the `r package("genridge", cite=TRUE)`, where the `ridge()` function
 is the workhorse and `pca.ridge()` transforms these results to PCA/SVD space.
 `vif.ridge()` calculates VIFs for class `"ridge"` objects and `precision()` calculates
@@ -960,29 +961,30 @@ precision and shrinkage measures.
 
 A variety of plotting functions is available for univariate, bivariate and 3D plots:
 
-* `traceplot()` Univariate ridge trace plots
-* `plot.ridge()` 2D ridge trace plots
-* `pairs.ridge()` scatterplot matrix of  ridge trace plots
-* `plot3d.ridge()` 3D ridge trace plots
+* `traceplot()` Traditional univariate ridge trace plots
+* `plot.ridge()` Bivariate 2D ridge trace plots, showing the covariance ellipse of the estimated coefficients
+* `pairs.ridge()` All pairwise bivariate ridge trace plots
+* `plot3d.ridge()` 3D ridge trace plots with ellipsoids
 * `biplot.ridge()` ridge trace plots in PCA/SVD space
 
+In addition, the `pca()` method for `"ridge"` objects transforms the coefficients and covariance matrices of a ridge object from predictor space to the equivalent, but more interesting space of the PCA of $\mathbf{X}\trans \mathbf{X}$ or the SVD of $\mathbf{X}$. `biplot.pcaridge()` Adds variable vectors to the bivariate plots of coefficients in PCA space
 
 ### Univariate ridge trace plots {#sec-ridge-univar}
 
-A classic example for ridge regression is Longley’s (1967) data, consisting of 7 economic variables, observed yearly from 1947 to 1962 (n=16), in the data frame datasets::longley. 
-The goal is to predict Employed from `GNP`, `Unemployed`, `Armed.Forces`, `Population`, `Year`, GNP.deflator.
+A classic example for ridge regression is Longley’s (1967) data, consisting of 7 economic variables, observed yearly from 1947 to 1962 (n=16), in the dataset `datasets::longley`. 
+The goal is to predict Employed from `GNP`, `Unemployed`, `Armed.Forces`, `Population`, `Year`, and `GNP.deflator`.
 
 ```{r longley}
 data(longley, package="datasets")
 str(longley)
 ```
 
-These data, which were constructed to illustrate numerical problems in least squares software at the time, are (purposely) perverse, in that:
+These data were constructed to illustrate numerical problems in least squares software at the time, and they are (purposely) perverse, in that:
 
-* each variable is a time series so that there is clearly a lack of independence among predictors.
-* worse, there is also some structural collinearity among the variables `GNP`, `Year`, `GNP.deflator`, and `Population`; for example, `GNP.deflator` is a multiplicative factor to account for inflation.
+* Each variable is a time series so that there is clearly a lack of independence among predictors.
+* Worse, there is also some structural collinearity among the variables `GNP`, `Year`, `GNP.deflator`, and `Population`; for example, `GNP.deflator` is a multiplicative factor to account for inflation.
 
-We fit the regression model, and sure enough, there are some extremely large VIFs.
+We fit the regression model, and sure enough, there are some extremely large VIFs. The largest, for `GNP` represents a multiplier of $\sqrt{1788.5} = 42.3$ on the standard errors.
 ```{r longley-vif}
 longley.lm <- lm(Employed ~ GNP + Unemployed + Armed.Forces + 
                             Population + Year + GNP.deflator, 
@@ -990,7 +992,7 @@ longley.lm <- lm(Employed ~ GNP + Unemployed + Armed.Forces +
 vif(longley.lm)
 ```
 
-Shrinkage values can be specified using either $\lambda \equiv k$ (where $\lambda = 0$ corresponds to OLS).
+Shrinkage values can be specified using $k$ (where $k = 0$ corresponds to OLS) or the equivalent degrees of freedom. (The function uses the notation $\lambda \equiv k$, so the argument is `lambda`.)
 Among other quantities, `ridge()` returns a matrix containing the coefficients for each predictor for each shrinkage value
 and other quantities.
 
@@ -1002,18 +1004,20 @@ lridge <- ridge(Employed ~ GNP + Unemployed + Armed.Forces +
 print(lridge, digits = 3)
 ```
 
-The standard, univariate, `traceplot()` simply plots the estimated coefficients for each predictor against the shrinkage factor $k$.
+The standard univariate plot, given by
+`traceplot()`, simply plots the estimated coefficients for each predictor against the shrinkage factor $k$.
 
 ```{r echo=-1}
 #| label: fig-longley-traceplot1
-#| fig-cap: "Univariate ridge trace plots for the coefficients of predictors of Employment in Longley’s data via ridge regression, with ridge constants $k = (0, 0.005, 0.01, 0.02, 0.04, 0.08$). The dotted lines show optimal values for shrinkage by two criteria (HKB, LW)."
+#| fig-cap: "Univariate ridge trace plot for the coefficients of predictors of Employment in Longley’s data via ridge regression, with ridge constants $k = (0, 0.005, 0.01, 0.02, 0.04, 0.08$). The dotted lines show optimal values for shrinkage by two criteria (HKB, LW)."
 par(mar=c(4, 4, 1, 1)+ 0.1)
 traceplot(lridge, 
+          X = "lambda",
           xlab = "Ridge constant (k)",
           xlim = c(-0.02, 0.08), cex.lab=1.25)
 ```
 
-You can see that 
+You can see that the coefficients for Year and GNP are shrunk considerably.
 
 The dotted lines in @fig-longley-traceplot1
 show choices for the ridge constant by two commonly used criteria to balance bias against precision due to 
@@ -1027,11 +1031,55 @@ c(HKB=lridge$kHKB,
   GCV=lridge$kGCV)
 ```
 
-These values seem rather small, but note that the coefficients for Year and GNP are shrunk considerably.
+<!-- These values seem rather small, but note that the coefficients for Year and GNP are shrunk considerably. -->
+
+It is often easier to interpret the plot when coefficients are plotted against the equivalent degrees of freedom, $\text{df}_k$.
+OLS corresponds to $\text{df}_k = 6$ degrees of freedom in the space of six parameters,
+and the effect of shrinkage is to decrease the degrees of freedom, as if estimating fewer parameters
+
+```{r echo=-1}
+#| label: fig-longley-traceplot2
+#| fig-cap: "Univariate ridge trace plot using equivalent degrees of freedom, $\\text{df}_k$ to specify shrinkage."
+par(mar=c(4, 4, 1, 1)+ 0.1)
+traceplot(lridge, 
+          X = "df",
+          xlim = c(4, 6.2), cex.lab=1.25)
+```
+
+The problem is that these are the **wrong plot**! They show the trends in increased bias associated with larger $k$, but they do not show the accompanying decrease in variance (increase in precision). For that, we need to consider the variances and covariances of the estimated coefficients. The univariate trace plot is the wrong graphic form for what is essentially a multivariate problem, where we would like to visualize how both coefficients and their variances change with $k$.
 
 ### Bivariate ridge trace plots {#sec-ridge-bivar}
 
+The bivariate analog of the trace plot suggested by @Friendly:genridge:2013 plots bivariate confidence ellipses for _pairs_ of coefficients. 
+Their centers, $(\widehat{\beta}_i, \widehat{\beta}_j)$
+show the bias induced for each coefficient, and also how the change in the ridge estimate for one parameter is related to changes for other parameters.
 
+The size and shapes of the covariance ellipses show directly the effect on precision of the estimates as a function of the ridge tuning constant.
+and their size and shape indicate sampling variance, $\widehat{\text{Var}} (\mathbf{\widehat{\beta}}_{ij})$. Here, I plot those for GNP against four of the other predictors.
+
+```{r}
+#| out-width: "100%"
+#| label: fig-longley-plot-ridge
+#| fig-show: "hold"
+#| fig-cap: "Bivariate ridge trace plots for the coefficients of four predictors against the coefficient for GNP in Longley’s data, with λ = 0, 0.005, 0.01, 0.02, 0.04, 0.08. In most cases, the coefficients are driven toward zero, but the bivariate plot also makes clear the reduction in variance, as well as the bivariate path of shrinkage."
+op <- par(mfrow=c(2,2), mar=c(4, 4, 1, 1)+ 0.1)
+clr <-  c("black", "red", "darkgreen","blue", "cyan4", "magenta")
+pch <- c(15:18, 7, 9)
+lambdaf <- c(expression(~widehat(beta)^OLS), ".005", ".01", ".02", ".04", ".08")
+
+for (i in 2:5) {
+	plot(lridge, variables=c(1,i), 
+	     radius=0.5, cex.lab=1.5, col=clr, 
+	     labels=NULL, fill=TRUE, fill.alpha=0.2)
+	text(lridge$coef[1,1], lridge$coef[1,i], 
+	     expression(~widehat(beta)^OLS), cex=1.5, pos=4, offset=.1)
+	text(lridge$coef[-1,c(1,i)], lambdaf[-1], pos=3, cex=1.3)
+}
+```
+
+As can be seen, the coefficients for each pair of predictors trace a path generally in toward the origin (0,0), and the covariance ellipses get smaller, indicating increased precision.
+
+The `pairs()` method for `"ridge"` objects shows all pairwise views in scatterplot matrix form.
 
 **Package summary**
 
