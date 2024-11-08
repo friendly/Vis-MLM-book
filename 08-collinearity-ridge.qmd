@@ -834,7 +834,7 @@ variance covariance matrix take the (hopefully now) familiar form
 \widehat{\boldsymbol{\beta}}^{\mathrm{OLS}} & = & 
     (\mathbf{X}\trans \mathbf{X})^{-1} \mathbf{X}\trans \mathbf{y} \comma \\
 \widehat{\Var} (\widehat{\boldsymbol{\beta}}^{\mathrm{OLS}}) & = & 
-    \widehat{\sigma}_{epsilon}^2 (\mathbf{X}\trans \mathbf{X})^{-1}.
+    \widehat{\sigma}_{\epsilon}^2 (\mathbf{X}\trans \mathbf{X})^{-1}.
 \end{align*} {#eq-OLS-beta-var}
 
 As we saw ealier, one signal of the problem of collinearity is that the determinant
@@ -849,18 +849,18 @@ in @eq-OLS-beta-var. This drives the determinant away from zero as $k$ increases
 The ridge regression estimates then become,
 
 \begin{align*}
-\widehat{\boldsymbol{\beta}}^{\mathrm{RR}}_k  & = &
+\widehat{\boldsymbol{\beta}}^{\mathrm{RR}}_k = &
     (\mathbf{X}\trans \mathbf{X} + k \mathbf{I})^{-1} \mathbf{X}\trans \mathbf{y}  \\
-                                    & = & \mathbf{G}_k \, \widehat{\boldsymbol{\beta}}^{\mathrm{OLS}} \comma \\
-\widehat{\Var} (\widehat{\boldsymbol{\beta}}^{\mathrm{RR}}_k) & = & 
+                                    = & \mathbf{G}_k \, \widehat{\boldsymbol{\beta}}^{\mathrm{OLS}} \comma \\
+\widehat{\Var} (\widehat{\boldsymbol{\beta}}^{\mathrm{RR}}_k) = & 
      \widehat{\sigma}^2  \mathbf{G}_k (\mathbf{X}\trans \mathbf{X})^{-1} \mathbf{G}_k\trans \comma
-\end{align*}
+\end{align*} {#eq-ridge-beta-var}
 
 where $\mathbf{G}_k = \left[\mathbf{I} + k (\mathbf{X}\trans \mathbf{X})^{-1} \right] ^{-1}$ is the $(p \times p)$ _shrinkage_ matrix.
 Thus, as $k$ increases, $\mathbf{G}_k$ decreases, and drives $\widehat{\mathbf{\beta}}^{\mathrm{RR}}_k$ toward $\mathbf{0}$
 [@HoerlKennard:1970a].  
 
-Another insight, from the shrinkage literature is that ridge regression can be formulated as least squares regression, minimizing a residual sum of squares, $\text{RSS}(k)$, which adds a penalty for large coefficients,
+Another insight, from the shrinkage literature, is that ridge regression can be formulated as least squares regression, minimizing a residual sum of squares, $\text{RSS}(k)$, which adds a penalty for large coefficients,
 
 $$
 \text{RSS}(k) = (\mathbf{y}-\mathbf{X} \mathbf{\beta}) \trans  (\mathbf{y}-\mathbf{X} \boldsymbol{\beta}) + k \boldsymbol{\beta}\trans\boldsymbol{\beta} \quad\quad (k \ge 0)
@@ -869,10 +869,10 @@ $$ {#eq-ridgeRSS}
 where the penalty restrict the coefficients to some squared length $\boldsymbol{\beta}\trans \boldsymbol{\beta} \le t(k)$.
 
 The geometry of ridge regession is illustrated in @fig-ridge-demo for two coefficients
-$\boldsymbol{\beta} = (\beta_1, \beta_2)$. The `r colorize("circles", "blue")`,
+$\boldsymbol{\beta} = (\beta_1, \beta_2)$. The `r colorize("circles", "blue")`
 at the origin, having radii $\sqrt{t_k}$, show the constraint 
 that the sum of squares of coefficients,
-$\boldsymbol{\beta}\trans \boldsymbol{\beta}$ be less than $k$.
+$\boldsymbol{\beta}\trans \boldsymbol{\beta} = \beta_1^2 + \beta_2^2$ be less than $k$.
 The `r colorize("ellipses", "red")` show contours of the covariance ellipse of
 $\widehat{\boldsymbol{\beta}}^{\mathrm{OLS}}$.
 As the shrinkage constant $k$ increases, the center of these ellipses travel along
@@ -884,12 +884,61 @@ circles or ellipses first kiss as they expand [@Friendly-etal:ellipses:2013].
 #| label: fig-ridge-demo
 #| out-width: "80%"
 #| echo: false
-#| fig-cap: "Geometric interpretation of rigdge regression, using ellipsoids of the $\\text{RSS}(k)$ function. The blue circles at the origin show the constraint that the sum of squares of coefficients, $\\boldsymbol{\\beta}\\trans \\boldsymbol{\\beta}$ be less than $k$."
+#| fig-cap: "Geometric interpretation of rigdge regression, using elliptical contours of the $\\text{RSS}(k)$ function. The blue circles at the origin show the constraint that the sum of squares of coefficients, $\\boldsymbol{\\beta}\\trans \\boldsymbol{\\beta}$ be less than $k$. The red ellipses show the covariance ellipse of two coefficients $\\boldsymbol{\\beta}$. Ridge regression finds the point $\\widehat{\\boldsymbol{\\beta}}^{\\mathrm{RR}}_k$ where the OLS contours just kiss the contraint region."
 knitr::include_graphics("images/ridge-demo.png")
 ```
 
 <!-- The blue circles at the origin show the constraint that the sum of squares of coefficients, $\\boldsymbol{\\beta}\\trans \\boldsymbol{\\beta}$ be less than $k$. The red ellipses show the covariance ellipse of two coefficients $\\boldsymbol{\\beta}$
 -->
+
+@eq-ridge-beta-var is computationally expensive, potentially numerically unstable for small $k$, and it is conceptually opaque,
+in that it sheds little light on the underlying geometry of the data in the column space of $\mathbf{X}$.  An alternative
+formulation can be given in terms of the singular value decomposition (SVD) of $\mathbf{X}$,
+
+$$
+\mathbf{X} = \mathbf{U} \mathbf{D} \mathbf{V}\trans
+$$
+
+where $\mathbf{U}$ and $\mathbf{V}$ are respectively $n\times p$ and $p\times p$ orthonormal matrices, so that
+$\mathbf{U}\trans \mathbf{U} = \mathbf{V}\trans \mathbf{V} = \mathbf{I}$,
+and
+$\mathbf{D} = \diag{(d_1, d_2, \dots d_p)}$
+is the diagonal matrix of ordered singular values, with entries $d_1 \ge d_2 \ge \cdots \ge d_p \ge 0$.
+
+Because $\mathbf{X}\trans \mathbf{X} = \mathbf{V} \mathbf{D}^2 \mathbf{V}\trans$, the eigenvalues of $\mathbf{X}\trans \mathbf{X}$
+are given by $\mathbf{D}^2$ and therefore the eigenvalues of $\mathbf{G}_k$ can be shown [@HoerlKennard:1970a]
+to be the diagonal elements of 
+
+$$
+\mathbf{D}(\mathbf{D}^2 + k \mathbf{I} )^{-1} \mathbf{D} = \diag{ \left(\frac{d_i^2}{d_i^2 + k}\right) }\period
+$$
+
+Noting that the eigenvectors, $\mathbf{V}$ are the principal component vectors, and that $\mathbf{X} \mathbf{V} = \mathbf{U} \mathbf{D}$,
+the ridge estimates can be calculated more simply in terms of  $\mathbf{U}$ and $\mathbf{D}$ as
+
+$$
+ \widehat{\boldsymbol{\beta}}^{\mathrm{RR}}_k = (\mathbf{D}^2 + k \mathbf{I})^{-1} \mathbf{D} \mathbf{U}\trans \mathbf{y} = \left( \frac{d_i}{d_i^2 + k}\right) \: \mathbf{u}_i\trans \mathbf{y}, \quad i=1, \dots p \period
+$$
+
+The terms $d^2_i / (d_i^2 + k) \le 1$ are thus the factors by which the coordinates of $\mathbf{u}_i\trans \mathbf{y}$
+are shrunk with respect to the orthonormal basis for the column space of $\mathbf{X}$.  The small singular values
+$d_i$ correspond to the directions which ridge regression shrinks the most.  These are the directions which
+contribute most to collinearity, discussed earlier.
+
+This analysis also provides an alternative and more intuitive characterization of the ridge tuning constant.
+By analogy with OLS, where the hat matrix, $\mat{H} = \mat{X} (\mat{X}\trans \mat{X})^{-1} \mat{X}\trans$
+reflects degrees of freedom $\textrm{df} = \trace{H} = p$
+corresponding to the $p$ parameters, the effective degrees of freedom for ridge regression \citep{Hastie-etal:elem:2001} is
+
+\begin{align*}
+ \textrm{df}_k 
+    = & \textrm{tr}[\mat{X} (\mat{X}\trans \mat{X} + k \mat{I})^{-1} \mat{X}\trans] \\
+    = & \sum_i^p \textrm{df}_k(i) = \sum_i^p \left( \frac{d_i^2}{d_i^2 + k} \right) \period
+\end{align} {#eq-dfk}
+
+$ \textrm{df}_k$ is a monotone decreasing function of $k$, and hence any set of ridge constants
+can be specified in terms of equivalent $\textrm{df}_k$.
+
 
 ### Univariate ridge trace plots {#sec-ridge-univar}
 
