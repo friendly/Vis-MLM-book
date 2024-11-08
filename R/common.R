@@ -238,7 +238,9 @@ package <- function(package, cite=FALSE) {
   "tourr",
   "liminal",
   "langevitour",
-  "vegan")
+  "vegan",
+  "glmnet",
+  "penalized")
 
 # write list of packages used at end of every chapter
 .pkg_file <- here::here("bib", "pkgs.txt")

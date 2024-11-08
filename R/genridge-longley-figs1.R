@@ -2,9 +2,25 @@
 #
 #  Figs 1-5
 
-if (!require(genridge)) {install.packages("genridge"); library(genridge)}
+library(genridge)
+library(VisCollin)
 library(car)
 data(longley)
+
+longley.lm <- lm(Employed ~ GNP + Unemployed + Armed.Forces + 
+                            Population + Year + GNP.deflator, 
+                 data=longley)
+vif(longley.lm)
+
+colldiag(longley.lm) |> print(fuzz = .3)
+
+lambda <- c(0, 0.005, 0.01, 0.02, 0.04, 0.08)
+lridge <- ridge(Employed ~ GNP + Unemployed + Armed.Forces + 
+                           Population + Year + GNP.deflator, 
+                data=longley, lambda=lambda)
+lridge
+
+
 
 # Ridge regression: Longley data
 lambda <- c(0, 0.005, 0.01, 0.02, 0.04, 0.08)
