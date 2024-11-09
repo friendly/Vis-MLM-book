@@ -985,7 +985,7 @@ A variety of plotting functions is available for univariate, bivariate and 3D pl
 
 In addition, the `pca()` method for `"ridge"` objects transforms the coefficients and covariance matrices of a ridge object from predictor space to the equivalent, but more interesting space of the PCA of $\mathbf{X}\trans \mathbf{X}$ or the SVD of $\mathbf{X}$. `biplot.pcaridge()` adds variable vectors to the bivariate plots of coefficients in PCA space
 
-### Univariate ridge trace plots {#sec-ridge-univar}
+## Univariate ridge trace plots {#sec-ridge-univar}
 
 A classic example for ridge regression is Longley’s (1967) data, consisting of 7 economic variables, observed yearly from 1947 to 1962 (n=16), in the dataset `datasets::longley`. 
 The goal is to predict Employed from `GNP`, `Unemployed`, `Armed.Forces`, `Population`, `Year`, and `GNP.deflator`.
@@ -1067,7 +1067,7 @@ But a bigger problem is that these univariate plots are the **wrong kind** of pl
 
 For that, we need to consider the variances and covariances of the estimated coefficients. The univariate trace plot is the wrong graphic form for what is essentially a multivariate problem, where we would like to visualize how both coefficients and their variances change with $k$.
 
-### Bivariate ridge trace plots {#sec-ridge-bivar}
+## Bivariate ridge trace plots {#sec-ridge-bivar}
 
 The bivariate analog of the trace plot suggested by @Friendly:genridge:2013 plots bivariate confidence ellipses for _pairs_ of coefficients. 
 Their centers, $(\widehat{\beta}_i, \widehat{\beta}_j)$
@@ -1114,29 +1114,106 @@ pairs(lridge, radius=0.5, diag.cex = 1.5)
 ### Visualizing the bias-variance tradeoff
 
 The function `precision()` calculates a number of measures of the effect of shrinkage of the coefficients in relation to the "size" of
-the covariance matrix $\mathcal{V}_k \equiv \widehat{\Var} (\widehat{\boldsymbol{\beta}}^{\mathrm{RR}}_k)$:
+the covariance matrix $\boldsymbol{\mathcal{V}}_k \equiv \widehat{\Var} (\widehat{\boldsymbol{\beta}}^{\mathrm{RR}}_k)$:
 
 * `norm.beta` $= \left \Vert \boldsymbol{\beta}\right \Vert / \max{\left \Vert \boldsymbol{\beta}\right \Vert}$ is a summary measure of shrinkage, the normalized root mean square of the estimated coefficients.
 
-* `det` $ = \log{| \mathcal{V}_k |}$ is an overall measure of variance of the coefficients. It measures the linearized volume of the covariance ellipsoid and corresponds conceptually to Wilks' Lambda criterion. 
+* `det` $ = \log{| \mathcal{V}_k |}$ is an overall measure of variance of the coefficients. It is the (linearized) volume of the covariance ellipsoid and corresponds conceptually to Wilks' Lambda criterion. 
+
+* `trace` $ = \text{trace} (\boldsymbol{\mathcal{V}}_k) $ is the sum of the variances and also the sum of the eigenvalues of $\boldsymbol{\mathcal{V}}_k$, conceptually similar to Pillai's trace criterion.
 
 
 ```{r precision}
-precision(lridge)
+pdat <- precision(lridge) |> print()
 ```
 
-Plotting shrinkage against variance each other gives a direct view of the tradeoff.
+Plotting shrinkage against a measure of variance gives a direct view of the tradeoff
+between bias and precision. Here I plot `norm.beta` against `det`, and join the
+points with a curve. You can see that in this example the HKB criterion prefers a smaller degree of shrinkage, but achieves only a modest decrease in variance. But variance
+decreases more sharply thereafter and the LW choice achieves greater precision.
 
-### Low-rank views
+```{r echo=-1}
+#| label: fig-longley-precision-plot
+#| fig-width: 8
+#| fig-height: 7
+#| out-width: "80%"
+#| fig-cap: "The tradeoff between bias and precision"
+op <- par(mar=c(4, 4, 1, 1) + 0.2)
+library(splines)
+with(pdat, {
+	plot(norm.beta, det, type="b", 
+	     cex.lab=1.25, pch=16, cex=1.5, col=clr, lwd=2,
+       xlab='shrinkage: ||b|| / max(||b||)',
+	     ylab='variance: log |Var(b)|')
+	text(norm.beta, det, 
+	     labels = lambdaf, 
+	     cex=1.25, pos=c(rep(2,length(lambda)-1),4))
+	text(min(norm.beta), max(det), 
+	     labels = "log |Variance| vs. Shrinkage", 
+	     cex=1.5, pos=4)
+	})
+# find locations for optimal shrinkage criteria
+mod <- lm(cbind(det, norm.beta) ~ bs(lambda, df=5), data=pdat)
+x <- data.frame(lambda=c(lridge$kHKB, lridge$kLW))
+fit <- predict(mod, x)
+points(fit[,2:1], pch=15, col=gray(.50), cex=1.6)
+text(fit[,2:1], c("HKB", "LW"), pos=3, cex=1.5, col=gray(.50))
+```
+
+## Low-rank views
 
 Just as principal components analysis gives low-dimensional views of a data set, PCA can
 be useful to understand ridge regression, just as it did for the problem of collinearity.
 
 The  `pca` method transforms a `"ridge"` object
 from parameter space, where the estimated coefficients are
-$\beta_k$ with covariance matrices $\Sigma_k$, to the
+$\beta_k$ with covariance matrices $\boldsymbol{\mathcal{V}}_k$, to the
 principal component space defined by the right singular vectors, $\mathbf{V}$,
 of the singular value decomposition of the scaled predictor matrix, $\mathbf{X}$.
+
+```{r echo=-1}
+#| label: fig-longley-pca-traceplot
+par(mar=c(4, 4, 1, 1)+ 0.1)
+plridge <- pca(lridge)
+plridge
+traceplot(plridge)
+```
+
+What may be surprising at first is that the coefficients for the first 4 components are not shrunk at all. Rather, the effect of shrinkage is seen only on the _last two dimensions_.
+But those also are the directions that contribute most to collinearity as we saw earlier.
+
+** pairs() ? **
+
+If we focus on the plot of dimensions `5:6`, we can see where all the shrinkage action
+is in this representation. Generally, the predictors that are related to the smallest
+dimension (6) are shrunk quickly at first.
+
+```{r echo = -1}
+#| label: fig-longley-pca-dim56
+par(mar=c(4, 4, 1, 1)+ 0.1)
+plot(plridge, variables=5:6, fill = TRUE, fill.alpha=0.2)
+text(plridge$coef[, 5:6], 
+	   label = lambdaf, 
+     cex=1.5, pos=4, offset=.1)
+```
+
+### Biplot view
+
+Finally, we can project the predictor variables into the PCA space of the smallest dimensions, where the shrinkage action mostly occurs to see how the predictor variables relate to these dimensions.
+
+`biplot.pcaridge()` supplements the standard display of the covariance ellipsoids for a ridge regression problem in PCA/SVD space with labeled arrows showing the contributions of the original variables to the dimensions plotted. The length of the arrows reflects proportion of variance that each predictors shares with the components.
+
+The biplot view showing the dimensions corresponding to the two smallest singular values is particularly useful for understanding how the predictors contribute to shrinkage in ridge regression. Here, Year and Population largely contribute to dimension 5; a contrast between (Year, Population) and GNP contributes to dimension 6.
+
+```{r echo = -1}
+#| label: fig-longley-pca-biplot
+op <- par(mar=c(4, 4, 1, 1) + 0.2)
+biplot(plridge, radius=0.5, 
+       ref=FALSE, asp=1, 
+       var.cex=1.15, cex.lab=1.3, col=clr,
+       fill=TRUE, fill.alpha=0.2, prefix="Dimension ")
+text(plridge$coef[,5:6], lambdaf, pos=2, cex=1.3)
+```
 
 
 ```{r}
