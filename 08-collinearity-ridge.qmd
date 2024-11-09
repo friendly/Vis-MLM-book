@@ -532,7 +532,7 @@ R file: `R/cars-colldiag.R`
 ```{r}
 #| label: fig-cars-tableplot
 #| fig-keep: "last"
-#| out-width: 10%
+#| out-width: 100%
 #| fig.cap: "Tableplot of condition indices and variance proportions for the `cars` data. In column 1, the square symbols are scaled relative to a maximum condition index of 30. 
 #|     In the remaining columns, variance proportions (times 100) are shown as circles
 #|     scaled relative to a maximum of 100."
@@ -615,7 +615,7 @@ ggp + geom_text_repel(data = scores[dsq > qchisq(0.95, df = 6),],
 
 As with the tabular display of variance proportions, Waldo is hiding
 in the dimensions associated with the smallest eigenvalues
-(largest condition indices).  
+(largest condition indices).
 As well, it turns out that outliers in the predictor space  (also high
 leverage observations) can often be seen as observations far
 from the centroid in the space of the smallest principal components.
@@ -638,6 +638,14 @@ It turns out that this vehicle, a Buick Estate wagon, is an early-year (1970) Am
 with an 8-cylinder, 455 cu. in, 225 horse-power engine, and able to go from 0 to 60 mph
 in 10 sec.
 (Its MPG is only slightly under-predicted from the regression model, however.)
+
+With PCA and the biplot, we are used to looking at the dimensions that account for
+the most variation, but
+the answer to _Where's Waldo?_ is that he is hiding in the smallest data dimensions,
+just as he does in @fig-wheres-waldo where the weak signals of his stripped shirt,
+hat and glasses are embedded in a visual field of noise. As we just saw, outliers
+hide there also, hoping to escape detection. These small dimensions are also
+implicated in ridge regression as we will see shortly (@sec-ridge).
 
 ## Remedies for collinearity: What can I do? {#sec-remedies}
 
@@ -790,15 +798,17 @@ vif(acetyl.mod2, type = "term")
 ```
 
 
-## Ridge regression {#sec:ridge}
+## Ridge regression {#sec-ridge}
 
 Ridge regression is an instance of a class of techniques designed to obtain more favorable predictions at the expense of some increase in bias, compared to ordinary least squares (OLS) estimation. 
 These methods began as a way of solving collinearity problems in OLS regression with highly correlated predictors
 [@HoerlKennard:1970a].
-More recently they developed to a larger class of model selection methods, of which the
+More recently ridge regression developed to a larger class of model selection methods, of which the
 LASSO method of @Tibshriani:regr:1996 and LAR method of @Efron-etal:leas:2004
 are well-known instances.  See, for example, the reviews in
 @Vinod:1978 and @McDonald:2009 for details and context omitted here.
+The case of ridge regression has also been extended to the case of
+two or more response variables [@Brown-Zidek-1980; @Haitovsky1987].
 
 
 An essential idea behind these methods is that the OLS estimates are constrained in some way, shrinking them, on average, toward zero, to achieve increased predictive accuracy
@@ -834,9 +844,9 @@ The ordinary least squares estimates of coefficients and their estimated
 variance covariance matrix take the (hopefully now) familiar form
 
 \begin{align*}
-\widehat{\boldsymbol{\beta}}^{\mathrm{OLS}} & = & 
+\widehat{\boldsymbol{\beta}}^{\mathrm{OLS}} = & 
     (\mathbf{X}\trans \mathbf{X})^{-1} \mathbf{X}\trans \mathbf{y} \comma \\
-\widehat{\Var} (\widehat{\boldsymbol{\beta}}^{\mathrm{OLS}}) & = & 
+\widehat{\Var} (\widehat{\boldsymbol{\beta}}^{\mathrm{OLS}}) = & 
     \widehat{\sigma}_{\epsilon}^2 (\mathbf{X}\trans \mathbf{X})^{-1}.
 \end{align*} {#eq-OLS-beta-var}
 
@@ -869,19 +879,20 @@ $$
 \text{RSS}(k) = (\mathbf{y}-\mathbf{X} \mathbf{\beta}) \trans  (\mathbf{y}-\mathbf{X} \boldsymbol{\beta}) + k \boldsymbol{\beta}\trans\boldsymbol{\beta} \quad\quad (k \ge 0)
  \comma 
 $$ {#eq-ridgeRSS}
-where the penalty restrict the coefficients to some squared length $\boldsymbol{\beta}\trans \boldsymbol{\beta} \le t(k)$.
+where the penalty restrict the coefficients to some squared length $\boldsymbol{\beta}\trans \boldsymbol{\beta} = \Sigma \beta_i \le t(k)$.
 
 The geometry of ridge regession is illustrated in @fig-ridge-demo for two coefficients
-$\boldsymbol{\beta} = (\beta_1, \beta_2)$. The `r colorize("circles", "blue")`
+$\boldsymbol{\beta} = (\beta_1, \beta_2)$. The `r colorize("blue circles", "blue")`
 at the origin, having radii $\sqrt{t_k}$, show the constraint 
 that the sum of squares of coefficients,
 $\boldsymbol{\beta}\trans \boldsymbol{\beta} = \beta_1^2 + \beta_2^2$ be less than $k$.
-The `r colorize("ellipses", "red")` show contours of the covariance ellipse of
+The `r colorize("red ellipses", "red")` show contours of the covariance ellipse of
 $\widehat{\boldsymbol{\beta}}^{\mathrm{OLS}}$.
 As the shrinkage constant $k$ increases, the center of these ellipses travel along
 the path illustrated toward $\boldsymbol{\beta} = \mathbf{0}$
 This path is called the _locus of osculation_, the path along which
-circles or ellipses first kiss as they expand [@Friendly-etal:ellipses:2013].
+circles or ellipses first kiss as they expand, like the pattern of ripples from
+rocks dropped into a pond [@Friendly-etal:ellipses:2013].
 
 ```{r}
 #| label: fig-ridge-demo
@@ -940,7 +951,8 @@ corresponding to the $p$ parameters, the effective degrees of freedom for ridge 
 \end{align*} {#eq-dfk}
 
 $\text{df}_k$ is a monotone decreasing function of $k$, and hence any set of ridge constants
-can be specified in terms of equivalent $\text{df}_k$.
+can be specified in terms of equivalent $\text{df}_k$. Greater shrinkage corresponds
+to fewer coefficients being estimated.
 
 There is a close connection with principal components regression mentioned in @sec-remedies. 
 Ridge regression shrinks _all_ dimensions
@@ -954,6 +966,8 @@ including
 `r pkg("MASS")` (the `lm.ridge()` function),
 `r pkg("glmnet", cite=TRUE)`, and
 `r pkg("penalized", cite=TRUE)`, but none of these provides insightful graphical displays.
+`glmnet::glmnet()` also implements a method for multivariate responses with
+a `family="mgaussian".
 
 Here, I focus in the `r package("genridge", cite=TRUE)`, where the `ridge()` function
 is the workhorse and `pca.ridge()` transforms these results to PCA/SVD space.
@@ -969,7 +983,7 @@ A variety of plotting functions is available for univariate, bivariate and 3D pl
 * `plot3d.ridge()` 3D ridge trace plots with ellipsoids
 * `biplot.ridge()` ridge trace plots in PCA/SVD space
 
-In addition, the `pca()` method for `"ridge"` objects transforms the coefficients and covariance matrices of a ridge object from predictor space to the equivalent, but more interesting space of the PCA of $\mathbf{X}\trans \mathbf{X}$ or the SVD of $\mathbf{X}$. `biplot.pcaridge()` Adds variable vectors to the bivariate plots of coefficients in PCA space
+In addition, the `pca()` method for `"ridge"` objects transforms the coefficients and covariance matrices of a ridge object from predictor space to the equivalent, but more interesting space of the PCA of $\mathbf{X}\trans \mathbf{X}$ or the SVD of $\mathbf{X}$. `biplot.pcaridge()` adds variable vectors to the bivariate plots of coefficients in PCA space
 
 ### Univariate ridge trace plots {#sec-ridge-univar}
 
@@ -1019,7 +1033,7 @@ traceplot(lridge,
           xlim = c(-0.02, 0.08), cex.lab=1.25)
 ```
 
-You can see that the coefficients for Year and GNP are shrunk considerably, but differences from the value at $k =0$ represent the bias needed to achieve more stable estimates.
+You can see that the coefficients for Year and GNP are shrunk considerably. Differences from the $\beta$ value at $k =0$ represent the bias needed to achieve more stable estimates.
 
 The dotted lines in @fig-longley-traceplot1
 show choices for the ridge constant by two commonly used criteria to balance bias against precision due to 
@@ -1035,7 +1049,8 @@ c(HKB=lridge$kHKB,
 
 <!-- These values seem rather small, but note that the coefficients for Year and GNP are shrunk considerably. -->
 
-It is often easier to interpret the plot when coefficients are plotted against the equivalent degrees of freedom, $\text{df}_k$.
+The shrinkage constant $k$ doesn't have much intrinsic meaning, s
+it is often easier to interpret the plot when coefficients are plotted against the equivalent degrees of freedom, $\text{df}_k$.
 OLS corresponds to $\text{df}_k = 6$ degrees of freedom in the space of six parameters,
 and the effect of shrinkage is to decrease the degrees of freedom, as if estimating fewer parameters.
 
@@ -1048,7 +1063,9 @@ traceplot(lridge,
           xlim = c(4, 6.2), cex.lab=1.25)
 ```
 
-The problem is that these univariate plots are the **wrong kind** of plot! They show the trends in increased bias associated with larger $k$, but they do not show the accompanying increase in _precision_ (decrease in variance). For that, we need to consider the variances and covariances of the estimated coefficients. The univariate trace plot is the wrong graphic form for what is essentially a multivariate problem, where we would like to visualize how both coefficients and their variances change with $k$.
+But a bigger problem is that these univariate plots are the **wrong kind** of plot! They show the trends in increased bias associated with larger $k$, but they do not show the accompanying increase in _precision_ (decrease in variance) achieved by allowing a bit of bias.
+
+For that, we need to consider the variances and covariances of the estimated coefficients. The univariate trace plot is the wrong graphic form for what is essentially a multivariate problem, where we would like to visualize how both coefficients and their variances change with $k$.
 
 ### Bivariate ridge trace plots {#sec-ridge-bivar}
 
@@ -1059,7 +1076,7 @@ show the bias induced for each coefficient, and also how the change in the ridge
 The size and shapes of the covariance ellipses show directly the effect on precision of the estimates as a function of the ridge tuning constant.
 and their size and shape indicate sampling variance, $\widehat{\text{Var}} (\mathbf{\widehat{\beta}}_{ij})$. Here, I plot those for GNP against four of the other predictors.
 
-```{r}
+```{r echo=-1}
 #| out-width: "100%"
 #| label: fig-longley-plot-ridge
 #| fig-show: "hold"
@@ -1081,20 +1098,46 @@ for (i in 2:5) {
 }
 ```
 
-As can be seen, the coefficients for each pair of predictors trace a path generally in toward the origin (0,0), and the covariance ellipses get smaller, indicating increased precision.
+As can be seen, the coefficients for each pair of predictors trace a path generally in toward the origin (0,0), and the covariance ellipses get smaller, indicating increased precision. Sometimes, these paths are rather direct, but it takes a peculiar route in the case of population and GNP.
 
-The `pairs()` method for `"ridge"` objects shows all pairwise views in scatterplot matrix form.
+The `pairs()` method for `"ridge"` objects shows all pairwise views in scatterplot matrix form. `radius` sets the base size of the ellipse-generating circle for the covariance ellipses.
 
 ```{r}
 #| label: fig-longley-pairs
 #| fig-width: 10
 #| fig-height: 10
 #| out-width: "90%"
-#| fig-cap: "Scatterplot matrix of bivariate ridge trace plots. ..."
+#| fig-cap: "Scatterplot matrix of bivariate ridge trace plots. Each panel shows the effect of shrinkage on the covariance ellipse for a pair of predictors."
 pairs(lridge, radius=0.5, diag.cex = 1.5)
 ```
 
-**Package summary**
+### Visualizing the bias-variance tradeoff
+
+The function `precision()` calculates a number of measures of the effect of shrinkage of the coefficients in relation to the "size" of
+the covariance matrix $\mathcal{V}_k \equiv \widehat{\Var} (\widehat{\boldsymbol{\beta}}^{\mathrm{RR}}_k)$:
+
+* `norm.beta` $= \left \Vert \boldsymbol{\beta}\right \Vert / \max{\left \Vert \boldsymbol{\beta}\right \Vert}$ is a summary measure of shrinkage, the normalized root mean square of the estimated coefficients.
+
+* `det` $ = \log{| \mathcal{V}_k |}$ is an overall measure of variance of the coefficients. It measures the linearized volume of the covariance ellipsoid and corresponds conceptually to Wilks' Lambda criterion. 
+
+
+```{r precision}
+precision(lridge)
+```
+
+Plotting shrinkage against variance each other gives a direct view of the tradeoff.
+
+### Low-rank views
+
+Just as principal components analysis gives low-dimensional views of a data set, PCA can
+be useful to understand ridge regression, just as it did for the problem of collinearity.
+
+The  `pca` method transforms a `"ridge"` object
+from parameter space, where the estimated coefficients are
+$\beta_k$ with covariance matrices $\Sigma_k$, to the
+principal component space defined by the right singular vectors, $\mathbf{V}$,
+of the singular value decomposition of the scaled predictor matrix, $\mathbf{X}$.
+
 
 ```{r}
 #| echo: false
