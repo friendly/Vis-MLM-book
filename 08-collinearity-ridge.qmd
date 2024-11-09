@@ -1052,7 +1052,7 @@ c(HKB=lridge$kHKB,
 The shrinkage constant $k$ doesn't have much intrinsic meaning, s
 it is often easier to interpret the plot when coefficients are plotted against the equivalent degrees of freedom, $\text{df}_k$.
 OLS corresponds to $\text{df}_k = 6$ degrees of freedom in the space of six parameters,
-and the effect of shrinkage is to decrease the degrees of freedom, as if estimating fewer parameters.
+and the effect of shrinkage is to decrease the degrees of freedom, as if estimating fewer parameters. This more natural scale also makes the changes in coefficient with shrinkage more nearly linear.
 
 ```{r echo=-1}
 #| label: fig-longley-traceplot2
@@ -1108,24 +1108,29 @@ The `pairs()` method for `"ridge"` objects shows all pairwise views in scatterpl
 #| fig-height: 10
 #| out-width: "90%"
 #| fig-cap: "Scatterplot matrix of bivariate ridge trace plots. Each panel shows the effect of shrinkage on the covariance ellipse for a pair of predictors."
-pairs(lridge, radius=0.5, diag.cex = 1.5)
+pairs(lridge, radius=0.5, diag.cex = 2)
 ```
 
 ### Visualizing the bias-variance tradeoff
 
 The function `precision()` calculates a number of measures of the effect of shrinkage of the coefficients in relation to the "size" of
-the covariance matrix $\boldsymbol{\mathcal{V}}_k \equiv \widehat{\Var} (\widehat{\boldsymbol{\beta}}^{\mathrm{RR}}_k)$:
-
-* `norm.beta` $= \left \Vert \boldsymbol{\beta}\right \Vert / \max{\left \Vert \boldsymbol{\beta}\right \Vert}$ is a summary measure of shrinkage, the normalized root mean square of the estimated coefficients.
-
-* `det` $ = \log{| \mathcal{V}_k |}$ is an overall measure of variance of the coefficients. It is the (linearized) volume of the covariance ellipsoid and corresponds conceptually to Wilks' Lambda criterion. 
-
-* `trace` $ = \text{trace} (\boldsymbol{\mathcal{V}}_k) $ is the sum of the variances and also the sum of the eigenvalues of $\boldsymbol{\mathcal{V}}_k$, conceptually similar to Pillai's trace criterion.
+the covariance matrix $\boldsymbol{\mathcal{V}}_k \equiv \widehat{\Var} (\widehat{\boldsymbol{\beta}}^{\mathrm{RR}}_k)$. Larger shrinkage $k$ should lead
+to a smaller ellipsoid for $\boldsymbol{\mathcal{V}}_k$, indicating increased precision.
 
 
 ```{r precision}
 pdat <- precision(lridge) |> print()
 ```
+
+Here,
+* `norm.beta` $= \left \Vert \boldsymbol{\beta}\right \Vert / \max{\left \Vert \boldsymbol{\beta}\right \Vert}$ is a summary measure of shrinkage, the normalized root mean square of the estimated coefficients. It starts at 1.0 for $k=0$ and decreases.
+
+* `det` $= \log{| \mathcal{V}_k |}$ is an overall measure of variance of the coefficients. It is the (linearized) volume of the covariance ellipsoid and corresponds conceptually to Wilks' Lambda criterion. 
+
+* `trace` $= \text{trace} (\boldsymbol{\mathcal{V}}_k) $ is the sum of the variances and also the sum of the eigenvalues of $\boldsymbol{\mathcal{V}}_k$, conceptually similar to Pillai's trace criterion.
+
+* `max.eig` is the largest eigenvalue measure of size, an analog of Roy's maximum root test.
+
 
 Plotting shrinkage against a measure of variance gives a direct view of the tradeoff
 between bias and precision. Here I plot `norm.beta` against `det`, and join the
@@ -1134,17 +1139,18 @@ decreases more sharply thereafter and the LW choice achieves greater precision.
 
 ```{r echo=-1}
 #| label: fig-longley-precision-plot
+#| code-fold: true
 #| fig-width: 8
 #| fig-height: 7
 #| out-width: "80%"
-#| fig-cap: "The tradeoff between bias and precision"
+#| fig-cap: "The tradeoff between bias and precision. Bias increases as we move away from the OLS solution, but precision increases."
 op <- par(mar=c(4, 4, 1, 1) + 0.2)
 library(splines)
 with(pdat, {
 	plot(norm.beta, det, type="b", 
 	     cex.lab=1.25, pch=16, cex=1.5, col=clr, lwd=2,
        xlab='shrinkage: ||b|| / max(||b||)',
-	     ylab='variance: log |Var(b)|')
+       ylab='variance: log |Var(b)|')
 	text(norm.beta, det, 
 	     labels = lambdaf, 
 	     cex=1.25, pos=c(rep(2,length(lambda)-1),4))
@@ -1153,8 +1159,10 @@ with(pdat, {
 	     cex=1.5, pos=4)
 	})
 # find locations for optimal shrinkage criteria
-mod <- lm(cbind(det, norm.beta) ~ bs(lambda, df=5), data=pdat)
-x <- data.frame(lambda=c(lridge$kHKB, lridge$kLW))
+mod <- lm(cbind(det, norm.beta) ~ bs(lambda, df=5), 
+          data=pdat)
+x <- data.frame(lambda=c(lridge$kHKB, 
+                         lridge$kLW))
 fit <- predict(mod, x)
 points(fit[,2:1], pch=15, col=gray(.50), cex=1.6)
 text(fit[,2:1], c("HKB", "LW"), pos=3, cex=1.5, col=gray(.50))
@@ -1170,19 +1178,38 @@ from parameter space, where the estimated coefficients are
 $\beta_k$ with covariance matrices $\boldsymbol{\mathcal{V}}_k$, to the
 principal component space defined by the right singular vectors, $\mathbf{V}$,
 of the singular value decomposition of the scaled predictor matrix, $\mathbf{X}$.
+In PCA space the total variance of the predictors is distributed among the
+linear combinations that account for greatest variance.
+
+```{r pca-ridge}
+plridge <- pca(lridge)
+plridge
+```
+
+Then, a `traceplot()` of the resulting `"pcaridge"`  object shows how the dimensions
+are affected by shrinkage, on the scale of degrees of freedom in @fig-longley-pca-traceplot.
 
 ```{r echo=-1}
 #| label: fig-longley-pca-traceplot
+#| fig-cap: "Ridge traceplot for the longley regression viewed in PCA space. The dimensions are the linear combinations of the predictors which account for greatest variance."
 par(mar=c(4, 4, 1, 1)+ 0.1)
-plridge <- pca(lridge)
-plridge
-traceplot(plridge)
+traceplot(plridge, X="df", 
+          cex.lab = 1.2, lwd=2)
 ```
 
-What may be surprising at first is that the coefficients for the first 4 components are not shrunk at all. Rather, the effect of shrinkage is seen only on the _last two dimensions_.
+What may be surprising at first is that the coefficients for the first 4 components are not shrunk at all. These large dimensions are immune to ridge tuning.
+Rather, the effect of shrinkage is seen only on the _last two dimensions_.
 But those also are the directions that contribute most to collinearity as we saw earlier.
 
 ** pairs() ? **
+
+A `pairs()` plot gives a dramatic representation bivariate effects of shrinkage in PCA space: the principal components of X are uncorrelated, so the ellipses are all aligned with the coordinate axes and the ellipses largely coincide for dimensions 1 to 4:
+
+```{r echo = -1}
+#| label: fig-longley-pca-pairs
+#| out-width: "100%"
+pairs(plridge)
+```
 
 If we focus on the plot of dimensions `5:6`, we can see where all the shrinkage action
 is in this representation. Generally, the predictors that are related to the smallest
@@ -1190,8 +1217,12 @@ dimension (6) are shrunk quickly at first.
 
 ```{r echo = -1}
 #| label: fig-longley-pca-dim56
+#| fig-height: 7
+#| fig-width: 7
+#| fig-cap: "Bivariate ridge trace plot for the smallest two dimensions ... "
 par(mar=c(4, 4, 1, 1)+ 0.1)
-plot(plridge, variables=5:6, fill = TRUE, fill.alpha=0.2)
+plot(plridge, variables=5:6, 
+     fill = TRUE, fill.alpha=0.2)
 text(plridge$coef[, 5:6], 
 	   label = lambdaf, 
      cex=1.5, pos=4, offset=.1)
@@ -1199,14 +1230,20 @@ text(plridge$coef[, 5:6],
 
 ### Biplot view
 
-Finally, we can project the predictor variables into the PCA space of the smallest dimensions, where the shrinkage action mostly occurs to see how the predictor variables relate to these dimensions.
+The question arises how to relate this view of shrinkage in PCA space to the original
+predictors. The biplot is again your friend. 
+You can project variable vectors for the
+predictor variables into the PCA space of the smallest dimensions, where the shrinkage action mostly occurs to see how the predictor variables relate to these dimensions.
 
 `biplot.pcaridge()` supplements the standard display of the covariance ellipsoids for a ridge regression problem in PCA/SVD space with labeled arrows showing the contributions of the original variables to the dimensions plotted. The length of the arrows reflects proportion of variance that each predictors shares with the components.
 
-The biplot view showing the dimensions corresponding to the two smallest singular values is particularly useful for understanding how the predictors contribute to shrinkage in ridge regression. Here, Year and Population largely contribute to dimension 5; a contrast between (Year, Population) and GNP contributes to dimension 6.
+The biplot view in @fig-longley-pca-biplot showing the two smallest dimensions is particularly useful for understanding how the predictors contribute to shrinkage in ridge regression. Here, Year and Population largely contribute to dimension 5; a contrast between (Year, Population) and GNP contributes to dimension 6.
 
 ```{r echo = -1}
 #| label: fig-longley-pca-biplot
+#| fig-height: 7
+#| fig-width: 7
+#| fig-cap: "Biplot view of the ridge trace plot for the smallest two dimensions ..."
 op <- par(mar=c(4, 4, 1, 1) + 0.2)
 biplot(plridge, radius=0.5, 
        ref=FALSE, asp=1, 
