@@ -956,7 +956,7 @@ to fewer coefficients being estimated.
 
 There is a close connection with principal components regression mentioned in @sec-remedies. 
 Ridge regression shrinks _all_ dimensions
-in proportion to $\text{df}_k(i)$, so the low variance dimensions are shrunk more.  
+in proportion to $\text{df}_k(i)$, so the low variance dimensions are shrunk more.
 Principal components regression discards the low variance dimensions and leaves the high variance dimensions unchanged.
 
 ### The `genridge` package
@@ -1008,7 +1008,7 @@ longley.lm <- lm(Employed ~ GNP + Unemployed + Armed.Forces +
 vif(longley.lm)
 ```
 
-Shrinkage values can be specified using $k$ (where $k = 0$ corresponds to OLS) or the equivalent degrees of freedom. (The function uses the notation $\lambda \equiv k$, so the argument is `lambda`.)
+Shrinkage values can be specified using $k$ (where $k = 0$ corresponds to OLS) or the equivalent degrees of freedom $ \text{df}_k$ (@eq-dfk). (The function uses the notation $\lambda \equiv k$, so the argument is `lambda`.)
 Among other quantities, `ridge()` returns a matrix containing the coefficients for each predictor for each shrinkage value
 and other quantities.
 
@@ -1033,7 +1033,7 @@ traceplot(lridge,
           xlim = c(-0.02, 0.08), cex.lab=1.25)
 ```
 
-You can see that the coefficients for Year and GNP are shrunk considerably. Differences from the $\beta$ value at $k =0$ represent the bias needed to achieve more stable estimates.
+You can see that the coefficients for Year and GNP are shrunk considerably. Differences from the $\beta$ value at $k =0$ represent the bias (smaller $\mid \beta \mid$) needed to achieve more stable estimates.
 
 The dotted lines in @fig-longley-traceplot1
 show choices for the ridge constant by two commonly used criteria to balance bias against precision due to 
@@ -1049,32 +1049,32 @@ c(HKB=lridge$kHKB,
 
 <!-- These values seem rather small, but note that the coefficients for Year and GNP are shrunk considerably. -->
 
-The shrinkage constant $k$ doesn't have much intrinsic meaning, s
+The shrinkage constant $k$ doesn't have much intrinsic meaning, so
 it is often easier to interpret the plot when coefficients are plotted against the equivalent degrees of freedom, $\text{df}_k$.
 OLS corresponds to $\text{df}_k = 6$ degrees of freedom in the space of six parameters,
 and the effect of shrinkage is to decrease the degrees of freedom, as if estimating fewer parameters. This more natural scale also makes the changes in coefficient with shrinkage more nearly linear.
 
 ```{r echo=-1}
 #| label: fig-longley-traceplot2
-#| fig-cap: "Univariate ridge trace plot using equivalent degrees of freedom, $\\text{df}_k$ to specify shrinkage."
+#| fig-cap: "Univariate ridge trace plot using equivalent degrees of freedom, $\\text{df}_k$ to specify shrinkage. This scale is easier to understand and makes the traces of prarameters more nearly linear."
 par(mar=c(4, 4, 1, 1)+ 0.1)
 traceplot(lridge, 
           X = "df",
           xlim = c(4, 6.2), cex.lab=1.25)
 ```
 
-But a bigger problem is that these univariate plots are the **wrong kind** of plot! They show the trends in increased bias associated with larger $k$, but they do not show the accompanying increase in _precision_ (decrease in variance) achieved by allowing a bit of bias.
+But a bigger problem is that these univariate plots are the **wrong kind** of plot! They show the trends in increased bias (toward smaller $\mid \beta \mid$) associated with larger $k$, but they do not show the accompanying increase in _precision_ (decrease in variance) achieved by allowing a bit of bias.
 
-For that, we need to consider the variances and covariances of the estimated coefficients. The univariate trace plot is the wrong graphic form for what is essentially a multivariate problem, where we would like to visualize how both coefficients and their variances change with $k$.
+For that, we need to consider the variances and covariances of the estimated coefficients. The univariate trace plot is the wrong graphic form for what is essentially a multivariate problem, where we would like to visualize how _both_ coefficients and their variances change with $k$.
 
 ## Bivariate ridge trace plots {#sec-ridge-bivar}
 
 The bivariate analog of the trace plot suggested by @Friendly:genridge:2013 plots bivariate confidence ellipses for _pairs_ of coefficients. 
-Their centers, $(\widehat{\beta}_i, \widehat{\beta}_j)$
+Their centers, $(\widehat{\beta}_i, \widehat{\beta}_j)$ compared to the OLS values
 show the bias induced for each coefficient, and also how the change in the ridge estimate for one parameter is related to changes for other parameters.
 
 The size and shapes of the covariance ellipses show directly the effect on precision of the estimates as a function of the ridge tuning constant.
-and their size and shape indicate sampling variance, $\widehat{\text{Var}} (\mathbf{\widehat{\beta}}_{ij})$. Here, I plot those for GNP against four of the other predictors.
+and their size and shape indicate sampling variance, $\widehat{\text{Var}} (\mathbf{\widehat{\beta}}_{ij})$. Here, I plot those for GNP against four of the other predictors. The `plot()` method for `"ridge"` objects plots these ellipses for a pair of variables.
 
 ```{r echo=-1}
 #| out-width: "100%"
@@ -1123,11 +1123,12 @@ pdat <- precision(lridge) |> print()
 ```
 
 Here,
+
 * `norm.beta` $= \left \Vert \boldsymbol{\beta}\right \Vert / \max{\left \Vert \boldsymbol{\beta}\right \Vert}$ is a summary measure of shrinkage, the normalized root mean square of the estimated coefficients. It starts at 1.0 for $k=0$ and decreases.
 
-* `det` $= \log{| \mathcal{V}_k |}$ is an overall measure of variance of the coefficients. It is the (linearized) volume of the covariance ellipsoid and corresponds conceptually to Wilks' Lambda criterion. 
+* `det` $=\log{| \mathcal{V}_k |}$ is an overall measure of variance of the coefficients. It is the (linearized) volume of the covariance ellipsoid and corresponds conceptually to Wilks' Lambda criterion. 
 
-* `trace` $= \text{trace} (\boldsymbol{\mathcal{V}}_k) $ is the sum of the variances and also the sum of the eigenvalues of $\boldsymbol{\mathcal{V}}_k$, conceptually similar to Pillai's trace criterion.
+* `trace` $=\text{trace} (\boldsymbol{\mathcal{V}}_k)$ is the sum of the variances and also the sum of the eigenvalues of $\boldsymbol{\mathcal{V}}_k$, conceptually similar to Pillai's trace criterion.
 
 * `max.eig` is the largest eigenvalue measure of size, an analog of Roy's maximum root test.
 
@@ -1140,6 +1141,7 @@ decreases more sharply thereafter and the LW choice achieves greater precision.
 ```{r echo=-1}
 #| label: fig-longley-precision-plot
 #| code-fold: true
+#| code-summary: "Show the code"
 #| fig-width: 8
 #| fig-height: 7
 #| out-width: "80%"
@@ -1201,13 +1203,14 @@ What may be surprising at first is that the coefficients for the first 4 compone
 Rather, the effect of shrinkage is seen only on the _last two dimensions_.
 But those also are the directions that contribute most to collinearity as we saw earlier.
 
-** pairs() ? **
+**pairs()** -- Should I include this ?
 
 A `pairs()` plot gives a dramatic representation bivariate effects of shrinkage in PCA space: the principal components of X are uncorrelated, so the ellipses are all aligned with the coordinate axes and the ellipses largely coincide for dimensions 1 to 4:
 
 ```{r echo = -1}
 #| label: fig-longley-pca-pairs
 #| out-width: "100%"
+#| fig-cap: "All pairwise bivariate ridge plots shown in PCA space."
 pairs(plridge)
 ```
 
