@@ -45,7 +45,7 @@ library(patchwork)
 
 ## What is collinearity?
 
-Researchers who have read standard treatments of linear models
+Researchers who have studies standard treatments of linear models
 (e.g, @Graybill1961; @Hocking2013)
 are often confused about what collinearity is, how to find its sources and how to take steps to resolve them.
 There are a number of important diagnostic measures that can help, but these are usually presented
@@ -86,7 +86,7 @@ in traditional tabular displays?
 #| label: fig-wheres-waldo
 #| echo: false
 #| out-width: "100%"
-#| fig-cap: "A scene from one of the Where's Waldo books. Waldo wears a red-striped shirt, but far too many of the other figures in the scene have horizontal red stripes, making it very difficult to find him among all the distractors. This is often the problem with collinearity diagnostics. _Source_: Retrieved from https://bit.ly/48KPcOo"
+#| fig-cap: "A scene from one of the Where's Waldo books. Waldo wears a red-striped shirt, but far too many of the other figures in the scene have horizontal red stripes, making it very difficult to find him among all the distractors. This is often the problem with collinearity diagnostics. _Source_: Modified from https://bit.ly/48KPcOo"
 knitr::include_graphics("images/wheres-waldo.png")
 ```
 
@@ -1098,7 +1098,7 @@ for (i in 2:5) {
 }
 ```
 
-As can be seen, the coefficients for each pair of predictors trace a path generally in toward the origin (0,0), and the covariance ellipses get smaller, indicating increased precision. Sometimes, these paths are rather direct, but it takes a peculiar route in the case of population and GNP.
+As can be seen, the coefficients for each pair of predictors trace a path generally in toward the origin (0,0), and the covariance ellipses get smaller, indicating increased precision. Sometimes, these paths are rather direct, but it takes a peculiar curvilinear route in the case of population and GNP.
 
 The `pairs()` method for `"ridge"` objects shows all pairwise views in scatterplot matrix form. `radius` sets the base size of the ellipse-generating circle for the covariance ellipses.
 
@@ -1108,7 +1108,8 @@ The `pairs()` method for `"ridge"` objects shows all pairwise views in scatterpl
 #| fig-height: 10
 #| out-width: "90%"
 #| fig-cap: "Scatterplot matrix of bivariate ridge trace plots. Each panel shows the effect of shrinkage on the covariance ellipse for a pair of predictors."
-pairs(lridge, radius=0.5, diag.cex = 2)
+pairs(lridge, radius=0.5, diag.cex = 2, 
+      fill = TRUE, fill.alpha = 0.1)
 ```
 
 ### Visualizing the bias-variance tradeoff
@@ -1124,7 +1125,7 @@ pdat <- precision(lridge) |> print()
 
 Here,
 
-* `norm.beta` $= \left \Vert \boldsymbol{\beta}\right \Vert / \max{\left \Vert \boldsymbol{\beta}\right \Vert}$ is a summary measure of shrinkage, the normalized root mean square of the estimated coefficients. It starts at 1.0 for $k=0$ and decreases.
+* `norm.beta` $= \left \Vert \boldsymbol{\beta}\right \Vert / \max{\left \Vert \boldsymbol{\beta}\right \Vert}$ is a summary measure of shrinkage, the normalized root mean square of the estimated coefficients. It starts at 1.0 for $k=0$ and decreases with the penalty for large coefficients.
 
 * `det` $=\log{| \mathcal{V}_k |}$ is an overall measure of variance of the coefficients. It is the (linearized) volume of the covariance ellipsoid and corresponds conceptually to Wilks' Lambda criterion. 
 
@@ -1179,9 +1180,8 @@ The  `pca` method transforms a `"ridge"` object
 from parameter space, where the estimated coefficients are
 $\beta_k$ with covariance matrices $\boldsymbol{\mathcal{V}}_k$, to the
 principal component space defined by the right singular vectors, $\mathbf{V}$,
-of the singular value decomposition of the scaled predictor matrix, $\mathbf{X}$.
-In PCA space the total variance of the predictors is distributed among the
-linear combinations that account for greatest variance.
+of the singular value decomposition  $\mathbf{U} \mathbf{D} \mathbf{V}\trans$ of the scaled predictor matrix, $\mathbf{X}$.
+In PCA space the total variance of the predictors remains the same, but it is distributed among the linear combinations that account for successively greatest variance.
 
 ```{r pca-ridge}
 plridge <- pca(lridge)
@@ -1189,7 +1189,7 @@ plridge
 ```
 
 Then, a `traceplot()` of the resulting `"pcaridge"`  object shows how the dimensions
-are affected by shrinkage, on the scale of degrees of freedom in @fig-longley-pca-traceplot.
+are affected by shrinkage, shown on the scale of degrees of freedom in @fig-longley-pca-traceplot.
 
 ```{r echo=-1}
 #| label: fig-longley-pca-traceplot
@@ -1203,12 +1203,15 @@ What may be surprising at first is that the coefficients for the first 4 compone
 Rather, the effect of shrinkage is seen only on the _last two dimensions_.
 But those also are the directions that contribute most to collinearity as we saw earlier.
 
-**pairs()** -- Should I include this ?
+<!-- **pairs()** -- Should I include this ? -->
 
-A `pairs()` plot gives a dramatic representation bivariate effects of shrinkage in PCA space: the principal components of X are uncorrelated, so the ellipses are all aligned with the coordinate axes and the ellipses largely coincide for dimensions 1 to 4:
+A `pairs()` plot gives a dramatic representation bivariate effects of shrinkage in PCA space: the principal components of X are uncorrelated, so the ellipses are all aligned with the coordinate axes and the ellipses largely coincide for dimensions 1 to 4.
+You can see them shrink in one direction in the last two columns and rows.
 
-```{r echo = -1}
+```{r}
 #| label: fig-longley-pca-pairs
+#| fig-width: 10
+#| fig-height: 10
 #| out-width: "100%"
 #| fig-cap: "All pairwise bivariate ridge plots shown in PCA space."
 pairs(plridge)
@@ -1225,7 +1228,7 @@ dimension (6) are shrunk quickly at first.
 #| fig-cap: "Bivariate ridge trace plot for the smallest two dimensions ... "
 par(mar=c(4, 4, 1, 1)+ 0.1)
 plot(plridge, variables=5:6, 
-     fill = TRUE, fill.alpha=0.2)
+     fill = TRUE, fill.alpha=0.15, cex.lab = 1.5)
 text(plridge$coef[, 5:6], 
 	   label = lambdaf, 
      cex=1.5, pos=4, offset=.1)
@@ -1238,9 +1241,10 @@ predictors. The biplot is again your friend.
 You can project variable vectors for the
 predictor variables into the PCA space of the smallest dimensions, where the shrinkage action mostly occurs to see how the predictor variables relate to these dimensions.
 
-`biplot.pcaridge()` supplements the standard display of the covariance ellipsoids for a ridge regression problem in PCA/SVD space with labeled arrows showing the contributions of the original variables to the dimensions plotted. The length of the arrows reflects proportion of variance that each predictors shares with the components.
+`biplot.pcaridge()` supplements the standard display of the covariance ellipsoids for a ridge regression problem in PCA/SVD space with labeled arrows showing the contributions of the original variables to the dimensions plotted. Recall from @sec-biplot that these
+reflect the correlations of the variables with the PCA dimensions.
+The lengths of the arrows reflect the proportion of variance that each predictors shares with the components.
 
-The biplot view in @fig-longley-pca-biplot showing the two smallest dimensions is particularly useful for understanding how the predictors contribute to shrinkage in ridge regression. Here, Year and Population largely contribute to dimension 5; a contrast between (Year, Population) and GNP contributes to dimension 6.
 
 ```{r echo = -1}
 #| label: fig-longley-pca-biplot
@@ -1251,10 +1255,24 @@ op <- par(mar=c(4, 4, 1, 1) + 0.2)
 biplot(plridge, radius=0.5, 
        ref=FALSE, asp=1, 
        var.cex=1.15, cex.lab=1.3, col=clr,
-       fill=TRUE, fill.alpha=0.2, prefix="Dimension ")
+       fill=TRUE, fill.alpha=0.15, 
+       prefix="Dimension ")
 text(plridge$coef[,5:6], lambdaf, pos=2, cex=1.3)
 ```
 
+The biplot view in @fig-longley-pca-biplot showing the two smallest dimensions is particularly useful for understanding how the predictors contribute to shrinkage in ridge regression. Here, Year and Population largely contribute to dimension 5; a contrast between (Year, Population) and GNP contributes to dimension 6.
+
+## Summary
+
+This chapter has considered the problems in regression models which stem from high correlations among the predictors. We saw that collinearity results in unstable
+estimates of coefficients with larger uncertainty, often dramatically more so than would be
+the case if the predictors were uncorrelated. Collinearity can be seen
+as merely a "data problem" which can safely be ignored if we are only interested
+in prediction. When we want to understand a model, ridge regression can tame the
+collinearity beast by shrinking the coefficients slighty to gain greater precision in the estimates. 
+
+Beyond these statistical considerations, the methods of this chapter highlight the
+roles of multivariate thinking and visualization in understanding these phenomena and the methods developed for solving them. ...
 
 ```{r}
 #| echo: false
