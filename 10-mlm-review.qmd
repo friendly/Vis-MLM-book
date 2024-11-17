@@ -46,7 +46,21 @@ library(tidyr)
 ```
 
 ## Structure of the MLM
-In each of these cases, the underlying MLM is given most compactly using the matrix equation, <!-- $$ --> 
+
+**TODO** Revise notation here
+
+With $p$ response variables, the multivariate linear model is most easily appreciated as the collection of $p$ linear models, one for each response.
+
+\begin{align*}
+\mathbf{y}_1 =& \mathbf{X}\boldsymbol{\beta}_1 + \boldsymbol{\epsilon}_1 \\
+\mathbf{y}_2 =& \mathbf{X}\boldsymbol{\beta}_2 + \boldsymbol{\epsilon}_2 \\
+  \vdots      &  \\
+\mathbf{y}_p =& \mathbf{X}\boldsymbol{\beta}_p + \boldsymbol{\epsilon}_p \\
+\end{align*}
+
+
+In each of these cases, the underlying MLM is given most compactly using the matrix equation, 
+<!-- $$ --> 
 <!-- \newcommand{\sizedmat}[2]{\mathord{\mathop{\mathbf{#1}\limits_{(#2)}}} --> 
 <!-- $$ -->
 
@@ -62,12 +76,10 @@ where
 -   $\mathbf{B} = ( \mathbf{b}_1 , \mathbf{b}_2 , \dots \mathbf{b}_j \dots, \mathbf{b}_p )$ is a matrix of regression coefficients, one column $\mathbf{b}_j$ for each response variable; 
 -   $\Epsilon$ is a matrix of errors in predicting $\mathbf{Y}$.
 
+<!--
 When it is useful to refer symbolically to the _rows_ $\mathbf{b}_i^\mathsf{T}$ of coefficients for the regressors 
 $x_0, x_1, x_2, \dots, x_i, \dots x_q$, these are expressed as: 
 
-<!-- 
-$\mathbf{B} = ( \mathbf{b}_0^\mathsf{T} , \mathbf{b}_1^\mathsf{T} , \dots \mathbf{b}_j^\mathsf{T} \dots, \mathbf{b}_p )^\mathsf{T}$, or more explicitly 
--->
 
 $$
 \sizedmat{B}{(q+1) \times p} =
@@ -80,6 +92,8 @@ $$
   \mathbf{b}_{q}^\mathsf{T}  \\ 
 \end{pmatrix}
 $$
+
+-->
 
 The structure of the model matrix $\mathbf{X}$ is the same as the univariate linear model, and may contain, therefore, 
 
@@ -151,6 +165,37 @@ lm(cbind(y1, y2, y3) ~ x1 + x2 + ..., data=)
 
 In the presence of possible outliers, robust methods are available for univariate linear models (e.g., `MASS::rlm())`. So too, `heplots::robmlm()` provides robust
 estimation in the multivariate case.
+
+### Example: Dog Food Data
+
+As a toy example to make these ideas concrete, consider the dataset `heplots::dogfood`.
+Here, a dogfood manufacturer wanted to study preference for different dogfood formulas, two of their own ("Old", "New") and two from other manufacturers ("Major", "Alps"). In a between-dog design, 
+each of $n=4$ dogs were presented with a bowl of _one_ formula and the time to `start` eating and `amount` eaten were recorded. Greater preference would be seen in a shorter delay to start eating and a greater amount,
+so these responses are expected to be negatively correlated.
+
+```{r dogfood-data}
+data(dogfood, package = "heplots")
+str(dogfood)
+```
+
+For this data, boxplots for the two responses provide an initial look.
+
+```{r}
+#| label: fig-dogfood-boxplot
+#| fig-cap: "Boxplots for time to start eating and amount eaten by dogs given one of four dogfood formulas."
+dog_long <- dogfood |>
+  pivot_longer(c(start, amount),
+               names_to = "variable")
+ggplot(data = dog_long, 
+       aes(x=formula, y = value, fill = formula)) +
+  geom_boxplot(alpha = 0.2) +
+  geom_point(size = 2.5) +
+  facet_wrap(~ variable, scales = "free") +
+  theme_bw(base_size = 14) + 
+  theme(legend.position="none")
+```
+
+With 
 
 ### Sums of squares
 

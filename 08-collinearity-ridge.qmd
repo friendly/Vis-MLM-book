@@ -142,8 +142,7 @@ when collinearity is present.
 * Thus you may find a situation where an overall model is highly significant (large $F$-statistic), while
 no (or few) of the individual predictors are. This is a puzzlement!
 * Beyond this, the least squares solution may have poor numerical accurracy [@Longley:1967], because
-the solution depends on the determinant $|\,\mathbf{X}^\mathsf{T} \mathbf{X}\,|$, which approaches 0
-as multiple correlations increase.
+the solution depends inversely on the determinant $|\,\mathbf{X}^\mathsf{T} \mathbf{X}\,|$, which approaches 0 as multiple correlations increase.
 * There is an interpretive problem as well. Recall that the coefficients $\hat{b}$ are _partial coefficients_, meaning that they estimate
 change $\Delta y$ in $y$ when $x$ changes by one unit $\Delta x$, but holding **all other variables
 constant**. Then, the model may be trying to estimate something that does not occur in the data.
@@ -898,7 +897,7 @@ rocks dropped into a pond [@Friendly-etal:ellipses:2013].
 #| label: fig-ridge-demo
 #| out-width: "80%"
 #| echo: false
-#| fig-cap: "Geometric interpretation of rigdge regression, using elliptical contours of the $\\text{RSS}(k)$ function. The blue circles at the origin show the constraint that the sum of squares of coefficients, $\\boldsymbol{\\beta}\\trans \\boldsymbol{\\beta}$ be less than $k$. The red ellipses show the covariance ellipse of two coefficients $\\boldsymbol{\\beta}$. Ridge regression finds the point $\\widehat{\\boldsymbol{\\beta}}^{\\mathrm{RR}}_k$ where the OLS contours just kiss the contraint region. _Source: @@Friendly-etal:ellipses:2013."
+#| fig-cap: "Geometric interpretation of ridge regression, using elliptical contours of the $\\text{RSS}(k)$ function. The blue circles at the origin show the constraint that the sum of squares of coefficients, $\\boldsymbol{\\beta}\\trans \\boldsymbol{\\beta}$ be less than $k$. The red ellipses show the covariance ellipse of two coefficients $\\boldsymbol{\\beta}$. Ridge regression finds the point $\\widehat{\\boldsymbol{\\beta}}^{\\mathrm{RR}}_k$ where the OLS contours just kiss the constraint region. _Source: @Friendly-etal:ellipses:2013."
 knitr::include_graphics("images/ridge-demo.png")
 ```
 
@@ -990,6 +989,8 @@ In addition, the `pca()` method for `"ridge"` objects transforms the coefficient
 A classic example for ridge regression is Longley’s (1967) data, consisting of 7 economic variables, observed yearly from 1947 to 1962 (n=16), in the dataset `datasets::longley`. 
 The goal is to predict Employed from `GNP`, `Unemployed`, `Armed.Forces`, `Population`, `Year`, and `GNP.deflator`.
 
+<!-- fig.code: taken from genridge  README.Rmd -->
+
 ```{r longley}
 data(longley, package="datasets")
 str(longley)
@@ -1039,12 +1040,10 @@ The dotted lines in @fig-longley-traceplot1
 show choices for the ridge constant by two commonly used criteria to balance bias against precision due to 
 @Hoerl-etal-1975 (`HKB`) and 
 @LawlessWang:1976 (`LW`).
-These values (along with a generalized cross-validation value `GCV`) are also stored in the "ridge" object:
+These values (along with a generalized cross-validation value `GCV`) are also stored in the "ridge" object as a vector `criteria`.
 
 ```{r}
-c(HKB=lridge$kHKB, 
-  LW=lridge$kLW, 
-  GCV=lridge$kGCV)
+lridge$criteria
 ```
 
 <!-- These values seem rather small, but note that the coefficients for Year and GNP are shrunk considerably. -->
@@ -1151,12 +1150,14 @@ op <- par(mar=c(4, 4, 1, 1) + 0.2)
 library(splines)
 with(pdat, {
 	plot(norm.beta, det, type="b", 
-	     cex.lab=1.25, pch=16, cex=1.5, col=clr, lwd=2,
+	     cex.lab=1.25, pch=16, 
+	     cex=1.5, col=clr, lwd=2,
        xlab='shrinkage: ||b|| / max(||b||)',
        ylab='variance: log |Var(b)|')
 	text(norm.beta, det, 
 	     labels = lambdaf, 
-	     cex=1.25, pos=c(rep(2,length(lambda)-1),4))
+	     cex = 1.25, 
+	     pos = c(rep(2,length(lambda)-1),4))
 	text(min(norm.beta), max(det), 
 	     labels = "log |Variance| vs. Shrinkage", 
 	     cex=1.5, pos=4)
@@ -1167,8 +1168,10 @@ mod <- lm(cbind(det, norm.beta) ~ bs(lambda, df=5),
 x <- data.frame(lambda=c(lridge$kHKB, 
                          lridge$kLW))
 fit <- predict(mod, x)
-points(fit[,2:1], pch=15, col=gray(.50), cex=1.6)
-text(fit[,2:1], c("HKB", "LW"), pos=3, cex=1.5, col=gray(.50))
+points(fit[,2:1], pch=15, 
+       col=gray(.50), cex=1.6)
+text(fit[,2:1], c("HKB", "LW"), 
+     pos=3, cex=1.5, col=gray(.50))
 ```
 
 ## Low-rank views
@@ -1250,7 +1253,7 @@ The lengths of the arrows reflect the proportion of variance that each predictor
 #| label: fig-longley-pca-biplot
 #| fig-height: 7
 #| fig-width: 7
-#| fig-cap: "Biplot view of the ridge trace plot for the smallest two dimensions ..."
+#| fig-cap: "Biplot view of the ridge trace plot for the smallest two dimensions, where the effects of shrinkage are most apparent."
 op <- par(mar=c(4, 4, 1, 1) + 0.2)
 biplot(plridge, radius=0.5, 
        ref=FALSE, asp=1, 
@@ -1262,17 +1265,20 @@ text(plridge$coef[,5:6], lambdaf, pos=2, cex=1.3)
 
 The biplot view in @fig-longley-pca-biplot showing the two smallest dimensions is particularly useful for understanding how the predictors contribute to shrinkage in ridge regression. Here, Year and Population largely contribute to dimension 5; a contrast between (Year, Population) and GNP contributes to dimension 6.
 
-## Summary
+## What have we learned?
 
 This chapter has considered the problems in regression models which stem from high correlations among the predictors. We saw that collinearity results in unstable
 estimates of coefficients with larger uncertainty, often dramatically more so than would be
 the case if the predictors were uncorrelated. Collinearity can be seen
 as merely a "data problem" which can safely be ignored if we are only interested
 in prediction. When we want to understand a model, ridge regression can tame the
-collinearity beast by shrinking the coefficients slighty to gain greater precision in the estimates. 
+collinearity beast by shrinking the coefficients slightly to gain greater precision in the estimates. 
 
 Beyond these statistical considerations, the methods of this chapter highlight the
-roles of multivariate thinking and visualization in understanding these phenomena and the methods developed for solving them. ...
+roles of multivariate thinking and visualization in understanding these phenomena and the methods developed for solving them. Data ellipses and confidence ellipses for coefficients again provide tools for visualizing what is concealed in numerical summaries.
+A perhaps surprising feature of both collinearity and ridge regression is that 
+the important information usually resides in the smallest PCA dimensions
+and biplots help again to understand these dimensions.
 
 ```{r}
 #| echo: false
