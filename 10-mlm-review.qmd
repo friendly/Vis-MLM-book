@@ -59,7 +59,20 @@ With $p$ response variables, the multivariate linear model is most easily apprec
 \end{align*}
 
 
-In each of these cases, the underlying MLM is given most compactly using the matrix equation, 
+The model matrix $\mathbf{X}$ is the same for all responses, but each one gets its
+own vector $\boldsymbol{\beta}_j$ of coefficients for how the predictors in $\mathbf{X}$
+fit a given response $\mathbf{y}_j$.
+
+Among the beauties of multivariate thinking is that we can put these separate equations
+together in single equation by joining the responses $\mathbf{y}_j$ as columns in a matrix
+$\mathbf{Y}$ and similarly arranging the vectors of coefficients $\boldsymbol{\beta}_j$
+as columns in a matrix $\mathbf{B}$. 
+(A slight hiccup in notation is that the _uppercase_ for the greek $\boldsymbol{\beta}$
+is the same as $\mathbf{B}$, so I use $\mathbf{b}_1 , \mathbf{b}_2 , \dots$ below to refer to its'
+columns.)
+
+The MLM then becomes:
+ 
 <!-- $$ --> 
 <!-- \newcommand{\sizedmat}[2]{\mathord{\mathop{\mathbf{#1}\limits_{(#2)}}} --> 
 <!-- $$ -->
@@ -71,9 +84,9 @@ $${#eq-mlm}
 
 where
 
--   $\mathbf{Y} = (\mathbf{y}_1 , \mathbf{y}_2, \dots , \mathbf{y}_j, \dots, \mathbf{y}_p )$ is the matrix of $n$ observations on $p$ responses;
+-   $\mathbf{Y} = (\mathbf{y}_1 , \mathbf{y}_2, \dots ,  \mathbf{y}_p )$ is the matrix of $n$ observations on $p$ responses, with typical column $\mathbf{y}_j$;
 -   $\mathbf{X}$ is the model matrix with columns $\mathbf{x}_i$ for $q$ regressors, which typically includes an initial column $\mathbf{x}_0$ of 1s for the intercept;
--   $\mathbf{B} = ( \mathbf{b}_1 , \mathbf{b}_2 , \dots \mathbf{b}_j \dots, \mathbf{b}_p )$ is a matrix of regression coefficients, one column $\mathbf{b}_j$ for each response variable; 
+-   $\mathbf{B} = ( \mathbf{b}_1 , \mathbf{b}_2 , \dots,  \mathbf{b}_p )$ is a matrix of regression coefficients, one column $\mathbf{b}_j$ for each response variable; 
 -   $\Epsilon$ is a matrix of errors in predicting $\mathbf{Y}$.
 
 <!--
@@ -95,7 +108,7 @@ $$
 
 -->
 
-The structure of the model matrix $\mathbf{X}$ is the same as the univariate linear model, and may contain, therefore, 
+The structure of the model matrix $\mathbf{X}$ is the same as the univariate linear model, and may therefore contain, 
 
 * **quantitative** predictors, such as `age`, `income`, years of `education`
 * **transformed predictors** like $\sqrt{\text{age}}$ or $\log{(\text{income})}$
@@ -178,10 +191,13 @@ data(dogfood, package = "heplots")
 str(dogfood)
 ```
 
-For this data, boxplots for the two responses provide an initial look.
+For this data, boxplots for the two responses provide an initial look, shown in @fig-dogfood-boxplot.
+Putting these side-by-side makes it easy to see the inverse relation between the medians on the two
+response variables.
 
 ```{r}
 #| label: fig-dogfood-boxplot
+#| code-fold: true
 #| fig-cap: "Boxplots for time to start eating and amount eaten by dogs given one of four dogfood formulas."
 dog_long <- dogfood |>
   pivot_longer(c(start, amount),
@@ -195,7 +211,24 @@ ggplot(data = dog_long,
   theme(legend.position="none")
 ```
 
-With 
+As suggested above, the multivariate model for testing mean differences due to
+the dogfood `formula` is fit using `lm()` on the matrix $\mathbf{Y}$ constructed
+with `cbind(start, amount)`. 
+
+```{r dogfood-mlm}
+dogfood.mod <- lm(cbind(start, amount) ~ formula, data=dogfood) |> 
+  print()
+```
+
+Then, the overall multivariate test that means on both variables do not differ
+is carried out using `car::Anova()`.
+```{r dogfood-aov}
+dogfood.aov <- Anova(dogfood.mod) |>
+  print()
+
+```
+
+The details of these analysis steps are explained below.
 
 ### Sums of squares
 
@@ -207,23 +240,29 @@ elements. For the MLM this is expressed as
 
 \begin{align*}
 \underset{(p\times p)}{\mathbf{SSP}_{T}}
-& = && \mathbf{Y}^{\prime} \mathbf{Y} - n \overline{\mathbf{y}}\,\overline{\mathbf{y}}^{\prime} \\
-& = && \left(\widehat {\mathbf{Y}}^{\prime}\widehat{\mathbf{Y}} - n\overline{\mathbf{y}}\,\overline{\mathbf{y}}^{\prime} \right) + \widehat{\Epsilon}^{\prime}\widehat{\Epsilon} \\
-& = &&  \mathbf{SSP}_{H} + \mathbf{SSP}_{E} \\
-& \equiv && \mathbf{H} + \mathbf{E} \comma
+& =  \mathbf{Y}^{\top} \mathbf{Y} - n \overline{\mathbf{y}}\,\overline{\mathbf{y}}^{\top} \\
+& =  \left(\widehat {\mathbf{Y}}^{\top}\widehat{\mathbf{Y}} - n\overline{\mathbf{y}}\,\overline{\mathbf{y}}^{\top} \right) + \widehat{\Epsilon}^{\top}\widehat{\Epsilon} \\
+& =   \mathbf{SSP}_{H} + \mathbf{SSP}_{E} \\
+& \equiv  \mathbf{H} + \mathbf{E} \comma
 \end{align*}
 
 where
 $\overline{\mathbf{y}}$ is the $(p\times 1)$ vector of means for the response variables; $\widehat{\mathbf{Y}} = \mathbf{X}\widehat{\mathbf{B}}$ is the matrix of fitted values; and $\widehat{\Epsilon} = \mat{Y} -\widehat{\mat{Y}}$ is the matrix of residuals. 
+
 This is the decomposition that we visualize in HE plots,
 where the size and direction of $\mathbf{H}$ and $\mathbf{E}$ can be represented as ellipsoids.
 
+But first, let's find these results for the example.
 
-The univariate $F$ test statistic, 
+### How big is $SS_H$ compared to $SS_E$?
+
+In a univariate response model, $SS_H$ and $SS_E$ are both scalar numbers and
+the univariate $F$ test statistic, 
 $$F = \frac{\text{SS}_H/\text{df}_h}{\text{SS}_E/\text{df}_e} = \frac{\mathsf{Var}(H)}{\mathsf{Var}(E)} \comma
 $$
 assesses "how big" $\text{SS}_H$ is, relative to $\text{SS}_E$, the variance accounted for by a hypothesized model or model terms relative to
 error variance.
+
 In the multivariate analog $\H$ and $\E$ are both $p \times p$ matrices, 
 and $\H$ "divided by" $\E$ becomes $\H \E^{-1}$. The answer, "how big" is expressed in terms of the $p$ eigenvalues 
 $\lambda_i, i = 1, 2, \dots p$ of $\H \E^{-1}$. These are the values $\lambda$ for which
@@ -264,7 +303,7 @@ $v_{i1} \mathbf{y}_1 + v_{i2} \mathbf{y}_2 + \cdots + v_{ip} \mathbf{y}_p$ which
 univariate $F$ statistic for the $i$-th dimension. We exploit this in canonical discriminant analysis
 and the corresponding canonical HE plots (@sec-candisc).
 
-### Test statistics
+### Multivariate test statistics
 
 In the univariate case, the overall $F$-test of $\mathcal{H}_0: \boldsymbol{\beta} = \mathbf{0}$
 is the uniformly most powerful invariant test when the assumptions are met. There is nothing better.

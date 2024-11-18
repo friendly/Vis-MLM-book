@@ -5,6 +5,7 @@ library(dplyr)
 library(heplots)
 
 data(dogfood, package = "heplots")
+str(dogfood)
 
 op <- par(mfrow = c(1,2))
 boxplot(start ~ formula, data = dogfood)
@@ -26,8 +27,10 @@ ggplot(data = dog_long,
   theme(legend.position="none")
 
 
-dogfood.mod <- lm(cbind(start, amount) ~ formula, data=dogfood)
-dogfood.aov <- Anova(dogfood.mod)
+dogfood.mod <- lm(cbind(start, amount) ~ formula, data=dogfood) |> 
+  print()
+dogfood.aov <- Anova(dogfood.mod) |>
+  print()
 summary(dogfood.mod) 
 
 #------ model matrix
@@ -39,9 +42,9 @@ cbind(formula = dogfood$formula,
       as.data.frame(X)) |> 
   dplyr::slice_head(n =1, by=formula)
 
-contrasts(dogfood$formula) <- contr.treatment(4)
-dogfood.mod0 <- lm(cbind(start, amount) ~ formula, data=dogfood)
-model.matrix(dogfood.mod0)
+# contrasts(dogfood$formula) <- contr.treatment(4)
+# dogfood.mod0 <- lm(cbind(start, amount) ~ formula, data=dogfood)
+# model.matrix(dogfood.mod0)
 
 # ------- SST, SSH, SSE
 
@@ -62,6 +65,13 @@ SSE <- crossprod(residuals) |> print()
 SSH <- dogfood.aov$SSP |> print()
 SSE <- dogfood.aov$SSE |> print()
 
+library(matlib)
+
+options("digits" = 5)
+# Ugh! rownames/colnames if present are used by default. Need to make them null to avoid them.
+rownames(SST) <- rownames(SSH) <- rownames(SSE) <- NULL
+colnames(SST) <- colnames(SSH) <- colnames(SSE) <- NULL
+Eqn(latexMatrix(SST), "=", latexMatrix(SSH), "+", latexMatrix(SSE))
 
 
 # data ellipses
