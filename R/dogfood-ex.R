@@ -27,7 +27,7 @@ ggplot(data = dog_long,
 
 
 dogfood.mod <- lm(cbind(start, amount) ~ formula, data=dogfood)
-Anova(dogfood.mod)
+dogfood.aov <- Anova(dogfood.mod)
 summary(dogfood.mod) 
 
 #------ model matrix
@@ -45,20 +45,23 @@ model.matrix(dogfood.mod0)
 
 # ------- SST, SSH, SSE
 
-fitted <- fitted(dogfood.mod)
-residuals <- residuals(dogfood.mod)
-
-# use crossprod
-SSH <- t(fitted) %*% fitted |> print()
-SSH <- crossprod(fitted) |> print()
-
-SSE <- t(residuals) %*% residuals |> print()
-
 Y <- dogfood[, c("start", "amount")]
-coldev <- sweep(Y, 2, colMeans(Y))
-SST <- t(coldev) %*% coldev |> print()
+Ydev <- sweep(Y, 2, colMeans(Y)) |> as.matrix()
 
-SST <- crossprod(as.matrix(coldev)) |> print()
+#SST <- t(Ydev) %*% Ydev |> print()
+SST <- crossprod(as.matrix(Ydev)) |> print()
+
+fitted <- fitted(dogfood.mod)
+Yfit <- sweep(fitted, 2, colMeans(fitted)) |> as.matrix()
+SSH <- crossprod(Yfit) |> print()
+
+residuals <- residuals(dogfood.mod)
+SSE <- crossprod(residuals) |> print()
+
+# or, from results of Anova()
+SSH <- dogfood.aov$SSP |> print()
+SSE <- dogfood.aov$SSE |> print()
+
 
 
 # data ellipses
