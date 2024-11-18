@@ -48,11 +48,18 @@ model.matrix(dogfood.mod0)
 fitted <- fitted(dogfood.mod)
 residuals <- residuals(dogfood.mod)
 
+# use crossprod
 SSH <- t(fitted) %*% fitted |> print()
+SSH <- crossprod(fitted) |> print()
+
 SSE <- t(residuals) %*% residuals |> print()
 
-dogfood |>
-  mutate(across(is.numeric), funs(. - mean(.)))
+Y <- dogfood[, c("start", "amount")]
+coldev <- sweep(Y, 2, colMeans(Y))
+SST <- t(coldev) %*% coldev |> print()
+
+SST <- crossprod(as.matrix(coldev)) |> print()
+
 
 # data ellipses
 covEllipses(cbind(start, amount) ~ formula, data=dogfood,
