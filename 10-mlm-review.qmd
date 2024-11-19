@@ -216,9 +216,14 @@ the dogfood `formula` is fit using `lm()` on the matrix $\mathbf{Y}$ constructed
 with `cbind(start, amount)`. 
 
 ```{r dogfood-mlm}
-dogfood.mod <- lm(cbind(start, amount) ~ formula, data=dogfood) |> 
+dogfood.mod <- lm(cbind(start, amount) ~ formula, 
+                  data=dogfood) |> 
   print()
 ```
+
+By default, the factor `formula` is represented by three columns in the $\mathbf{X}$
+matrix that correspond to treatment contrasts, which are comparisons of the Old formula (a baseline level) with each of the others. The coefficients, for example `formulaNEW`, are the difference in
+means from those for Old.
 
 Then, the overall multivariate test that means on both variables do not differ
 is carried out using `car::Anova()`.
@@ -236,7 +241,7 @@ In univariate response models, statistical tests and model summaries (like $R^2$
 decomposition of the total sum of squares $SS_T$ into regression or hypothesis ($SS_H$) and error ($SS_E$)
 sums of squares. In the multivariate linear model each of these becomes a $p \times p$ matrix $SSP$
 containing sums of squares for the $p$ responses on the diagonal and sums of cross products in the off-diagonal.
-elements. For the MLM this is expressed as
+elements. For the MLM this is expressed as:
 
 \begin{align*}
 \underset{(p\times p)}{\mathbf{SSP}_{T}}
@@ -244,15 +249,66 @@ elements. For the MLM this is expressed as
 & =  \left(\widehat {\mathbf{Y}}^{\top}\widehat{\mathbf{Y}} - n\overline{\mathbf{y}}\,\overline{\mathbf{y}}^{\top} \right) + \widehat{\Epsilon}^{\top}\widehat{\Epsilon} \\
 & =   \mathbf{SSP}_{H} + \mathbf{SSP}_{E} \\
 & \equiv  \mathbf{H} + \mathbf{E} \comma
-\end{align*}
+\end{align*} {#eq-SSP}
 
-where
-$\overline{\mathbf{y}}$ is the $(p\times 1)$ vector of means for the response variables; $\widehat{\mathbf{Y}} = \mathbf{X}\widehat{\mathbf{B}}$ is the matrix of fitted values; and $\widehat{\Epsilon} = \mat{Y} -\widehat{\mat{Y}}$ is the matrix of residuals. 
+where,
+* $\overline{\mathbf{y}}$ is the $(p\times 1)$ vector of means for the response variables;
+* $\widehat{\mathbf{Y}} = \mathbf{X}\widehat{\mathbf{B}}$ is the matrix of fitted values; and
+* $\widehat{\Epsilon} = \mat{Y} -\widehat{\mat{Y}}$ is the matrix of residuals. 
 
 This is the decomposition that we visualize in HE plots,
 where the size and direction of $\mathbf{H}$ and $\mathbf{E}$ can be represented as ellipsoids.
 
-But first, let's find these results for the example.
+But first, let's find these results for the example. The easy way is to get them from
+the result returned by `car::Anova()`, where the hypothesis $\mathbf{SSP}_{H}$ for
+each term in the model is returned as a named list `SSP` and the error $\mathbf{SSP}_{E}$ is
+returned as the matrix `SSPE`.
+
+
+```{r dogfood-aov-SSP}
+SSP_H <- dogfood.aov$SSP |> print()
+SSP_E <- dogfood.aov$SSPE |> print()
+```
+
+You can calculate these directly as shown below. `sweep()` is used to subtract the `colMeans()`
+from $\mathbf{Y}$ and $\widehat{\mathbf{Y}}$ and `crossprod()` premultiplies a matrix by
+its' transpose.
+
+```{r dogfood-SSP}
+Y <- dogfood[, c("start", "amount")]
+Ydev <- sweep(Y, 2, colMeans(Y)) |> as.matrix()
+SSP_T <- crossprod(as.matrix(Ydev)) |> print()
+
+fitted <- fitted(dogfood.mod)
+Yfit <- sweep(fitted, 2, colMeans(fitted)) |> as.matrix()
+SSP_H <- crossprod(Yfit) |> print()
+
+residuals <- residuals(dogfood.mod)
+SSP_E <- crossprod(residuals) |> print()
+```
+
+
+The decomposition of the total sum of squares and products in @eq-SSP can be shown as:
+
+$$
+\overset{\mathbf{SSP}_T}
+  {\begin{pmatrix} 
+   35.4 & -59.2 \\ 
+  -59.2 & 975.9 \\ 
+  \end{pmatrix}}
+=
+\overset{\mathbf{SSP}_H}
+  {\begin{pmatrix} 
+    9.69 & -70.94 \\ 
+  -70.94 & 585.69 \\ 
+  \end{pmatrix}}
++
+\overset{\mathbf{SSP}_E}
+  {\begin{pmatrix} 
+   25.8 &  11.8 \\ 
+   11.8 & 390.3 \\ 
+  \end{pmatrix}}
+$$
 
 ### How big is $SS_H$ compared to $SS_E$?
 
@@ -280,6 +336,23 @@ so only $s=\min(p, \text{df}_h)$ eigenvalues can be non-zero. For example, a tes
 a hypothesis about a single quantitative predictor $\mathbf{x}$, has $\text{df}_h = 1$ degree of freedom
 and $\rank{H} = 1$; for a factor with $g$ groups, $\text{df}_h = \rank{H} = g-1$.
 
+For the `dogfood` data, we get the following results:
+
+```{r dogfood-eigen}
+HEinv <- SSP_H %*% solve(SSP_E) |> print()
+eig <- eigen(HEinv)
+eig$values
+
+# as proportions
+eig$values / sum(eig$values)
+```
+
+The factor `formula` has four levels and therefore $\text{df}_h = 3$ degrees of freedom.
+But there are only $p = 2$ responses, so there are $s=\min(p, \text{df}_h) = 2$
+eigenvalues (and corresponding eigenvectors). The eigenvalues tell us that 98.5% of
+the hypothesis variance due to `formula` can be accounted for by a single dimension.
+
+
 <!-- This -->
 <!-- has a direct multivariate analog in terms of -->
 <!-- the $s=\min(p, df_h)$ non-zero latent roots (eigenvalues), $\lambda_i$, of $\mat{H}\mat{E}^{-1}$ -->
@@ -302,6 +375,17 @@ variables in a linear combination
 $v_{i1} \mathbf{y}_1 + v_{i2} \mathbf{y}_2 + \cdots + v_{ip} \mathbf{y}_p$ which produces the largest
 univariate $F$ statistic for the $i$-th dimension. We exploit this in canonical discriminant analysis
 and the corresponding canonical HE plots (@sec-candisc).
+
+The eigenvectors of $\H \E^{-1}$ for the dogfood model are shown below:
+
+```{r dogfood-eigenvectors}
+rownames(eig$vectors) <- rownames(HEinv)
+colnames(eig$vectors) <- paste("Dim", 1:2)
+eig$vectors
+```
+
+The first column corresponds to the weighted sum $0.12 \times\text{start} - 0.99 \times \text{amount}$,
+which as we saw above accounts for 95.5% of the differences in the group means.
 
 ### Multivariate test statistics
 
@@ -447,44 +531,64 @@ When contrasts are placed as columns of a matrix $\mathbf{C}$, they are all mutu
 if $\mathbf{C}^\mathsf{T} \mathbf{C}$ is a diagonal matrix.
 Orthogonal contrasts correspond to statistically independent tests.
 
-For example, with $g=4$ groups representing the combinations of two drugs, A and B
-given at low and high doses, we might want to compare
-(a) the average of the drug A groups vs. the average of drug B;
-(b) low vs. high for drug A;
-(c) low vs. high for drug B. The contrasts that do this are:
+<!-- For example, with $g=4$ groups representing the combinations of two drugs, A and B -->
+<!-- given at low and high doses, we might want to compare -->
+<!-- (a) the average of the drug A groups vs. the average of drug B; -->
+<!-- (b) low vs. high for drug A; -->
+<!-- (c) low vs. high for drug B. The contrasts that do this are: -->
+
+<!-- \begin{align*} -->
+<!-- L_1 & = (\mu_1 + \mu_2) - (\mu_1 + \mu_2) & \rightarrow\: & \mathbf{c}_1 =  -->
+<!--     \begin{pmatrix}  -->
+<!--      1 &  1 & -1 & -1  -->
+<!--     \end{pmatrix} \\ -->
+<!-- L_2 & = \mu_1 - \mu_2                     & \rightarrow\: & \mathbf{c}_2 =  -->
+<!--     \begin{pmatrix}  -->
+<!--      1 &  -1 & 0 & 0  -->
+<!--     \end{pmatrix} \\ -->
+<!-- L_3 & = \mu_3 - \mu_4                     & \rightarrow\: & \mathbf{c}_3 =  -->
+<!--     \begin{pmatrix}  -->
+<!--      0 &  0 & 1 & -1  -->
+<!--     \end{pmatrix} -->
+<!-- \end{align*} -->
+
+For example, with the $g=4$ groups for the `dogfood` data, the company might want to test
+the following comparisons among the formulas Old, New, Major and Alps:
+(a) Ours vs. Theirs: The average of (Old, New) compared to (Major, Alps);
+(b) Old vs. New;
+(c) Major vs. Alps. The contrasts that do this are:
 
 \begin{align*}
-L_1 & = (\mu_1 + \mu_2) - (\mu_1 + \mu_2) & \rightarrow\: & \mathbf{c}_1 = 
+L_1 & = (\mu_O + \mu_N) - (\mu_M + \mu_A) & \rightarrow\: & \mathbf{c}_1 = 
     \begin{pmatrix} 
      1 &  1 & -1 & -1 
     \end{pmatrix} \\
-L_2 & = \mu_1 - \mu_2                     & \rightarrow\: & \mathbf{c}_2 = 
+L_2 & = \mu_O - \mu_N                     & \rightarrow\: & \mathbf{c}_2 = 
     \begin{pmatrix} 
      1 &  -1 & 0 & 0 
     \end{pmatrix} \\
-L_3 & = \mu_3 - \mu_4                     & \rightarrow\: & \mathbf{c}_3 = 
+L_3 & = \mu_M - \mu_A                     & \rightarrow\: & \mathbf{c}_3 = 
     \begin{pmatrix} 
      0 &  0 & 1 & -1 
     \end{pmatrix}
 \end{align*}
 
 Note that these correspond to _nested dichotomies_ among the four groups:
-first we compare groups (1 and 2) against groups (3 and 4), then subsequently
-within each of these sets. Such contrasts are always orthogonal, and therefore 
-correspond to statistically independent tests.
+first we compare groups (Old and New) against groups (Major and Alps), then subsequently
+within each of these sets. Such contrasts are always _orthogonal_, and therefore 
+correspond to statistically independent tests. 
 
 In R, contrasts for a factor are specified as columns of matrix, each of which sums to zero.
 For this example, we can set this up by creating each as a vector and joining them
 as columns using `cbind()`:
 
 ```{r contrasts}
-c1 <- c(1,  1, -1, -1)    # A1,A2 vs. B1,B2
-c2 <- c(1, -1,  0,  0)    # A1 vs. A2
-c3 <- c(0,  0,  1, -1)    # B1 vs. B2
+c1 <- c(1,  1, -1, -1)    # Old,New vs. Major,Alps
+c2 <- c(1, -1,  0,  0)    # Old vs. New
+c3 <- c(0,  0,  1, -1)    # Major vs. Alps
 C <- cbind(c1,c2,c3) 
-rownames(C) <- outer(LETTERS[1:2], 1:2, paste0) |> 
-  t() |> 
-  c()
+rownames(C) <- levels(dogfood$formula)
+
 C
 
 # show they are mutually orthogonal
@@ -495,7 +599,7 @@ For a dataset, `data`, with this factor as `group`, you can set up the analyses 
 contrasts by assigning the matrix `C` to `contrasts()`:
 
 ```{r eval=FALSE}
-contrasts(data$group) <- C
+contrasts(dogfood$formula) <- C
 ```
 
 

@@ -46,33 +46,60 @@ cbind(formula = dogfood$formula,
 # dogfood.mod0 <- lm(cbind(start, amount) ~ formula, data=dogfood)
 # model.matrix(dogfood.mod0)
 
-# ------- SST, SSH, SSE
+# ------- SST, SSP_H, SSP_E
 
 Y <- dogfood[, c("start", "amount")]
 Ydev <- sweep(Y, 2, colMeans(Y)) |> as.matrix()
-
-#SST <- t(Ydev) %*% Ydev |> print()
-SST <- crossprod(as.matrix(Ydev)) |> print()
+SSP_T <- crossprod(as.matrix(Ydev)) |> print()
 
 fitted <- fitted(dogfood.mod)
 Yfit <- sweep(fitted, 2, colMeans(fitted)) |> as.matrix()
-SSH <- crossprod(Yfit) |> print()
+SSP_H <- crossprod(Yfit) |> print()
 
 residuals <- residuals(dogfood.mod)
-SSE <- crossprod(residuals) |> print()
+SSP_E <- crossprod(residuals) |> print()
 
 # or, from results of Anova()
-SSH <- dogfood.aov$SSP |> print()
-SSE <- dogfood.aov$SSE |> print()
+SSP_H <- dogfood.aov$SSP |> print()
+SSP_E <- dogfood.aov$SSPE |> print()
 
 library(matlib)
 
 options("digits" = 5)
 # Ugh! rownames/colnames if present are used by default. Need to make them null to avoid them.
-rownames(SST) <- rownames(SSH) <- rownames(SSE) <- NULL
-colnames(SST) <- colnames(SSH) <- colnames(SSE) <- NULL
-Eqn(latexMatrix(SST), "=", latexMatrix(SSH), "+", latexMatrix(SSE))
+rownames(SSP_T) <- rownames(SSP_H) <- rownames(SSP_E) <- NULL
+colnames(SSP_T) <- colnames(SSP_H) <- colnames(SSP_E) <- NULL
+Eqn(latexMatrix(SSP_T), "=", latexMatrix(SSP_H), "+", latexMatrix(SSP_E))
 
+eqn <- "
+\begin{equation*}
+\overset{\mathbf{SSP}_T}
+  {\begin{pmatrix} 
+   35.4 & -59.2 \\ 
+  -59.2 & 975.9 \\ 
+  \end{pmatrix}}
+=
+\overset{\mathbf{SSP}_H}
+  {\begin{pmatrix} 
+    9.69 & -70.94 \\ 
+  -70.94 & 585.69 \\ 
+  \end{pmatrix}}
++
+\overset{\mathbf{SSP}_E}
+  {\begin{pmatrix} 
+   25.8 &  11.8 \\ 
+   11.8 & 390.3 \\ 
+  \end{pmatrix}}
+\end{equation*}
+"
+
+# eigenvalues
+
+HEinv <- SSP_H %*% solve(SSP_E) |> print()
+eigen(HEinv)
+
+library(candisc)
+dogfood.can <- candisc(dogfood.mod) |> print()
 
 # data ellipses
 covEllipses(cbind(start, amount) ~ formula, data=dogfood,
@@ -84,10 +111,31 @@ dataEllipse(amount ~ start | formula, data=dogfood,
             levels = 0.4,
             fill = TRUE, fill.alpha= 0.1)
 
-# test contrasts
+
+# setup contrasts to test interesting comparisons
+C <- matrix(
+  c( 1,  1, -1, -1,         #Ours vs. Theirs
+     0,  0,  1, -1,           #Major vs. Alps
+     1, -1,  0,  0),             #New vs. Old
+  nrow=4, ncol=3)
+# assign these to the formula factor
+contrasts(dogfood$formula) <- C
+
+# test these contrasts with multivariate tests
 linearHypothesis(dogfood.mod, "formula1", title="Ours vs. Theirs")
 linearHypothesis(dogfood.mod, "formula2", title="Old vs. New")
 linearHypothesis(dogfood.mod, "formula3", title="Alps vs. Major")
 
-heplot(dogfood.mod)
+heplot(dogfood.mod, fill = TRUE, fill.alpha = 0.1)
+
+# display contrasts in the heplot 
+hyp <- list("Ours/Theirs" = "formula1",
+            "Old/New" = "formula2")
+heplot(dogfood.mod, hypotheses = hyp,
+       fill = TRUE, fill.alpha = 0.1)
+
+dogfood.can <- candisc(dogfood.mod, data=dogfood)
+heplot(dogfood.can, 
+       fill = TRUE, fill.alpha = 0.1, 
+       lwd = 2, var.lwd = 2, var.cex = 2)
 

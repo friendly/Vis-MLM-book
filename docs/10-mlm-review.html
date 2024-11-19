@@ -410,7 +410,8 @@ window.Quarto = {
 \mathbf{y}_p =&amp; \mathbf{X}\boldsymbol{\beta}_p + \boldsymbol{\epsilon}_p \\
 \end{aligned}\]</span></p>
 <p>The model matrix <span class="math inline">\(\mathbf{X}\)</span> is the same for all responses, but each one gets its own vector <span class="math inline">\(\boldsymbol{\beta}_j\)</span> of coefficients for how the predictors in <span class="math inline">\(\mathbf{X}\)</span> fit a given response <span class="math inline">\(\mathbf{y}_j\)</span>.</p>
-<p>Among the beauties of multivariate thinking is that we can put these separate equations together in single equation by joining the responses <span class="math inline">\(\mathbf{y}_j\)</span> as columns in a matrix $ and similarly arranging the vectors of coefficients <span class="math inline">\(\boldsymbol{\beta}_j\)</span> as columns in a matrix <span class="math inline">\(\mathbf{B}\)</span>. (A slight hiccup in notation is that there is no uppercase greek <span class="math inline">\(\boldsymbol{\beta}\)</span> …) The MLM then becomes:</p>
+<p>Among the beauties of multivariate thinking is that we can put these separate equations together in single equation by joining the responses <span class="math inline">\(\mathbf{y}_j\)</span> as columns in a matrix <span class="math inline">\(\mathbf{Y}\)</span> and similarly arranging the vectors of coefficients <span class="math inline">\(\boldsymbol{\beta}_j\)</span> as columns in a matrix <span class="math inline">\(\mathbf{B}\)</span>. (A slight hiccup in notation is that the <em>uppercase</em> for the greek <span class="math inline">\(\boldsymbol{\beta}\)</span> is the same as <span class="math inline">\(\mathbf{B}\)</span>, so I use <span class="math inline">\(\mathbf{b}_1 , \mathbf{b}_2 , \dots\)</span> below to refer to its’ columns.)</p>
+<p>The MLM then becomes:</p>
 <!-- $$ -->
 <!-- \newcommand{\sizedmat}[2]{\mathord{\mathop{\mathbf{#1}\limits_{(#2)}}} -->
 <!-- $$ -->
@@ -532,7 +533,8 @@ Figure&nbsp;10.1: Boxplots for time to start eating and amount eaten by dogs giv
 </div>
 <p>As suggested above, the multivariate model for testing mean differences due to the dogfood <code>formula</code> is fit using <code><a href="https://rdrr.io/r/stats/lm.html">lm()</a></code> on the matrix <span class="math inline">\(\mathbf{Y}\)</span> constructed with <code>cbind(start, amount)</code>.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb5" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">dogfood.mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">start</span>, <span class="va">amount</span><span class="op">)</span> <span class="op">~</span> <span class="va">formula</span>, data<span class="op">=</span><span class="va">dogfood</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<div class="sourceCode" id="cb5" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">dogfood.mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">start</span>, <span class="va">amount</span><span class="op">)</span> <span class="op">~</span> <span class="va">formula</span>, </span>
+<span>                  data<span class="op">=</span><span class="va">dogfood</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Call:</span></span>
@@ -545,6 +547,7 @@ Figure&nbsp;10.1: Boxplots for time to start eating and amount eaten by dogs giv
 <span><span class="co">#&gt; formulaMajor    2.00  -12.25</span></span>
 <span><span class="co">#&gt; formulaAlps     1.75  -16.00</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<p>By default, the factor <code>formula</code> is represented by three columns in the <span class="math inline">\(\mathbf{X}\)</span> matrix that correspond to treatment contrasts, which are comparisons of the Old formula (a baseline level) with each of the others. The coefficients, for example <code>formulaNEW</code>, are the difference in means from those for Old.</p>
 <p>Then, the overall multivariate test that means on both variables do not differ is carried out using <code><a href="https://rdrr.io/pkg/car/man/Anova.html">car::Anova()</a></code>.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb6" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">dogfood.aov</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova</a></span><span class="op">(</span><span class="va">dogfood.mod</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -559,15 +562,70 @@ Figure&nbsp;10.1: Boxplots for time to start eating and amount eaten by dogs giv
 <p>The details of these analysis steps are explained below.</p>
 </section><section id="sums-of-squares" class="level3" data-number="10.2.2"><h3 data-number="10.2.2" class="anchored" data-anchor-id="sums-of-squares">
 <span class="header-section-number">10.2.2</span> Sums of squares</h3>
-<p>In univariate response models, statistical tests and model summaries (like <span class="math inline">\(R^2\)</span>) are based on the familiar decomposition of the total sum of squares <span class="math inline">\(SS_T\)</span> into regression or hypothesis (<span class="math inline">\(SS_H\)</span>) and error (<span class="math inline">\(SS_E\)</span>) sums of squares. In the multivariate linear model each of these becomes a <span class="math inline">\(p \times p\)</span> matrix <span class="math inline">\(SSP\)</span> containing sums of squares for the <span class="math inline">\(p\)</span> responses on the diagonal and sums of cross products in the off-diagonal. elements. For the MLM this is expressed as</p>
-<p><span class="math display">\[\begin{aligned}
+<p>In univariate response models, statistical tests and model summaries (like <span class="math inline">\(R^2\)</span>) are based on the familiar decomposition of the total sum of squares <span class="math inline">\(SS_T\)</span> into regression or hypothesis (<span class="math inline">\(SS_H\)</span>) and error (<span class="math inline">\(SS_E\)</span>) sums of squares. In the multivariate linear model each of these becomes a <span class="math inline">\(p \times p\)</span> matrix <span class="math inline">\(SSP\)</span> containing sums of squares for the <span class="math inline">\(p\)</span> responses on the diagonal and sums of cross products in the off-diagonal. elements. For the MLM this is expressed as:</p>
+<p><span id="eq-SSP"><span class="math display">\[\begin{aligned}
 \underset{(p\times p)}{\mathbf{SSP}_{T}}
 &amp; =  \mathbf{Y}^{\top} \mathbf{Y} - n \overline{\mathbf{y}}\,\overline{\mathbf{y}}^{\top} \\
 &amp; =  \left(\widehat {\mathbf{Y}}^{\top}\widehat{\mathbf{Y}} - n\overline{\mathbf{y}}\,\overline{\mathbf{y}}^{\top} \right) + \widehat{\boldsymbol{\Large\varepsilon}}^{\top}\widehat{\boldsymbol{\Large\varepsilon}} \\
 &amp; =   \mathbf{SSP}_{H} + \mathbf{SSP}_{E} \\
 &amp; \equiv  \mathbf{H} + \mathbf{E} \:\: ,
-\end{aligned}\]</span></p>
-<p>where <span class="math inline">\(\overline{\mathbf{y}}\)</span> is the <span class="math inline">\((p\times 1)\)</span> vector of means for the response variables; <span class="math inline">\(\widehat{\mathbf{Y}} = \mathbf{X}\widehat{\mathbf{B}}\)</span> is the matrix of fitted values; and <span class="math inline">\(\widehat{\boldsymbol{\Large\varepsilon}} = \mathbf{Y} -\widehat{\mathbf{Y}}\)</span> is the matrix of residuals. This is the decomposition that we visualize in HE plots, where the size and direction of <span class="math inline">\(\mathbf{H}\)</span> and <span class="math inline">\(\mathbf{E}\)</span> can be represented as ellipsoids.</p>
+\end{aligned} \tag{10.2}\]</span></span></p>
+<p>where, * <span class="math inline">\(\overline{\mathbf{y}}\)</span> is the <span class="math inline">\((p\times 1)\)</span> vector of means for the response variables; * <span class="math inline">\(\widehat{\mathbf{Y}} = \mathbf{X}\widehat{\mathbf{B}}\)</span> is the matrix of fitted values; and * <span class="math inline">\(\widehat{\boldsymbol{\Large\varepsilon}} = \mathbf{Y} -\widehat{\mathbf{Y}}\)</span> is the matrix of residuals.</p>
+<p>This is the decomposition that we visualize in HE plots, where the size and direction of <span class="math inline">\(\mathbf{H}\)</span> and <span class="math inline">\(\mathbf{E}\)</span> can be represented as ellipsoids.</p>
+<p>But first, let’s find these results for the example. The easy way is to get them from the result returned by <code><a href="https://rdrr.io/pkg/car/man/Anova.html">car::Anova()</a></code>, where the hypothesis <span class="math inline">\(\mathbf{SSP}_{H}\)</span> for each term in the model is returned as a named list <code>SSP</code> and the error <span class="math inline">\(\mathbf{SSP}_{E}\)</span> is returned as the matrix <code>SSPE</code>.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb7" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">SSP_H</span> <span class="op">&lt;-</span> <span class="va">dogfood.aov</span><span class="op">$</span><span class="va">SSP</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; $formula</span></span>
+<span><span class="co">#&gt;         start amount</span></span>
+<span><span class="co">#&gt; start    9.69  -70.9</span></span>
+<span><span class="co">#&gt; amount -70.94  585.7</span></span>
+<span><span class="va">SSP_E</span> <span class="op">&lt;-</span> <span class="va">dogfood.aov</span><span class="op">$</span><span class="va">SSPE</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt;        start amount</span></span>
+<span><span class="co">#&gt; start   25.8   11.8</span></span>
+<span><span class="co">#&gt; amount  11.8  390.3</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>You can calculate these directly as shown below. <code><a href="https://rdrr.io/r/base/sweep.html">sweep()</a></code> is used to subtract the <code><a href="https://rdrr.io/r/base/colSums.html">colMeans()</a></code> from <span class="math inline">\(\mathbf{Y}\)</span> and <span class="math inline">\(\widehat{\mathbf{Y}}\)</span> and <code><a href="https://rdrr.io/r/base/crossprod.html">crossprod()</a></code> premultiplies a matrix by its’ transpose.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb8" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">Y</span> <span class="op">&lt;-</span> <span class="va">dogfood</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"start"</span>, <span class="st">"amount"</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="va">Ydev</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sweep.html">sweep</a></span><span class="op">(</span><span class="va">Y</span>, <span class="fl">2</span>, <span class="fu"><a href="https://rdrr.io/r/base/colSums.html">colMeans</a></span><span class="op">(</span><span class="va">Y</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">SSP_T</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/crossprod.html">crossprod</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span><span class="op">(</span><span class="va">Ydev</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt;        start amount</span></span>
+<span><span class="co">#&gt; start   35.4  -59.2</span></span>
+<span><span class="co">#&gt; amount -59.2  975.9</span></span>
+<span></span>
+<span><span class="va">fitted</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/fitted.values.html">fitted</a></span><span class="op">(</span><span class="va">dogfood.mod</span><span class="op">)</span></span>
+<span><span class="va">Yfit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sweep.html">sweep</a></span><span class="op">(</span><span class="va">fitted</span>, <span class="fl">2</span>, <span class="fu"><a href="https://rdrr.io/r/base/colSums.html">colMeans</a></span><span class="op">(</span><span class="va">fitted</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">SSP_H</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/crossprod.html">crossprod</a></span><span class="op">(</span><span class="va">Yfit</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt;         start amount</span></span>
+<span><span class="co">#&gt; start    9.69  -70.9</span></span>
+<span><span class="co">#&gt; amount -70.94  585.7</span></span>
+<span></span>
+<span><span class="va">residuals</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/residuals.html">residuals</a></span><span class="op">(</span><span class="va">dogfood.mod</span><span class="op">)</span></span>
+<span><span class="va">SSP_E</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/crossprod.html">crossprod</a></span><span class="op">(</span><span class="va">residuals</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt;        start amount</span></span>
+<span><span class="co">#&gt; start   25.8   11.8</span></span>
+<span><span class="co">#&gt; amount  11.8  390.3</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The decomposition of the total sum of squares and products in <a href="#eq-SSP" class="quarto-xref">Equation&nbsp;<span>10.2</span></a> can be shown as:</p>
+<p><span class="math display">\[
+\overset{\mathbf{SSP}_T}
+  {\begin{pmatrix}
+   35.4 &amp; -59.2 \\
+  -59.2 &amp; 975.9 \\
+  \end{pmatrix}}
+=
+\overset{\mathbf{SSP}_H}
+  {\begin{pmatrix}
+    9.69 &amp; -70.94 \\
+  -70.94 &amp; 585.69 \\
+  \end{pmatrix}}
++
+\overset{\mathbf{SSP}_E}
+  {\begin{pmatrix}
+   25.8 &amp;  11.8 \\
+   11.8 &amp; 390.3 \\
+  \end{pmatrix}}
+\]</span></p>
 </section><section id="how-big-is-ss_h-compared-to-ss_e" class="level3" data-number="10.2.3"><h3 data-number="10.2.3" class="anchored" data-anchor-id="how-big-is-ss_h-compared-to-ss_e">
 <span class="header-section-number">10.2.3</span> How big is <span class="math inline">\(SS_H\)</span> compared to <span class="math inline">\(SS_E\)</span>?</h3>
 <p>In a univariate response model, <span class="math inline">\(SS_H\)</span> and <span class="math inline">\(SS_E\)</span> are both scalar numbers and the univariate <span class="math inline">\(F\)</span> test statistic, <span class="math display">\[F = \frac{\text{SS}_H/\text{df}_h}{\text{SS}_E/\text{df}_e} = \frac{\mathsf{Var}(H)}{\mathsf{Var}(E)} \:\: ,
@@ -576,8 +634,23 @@ Figure&nbsp;10.1: Boxplots for time to start eating and amount eaten by dogs giv
 \mathrm{det}(\mathbf{H}\mathbf{E}^{-1} - \lambda \mathbf{I}) = 0 \:\: .
 \]</span> The solution gives the <span class="math inline">\(\lambda_i\)</span> as the eigenvalues, with vectors <span class="math inline">\(\mathbf{v}_i\)</span> as the corresponding eigenvectors, <span id="eq-he-eigen"><span class="math display">\[
 \mathbf{H}\mathbf{E}^{-1} \; \lambda_i = \lambda_i \mathbf{v}_i \:\: .
-\tag{10.2}\]</span></span></p>
+\tag{10.3}\]</span></span></p>
 <p>However, when the hypothesized model terms have <span class="math inline">\(\text{df}_h\)</span> degrees of freedom (columns of the <span class="math inline">\(\mathbf{X}\)</span> matrix for that term), <span class="math inline">\(\mathbf{H}\)</span> is of rank <span class="math inline">\(\text{df}_h\)</span>, so only <span class="math inline">\(s=\min(p, \text{df}_h)\)</span> eigenvalues can be non-zero. For example, a test for a hypothesis about a single quantitative predictor <span class="math inline">\(\mathbf{x}\)</span>, has <span class="math inline">\(\text{df}_h = 1\)</span> degree of freedom and <span class="math inline">\(\mathrm{rank} (\mathbf{H}) = 1\)</span>; for a factor with <span class="math inline">\(g\)</span> groups, <span class="math inline">\(\text{df}_h = \mathrm{rank} (\mathbf{H}) = g-1\)</span>.</p>
+<p>For the <code>dogfood</code> data, we get the following results:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb9" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">HEinv</span> <span class="op">&lt;-</span> <span class="va">SSP_H</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html">%*%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/solve.html">solve</a></span><span class="op">(</span><span class="va">SSP_E</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt;         start amount</span></span>
+<span><span class="co">#&gt; start   0.466 -0.196</span></span>
+<span><span class="co">#&gt; amount -3.488  1.606</span></span>
+<span><span class="va">eig</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/eigen.html">eigen</a></span><span class="op">(</span><span class="va">HEinv</span><span class="op">)</span></span>
+<span><span class="va">eig</span><span class="op">$</span><span class="va">values</span></span>
+<span><span class="co">#&gt; [1] 2.0396 0.0317</span></span>
+<span></span>
+<span><span class="co"># as proportions</span></span>
+<span><span class="va">eig</span><span class="op">$</span><span class="va">values</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">eig</span><span class="op">$</span><span class="va">values</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 0.9847 0.0153</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The factor <code>formula</code> has four levels and therefore <span class="math inline">\(\text{df}_h = 3\)</span> degrees of freedom. But there are only <span class="math inline">\(p = 2\)</span> responses, so there are <span class="math inline">\(s=\min(p, \text{df}_h) = 2\)</span> eigenvalues (and corresponding eigenvectors). The eigenvalues tell us that 98.5% of the hypothesis variance due to <code>formula</code> can be accounted for by a single dimension.</p>
 <!-- This -->
 <!-- has a direct multivariate analog in terms of -->
 <!-- the $s=\min(p, df_h)$ non-zero latent roots (eigenvalues), $\lambda_i$, of $\mat{H}\mat{E}^{-1}$ -->
@@ -587,7 +660,17 @@ Figure&nbsp;10.1: Boxplots for time to start eating and amount eaten by dogs giv
 <!--  \mathbf{H}\mathbf{E}^{-1} \lambda_i = \lambda_i \mathbf{v}_i \period -->
 <!-- $$ -->
 <p>The overall multivariate test for the model in <a href="#eq-mlm" class="quarto-xref">Equation&nbsp;<span>10.1</span></a> is essentially a test of the hypothesis <span class="math inline">\(\mathcal{H}_0: \mathbf{B} = 0\)</span> (excluding the row for the intercept). Equivalently, this is a test based on the <em>incremental</em> <span class="math inline">\(\mathbf{SSP}_{H}\)</span> for the hypothesized terms in the model—that is, the difference between the <span class="math inline">\(\mathbf{SSP}_{H}\)</span> for the full model and the null, intercept-only model. The same idea can be applied to test the difference between any pair of <em>nested</em> models—the added contribution of terms in a larger model relative to a smaller model containing a subset of terms.</p>
-<p>The eigenvectors <span class="math inline">\(\mathbf{v}_i\)</span> in <a href="#eq-he-eigen" class="quarto-xref">Equation&nbsp;<span>10.2</span></a> are also important. These are the weights for the variables in a linear combination <span class="math inline">\(v_{i1} \mathbf{y}_1 + v_{i2} \mathbf{y}_2 + \cdots + v_{ip} \mathbf{y}_p\)</span> which produces the largest univariate <span class="math inline">\(F\)</span> statistic for the <span class="math inline">\(i\)</span>-th dimension. We exploit this in canonical discriminant analysis and the corresponding canonical HE plots (<a href="11-mlm-viz.html#sec-candisc" class="quarto-xref"><span>Section 11.2</span></a>).</p>
+<p>The eigenvectors <span class="math inline">\(\mathbf{v}_i\)</span> in <a href="#eq-he-eigen" class="quarto-xref">Equation&nbsp;<span>10.3</span></a> are also important. These are the weights for the variables in a linear combination <span class="math inline">\(v_{i1} \mathbf{y}_1 + v_{i2} \mathbf{y}_2 + \cdots + v_{ip} \mathbf{y}_p\)</span> which produces the largest univariate <span class="math inline">\(F\)</span> statistic for the <span class="math inline">\(i\)</span>-th dimension. We exploit this in canonical discriminant analysis and the corresponding canonical HE plots (<a href="11-mlm-viz.html#sec-candisc" class="quarto-xref"><span>Section 11.2</span></a>).</p>
+<p>The eigenvectors of <span class="math inline">\(\mathbf{H}\mathbf{E}^{-1}\)</span> for the dogfood model are shown below:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb10" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="va">eig</span><span class="op">$</span><span class="va">vectors</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="va">HEinv</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">eig</span><span class="op">$</span><span class="va">vectors</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="st">"Dim"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">)</span></span>
+<span><span class="va">eig</span><span class="op">$</span><span class="va">vectors</span></span>
+<span><span class="co">#&gt;         Dim 1  Dim 2</span></span>
+<span><span class="co">#&gt; start   0.123 -0.411</span></span>
+<span><span class="co">#&gt; amount -0.992 -0.911</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The first column corresponds to the weighted sum <span class="math inline">\(0.12 \times\text{start} - 0.99 \times \text{amount}\)</span>, which as we saw above accounts for 95.5% of the differences in the group means.</p>
 </section><section id="multivariate-test-statistics" class="level3" data-number="10.2.4"><h3 data-number="10.2.4" class="anchored" data-anchor-id="multivariate-test-statistics">
 <span class="header-section-number">10.2.4</span> Multivariate test statistics</h3>
 <p>In the univariate case, the overall <span class="math inline">\(F\)</span>-test of <span class="math inline">\(\mathcal{H}_0: \boldsymbol{\beta} = \mathbf{0}\)</span> is the uniformly most powerful invariant test when the assumptions are met. There is nothing better. This is not the case in the MLM.</p>
@@ -657,8 +740,8 @@ Table&nbsp;10.1: Test statistics for multivariate tests combine the size of dime
 (\mathbf{C} \widehat{\mathbf{B}})^\mathsf{T}\,
 [\mathbf{C} (\mathbf{X}^\mathsf{T}\mathbf{X} )^{-1} \mathbf{C}^\mathsf{T}]^{-1} \,
 (\mathbf{C} \widehat{\mathbf{B}})
-\tag{10.3}\]</span></span></p>
-<p>where there are <span class="math inline">\(s = \min(h, p)\)</span> non-zero eigenvalues of <span class="math inline">\(\mathbf{H}\mathbf{E}^{-1}\)</span>. In <a href="#eq-hmat" class="quarto-xref">Equation&nbsp;<span>10.3</span></a>, <span class="math inline">\(\mathbf{H}\)</span> measures the (Mahalanobis) squared distances (and cross products) among the linear combinations <span class="math inline">\(\mathbf{C} \widehat{\mathbf{B}}\)</span> from the origin under the null hypothesis. <!-- An animated display of these ideas and the relations between data ellipses and HE plots can be seen at --> <!-- [https://www.datavis.ca/gallery/animation/manova/](https://www.datavis.ca/gallery/animation/manova/). --></p>
+\tag{10.4}\]</span></span></p>
+<p>where there are <span class="math inline">\(s = \min(h, p)\)</span> non-zero eigenvalues of <span class="math inline">\(\mathbf{H}\mathbf{E}^{-1}\)</span>. In <a href="#eq-hmat" class="quarto-xref">Equation&nbsp;<span>10.4</span></a>, <span class="math inline">\(\mathbf{H}\)</span> measures the (Mahalanobis) squared distances (and cross products) among the linear combinations <span class="math inline">\(\mathbf{C} \widehat{\mathbf{B}}\)</span> from the origin under the null hypothesis. <!-- An animated display of these ideas and the relations between data ellipses and HE plots can be seen at --> <!-- [https://www.datavis.ca/gallery/animation/manova/](https://www.datavis.ca/gallery/animation/manova/). --></p>
 <p>For example, with three responses <span class="math inline">\(y_1, y_2, y_3\)</span> and three predictors <span class="math inline">\(x_1, x_2, x_3\)</span>, we can test the hypothesis that neither <span class="math inline">\(x_2\)</span> nor <span class="math inline">\(x_3\)</span> contribute at all to the predicting the <span class="math inline">\(y\)</span>s in terms of the hypothesis that the coefficients for the corresponding rows of <span class="math inline">\(\mathbf{B}\)</span> are zero using a 1-row <span class="math inline">\(\mathbf{C}\)</span> matrix that simply selects those rows:</p>
 <!-- $$ -->
 <!-- \mathcal{H}_0 : \mathbf{C} \mathbf{B} =  -->
@@ -703,37 +786,55 @@ Table&nbsp;10.1: Test statistics for multivariate tests combine the size of dime
 <p><span class="math display">\[
 L = \mathbf{c}^\mathsf{T} \boldsymbol{\mu} = \sum_i c_i \mu_i \quad\text{such that}\quad \Sigma c_i = 0
 \]</span> Two contrasts, <span class="math inline">\(\mathbf{c}_1\)</span> and <span class="math inline">\(\mathbf{c}_2\)</span> are <em>orthogonal</em> if the sum of products of their weights is zero, i.e., <span class="math inline">\(\mathbf{c}_1^\mathsf{T} \mathbf{c}_2 = \Sigma c_{1i} \times c_{2i} = 0\)</span>. When contrasts are placed as columns of a matrix <span class="math inline">\(\mathbf{C}\)</span>, they are all mutually orthogonal if <span class="math inline">\(\mathbf{C}^\mathsf{T} \mathbf{C}\)</span> is a diagonal matrix. Orthogonal contrasts correspond to statistically independent tests.</p>
-<p>For example, with <span class="math inline">\(g=4\)</span> groups representing the combinations of two drugs, A and B given at low and high doses, we might want to compare (a) the average of the drug A groups vs.&nbsp;the average of drug B; (b) low vs.&nbsp;high for drug A; (c) low vs.&nbsp;high for drug B. The contrasts that do this are:</p>
+<!-- For example, with $g=4$ groups representing the combinations of two drugs, A and B -->
+<!-- given at low and high doses, we might want to compare -->
+<!-- (a) the average of the drug A groups vs. the average of drug B; -->
+<!-- (b) low vs. high for drug A; -->
+<!-- (c) low vs. high for drug B. The contrasts that do this are: -->
+<!-- \begin{align*} -->
+<!-- L_1 & = (\mu_1 + \mu_2) - (\mu_1 + \mu_2) & \rightarrow\: & \mathbf{c}_1 =  -->
+<!--     \begin{pmatrix}  -->
+<!--      1 &  1 & -1 & -1  -->
+<!--     \end{pmatrix} \\ -->
+<!-- L_2 & = \mu_1 - \mu_2                     & \rightarrow\: & \mathbf{c}_2 =  -->
+<!--     \begin{pmatrix}  -->
+<!--      1 &  -1 & 0 & 0  -->
+<!--     \end{pmatrix} \\ -->
+<!-- L_3 & = \mu_3 - \mu_4                     & \rightarrow\: & \mathbf{c}_3 =  -->
+<!--     \begin{pmatrix}  -->
+<!--      0 &  0 & 1 & -1  -->
+<!--     \end{pmatrix} -->
+<!-- \end{align*} -->
+<p>For example, with the <span class="math inline">\(g=4\)</span> groups for the <code>dogfood</code> data, the company might want to test the following comparisons among the formulas Old, New, Major and Alps: (a) Ours vs.&nbsp;Theirs: The average of (Old, New) compared to (Major, Alps); (b) Old vs.&nbsp;New; (c) Major vs.&nbsp;Alps. The contrasts that do this are:</p>
 <p><span class="math display">\[\begin{aligned}
-L_1 &amp; = (\mu_1 + \mu_2) - (\mu_1 + \mu_2) &amp; \rightarrow\: &amp; \mathbf{c}_1 =
+L_1 &amp; = (\mu_O + \mu_N) - (\mu_M + \mu_A) &amp; \rightarrow\: &amp; \mathbf{c}_1 =
     \begin{pmatrix}
      1 &amp;  1 &amp; -1 &amp; -1
     \end{pmatrix} \\
-L_2 &amp; = \mu_1 - \mu_2                     &amp; \rightarrow\: &amp; \mathbf{c}_2 =
+L_2 &amp; = \mu_O - \mu_N                     &amp; \rightarrow\: &amp; \mathbf{c}_2 =
     \begin{pmatrix}
      1 &amp;  -1 &amp; 0 &amp; 0
     \end{pmatrix} \\
-L_3 &amp; = \mu_3 - \mu_4                     &amp; \rightarrow\: &amp; \mathbf{c}_3 =
+L_3 &amp; = \mu_M - \mu_A                     &amp; \rightarrow\: &amp; \mathbf{c}_3 =
     \begin{pmatrix}
      0 &amp;  0 &amp; 1 &amp; -1
     \end{pmatrix}
 \end{aligned}\]</span></p>
-<p>Note that these correspond to <em>nested dichotomies</em> among the four groups: first we compare groups (1 and 2) against groups (3 and 4), then subsequently within each of these sets. Such contrasts are always orthogonal, and therefore correspond to statistically independent tests.</p>
+<p>Note that these correspond to <em>nested dichotomies</em> among the four groups: first we compare groups (Old and New) against groups (Major and Alps), then subsequently within each of these sets. Such contrasts are always <em>orthogonal</em>, and therefore correspond to statistically independent tests.</p>
 <p>In R, contrasts for a factor are specified as columns of matrix, each of which sums to zero. For this example, we can set this up by creating each as a vector and joining them as columns using <code><a href="https://rdrr.io/r/base/cbind.html">cbind()</a></code>:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb7" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">c1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>,  <span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span>    <span class="co"># A1,A2 vs. B1,B2</span></span>
-<span><span class="va">c2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span>,  <span class="fl">0</span>,  <span class="fl">0</span><span class="op">)</span>    <span class="co"># A1 vs. A2</span></span>
-<span><span class="va">c3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>,  <span class="fl">0</span>,  <span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span>    <span class="co"># B1 vs. B2</span></span>
+<div class="sourceCode" id="cb11" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">c1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>,  <span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span>    <span class="co"># Old,New vs. Major,Alps</span></span>
+<span><span class="va">c2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span>,  <span class="fl">0</span>,  <span class="fl">0</span><span class="op">)</span>    <span class="co"># Old vs. New</span></span>
+<span><span class="va">c3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>,  <span class="fl">0</span>,  <span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span>    <span class="co"># Major vs. Alps</span></span>
 <span><span class="va">C</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">c1</span>,<span class="va">c2</span>,<span class="va">c3</span><span class="op">)</span> </span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="va">C</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/outer.html">outer</a></span><span class="op">(</span><span class="va">LETTERS</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">2</span>, <span class="va">paste0</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/t.html">t</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="va">C</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/levels.html">levels</a></span><span class="op">(</span><span class="va">dogfood</span><span class="op">$</span><span class="va">formula</span><span class="op">)</span></span>
+<span></span>
 <span><span class="va">C</span></span>
-<span><span class="co">#&gt;    c1 c2 c3</span></span>
-<span><span class="co">#&gt; A1  1  1  0</span></span>
-<span><span class="co">#&gt; A2  1 -1  0</span></span>
-<span><span class="co">#&gt; B1 -1  0  1</span></span>
-<span><span class="co">#&gt; B2 -1  0 -1</span></span>
+<span><span class="co">#&gt;       c1 c2 c3</span></span>
+<span><span class="co">#&gt; Old    1  1  0</span></span>
+<span><span class="co">#&gt; New    1 -1  0</span></span>
+<span><span class="co">#&gt; Major -1  0  1</span></span>
+<span><span class="co">#&gt; Alps  -1  0 -1</span></span>
 <span></span>
 <span><span class="co"># show they are mutually orthogonal</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/t.html">t</a></span><span class="op">(</span><span class="va">C</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html">%*%</a></span> <span class="va">C</span></span>
@@ -744,7 +845,7 @@ L_3 &amp; = \mu_3 - \mu_4                     &amp; \rightarrow\: &amp; \mathbf{
 </div>
 <p>For a dataset, <code>data</code>, with this factor as <code>group</code>, you can set up the analyses to use these contrasts by assigning the matrix <code>C</code> to <code><a href="https://rdrr.io/r/stats/contrasts.html">contrasts()</a></code>:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb8" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/contrasts.html">contrasts</a></span><span class="op">(</span><span class="va">data</span><span class="op">$</span><span class="va">group</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">C</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb12" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/contrasts.html">contrasts</a></span><span class="op">(</span><span class="va">dogfood</span><span class="op">$</span><span class="va">formula</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">C</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>For multivariate tests, when all contrasts are pairwise orthogonal, the overall test of a factor with <span class="math inline">\(\text{df}_h = g-1\)</span> degrees of freedom can be broken down into <span class="math inline">\(g-1\)</span> separate 1 df tests. This gives rise to a set of <span class="math inline">\(\text{df}_h\)</span> rank 1 <span class="math inline">\(\mathbf{H}\)</span> matrices that additively decompose the overall hypothesis SSCP matrix,</p>
 <p><span class="math display">\[
@@ -798,7 +899,7 @@ Figure&nbsp;10.3: A simple MANOVA design involving three groups and two response
 <p>The main questions concern whether the group means differ on these scales, and the nature of these differences. That is, do the means differ significantly on all three measures? Is there a consistent order of groups across these three aspects of parenting?</p>
 <p>More specific questions are: (a) Do the fathers of typical children differ from the other two groups on average? (b) Do the physical and mental groups differ? These questions can be tested using contrasts, and are specified by assigning a matrix to <code>contrasts(Parenting$group)</code>; each column is a contrast whose values sum to zero. They are given labels <code>"group1"</code> (normal vs.&nbsp;other) and <code>"group2"</code> (physical vs.&nbsp;mental) in some output.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb9" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">Parenting</span>, package<span class="op">=</span><span class="st">"heplots"</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb13" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">Parenting</span>, package<span class="op">=</span><span class="st">"heplots"</span><span class="op">)</span></span>
 <span><span class="va">C</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">.5</span>, <span class="op">-</span><span class="fl">.5</span>,</span>
 <span>              <span class="fl">0</span>,  <span class="fl">1</span>,  <span class="op">-</span><span class="fl">1</span><span class="op">)</span>, </span>
 <span>            nrow <span class="op">=</span> <span class="fl">3</span>, ncol <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
@@ -811,7 +912,7 @@ Figure&nbsp;10.3: A simple MANOVA design involving three groups and two response
 <section id="exploratory-plots" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="exploratory-plots">Exploratory plots</h4>
 <p>Before setting up a model and testing, it is well-advised to examine the data graphically. The simplest plots are side-by-side boxplots (or violin plots) for the three responses. With <code>ggplot2</code>, this is easily done by reshaping the data to long format and using faceting. In <a href="#fig-parenting-boxpl" class="quarto-xref">Figure&nbsp;<span>10.4</span></a>, I’ve also plotted the group means with white dots.</p>
 <div class="cell" data-layout-align="center">
-<details class="code-fold"><summary>See the ggplot code</summary><div class="sourceCode" id="cb10" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">parenting_long</span> <span class="op">&lt;-</span> <span class="va">Parenting</span> <span class="op">|&gt;</span></span>
+<details class="code-fold"><summary>See the ggplot code</summary><div class="sourceCode" id="cb14" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">parenting_long</span> <span class="op">&lt;-</span> <span class="va">Parenting</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html">pivot_longer</a></span><span class="op">(</span>cols<span class="op">=</span><span class="va">caring</span><span class="op">:</span><span class="va">play</span>, names_to <span class="op">=</span> <span class="st">"variable"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">parenting_long</span>, </span>
@@ -844,7 +945,7 @@ Figure&nbsp;10.4: Faceted boxplots of scores on the three parenting scales, show
 <p>In this figure, differences among the groups on <code>play</code> are most apparent, with fathers of non-disabled children scoring highest. Differences among the groups on <code>emotion</code> are very small, but one high outlier for the fathers of mentally disabled children is apparent. On <code>caring</code>, fathers of children with a physical disability stand out as highest.</p>
 <p>For exploratory purposes, you might also make a scatterplot matrix. Here, because the MLM assumes homogeneity of the variances and covariance matrices <span class="math inline">\(\mathbf{S}_i\)</span>, I show only the data ellipses in scatterplot matrix format, using <code>heplots:covEllipses()</code> (with 50% coverage, for clarity):</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb11" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">colors</span> <span class="op">&lt;-</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/pal_hue.html">hue_pal</a></span><span class="op">(</span><span class="op">)</span><span class="op">(</span><span class="fl">3</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/rev.html">rev</a></span><span class="op">(</span><span class="op">)</span>  <span class="co"># match color use in ggplot</span></span>
+<div class="sourceCode" id="cb15" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">colors</span> <span class="op">&lt;-</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/pal_hue.html">hue_pal</a></span><span class="op">(</span><span class="op">)</span><span class="op">(</span><span class="fl">3</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/rev.html">rev</a></span><span class="op">(</span><span class="op">)</span>  <span class="co"># match color use in ggplot</span></span>
 <span><span class="fu"><a href="https://friendly.github.io/heplots/reference/covEllipses.html">covEllipses</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">caring</span>, <span class="va">play</span>, <span class="va">emotion</span><span class="op">)</span> <span class="op">~</span> <span class="va">group</span>, data<span class="op">=</span><span class="va">Parenting</span>,</span>
 <span>  variables <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span>,</span>
 <span>  fill <span class="op">=</span> <span class="cn">TRUE</span>, fill.alpha <span class="op">=</span> <span class="fl">0.2</span>,</span>
@@ -867,7 +968,7 @@ Figure&nbsp;10.5: Bivariate data ellipses for pairs of the three responses, show
 <span class="header-section-number">10.3.1.1</span> Testing the model</h4>
 <p>Let’s proceed to fit the multivariate model predicting all three scales from the <code>group</code> factor. <code><a href="https://rdrr.io/r/stats/lm.html">lm()</a></code> for a multivariate response returns an object of class <code>"mlm"</code>, for which there are many methods (use <code>methods(class="mlm")</code> to find them).</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb12" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">parenting.mlm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">caring</span>, <span class="va">play</span>, <span class="va">emotion</span><span class="op">)</span> <span class="op">~</span> <span class="va">group</span>, </span>
+<div class="sourceCode" id="cb16" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">parenting.mlm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">caring</span>, <span class="va">play</span>, <span class="va">emotion</span><span class="op">)</span> <span class="op">~</span> <span class="va">group</span>, </span>
 <span>                    data<span class="op">=</span><span class="va">Parenting</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Call:</span></span>
@@ -882,7 +983,7 @@ Figure&nbsp;10.5: Bivariate data ellipses for pairs of the three responses, show
 <p>The coefficients in this model are the values of the contrasts set up above. <code>group1</code> is the mean of the typical group minus the average of the other two, which is negative on <code>caring</code> and <code>emotion</code> but positive for <code>play</code>. <code>group2</code> is the difference in means for the physical vs.&nbsp;mental groups.</p>
 <p>Before doing multivariate tests, it is useful to see what would happen if we ran univariate ANOVAs on each of the responses. These can be extracted from an MLM using <code><a href="https://rdrr.io/r/stats/summary.aov.html">stats::summary.aov()</a></code>:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb13" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/summary.aov.html">summary.aov</a></span><span class="op">(</span><span class="va">parenting.mlm</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb17" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/summary.aov.html">summary.aov</a></span><span class="op">(</span><span class="va">parenting.mlm</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  Response caring :</span></span>
 <span><span class="co">#&gt;             Df Sum Sq Mean Sq F value Pr(&gt;F)    </span></span>
 <span><span class="co">#&gt; group        2    130    65.2    18.6  6e-07 ***</span></span>
@@ -904,7 +1005,7 @@ Figure&nbsp;10.5: Bivariate data ellipses for pairs of the three responses, show
 </div>
 <p>If you like, you can also extract the univariate model fit statistics from the <code>"mlm" using the</code>broom::glance()` method for a multivariate model object.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb14" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://generics.r-lib.org/reference/glance.html">glance</a></span><span class="op">(</span><span class="va">parenting.mlm</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<div class="sourceCode" id="cb18" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://generics.r-lib.org/reference/glance.html">glance</a></span><span class="op">(</span><span class="va">parenting.mlm</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">response</span>, <span class="va">r.squared</span>, <span class="va">fstatistic</span>, <span class="va">p.value</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 3 × 4</span></span>
 <span><span class="co">#&gt;   response r.squared fstatistic       p.value</span></span>
@@ -915,7 +1016,7 @@ Figure&nbsp;10.5: Bivariate data ellipses for pairs of the three responses, show
 </div>
 <p>From this, one might conclude that there are differences only in <code>caring</code> and <code>play</code> and therefore ignore <code>emotion</code>, but this would be short-sighted. <code><a href="https://rdrr.io/pkg/car/man/Anova.html">car::Anova()</a></code> gives the overall multivariate test <span class="math inline">\(\mathcal{H}_0: \mathbf{B} = 0\)</span> of the <code>group</code> effect. Note that this has a much smaller <span class="math inline">\(p\)</span>-value than any of the univariate <span class="math inline">\(F\)</span> tests.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb15" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova</a></span><span class="op">(</span><span class="va">parenting.mlm</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb19" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova</a></span><span class="op">(</span><span class="va">parenting.mlm</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Type II MANOVA Tests: Pillai test statistic</span></span>
 <span><span class="co">#&gt;       Df test stat approx F num Df den Df Pr(&gt;F)    </span></span>
@@ -925,7 +1026,7 @@ Figure&nbsp;10.5: Bivariate data ellipses for pairs of the three responses, show
 </div>
 <p><code><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova()</a></code> returns an object of class <code>"Anova.mlm"</code> which has various methods. The <code><a href="https://rdrr.io/r/base/summary.html">summary()</a></code> method for this gives more details, including all four test statistics. These tests have <span class="math inline">\(s = \min(p, \text{df}_h) = \min(3,2) = 2\)</span> dimensions and the <span class="math inline">\(F\)</span> approximations are not equivalent here. All four tests are highly significant</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb16" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">parenting.summary</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova</a></span><span class="op">(</span><span class="va">parenting.mlm</span><span class="op">)</span> <span class="op">|&gt;</span>  <span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="op">)</span> </span>
+<div class="sourceCode" id="cb20" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">parenting.summary</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova</a></span><span class="op">(</span><span class="va">parenting.mlm</span><span class="op">)</span> <span class="op">|&gt;</span>  <span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="op">)</span> </span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">parenting.summary</span>, SSP<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Type II MANOVA Tests:</span></span>
@@ -945,7 +1046,7 @@ Figure&nbsp;10.5: Bivariate data ellipses for pairs of the three responses, show
 </div>
 <p>The <code><a href="https://rdrr.io/r/base/summary.html">summary()</a></code> method by default prints the SSH = <span class="math inline">\(\mathbf{H}\)</span> and SSE = <span class="math inline">\(\mathbf{E}\)</span> matrices, but I suppressed them above. They can be extracted from the object using <code><a href="https://purrr.tidyverse.org/reference/pluck.html">purrr::pluck()</a></code>:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb17" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">H</span> <span class="op">&lt;-</span> <span class="va">parenting.summary</span> <span class="op">|&gt;</span> </span>
+<div class="sourceCode" id="cb21" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">H</span> <span class="op">&lt;-</span> <span class="va">parenting.summary</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/pluck.html">pluck</a></span><span class="op">(</span><span class="st">"multivariate.tests"</span>, <span class="st">"group"</span>, <span class="st">"SSPH"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         caring    play emotion</span></span>
@@ -964,7 +1065,7 @@ Figure&nbsp;10.5: Bivariate data ellipses for pairs of the three responses, show
 <p>With three or more groups or with a more complex MANOVA design, contrasts provide a way of testing questions of substantive interest regarding differences among group means.</p>
 <p>The test of the contrast comparing the typical group to the average of the others is the test using the contrast <span class="math inline">\(c_1 = (1, -\frac12, -\frac12)\)</span> which produces the coefficients labeled <code>"group1"</code>. The function <code><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">car::linearHypothesis()</a></code> carries out the multivariate test that these are all zero. This is a 1 df test, so all four test statistics produce the same <span class="math inline">\(F\)</span> and <span class="math inline">\(p\)</span>-values.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb18" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">parenting.mlm</span><span class="op">)</span><span class="op">[</span><span class="st">"group1"</span>,<span class="op">]</span></span>
+<div class="sourceCode" id="cb22" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">parenting.mlm</span><span class="op">)</span><span class="op">[</span><span class="st">"group1"</span>,<span class="op">]</span></span>
 <span><span class="co">#&gt;  caring    play emotion </span></span>
 <span><span class="co">#&gt; -0.3833  2.4167 -0.0667</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">linearHypothesis</a></span><span class="op">(</span><span class="va">parenting.mlm</span>, <span class="st">"group1"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
@@ -981,7 +1082,7 @@ Figure&nbsp;10.5: Bivariate data ellipses for pairs of the three responses, show
 </div>
 <p>Similarly, the difference between the physical and mental groups uses the contrast <span class="math inline">\(c_2 = (0, 1, -1)\)</span> and the test that these means are equal is given by <code><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">linearHypothesis()</a></code> applied to <code>group2</code>.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb19" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">parenting.mlm</span><span class="op">)</span><span class="op">[</span><span class="st">"group2"</span>,<span class="op">]</span></span>
+<div class="sourceCode" id="cb23" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">parenting.mlm</span><span class="op">)</span><span class="op">[</span><span class="st">"group2"</span>,<span class="op">]</span></span>
 <span><span class="co">#&gt;  caring    play emotion </span></span>
 <span><span class="co">#&gt;   1.775  -0.225  -0.600</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">linearHypothesis</a></span><span class="op">(</span><span class="va">parenting.mlm</span>, <span class="st">"group2"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
@@ -999,7 +1100,7 @@ Figure&nbsp;10.5: Bivariate data ellipses for pairs of the three responses, show
 <p><code><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">linearHypothesis()</a></code> is very general. The second argument (<code>hypothesis.matrix</code>) corresponds to <span class="math inline">\(\mathbf{C}\)</span>, and can be specified as numeric matrix giving the linear combinations of coefficients by rows to be tested, or a character vector giving the hypothesis in symbolic form; <code>"group1"</code> is equivalent to <code>"group1 = 0"</code>.</p>
 <p>Because the contrasts used here are orthogonal, they comprise the overall test of <span class="math inline">\(\mathbf{B} = \mathbf{0}\)</span> which implies that the means of the three groups are all equal. The test below gives the same results as <code>Anova(parenting.mlm)</code>.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb20" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">linearHypothesis</a></span><span class="op">(</span><span class="va">parenting.mlm</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"group1"</span>, <span class="st">"group2"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<div class="sourceCode" id="cb24" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">linearHypothesis</a></span><span class="op">(</span><span class="va">parenting.mlm</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"group1"</span>, <span class="st">"group2"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span>SSP<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Multivariate Tests: </span></span>
@@ -1018,7 +1119,7 @@ Figure&nbsp;10.5: Bivariate data ellipses for pairs of the three responses, show
 <span class="header-section-number">10.3.3</span> Example: Adolescent mental health</h3>
 <p>The dataset <code><a href="https://friendly.github.io/heplots/reference/AddHealth.html">heplots::AddHealth</a></code> contains a large cross-sectional sample of participants from grades 7–12 from the National Longitudinal Study of Adolescent Health, described by <span class="citation" data-cites="Warne2014">Warne (<a href="95-references.html#ref-Warne2014" role="doc-biblioref">2014</a>)</span>. It contains responses to two Likert-scale (1–5) items, <code>anxiety</code> and <code>depression</code>. <code>grade</code> is an <em>ordered</em> factor, which means that the default contrasts are taken as orthogonal polynomials with linear (<code>grade.L</code>), quadratic (<code>grade.Q</code>), up to 5th degree (<code>grade^5</code>) trends, which decompose the total effect of grade.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb21" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">AddHealth</span>, package<span class="op">=</span><span class="st">"heplots"</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb25" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">AddHealth</span>, package<span class="op">=</span><span class="st">"heplots"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span><span class="op">(</span><span class="va">AddHealth</span><span class="op">)</span></span>
 <span><span class="co">#&gt; 'data.frame':  4344 obs. of  3 variables:</span></span>
 <span><span class="co">#&gt;  $ grade     : Ord.factor w/ 6 levels "7"&lt;"8"&lt;"9"&lt;"10"&lt;..: 5 4 6 1 2 2 2 3 3 3 ...</span></span>
@@ -1034,7 +1135,7 @@ Figure&nbsp;10.5: Bivariate data ellipses for pairs of the three responses, show
 <p>The first question can be answered by fitting separate linear models for each response (e.g., <code>lm(anxiety ~ grade))</code>). However the second question is more interesting because it considers the two responses together and takes their correlation into account. This would be fit as the MLM:</p>
 <p><span id="eq-AH-mod"><span class="math display">\[
 \mathbf{y} = \boldsymbol{\beta}_0 + \boldsymbol{\beta}_1 x + \boldsymbol{\beta}_2 x^2 + \cdots \boldsymbol{\beta}_5 x^5
-\tag{10.4}\]</span></span></p>
+\tag{10.5}\]</span></span></p>
 <p>or, expressed in terms of the variables,</p>
 <p><span id="eq-AH-mod2"><span class="math display">\[\begin{aligned}
 \begin{bmatrix} y_{\text{anx}} \\y_{\text{dep}} \end{bmatrix} &amp; = &amp;
@@ -1042,12 +1143,12 @@ Figure&nbsp;10.5: Bivariate data ellipses for pairs of the three responses, show
 \begin{bmatrix} \beta_{1,\text{anx}} \\ \beta_{1,\text{dep}} \end{bmatrix} \text{grade} +
 \begin{bmatrix} \beta_{2,\text{anx}} \\ \beta_{2,\text{dep}} \end{bmatrix} \text{grade}^2 + \cdots
 \begin{bmatrix} \beta_{5,\text{anx}} \\ \beta_{5,\text{dep}} \end{bmatrix} \text{grade}^5
-\end{aligned} \tag{10.5}\]</span></span></p>
-<p>With<code>grade</code> represented as an ordered factor, the values of <span class="math inline">\(x\)</span> in <a href="#eq-AH-mod" class="quarto-xref">Equation&nbsp;<span>10.4</span></a> are those of the orthogonal polynomials given by <code>poly(grade,5)</code>.</p>
+\end{aligned} \tag{10.6}\]</span></span></p>
+<p>With<code>grade</code> represented as an ordered factor, the values of <span class="math inline">\(x\)</span> in <a href="#eq-AH-mod" class="quarto-xref">Equation&nbsp;<span>10.5</span></a> are those of the orthogonal polynomials given by <code>poly(grade,5)</code>.</p>
 <section id="exploratory-plots-1" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="exploratory-plots-1">Exploratory plots</h4>
 <p>Some exploratory analysis is useful before fitting and visualizing models. As a first step, we find the means, standard deviations, and standard errors of the means.</p>
 <div class="cell" data-layout-align="center">
-<details class="code-fold"><summary>Show the code</summary><div class="sourceCode" id="cb22" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org">ggplot2</a></span><span class="op">)</span></span>
+<details class="code-fold"><summary>Show the code</summary><div class="sourceCode" id="cb26" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org">ggplot2</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org">dplyr</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">means</span> <span class="op">&lt;-</span> <span class="va">AddHealth</span> <span class="op">|&gt;</span></span>
@@ -1075,7 +1176,7 @@ Figure&nbsp;10.5: Bivariate data ellipses for pairs of the three responses, show
 </div>
 <p>Now, plot the means with <span class="math inline">\(\pm 1\)</span> error bars. It appears that average level of both depression and anxiety increase steadily with grade, except for grades 11 and 12 which don’t differ much. Alternatively, we could describe this as relationships that seem largely linear, with a hint of curvature at the upper end.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb23" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">p1</span> <span class="op">&lt;-</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">means</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">grade</span>, y <span class="op">=</span> <span class="va">anxiety</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<div class="sourceCode" id="cb27" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">p1</span> <span class="op">&lt;-</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">means</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">grade</span>, y <span class="op">=</span> <span class="va">anxiety</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">4</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_line</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>group <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>, linewidth <span class="op">=</span> <span class="fl">1.2</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_linerange.html">geom_errorbar</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>ymin <span class="op">=</span> <span class="va">anxiety</span> <span class="op">-</span> <span class="va">anx_se</span>, </span>
@@ -1103,7 +1204,7 @@ Figure&nbsp;10.6: Means of anxiety and depression by grade, with <span class="ma
 </div>
 <p>It is also useful to within-group correlations using <code><a href="https://friendly.github.io/heplots/reference/covEllipses.html">covEllipses()</a></code>, as shown in <a href="#fig-addhealth-covellipse" class="quarto-xref">Figure&nbsp;<span>10.7</span></a>. This also plots the bivariate means showing the form of the association , treating anxiety and depression as multivariate outcomes. (Because the variability of the scores within groups is so large compared to the range of the means, I show the data ellipses with coverage of only 10%.)</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb24" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://friendly.github.io/heplots/reference/covEllipses.html">covEllipses</a></span><span class="op">(</span><span class="va">AddHealth</span><span class="op">[</span>, <span class="fl">3</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>, group <span class="op">=</span> <span class="va">AddHealth</span><span class="op">$</span><span class="va">grade</span>,</span>
+<div class="sourceCode" id="cb28" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://friendly.github.io/heplots/reference/covEllipses.html">covEllipses</a></span><span class="op">(</span><span class="va">AddHealth</span><span class="op">[</span>, <span class="fl">3</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>, group <span class="op">=</span> <span class="va">AddHealth</span><span class="op">$</span><span class="va">grade</span>,</span>
 <span>            pooled <span class="op">=</span> <span class="cn">FALSE</span>, level <span class="op">=</span> <span class="fl">0.1</span>,</span>
 <span>            center.cex <span class="op">=</span> <span class="fl">2.5</span>, cex <span class="op">=</span> <span class="fl">1.5</span>, cex.lab <span class="op">=</span> <span class="fl">1.5</span>,</span>
 <span>            fill <span class="op">=</span> <span class="cn">TRUE</span>, fill.alpha <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -1125,7 +1226,7 @@ Figure&nbsp;10.7: Within-group covariance ellipses for the <code>grade</code> gr
 \mathcal{H}_0: \boldsymbol{\beta}_1 =  \boldsymbol{\beta}_2  = \cdots =  \boldsymbol{\beta}_5 = \boldsymbol{0} \; .
 \]</span> We fit the MANOVA model, and test the grade effect using <code><a href="https://rdrr.io/pkg/car/man/Anova.html">car::Anova()</a></code>. The effect of <code>grade</code> is highly significant, as we could tell from <a href="#fig-addhealth-means-each" class="quarto-xref">Figure&nbsp;<span>10.6</span></a>.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb25" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">AH.mlm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">anxiety</span>, <span class="va">depression</span><span class="op">)</span> <span class="op">~</span> <span class="va">grade</span>, data <span class="op">=</span> <span class="va">AddHealth</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb29" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">AH.mlm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">anxiety</span>, <span class="va">depression</span><span class="op">)</span> <span class="op">~</span> <span class="va">grade</span>, data <span class="op">=</span> <span class="va">AddHealth</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># overall test of `grade`</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova</a></span><span class="op">(</span><span class="va">AH.mlm</span><span class="op">)</span></span>
@@ -1138,12 +1239,12 @@ Figure&nbsp;10.7: Within-group covariance ellipses for the <code>grade</code> gr
 </div>
 <p>However, the overall test, with 5 degrees of freedom is diffuse, in that it can be rejected if any pair of means differ. Given that <code>grade</code> is an ordered factor, it makes sense to examine narrower hypotheses of linear and nonlinear trends, <code><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">car::linearHypothesis()</a></code> on the coefficients of model <code>AH.mlm</code>.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb26" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">AH.mlm</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb30" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">AH.mlm</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; NULL</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>The joint test of the linear coefficients <span class="math inline">\(\boldsymbol{\beta}_1 = (\beta_{1,\text{anx}},  \beta_{1,\text{dep}})^\mathsf{T}\)</span> for anxiety and depression, <span class="math inline">\(H_0 : \boldsymbol{\beta}_1 = \boldsymbol{0}\)</span> is highly significant,</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb27" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co">## linear effect</span></span>
+<div class="sourceCode" id="cb31" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co">## linear effect</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">linearHypothesis</a></span><span class="op">(</span><span class="va">AH.mlm</span>, <span class="st">"grade.L"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span>SSP <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Multivariate Tests: </span></span>
@@ -1157,7 +1258,7 @@ Figure&nbsp;10.7: Within-group covariance ellipses for the <code>grade</code> gr
 </div>
 <p>The test of the quadratic coefficients <span class="math inline">\(H_0 : \boldsymbol{\beta}_2 = \boldsymbol{0}\)</span> indicates significant curvature in trends across grade, as we saw in the plots of their means in <a href="#fig-addhealth-means-each" class="quarto-xref">Figure&nbsp;<span>10.6</span></a>. One interpretation might be that depression and anxiety after increasing steadily up to grade eleven could level off thereafter.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb28" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co">## quadratic effect</span></span>
+<div class="sourceCode" id="cb32" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co">## quadratic effect</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">linearHypothesis</a></span><span class="op">(</span><span class="va">AH.mlm</span>, <span class="st">"grade.Q"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span>SSP <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Multivariate Tests: </span></span>
@@ -1171,7 +1272,7 @@ Figure&nbsp;10.7: Within-group covariance ellipses for the <code>grade</code> gr
 </div>
 <p>An advantage of linear hypotheses is that we can test several terms <em>jointly</em>. Of interest here is the hypothesis that all higher order terms beyond the quadratic are zero, <span class="math inline">\(H_0 : \boldsymbol{\beta}_3 =  \boldsymbol{\beta}_4 =  \boldsymbol{\beta}_5 = \boldsymbol{0}\)</span>. Using <code>linearHypothesis</code> you can supply a vector of coefficient names to be tested for their joint effect when dropped from the model.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb29" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">AH.mlm</span><span class="op">)</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb33" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">AH.mlm</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "(Intercept)" "grade.L"     "grade.Q"     "grade.C"    </span></span>
 <span><span class="co">#&gt; [5] "grade^4"     "grade^5"</span></span>
 <span><span class="co">## joint test of all higher terms</span></span>
