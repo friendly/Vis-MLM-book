@@ -67,8 +67,9 @@ library(matlib)
 
 options("digits" = 5)
 # Ugh! rownames/colnames if present are used by default. Need to make them null to avoid them.
-rownames(SSP_T) <- rownames(SSP_H) <- rownames(SSP_E) <- NULL
-colnames(SSP_T) <- colnames(SSP_H) <- colnames(SSP_E) <- NULL
+# rownames(SSP_T) <- rownames(SSP_H) <- rownames(SSP_E) <- NULL
+# colnames(SSP_T) <- colnames(SSP_H) <- colnames(SSP_E) <- NULL
+options(print.latexMatrix = list(display.labels=FALSE))
 Eqn(latexMatrix(SSP_T), "=", latexMatrix(SSP_H), "+", latexMatrix(SSP_E))
 
 eqn <- "
@@ -113,24 +114,74 @@ dataEllipse(amount ~ start | formula, data=dogfood,
 
 
 # setup contrasts to test interesting comparisons
-C <- matrix(
-  c( 1,  1, -1, -1,         #Ours vs. Theirs
-     0,  0,  1, -1,           #Major vs. Alps
-     1, -1,  0,  0),             #New vs. Old
-  nrow=4, ncol=3)
+# C <- matrix(
+#   c( 1,  1, -1, -1,         #Ours vs. Theirs
+#      0,  0,  1, -1,           #Major vs. Alps
+#      1, -1,  0,  0),             #New vs. Old
+#   nrow=4, ncol=3)
+
+c1 <- c(1,  1, -1, -1)    # Old,New vs. Major,Alps
+c2 <- c(1, -1,  0,  0)    # Old vs. New
+c3 <- c(0,  0,  1, -1)    # Major vs. Alps
+C <- cbind(c1,c2,c3) 
+rownames(C) <- levels(dogfood$formula)
+
+C
+
+# show they are mutually orthogonal
+t(C) %*% C
+
 # assign these to the formula factor
 contrasts(dogfood$formula) <- C
+# refit the model
+dogfood.mod <- lm(cbind(start, amount) ~ formula, data=dogfood)
+# coefficients are now estimates of the contrasts
 
 # test these contrasts with multivariate tests
-linearHypothesis(dogfood.mod, "formula1", title="Ours vs. Theirs")
-linearHypothesis(dogfood.mod, "formula2", title="Old vs. New")
-linearHypothesis(dogfood.mod, "formula3", title="Alps vs. Major")
+H1 <- linearHypothesis(dogfood.mod, "formulac1", title="Ours vs. Theirs") 
+H2 <- linearHypothesis(dogfood.mod, "formulac2", title="Old vs. New")
+H3 <- linearHypothesis(dogfood.mod, "formulac3", title="Alps vs. Major")
 
+SSP_H1 <- H1$SSPH |> round(digits=2)
+SSP_H2 <- H2$SSPH |> round(digits=2)
+SSP_H3 <- H3$SSPH |> round(digits=2)
+
+#options(digits=4)
+Eqn(latexMatrix(SSP_H), "=", latexMatrix(SSP_H1), "+", latexMatrix(SSP_H2), "+", latexMatrix(SSP_H3))
+
+eqn <- "
+\begin{equation*}
+\begin{pmatrix} 
+  9.7 & -70.9 \\ 
+-70.9 & 585.7 \\ 
+\end{pmatrix}
+=\begin{pmatrix} 
+  7.6 & -59.8 \\ 
+-59.8 & 473.1 \\ 
+\end{pmatrix}
++\begin{pmatrix} 
+ 0.13 &  1.88 \\ 
+ 1.88 & 28.12 \\ 
+\end{pmatrix}
++\begin{pmatrix} 
+  2 & -13 \\ 
+-13 &  84 \\ 
+\end{pmatrix}
+\end{equation*}
+"
+
+# test all 3 contrasts = overall test
+
+
+(all <- rownames(coef(dogfood.mod)))
+linearHypothesis(dogfood.mod, all[-1], title="Overall test")
+
+# HE plots
 heplot(dogfood.mod, fill = TRUE, fill.alpha = 0.1)
 
 # display contrasts in the heplot 
-hyp <- list("Ours/Theirs" = "formula1",
-            "Old/New" = "formula2")
+hyp <- list("Ours/Theirs" = "formulac1",
+            "Old/New" = "formulac2")
 heplot(dogfood.mod, hypotheses = hyp,
        fill = TRUE, fill.alpha = 0.1)
 

@@ -43,6 +43,7 @@ library(ggplot2)
 library(heplots)
 library(patchwork)
 library(tidyr)
+library(matlib)
 ```
 
 ## Structure of the MLM
@@ -89,26 +90,46 @@ where
 -   $\mathbf{B} = ( \mathbf{b}_1 , \mathbf{b}_2 , \dots,  \mathbf{b}_p )$ is a matrix of regression coefficients, one column $\mathbf{b}_j$ for each response variable; 
 -   $\Epsilon$ is a matrix of errors in predicting $\mathbf{Y}$.
 
-<!--
-When it is useful to refer symbolically to the _rows_ $\mathbf{b}_i^\mathsf{T}$ of coefficients for the regressors 
-$x_0, x_1, x_2, \dots, x_i, \dots x_q$, these are expressed as: 
-
+Writing @eq-mlm in terms of its elements, we have
 
 $$
-\sizedmat{B}{(q+1) \times p} =
-\begin{pmatrix} 
-  \mathbf{b}_{0}^\mathsf{T}  \\ 
-  \mathbf{b}_{1}^\mathsf{T}  \\ 
-  \vdots                     \\
-  \mathbf{b}_{i}^\mathsf{T}  \\
-  \vdots                     \\
-  \mathbf{b}_{q}^\mathsf{T}  \\ 
-\end{pmatrix}
+\overset{\mathbf{Y}}
+  {\begin{bmatrix} 
+  y_{11} & y_{12} & \cdots & y_{1p} \\
+  y_{21} & y_{22} & \cdots & y_{2p} \\
+  \vdots & \vdots & \ddots & \vdots \\
+  y_{n1} & y_{n2} & \cdots & y_{np}
+  \end{bmatrix}
+  }
+ = 
+\overset{\mathbf{X}}
+  {\begin{bmatrix}
+  1 & x_{11} & \cdots & x_{1q} \\
+  1 & x_{21} & \cdots & x_{2q} \\
+  \vdots & \vdots & \ddots & \vdots \\
+  1 & x_{n1} & \cdots & x_{nq}
+  \end{bmatrix}
+  }
+\overset{\mathbf{B}}
+  {\begin{bmatrix}
+  \beta_{01} & \beta_{02} & \cdots & \beta_{0p} \\
+  \beta_{11} & \beta_{12} & \cdots & \beta_{1p} \\
+  \vdots & \vdots & \ddots & \vdots \\
+  \beta_{q1} & \beta_{q2} & \cdots & \beta_{qp}
+  \end{bmatrix}
+  }
++
+\overset{\mathcal{\boldsymbol{\Large\varepsilon}}}
+  {\begin{bmatrix}
+  \epsilon_{11} & \epsilon_{12} & \cdots & \epsilon_{1p} \\
+  \epsilon_{21} & \epsilon_{22} & \cdots & \epsilon_{2p} \\
+  \vdots & \vdots & \ddots & \vdots \\
+  \epsilon_{n1} & \epsilon_{n2} & \cdots & \epsilon_{np}
+  \end{bmatrix}
+  }
 $$
 
--->
-
-The structure of the model matrix $\mathbf{X}$ is the same as the univariate linear model, and may therefore contain, 
+The structure of the model matrix $\mathbf{X}$ is exactly the same as the univariate linear model, and may therefore contain, 
 
 * **quantitative** predictors, such as `age`, `income`, years of `education`
 * **transformed predictors** like $\sqrt{\text{age}}$ or $\log{(\text{income})}$
@@ -252,6 +273,7 @@ elements. For the MLM this is expressed as:
 \end{align*} {#eq-SSP}
 
 where,
+
 * $\overline{\mathbf{y}}$ is the $(p\times 1)$ vector of means for the response variables;
 * $\widehat{\mathbf{Y}} = \mathbf{X}\widehat{\mathbf{B}}$ is the matrix of fitted values; and
 * $\widehat{\Epsilon} = \mat{Y} -\widehat{\mat{Y}}$ is the matrix of residuals. 
@@ -261,7 +283,7 @@ where the size and direction of $\mathbf{H}$ and $\mathbf{E}$ can be represented
 
 But first, let's find these results for the example. The easy way is to get them from
 the result returned by `car::Anova()`, where the hypothesis $\mathbf{SSP}_{H}$ for
-each term in the model is returned as a named list `SSP` and the error $\mathbf{SSP}_{E}$ is
+each term in the model is returned as an element in a named list `SSP` and the error $\mathbf{SSP}_{E}$ is
 returned as the matrix `SSPE`.
 
 
@@ -527,8 +549,9 @@ L = \mathbf{c}^\mathsf{T} \boldsymbol{\mu} = \sum_i c_i \mu_i \quad\text{such th
 $$
 Two contrasts, $\mathbf{c}_1$ and $\mathbf{c}_2$ are _orthogonal_ if the sum of products
 of their weights is zero, i.e., $\mathbf{c}_1^\mathsf{T} \mathbf{c}_2 = \Sigma c_{1i} \times c_{2i} = 0$.
-When contrasts are placed as columns of a matrix $\mathbf{C}$, they are all mutually orthogonal
-if $\mathbf{C}^\mathsf{T} \mathbf{C}$ is a diagonal matrix.
+When contrasts are placed as columns of a matrix $\mathbf{C}$, they are all _mutually orthogonal_
+if each pair is orthogonal, which means
+$\mathbf{C}^\top \mathbf{C}$ is a diagonal matrix.
 Orthogonal contrasts correspond to statistically independent tests.
 
 <!-- For example, with $g=4$ groups representing the combinations of two drugs, A and B -->
@@ -596,10 +619,14 @@ t(C) %*% C
 ```
 
 For a dataset, `data`, with this factor as `group`, you can set up the analyses to use these
-contrasts by assigning the matrix `C` to `contrasts()`:
+contrasts by assigning the matrix `C` to `contrasts()`. When the contrasts are changed,
+it is necessary to refit the model. The estimated coefficients then become the estimated
+mean differences of the contrasts.
 
 ```{r eval=FALSE}
 contrasts(dogfood$formula) <- C
+dogfood.mod <- lm(cbind(start, amount) ~ formula, data=dogfood)
+coef(dogfood.mod)
 ```
 
 
@@ -611,11 +638,66 @@ that additively decompose the overall hypothesis SSCP matrix,
 
 $$
 \mathbf{H} = \mathbf{H}_1 + \mathbf{H}_2 + \cdots + \mathbf{H}_{\text{df}_h} \comma
-$$
+$$ {#eq-H-contrasts}
+
 exactly as the univariate $\text{SS}_H$ can be decomposed using orthogonal contrasts in an ANOVA.
 
+You can test such contrasts or any other hypotheses involving linear combinations of the coefficients  using `car::linearHypothesis`. Here, `"formulac1"` refers to the contrast `c1` for the difference between Ours and Theirs. Note that because this is a 1 df test, all four test statistics
+yield the same $F$ values.
 
+```{r dogfood-H1}
+hyp <- rownames(coef(dogfood.mod))[-1] |> print()
+H1 <- linearHypothesis(dogfood.mod, hyp[1], title="Ours vs. Theirs") |> 
+  print()
+```
 
+Similarly for the other two contrasts within these each of these two subsets, but I don't print the
+results
+
+```{r dogfood-H2}
+H2 <- linearHypothesis(dogfood.mod, hyp[2], title="Old vs. New")
+H3 <- linearHypothesis(dogfood.mod, hyp[3], title="Alps vs. Major")
+```
+
+Then, we can illustrate @eq-H-contrasts by extracting the 1 df $\mathbf{H}$  matrices (`SSPH`)
+from the results of `linearHypothesis`.
+
+```{r dogfood-Eqn, results='asis', eval=FALSE}
+options(print.latexMatrix = list(display.labels=FALSE))
+SSP_H1 <- H1$SSPH |> round(digits=2)
+SSP_H2 <- H2$SSPH |> round(digits=2)
+SSP_H3 <- H3$SSPH |> round(digits=2)
+Eqn(latexMatrix(SSP_H), "=", 
+    latexMatrix(SSP_H1), "+", 
+    latexMatrix(SSP_H2), "+", 
+    latexMatrix(SSP_H3))
+```
+
+$$
+\overset{\mathbf{H}}
+{\begin{pmatrix} 
+  9.7 & -70.9 \\ 
+-70.9 & 585.7 \\ 
+\end{pmatrix}}
+=
+\overset{\mathbf{H}_1}
+{\begin{pmatrix} 
+  7.6 & -59.8 \\ 
+-59.8 & 473.1 \\ 
+\end{pmatrix}}
++
+\overset{\mathbf{H}_2}
+{\begin{pmatrix} 
+ 0.13 &  1.88 \\ 
+ 1.88 & 28.12 \\ 
+\end{pmatrix}}
++
+\overset{\mathbf{H}_3}
+{\begin{pmatrix} 
+  2 & -13 \\ 
+-13 &  84 \\ 
+\end{pmatrix}}
+$$
 
 
 ## ANOVA $\rightarrow$ MANOVA
