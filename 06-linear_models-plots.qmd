@@ -1211,9 +1211,508 @@ For these workers compared with blue collar jobs, prestige increases 1.77 less w
 
 
 <!-- ## Outliers, leverage influence -->
-```{r child="child/06-leverage.qmd"}
+<!-- was: r child="child/06-leverage.qmd" -->
+
+## Outliers, leverage and influence {#sec-leverage}
+
+In small to moderate samples, "unusual" observations can have dramatic effects on a fitted
+regression model, as we saw in the analysis of Davis's data on
+reported and measured weight (@sec-davis) where one erroneous observations hugely
+altered the fitted line. As well, it turns out that two observations in Duncan's data
+are unusual enough that removing them alters his conclusion that income and education
+have nearly equal effects on occupational prestige.
+
+An observation can be unusual in three archetypal ways, with different consequences:
+
+* Unusual in the response $y$, but typical in the predictor(s), $\mathbf{x}$ --- a badly fitted case with a large absolute residual, but with $x$ not far from the mean, as in @fig-ch02-davis-reg2. This case does not do much harm to the fitted model.
+
+* Unusual in the predictor(s) $\mathbf{x}$, but typical in $y$ --- an otherwise well-fitted point. This case also does litle
+harm, and in fact can be considered to improve precision, a "good leverage" point.
+
+* Unusual in **both** $\mathbf{x}$ and $y$ --- This is the case, a "bad leverage" point, revealed in the analysis of Davis's data, @fig-ch02-davis-reg1, where the one erroneous point for women was highly influential, pulling the regression line towards it and affecting the estimated coefficient as well as all the fitted values. In addition, subsets of observations can be _jointly_ influential, in that their effects combine, or can mask each other's influence.
+
+Influential cases are the ones that matter most. As suggested above, to be influential an observation must be
+unusual in **both** $\mathbf{x}$ and $y$, and affects the estimated coefficients, thereby also altering the
+predicted values for all observations.
+A heuristic formula capturing the relations among leverage, "outlyingness" on $y$ and influence is
+
+$$
+\text{Influence}_{\text{coefficients}} \;=\; X_\text{leverage} \;\times\; Y_\text{residual}
+$$
+As described below, leverage is proportional to the squared distance $(x_i - \bar{x})^2$ of an observation $x_i$
+from its mean in simple regression and to the squared Mahalanobis distance
+in the general case. The $Y_\text{residual}$ is best measured by a _studentized_ residual,
+obtained by omitting each case $i$ in turn and calculating its residual from the coefficients obtained
+from the remaining cases.
+
+### The leverage-influence quartet {#sec-lev-inf-quartet}
+
+These ideas can be illustrated in the "leverage-influence quartet" by considering a standard simple linear regression
+for a sample and then adding one additional point reflecting the three situations described above.
+Below, I generate a sample of $N = 15$ points with $x$ uniformly distributed between (40, 60)
+and $y \sim 10 + 0.75 x + \mathcal{N}(0, 1.25^2)$, duplicated four times.
+
+```{r levdemo1}
+library(tidyverse)
+library(car)
+set.seed(42)
+N <- 15
+case_labels <- paste(1:4, c("OK", "Outlier", "Leverage", "Influence"))
+levdemo <- tibble(
+	case = rep(case_labels, 
+	           each = N),
+	x = rep(round(40 + 20 * runif(N), 1), 4),
+	y = rep(round(10 + .75 * x + rnorm(N, 0, 1.25), 4)),
+	id = " "
+)
+
+mod <- lm(y ~ x, data=levdemo)
+coef(mod)
+```
+
+The additional points, one for each situation are set to the values below.
+
+* `Outlier`: (52, 60) a low leverage point, but an outlier (`O`) with a large residual
+* `Leverage`: (75, 65) a "good" high leverage point (`L`) that fits well with the regression line
+* `Influence`: (70, 40) a "bad" high leverage point (`OL`) with a large residual.
+
+```{r levdemo2}
+extra <- tibble(
+  case = case_labels,
+  x  = c(65, 52, 75, 70),
+  y  = c(NA, 65, 65, 40),
+  id = c("  ", "O", "L", "OL")
+)
+
+#' Join these to the data
+both <- bind_rows(levdemo, extra) |>
+  mutate(case = factor(case))
+```
+
+We can plot these four situations with `ggplot2` in panels faceted by `case` as shown below.
+The standard version of this plot shows the regression line for the 
+`r colorize("original data", "blue")` and that for the `r colorize("ammended data", "red")`
+with the additional point. Note that we use the `levdemo` dataset in `geom_smooth()` for the
+regression line with the original data, but specify `data = both` for that with the additional point.
+
+```{r}
+#| label: fig-levdemo
+#| out-width: 100%
+#| fig-cap: !expr paste('Leverage influence quartet with data 50% ellipses. Case (1) original data; (2) adding one low-leverage outlier, "O"; (3) adding one "good" leverage point, "L"; (4) adding one "bad" leverage point, "OL". The dashed', blue, 'line is the fitted line for the original data, while the solid', red, 'line reflects the additional point. The data ellipses show the effect of the additional point on precision.')
+ggplot(levdemo, aes(x = x, y = y)) +
+  geom_point(color = "blue", size = 2) +
+  geom_smooth(data = both, 
+              method = "lm", formula = y ~ x, se = FALSE,
+              color = "red", linewidth = 1.3, linetype = 1) +
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE,
+              color = "blue", linewidth = 1, linetype = "longdash" ) +
+  stat_ellipse(data = both, level = 0.5, color="blue", type="norm", linewidth = 1.4) +
+  geom_point(data=extra, color = "red", size = 4) +
+  geom_text(data=extra, aes(label = id), nudge_x = -2, size = 5) +
+  facet_wrap(~case, labeller = label_both) +
+  theme_bw(base_size = 14)
+```
+
+
+The standard version of this graph shows only the fitted regression lines in each panel.
+As can be seen, the fitted line doesn't change very much in panels (2) and (3); only
+the bad leverage point, "OL" in panel (4) is harmful.
+Adding data ellipses to each panel immediately makes it clear that there is another
+part to this story--- the effect of the unusual point on _precision_ (standard errors)
+of our estimates of the coefficients.
+
+Now, we see _directly_ that there is a big difference in impact between
+the low-leverage outlier [panel (2)] and the high-leverage, small-residual case [panel (3)],
+even though their effect on coefficient estimates is negligible.
+In panel (2), the single outlier inflates the estimate of residual variance (the size of the
+vertical slice of the data ellipse at $\bar{x}$), while in panel (3) this is decreased.
+
+To allow direct comparison and make the added value of the data ellipse more apparent, we overlay the data ellipses from
+@fig-levdemo in a single graph, shown in @fig-levdemo2.
+Here, we can also see why the high-leverage
+point "L" (added in panel (c) of @fig-levdemo) is called a "good leverage" point.
+By increasing the standard deviation of $x$, it makes the data ellipse somewhat more elongated,
+giving increased precision of our estimates of $\vec{\beta}$. 
+
+```{r}
+#| label: fig-levdemo2
+#| out-width: 80%
+#| code-fold: true
+#| fig-cap: "Data ellipses in the Leverage-influence quartet. This graph overlays the data ellipses
+#|     and additional points from the four panels of @fig-levdemo2. It can be seen that only the
+#|     OL point affects the slope, while the O and L points affect precision of the estimates in opposite
+#|     directions."
+colors <- c("black", "blue", "darkgreen", "red")
+with(both,
+     {dataEllipse(x, y, groups = case, 
+          levels = 0.68,
+          plot.points = FALSE, add = FALSE,
+          center.pch = "+",
+          col = colors,
+          fill = TRUE, fill.alpha = 0.1)
+     })
+
+case1 <- both |> filter(case == "1 OK")
+points(case1[, c("x", "y")], cex=1)
+
+points(extra[, c("x", "y")], 
+       col = colors,
+       pch = 16, cex = 2)
+
+text(extra[, c("x", "y")],
+     labels = extra$id,
+     col = colors, pos = 2, offset = 0.5)
+```
+
+#### Measuring leverage
+
+Leverage is thus an index of the _potential_ impact of an observation on the model due to its'
+atypical value in the X space of the predictor(s). It is commonly measured by the "hat" value, $h_i$,
+so called because it puts the hat $\mathbf{\widehat{(\bullet)}}$ on $\mathbf{y}$, i.e., the vector of fitted values can 
+be expressed as
+
+\begin{align*}
+\mathbf{\hat{y}} 
+   &= \underbrace{\mathbf{X}(\mathbf{X}^{\top}\mathbf{X})^{-1}\mathbf{X}^{\top}}_\mathbf{H}\mathbf{y} \\[2ex]
+   &= \mathbf{H\:y} \period
+\end{align*}
+
+
+<!-- \begin{align*} -->
+<!-- \hat{\mathbf{y}} & =  \mathbf{H} \mathbf{y} \\ -->
+<!--                  & =  [\mathbf{X} (\mathbf{X}^\mathsf{T} \mathbf{X})^{-1} \mathbf{X}^\mathsf{T}] \; \mathbf{y} \; , -->
+<!-- \end{align*} -->
+
+
+
+Here, $h_i \equiv h_{ii}$ are the diagonal elements of the Hat matrix $\mathbf{H}$. In simple regression,
+hat values are proportional to the squared distance of the observation $x_i$ from the mean,
+$h_i \propto (x_i - \bar{x})^2$,
+$$
+h_i = \frac{1}{n} + \frac{(x_i - \bar{x})^2}{\Sigma_i (x_i - \bar{x})^2} \; ,
+$$ {#eq-hat-univar}
+
+and range from $1/n$ to 1, with an average value $\bar{h} = 2/n$. Consequently, observations with
+$h_i$ greater than $2 \bar{h}$ or $3 \bar{h}$ are commonly considered to be of high leverage.
+
+With $p \ge 2$ predictors, an analogous relationship holds, but the correlations among the
+predictors must be taken into account.
+It is demonstrated below that $h_i \propto D^2 (\mathbf{x} - \bar{\mathbf{x}})$,
+the Mahalanobis squared distance of $\mathbf{x}$ from the centroid $\bar{\mathbf{x}}$[^1].
+
+The generalized version of @eq-hat-univar is
+
+$$
+h_i = \frac{1}{n} + \frac{1}{n-1} D^2 (\mathbf{x} - \bar{\mathbf{x}}) \; ,
+$$ {#eq-hat-multivar}
+
+where $D^2 (\mathbf{x} - \bar{\mathbf{x}}) = (\mathbf{x} - \bar{\mathbf{x}})^\mathsf{T} \mathbf{S}_X^{-1} (\mathbf{x} - \bar{\mathbf{x}})$. From @sec-data-ellipse, it follows that contours of constant leverage correspond to
+data ellipses or ellipsoids of the predictors in $\mathbf{x}$, whose boundaries, assuming normality, correspond to quantiles of the $\chi^2_p$ distribution
+
+[^1]: See this [Stats StackExchange discussion](https://bit.ly/45x2T0Q) for a proof.
+
+**Example**:
+
+To illustrate @eq-hat-multivar, I generate $N = 100$ points from a bivariate normal distribution with means
+$\mu = (30, 30)$, variances = 10, and a correlation $\rho = 0.7$ and add two noteworthy points
+that show an apparently paradoxical result.
+
+```{r hatval1}
+set.seed(421)
+N <- 100
+r <- 0.7
+mu <- c(30, 30)
+cov <- matrix(c(10,   10*r,
+                10*r, 10), ncol=2)
+
+X <- MASS::mvrnorm(N, mu, cov) |> as.data.frame()
+colnames(X) <- c("x1", "x2")
+
+# add 2 points
+X <- rbind(X,
+           data.frame(x1 = c(28, 38),
+                      x2 = c(42, 35)))
+```
+
+The Mahalanobis squared distances of these points can be calculated using `heplots::Mahalanobis()`,
+and their corresponding hatvalues found using `hatvalues()`
+for any linear model using both `x1` and `x2`.
+
+```{r hatval2}
+X <- X |>
+  mutate(Dsq = heplots::Mahalanobis(X)) |>
+  mutate(y = 2*x1 + 3*x2 + rnorm(nrow(X), 0, 5),
+         hat = hatvalues(lm(y ~ x1 + x2))) 
 
 ```
+
+Plotting `x1` and `x2` with data ellipses shows the relation of leverage to squared distance from the mean.
+The `r colorize("blue", "blue")` point looks to be farther from the `r colorize("mean", "green")`, but 
+the `r colorize("red", "red")` point is actually very much further by Mahalanobis squared distance, which takes the correlation into account; it thus has much greater leverage.
+
+
+```{r echo=-1}
+#| label: fig-hatvalues-demo1
+#| fig-show: "hold"
+#| fig-cap: !expr paste("Data ellipses for a bivariate normal sample with correlation 0.7, and two additional noteworthy points. The", blue, "point looks to be farther from the mean, but the", red, "point is actually more than 5 times further by Mahalanobis squared distance, and thus has much greater leverage.")
+par(mar = c(4, 4, 1, 1) + 0.1)
+dataEllipse(X$x1, X$x2, 
+            levels = c(0.40, 0.68, 0.95),
+            fill = TRUE, fill.alpha = 0.05,
+            col = "darkgreen",
+            xlab = "X1", ylab = "X2")
+points(X[1:nrow(X) > N, 1:2], pch = 16, 
+       col=c("red", "blue"), cex = 2)
+X |> slice_tail(n = 2) |>      # last two rows
+  points(pch = 16, col=c("red", "blue"), cex = 2)
+```
+
+The fact that hatvalues are proportional to leverage can be seen by plotting one against the other.
+I highlight the two noteworthy points in their colors from @fig-hatvalues-demo1 to illustrate
+how much greater leverage the `r colorize("red", "red")` point has compared to the `r colorize("blue", "blue")`
+point.
+
+```{r}
+#| label: fig-hatvalues-demo2
+#| fig-cap: "Hat values are proportional to squared Mahalanobis distances from the mean."
+plot(hat ~ Dsq, data = X,
+     cex = c(rep(1, N), rep(2, 2)), 
+     col = c(rep("black", N), "red", "blue"),
+     pch = 16,
+     ylab = "Hatvalue",
+     xlab = "Mahalanobis Dsq")
+```
+
+Look back at these two points in @fig-hatvalues-demo1. Can you guess how much further the `r colorize("red", "red")`
+point is from the mean than the `r colorize("blue", "blue")` point? You might be surprised that its'
+$D^2$ and leverage are about five times as great!
+
+```{r hatval3}
+X |> slice_tail(n=2)
+```
+
+#### Outliers: Measuring residuals
+
+From the discussion in @sec-leverage, outliers for the response $y$ are those observations for which the
+residual $e_i = y_i - \hat{y}_i$ are unusually large in magnitude. However, as demonstrated in @fig-levdemo,
+a high-leverage point will pull the fitted line towards it, reducing its' residual and thus making them
+look less unusual.
+
+The standard approach [@CookWeisberg:82; @HoaglinWelsch1978] is to consider a _deleted residual_ $e_{(-i)}$, conceptually as that
+obtained by re-fitting the model with observation $i$ omitted and obtaining the fitted value $\hat{y}_{(-i)}$
+from the remaining $n-1$ observations,
+$$
+e_{(-i)} = y_i - \hat{y}_{(-i)} \; .
+$$
+The (externally) _studentized residual_ is then obtained by dividing $e_{(-i)}$ by it's estimated standard error, giving
+$$
+e^\star_{(-i)} = \frac{e_{(-i)}}{\text{sd}(e_{(-i)})} = \frac{e_i}{\sqrt{\text{MSE}_{(-i)}\; (1 - h_i)}} \; .
+$$
+
+This is just the ordinary residual $e_i$ divided by a factor that increases with the residual variance
+but decreases with leverage.  It can be shown that these studentized residuals follow a $t$ distribution
+with $n - p -2$ degrees of freedom, so a value $|e^\star_{(-i)}| > 2$ can be considered large enough to
+pay attention to.  
+In practice for classical linear models, it is unnecessary to actually re-fit the model $n$ times.
+@VellemanWelsh:81 show that all these leave-one-out quantities can be calculated from the
+model fitted to the full data set and the hat (projection) matrix
+$\mathbf{H} = (\mathbf{X}\trans \mathbf{X})^{-1} \mathbf{X}\trans$ from which $\widehat{\mathbf{b}} = \mathbf{H} \mathbf{y}$.
+
+
+#### Measuring influence
+
+As described at the start of this section, the actual influence of a given case depends multiplicatively
+on its' leverage and residual. But how can we measure it?
+
+The essential idea introduced above, is to 
+delete the observations one at a time, each time refitting the regression model on the remaining $n–1$ observations.
+Then, for observation $i$ compare the results using all $n$ observations to those with the $i^{th}$ observation deleted to see how much influence the observation has on the analysis. 
+
+The simplest such measure, called DFFITS, compares the predicted value for case $i$ with what would be obtained
+when that observation is excluded.
+
+\begin{align*}
+\text{DFFITS}_i & = & \frac{\hat{y}_i - \hat{y}_{(-i)}}{\sqrt{\text{MSE}_{(-i)}\; h_i}} \\
+   & = & e^\star_{(-i)} \times \sqrt{\frac{h_i}{1-h_i}} \;\; .
+\end{align*}
+
+The first equation gives the signed difference in fitted values in units of the standard deviation of that difference weighted by leverage;
+the second version [@Belsley-etal:80] represents that as a product of residual and leverage.
+A rule of thumb is that an observation is deemed to be influential if $| \text{DFFITS}_i | > 2 \sqrt{(p+1) / n}$.
+
+Influence can also be assessed in terms of the change in the estimated coefficients
+$\mathbf{b} = \widehat{\mathbf{\beta}}$ versus their values $\mathbf{b}_{(-i)}$
+when case $i$ is removed.
+Cook's distance, $D_i$, summarizes the size of the difference as a weighted sum of squares
+of the differences $\mathbf{d} =\mathbf{b} - \mathbf{b}_{(-i)}$ [@Cook:77].
+
+$$
+D_i = \mathbf{d}\trans \, (\mathbf{X}\trans \mathbf{X}) \,\mathbf{d} / (p+1) \hat{\sigma}^2
+$$
+This can be re-expressed in terms of the components of residual and leverage
+
+$$
+D_i = \frac{e^{\star 2}_{(-i)}}{p+1} \times \frac{h_i}{(1- h_i)}
+$$
+
+Cook's distance is in the metric of an $F$ distribution with $p$  and $n − p$  degrees of freedom,
+so values $D_i > 4/n$ are considered large.
+
+### Influence plots
+
+The most common plot to detect influence is a bubble plot of the studentized residuals
+versus hat values, with the size (area) of the plotting symbol proportional to Cook's $D$.
+These plots are constructed using `car::influencePlot()` which also fills the
+bubble symbols with color whose opacity is proportional to Cook's $D$.
+
+This is shown in @fig-levdemo-infl for the demonstration dataset
+constructed in @sec-lev-inf-quartet. In this plot, notable cutoffs for hatvalues
+at $2 \bar{h}$ and $3 \bar{h}$ are shown by dashed vertical lines
+and horizontal cutoffs for studentized residuals are shown at values of $\pm 2$.
+
+
+The demonstration data of @sec-lev-inf-quartet has four copies of the same
+$(x, y)$ data, three of which have an unusual observation.
+The influence plot in @fig-levdemo-infl subsets the data to give
+the $19 = 15 + 4$ unique observations, including
+the three unusual cases.
+As can be seen, the high "Leverage" point has 
+has less influence than the point labeled "Influence", which has moderate
+leverage but a large absolute residual.
+
+
+```{r}
+#| label: fig-levdemo-infl
+#| code-fold: true
+#| code-summary: See the code
+#| fig-cap: Influence plot for the demonstration data. The areas of the bubble symbols are proportional to Cook's $D$. The impact of the three unusual points on Cook's $D$ is clearly seen.
+once <- both[c(1:16, 62, 63, 64),]      # unique observations
+once.mod <- lm(y ~ x, data=once)
+inf <- influencePlot(once.mod, 
+                     id = list(cex = 0.01),
+                     fill.alpha = 0.5,
+                     cex.lab = 1.5)
+# custom labels
+unusual <- bind_cols(once[17:19,], inf) |> 
+  print(digits=3)
+with(unusual, {
+  casetype <- gsub("\\d ", "", case)
+  text(Hat, StudRes, label = casetype,
+       pos = c(4, 2, 3), cex=1.5)
+})
+```
+
+
+### Duncan data {#sec-duncan-influence}
+
+Let's return to the `Duncan` data used as an example in @sec-example-duncan where a few points stood out as unusual in the basic diagnostic plots (@fig-duncan-plot-model).
+The influence plot in @fig-duncan-infl helps to make sense of these noteworthy observations.
+The default method for identifying points in `influencePlot()`
+labels points with any of large studentized residuals, hat-values or Cook's distances.
+
+```{r}
+#| label: fig-duncan-infl
+#| fig-cap: Influence plot for the model predicting occupational prestige in Duncan's data. Cases with large studentized residuals, hat-values or Cook's distances are labeled.
+inf <- influencePlot(duncan.mod, id = list(n=3),
+                     cex.lab = 1.5)
+```
+
+`influencePlot()` returns (invisibly) the influence diagnostics for the cases identified in the
+plot. It is often useful to look at data values for these cases to understand why each of these
+was flagged.
+
+```{r}
+merge(Duncan, inf, by="row.names", all.x = FALSE) |> 
+  arrange(desc(CookD)) |> 
+  print(digits=3)
+```
+
+* _minister_ has by far the largest influence, because it has an extremely positive residual and a large hat value. Looking at the data, we see that ministers have very low income, so their prestige is under-predicted. The large hat value reflects the fact that ministers have low income combined with very high education.
+
+* _conductor_ has the next largest Cook's $D$. It has a large hat value because its combination of relatively high income and low education is unusual in the data.
+
+* Among the others, _reporter_ has a relatively large negative residual---its prestige is far less than the model predicts---but its low leverage make it not highly influential.
+_railroad engineer_ has an extremely large hat value because its income is very high in relation to education. But this case is well-predicted and has a small residual, so its leverage is not large.
+
+### Influence in added-variable plots
+
+The properties of added-variable plots discussed in @sec-avplots make them also useful for understanding why cases are influential because they control for other predictors in each plot, and therefore
+show the _partial_ contributions of each observation to hat values and residuals. As a consequence, we
+can see directly the how individual cases become individually or jointly influential.
+
+The Duncan data provides a particularly instructive example of this. @fig-duncan-av-influence
+shows the AV plots for both income and education in the model `duncan.mod`, with some annotations
+added. I want to focus here on the _joint_ influence of the occupations minister and conductor
+which were seen to be the most influential in @fig-duncan-infl. The `r colorize("green")`
+vertical lines show their residuals in each panel and the `r colorize("red")` lines show the regressions
+when these two observations are deleted.
+
+The basic AV plots are produced using the call to `avPlots()` below. 
+To avoid clutter, I use the argument `id = list(method = "mahal", n=3)` so that
+only the three points with the greatest Mahalanobis distances from the centroid in each plot
+are labeled. These are the cases with the largest leverage seen in @fig-duncan-infl.
+
+```{r}
+#| label: duncan-av-infl
+#| eval: false
+avPlots(duncan.mod,
+  ellipse = list(levels = 0.68, fill = TRUE, fill.alpha = 0.1),
+  id = list(method = "mahal", n=3),
+  pch = 16, cex = 0.9,
+  cex.lab = 1.5)
+```
+
+
+```{r}
+#| label: fig-duncan-av-influence
+#| echo: false
+#| out-width: "100%"
+#| fig-cap: Added variable plots for the Duncan model, highlighting the impact of the observations for minister and conductor in each plot. The green lines show the residuals for these observations. The red line in each panel shows the regression line omitting these observations.
+knitr::include_graphics("images/duncan-av-influence.png")
+```
+
+The two cases---minister and conductor---are the most highly influential, but as we can see in 
+@fig-duncan-av-influence their influence combines because they are at opposite sides of the horizontal axis and their residuals are of opposite signs. They act together to decrease the slope for income and increase that for education.
+
+```{r}
+#| label: duncan-av-infl-code
+#| eval: false
+#| code-fold: true
+#| code-summary: Code for income AV plot
+res <- avPlot(duncan.mod, "income",
+              ellipse = list(levels = 0.68),
+              id = list(method = "mahal", n=3),
+              pch = 16,
+              cex.lab = 1.5) |>
+  as.data.frame()
+fit <- lm(prestige ~ income, data = res)
+info <- cbind(res, fitted = fitted(fit), 
+             resids = residuals(fit),
+             hat = hatvalues(fit),
+             cookd = cooks.distance(fit))
+
+# noteworthy points in this plot
+big <- which(info$cookd > .20)
+with(info, {
+  arrows(income[big], fitted[big], income[big], prestige[big], 
+         angle = 12, length = .18, lwd = 2, col = "darkgreen")
+  })
+
+# line w/o the unusual points
+duncan.mod2 <- update(duncan.mod, subset = -c(6, 16))
+bs <- coef(duncan.mod2)["income"]
+abline(a=0, b=bs, col = "red", lwd=2)
+```
+
+Duncan's hypothesis that the slopes for income and education were equal thus fails when these
+two observations are deleted. The slope for income then becomes 2.6 times that of education.
+
+```{r}
+#| label: duncan.mod2
+duncan.mod2 <- update(duncan.mod, subset = -c(6, 16))
+coef(duncan.mod2)
+```
+
 
 
 **Package summary**

@@ -43,10 +43,38 @@ library(ggplot2)
 library(heplots)
 library(patchwork)
 library(tidyr)
+library(matlib)
 ```
 
 ## Structure of the MLM
-In each of these cases, the underlying MLM is given most compactly using the matrix equation, <!-- $$ --> 
+
+**TODO** Revise notation here
+
+With $p$ response variables, the multivariate linear model is most easily appreciated as the collection of $p$ linear models, one for each response.
+
+\begin{align*}
+\mathbf{y}_1 =& \mathbf{X}\boldsymbol{\beta}_1 + \boldsymbol{\epsilon}_1 \\
+\mathbf{y}_2 =& \mathbf{X}\boldsymbol{\beta}_2 + \boldsymbol{\epsilon}_2 \\
+  \vdots      &  \\
+\mathbf{y}_p =& \mathbf{X}\boldsymbol{\beta}_p + \boldsymbol{\epsilon}_p \\
+\end{align*}
+
+
+The model matrix $\mathbf{X}$ is the same for all responses, but each one gets its
+own vector $\boldsymbol{\beta}_j$ of coefficients for how the predictors in $\mathbf{X}$
+fit a given response $\mathbf{y}_j$.
+
+Among the beauties of multivariate thinking is that we can put these separate equations
+together in single equation by joining the responses $\mathbf{y}_j$ as columns in a matrix
+$\mathbf{Y}$ and similarly arranging the vectors of coefficients $\boldsymbol{\beta}_j$
+as columns in a matrix $\mathbf{B}$. 
+(A slight hiccup in notation is that the _uppercase_ for the greek $\boldsymbol{\beta}$
+is the same as $\mathbf{B}$, so I use $\mathbf{b}_1 , \mathbf{b}_2 , \dots$ below to refer to its'
+columns.)
+
+The MLM then becomes:
+ 
+<!-- $$ --> 
 <!-- \newcommand{\sizedmat}[2]{\mathord{\mathop{\mathbf{#1}\limits_{(#2)}}} --> 
 <!-- $$ -->
 
@@ -57,31 +85,53 @@ $${#eq-mlm}
 
 where
 
--   $\mathbf{Y} = (\mathbf{y}_1 , \mathbf{y}_2, \dots , \mathbf{y}_j, \dots, \mathbf{y}_p )$ is the matrix of $n$ observations on $p$ responses;
+-   $\mathbf{Y} = (\mathbf{y}_1 , \mathbf{y}_2, \dots ,  \mathbf{y}_p )$ is the matrix of $n$ observations on $p$ responses, with typical column $\mathbf{y}_j$;
 -   $\mathbf{X}$ is the model matrix with columns $\mathbf{x}_i$ for $q$ regressors, which typically includes an initial column $\mathbf{x}_0$ of 1s for the intercept;
--   $\mathbf{B} = ( \mathbf{b}_1 , \mathbf{b}_2 , \dots \mathbf{b}_j \dots, \mathbf{b}_p )$ is a matrix of regression coefficients, one column $\mathbf{b}_j$ for each response variable; 
+-   $\mathbf{B} = ( \mathbf{b}_1 , \mathbf{b}_2 , \dots,  \mathbf{b}_p )$ is a matrix of regression coefficients, one column $\mathbf{b}_j$ for each response variable; 
 -   $\Epsilon$ is a matrix of errors in predicting $\mathbf{Y}$.
 
-When it is useful to refer symbolically to the _rows_ $\mathbf{b}_i^\mathsf{T}$ of coefficients for the regressors 
-$x_0, x_1, x_2, \dots, x_i, \dots x_q$, these are expressed as: 
-
-<!-- 
-$\mathbf{B} = ( \mathbf{b}_0^\mathsf{T} , \mathbf{b}_1^\mathsf{T} , \dots \mathbf{b}_j^\mathsf{T} \dots, \mathbf{b}_p )^\mathsf{T}$, or more explicitly 
--->
+Writing @eq-mlm in terms of its elements, we have
 
 $$
-\sizedmat{B}{(q+1) \times p} =
-\begin{pmatrix} 
-  \mathbf{b}_{0}^\mathsf{T}  \\ 
-  \mathbf{b}_{1}^\mathsf{T}  \\ 
-  \vdots                     \\
-  \mathbf{b}_{i}^\mathsf{T}  \\
-  \vdots                     \\
-  \mathbf{b}_{q}^\mathsf{T}  \\ 
-\end{pmatrix}
+\begin{align*}
+\overset{\mathbf{Y}}
+  {\begin{bmatrix} 
+  y_{11} & y_{12} & \cdots & y_{1p} \\
+  y_{21} & y_{22} & \cdots & y_{2p} \\
+  \vdots & \vdots & \ddots & \vdots \\
+  y_{n1} & y_{n2} & \cdots & y_{np}
+  \end{bmatrix}
+  }
+& = 
+\overset{\mathbf{X}}
+  {\begin{bmatrix}
+  1 & x_{11} & \cdots & x_{1q} \\
+  1 & x_{21} & \cdots & x_{2q} \\
+  \vdots & \vdots & \ddots & \vdots \\
+  1 & x_{n1} & \cdots & x_{nq}
+  \end{bmatrix}
+  } 
+\overset{\mathbf{B}}
+  {\begin{bmatrix}
+  \beta_{01} & \beta_{02} & \cdots & \beta_{0p} \\
+  \beta_{11} & \beta_{12} & \cdots & \beta_{1p} \\
+  \vdots & \vdots & \ddots & \vdots \\
+  \beta_{q1} & \beta_{q2} & \cdots & \beta_{qp}
+  \end{bmatrix}
+  } \\
+& + \quad\quad
+\overset{\mathcal{\boldsymbol{\Large\varepsilon}}}
+  {\begin{bmatrix}
+  \epsilon_{11} & \epsilon_{12} & \cdots & \epsilon_{1p} \\
+  \epsilon_{21} & \epsilon_{22} & \cdots & \epsilon_{2p} \\
+  \vdots & \vdots & \ddots & \vdots \\
+  \epsilon_{n1} & \epsilon_{n2} & \cdots & \epsilon_{np}
+  \end{bmatrix}
+  }
+\end{align*}
 $$
 
-The structure of the model matrix $\mathbf{X}$ is the same as the univariate linear model, and may contain, therefore, 
+The structure of the model matrix $\mathbf{X}$ is exactly the same as the univariate linear model, and may therefore contain, 
 
 * **quantitative** predictors, such as `age`, `income`, years of `education`
 * **transformed predictors** like $\sqrt{\text{age}}$ or $\log{(\text{income})}$
@@ -152,33 +202,147 @@ lm(cbind(y1, y2, y3) ~ x1 + x2 + ..., data=)
 In the presence of possible outliers, robust methods are available for univariate linear models (e.g., `MASS::rlm())`. So too, `heplots::robmlm()` provides robust
 estimation in the multivariate case.
 
+### Example: Dog Food Data
+
+As a toy example to make these ideas concrete, consider the dataset `heplots::dogfood`.
+Here, a dogfood manufacturer wanted to study preference for different dogfood formulas, two of their own ("Old", "New") and two from other manufacturers ("Major", "Alps"). In a between-dog design, 
+each of $n=4$ dogs were presented with a bowl of _one_ formula and the time to `start` eating and `amount` eaten were recorded. Greater preference would be seen in a shorter delay to start eating and a greater amount,
+so these responses are expected to be negatively correlated.
+
+```{r dogfood-data}
+data(dogfood, package = "heplots")
+str(dogfood)
+```
+
+For this data, boxplots for the two responses provide an initial look, shown in @fig-dogfood-boxplot.
+Putting these side-by-side makes it easy to see the inverse relation between the medians on the two
+response variables.
+
+```{r}
+#| label: fig-dogfood-boxplot
+#| code-fold: true
+#| fig-cap: "Boxplots for time to start eating and amount eaten by dogs given one of four dogfood formulas."
+dog_long <- dogfood |>
+  pivot_longer(c(start, amount),
+               names_to = "variable")
+ggplot(data = dog_long, 
+       aes(x=formula, y = value, fill = formula)) +
+  geom_boxplot(alpha = 0.2) +
+  geom_point(size = 2.5) +
+  facet_wrap(~ variable, scales = "free") +
+  theme_bw(base_size = 14) + 
+  theme(legend.position="none")
+```
+
+As suggested above, the multivariate model for testing mean differences due to
+the dogfood `formula` is fit using `lm()` on the matrix $\mathbf{Y}$ constructed
+with `cbind(start, amount)`. 
+
+```{r dogfood-mlm}
+dogfood.mod <- lm(cbind(start, amount) ~ formula, 
+                  data=dogfood) |> 
+  print()
+```
+
+By default, the factor `formula` is represented by three columns in the $\mathbf{X}$
+matrix that correspond to treatment contrasts, which are comparisons of the Old formula (a baseline level) with each of the others. The coefficients, for example `formulaNEW`, are the difference in
+means from those for Old.
+
+Then, the overall multivariate test that means on both variables do not differ
+is carried out using `car::Anova()`.
+```{r dogfood-aov}
+dogfood.aov <- Anova(dogfood.mod) |>
+  print()
+
+```
+
+The details of these analysis steps are explained below.
+
 ### Sums of squares
 
 In univariate response models, statistical tests and model summaries (like $R^2$) are based on the familiar 
 decomposition of the total sum of squares $SS_T$ into regression or hypothesis ($SS_H$) and error ($SS_E$)
 sums of squares. In the multivariate linear model each of these becomes a $p \times p$ matrix $SSP$
 containing sums of squares for the $p$ responses on the diagonal and sums of cross products in the off-diagonal.
-elements. For the MLM this is expressed as
+elements. For the MLM this is expressed as:
 
 \begin{align*}
 \underset{(p\times p)}{\mathbf{SSP}_{T}}
-& = && \mathbf{Y}^{\prime} \mathbf{Y} - n \overline{\mathbf{y}}\,\overline{\mathbf{y}}^{\prime} \\
-& = && \left(\widehat {\mathbf{Y}}^{\prime}\widehat{\mathbf{Y}} - n\overline{\mathbf{y}}\,\overline{\mathbf{y}}^{\prime} \right) + \widehat{\Epsilon}^{\prime}\widehat{\Epsilon} \\
-& = &&  \mathbf{SSP}_{H} + \mathbf{SSP}_{E} \\
-& \equiv && \mathbf{H} + \mathbf{E} \comma
-\end{align*}
+& =  \mathbf{Y}^{\top} \mathbf{Y} - n \overline{\mathbf{y}}\,\overline{\mathbf{y}}^{\top} \\
+& =  \left(\widehat {\mathbf{Y}}^{\top}\widehat{\mathbf{Y}} - n\overline{\mathbf{y}}\,\overline{\mathbf{y}}^{\top} \right) + \widehat{\Epsilon}^{\top}\widehat{\Epsilon} \\
+& =   \mathbf{SSP}_{H} + \mathbf{SSP}_{E} \\
+& \equiv  \mathbf{H} + \mathbf{E} \comma
+\end{align*} {#eq-SSP}
 
-where
-$\overline{\mathbf{y}}$ is the $(p\times 1)$ vector of means for the response variables; $\widehat{\mathbf{Y}} = \mathbf{X}\widehat{\mathbf{B}}$ is the matrix of fitted values; and $\widehat{\Epsilon} = \mat{Y} -\widehat{\mat{Y}}$ is the matrix of residuals. 
+where,
+
+* $\overline{\mathbf{y}}$ is the $(p\times 1)$ vector of means for the response variables;
+* $\widehat{\mathbf{Y}} = \mathbf{X}\widehat{\mathbf{B}}$ is the matrix of fitted values; and
+* $\widehat{\Epsilon} = \mat{Y} -\widehat{\mat{Y}}$ is the matrix of residuals. 
+
 This is the decomposition that we visualize in HE plots,
 where the size and direction of $\mathbf{H}$ and $\mathbf{E}$ can be represented as ellipsoids.
 
+But first, let's find these results for the example. The easy way is to get them from
+the result returned by `car::Anova()`, where the hypothesis $\mathbf{SSP}_{H}$ for
+each term in the model is returned as an element in a named list `SSP` and the error $\mathbf{SSP}_{E}$ is
+returned as the matrix `SSPE`.
 
-The univariate $F$ test statistic, 
+
+```{r dogfood-aov-SSP}
+SSP_H <- dogfood.aov$SSP |> print()
+SSP_E <- dogfood.aov$SSPE |> print()
+```
+
+You can calculate these directly as shown below. `sweep()` is used to subtract the `colMeans()`
+from $\mathbf{Y}$ and $\widehat{\mathbf{Y}}$ and `crossprod()` premultiplies a matrix by
+its' transpose.
+
+```{r dogfood-SSP}
+Y <- dogfood[, c("start", "amount")]
+Ydev <- sweep(Y, 2, colMeans(Y)) |> as.matrix()
+SSP_T <- crossprod(as.matrix(Ydev)) |> print()
+
+fitted <- fitted(dogfood.mod)
+Yfit <- sweep(fitted, 2, colMeans(fitted)) |> as.matrix()
+SSP_H <- crossprod(Yfit) |> print()
+
+residuals <- residuals(dogfood.mod)
+SSP_E <- crossprod(residuals) |> print()
+```
+
+
+The decomposition of the total sum of squares and products in @eq-SSP can be shown as:
+
+$$
+\overset{\mathbf{SSP}_T}
+  {\begin{pmatrix} 
+   35.4 & -59.2 \\ 
+  -59.2 & 975.9 \\ 
+  \end{pmatrix}}
+=
+\overset{\mathbf{SSP}_H}
+  {\begin{pmatrix} 
+    9.69 & -70.94 \\ 
+  -70.94 & 585.69 \\ 
+  \end{pmatrix}}
++
+\overset{\mathbf{SSP}_E}
+  {\begin{pmatrix} 
+   25.8 &  11.8 \\ 
+   11.8 & 390.3 \\ 
+  \end{pmatrix}}
+$$
+
+### How big is $SS_H$ compared to $SS_E$?
+
+In a univariate response model, $SS_H$ and $SS_E$ are both scalar numbers and
+the univariate $F$ test statistic, 
 $$F = \frac{\text{SS}_H/\text{df}_h}{\text{SS}_E/\text{df}_e} = \frac{\mathsf{Var}(H)}{\mathsf{Var}(E)} \comma
 $$
 assesses "how big" $\text{SS}_H$ is, relative to $\text{SS}_E$, the variance accounted for by a hypothesized model or model terms relative to
 error variance.
+
 In the multivariate analog $\H$ and $\E$ are both $p \times p$ matrices, 
 and $\H$ "divided by" $\E$ becomes $\H \E^{-1}$. The answer, "how big" is expressed in terms of the $p$ eigenvalues 
 $\lambda_i, i = 1, 2, \dots p$ of $\H \E^{-1}$. These are the values $\lambda$ for which
@@ -195,6 +359,23 @@ However, when the hypothesized model terms have $\text{df}_h$ degrees of freedom
 so only $s=\min(p, \text{df}_h)$ eigenvalues can be non-zero. For example, a test for
 a hypothesis about a single quantitative predictor $\mathbf{x}$, has $\text{df}_h = 1$ degree of freedom
 and $\rank{H} = 1$; for a factor with $g$ groups, $\text{df}_h = \rank{H} = g-1$.
+
+For the `dogfood` data, we get the following results:
+
+```{r dogfood-eigen}
+HEinv <- SSP_H %*% solve(SSP_E) |> print()
+eig <- eigen(HEinv)
+eig$values
+
+# as proportions
+eig$values / sum(eig$values)
+```
+
+The factor `formula` has four levels and therefore $\text{df}_h = 3$ degrees of freedom.
+But there are only $p = 2$ responses, so there are $s=\min(p, \text{df}_h) = 2$
+eigenvalues (and corresponding eigenvectors). The eigenvalues tell us that 98.5% of
+the hypothesis variance due to `formula` can be accounted for by a single dimension.
+
 
 <!-- This -->
 <!-- has a direct multivariate analog in terms of -->
@@ -219,7 +400,18 @@ $v_{i1} \mathbf{y}_1 + v_{i2} \mathbf{y}_2 + \cdots + v_{ip} \mathbf{y}_p$ which
 univariate $F$ statistic for the $i$-th dimension. We exploit this in canonical discriminant analysis
 and the corresponding canonical HE plots (@sec-candisc).
 
-### Test statistics
+The eigenvectors of $\H \E^{-1}$ for the dogfood model are shown below:
+
+```{r dogfood-eigenvectors}
+rownames(eig$vectors) <- rownames(HEinv)
+colnames(eig$vectors) <- paste("Dim", 1:2)
+eig$vectors
+```
+
+The first column corresponds to the weighted sum $0.12 \times\text{start} - 0.99 \times \text{amount}$,
+which as we saw above accounts for 95.5% of the differences in the group means.
+
+## Multivariate test statistics
 
 In the univariate case, the overall $F$-test of $\mathcal{H}_0: \boldsymbol{\beta} = \mathbf{0}$
 is the uniformly most powerful invariant test when the assumptions are met. There is nothing better.
@@ -359,61 +551,94 @@ L = \mathbf{c}^\mathsf{T} \boldsymbol{\mu} = \sum_i c_i \mu_i \quad\text{such th
 $$
 Two contrasts, $\mathbf{c}_1$ and $\mathbf{c}_2$ are _orthogonal_ if the sum of products
 of their weights is zero, i.e., $\mathbf{c}_1^\mathsf{T} \mathbf{c}_2 = \Sigma c_{1i} \times c_{2i} = 0$.
-When contrasts are placed as columns of a matrix $\mathbf{C}$, they are all mutually orthogonal
-if $\mathbf{C}^\mathsf{T} \mathbf{C}$ is a diagonal matrix.
+When contrasts are placed as columns of a matrix $\mathbf{C}$, they are all _mutually orthogonal_
+if each pair is orthogonal, which means
+$\mathbf{C}^\top \mathbf{C}$ is a diagonal matrix.
 Orthogonal contrasts correspond to statistically independent tests.
 
-For example, with $g=4$ groups representing the combinations of two drugs, A and B
-given at low and high doses, we might want to compare
-(a) the average of the drug A groups vs. the average of drug B;
-(b) low vs. high for drug A;
-(c) low vs. high for drug B. The contrasts that do this are:
+<!-- For example, with $g=4$ groups representing the combinations of two drugs, A and B -->
+<!-- given at low and high doses, we might want to compare -->
+<!-- (a) the average of the drug A groups vs. the average of drug B; -->
+<!-- (b) low vs. high for drug A; -->
+<!-- (c) low vs. high for drug B. The contrasts that do this are: -->
+
+<!-- \begin{align*} -->
+<!-- L_1 & = (\mu_1 + \mu_2) - (\mu_1 + \mu_2) & \rightarrow\: & \mathbf{c}_1 =  -->
+<!--     \begin{pmatrix}  -->
+<!--      1 &  1 & -1 & -1  -->
+<!--     \end{pmatrix} \\ -->
+<!-- L_2 & = \mu_1 - \mu_2                     & \rightarrow\: & \mathbf{c}_2 =  -->
+<!--     \begin{pmatrix}  -->
+<!--      1 &  -1 & 0 & 0  -->
+<!--     \end{pmatrix} \\ -->
+<!-- L_3 & = \mu_3 - \mu_4                     & \rightarrow\: & \mathbf{c}_3 =  -->
+<!--     \begin{pmatrix}  -->
+<!--      0 &  0 & 1 & -1  -->
+<!--     \end{pmatrix} -->
+<!-- \end{align*} -->
+
+**TODO**: Should use $\frac12$ here so contrast L_1 is mean diff
+
+For example, with the $g=4$ groups for the `dogfood` data, the company might want to test
+the following comparisons among the formulas Old, New, Major and Alps:
+(a) Ours vs. Theirs: The average of (Old, New) compared to (Major, Alps);
+(b) Old vs. New;
+(c) Major vs. Alps. The contrasts that do this are:
 
 \begin{align*}
-L_1 & = (\mu_1 + \mu_2) - (\mu_1 + \mu_2) & \rightarrow\: & \mathbf{c}_1 = 
-    \begin{pmatrix} 
-     1 &  1 & -1 & -1 
-    \end{pmatrix} \\
-L_2 & = \mu_1 - \mu_2                     & \rightarrow\: & \mathbf{c}_2 = 
+L_1 & = \textstyle{\frac12} (\mu_O + \mu_N) - 
+        \textstyle{\frac12} (\mu_M + \mu_A) & \rightarrow\: & \mathbf{c}_1 = 
+\textstyle{\frac12} 
+     \begin{pmatrix} 
+      1 &  1 & -1 & -1 
+     \end{pmatrix} \\
+L_2 & = \mu_O - \mu_N                     & \rightarrow\: & \mathbf{c}_2 = 
     \begin{pmatrix} 
      1 &  -1 & 0 & 0 
     \end{pmatrix} \\
-L_3 & = \mu_3 - \mu_4                     & \rightarrow\: & \mathbf{c}_3 = 
+L_3 & = \mu_M - \mu_A                     & \rightarrow\: & \mathbf{c}_3 = 
     \begin{pmatrix} 
      0 &  0 & 1 & -1 
     \end{pmatrix}
 \end{align*}
 
 Note that these correspond to _nested dichotomies_ among the four groups:
-first we compare groups (1 and 2) against groups (3 and 4), then subsequently
-within each of these sets. Such contrasts are always orthogonal, and therefore 
-correspond to statistically independent tests.
+first we compare groups (Old and New) against groups (Major and Alps), then subsequently
+within each of these sets. Such contrasts are always _orthogonal_, and therefore 
+correspond to statistically independent tests. 
 
 In R, contrasts for a factor are specified as columns of matrix, each of which sums to zero.
 For this example, we can set this up by creating each as a vector and joining them
 as columns using `cbind()`:
 
 ```{r contrasts}
-c1 <- c(1,  1, -1, -1)    # A1,A2 vs. B1,B2
-c2 <- c(1, -1,  0,  0)    # A1 vs. A2
-c3 <- c(0,  0,  1, -1)    # B1 vs. B2
+c1 <- c(1,  1, -1, -1)/2    # Old,New vs. Major,Alps
+c2 <- c(1, -1,  0,  0)      # Old vs. New
+c3 <- c(0,  0,  1, -1)      # Major vs. Alps
 C <- cbind(c1,c2,c3) 
-rownames(C) <- outer(LETTERS[1:2], 1:2, paste0) |> 
-  t() |> 
-  c()
+rownames(C) <- levels(dogfood$formula)
+
 C
 
 # show they are mutually orthogonal
 t(C) %*% C
 ```
 
-For a dataset, `data`, with this factor as `group`, you can set up the analyses to use these
-contrasts by assigning the matrix `C` to `contrasts()`:
+For the `dogfood` data, with `formula` as the group factor,
+you can set up the analyses to use these
+contrasts by assigning the matrix `C` to `contrasts()` for that factor in the dataset itself.
+When the contrasts are changed,
+it is necessary to refit the model. The estimated coefficients then become the estimated
+mean differences for the contrasts.
 
-```{r eval=FALSE}
-contrasts(data$group) <- C
+```{r dogfood-contrasts}
+contrasts(dogfood$formula) <- C
+dogfood.mod <- lm(cbind(start, amount) ~ formula, 
+                  data=dogfood)
+coef(dogfood.mod)
 ```
-
+For example, Ours vs. Theirs estimated by `formulac1` takes 0.69 less time to start eating
+and eats 5.44 more on average.
 
 For multivariate tests, when all contrasts are pairwise orthogonal,
 the overall test of a factor with
@@ -423,11 +648,67 @@ that additively decompose the overall hypothesis SSCP matrix,
 
 $$
 \mathbf{H} = \mathbf{H}_1 + \mathbf{H}_2 + \cdots + \mathbf{H}_{\text{df}_h} \comma
-$$
+$$ {#eq-H-contrasts}
+
 exactly as the univariate $\text{SS}_H$ can be decomposed using orthogonal contrasts in an ANOVA.
 
+You can test such contrasts or any other hypotheses involving linear combinations of the coefficients  using `car::linearHypothesis`. Here, `"formulac1"` refers to the contrast `c1` for the difference between Ours and Theirs. Note that because this is a 1 df test, all four test statistics
+yield the same $F$ values.
 
+```{r dogfood-H1}
+hyp <- rownames(coef(dogfood.mod))[-1] |> print()
+H1 <- linearHypothesis(dogfood.mod, hyp[1], title="Ours vs. Theirs") |> 
+  print()
+```
 
+Similarly for the other two contrasts within these each of these two subsets, but I don't print the
+results
+
+```{r dogfood-H2}
+H2 <- linearHypothesis(dogfood.mod, hyp[2], title="Old vs. New")
+H3 <- linearHypothesis(dogfood.mod, hyp[3], title="Alps vs. Major")
+```
+
+Then, we can illustrate @eq-H-contrasts by extracting the 1 df $\mathbf{H}$  matrices (`SSPH`)
+from the results of `linearHypothesis`.
+
+<!-- this doesn't work -->
+```{r dogfood-Eqn, results='asis'}
+options(print.latexMatrix = list(display.labels=FALSE))
+SSP_H1 <- H1$SSPH |> round(digits=2)
+SSP_H2 <- H2$SSPH |> round(digits=2)
+SSP_H3 <- H3$SSPH |> round(digits=2)
+Eqn(latexMatrix(SSP_H),  "=", 
+    latexMatrix(SSP_H1), "+", 
+    latexMatrix(SSP_H2), "+", 
+    latexMatrix(SSP_H3), quarto=TRUE)
+```
+
+$$
+\overset{\mathbf{H}}
+{\begin{pmatrix} 
+  9.7 & -70.9 \\ 
+-70.9 & 585.7 \\ 
+\end{pmatrix}}
+=
+\overset{\mathbf{H}_1}
+{\begin{pmatrix} 
+  7.6 & -59.8 \\ 
+-59.8 & 473.1 \\ 
+\end{pmatrix}}
++
+\overset{\mathbf{H}_2}
+{\begin{pmatrix} 
+ 0.13 &  1.88 \\ 
+ 1.88 & 28.12 \\ 
+\end{pmatrix}}
++
+\overset{\mathbf{H}_3}
+{\begin{pmatrix} 
+  2 & -13 \\ 
+-13 &  84 \\ 
+\end{pmatrix}}
+$$
 
 
 ## ANOVA $\rightarrow$ MANOVA
