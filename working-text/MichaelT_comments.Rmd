@@ -446,6 +446,144 @@ from. I suspect that one could place this chapter before the one on dimension re
 by introducing the central theme as "How to tackle large datasets with multiple response variables". Then, we could lead
 into collinearity as one of the common issues that one faces in large datasets.
 
+# Chapter 8 Nov 13/2024 Edition
+
+> Another collection of graphical methods, generalized ridge trace plots, implemented 
+in the `r pkg("genridge")``
+
+- There's an extra '`'
+
+The Where's Waldo is funny and apt
+
+> In the limiting case, when one $x_i$ is _perfectly_
+predictable from the other $x$s, i.e., $R^2 (x_i | \text{other }x) = 1$, 
+
+- I'd put the extra emphasis right after wards like: "In the limiting case, collinearity becomes particularly problematic  when one $x_i$ is _perfectly_ predictable from the other $x$s, i.e., $R^2 (x_i | \text{other }x) = 1$. This is problematic because:"
+
+- I'm biased towards putting the extra emphasis because it makes it easier to understand that the following list of sentences is a list of problems. 
+
+> A more subtly case is the use _ipsatized_, defined as
+scores that sum to a constant, such as proportions of a total.
+
+- Perhaps, 'subtle'? And 'the use of _ipsatized_ scores, which are defined'
+
+> You might have scores on
+tests of reading, math, spelling and geography. With ipsatized scores, any one of these
+is necessarily 1 $-$ sum of the others. 
+
+- I'm not sure I understand, could you please give a concrete numerical example?
+
+> Beyond this, the least squares solution may have poor numerical accurracy
+
+- accuracy
+
+> For example: predicting strength from the highly correlated height and weight
+
+- Do you mean that it wouldn't make sense to try to separate height and weight from each other because since the two predictors are so highly correlated with each other, you'll be very limited in how many people will have a particularly high height at that weight? Perhaps this could be more simply described with a graph... Even verbally, I'm finding it complicated
+
+```{r, eval = FALSE}
+matrix(c(s[1],    r * prod(s),
+         r * prod(s), s[2]), nrow = 2, ncol = 2)
+```
+
+Perhaps just do `r * s[1] * s[2]` instead of `r * prod(s)`? It's only two elements and I don't think many people use `prod()` frequently enough for them to know what it means... I thought it was a cross product
+
+
+I really like Figure 8.4. I think it'd be nice if we could call it 'x1 $\beta$ coefficient' instead of x1 coefficient. It would've been great if the 1996 LASSO paper had something like this
+
+> Note that when there are terms in the model with more than one degree of freedom, such as education with four levels
+(and hence 3 df) or a polynomial term specified as `poly(age, 3)`, that variable, education or age
+is represented by three separate $x$s in the model matrix, and the standard VIF calculation
+gives results that vary with how those terms are coded in the model. 
+
+- Perhaps there could be more direct emphasis that the VIF could be high simply because of how the terms are coded and not because there is something strictly 'problematic' regarding our data/model. ATM, it's coming across as neutral and it makes GVIF seem more like a neat side-trick than something that one should seriously consider in these cases.
+
+> More generally, the matrix $\mathbf{R}^{-1}_{X} = (r^{ij})$, when standardized to a correlation matrix
+as $-r^{ij} / \sqrt{r^{ii} \; r^{jj}}$ gives the matrix of all partial correlations,
+$r_{ij} \,|\, \text{others}$.
+}
+
+- Dangling `}`
+- I like and appreciate this informational pop-up
+
+- I like the concrete explanation in section 8.2.2. 
+- On my screen of the website, the printout of the `cd` object seems a bit broken. Not sure if this is a rendering issue? The thing is that it appears that the column names for columns 1 and 2 are not quite where they should be?
+
+- Figure 8.5 is great
+
+```{r colldiag2, eval = FALSE}
+print(cd, fuzz = 0.5)
+```
+
+- Figure 8.6: 
+    - I forget if I mentioned this, but I feel like the ggplot versions of the biplots might be a bit off because the magnitude of the horizontal distance between ticks on the x-axis are always very different from the magnitude of the vertical distance between ticks on the y-axis?
+    - The dark blue text and the many black dots are making it a bit hard to read. Perhaps we could make the dots bigger, change shape, change to a color that might mix/blend with the text well? https://mjskay.github.io/ggblend/ ?
+    - Maybe also adjust alpha?
+    
+> If we are only interested in predicting / explaining an outcome, 
+and not the model coefficients or which are "significant", collinearity can be largely ignored.
+
+- I understand what you mean, but in my consulting sessions, I feel that clients don't seem to understand what they're committing to when they want 'pure prediction'. This seems to be compounded by a sense that in the social sciences because causality is largely out of the question, the 'only thing we should care about is prediction' *ever*. Which I don't think is quite the same thing as what statisticians mean by 'if you only care about predictions'.
+- I suspect that these days 'explaining an outcome' also has the connotation of causal inference, imo. Or I feel it really should, especially after Yarkoni & Westfall 2017.
+
+> When some predictors share a common cause, as in GNP or population in time-series or cross-national data,
+
+- Perhaps some context on what 'GNP', 'population in time'series' data are and whatthey have to do with common causes? Do you mean GDP? 
+
+> use Bayesian regression; if multicollinearity prevents a regression coefficient from being estimated precisely, then a prior on that coefficient will help to reduce its posterior variance.
+
+- Perhaps not a comment, but it's interesting to read the Stan documentation about collinearity: https://mc-stan.org/docs/stan-users-guide/problematic-posteriors.html#sampling-difficulties-with-problematic-priors and https://mc-stan.org/docs/stan-users-guide/problematic-posteriors.html#collinearity.section 
+
+> The effect of centering here is remove the linear association in what is a purely quadratic relationship,
+as can be seen by plotting `y1` and `y2` against `x`.
+
+- This section was incredibly illuminating for me, especially the graph. I've heard this repeated so many times, but it was incredibly mystifying why it would be true in my head.
+
+> This is far better, although
+still not great in terms of VIF. But, how much have we improved the situation by the simple
+act of centering the predictors? The square roots of the ratios of VIFs tell us the impact
+of centering on the standard errors.
+
+- Couldn't we use the tableplots and other diagrams from earlier? I don't think it's a waste to have another diagram... Especially over numerical output
+
+- Figure 8.8
+    - Could we have an animation maybe?
+    - The sqrt{t} seems misplaced... maybe?
+    - Maybe differentially have a color gradient to the red ellipses and have a legend to how they differ from each other?
+    - I think it'd be nice to have append a pair of graphs for how the relationship between y ~ \beta_1 or y ~ \beta_2 varies with the path of beta^RR
+    
+> `glmnet::glmnet()` also implements a method for multivariate responses with
+a `family="mgaussian".
+
+- Missing '`' for "mgaussian"
+
+> The dotted lines in @fig-longley-traceplot1
+show choices for the ridge constant by two commonly used criteria to balance bias against precision due to 
+@Hoerl-etal-1975 (`HKB`) and 
+@LawlessWang:1976 (`LW`).
+These values (along with a generalized cross-validation value `GCV`) are also stored in the "ridge" object:
+
+- Perhaps elaborate on the HKB and LW criteria? I've never heard of them?
+
+> For that, we need to consider the variances and covariances of the estimated coefficients. The univariate trace plot is the wrong graphic form for what is essentially a multivariate problem, where we would like to visualize how _both_ coefficients and their variances change with $k$.
+
+- Very interesting
+
+Figure 8.11 is very interesting... I don't think the Stanford people have done this before... Not in their textbooks?
+
+Figure 8.12 is great! Perhaps if there was some way I could better see the numbers and the x and y-axes, that'd be nice. 
+
+- Have you considered using something like the continuous scales from the color space package? 
+- I'd really like a ggplot2 version of these bivariate ridge trace plots
+
+- The axis text sizes in Figure 8.13 are quite small
+
+I'm confused about what is being visualized in Figures 8.15 and 8.16? Are these the... What do they mean? What does each dot refer to? A beta parameter? Which one?
+
+> Beyond these statistical considerations, the methods of this chapter highlight the roles of multivariate thinking and visualization in understanding these phenomena and the methods developed for solving them. …
+
+- Trailing ...
+
 # Chapter 9
 
 ## Section 9.1
@@ -765,3 +903,34 @@ Perhaps an explicit graph of what data ellipses when covariance matrices are all
 > or equivalently, that all coefficients except the intercept in the model \@ref(eq:AH-mod) are zero,
 
 - Broken reference? It's not rendering in the html
+
+# Chapter 11
+
+I suppose I'll come back to this chapter once it's complete.
+
+- What is canonical space?
+- I think a facetted HE plot where the error ellipse is varied in terms of some more tangible $\beta$/$SE$ coefficient may be nice?
+
+# Chapter 12
+
+> How can we visualize differences among group variances and covariance matrices
+
+So by this, do you mean the difference in the variances/covariances of some set of variables between groups? Or... Do we mean something like how the level 1 standard deviation of some level 2 groups are different from each other? I think it could be understood both ways given location-scale multilevel models.
+
+> this topic can also be extended to the multivariate analysis of covaraiance (MANCOVA) setting
+
+- Typo: covariance
+
+$$
+M = (N -g) \ln \;|\; \mathbf{S}_p \;|\; - \sum_{i=1}^g (n_i -1) \ln \;|\; \mathbf{S}_i \;|\; \; ,
+$$ {eq-boxm}
+
+- Dangling {eq-boxm} ?
+
+## 12.4 Box's M test
+
+- I think more clarification regarding whta each of the variables are could help. Is $g$ the number of groups? What is $p$?
+
+> If group sizes are greatly unequal __and__ homogeneity of variance is violated, then the $F$ statistic is too liberal ($p$ values too large) when large sample variances are associated with small group sizes.
+
+- I assume that by liberal you mean that the p-value approaches 0. Perhaps that could be clarified? I find it confusing when I read big or small $p$ values, it seems a bit ambiguous to me...
