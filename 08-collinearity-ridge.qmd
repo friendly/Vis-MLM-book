@@ -25,7 +25,7 @@ and presents some novel visual tools for these purposes using the  `r pkg("VisCo
 
 One class of solutions for collinearity involves _regularization methods_ such as ridge regression. 
 Another collection of graphical methods, generalized ridge trace plots, implemented 
-in the `r pkg("genridge")`` package, sheds further light on what is accomplished by this technique.
+in the `r pkg("genridge")` package, sheds further light on what is accomplished by this technique.
 More generally, the methods of this chapter are further examples of how data and confidence
 ellipsoids can be used to visualize bias **and** precision of regression estimates.
 
@@ -109,8 +109,8 @@ The sampling variances and covariances of the estimated coefficients is
 $\text{Var} (\widehat{\mathbf{b}}) = \sigma_\epsilon^2 \times (\mathbf{X}^\mathsf{T} \mathbf{X})^{-1}$ and $\sigma_\epsilon^2$ is the variance of the residuals $\mathbf{\epsilon}$, estimated by the
 mean squared error (MSE).
 
-In the limiting case, when one $x_i$ is _perfectly_
-predictable from the other $x$s, i.e., $R^2 (x_i | \text{other }x) = 1$, 
+
+In the limiting case, collinearity becomes particularly problematic  when one $x_i$ is _perfectly_ predictable from the other $x$s, i.e., $R^2 (x_i | \text{other }x) = 1$. This is problematic because:
 
 * there is no _unique_ solution for the regression coefficients 
 $\mathbf{b} = (\mathbf{X}^\mathsf{T} \mathbf{X})^{-1} \mathbf{X} \mathbf{y}$;
@@ -121,10 +121,13 @@ This extreme case reflects a situation when one or more predictors are effective
 when you include two variables $x$ and $y$ and their sum $z = x + y$ in a model.
 For instance, a dataset may include variables for income, expenses, and savings. But
 income is the sum of expenses and savings, so not all three should be used as predictors.
-A more subtly case is the use _ipsatized_, defined as
+
+A more subtle case is the use _ipsatized_, defined as
 scores that sum to a constant, such as proportions of a total. You might have scores on
 tests of reading, math, spelling and geography. With ipsatized scores, any one of these
-is necessarily 1 $-$ sum of the others. 
+is necessarily 1 $-$ sum of the others, i.e., if reading is 0.5, math and geography are
+both 0.15, then geography must be 0.2. Once thre of the four scores are known, the last
+provides no new information.
 
 More generally, collinearity refers to the case when there are very high
 **multiple correlations** among the predictors, such as $R^2 (x_i | \text{other }x) \ge 0.9$. 
@@ -141,7 +144,7 @@ so a coefficient that would significant if the predictors were uncorrelated beco
 when collinearity is present.
 * Thus you may find a situation where an overall model is highly significant (large $F$-statistic), while
 no (or few) of the individual predictors are. This is a puzzlement!
-* Beyond this, the least squares solution may have poor numerical accurracy [@Longley:1967], because
+* Beyond this, the least squares solution may have poor numerical accuracy [@Longley:1967], because
 the solution depends inversely on the determinant $|\,\mathbf{X}^\mathsf{T} \mathbf{X}\,|$, which approaches 0 as multiple correlations increase.
 * There is an interpretive problem as well. Recall that the coefficients $\hat{b}$ are _partial coefficients_, meaning that they estimate
 change $\Delta y$ in $y$ when $x$ changes by one unit $\Delta x$, but holding **all other variables
@@ -216,8 +219,8 @@ beta <- c(3, 3)          # true coefficients
 # Specify a covariance matrix, with standard deviations
 #   s[1], s[2] and correlation r
 Cov <- function(s, r){
-  matrix(c(s[1],    r * prod(s),
-         r * prod(s), s[2]), nrow = 2, ncol = 2)
+  matrix(c(s[1],        r * s[1]*s[2],
+         r * s[1]*s[2], s[2]), nrow = 2, ncol = 2)
 }
 
 # Generate a dataframe of X, y for each rho
@@ -270,8 +273,8 @@ do_plots <- function(XY, mod, r) {
   confidenceEllipse(mod,
                     col = "red",
                     fill = TRUE, fill.alpha = 0.1,
-                    xlab = "x1 coefficient",
-                    ylab = "x2 coefficient",
+                    xlab = expression(paste("x1 coefficient, ", beta[1])),
+                    ylab = expression(paste("x2 coefficient, ", beta[2])),
                     xlim = c(-5, 10),
                     ylim = c(-5, 10),
                     asp = 1)
@@ -360,7 +363,7 @@ of such terms, relative to what would be obtained with uncorrelated data. Visual
 by comparing the areas of the ellipses in the bottom row of @fig-collin-data-beta.
 Because the magnitude of the GVIF increases with the number of degrees of freedom for the set of parameters, 
 Fox & Monette suggest the analog $\sqrt{\text{GVIF}^{1/2 \text{df}}}$ as the measure of impact on standard
-errors.
+errors. This is what `car::vif()` calculates for a factor or other term with more than 1 df.
 
 **Example**: This example uses the `cars` dataset in the `VisCollin` package
 containing various measures of size and performance on 406 models of automobiles from 1982. Interest is focused on predicting gas mileage, `mpg`.
@@ -375,10 +378,12 @@ accelerate from 0 -- 60 mph and model year (1970--1982). Perhaps surprisingly, o
 significantly predict gas mileage. What's going on here?
 
 ```{r cars-mod}
-cars.mod <- lm (mpg ~ cylinder + engine + horse + weight + accel + year, 
+cars.mod <- lm (mpg ~ cylinder + engine + horse + 
+                      weight + accel + year, 
                 data=cars)
 Anova(cars.mod)
 ```
+
 
 We check the variance inflation factors, using `car::vif()`. We see that most predictors have very high
 VIFs, indicating moderately severe multicollinearity.
@@ -390,9 +395,19 @@ sqrt(vif(cars.mod))
 ```
 
 According to $\sqrt{\text{VIF}}$, the standard error of `cylinder` has been
-multiplied by 3.26 and it's $t$-value divided by this number,
+multiplied by $\sqrt{10.63} = 3.26$ and it's $t$-value is divided by this number,
 compared with the case when all predictors are
 uncorrelated. `engine`, `horse` and `weight` suffer a similar fate.
+
+If we also included the factor `origin` in the models, we would get the generalized GVIF:
+
+```{r cars-mod2}
+cars.mod2 <- lm (mpg ~ cylinder + engine + horse + 
+                       weight + accel + year + origin 
+                 data=cars)
+vif(cars.mod2)
+```
+
 
 ::: {.callout-tip title="Connection with inverse of correlation matrix"}
 

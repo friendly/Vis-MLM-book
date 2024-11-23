@@ -25,6 +25,11 @@ cars.mod <- lm (mpg ~ cylinder + engine + horse + weight + accel + year,
                 data=cars)
 vif(cars.mod)
 
+cars.mod2 <- lm (mpg ~ cylinder + engine + horse + weight + accel + year + origin,
+                data=cars)
+vif(cars.mod2)
+
+
 # SAS: / collin option
 #colldiag(cars.mod)
 
@@ -119,5 +124,22 @@ ggp + geom_text_repel(data = scores[dsq > qchisq(0.95, df = 6),],
                     label = name),
                 vjust = -0.5,
                 size = 5)
+
+
+library(ggbiplot)
+
+cars.pca <- reflect(cars.pca.save, columns = 5:6)
+# why no ellipse?
+ggbiplot(cars.pca,
+         choices = 6:5,
+         obs.scale = 1, var.scale = 1,
+         point.size = 1,
+         var.factor =10,
+         varname.size = 4,
+         varname.color = "blue",
+         ellipse = TRUE,
+         ellipse.prob = 0.5, ellipse.alpha = 0.1,
+         axis.title = "Dim") +
+  theme_bw(base_size = 14)
 
 

@@ -57,8 +57,8 @@ do_plots <- function(XY, mod, r) {
   confidenceEllipse(mod,
                     col = "red",
                     fill = TRUE, fill.alpha = 0.1,
-                    xlab = "x1 coefficient",
-                    ylab = "x2 coefficient",
+                    xlab = expression(paste("x1 coefficient, ", beta[1])),
+                    ylab = expression(paste("x2 coefficient, ", beta[2])),
                     xlim = c(-5, 10),
                     ylim = c(-5, 10),
                     asp = 1)
