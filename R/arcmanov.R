@@ -60,4 +60,7 @@ for (i in 1:ng) {
 }
 text(means$y1, means$y2, 1:ng, pos = 3)
 
+library(purrr)
+map_depth(Grps, 2, ~ mean(.x)) %>% unlist
+
 
