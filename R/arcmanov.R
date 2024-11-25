@@ -1,16 +1,18 @@
 library(heplots)
 library(dplyr)
+library(ellipse)
+library(purr)
 
 means <- tibble::tribble(
   ~group, ~y1, ~y2,
-  1,  8,  10,
-  2, 10,   5,
-  3, 12,  14,
-  4, 17,  20,
-  5, 18,  11,
-  6, 20,  16,
-  7, 25,  20,
-  8, 27,  26,
+  1,  5,   7,
+  2, 13,   6,
+  3, 14,  16,
+  4, 17,  28,
+  5, 21,  13,
+  6, 25,  25,
+  7, 30,  23,
+  8, 36,  34,
 )
 ng <- nrow(means)
 
@@ -41,3 +43,21 @@ for (i in 1:ng) {
                              means$y1[i], means$y2[i],
                              means$s1[i], means$s2[i], means$r[i])
 }
+
+library(ellipse)
+
+plot(y2 ~ y1, data=means,
+     pch = 16,
+     xlim = c(0, 40),
+     ylim = c(0, 40))
+
+for (i in 1:ng) {
+  g <- Grps[[i]]$group
+  mu <- Grps[[i]]$mu
+  S <- Grps[[i]]$Sigma
+  polygon(ellipse(S, centre=mu, level=0.68),
+        col = scales::alpha("red", .1), lwd=1.5)
+}
+text(means$y1, means$y2, 1:ng, pos = 3)
+
+
