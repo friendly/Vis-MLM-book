@@ -38,7 +38,7 @@ plot(amount ~ start, data=dogfood,
      col = col[dogfood$formula],
      cex=2, cex.lab = 1.5,
      xlim = c(0,5),
-     ylim = c(75, 100))
+     ylim = c(70, 110))
 
 # (b) data ellipses
 covEllipses(cbind(start, amount) ~ formula, data=dogfood,
@@ -48,11 +48,11 @@ covEllipses(cbind(start, amount) ~ formula, data=dogfood,
             cex.lab = 1.5,
             cex = 1.5,
             xlim = c(0,5),
-            ylim = c(75, 100))
+            ylim = c(70, 110))
 points(amount ~ start, data=dogfood, 
        pch = (15:19)[dogfood$formula], 
        col = col[dogfood$formula],
-       cex=2)
+       cex=1.5)
 
 # (c) HE plot
 heplot(dogfood.mod, fill = TRUE, 
@@ -60,7 +60,7 @@ heplot(dogfood.mod, fill = TRUE,
        cex.lab = 1.5,
        cex = 1.5,
        xlim = c(0,5),
-       ylim = c(75, 100))
+       ylim = c(70, 110))
 
 #'
 # display contrasts in the heplot 
@@ -77,6 +77,7 @@ dogfood.can <- candisc(dogfood.mod, data=dogfood)
 heplot(dogfood.can, 
        fill = TRUE, fill.alpha = 0.1, 
        lwd = 2, var.lwd = 2, var.cex = 1.5,
+       scale = 2,
        cex = 1.25,
        cex.lab = 1.5)
 par(op)
