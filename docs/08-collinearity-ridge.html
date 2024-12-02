@@ -1077,7 +1077,7 @@ Figure&nbsp;8.8: Geometric interpretation of ridge regression, using elliptical 
 </div>
 <p>These data were constructed to illustrate numerical problems in least squares software at the time, and they are (purposely) perverse, in that:</p>
 <ul>
-<li>Each variable is a time series so that there is clearly a lack of independence among predictors.</li>
+<li>Each variable is a time series so that there is clearly a lack of independence among predictors. <code>Year</code> is at least implicitly correlated with most of the others.</li>
 <li>Worse, there is also some structural collinearity among the variables <code>GNP</code>, <code>Year</code>, <code>GNP.deflator</code>, and <code>Population</code>; for example, <code>GNP.deflator</code> is a multiplicative factor to account for inflation.</li>
 </ul>
 <p>We fit the regression model, and sure enough, there are some extremely large VIFs. The largest, for <code>GNP</code> represents a multiplier of <span class="math inline">\(\sqrt{1788.5} = 42.3\)</span> on the standard errors.</p>
@@ -1093,26 +1093,28 @@ Figure&nbsp;8.8: Geometric interpretation of ridge regression, using elliptical 
 </div>
 <p>Shrinkage values can be specified using <span class="math inline">\(k\)</span> (where <span class="math inline">\(k = 0\)</span> corresponds to OLS) or the equivalent degrees of freedom $ _k$ (<a href="#eq-dfk" class="quarto-xref">Equation&nbsp;<span>8.5</span></a>). (The function uses the notation <span class="math inline">\(\lambda \equiv k\)</span>, so the argument is <code>lambda</code>.) Among other quantities, <code><a href="https://friendly.github.io/genridge/reference/ridge.html">ridge()</a></code> returns a matrix containing the coefficients for each predictor for each shrinkage value and other quantities.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb23" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">lambda</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.005</span>, <span class="fl">0.01</span>, <span class="fl">0.02</span>, <span class="fl">0.04</span>, <span class="fl">0.08</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb23" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">lambda</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.002</span>, <span class="fl">0.005</span>, <span class="fl">0.01</span>, <span class="fl">0.02</span>, <span class="fl">0.04</span>, <span class="fl">0.08</span><span class="op">)</span></span>
 <span><span class="va">lridge</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://friendly.github.io/genridge/reference/ridge.html">ridge</a></span><span class="op">(</span><span class="va">Employed</span> <span class="op">~</span> <span class="va">GNP</span> <span class="op">+</span> <span class="va">Unemployed</span> <span class="op">+</span> <span class="va">Armed.Forces</span> <span class="op">+</span> </span>
 <span>                           <span class="va">Population</span> <span class="op">+</span> <span class="va">Year</span> <span class="op">+</span> <span class="va">GNP.deflator</span>, </span>
 <span>    data<span class="op">=</span><span class="va">longley</span>, lambda<span class="op">=</span><span class="va">lambda</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">lridge</span>, digits <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">lridge</span>, digits <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Ridge Coefficients:</span></span>
-<span><span class="co">#&gt;        GNP      Unemployed  Armed.Forces  Population  Year   </span></span>
-<span><span class="co">#&gt; 0.000  -3.4472  -1.8279     -0.6962       -0.3442      8.4320</span></span>
-<span><span class="co">#&gt; 0.005  -1.0425  -1.4914     -0.6235       -0.9356      6.5665</span></span>
-<span><span class="co">#&gt; 0.010  -0.1798  -1.3610     -0.5881       -1.0032      5.6563</span></span>
-<span><span class="co">#&gt; 0.020   0.4995  -1.2451     -0.5476       -0.8676      4.6261</span></span>
-<span><span class="co">#&gt; 0.040   0.9059  -1.1552     -0.5039       -0.5235      3.5765</span></span>
-<span><span class="co">#&gt; 0.080   1.0907  -1.0864     -0.4583       -0.0860      2.6416</span></span>
+<span><span class="co">#&gt;        GNP     Unemployed  Armed.Forces  Population  Year  </span></span>
+<span><span class="co">#&gt; 0.000  -3.447  -1.828      -0.696        -0.344       8.432</span></span>
+<span><span class="co">#&gt; 0.002  -2.114  -1.644      -0.658        -0.713       7.466</span></span>
+<span><span class="co">#&gt; 0.005  -1.042  -1.491      -0.623        -0.936       6.567</span></span>
+<span><span class="co">#&gt; 0.010  -0.180  -1.361      -0.588        -1.003       5.656</span></span>
+<span><span class="co">#&gt; 0.020   0.499  -1.245      -0.548        -0.868       4.626</span></span>
+<span><span class="co">#&gt; 0.040   0.906  -1.155      -0.504        -0.523       3.577</span></span>
+<span><span class="co">#&gt; 0.080   1.091  -1.086      -0.458        -0.086       2.642</span></span>
 <span><span class="co">#&gt;        GNP.deflator</span></span>
-<span><span class="co">#&gt; 0.000   0.1574     </span></span>
-<span><span class="co">#&gt; 0.005  -0.0418     </span></span>
-<span><span class="co">#&gt; 0.010  -0.0261     </span></span>
-<span><span class="co">#&gt; 0.020   0.0977     </span></span>
-<span><span class="co">#&gt; 0.040   0.3212     </span></span>
-<span><span class="co">#&gt; 0.080   0.5703</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; 0.000   0.157      </span></span>
+<span><span class="co">#&gt; 0.002   0.022      </span></span>
+<span><span class="co">#&gt; 0.005  -0.042      </span></span>
+<span><span class="co">#&gt; 0.010  -0.026      </span></span>
+<span><span class="co">#&gt; 0.020   0.098      </span></span>
+<span><span class="co">#&gt; 0.040   0.321      </span></span>
+<span><span class="co">#&gt; 0.080   0.570</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>The standard univariate plot, given by <code><a href="https://friendly.github.io/genridge/reference/traceplot.html">traceplot()</a></code>, simply plots the estimated coefficients for each predictor against the shrinkage factor <span class="math inline">\(k\)</span>.</p>
 <div class="cell" data-layout-align="center">
@@ -1126,7 +1128,7 @@ Figure&nbsp;8.8: Geometric interpretation of ridge regression, using elliptical 
 <img src="figs/ch08/fig-longley-traceplot1-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="2100">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-longley-traceplot1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;8.9: Univariate ridge trace plot for the coefficients of predictors of Employment in Longley’s data via ridge regression, with ridge constants <span class="math inline">\(k = (0, 0.005, 0.01, 0.02, 0.04, 0.08\)</span>). The dotted lines show optimal values for shrinkage by two criteria (HKB, LW).
+Figure&nbsp;8.9: Univariate ridge trace plot for the coefficients of predictors of Employment in Longley’s data via ridge regression, with ridge constants k = (0, 0.002, 0.005, 0.01, 0.02, 0.04, 0.08). The dotted lines show optimal values for shrinkage by two criteria (HKB, LW).
 </figcaption></figure>
 </div>
 </div>
@@ -1136,7 +1138,7 @@ Figure&nbsp;8.9: Univariate ridge trace plot for the coefficients of predictors 
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb25" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">lridge</span><span class="op">$</span><span class="va">criteria</span></span>
 <span><span class="co">#&gt;    kHKB     kLW    kGCV </span></span>
-<span><span class="co">#&gt; 0.00428 0.03230 0.00500</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; 0.00428 0.03230 0.00200</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <!-- These values seem rather small, but note that the coefficients for Year and GNP are shrunk considerably. -->
 <p>The shrinkage constant <span class="math inline">\(k\)</span> doesn’t have much intrinsic meaning, so it is often easier to interpret the plot when coefficients are plotted against the equivalent degrees of freedom, <span class="math inline">\(\text{df}_k\)</span>. OLS corresponds to <span class="math inline">\(\text{df}_k = 6\)</span> degrees of freedom in the space of six parameters, and the effect of shrinkage is to decrease the degrees of freedom, as if estimating fewer parameters. This more natural scale also makes the changes in coefficient with shrinkage more nearly linear.</p>
@@ -1162,9 +1164,9 @@ Figure&nbsp;8.10: Univariate ridge trace plot using equivalent degrees of freedo
 <p>The bivariate analog of the trace plot suggested by <span class="citation" data-cites="Friendly:genridge:2013">Friendly (<a href="95-references.html#ref-Friendly:genridge:2013" role="doc-biblioref">2013</a>)</span> plots bivariate confidence ellipses for <em>pairs</em> of coefficients. Their centers, <span class="math inline">\((\widehat{\beta}_i, \widehat{\beta}_j)\)</span> compared to the OLS values show the bias induced for each coefficient, and also how the change in the ridge estimate for one parameter is related to changes for other parameters.</p>
 <p>The size and shapes of the covariance ellipses show directly the effect on precision of the estimates as a function of the ridge tuning constant. and their size and shape indicate sampling variance, <span class="math inline">\(\widehat{\text{Var}} (\mathbf{\widehat{\beta}}_{ij})\)</span>. Here, I plot those for GNP against four of the other predictors. The <code><a href="https://rdrr.io/r/graphics/plot.default.html">plot()</a></code> method for <code>"ridge"</code> objects plots these ellipses for a pair of variables.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb27" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">clr</span> <span class="op">&lt;-</span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"black"</span>, <span class="st">"red"</span>, <span class="st">"darkgreen"</span>,<span class="st">"blue"</span>, <span class="st">"cyan4"</span>, <span class="st">"magenta"</span><span class="op">)</span></span>
-<span><span class="va">pch</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">15</span><span class="op">:</span><span class="fl">18</span>, <span class="fl">7</span>, <span class="fl">9</span><span class="op">)</span></span>
-<span><span class="va">lambdaf</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/expression.html">expression</a></span><span class="op">(</span><span class="op">~</span><span class="fu">widehat</span><span class="op">(</span><span class="va">beta</span><span class="op">)</span><span class="op">^</span><span class="va">OLS</span><span class="op">)</span>, <span class="st">".005"</span>, <span class="st">".01"</span>, <span class="st">".02"</span>, <span class="st">".04"</span>, <span class="st">".08"</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb27" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">clr</span> <span class="op">&lt;-</span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"black"</span>, <span class="st">"red"</span>, <span class="st">"brown"</span>, <span class="st">"darkgreen"</span>,<span class="st">"blue"</span>, <span class="st">"cyan4"</span>, <span class="st">"magenta"</span><span class="op">)</span></span>
+<span><span class="va">pch</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">15</span><span class="op">:</span><span class="fl">18</span>, <span class="fl">7</span>, <span class="fl">9</span>, <span class="fl">12</span><span class="op">)</span></span>
+<span><span class="va">lambdaf</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/expression.html">expression</a></span><span class="op">(</span><span class="op">~</span><span class="fu">widehat</span><span class="op">(</span><span class="va">beta</span><span class="op">)</span><span class="op">^</span><span class="va">OLS</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/character.html">as.character</a></span><span class="op">(</span><span class="va">lambda</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">2</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">lridge</span>, variables<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="va">i</span><span class="op">)</span>, </span>
@@ -1180,7 +1182,7 @@ Figure&nbsp;8.10: Univariate ridge trace plot using equivalent degrees of freedo
 <img src="figs/ch08/fig-longley-plot-ridge-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-longley-plot-ridge-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;8.11: Bivariate ridge trace plots for the coefficients of four predictors against the coefficient for GNP in Longley’s data, with λ = 0, 0.005, 0.01, 0.02, 0.04, 0.08. In most cases, the coefficients are driven toward zero, but the bivariate plot also makes clear the reduction in variance, as well as the bivariate path of shrinkage.
+Figure&nbsp;8.11: Bivariate ridge trace plots for the coefficients of four predictors against the coefficient for GNP in Longley’s data, with k = 0, 0.002, 0.005, 0.01, 0.02, 0.04, 0.08. In most cases, the coefficients are driven toward zero, but the bivariate plot also makes clear the reduction in variance, as well as the bivariate path of shrinkage.
 </figcaption></figure>
 </div>
 </div>
@@ -1206,13 +1208,14 @@ Figure&nbsp;8.12: Scatterplot matrix of bivariate ridge trace plots. Each panel 
 <p>The function <code><a href="https://friendly.github.io/genridge/reference/precision.html">precision()</a></code> calculates a number of measures of the effect of shrinkage of the coefficients in relation to the “size” of the covariance matrix <span class="math inline">\(\boldsymbol{\mathcal{V}}_k \equiv \widehat{\mathsf{Var}} (\widehat{\boldsymbol{\beta}}^{\mathrm{RR}}_k)\)</span>. Larger shrinkage <span class="math inline">\(k\)</span> should lead to a smaller ellipsoid for <span class="math inline">\(\boldsymbol{\mathcal{V}}_k\)</span>, indicating increased precision.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb29" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">pdat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://friendly.github.io/genridge/reference/precision.html">precision</a></span><span class="op">(</span><span class="va">lridge</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt;       lambda   df   det  trace max.eig norm.beta</span></span>
-<span><span class="co">#&gt; 0.000  0.000 6.00 -12.9 18.119  15.419     1.000</span></span>
-<span><span class="co">#&gt; 0.005  0.005 5.42 -14.4  6.821   4.606     0.741</span></span>
-<span><span class="co">#&gt; 0.010  0.010 5.14 -15.4  4.042   2.181     0.637</span></span>
-<span><span class="co">#&gt; 0.020  0.020 4.82 -16.8  2.218   1.025     0.528</span></span>
-<span><span class="co">#&gt; 0.040  0.040 4.48 -18.7  1.165   0.581     0.423</span></span>
-<span><span class="co">#&gt; 0.080  0.080 4.13 -21.1  0.587   0.260     0.337</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt;       lambda   df   det  trace max.eig norm.beta norm.diff</span></span>
+<span><span class="co">#&gt; 0.000  0.000 6.00 -12.9 18.119  15.419     1.000     0.000</span></span>
+<span><span class="co">#&gt; 0.002  0.002 5.70 -13.6 11.179   8.693     0.857     0.695</span></span>
+<span><span class="co">#&gt; 0.005  0.005 5.42 -14.4  6.821   4.606     0.741     1.276</span></span>
+<span><span class="co">#&gt; 0.010  0.010 5.14 -15.4  4.042   2.181     0.637     1.783</span></span>
+<span><span class="co">#&gt; 0.020  0.020 4.82 -16.8  2.218   1.025     0.528     2.262</span></span>
+<span><span class="co">#&gt; 0.040  0.040 4.48 -18.7  1.165   0.581     0.423     2.679</span></span>
+<span><span class="co">#&gt; 0.080  0.080 4.13 -21.1  0.587   0.260     0.337     3.027</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Here,</p>
 <ul>
@@ -1269,6 +1272,7 @@ Figure&nbsp;8.13: The tradeoff between bias and precision. Bias increases as we 
 <span><span class="co">#&gt; Ridge Coefficients:</span></span>
 <span><span class="co">#&gt;        dim1     dim2     dim3     dim4     dim5     dim6   </span></span>
 <span><span class="co">#&gt; 0.000  1.51541  0.37939  1.80131  0.34595  5.97391  6.74225</span></span>
+<span><span class="co">#&gt; 0.002  1.51537  0.37935  1.80021  0.34308  5.69497  5.06243</span></span>
 <span><span class="co">#&gt; 0.005  1.51531  0.37928  1.79855  0.33886  5.32221  3.68519</span></span>
 <span><span class="co">#&gt; 0.010  1.51521  0.37918  1.79579  0.33205  4.79871  2.53553</span></span>
 <span><span class="co">#&gt; 0.020  1.51500  0.37898  1.79031  0.31922  4.00988  1.56135</span></span>

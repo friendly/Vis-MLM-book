@@ -1013,7 +1013,7 @@ str(longley)
 
 These data were constructed to illustrate numerical problems in least squares software at the time, and they are (purposely) perverse, in that:
 
-* Each variable is a time series so that there is clearly a lack of independence among predictors.
+* Each variable is a time series so that there is clearly a lack of independence among predictors. `Year` is at least implicitly correlated with most of the others.
 * Worse, there is also some structural collinearity among the variables `GNP`, `Year`, `GNP.deflator`, and `Population`; for example, `GNP.deflator` is a multiplicative factor to account for inflation.
 
 We fit the regression model, and sure enough, there are some extremely large VIFs. The largest, for `GNP` represents a multiplier of $\sqrt{1788.5} = 42.3$ on the standard errors.
@@ -1029,11 +1029,11 @@ Among other quantities, `ridge()` returns a matrix containing the coefficients f
 and other quantities.
 
 ```{r longley2}
-lambda <- c(0, 0.005, 0.01, 0.02, 0.04, 0.08)
+lambda <- c(0, 0.002, 0.005, 0.01, 0.02, 0.04, 0.08)
 lridge <- ridge(Employed ~ GNP + Unemployed + Armed.Forces + 
                            Population + Year + GNP.deflator, 
 		data=longley, lambda=lambda)
-print(lridge, digits = 3)
+print(lridge, digits = 2)
 ```
 
 The standard univariate plot, given by
@@ -1041,7 +1041,7 @@ The standard univariate plot, given by
 
 ```{r echo=-1}
 #| label: fig-longley-traceplot1
-#| fig-cap: "Univariate ridge trace plot for the coefficients of predictors of Employment in Longley’s data via ridge regression, with ridge constants $k = (0, 0.005, 0.01, 0.02, 0.04, 0.08$). The dotted lines show optimal values for shrinkage by two criteria (HKB, LW)."
+#| fig-cap: "Univariate ridge trace plot for the coefficients of predictors of Employment in Longley’s data via ridge regression, with ridge constants k = (0, 0.002, 0.005, 0.01, 0.02, 0.04, 0.08). The dotted lines show optimal values for shrinkage by two criteria (HKB, LW)."
 par(mar=c(4, 4, 1, 1)+ 0.1)
 traceplot(lridge, 
           X = "lambda",
@@ -1096,11 +1096,11 @@ and their size and shape indicate sampling variance, $\widehat{\text{Var}} (\mat
 #| fig-show: "hold"
 #| fig-width: 9
 #| fig-height: 8
-#| fig-cap: "Bivariate ridge trace plots for the coefficients of four predictors against the coefficient for GNP in Longley’s data, with λ = 0, 0.005, 0.01, 0.02, 0.04, 0.08. In most cases, the coefficients are driven toward zero, but the bivariate plot also makes clear the reduction in variance, as well as the bivariate path of shrinkage."
+#| fig-cap: "Bivariate ridge trace plots for the coefficients of four predictors against the coefficient for GNP in Longley’s data, with k = 0, 0.002, 0.005, 0.01, 0.02, 0.04, 0.08. In most cases, the coefficients are driven toward zero, but the bivariate plot also makes clear the reduction in variance, as well as the bivariate path of shrinkage."
 op <- par(mfrow=c(2,2), mar=c(4, 4, 1, 1)+ 0.1)
-clr <-  c("black", "red", "darkgreen","blue", "cyan4", "magenta")
-pch <- c(15:18, 7, 9)
-lambdaf <- c(expression(~widehat(beta)^OLS), ".005", ".01", ".02", ".04", ".08")
+clr <-  c("black", "red", "brown", "darkgreen","blue", "cyan4", "magenta")
+pch <- c(15:18, 7, 9, 12)
+lambdaf <- c(expression(~widehat(beta)^OLS), as.character(lambda[-1]))
 
 for (i in 2:5) {
 	plot(lridge, variables=c(1,i), 
@@ -1137,9 +1137,8 @@ to a smaller ellipsoid for $\boldsymbol{\mathcal{V}}_k$, indicating increased pr
 pdat <- precision(lridge) |> print()
 ```
 
-Here,
+Here, the first three terms described below are (inverse) measures of precision; the last two quantify shrinkage: 
 
-* `norm.beta` $= \left \Vert \boldsymbol{\beta}\right \Vert / \max{\left \Vert \boldsymbol{\beta}\right \Vert}$ is a summary measure of shrinkage, the normalized root mean square of the estimated coefficients. It starts at 1.0 for $k=0$ and decreases with the penalty for large coefficients.
 
 * `det` $=\log{| \mathcal{V}_k |}$ is an overall measure of variance of the coefficients. It is the (linearized) volume of the covariance ellipsoid and corresponds conceptually to Wilks' Lambda criterion. 
 
@@ -1147,6 +1146,11 @@ Here,
 
 * `max.eig` is the largest eigenvalue measure of size, an analog of Roy's maximum root test.
 
+* `norm.beta` $= \left \Vert \boldsymbol{\beta}\right \Vert / \max{\left \Vert \boldsymbol{\beta}\right \Vert}$ is a summary measure of shrinkage, the normalized root mean square of the estimated coefficients. It starts at 1.0 for $k=0$ and decreases with the penalty for large coefficients.
+
+* `diff.beta` is the root mean square of the difference from the OLS estimate
+$\lVert \mathbf{\beta}_{\text{OLS}} - \mathbf{\beta}_k \rVert$. 
+This measure is inversely related to `norm.beta`.
 
 Plotting shrinkage against a measure of variance gives a direct view of the tradeoff
 between bias and precision. Here I plot `norm.beta` against `det`, and join the
