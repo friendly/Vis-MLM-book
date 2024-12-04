@@ -87,3 +87,5 @@ heplot(dogfood.can,
 text.usr(0.02, 0.95, "(d) CD-HE plot", pos = 4, cex = 1.3)
 
 par(op)
+
+
