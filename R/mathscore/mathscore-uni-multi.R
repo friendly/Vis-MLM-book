@@ -25,7 +25,8 @@ tidy(math.mod) |>
   filter(term != "(Intercept)") |>
   select(-term) |>
   rename(Mean_diff = estimate,
-         t = statistic)
+         t = statistic) |>
+  mutate(signif = noquote(gtools::stars.pval(p.value)))
   
 
 

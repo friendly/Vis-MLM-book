@@ -1,10 +1,8 @@
-data(mathscore, package="heplots")
-
 library(car)
 library(heplots)
 library(dplyr)
 
-setwd("C:/Users/friendly/Dropbox/Documents/SCS/VisMLM-course/fig/mathscore")
+data(mathscore, package="heplots")
 
 math.mod <- lm(cbind(BM, WP) ~ group, data=mathscore)
 Anova(math.mod)

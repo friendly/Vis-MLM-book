@@ -42,6 +42,7 @@ library(ggplot2)
 library(dplyr)
 library(tidyr)
 library(ggbiplot)
+library(broom)
 ```
 
 
@@ -169,7 +170,7 @@ str(mathscore)
 ```
 
 You can carry out the test that the means for both variables are jointly equal across groups using either
-`Hotelling::hotelling.test()` [@R-Hotelling] or `car::Anova()`,
+`Hotelling::hotelling.test()` [@R-Hotelling] or `car::Anova()`, but the latter is more generally useful
 
 ```{r mathscore1}
 hotelling.test(cbind(BM, WP) ~ group, data=mathscore) |> print()
@@ -189,8 +190,23 @@ From this, we might conclude that the two groups do _not_ differ significantly o
 but strongly differ on Word problems. But the two univariate tests do not take the correlation
 among the mean differences into account.
 
+If you want to just extract the $t$-tests, here's a handy trick using `broom::tidy.mlm()`,
+which summarizes the test statistics for each response and each term in a MLM. The mean difference shown below is that for group 2 - group 1.
+
+```{r mathscore-tidy}
+tidy(math.mod) |>
+  filter(term != "(Intercept)") |>
+  select(-term) |>
+  rename(Mean_diff = estimate,
+         t = statistic) |>
+  mutate(signif = noquote(gtools::stars.pval(p.value)))
+```
+
+
+
 To see the differences between the groups on both variables together, we draw their data (68%)
-ellipses, using `heplots::covEllipses()`
+ellipses, using `heplots::covEllipses()`. (Setting `pooled=FALSE` here omits drawing the
+the ellipse for the pooled covariance matrix $\mathbf{S}_p$.)
 
 <!-- figure-code: R/mathscore/mathscore-figs.R -->
 
@@ -201,7 +217,7 @@ ellipses, using `heplots::covEllipses()`
 #| fig-cap: "Data ellipses for the `mathscore` data, enclosing approximately 68% of the observations in each group"
 colors <- c("darkgreen", "blue")
 covEllipses(mathscore[,c("BM", "WP")], mathscore$group,
-            pooled=FALSE, 
+            pooled = FALSE, 
             col = colors,
             fill = TRUE, 
             fill.alpha = 0.05,
@@ -234,7 +250,7 @@ In Hotelling's $T^2$, the "size" of the difference between the means (labeled "1
 is assessed relative to the pooled within-group covariance matrix $\mathbf{S}_p$, which is just a size-weighted average of the two within-sample matrices, $\mathbf{S}_1$ and $\mathbf{S}_2$,
 
 $$
-\mathbf{S}_p = [ (n_1 - 1) \mathbf{S}_1 + (n_2 - 1) \mathbf{S}_2 ] / (n_1 + n_2 - 2)
+\mathbf{S}_p = [ (n_1 - 1) \mathbf{S}_1 + (n_2 - 1) \mathbf{S}_2 ] / (n_1 + n_2 - 2) \period
 $$
 
 Visually, imagine sliding the the separate data ellipses to the grand mean,
@@ -334,7 +350,7 @@ $\mathbf{p}_1 + \frac{\mathbf{d}^\mathsf{T} (\mathbf{a} - \mathbf{p}_1)} {\mathb
 letting $\mathbf{d} = \mathbf{p}_1 - \mathbf{p}_2$.
 
 ```{r project-on}
-dot <- function(x, y) sum(x*y)
+dot <- function(x, y) sum(x*y)       # dot product of two vectors
 project_on <- function(a, p1, p2) {
 	a <- as.numeric(a)
 	p1 <- as.numeric(p1)
@@ -399,10 +415,11 @@ of developing a rule to classify instances of flowers---in his famous case, Iris
 (math.lda <- MASS::lda(group ~ ., data=mathscore))
 ```
 
-The coefficients give $w = -0.84 \text{BM} + 0.75 \text{WP}$.  This is exactly the direction given by the line for the $\mathbf{H}$ ellipse in @fig-mathscore-HE-overlay.
+The coefficients give $w = -0.084 \;\text{BM} + 0.075 \;\text{WP}$.  This is exactly the direction given by the line for the $\mathbf{H}$ ellipse in @fig-mathscore-HE-overlay.
 
 To round this out, we can calculate the discriminant scores by multiplying the matrix $\mathbf{X}$
-by the vector $\mathbf{a} = \mathbf{S}^{-1} (\bar{\mathbf{x}}_1 - \bar{\mathbf{x}}_2)$ of the discriminant weights.
+by the vector $\mathbf{a} = \mathbf{S}^{-1} (\bar{\mathbf{x}}_1 - \bar{\mathbf{x}}_2)$ of the discriminant weights. These were shown in @fig-mathscore-HE-overlay as the projections
+of the data points on the line joining the group means, 
 
 ```{r}
 math.lda$scaling
@@ -415,7 +432,7 @@ scores |>
   slice(1:3)
 ```
 
-Then a $t$-test on these scores gives Hotelling's $T$, accessed via the `statistic` component of `t.test()`
+Then a $t$-test on these scores gives the same value as Hotelling's $T$; it is accessed via the `statistic` component of `t.test()`
 
 ```{r}
 t <- t.test(LD1 ~ group, data=scores)$statistic
@@ -527,7 +544,7 @@ The length of bills only distinguishes the types of banknotes on the second dime
 #| label: fig-banknote-biplot
 #| out-width: "100%"
 #| fig-cap: "Biplot of the banknote variables, showing how the size measurements are related to each other. The points and data ellipses for the component scores are colored by Status, showing how the counterfeit and genuine bills are distinguished by these measures."
-banknote.pca <- reflect(banknote.pca)
+banknote.pca <- ggbiplot::reflect(banknote.pca)
 ggbiplot(banknote.pca,
    obs.scale = 1, var.scale = 1,
    groups = banknote$Status,
@@ -588,8 +605,8 @@ $$
 \eta^2 = \frac{\text{SS}_\text{Between groups}}{\text{SS}_\text{Total}}
 $$
 For multivariate response models, the generalization of $\eta^2$ uses multivariate analogs of these sums of squares, $\mathbf{Q}_H$
-and $\mathbf{Q}_T = \mathbf{Q}_H + \mathbf{Q}_E$, and there are different different calculations for a single
-measure corresponding to the various test statistics (Wilks' $\Lambda$, etc.), as described in **Chapter XX**.
+and $\mathbf{Q}_T = \mathbf{Q}_H + \mathbf{Q}_E$, and there are different calculations for a single
+measure corresponding to the various test statistics (Wilks' $\Lambda$, etc.), as described in @sec-mlm-review.
 
 Let's calculate the $\eta^2$ for the multivariate model `banknote.mlm` with `Status` as the only predictor, giving $\eta^2 = 0.92$, or 92% of the total variance. 
 
@@ -597,8 +614,8 @@ Let's calculate the $\eta^2$ for the multivariate model `banknote.mlm` with `Sta
 heplots::etasq(banknote.mlm)
 ```
 
-This can be compared (unfavorably) to the principal components analysis and the biplot in @fig-banknote-biplot,
-where two components accounted for 70% of total variance and it took four PCA dimensions to account for over 90%.
+This can be compared to the principal components analysis and the biplot in @fig-banknote-biplot,
+where two components (less favorably) accounted for 70% of total variance and it took four PCA dimensions to account for over 90%.
 The goals of PCA and MANOVA are different, of course, but they are both concerned with accounting for variance
 of multivariate data. We will meet another multivariate juicer, **canonical discriminant analysis** in @sec-vis-mlm.
 
@@ -614,7 +631,10 @@ univariate $t$ for all choices of weights.
 
 @fig-HE-framework summarizes what was shown in @sec-t2-heplot and @sec-t2-discrim.
 The data ellipses for the two groups in the `mathscore` data summarize the information
-about means and within-group variances.
+about means and within-group variances. In the HE plot, the difference between the means is
+itself summarized by the line through them, which represents the $\mathbf{H} =\mathbf{Q}_H$ matrix
+and within-group variation is represented by the "Error" ellipse which is the
+$\mathbf{E} = \mathbf{S}_p = \mathbf{Q}_E$ matrix. 
 
 ```{r}
 #| label: fig-HE-framework
@@ -626,6 +646,11 @@ about means and within-group variances.
 knitr::include_graphics("images/HE-framework.png")
 ```
 
+As we will see later (@sec-vis-mlm), the $\mathbf{H}$ ellipse is scaled so that it provides a visual
+test of significance: it projects somewhere outside the $\mathbf{E}$ ellipse if and only if the
+means differ significantly. The direction of the line between the means is also the discriminant
+axis and scores on this axis are weighted sum of the responses that have the greatest possible
+mean difference.
 
 ## Exercises
 
@@ -633,7 +658,6 @@ knitr::include_graphics("images/HE-framework.png")
 the equivalent $F$ statistic found by `Anova()` is 28.9. Verify that @eq-Fstat gives this result.
 
 
-**Package summary**
 
 ```{r}
 #| echo: false
