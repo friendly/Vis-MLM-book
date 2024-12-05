@@ -152,9 +152,9 @@ and Mardia [@Mardia:1970:MMS]
 tests (in the **MVN** package);
 <!-- mshapiro.test( )[in the mvnormtest package] can be used to perform the Shapiro-Wilk test for multivariate normality -->
 however this is often better assessed visually using a $\chi^2$ QQ plot
-of Mahalanobis squared distance against their corresponding $\chi^2_p$ values using `heplots::cqplot()`.
+of Mahalanobis squared distance against their corresponding $\chi^2_p$ values for $p$ degrees of freedom using `heplots::cqplot()`.
 * **Homoscedasticity**: The error-covariance matrix $\mathbf{\Sigma}$ is constant across all observations and grouping factors.
-Graphical methods to determine if this assumption is met are described in @sec-eqcov.
+Graphical methods to show if this assumption is met are described in @sec-eqcov.
 * **Independence**: $\mathbf{\epsilon}_{i}^{\prime}$ and $\mathbf{\epsilon}_{j}^{\prime}$ are independent for $i\neq j$, so knowing the data for case $i$ gives no information about case $j$ (as would be true if the data consisted of pairs of husbands and wives); 
 * The predictors, $\mathbf{X}$, are fixed and measured without error or at least they are independent of the errors, $\Epsilon$. 
 
@@ -199,7 +199,7 @@ on the left-hand side of the model formula, wrapped in `cbind()` which combines 
 lm(cbind(y1, y2, y3) ~ x1 + x2 + ..., data=)
 ```
 
-In the presence of possible outliers, robust methods are available for univariate linear models (e.g., `MASS::rlm())`. So too, `heplots::robmlm()` provides robust
+In the presence of possible outliers, robust methods are available for univariate linear models (e.g., `MASS::rlm()`). So too, `heplots::robmlm()` provides robust
 estimation in the multivariate case.
 
 ### Example: Dog Food Data
@@ -317,7 +317,7 @@ knitr::include_graphics("images/VisualizingSSP.png")
 
 The formulas for these sum of squares and products matrices can be shown explicitly as follows, 
 where the notation $\mathbf{z} \mathbf{z}^\top$ generates the $p \times p$ outer product
-of a vector $\mathbf{z}$.
+of a vector $\mathbf{z}$, giving $z_k \times z_\ell$ for all pairs of elements.
 $$
 \mathbf{SSP}_T =
 \sum_{i=1}^{g} \sum_{j=1}^{n_{i}}\left(\mathbf{y}_{ij}-\overline{\mathbf{y}}_{\cdot \cdot}\right)\left(\mathbf{y}_{ij}-\overline{\mathbf{y}}_{\cdot \cdot}\right)^{\top}
@@ -395,19 +395,30 @@ the univariate $F$ test statistic,
 $$F = \frac{\text{SS}_H/\text{df}_h}{\text{SS}_E/\text{df}_e} = \frac{\mathsf{Var}(H)}{\mathsf{Var}(E)} \comma
 $$
 assesses "how big" $\text{SS}_H$ is, relative to $\text{SS}_E$, the variance accounted for by a hypothesized model or model terms relative to
-error variance.
+error variance. The measure $R^2 = SS_H / (SS_H + SS_E) = SS_H / SS_T$ gives the proportion of
+total variance accounted for by the model terms.
 
 In the multivariate analog $\H$ and $\E$ are both $p \times p$ matrices, 
-and $\H$ "divided by" $\E$ becomes $\H \E^{-1}$. The answer, "how big" is expressed in terms of the $p$ eigenvalues 
-$\lambda_i, i = 1, 2, \dots p$ of $\H \E^{-1}$. These are the values $\lambda$ for which
+and $\H$ "divided by" $\E$ becomes $\H \E^{-1}$. The answer, "how big" $\text{SS}_H$ is compared to
+$\text{SS}_E$ is expressed in terms of the $p$ eigenvalues 
+$\lambda_i, i = 1, 2, \dots p$ of $\H \E^{-1}$. These are the $p$ values $\lambda$ which solve the determinant equation
 $$
 \det{\H \E^{-1} - \lambda \mat{I}} = 0 \period
 $$
-The solution gives the $\lambda_i$ as the eigenvalues, with vectors $\mathbf{v}_i$ as the corresponding
+The solution also gives the $\lambda_i$ as the eigenvalues, with vectors $\mathbf{v}_i$ as the corresponding
 eigenvectors,
 $$
 \H \E^{-1} \; \lambda_i = \lambda_i \mathbf{v}_i \period
 $${#eq-he-eigen}
+
+This can also be expressed in terms of the size of $\H$ relative to total variation $(\H + \E)$
+as
+
+$$
+\H (\H +\E +)^{-1} \; \rho_i = \rho_i \mathbf{v}_i \comma
+$$ {#eq-he-eigen2}
+
+which has the same eigenvectors as @eq-he-eigen and the eigenvalues are $\rho_i = \lambda_i / (1 + \lambda_i)$.
 
 However, when the hypothesized model terms have $\text{df}_h$ degrees of freedom (columns of the $\mathbf{X}$ matrix for that term), $\H$ is of rank $\text{df}_h$,
 so only $s=\min(p, \text{df}_h)$ eigenvalues can be non-zero. For example, a test for
@@ -510,11 +521,11 @@ Test statistics for multivariate tests combine the size of dimensions of $\mathb
 
 
 
-These correspond to different kinds of "means" of the $\lambda_i$: arithmetic, geometric, harmonic
-and supremum. See @Friendly-etal:ellipses:2013 for the geometry behind these measures.
+These correspond to different kinds of "means" of the $\lambda_i$: geometric (Wilks), arithmetic (Pillai), harmonic (Hotelling-Lawley)
+and supremum (Roy). See @Friendly-etal:ellipses:2013 for the geometry behind these measures.
 
 Each of these statistics have different sampling distributions under the null hypothesis, but they
-can all be converted to $F$ statistics, which are exact when $s \le 2$, and approximations otherwise.
+can all be converted to $F$ statistics. These are exact when $s \le 2$, and approximations otherwise.
 As well, each has an analog of the $R^2$-like partial $\eta^2$ measure, giving the partial association
 accounted for by each term in the MLM.
 
@@ -536,7 +547,7 @@ $$
 \mathbf{H}  =
  (\mathbf{C} \widehat{\mathbf{B}})\trans \,
  [\mathbf{C} (\mathbf{X}\trans \mathbf{X} )^{-1} \mathbf{C}\trans]^{-1} \,
- (\mathbf{C} \widehat{\mathbf{B}})
+ (\mathbf{C} \widehat{\mathbf{B}}) \comma
 $${#eq-hmat}
 
 where there are $s = \min(h, p)$ non-zero eigenvalues of $\mat{H}\mat{E}^{-1}$.
@@ -546,7 +557,7 @@ the linear combinations $\mathbf{C} \widehat{\mathbf{B}}$ from the origin under 
 <!-- [https://www.datavis.ca/gallery/animation/manova/](https://www.datavis.ca/gallery/animation/manova/). -->
 
 For example, with three responses $y_1, y_2, y_3$ and three predictors $x_1, x_2, x_3$, we can test the hypothesis
-that neither $x_2$ nor $x_3$ contribute at all to the predicting the $y$s in terms of the hypothesis that
+that neither $x_2$ nor $x_3$ contribute at all to predicting the $y$s in terms of the hypothesis that
 the coefficients for the corresponding rows of $\mathbf{B}$ are zero using a 1-row $\mathbf{C}$ matrix that
 simply selects those rows:
 
@@ -609,6 +620,7 @@ When contrasts are placed as columns of a matrix $\mathbf{C}$, they are all _mut
 if each pair is orthogonal, which means
 $\mathbf{C}^\top \mathbf{C}$ is a diagonal matrix.
 Orthogonal contrasts correspond to statistically independent tests.
+This is nice because they reflect separate, non-overlapping research questions.
 
 <!-- For example, with $g=4$ groups representing the combinations of two drugs, A and B -->
 <!-- given at low and high doses, we might want to compare -->
@@ -658,8 +670,10 @@ L_3 & = \mu_M - \mu_A                     & \rightarrow\: & \mathbf{c}_3 =
 
 Note that these correspond to _nested dichotomies_ among the four groups:
 first we compare groups (Old and New) against groups (Major and Alps), then subsequently
-within each of these sets. Such contrasts are always _orthogonal_, and therefore 
-correspond to statistically independent tests. 
+within each of these sets. Nested dicontomy contrasts are always _orthogonal_, and therefore 
+correspond to statistically independent tests. We are effectively taking a three
+degree-of-freedom question, "do the means differ?" and breaking it down into three separate
+1 df tests that answer specific parts of that overall question.
 
 In R, contrasts for a factor are specified as columns of matrix, each of which sums to zero.
 For this example, we can set this up by creating each as a vector and joining them
@@ -715,12 +729,14 @@ H1 <- linearHypothesis(dogfood.mod, hyp[1], title="Ours vs. Theirs") |>
   print()
 ```
 
-Similarly for the other two contrasts within these each of these two subsets, but I don't print the
+Similarly we can test the other two contrasts within these each of these two subsets, but I don't print the
 results
 
 ```{r dogfood-H2}
-H2 <- linearHypothesis(dogfood.mod, hyp[2], title="Old vs. New")
-H3 <- linearHypothesis(dogfood.mod, hyp[3], title="Alps vs. Major")
+H2 <- linearHypothesis(dogfood.mod, hyp[2], 
+                       title="Old vs. New")
+H3 <- linearHypothesis(dogfood.mod, hyp[3], 
+                       title="Alps vs. Major")
 ```
 
 Then, we can illustrate @eq-H-contrasts by extracting the 1 df $\mathbf{H}$  matrices (`SSPH`)
@@ -791,17 +807,21 @@ As shown in the figure, the centroids, $(\mu_{1g}, \mu_{2g})$, clearly differ---
 A multivariate analysis would show a highly difference among groups.
 From a rough visual inspection, it seems that means differ on the math test $Y_1$, with the
 physics group out-performing the other two. On the reading test $Y_2$ however it might turn out that the three
-group means don't differ significantly in an ANOVA, although the Shakespeare group comes out best by a small amount.
-Doing separate ANOVAs on these variables would miss what is so obvious from @fig-manova-diagram.
+group means don't differ significantly in an ANOVA, but the Shakespeare and physics groups appear to outperform the normal curriculum group.
+Doing separate ANOVAs on these variables would miss what is so obvious from @fig-manova-diagram: there
+is wide separation among the groups in the two tests considered _jointly_. 
 
 @fig-manova-response-dimensions illustrates a second important advantage of performing
 a multivariate analysis over separate ANOVAS: that of determining the number of dimensions or aspects
 along which groups differ. In the panel on the left, the means of the three groups increase nearly
-linearly on the combination of $Y_1$ and $Y_2$, to their differences can be ascribed to a single
-dimension. For example, the groups here might be patients diagnosed as normal, mild schizophrenia
+linearly on the combination of $Y_1$ and $Y_2$, so their differences can be ascribed to a single
+dimension, which simplifies the interpretation.
+
+For example, the groups here might be patients diagnosed as normal, mild schizophrenia
 and profound schizophrenia, and the measures could be tests of memory and attention.
 The obvious multivariate interpretation from the figure is that of increasing impairment
-of cognitive functioning across the groups. Note also the positive association within each group:
+of cognitive functioning across the groups, comprised by memory and attention.
+Note also the positive association _within_ each group:
 those who perform better on the memory task also do better on attention.
 
 ```{r}
@@ -814,7 +834,8 @@ knitr::include_graphics(here::here("images", "manova-response-dimensions-anno.pn
 
 In contrast, the right panel of @fig-manova-response-dimensions shows a situation where the group means
 have a low correlation. Data like this might arise in a study of parental competency, where there are
-are measure of the degree of caring ($Y_1$) and time spent in play ($Y_2$) by fathers and groups consisting of fathers of children with no disability, or a physical disability or a mental ability.
+are measures of both the degree of caring ($Y_1$) and time spent in play ($Y_2$) by fathers and groups consisting of fathers of children with no disability, or a physical disability or a mental ability.
+
 As can be seen in @fig-manova-response-dimensions fathers of the disabled children differ from those
 of the not disabled group in two different directions corresponding to being higher on either
 $Y_1$ or $Y_2$. The `r colorize("red")` arrows suggest that the differences among groups could be
@@ -950,7 +971,7 @@ glance(parenting.mlm) |>
 
 From this, one might conclude that there are differences only in `caring` and `play` and therefore ignore
 `emotion`, but this would be short-sighted. 
-`car::Anova()` gives the overall multivariate test $\mathcal{H}_0: \mathbf{B} = 0$ of the `group` effect. Note that
+`car::Anova()`, shown below, gives the overall multivariate test $\mathcal{H}_0: \mathbf{B} = 0$ of the `group` effect, that the groups don't differ on _any_ of the response variables. Note that
 this has a much smaller $p$-value than any of the univariate $F$ tests.
 
 ```{r parenting-Anova}
@@ -959,15 +980,15 @@ Anova(parenting.mlm)
 
 `Anova()` returns an object of class `"Anova.mlm"` which has various methods.
 The `summary()` method for this gives more details, including all four test statistics.
-These tests have $s = \min(p, \text{df}_h) = \min(3,2) = 2$ dimensions and the $F$ approximations are not
-equivalent here. All four tests are highly significant
+With $p=3$ responses, these tests have $s = \min(p, \text{df}_h) = \min(3,2) = 2$ dimensions and the $F$ approximations are not
+equivalent here. All four tests are highly significant, with Roy's test giving the largest $F$ statistic.
 ```{r}
 parenting.summary <- Anova(parenting.mlm) |>  summary() 
 print(parenting.summary, SSP=FALSE)
 ```
 
 The `summary()` method by default prints the SSH = $\mathbf{H}$ and SSE = $\mathbf{E}$ matrices, but I suppressed
-them above. They can be extracted from the object using `purrr::pluck()`:
+them above. The data structure returned contains nested elements which can be extracted more easily from the object using `purrr::pluck()`:
 
 ```{r par-summary-pluck}
 H <- parenting.summary |> 
@@ -987,7 +1008,7 @@ testing questions of substantive interest regarding differences among group mean
 The test of the contrast comparing the typical group to the average of the others is the test 
 using the contrast $c_1 = (1, -\frac12, -\frac12)$ which produces the coefficients labeled
 `"group1"`. The function `car::linearHypothesis()` carries out the multivariate test
-that these are all zero. This is a 1 df test, so all four test statistics produce the same
+that this difference is zero. This is a 1 df test, so all four test statistics produce the same
 $F$ and $p$-values.
 
 ```{r parenting-lin-hyp1}
@@ -1009,8 +1030,8 @@ linearHypothesis(parenting.mlm, "group2") |>
 $\mathbf{C}$, and can be specified as numeric matrix giving the linear combinations of coefficients by rows to be tested, or a character vector giving the hypothesis in symbolic form; `"group1"`
 is equivalent to `"group1 = 0"`.
 
-Because the contrasts used here are orthogonal, they comprise the overall test of 
-$\mathbf{B} = \mathbf{0}$ which implies that the means of the three groups are all equal.
+Because the two contrasts used here are orthogonal, they add together to give the overall test of 
+$\mathbf{B} = \mathbf{0}$, which implies that the means of the three groups are all equal.
 The test below gives the same results as `Anova(parenting.mlm)`.
 
 ```{r parenting-lin-hyp3}
@@ -1048,7 +1069,7 @@ The research questions are:
 
 * How do the means for anxiety and depression vary separately with grade? Is there evidence for linear and nonlinear trends?
 * How do anxiety and depression vary _jointly_ with grade?
-* How does the _association* of anxiety and depression vary with age?
+* How does the _association_ of anxiety and depression vary with age?
 
 The first question can be answered by fitting separate linear models for each response
 (e.g., `lm(anxiety ~ grade))`). However the second question is more interesting because it 
@@ -1174,13 +1195,13 @@ coef(AH.mlm) |> names()
 
 
 The joint test of the linear coefficients $\boldsymbol{\beta}_1 = (\beta_{1,\text{anx}},  \beta_{1,\text{dep}})^\mathsf{T}$ for anxiety and depression, 
-$H_0 : \boldsymbol{\beta}_1 = \boldsymbol{0}$ is highly significant,
+$\mathcal{H}_0 : \boldsymbol{\beta}_1 = \boldsymbol{0}$ is highly significant,
 ```{r addhealth-linhyp1}
 ## linear effect
 linearHypothesis(AH.mlm, "grade.L") |> print(SSP = FALSE)
 ```
 
-The test of the quadratic coefficients $H_0 : \boldsymbol{\beta}_2 = \boldsymbol{0}$
+The test of the quadratic coefficients $\mathcal{H}_0 : \boldsymbol{\beta}_2 = \boldsymbol{0}$
 indicates significant curvature in trends across grade, as we saw in the plots of their means in @fig-addhealth-means-each. One interpretation might be that
 depression and anxiety after increasing steadily up to grade eleven could level off thereafter.
 ```{r addhealth-linhyp2}
@@ -1190,7 +1211,7 @@ linearHypothesis(AH.mlm, "grade.Q") |> print(SSP = FALSE)
 
 An advantage of linear hypotheses is that we can test several terms _jointly_.
 Of interest here is the hypothesis that all higher order terms beyond the quadratic are zero,
-$H_0 : \boldsymbol{\beta}_3 =  \boldsymbol{\beta}_4 =  \boldsymbol{\beta}_5 = \boldsymbol{0}$. Using `linearHypothesis` you can supply a vector of
+$\mathcal{H}_0 : \boldsymbol{\beta}_3 =  \boldsymbol{\beta}_4 =  \boldsymbol{\beta}_5 = \boldsymbol{0}$. Using `linearHypothesis` you can supply a vector of
 coefficient names to be tested for their joint effect when dropped from the model.
 
 ```{r addhealth-linhyp3}
