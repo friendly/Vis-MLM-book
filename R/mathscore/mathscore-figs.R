@@ -122,11 +122,11 @@ heplot(math.mod, fill=TRUE, cex=2, cex.lab=1.8,
 means <-  aggregate(cbind(BM, WP)~group, mean, data=mathscore)[,-1]
 
 # find projection of point A on line between L1 and L2
+dot <- function(x,y) sum( x * y)	
 project_on <- function(A, L1, L2) {
 	A <- as.numeric(A)
 	L1 <- as.numeric(L1)
 	L2 <- as.numeric(L2)
-	dot <- function(x,y) sum( x * y)	
 	t <- dot(L2-L1, A-L1) / dot(L2-L1, L2-L1)
 	C <- L1 + t*(L2-L1)
 	C
