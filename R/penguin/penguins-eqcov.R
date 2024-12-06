@@ -10,12 +10,49 @@ library(candisc)
 # load(here::here("data", "peng.RData"))
 data(peng, package="heplots")
 source("R/penguin/penguin-colors.R")
-
-#' ## Initial scatterplots and data ellipses
-
 # use penguin colors
 col <- peng.colors()
 pch <- 15:17
+
+# Levine tests
+
+leveneTest(bill_length ~ species, data=peng)
+leveneTest(body_mass ~ species, data=peng)
+
+leveneTests(peng[, 3:6], peng$species)
+
+# do it manually
+
+vars <- c("bill_length", "bill_depth", "flipper_length", "body_mass")
+
+# Multivariate levene test
+pengDevs <- abs(colDevs(peng[, vars], peng$species, median))
+#pengDevs <- data.frame(species = peng$species, pengDevs)
+
+dev.mod <- lm(pengDevs ~ peng$species)
+Anova(dev.mod)
+
+# box plots of deviations
+dev_long <- data.frame(species = peng$species, pengDevs) |> 
+  pivot_longer(bill_length:body_mass, 
+               names_to = "variable", 
+               values_to = "value") 
+
+dev_long |>
+  group_by(species) |> 
+  ggplot(aes(value, species, fill = species)) +
+#  geom_vline(xintercept = 0, color = "red") +
+  geom_boxplot() +
+  facet_wrap(~ variable, scales = 'free_x') +
+  xlab("| median deviation |") +
+  theme_penguins() +
+  theme_bw(base_size = 14) +
+  theme(legend.position = 'none') 
+
+
+
+#' ## Initial scatterplots and data ellipses
+
 
 op <- par(mfcol=c(1,2), mar=c(5,4,1,1)+.1)
 scatterplot(bill_length ~ body_mass | species, data=peng,
@@ -39,28 +76,40 @@ par(op)
 
 #' Uncentered and centered, first two variables
 
+col <- peng.colors("dark")
+clr <- c(col, gray(.20))
+op <- par(mar = c(4, 4, 1, 1) + .5,
+          mfrow = c(c(1,2)))
 covEllipses(cbind(bill_length, bill_depth) ~ species, data=peng,
-            fill=c(rep(FALSE,3), TRUE))
-
+            fill=TRUE,
+            fill.alpha = 0.1,
+            lwd = 3,
+            col = clr)
 
 covEllipses(cbind(bill_length, bill_depth) ~ species, data=peng,
             center=TRUE, 
             fill=c(rep(FALSE,3), TRUE), 
-            fill.alpha=.1, label.pos=c(1:3,0))
+            fill.alpha=.1, 
+            lwd = 3,
+            col = clr,
+            label.pos=c(1:3,0))
+par(op)
+
+
 
 #' All pairs when more than two variables are specified
 #' They look pretty similar
-cols = c(peng.colors(), "black")
+clr <- c(peng.colors(), "black")
 covEllipses(peng[,3:6], peng$species, 
             variables=1:4,
-            col = cols,
+            col = clr,
             fill=TRUE, 
             fill.alpha=.1)
 
 #' See diffs better by overlay at grand mean
 covEllipses(peng[,3:6], peng$species, 
             variables=1:4, 
-            col = cols,
+            col = clr,
             center=TRUE,
             fill=TRUE, 
             label.pos=c(1:3,0), 

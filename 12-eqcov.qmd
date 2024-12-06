@@ -35,7 +35,7 @@ Most of the discussion is couched in terms of a one-way design for simplicity,
 but the same ideas can apply to two-way (and higher) designs, where a "group" factor
 is defined as the product combination (interaction) of two or more factor
 variables. When there are also numeric covariates, this topic can also be extended
-to the multivariate analysis of covaraiance (MANCOVA) setting. This can be 
+to the multivariate analysis of covariance (MANCOVA) setting. This can be 
 accomplished by applying these techniques to the residuals from predictions by 
 the covariates alone.
 
@@ -76,19 +76,121 @@ but these have been found to have terrible statistical properties [@Rogan:1977],
 
 Levene [-@Levene:1960] introduced a different form of test, based on the simple idea that when 
 variances are equal across groups, 
-the average absolute values of differences between the observations and group means
+the average _absolute values_ of differences between the observations and group means
 will also be equal, i.e., substituting an $L_1$ norm for the $L_2$ norm of variance. 
 In a one-way design, this is equivalent to a test of group differences in the
 means of the auxilliary variable $z_{ij} = | y_{ij} - \bar{y}_i |$.
 
+
+
 More robust versions of this test were proposed by @BrownForsythe:1974. These tests
-substitute the group mean by either the group median or a trimmed mean in the ANOVA of the absolute deviations, and
-should be almost always preferred to Levene's version.
+substitute the group mean by either the group **median** or a **trimmed mean** in the ANOVA of the absolute deviations.
+Some suggest these should be almost always preferred to Levene's version using the mean deviation.
 See @Conover-etal:1981 for an early review and @Gastwirth-etal:2009 for a general discussion of these tests. 
 In what follows, we refer to this class of tests as "Levene-type" tests and suggest a 
 multivariate extension described below (@sec-mlevene).
 
-## Homogeneity of variance in ANOVA {#sec-mlevene}
+These deviations from a group central can be calculated using `heplots::colDevs()` and the central value can be
+a function, like `mean`, `median` or an anonymous one like `function(x) mean(x, trim = 0.1))` that trims 10%
+off each side of the distribution. With a response `Y` Levene's test then be performed "by hand" as follows:
+
+```{r lm-levine, eval=FALSE}
+Z.mean <- abs( colDevs(Y, group) )
+lm(Z.mean ~ group)
+
+Z.med <- abs( colDevs(Y, group, median) )
+lm(Z.med ~ group)
+```
+
+The function `car::leveneTest()` does this, so we could examine whether the variances are equal in the Penguin variables, one at a time,
+like so:
+```{r levene-peng1}
+data(peng, package = "heplots")
+leveneTest(bill_length ~ species, data=peng)
+  # ...
+leveneTest(body_mass ~ species, data=peng)
+```
+
+**TODO**: Add a formula method to `leveneTests()`
+
+More conveniently, `heplots:leveneTests()` with an "s", does this for each of a set of response variables. It also formats the results
+in a more pleasing way:
+
+```{r levene-peng2}
+leveneTests(peng[, 3:6], peng$species)
+```
+
+So, this tells us that the groups do not differ in variances on all variables except for `body_mass`.
+
+## Visualizing Levene's test {#sec-mlevene}
+
+To gain some insight into the problem of homogeneity of variance it is helpful how the situation looks in terms of data.
+For the Penguin data, it might be simplest just boxplots of the variables and try to see whether the widths of the
+central 50% boxes seem to be the same, as in @fig-peng-boxplots.
+However, it is perceptually difficult to focus on differences with widths of
+the boxes within each panel when their centers also differ from group to group.
+
+```{r}
+#| label: fig-peng-boxplots
+#| code-fold: true
+#| code-summary: "See the code"
+#| fig-width: 10
+#| fig-height: 5
+#| out-width: "80%"
+#| fig-cap: "Boxplots for the Penguin variables. For assessing homogeneity of variance, we should be looking for differences in width of
+#| the central 50% boxes in each panel, rather than difference in central tendency."
+source("R/penguin/penguin-colors.R")
+peng_long <- peng |> 
+  pivot_longer(bill_length:body_mass, 
+               names_to = "variable", 
+               values_to = "value") 
+
+peng_long |>
+  group_by(species) |> 
+  ggplot(aes(value, species, fill = species)) +
+  geom_boxplot() +
+  facet_wrap(~ variable, scales = 'free_x') +
+  theme_penguins() +
+  theme_bw(base_size = 14) +
+  theme(legend.position = 'none') 
+```
+
+Instead, we can see more directly what is tested by the Levene test by graphing the absolute deviations from the group means or medians,
+which we can calculate like this:
+
+```{r}
+vars <- c("bill_length", "bill_depth", "flipper_length", "body_mass")
+pengDevs <- colDevs(peng[, vars], peng$species, median) |>
+  abs()
+```
+
+as shown in @fig-peng-devplots.
+
+```{r}
+#| label: fig-peng-devplots
+#| code-fold: true
+#| code-summary: "See the code"
+#| fig-width: 10
+#| fig-height: 5
+#| out-width: "80%"
+#| fig-cap: "Boxplots for absolute differences from group medians for the Penguin data." 
+# calculate absolute differences from median
+dev_long <- data.frame(species = peng$species, pengDevs) |> 
+  pivot_longer(bill_length:body_mass, 
+               names_to = "variable", 
+               values_to = "value") 
+
+dev_long |>
+  group_by(species) |> 
+  ggplot(aes(value, species, fill = species)) +
+  geom_boxplot() +
+  facet_wrap(~ variable, scales = 'free_x') +
+  xlab("| median deviation |") +
+  theme_penguins() +
+  theme_bw(base_size = 14) +
+  theme(legend.position = 'none') 
+```
+
 
 ## Homogeneity of variance in MANOVA {#sec-homogeneity-MANOVA}
 
@@ -99,25 +201,53 @@ $$
 $$
 However, the standard test statistics (Wilks' Lambda, Hotelling-Lawley trace, Pillai-Bartlett trace, Roy's maximum root) rely upon
 the analogous assumption that
-the within-group covariance matrices for all groups are equal,
+the within-group covariance **matrices** $\mathbf{\Sigma}_i$ are equal for all groups,
 $$
 \mathbf{\Sigma}_1 = \mathbf{\Sigma}_2 = \cdots = \mathbf{\Sigma}_g \; .
 $$
+This is much stronger than in the univariate case, because it also required that all the correlations between pairs of variables are the same for all
+groups. ...
+
+**Insert** formulas for 2 x 2 case
 
 **Insert** pairs covEllipses for penguins data
 
 To preview the main example, @fig-peng-covEllipse0 shows data ellipses for the
 main size variables in the `palmerpenguins::penguins` data.
 
+To view the relations ...
+
 ```{r}
 #| label: fig-peng-covEllipse0
 #| fig-align: center
 #| out-width: "100%"
 #| code-fold: show
-#| echo: FALSE
-#| fig-cap: "Data ellipses for the penguins data."
-data(peng, package = "heplots")
+#| fig-cap: "Data ellipses for bill length and bill depth in the penguins data, also showing the pooled covariance. Left: As is; right: centered at the grand means for easier comparison."
+op <- par(mar = c(4, 4, 1, 1) + .5,
+          mfrow = c(c(1,2)))
+covEllipses(cbind(bill_length, bill_depth) ~ species, data=peng,
+            fill = TRUE,
+            fill.alpha = 0.1,
+            lwd = 3,
+            col = clr)
 
+covEllipses(cbind(bill_length, bill_depth) ~ species, data=peng,
+            center = TRUE, 
+            fill = c(rep(FALSE,3), TRUE), 
+            fill.alpha = .1, 
+            lwd = 3,
+            col = clr,
+            label.pos = c(1:3,0))
+par(op)
+```
+
+
+```{r}
+#| label: fig-peng-covEllipse-pairs
+#| fig-align: center
+#| out-width: "100%"
+#| code-fold: show
+#| fig-cap: "All pairwise covariance ellipses for the penguins data."
 covEllipses(peng[3:6], peng$species, 
             variables=1:4,
             pooled = FALSE,
