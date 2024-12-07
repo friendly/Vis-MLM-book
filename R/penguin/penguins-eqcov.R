@@ -7,7 +7,6 @@ library(effects)
 library(heplots)
 library(candisc)
 
-# load(here::here("data", "peng.RData"))
 data(peng, package="heplots")
 source("R/penguin/penguin-colors.R")
 # use penguin colors
@@ -27,10 +26,16 @@ vars <- c("bill_length", "bill_depth", "flipper_length", "body_mass")
 
 # Multivariate levene test
 pengDevs <- abs(colDevs(peng[, vars], peng$species, median))
-#pengDevs <- data.frame(species = peng$species, pengDevs)
-
 dev.mod <- lm(pengDevs ~ peng$species)
 Anova(dev.mod)
+
+pengDevs <- data.frame(species = peng$species, pengDevs)
+dev.mod <- lm(cbind(bill_length, bill_depth, flipper_length, body_mass) ~ species, 
+              data=pengDevs)
+Anova(dev.mod)
+
+heplot(dev.mod)
+
 
 # box plots of deviations
 dev_long <- data.frame(species = peng$species, pengDevs) |> 
