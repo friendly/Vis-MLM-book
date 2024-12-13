@@ -15,7 +15,17 @@ knitr::opts_chunk$set(fig.path = "figs/ch12/")
 
 
 This chapter concerns the extension of tests of homogeneity of variance from the classical univariate
-ANOVA setting to the analogous multivariate (MANOVA) setting. Such tests are a routine but important aspect of data analysis, as particular violations can drastically impact model estimates [@Lix:1996]. 
+ANOVA setting to the analogous multivariate (MANOVA) setting. Such tests are a routine but important aspect of data analysis, as particular violations can drastically impact model estimates and appropriate conclusions that can be drawn [@Lix:1996]. 
+
+Beyond issues of model assumptions, 
+the question of equality of covariance matrices is often of general interest itself. For instance,
+variability is often an important issue in studies of strict equivalence in laboratories comparing across  multiple patient measurements and in other applied contexts [see @Gastwirth-etal:2009 for other exemplars].
+Moreover the outcome of such tests often have important consequences
+for the details of a main method of analysis.  Just as the Welsh $t$-test [@Welch:1947] is now commonly
+used and reported for a two-group test of differences in means under unequal variances,
+a preliminary test of equality of covariance matrices is often used in discriminant analysis
+to decide whether linear (LDA) or quadratic discriminant analysis (QDA) should be applied in a
+given problem. In such cases, the data at hand should inform the choice of statistical analysis to utilize.
 
 
 We provide some answers to the following questions:
@@ -65,7 +75,10 @@ $$
 
 It turns out that the $F$ test for differences in means
 is relatively robust to violation of this assumption [@Harwell:1992],
-as long as the group sizes are roughly equal.[^1]
+as long as the group sample sizes are roughly equal.[^1]
+This applies to Type I error $\alpha$ rates, which are not much affected.
+However, unequal variance makes the ANOVA tests less efficient: you lose power to detect
+significant differences.
 
 [^1]: If group sizes are greatly unequal __and__ homogeneity of variance is violated, then the $F$ statistic is too liberal ($p$ values too large) when large sample variances are associated with small group sizes.
 Conversely, the $F$ statistic is too conservative if large variances are associated with large group sizes.
@@ -111,16 +124,18 @@ leveneTest(bill_length ~ species, data=peng)
 leveneTest(body_mass ~ species, data=peng)
 ```
 
-**TODO**: Add a formula method to `leveneTests()`
 
-More conveniently, `heplots:leveneTests()` with an "s", does this for each of a set of response variables. It also formats the results
-in a more pleasing way:
+More conveniently, `heplots:leveneTests()` with an "s", does this for each of a set of response variables,
+specified in a data frame, a model formula or a `"mlm"` object.
+It also formats the results in a more pleasing way:
 
 ```{r levene-peng2}
-leveneTests(peng[, 3:6], peng$species)
+peng.mod <- lm(cbind(bill_length, bill_depth, flipper_length, body_mass) ~ species, 
+               data = peng)
+leveneTests(peng.mod)
 ```
 
-So, this tells us that the groups do not differ in variances on all variables except for `body_mass`.
+So, this tells us that the groups do not differ in variances on first three variables, but they do for `body_mass`.
 
 ## Visualizing Levene's test {#sec-mlevene}
 
@@ -137,7 +152,7 @@ the boxes within each panel when their centers also differ from group to group.
 #| code-summary: "See the code"
 #| fig-width: 10
 #| fig-height: 5
-#| out-width: "80%"
+#| out-width: "90%"
 #| fig-cap: "Boxplots for the Penguin variables. For assessing homogeneity of variance, we should be looking for differences in width of
 #| the central 50% boxes in each panel, rather than difference in central tendency."
 source("R/penguin/penguin-colors.R")
@@ -158,8 +173,9 @@ peng_long |>
   theme(legend.position = 'none') 
 ```
 
-Instead, we can see more directly what is tested by the Levene test by graphing the absolute deviations from the group means or medians,
-which we can calculate like this:
+Instead, you can see more _directly_ what is tested by the Levene test by graphing the absolute deviations from the group means or medians. This is another example of the graphic idea that to make visual comparisons easier
+by plotting quantities of direct interest.
+You can calculate these values as follows:
 
 ```{r}
 vars <- c("bill_length", "bill_depth", "flipper_length", "body_mass")
@@ -167,7 +183,7 @@ pengDevs <- colDevs(peng[, vars], peng$species, median) |>
   abs()
 ```
 
-Making boxplot of the absolute deviations in @fig-peng-devplots your eye can now focus on the average
+From a boxplot of the absolute deviations in @fig-peng-devplots your eye can now focus on the central
 value, shown by the median '|' line, because Levene's method is testing whether these differ
 across groups.
 
@@ -177,7 +193,7 @@ across groups.
 #| code-summary: "See the code"
 #| fig-width: 10
 #| fig-height: 5
-#| out-width: "80%"
+#| out-width: "90%"
 #| fig-cap: "Boxplots for absolute differences from group medians for the Penguin data." 
 # calculate absolute differences from median
 dev_long <- data.frame(species = peng$species, pengDevs) |> 
@@ -190,12 +206,13 @@ dev_long |>
   ggplot(aes(value, species, fill = species)) +
   geom_boxplot() +
   facet_wrap(~ variable, scales = 'free_x') +
-  xlab("| median deviation |") +
+  xlab("absolute median deviation") +
   theme_penguins() +
   theme_bw(base_size = 14) +
   theme(legend.position = 'none') 
 ```
 
+It is now easy to see that the medians largely align for all the variables except for `body_mass`.
 
 ## Homogeneity of variance in MANOVA {#sec-homogeneity-MANOVA}
 
@@ -210,7 +227,12 @@ the within-group covariance **matrices** $\mathbf{\Sigma}_i$ are equal for all g
 $$
 \mathbf{\Sigma}_1 = \mathbf{\Sigma}_2 = \cdots = \mathbf{\Sigma}_g \; .
 $$
-This is much stronger than in the univariate case, because it also requires that all the correlations between pairs of variables are the same for all groups. For example, in the case of two responses,
+This is much stronger than in the univariate case, because it also requires that all the correlations between pairs of variables are the same for all groups. For example, for two responses, there are three
+parameters ($\rho, \sigma_1^2, \sigma_2^2$) assumed equal across all groups; for $p$ responses, there
+are $p (p+1) / 2$ assumed equal.
+
+<!--
+For example, in the case of two responses,
 we must assume:
 
 $$
@@ -228,7 +250,7 @@ $$
 \end{pmatrix}
 _g
 $$
-
+-->
 
 
 

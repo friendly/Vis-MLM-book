@@ -20,6 +20,12 @@ leveneTest(body_mass ~ species, data=peng)
 
 leveneTests(peng[, 3:6], peng$species)
 
+leveneTests(cbind(bill_length, bill_depth, flipper_length, body_mass) ~ species, data = peng)
+
+peng.mod <- lm(cbind(bill_length, bill_depth, flipper_length, body_mass) ~ species, 
+               data = peng)
+leveneTests(peng.mod)
+
 # do it manually
 
 vars <- c("bill_length", "bill_depth", "flipper_length", "body_mass")
@@ -49,7 +55,7 @@ dev_long |>
 #  geom_vline(xintercept = 0, color = "red") +
   geom_boxplot() +
   facet_wrap(~ variable, scales = 'free_x') +
-  xlab("| median deviation |") +
+  xlab("abs( median deviation )") +
   theme_penguins() +
   theme_bw(base_size = 14) +
   theme(legend.position = 'none') 
