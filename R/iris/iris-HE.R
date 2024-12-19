@@ -11,16 +11,34 @@ iris.mod <- lm(cbind(Sepal.Length, Sepal.Width, Petal.Length, Petal.Width) ~
                  Species, data=iris)
 
 Anova(iris.mod)
-
 summary(iris.mod)
-
 summary(iris.mod, univariate = TRUE)
-
 # tests for each response
-
 glance(iris.mod)
 
-op <- par(mar = c(4, 4, 1, 1) + .5)
+col <-c("blue", "darkgreen", "brown")
+clr <- c(col, "red")
+
+op <- par(mar = c(4, 4, 1, 1) + .5,
+          mfrow = c(1, 2))
+covEllipses(cbind(Sepal.Length, Sepal.Width) ~ Species, data=iris,
+      pooled = TRUE,
+      fill=TRUE,
+      fill.alpha = 0.1,
+      lwd = 3,
+      col = clr,
+      cex = 1.5, cex.lab = 1.5,
+      label.pos = c(3, 1, 3, 0),
+      xlim = c(4,8), ylim = c(2,4))
+
+heplot(iris.mod, size = "effect",
+       cex = 1.5, cex.lab = 1.5,
+       fill=TRUE, fill.alpha=c(0.3,0.1),
+       xlim = c(4,8), ylim = c(2,4))
+par(op)
+
+op <- par(mar = c(4, 4, 1, 1) + .5,
+          mfrow = c(1, 2))
 heplot(iris.mod, size = "effect",
        cex = 1.5, cex.lab = 1.5,
        fill=TRUE, fill.alpha=c(0.3,0.1),
@@ -29,7 +47,7 @@ text(10, 4.5, expression(paste("Effect size scaling:", bold(H) / df[e])),
      pos = 2, cex = 1.2)
 
 heplot(iris.mod, size = "evidence",
-       cex = 1.5,
+       cex = 1.5, cex.lab = 1.5,
        fill=TRUE, fill.alpha=c(0.3,0.1),
        xlim = c(2,10), ylim = c(1.4,4.6))
 text(10, 4.5, expression(paste("Significance scaling:", bold(H) / (lambda[alpha] * df[e]))), 

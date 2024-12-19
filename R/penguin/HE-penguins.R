@@ -1,36 +1,16 @@
 
 library(dplyr)
-library(readr)
+#library(readr)
 #library(tidyr)
 library(car)
 library(heplots)
 library(candisc)
-library(palmerpenguins)
+#library(palmerpenguins)
 
 
-#url <- "https://raw.githubusercontent.com/friendly/penguins/master/data/penguins_size.csv"
-#url <- "https://raw.githubusercontent.com/allisonhorst/penguins/master/data/penguins_size.csv"
-#
-#penguins <-read_csv(url)
-
-# peng <- penguins %>%
-# 	rename(
-#          bill_length = bill_length_mm, 
-#          bill_depth = bill_depth_mm, 
-#          flipper_length = flipper_length_mm, 
-#          body_mass = body_mass_g
-#          ) %>%
-#   mutate(species = as.factor(species),
-#          island = as.factor(island),
-#          sex = as.factor(substr(sex,1,1))) %>%
-#   filter(!is.na(bill_depth),
-#          !is.na(sex))
-# 
-# str(peng)
-# View(peng)
 
 data(peng, package="heplots")
-
+source(here::here("R", "penguin", "penguin-colors.R"))
 
 # vars <- paste(names(peng)[-1], collapse="\n")
 # cat(vars)
