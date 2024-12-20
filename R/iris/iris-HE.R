@@ -78,3 +78,7 @@ heplot(iris.mod, hypotheses=hyp, fill=TRUE,
 # vary label position and fill.alpha
 heplot(iris.mod, hypotheses=hyp, fill=TRUE, fill.alpha=c(0.3,0.1), col=c("red", "blue"), 
        lty=c(0,0,1,1), label.pos=0:3)
+
+pairs(iris.mod,
+      fill=TRUE, fill.alpha=c(0.3,0.1)
+)
