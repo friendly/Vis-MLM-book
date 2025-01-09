@@ -66,6 +66,7 @@ library(ggdensity)
 library(patchwork)
 library(ggpcp)
 library(tourr)
+library(heplots)
 ```
 
 ## Bivariate summaries {#sec-bivariate_summaries}
@@ -569,14 +570,15 @@ $$
 $$
 A computational definition recognizes that the boundary of the ellipsoid can be found by transforming
 a unit sphere $\mathcal{P}$
-centered at the origin, $\mathcal{P} : \{ \mathbf{x}^\textsf{T} \mathbf{x}= 1\}$, by $\mathbf{S}^{1/2}$
+centered at the origin, $\mathcal{P} := \{ \mathbf{x}^\textsf{T} \mathbf{x}= 1\}$, by $\mathbf{S}^{1/2}$
 and then shifting that to centroid of the data,
 
 $$
 \mathcal{E}_c (\bar{\mathbf{y}}, \mathbf{S}) = \bar{\mathbf{y}} \; \oplus \; \mathbf{S}^{1/2} \, \mathcal{P} \comma
 $$
 where $\mathbf{S}^{1/2}$ represents a rotation and scaling and the notation $\oplus$ represents translation to a new centroid, $\bar{\mathbf{y}}$ here. The matrix $\mathbf{S}^{1/2}$ is commonly computed
-as the Choleski factor of $\mathbf{S}$. Slightly abusing notation and taking the unit sphere as given (like an identity matrix $\mathbf{I}$),
+as the Choleski factor of $\mathbf{S}$. Slightly abusing notation and taking the unit sphere $\mathcal{P}$
+as given (like an identity matrix $\mathbf{I}$),
 we can write the data ellipsoid as simply:
 
 $$
@@ -606,6 +608,8 @@ Galton's goal was to predict (or explain) how a heritable trait, $Y$, (e.g.,
 height) of children was related to that of their parents, $X$.
 He made a semi-graphic table of the frequencies of 928 observations of the average
 height of father and mother versus the height of their child, shown in @fig-galton-corr.
+(Today, we would put child height on the $y$ axis, but Galton was working from the table,
+so he organized it with parent height as the rows.)
 He then drew smoothed contour lines of equal frequencies and had the wonderful
 visual insight that these formed concentric shapes that were tolerably close to ellipses.
 
@@ -614,6 +618,7 @@ insight: the lines of means of ($Y | X$) and ($X | Y$) corresponded approximatel
 the loci of  horizontal and vertical tangents to the concentric ellipses. 
 To complete the picture, he added lines showing the major and minor axes of the
 family of ellipses (which turned out to be the principal components) with the result shown in @fig-galton-corr.
+
 
 ```{r}
 #| label: fig-galton-corr
@@ -626,6 +631,32 @@ knitr::include_graphics("images/galton-corr.jpg")
 
 
 For two variables, $x$ and $y$, the remarkable properties of the data ellipse are illustrated in @fig-galton-ellipse-r, a modern reconstruction of Galton's diagram.
+
+```{r galton-ellipse}
+#| eval: false
+#| code-fold: true
+#| code-summary: "Partial code for this figure"
+data(Galton, package = "HistData")
+sunflowerplot(parent ~ child, data=Galton, 
+      xlim=c(61,75), 
+      ylim=c(61,75), 
+      seg.col="black", 
+    	xlab="Child height", 
+      ylab="Mid Parent height")
+
+y.x <- lm(parent ~ child, data=Galton)     # regression of y on x
+abline(y.x, lwd=2)
+x.y <- lm(child ~ parent, data=Galton)     # regression of x on y
+cc <- coef(x.y)
+abline(-cc[1]/cc[2], 1/cc[2], lwd=2, col="gray")
+
+with(Galton, 
+     car::dataEllipse(child, parent, 
+         plot.points=FALSE, 
+         levels=c(0.40, 0.68, 0.95), 
+         lty=1:3)
+    )
+```
 
 
 ```{r}
@@ -1125,7 +1156,7 @@ p2 <- ggplot(peng,
 p1 + p2
 ```
 
-### Simpson's paradox: marginal and conditional relationships
+## Simpson's paradox: marginal and conditional relationships
 
 Because it provides a visual representation of means, variances, and correlations,
 the data ellipse is ideally suited as a tool for illustrating and
@@ -1263,6 +1294,108 @@ plt3
 ```
 
 :::
+
+## Multivariate normality and outliers {#sec-multivar-normality}
+
+The relation of the data ellipsoid for $p$ variables to the $\chi^2_p$ distribution with
+$p$ degrees of freedom described in @sec-data-ellipse is based on the assumption that
+the data in $\mathbf{y}$ is a sample from a multivariate normal distribution (MVN),
+with a mean vector $\boldsymbol{\mu}$ and variance-covariance matrix $\boldsymbol{\Sigma}$,
+$$
+\mathbf{y}_{p \times 1} \sim \mathcal{N}(\boldsymbol{\mu}, \boldsymbol{\Sigma}) \Longleftrightarrow D^2_M (\mathbf{y}) \sim \chi^2_p\; .
+$$
+This fact can be used to assess whether sample data in $\mathbf{y}$ does indeed follow a
+MVN distribution by plotting the _quantiles_[^quantile] of the _sorted_ sample $D^2$ values
+(denoted $D^2_{(i)}$) calculated from @eq-Dsq
+against the corresponding $\chi^2_p$ quantiles found from `qchisq(df = p)`.
+The plotted points should then approximately fall along a line of unit slope when the data are MVN.
+This also provides a simple method to identify potential outliers as those points which are furthest
+from the centroid; that is those 
+for which
+$D^2_{(i)}$ is greater than the $1 - \alpha$ quantile of $\chi^2_p$.
+
+
+[^quantile]:  
+The $p$-quantile of a random variable $Y$ is a value, denoted by $Q_Y(p)$, such that
+$X \leq Q_Y(p)$ with probability $p$, i.e., $\Pr (Y \leq Q_Y(p)) = p$.
+For continuous variables, the quantile is the inverse of the cumulative distribution function.
+
+```{r}
+data(Galton, package = "HistData")
+```
+
+
+You can illustrate the calculation of $D^2_{(i)}$ using `heplots::Mahalanobis()` for the
+`Galton` data as shown below. I've used $\alpha = 0.01$, giving $\chi^2_p (0.99) = 9.21$
+as an outlier cutoff, just for the sake of this example.  With 928 cases, we would expect
+about 9 to have larger squared distances than this cutoff.
+
+```{r galton-dsq}
+DSQ <- Mahalanobis(Galton)
+alpha <- 0.01
+cutoff <- (qchisq(p = 1 - alpha, df = ncol(Galton))) |> 
+  print()
+outliers <- which(DSQ > cutoff) |>
+  print()
+GaltonD <- cbind(Galton, DSQ = DSQ)
+GaltonD[outliers,]
+```
+
+$\chi^2$ QQ plots are constructed by `heplots::cqplot()`.
+For the Galton data, the result is shown in @fig-galton-cqplot, where I've asked for the `id.n = 3`
+with the greatest $D^2_{(i)}$ values to be identified with their row numbers in the data.
+```{r}
+#| label: fig-galton-cqplot
+#| fig-cap: "Chi-square QQ plot of Galton's data on heights of parents and their offspring, with a 95%
+#|     pointwise confidence envelope"
+cqplot(Galton, id.n = 3)
+```
+
+In the typical use of QQ plots, it essential to have something in the nature of a confidence band
+around the points to be able to appreciate whether, and to what degree the observed data points
+differ from the reference distribution. For \code{cqplot}, this helps to assess whether the
+data are reasonably distributed as multivariate normal and also to flag potential outliers.
+
+The confidence envelope is calculated by finding the standard errors of the $D^2_{(i)}$,
+
+$$
+ \text{se} ( D^2_{(i)} ) = \hat{b} /d ( q_i)) \times \sqrt{  p_i (1-p_i) / n }  \comma
+$$
+where  
+$\hat{b}$ is an estimate of the slope of
+the reference line obtained from from the ratio of the interquartile range of the
+$D^2$ values to that of the corresponding $\chi^2_p$ distribution and
+$d(q_i)$ is the density of the chi square distribution at the quantile $q_i$.
+
+So, in @fig-galton-cqplot, you can see the same three points, with largest $D^2$ identified earlier.
+The confidence band shows that uncertainty increases a points get further from the mean, but
+by and large, nearly all the points lie within it.
+The fact that larger values fall beneath the reference line indicates that the sample $D^2$ are
+somewhat _less concentrated_ than values in the $\chi^2_2$ distribution.
+
+To help understand what we are seeing in this example, it is helpful to view the data in a
+scatterplot equivalent of @fig-galton-ellipse-r, with the same three observations labeled
+and made distinctive in the plot.
+
+```{r echo = -1}
+#| label: fig-galton-outliers
+#| fig-cap: "Scatterplot of Galton's data showing 68% and 95% data ellipses for the observations on parent and child height. The discrete points have been jittered to avoid overplotting. The three observations identified as having large $D^2$ values are labeled with their observation number."
+op <- par(mar = c(4,4,1,1)+.5)
+set.seed(47)
+dataEllipse(parent ~ child, data = GaltonD,
+            levels = c(0.68, 0.95),
+            add = FALSE, plot.points = FALSE,
+            center.pch = "+", center.cex = 3,
+            cex.lab = 1.5)
+with(GaltonD,{
+  points(jitter(child), jitter(parent),
+         col = ifelse(DSQ > cutoff, "red", "black"),
+         pch = ifelse(DSQ > cutoff, 16, 1),
+         cex = ifelse(DSQ > cutoff, 2, 0.8))
+  text(child[outliers], parent[outliers], labels = outliers, pos = 3)
+  }
+)
+```
 
 
 ## Scatterplot matrices {#sec-scatmat}

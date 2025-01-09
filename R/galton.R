@@ -1,5 +1,4 @@
 data(Galton, package = "HistData")
-
 sunflowerplot(parent ~ child, data=Galton, 
       xlim=c(61,75), 
       ylim=c(61,75), 
@@ -19,3 +18,44 @@ with(Galton,
          levels=c(0.40, 0.68, 0.95), 
          lty=1:3)
     )
+
+# multivariate normality
+
+library(heplots)
+DSQ <- Mahalanobis(Galton)
+alpha <- 0.01
+cutoff <- (qchisq(p = 1 - alpha, df = ncol(Galton))) |> 
+  print()
+outliers <- which(DSQ > cutoff) |>
+  print()
+
+GaltonD <- cbind(Galton, DSQ = DSQ)
+GaltonD[outliers,]
+
+op <- par(mar = c(4,4,1,1)+.5)
+set.seed(47)
+dataEllipse(parent ~ child, data = GaltonD,
+            levels = c(0.68, 0.95),
+            add = FALSE, plot.points = FALSE,
+            center.pch = "+", center.cex = 3,
+            cex.lab = 1.5)
+with(GaltonD,{
+  points(jitter(child), jitter(parent),
+         col = ifelse(DSQ > cutoff, "red", "black"),
+         pch = ifelse(DSQ > cutoff, 16, 1),
+         cex = ifelse(DSQ > cutoff, 2, 0.8))
+  text(child[outliers], parent[outliers], labels = outliers, pos = 3)
+  }
+)
+par(op)
+
+
+# cqplot
+out <- cqplot(Galton, id.n = 3) 
+
+
+
+
+cqplot(Galton, id.n = 4, detrend = TRUE)
+cqplot(Galton, id.n = 4, method = "mcd")
+
