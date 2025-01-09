@@ -1300,7 +1300,7 @@ plt3
 The relation of the data ellipsoid for $p$ variables to the $\chi^2_p$ distribution with
 $p$ degrees of freedom described in @sec-data-ellipse is based on the assumption that
 the data in $\mathbf{y}$ is a sample from a multivariate normal distribution (MVN),
-with a mean vector $\boldsymbol{\mu}$ and variance-covariance matrix $\boldsymbol{\Sigma}$,
+with a mean vector $\boldsymbol{\mu}$ and variance-covariance matrix $\boldsymbol{\Sigma}$, so each one implies the other:
 $$
 \mathbf{y}_{p \times 1} \sim \mathcal{N}(\boldsymbol{\mu}, \boldsymbol{\Sigma}) \Longleftrightarrow D^2_M (\mathbf{y}) \sim \chi^2_p\; .
 $$
@@ -1309,18 +1309,17 @@ MVN distribution by plotting the _quantiles_[^quantile] of the _sorted_ sample $
 (denoted $D^2_{(i)}$) calculated from @eq-Dsq
 against the corresponding $\chi^2_p$ quantiles found from `qchisq(df = p)`.
 The plotted points should then approximately fall along a line of unit slope when the data are MVN.
-This also provides a simple method to identify potential outliers as those points which are furthest
-from the centroid; that is those 
-for which
+This also provides a simple method to identify potential outliers as those points which are furthest from the centroid; that is those  for which
 $D^2_{(i)}$ is greater than the $1 - \alpha$ quantile of $\chi^2_p$.
 
 
 [^quantile]:  
-The $p$-quantile of a random variable $Y$ is a value, denoted by $Q_Y(p)$, such that
+The $p^{th}$-quantile of a random variable $Y$ is a value, denoted by $Q_Y(p)$, such that
 $X \leq Q_Y(p)$ with probability $p$, i.e., $\Pr (Y \leq Q_Y(p)) = p$.
 For continuous variables, the quantile is the inverse of the cumulative distribution function.
 
-```{r}
+```{r load-Galton}
+#| echo: false
 data(Galton, package = "HistData")
 ```
 
@@ -1328,7 +1327,8 @@ data(Galton, package = "HistData")
 You can illustrate the calculation of $D^2_{(i)}$ using `heplots::Mahalanobis()` for the
 `Galton` data as shown below. I've used $\alpha = 0.01$, giving $\chi^2_p (0.99) = 9.21$
 as an outlier cutoff, just for the sake of this example.  With 928 cases, we would expect
-about 9 to have larger squared distances than this cutoff.
+about 1% or 9 to have larger squared distances than this cutoff.
+Three cases are identified here.
 
 ```{r galton-dsq}
 DSQ <- Mahalanobis(Galton)
@@ -1361,8 +1361,7 @@ The confidence envelope is calculated by finding the standard errors of the $D^2
 $$
  \text{se} ( D^2_{(i)} ) = \hat{b} /d ( q_i)) \times \sqrt{  p_i (1-p_i) / n }  \comma
 $$
-where  
-$\hat{b}$ is an estimate of the slope of
+where $\hat{b}$ is an estimate of the slope of
 the reference line obtained from from the ratio of the interquartile range of the
 $D^2$ values to that of the corresponding $\chi^2_p$ distribution and
 $d(q_i)$ is the density of the chi square distribution at the quantile $q_i$.
@@ -1370,8 +1369,8 @@ $d(q_i)$ is the density of the chi square distribution at the quantile $q_i$.
 So, in @fig-galton-cqplot, you can see the same three points, with largest $D^2$ identified earlier.
 The confidence band shows that uncertainty increases a points get further from the mean, but
 by and large, nearly all the points lie within it.
-The fact that larger values fall beneath the reference line indicates that the sample $D^2$ are
-somewhat _less concentrated_ than values in the $\chi^2_2$ distribution.
+The fact that larger values fall _beneath_ the reference line indicates that the sample $D^2$ are
+somewhat _less concentrated_ (has a shorter upper tail) than values in the $\chi^2_2$ distribution.
 
 To help understand what we are seeing in this example, it is helpful to view the data in a
 scatterplot equivalent of @fig-galton-ellipse-r, with the same three observations labeled
@@ -1397,6 +1396,8 @@ with(GaltonD,{
 )
 ```
 
+It is clear from this plot that case 897 is for an exceptionally tall child of quite short parents, while case 1 and 13 are from very short children of tall parents; you could call
+them poster children for regression toward the mean.
 
 ## Scatterplot matrices {#sec-scatmat}
 
