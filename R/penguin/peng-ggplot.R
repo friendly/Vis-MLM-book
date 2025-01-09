@@ -9,7 +9,6 @@ library(car)
 library(ggdensity)
 library(patchwork)
 
-#load(here::here("data", "peng.RData"))
 data(peng, package="heplots")
 #str(peng)
 
@@ -43,6 +42,7 @@ ggplot(peng,
   stat_ellipse(geom = "polygon", level = 0.95, alpha = 0.2) +
   stat_ellipse(geom = "polygon", level = 0.68, alpha = 0.2) +
   stat_ellipse(geom = "polygon", level = 0.40, alpha = 0.2) +
+  theme_penguins +
   theme(legend.position = "inside",
         legend.position.inside=c(0.85, 0.15))
 
