@@ -1356,12 +1356,12 @@ around the points to be able to appreciate whether, and to what degree the obser
 differ from the reference distribution. For `cqplot()`, this helps to assess whether the
 data are reasonably distributed as multivariate normal and also to flag potential outliers.
 
-The confidence envelope is calculated by finding the standard errors of the $D^2_{(i)}$,
+The pointwise 95% confidence envelope is calculated as $D^2_{(i)} \pm 1.96 \text{se} ( D^2_{(i)} )$ with,
 
 $$
- \text{se} ( D^2_{(i)} ) = \hat{b} /d ( q_i)) \times \sqrt{  p_i (1-p_i) / n }  \comma
+ \text{se} ( D^2_{(i)} ) = \hat{b} /d ( q_i)) \times \sqrt{  p_i (1-p_i) / n }  \period
 $$
-where $\hat{b}$ is an estimate of the slope of
+Here, $\hat{b}$ is an estimate of the slope of
 the reference line obtained from from the ratio of the interquartile range of the
 $D^2$ values to that of the corresponding $\chi^2_p$ distribution and
 $d(q_i)$ is the density of the chi square distribution at the quantile $q_i$.
@@ -1402,20 +1402,68 @@ It is clear from this plot that case 897 is for an exceptionally tall child of q
 them poster children for regression toward the mean.
 
 Let's make the same plot for the Penguin data, using the same point symbols and colors as in @fig-peng-ggplot1.
+For illustration, I again label the three most extreme points.
 
 ```{r}
 #| label: fig-peng-cqplot
 #| fig-cap: "Chi-square QQ plot of the Pengiun data"
 clr <- peng.colors("dark")
-pch <- c(19, 17, 15)   # ggplot defaults for a factor
+pch <- c(19, 17, 15)   # ggplot symbol defaults for a factor
 
 out <- cqplot(peng[, 3:6], 
    id.n = 3,
    col = clr[peng$species],
    pch = pch[peng$species],
    ref.col = "grey",
-   what = "Penguin numeric variables")
+   what = "Penguin numeric variables",
+   cex.lab = 1.25)
 out
+```
+
+One point (case 283) stands out as an extreme multivariate outlier. The other two (10, 35) are well within the
+confidence envelope.
+
+This example also illustrates why outlier detection requires a multivariate rather than univariate approach
+and why it is necessary to take the correlations among variables into account with Malahanobis squared distance.
+In the code below, I find the observations with the three largest $D^2_{(i)}$ and convert the numeric variables
+to standardized $z$ scores, $z_i = (y_i - \bar(y)) / s_y$.
+
+```{r peng-zscores}
+DSQ <- Mahalanobis(peng[, 3:6])
+noteworthy <- order(DSQ, decreasing = TRUE)[1:3] |> print()
+
+peng |>
+  tibble::rownames_to_column(var = "id") |> 
+  mutate(across(bill_length:body_mass, c(scale))) |>
+  filter(id %in% noteworthy) |>
+  select(id, species, bill_length:body_mass) 
+```
+
+Plot, as in @fig-peng-ggplot1, but show the identified points....
+
+```{r}
+#| label: fig-peng-ggplot-out
+#| fig-cap: "Plot of bill length and bill depth, with the noteworthy points labeled"
+#| eval: false
+peng_plot <- peng |>
+  tibble::rownames_to_column(var = "id") |> 
+  mutate(note = id %in% noteworthy)
+
+ggplot(peng_plot, 
+       aes(x = bill_length, y = bill_depth,
+           color = species, shape = species, fill=species)) +
+  geom_point(aes(size=note), show.legend = FALSE) +
+  scale_size_manual(values = c(1.5, 4)) +
+  geom_text(data = subset(peng_plot, note==TRUE),
+            aes(label = id),
+            nudge_y = .4, color = "black", size = 5) +
+  geom_smooth(method = "lm", formula = y ~ x,
+              se=FALSE, linewidth=2) +
+  stat_ellipse(geom = "polygon", level = 0.95, alpha = 0.1) +
+  theme_penguins +
+  theme_bw(base_size = 14) +
+  theme(legend.position = "inside",
+        legend.position.inside=c(0.85, 0.15))
 ```
 
 

@@ -55,6 +55,7 @@ out <- cqplot(Galton, id.n = 3)
 
 
 
+cqplot(Galton, id.n = 4, id.method = "r")
 
 cqplot(Galton, id.n = 4, detrend = TRUE)
 cqplot(Galton, id.n = 4, method = "mcd")
