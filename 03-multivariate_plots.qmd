@@ -1312,25 +1312,34 @@ The plotted points should then approximately fall along a line of unit slope whe
 This also provides a simple method to identify potential outliers as those points which are furthest from the centroid; that is those  for which
 $D^2_{(i)}$ is greater than the $1 - \alpha$ quantile of $\chi^2_p$.
 
-
 [^quantile]:  
 The $p^{th}$-quantile of a random variable $Y$ is a value, denoted by $Q_Y(p)$, such that
 $X \leq Q_Y(p)$ with probability $p$, i.e., $\Pr (Y \leq Q_Y(p)) = p$.
 For continuous variables, the quantile is the inverse of the cumulative distribution function.
 
-```{r load-Galton}
-#| echo: false
-data(Galton, package = "HistData")
-```
+The topics of assessing multivariate normality and detecting multivariate outliers are
+larger than
+I consider here, 
+where I focus on the $\chi^2$ QQ plot and graphical methods to relate the
+the points identified as potential outliers to plots in data space.
+These topics are also intertwined, because outliers inflate the variance ($\mathbf{S}$) of
+the data, making extreme observations appear less extreme.
+A variety of robust methods are described later (sec ??) ...
 
 
-You can illustrate the calculation of $D^2_{(i)}$ using `heplots::Mahalanobis()` for the
+
+### Galton data
+
+
+Mahalanobis $D^2$ values are calculated by `heplots::Mahalanobis()`.
+I illustrate finding the largest $D^2_{(i)}$ for the
 `Galton` data as shown below. I've used $\alpha = 0.01$, giving $\chi^2_p (0.99) = 9.21$
 as an outlier cutoff, just for the sake of this example.  With 928 cases, we would expect
 about 1% or 9 to have larger squared distances than this cutoff.
 Three cases are identified here.
 
 ```{r galton-dsq}
+data(Galton, package = "HistData")
 DSQ <- Mahalanobis(Galton)
 alpha <- 0.01
 cutoff <- (qchisq(p = 1 - alpha, df = ncol(Galton))) |> 
@@ -1348,7 +1357,8 @@ with the greatest $D^2_{(i)}$ values to be identified with their row numbers in 
 #| label: fig-galton-cqplot
 #| fig-cap: "Chi-square QQ plot of Galton's data on heights of parents and their offspring, with a 95%
 #|     pointwise confidence envelope"
-cqplot(Galton, id.n = 3)
+out <- cqplot(Galton, id.n = 3)
+out
 ```
 
 In the typical use of QQ plots, it essential to have something in the nature of a confidence band
@@ -1356,7 +1366,7 @@ around the points to be able to appreciate whether, and to what degree the obser
 differ from the reference distribution. For `cqplot()`, this helps to assess whether the
 data are reasonably distributed as multivariate normal and also to flag potential outliers.
 
-The pointwise 95% confidence envelope is calculated as $D^2_{(i)} \pm 1.96 \text{se} ( D^2_{(i)} )$ with,
+The pointwise 95% confidence envelope is calculated as $D^2_{(i)} \pm 1.96 \; \text{se} ( D^2_{(i)} )$ with,
 
 $$
  \text{se} ( D^2_{(i)} ) = \hat{b} /d ( q_i)) \times \sqrt{  p_i (1-p_i) / n }  \period
@@ -1401,6 +1411,8 @@ with(GaltonD,{
 It is clear from this plot that case 897 is for an exceptionally tall child of quite short parents, while case 1 and 13 are from very short children of tall parents; you could call
 them poster children for regression toward the mean.
 
+### Penguin data
+
 Let's make the same plot for the Penguin data, using the same point symbols and colors as in @fig-peng-ggplot1.
 For illustration, I again label the three most extreme points.
 
@@ -1426,7 +1438,7 @@ confidence envelope.
 This example also illustrates why outlier detection requires a multivariate rather than univariate approach
 and why it is necessary to take the correlations among variables into account with Malahanobis squared distance.
 In the code below, I find the observations with the three largest $D^2_{(i)}$ and convert the numeric variables
-to standardized $z$ scores, $z_i = (y_i - \bar(y)) / s_y$.
+to standardized $z$ scores, $z_i = (y_i - \bar{y}) / s_y$.
 
 ```{r peng-zscores}
 DSQ <- Mahalanobis(peng[, 3:6])
@@ -1444,7 +1456,7 @@ Plot, as in @fig-peng-ggplot1, but show the identified points....
 ```{r}
 #| label: fig-peng-ggplot-out
 #| fig-cap: "Plot of bill length and bill depth, with the noteworthy points labeled"
-#| eval: false
+#| eval: true
 peng_plot <- peng |>
   tibble::rownames_to_column(var = "id") |> 
   mutate(note = id %in% noteworthy)
@@ -1460,7 +1472,7 @@ ggplot(peng_plot,
   geom_smooth(method = "lm", formula = y ~ x,
               se=FALSE, linewidth=2) +
   stat_ellipse(geom = "polygon", level = 0.95, alpha = 0.1) +
-  theme_penguins +
+  theme_penguins() +
   theme_bw(base_size = 14) +
   theme(legend.position = "inside",
         legend.position.inside=c(0.85, 0.15))

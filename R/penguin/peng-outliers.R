@@ -28,9 +28,9 @@ peng |> subset(rownames(peng) %in% noteworthy)
 
 peng |>
   tibble::rownames_to_column(var = "id") |> 
+  select(id, species, bill_length:body_mass) |>
   mutate(across(bill_length:body_mass, c(scale))) |>
-  filter(id %in% noteworthy) |>
-  select(id, species, bill_length:body_mass) 
+  filter(id %in% noteworthy)
 
 peng |>
   tibble::rownames_to_column(var = "id") |> 
@@ -66,7 +66,7 @@ ggplot(peng_plot,
   geom_smooth(method = "lm", formula = y ~ x,
               se=FALSE, linewidth=2) +
   stat_ellipse(geom = "polygon", level = 0.95, alpha = 0.1) +
-  theme_penguins +
+  theme_penguins() +
   theme_bw(base_size = 14) +
   theme(legend.position = "inside",
         legend.position.inside=c(0.85, 0.15))
