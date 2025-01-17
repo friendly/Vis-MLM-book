@@ -1307,8 +1307,10 @@ $$
 This fact can be used to assess whether sample data in $\mathbf{y}$ does indeed follow a
 MVN distribution by plotting the _quantiles_[^quantile] of the _sorted_ sample $D^2$ values
 (denoted $D^2_{(i)}$) calculated from @eq-Dsq
-against the corresponding $\chi^2_p$ quantiles found from `qchisq(df = p)`.
-The plotted points should then approximately fall along a line of unit slope when the data are MVN.
+against the corresponding $\chi^2_p$ quantiles found from `qchisq(df = p)`. This is called
+a $\chi^2$ QQ plot.
+
+The essential idea is that the plotted points should then approximately fall along a 45$^o$ line of  slope = 1 when the data are MVN (and axes are scaled equally).
 This also provides a simple method to identify potential outliers as those points which are furthest from the centroid; that is those  for which
 $D^2_{(i)}$ is greater than the $1 - \alpha$ quantile of $\chi^2_p$.
 
@@ -1318,14 +1320,15 @@ $X \leq Q_Y(p)$ with probability $p$, i.e., $\Pr (Y \leq Q_Y(p)) = p$.
 For continuous variables, the quantile is the inverse of the cumulative distribution function.
 
 The topics of assessing multivariate normality and detecting multivariate outliers are
-larger than
-I consider here, 
-where I focus on the $\chi^2$ QQ plot and graphical methods to relate the
-the points identified as potential outliers to plots in data space.
+larger than I consider here.
 These topics are also intertwined, because outliers inflate the variance ($\mathbf{S}$) of
 the data, making extreme observations appear less extreme.
-A variety of robust methods are described later (sec ??) ...
+A variety of _robust_ methods described later (**sec ??**) work by down-weighting outliers,
+which is particularly important in assessing whether the residuals from a multivariate linear
+model are multivariate normal.
 
+In this section, I focus on the $\chi^2$ QQ plot and graphical methods to relate the
+the points identified as potential outliers to plots in data space.
 
 
 ### Galton data
@@ -1335,7 +1338,9 @@ Mahalanobis $D^2$ values are calculated by `heplots::Mahalanobis()`.
 I illustrate finding the largest $D^2_{(i)}$ for the
 `Galton` data as shown below. I've used $\alpha = 0.01$, giving $\chi^2_p (0.99) = 9.21$
 as an outlier cutoff, just for the sake of this example.  With 928 cases, we would expect
-about 1% or 9 to have larger squared distances than this cutoff.
+about 1% or 9 to have larger squared distances than this cutoff. (Normally, allowing for
+the fact that we are looking at the largest values in a sample of size $n$, we would use
+a much smaller individual significance level, say $\alpha = 0.001$ or smaller still.)
 Three cases are identified here.
 
 ```{r galton-dsq}
@@ -1353,6 +1358,8 @@ GaltonD[outliers,]
 $\chi^2$ QQ plots are constructed by `heplots::cqplot()`.
 For the Galton data, the result is shown in @fig-galton-cqplot, where I've asked for the `id.n = 3`
 with the greatest $D^2_{(i)}$ values to be identified with their row numbers in the plot.
+The function returns (invisibly) the $D^2_{(i)}$ and corresponding $\chi^2_2$ quantile
+along with the upper-tail $p$-value.
 ```{r}
 #| label: fig-galton-cqplot
 #| fig-cap: "Chi-square QQ plot of Galton's data on heights of parents and their offspring, with a 95%
@@ -1366,15 +1373,16 @@ around the points to be able to appreciate whether, and to what degree the obser
 differ from the reference distribution. For `cqplot()`, this helps to assess whether the
 data are reasonably distributed as multivariate normal and also to flag potential outliers.
 
-The pointwise 95% confidence envelope is calculated as $D^2_{(i)} \pm 1.96 \; \text{se} ( D^2_{(i)} )$ with,
+The pointwise 95% confidence envelope is calculated as $D^2_{(i)} \pm 1.96 \times \text{se} ( D^2_{(i)} )$ where the standard error is calculated [@Chambers-etal:83, Sec. 8.6] as
 
 $$
- \text{se} ( D^2_{(i)} ) = \hat{b} /d ( q_i)) \times \sqrt{  p_i (1-p_i) / n }  \period
+ \text{se} ( D^2_{(i)} ) = \frac{\hat{b}}{d ( q_i)} \times \sqrt{  p_i (1-p_i) / n }  \period
 $$
-Here, $\hat{b}$ is an estimate of the slope of
+Here, $\hat{b}$ is an estimate of the _actual_ slope of
 the reference line obtained from from the ratio of the interquartile range of the
-$D^2$ values to that of the corresponding $\chi^2_p$ distribution and
-$d(q_i)$ is the density of the chi square distribution at the quantile $q_i$.
+$D^2$ values to that of the corresponding $\chi^2_p$ distribution.
+$d(q_i)$ is the density of the chi square distribution at the quantile $q_i$ and $p_i$ is
+the corresponding percentile.
 
 So, in @fig-galton-cqplot, you can see the same three points, with largest $D^2$ identified earlier.
 The confidence band shows that uncertainty increases a points get further from the mean, but
@@ -1384,13 +1392,13 @@ somewhat _less concentrated_ (has a shorter upper tail) than values in the $\chi
 
 To help understand what we are seeing in this example, it is helpful to view the data in a
 scatterplot equivalent of @fig-galton-ellipse-r, with the same three observations labeled
-and made distinctive in the plot. Because the heights are recorded in
-whole inches I jitter them on top of the data ellipses plotted without
-the points.
+and made distinctive in the plot. For this plot, because the heights are recorded in
+whole inches, I draw the data ellipses first without plotting the points and then
+draw the points using `jitter()` on top of the data ellipses.
 
 ```{r echo = -1}
 #| label: fig-galton-outliers
-#| fig-cap: "Scatterplot of Galton's data showing 68% and 95% data ellipses for the observations on parent and child height. The discrete points have been jittered to avoid overplotting. The three observations identified as having large $D^2$ values are labeled with their observation number."
+#| fig-cap: "Scatterplot of Galton's data showing 68% and 95% data ellipses for the observations on parent and child height. The discrete points have been jittered to avoid overplotting. The three observations identified as having large $D^2$ values are labeled with their observation number and given distinctive size, color and shape."
 op <- par(mar = c(4,4,1,1)+.5)
 set.seed(47)
 dataEllipse(parent ~ child, data = GaltonD,
@@ -1413,7 +1421,9 @@ them poster children for regression toward the mean.
 
 ### Penguin data
 
-Let's make the same plot for the Penguin data, using the same point symbols and colors as in @fig-peng-ggplot1.
+Let's do a similar analysis to assess multivariate normality and identify possible
+outliers for the Penguin data. In the `cqplot()` shown in @fig-peng-cqplot,
+I use the same point symbols and colors as in @fig-peng-ggplot1.
 For illustration, I again label the three most extreme points.
 
 ```{r}
