@@ -1428,7 +1428,7 @@ For illustration, I again label the three most extreme points.
 
 ```{r}
 #| label: fig-peng-cqplot
-#| fig-cap: "Chi-square QQ plot of the Pengiun data"
+#| fig-cap: "Chi-square QQ plot of the Pengiun data. The three cases with the largest $D^2$ values are identified with their case numbers."
 clr <- peng.colors("dark")
 pch <- c(19, 17, 15)   # ggplot symbol defaults for a factor
 
@@ -1442,31 +1442,18 @@ out <- cqplot(peng[, 3:6],
 out
 ```
 
-One point (case 283) stands out as an extreme multivariate outlier. The other two (10, 35) are well within the
-confidence envelope.
+One point (case 283) stands out as an extreme multivariate outlier. The other two (10, 35) are well within the confidence envelope.
 
-This example also illustrates why outlier detection requires a multivariate rather than univariate approach
-and why it is necessary to take the correlations among variables into account with Malahanobis squared distance.
-In the code below, I find the observations with the three largest $D^2_{(i)}$ and convert the numeric variables
-to standardized $z$ scores, $z_i = (y_i - \bar{y}) / s_y$.
 
-```{r peng-zscores}
-DSQ <- Mahalanobis(peng[, 3:6])
-noteworthy <- order(DSQ, decreasing = TRUE)[1:3] |> print()
-
-peng |>
-  tibble::rownames_to_column(var = "id") |> 
-  mutate(across(bill_length:body_mass, c(scale))) |>
-  filter(id %in% noteworthy) |>
-  select(id, species, bill_length:body_mass) 
-```
-
-Plot, as in @fig-peng-ggplot1, but show the identified points....
+To relate this to the data, we can plot the data, as in @fig-peng-ggplot1, and label the points identified as noteworthy. 
 
 ```{r}
 #| label: fig-peng-ggplot-out
-#| fig-cap: "Plot of bill length and bill depth, with the noteworthy points labeled"
+#| fig-cap: "Plot of bill length and bill depth, with the noteworthy points labeled. Only one (case 283) is a true multivariate outlier."
 #| eval: true
+DSQ <- Mahalanobis(peng[, 3:6])
+noteworthy <- order(DSQ, decreasing = TRUE)[1:3] |> print()
+
 peng_plot <- peng |>
   tibble::rownames_to_column(var = "id") |> 
   mutate(note = id %in% noteworthy)
@@ -1488,6 +1475,31 @@ ggplot(peng_plot,
         legend.position.inside=c(0.85, 0.15))
 ```
 
+Two cases (10, 283) appear to be very unusual, in relation to other members of their species. But only case 283 is a true multivariate outlier, as shown in the cqplot
+@fig-peng-cqplot.
+
+<!--
+This example also illustrates why outlier detection requires a multivariate rather than univariate approach
+and why it is necessary to take the correlations among variables into account with Malahanobis squared distance.
+In the code below, I find the observations with the three largest $D^2_{(i)}$ and convert the numeric variables
+to standardized $z$ scores, $z_i = (y_i - \bar{y}) / s_y$.
+
+```{r peng-zscores}
+DSQ <- Mahalanobis(peng[, 3:6])
+noteworthy <- order(DSQ, decreasing = TRUE)[1:3] |> print()
+
+peng |>
+  tibble::rownames_to_column(var = "id") |> 
+  mutate(
+    z_BL = c(scale(bill_length)),
+    z_BD = c(scale(bill_depth)),
+    z_FL = c(scale(flipper_length)),
+    z_BM = c(scale(body_mass))
+  ) |>
+  filter(id %in% noteworthy) |>
+  select(id, species, z_BL:z_BM) 
+```
+-->
 
 ## Scatterplot matrices {#sec-scatmat}
 

@@ -36,9 +36,9 @@ peng |>
   tibble::rownames_to_column(var = "id") |> 
   mutate(
     z_BL = c(scale(bill_length)),
-    z_BD = scale(bill_depth),
-    z_FL = scale(flipper_length),
-    z_BM = scale(body_mass)
+    z_BD = c(scale(bill_depth)),
+    z_FL = c(scale(flipper_length)),
+    z_BM = c(scale(body_mass))
   ) |>
   filter(id %in% noteworthy) |>
   select(id, species, z_BL:z_BM) 
