@@ -36,12 +36,12 @@ peng |>
   tibble::rownames_to_column(var = "id") |> 
   mutate(
     z_BL = c(scale(bill_length)),
-    z_BD = scale(bill_depth),
-    z_FL = scale(flipper_length),
-    z_BM = scale(body_mass)
+    z_BD = c(scale(bill_depth)),
+    z_FL = c(scale(flipper_length)),
+    z_BM = c(scale(body_mass))
   ) |>
   filter(id %in% noteworthy) |>
-  select(id, species, z_BL:z_BM) 
+  select(id, species, sex, z_BL:z_BM) 
 
 
 peng |>
@@ -70,3 +70,18 @@ ggplot(peng_plot,
   theme_bw(base_size = 14) +
   theme(legend.position = "inside",
         legend.position.inside=c(0.85, 0.15))
+
+# From Cara Tompson
+
+# |- Exceptions ----
+p_exceptions <- peng |>
+  tibble::rownames_to_column(var = "id") |>
+  filter(bill_length == 48.7 & flipper_length == 222 |
+           bill_length == 46.9 & flipper_length == 192 |
+           bill_length == 58.0 & flipper_length == 181 |
+           bill_length == 44.1 & flipper_length == 210) |>
+  arrange(bill_length) |>
+  mutate(nickname = c( "The BFG", "Tinkerbell", "Average Joes", "Cyrano")) |>
+  print()
+
+         
