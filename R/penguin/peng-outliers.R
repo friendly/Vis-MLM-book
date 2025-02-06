@@ -70,3 +70,23 @@ ggplot(peng_plot,
   theme_bw(base_size = 14) +
   theme(legend.position = "inside",
         legend.position.inside=c(0.85, 0.15))
+
+
+# From Cara Thompson
+
+# |- Exceptions ----
+p_exceptions <- peng |>
+  tibble::rownames_to_column(var = "id") |>
+  filter(bill_length == 48.7 & flipper_length == 222 |
+           bill_length == 46.9 & flipper_length == 192 |
+           bill_length == 58.0 & flipper_length == 181 |
+           bill_length == 44.1 & flipper_length == 210) |>
+  arrange(bill_length) |>
+  mutate(nickname = c( "The BFG", "Tinkerbell", "Average Joes", "Cyrano")) |>
+  print()
+
+# Outliers on last PCA dimensions
+
+peng.pca <- prcomp (~ bill_length + bill_depth + flipper_length + body_mass,
+                    data=peng)
+                    
