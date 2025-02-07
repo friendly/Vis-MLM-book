@@ -85,8 +85,58 @@ p_exceptions <- peng |>
   mutate(nickname = c( "The BFG", "Tinkerbell", "Average Joes", "Cyrano")) |>
   print()
 
+
+# MVN & outliers for residuals
+
+peng.mod <- lm(cbind(bill_length, bill_depth, flipper_length, body_mass) ~ species, data = peng)
+
+cqplot(residuals(peng.mod), id.n = 3)
+
 # Outliers on last PCA dimensions
 
+library(ggbiplot)
 peng.pca <- prcomp (~ bill_length + bill_depth + flipper_length + body_mass,
-                    data=peng)
-                    
+                    data=peng, scale. = TRUE)
+
+lab <- 1:nrow(peng)
+lab <- ifelse(lab %in% noteworthy, lab, "")
+
+ggbiplot(peng.pca, # obs.scale = 1, var.scale = 1,
+         groups = peng$species, 
+         ellipse = TRUE, 
+         circle = TRUE,
+#         labels = lab,
+         varname.size = 5) +
+#  scale_color_discrete(name = 'Penguin Species') +
+  geom_text(data = subset(peng_plot, note==TRUE),
+            aes(label = id),
+            nudge_y = .4, color = "black", size = 5) +
+  theme_minimal() +
+  theme_penguins(name = "Species") +
+  theme(legend.direction = 'horizontal', legend.position = 'top') 
+
+# last 2 dimensions
+ggbiplot(peng.pca,  obs.scale = 1, var.scale = 1,
+         choices = 3:4,
+         groups = peng$species, 
+         ellipse = TRUE, 
+         circle = TRUE,
+         varname.size = 5) +
+  #  scale_color_discrete(name = 'Penguin Species') +
+  theme_minimal() +
+  theme_penguins(name = "Species") +
+  theme(legend.direction = 'horizontal', legend.position = 'top') 
+
+library(factoextra)
+
+fviz_pca_biplot(
+  peng.pca,
+  axes = 3:4,
+  habillage = peng$species,
+  addEllipses = TRUE, ellipse.level = 0.68,
+  palette = peng.colors("dark"),
+  arrowsize = 1.5, col.var = "black", labelsize=4
+#  label = lab
+  ) +
+  theme(legend.position = "top")
+
