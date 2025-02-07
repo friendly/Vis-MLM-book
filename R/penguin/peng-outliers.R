@@ -129,14 +129,18 @@ ggbiplot(peng.pca,  obs.scale = 1, var.scale = 1,
 
 library(factoextra)
 
+
+# label.select works to identify the points, but looses the variable labels
 fviz_pca_biplot(
   peng.pca,
   axes = 3:4,
   habillage = peng$species,
+  geom.var = c("arrow", "text"),
   addEllipses = TRUE, ellipse.level = 0.68,
   palette = peng.colors("dark"),
-  arrowsize = 1.5, col.var = "black", labelsize=4
-#  label = lab
-  ) +
+  arrowsize = 1.5, col.var = "black", labelsize=4,
+  label.select = noteworthy,
+  ggtheme = theme_minimal(base_size = 14)
+) +
   theme(legend.position = "top")
 
