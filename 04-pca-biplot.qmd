@@ -2105,9 +2105,84 @@ knitr::include_graphics("images/outlier-demo.gif")
 ### Example: Penguin data
 
 In @sec-multnorm-penguin we examined the questions of multivariate normality and outliers for the penguin data.
-From a $chi^2$ QQ plot (@fig-peng-cqplot)
-of the Mahalanobis $D^2$ values, three Penguins () were identified as noteworthy, deserving a closer look
-to see why they are unusual.
+From a $\chi^2$ QQ plot (@fig-peng-cqplot)
+of the Mahalanobis $D^2$ values, three Penguins (283,  10,  35) were identified as noteworthy, deserving a closer look to see why they are unusual. It was pointed out that 2D plots of the data variables were only partially
+revealing.
+Let's see where they appear in biplots.
+
+First, I find the noteworthy points as before:
+
+```{r peng-out}
+data(peng, package="heplots")
+
+# find potential multivariate outliers
+DSQ <- heplots::Mahalanobis(peng[, 3:6])
+noteworthy <- order(DSQ, decreasing = TRUE)[1:3] |> print()
+```
+
+The PCA shows that the first two components accounts for 88% of variance:
+```{r peng-pca}
+peng.pca <- prcomp(~ bill_length + bill_depth + flipper_length + body_mass,
+                   data=peng, scale. = TRUE)
+summary(peng.pca)
+```
+
+```{r}
+#| label: fig-peng-out-biplot1
+#| out-width: "60%"
+#| fig-cap: "Biplot of the first two dimensions of the Penguin data"
+knitr::include_graphics("images/peng-out-biplot-12.png")
+```
+
+@fig-peng-out-biplot1 gives the biplot for the first two dimensions. It can be seen that:
+* PC1 is largely determined by flipper length and body mass. We can interpret this as an overall measure of **penguin size**. On this dimension, Gentoos are the largest, by quite a lot, compared with Adelie and Chinstrap.
+
+* PC2 is mainly determined by variation in the two beak variables: bill length and depth. Chinstrap are lower than the other two species on bill length and depth, but bill length further distinguishes the Gentoos from the Adelies. A penguin biologist could almost certainly provide an explanation, but I'll call this **beak shape**.
+
+* But, our three suspected outliers are well-within the bulk of their species.
+
+That's the point of this exercise. The projection of the data into the space that accounts for the greatest
+**total** variance usually does not reveal a few unusual points.
+
+```{r peng-out-biplot1}
+#| eval: false
+#| code-fold: true
+#| code-summary: Show the code
+source("R/penguin/penguin-colors.R")
+# create vector of labels, blank except for the noteworthy
+lab <- 1:nrow(peng)
+lab <- ifelse(lab %in% noteworthy, lab, "")
+
+ggbiplot(peng.pca, # obs.scale = 1, var.scale = 1,
+         choices = 1:2,
+         groups = peng$species, 
+         ellipse = TRUE, ellipse.alpha = 0.1,
+         circle = TRUE,
+         var.factor = 1,
+         geom.ind = c("point", "text"),
+         point.size = 1,
+         labels = lab, labels.size = 6,
+         varname.size = 5,
+         clip = "off") +
+  theme_minimal(base_size = 14) +
+  theme_penguins("dark") +
+  scale_shape_discrete() +
+  theme(legend.direction = 'horizontal', legend.position = 'top') 
+```
+
+Now, plotting dimensions 3 and 4 gives @fig-peng-out-biplot2. Dimension 3, accounting for 9%,
+is largely determined by
+a contrast of bill length with bill depth and body mass. The Chinstraps here have the longest, straightest
+beaks. Our friend Cyrano (case 283), which is the only true multivariate outlier, lies at the extreme ends of
+both dimensions. Case 10 (Hook Nose) stands out at the high end of dimension 3, while case 35 is at the high
+end of dimension 4.
+
+```{r}
+#| label: fig-peng-out-biplot2
+#| out-width: "60%"
+#| fig-cap: "Biplot of dimensions 3-4 of the Penguin data"
+knitr::include_graphics("images/peng-out-biplot-34.png")
+```
 
 **Package summary**
 
