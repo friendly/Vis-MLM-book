@@ -3,8 +3,10 @@ library(candisc)
 library(car)
 #source("R/util/text.usr.R")
 
+# NB: changed contrast order
 data(iris)
-contrasts(iris$Species) <- matrix(c(0,-1,1, 2, -1, -1), 3,2)
+#contrasts(iris$Species) <- matrix(c(0,-1,1, 2, -1, -1), 3,2)
+contrasts(iris$Species) <- matrix(c(1,-1/2,-1/2,  0, 1, -1), nrow=3, ncol=2)
 contrasts(iris$Species)
 
 iris.mod <- lm(cbind(Sepal.Length, Sepal.Width, Petal.Length, Petal.Width) ~
@@ -15,6 +17,17 @@ summary(iris.mod)
 summary(iris.mod, univariate = TRUE)
 # tests for each response
 glance(iris.mod)
+
+# Species1: S:VV
+# Species2: V:V
+coef(iris.mod)
+
+linearHypothesis(iris.mod, "Species1") |> print(SSP=FALSE)
+linearHypothesis(iris.mod, "Species2") |> print(SSP=FALSE)
+
+# overall
+linearHypothesis(iris.mod, c("Species1", "Species2")) |> print(SSP=FALSE)
+
 
 col <-c("blue", "darkgreen", "brown")
 clr <- c(col, "red")

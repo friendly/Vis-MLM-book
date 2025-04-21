@@ -51,7 +51,27 @@ div.sourceCode
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 <script src="site_libs/quarto-nav/quarto-nav.js"></script>
 <script src="site_libs/quarto-nav/headroom.min.js"></script>
@@ -335,9 +355,10 @@ window.Quarto = {
 <a href="#he-plot-construction" id="toc-he-plot-construction" class="nav-link" data-scroll-target="#he-plot-construction"><span class="header-section-number">11.2</span> HE plot construction</a>
   <ul class="collapse">
 <li><a href="#example-iris-data" id="toc-example-iris-data" class="nav-link" data-scroll-target="#example-iris-data"><span class="header-section-number">11.2.1</span> Example: Iris data</a></li>
-  <li><a href="#significance-scaling" id="toc-significance-scaling" class="nav-link" data-scroll-target="#significance-scaling"><span class="header-section-number">11.2.2</span> Significance scaling</a></li>
-  <li><a href="#contrasts" id="toc-contrasts" class="nav-link" data-scroll-target="#contrasts"><span class="header-section-number">11.2.3</span> Contrasts</a></li>
-  <li><a href="#he-plot-matrices" id="toc-he-plot-matrices" class="nav-link" data-scroll-target="#he-plot-matrices"><span class="header-section-number">11.2.4</span> HE plot matrices</a></li>
+  <li><a href="#manova-model" id="toc-manova-model" class="nav-link" data-scroll-target="#manova-model"><span class="header-section-number">11.2.2</span> MANOVA model</a></li>
+  <li><a href="#significance-scaling" id="toc-significance-scaling" class="nav-link" data-scroll-target="#significance-scaling"><span class="header-section-number">11.2.3</span> Significance scaling</a></li>
+  <li><a href="#contrasts" id="toc-contrasts" class="nav-link" data-scroll-target="#contrasts"><span class="header-section-number">11.2.4</span> Contrasts</a></li>
+  <li><a href="#he-plot-matrices" id="toc-he-plot-matrices" class="nav-link" data-scroll-target="#he-plot-matrices"><span class="header-section-number">11.2.5</span> HE plot matrices</a></li>
   </ul>
 </li>
   <li><a href="#sec-candisc" id="toc-sec-candisc" class="nav-link" data-scroll-target="#sec-candisc"><span class="header-section-number">11.3</span> Canonical discriminant analysis</a></li>
@@ -434,8 +455,131 @@ design with 8 groups.
 <p>An ellipsoid representing variation in the means of a factor (or any other term reflected in a general linear hypothesis test, <a href="10-mlm-review.html#eq-hmat" class="quarto-xref">Equation&nbsp;<span>10.6</span></a>) in the <span class="math inline">\(\mathbf{H}\)</span> matrix is simply the data ellipse of the fitted values for that term. Dividing the hypothesis matrix by the error degrees of freedom, giving <span class="math inline">\(\mathbf{H} / \text{df}_e\)</span>, puts this on the same scale as the ellipse. <!-- , as shown in the left panel of \figref{fig:heplot-iris1}. --> I refer to this as <em>effect size scaling</em>, because it is similar to an effect size index used in univariate models, e.g., <span class="math inline">\(ES = (\bar{y}_1 - \bar{y}_2) / s_e\)</span> in a two-group, univariate design.</p>
 <section id="example-iris-data" class="level3" data-number="11.2.1"><h3 data-number="11.2.1" class="anchored" data-anchor-id="example-iris-data">
 <span class="header-section-number">11.2.1</span> Example: Iris data</h3>
-<p><strong>TODO</strong>: Introduce the iris data earlier. Where???</p>
-<p><a href="#fig-iris-HE1" class="quarto-xref">Figure&nbsp;<span>11.2</span></a> shows two views of the relationship between sepal length and sepal width for the iris data. … <!--
+<p>Perhaps the most famous (or infamous) dataset in the history of multivariate data analysis is that of measurements on three species of Iris flowers collected by Edgar Anderson <span class="citation" data-cites="Anderson:35">(<a href="95-references.html#ref-Anderson:35" role="doc-biblioref">1935</a>)</span> in the Gaspé Peninsula of Québec, Canada. Anderson wanted to quantify the outward appearance (“morphology”: shape, structure, color, pattern, size) of species as a method to study variation within and between such groups. Although Anderson published in the obscure <em>Bulletin of the American Iris Society</em>, R. A. Fisher <span class="citation" data-cites="Fisher:1936">(<a href="95-references.html#ref-Fisher:1936" role="doc-biblioref">1936</a>)</span> saw this as a challenge and opportunity to introduce the method now called discriminant analysis—how to find a weighted composite of variables to best discriminate among existing groups.</p>
+<!-- depending on use, make some of this a text box -->
+<div class="callout callout-style-default callout-note callout-titled" title="History corner">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+History corner
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>I said “infamous” above because Fisher published in the <em>Annals of Eugenics</em>, was an ardent eugenicist himself, and the work of eugenicists was often pervaded by prejudice against racial, ethnic and disabled groups. Through guilt by association, the Iris data, having mistakenly been called “Fisher’s Iris Data”, has become deprecated, even called “racist data”.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> The voices of the <em>Setosa</em>, <em>Versicolor</em> and <em>Virginica</em> of Gaspé protest: we don’t have a racist bone in out body and nor prejudice against any other species. <span class="citation" data-cites="Bodmer-etal-2021">Bodmer et al. (<a href="95-references.html#ref-Bodmer-etal-2021" role="doc-biblioref">2021</a>)</span> present a careful account of Fisher’s views on eugenics within the context of his time and his contributions to modern statistical theory and practice. Fisher’s views on race were largely formed by Darwin and Galton, but “nearly all of Fisher’s statements were about populations, groups of populations, or the human species as a whole”. Regardless, the <code>iris</code> data were Anderson’s and should not be blamed.</p>
+</div>
+</div>
+<!--
+
+
+
+
+
+
+
+::: {.cell layout-align="center"}
+
+```{.r .cell-code}
+knitr::include_graphics(here::here("images/iris-flowers-labeled.png"))
+```
+
+::: {.cell-output-display}
+![Three species of irises in the Anderson/Fisher data set. _Source_: P. I. Adegbite [Iris Flower Classification]( https://peaceadegbite1.medium.com/iris-flower-classification-60790e9718a1)](images/iris-flowers-labeled.png){#fig-iris-flowers fig-align='center' width=100%}
+:::
+:::
+
+
+
+
+
+
+
+
+@fig-iris-flowers shows photos of the three iris species, _Setosa_, _Versicolor_ and _Virginica_. 
+Each flower has three sepals and three petals. The sepals have brightly colored central sections.
+Anderson recorded measurements of the  length and width (in cm.) of the sepals and petals on 50 flowers of each type.
+-->
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div id="fig-iris-diagram" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-iris-diagram-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="images/iris-diagram.jpg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-iris-diagram-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;11.2: Diagram of an iris flower showing the measurements of petal and sepal. Each flower has three sepals and three petals. The sepals have brightly colored central sections. <em>Source</em>: <span class="citation" data-cites="DeSilva2020">Gayan De Silva (<a href="95-references.html#ref-DeSilva2020" role="doc-biblioref">2020</a>)</span>
+</figcaption></figure>
+</div>
+</div>
+</div>
+<p>So we understand what the measurements represent, <a href="#fig-iris-diagram" class="quarto-xref">Figure&nbsp;<span>11.2</span></a> superposes labels on a typical iris flower. Sepals are like ostentatious petals, with attractive decorations in the central section. Length is the distance from the center to the tip and width is the transverse dimension.</p>
+<p>As always, it is useful to start with overview displays to see the data.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb2" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/car/man/scatterplotMatrix.html">scatterplotMatrix</a></span><span class="op">(</span><span class="op">~</span> <span class="va">Sepal.Length</span> <span class="op">+</span> <span class="va">Sepal.Width</span> <span class="op">+</span> <span class="va">Petal.Length</span> <span class="op">+</span> <span class="va">Petal.Width</span> <span class="op">|</span> <span class="va">Species</span>,</span>
+<span>  data <span class="op">=</span> <span class="va">iris</span>,</span>
+<span>  col <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/pal_hue.html">hue_pal</a></span><span class="op">(</span><span class="op">)</span><span class="op">(</span><span class="fl">3</span><span class="op">)</span>,</span>
+<span>  pch <span class="op">=</span> <span class="fl">15</span><span class="op">:</span><span class="fl">17</span>,</span>
+<span>  smooth<span class="op">=</span><span class="cn">FALSE</span>,</span>
+<span>  regLine <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  ellipse<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>levels<span class="op">=</span><span class="fl">0.68</span>, fill.alpha<span class="op">=</span><span class="fl">0.1</span><span class="op">)</span>,</span>
+<span>  diagonal <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  legend <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>coords <span class="op">=</span> <span class="st">"bottomleft"</span>, cex <span class="op">=</span> <span class="fl">1.3</span>, pt.cex <span class="op">=</span> <span class="fl">1.2</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-iris-spm" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-iris-spm-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/ch11/fig-iris-spm-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-iris-spm-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;11.3: Scatterplot matrix of the <code>iris</code> dataset.
+</figcaption></figure>
+</div>
+</div>
+</div>
+</section><section id="manova-model" class="level3" data-number="11.2.2"><h3 data-number="11.2.2" class="anchored" data-anchor-id="manova-model">
+<span class="header-section-number">11.2.2</span> MANOVA model</h3>
+<p>A MANOVA model for these data answers the question: “Do the means of the <code>Species</code> differ significantly sepal and petal variables taken together?” <span class="math display">\[
+\mathbf{H}0 : \mathbf{\mu}_\textrm{setosa} = \mathbf{\mu}_\textrm{versicolor} = \mathbf{\mu}_\textrm{virginica}
+\]</span></p>
+<p>Because there are three species, the test involves 2 degrees of freedom, and we are entitled to represent this by two 1-df contrasts, or sub-questions. From the separation among the groups shown in <a href="#fig-iris-spm" class="quarto-xref">Figure&nbsp;<span>11.3</span></a> (or more botanical knowledge), it makes sense to compare</p>
+<ul>
+<li>Setosa vs.&nbsp;others: <span class="math inline">\(\mathbf{c}_1 = (1,\: -\frac12, \: -\frac12)\)</span>
+</li>
+<li>Versicolor vs.&nbsp;Virginica: : <span class="math inline">\(\mathbf{c}_1 = (0,\: 1, \: -1)\)</span>
+</li>
+</ul>
+<p>You can do this by putting these vectors as columns in a matrix and assigning this to the <code><a href="https://rdrr.io/r/stats/contrasts.html">contrasts()</a></code> of <code>Species</code>. It is important to do this <em>before</em> fitting with <code><a href="https://rdrr.io/r/stats/lm.html">lm()</a></code>, because the contrasts in effect determine how the <span class="math inline">\(\mathbf{X}\)</span> matrix is setup, and hence the names of the coefficients representing <code>Species</code>.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb3" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/contrasts.html">contrasts</a></span><span class="op">(</span><span class="va">iris</span><span class="op">$</span><span class="va">Species</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="op">-</span><span class="fl">1</span><span class="op">/</span><span class="fl">2</span>,<span class="op">-</span><span class="fl">1</span><span class="op">/</span><span class="fl">2</span>,  <span class="fl">0</span>, <span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span>, nrow<span class="op">=</span><span class="fl">3</span>, ncol<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/contrasts.html">contrasts</a></span><span class="op">(</span><span class="va">iris</span><span class="op">$</span><span class="va">Species</span><span class="op">)</span></span>
+<span><span class="co">#&gt;            [,1] [,2]</span></span>
+<span><span class="co">#&gt; setosa      1.0    0</span></span>
+<span><span class="co">#&gt; versicolor -0.5    1</span></span>
+<span><span class="co">#&gt; virginica  -0.5   -1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Now fit the model. As expected, the differences among groups is highly significant.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb4" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">iris.mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">Sepal.Length</span>, <span class="va">Sepal.Width</span>, <span class="va">Petal.Length</span>, <span class="va">Petal.Width</span><span class="op">)</span> <span class="op">~</span></span>
+<span>                 <span class="va">Species</span>, data<span class="op">=</span><span class="va">iris</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova</a></span><span class="op">(</span><span class="va">iris.mod</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Type II MANOVA Tests: Pillai test statistic</span></span>
+<span><span class="co">#&gt;         Df test stat approx F num Df den Df Pr(&gt;F)    </span></span>
+<span><span class="co">#&gt; Species  2      1.19     53.5      8    290 &lt;2e-16 ***</span></span>
+<span><span class="co">#&gt; ---</span></span>
+<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>As a quick follow-up, it is useful to examine the univariate tests for each of the iris variables, using <code>heplots::glance()</code> or <code><a href="https://friendly.github.io/heplots/reference/uniStats.html">heplots::uniStats()</a></code>. It is of interest that the <span class="math inline">\(R^2\)</span> values are much larger for the petal variables than the sepal length and width.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb5" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://generics.r-lib.org/reference/glance.html">glance</a></span><span class="op">(</span><span class="va">iris.mod</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 4 × 8</span></span>
+<span><span class="co">#&gt;   response     r.squared sigma fstatistic numdf dendf  p.value  nobs</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;            &lt;dbl&gt; &lt;dbl&gt;      &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt; &lt;int&gt;</span></span>
+<span><span class="co">#&gt; 1 Sepal.Length     0.619 0.515      119.      2   147 1.67e-31   150</span></span>
+<span><span class="co">#&gt; 2 Sepal.Width      0.401 0.340       49.2     2   147 4.49e-17   150</span></span>
+<span><span class="co">#&gt; 3 Petal.Length     0.941 0.430     1180.      2   147 2.86e-91   150</span></span>
+<span><span class="co">#&gt; 4 Petal.Width      0.929 0.205      960.      2   147 4.17e-85   150</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><strong>Older stuff</strong> <a href="#fig-iris-HE1" class="quarto-xref">Figure&nbsp;<span>11.4</span></a> shows two views of the relationship between sepal length and sepal width for the iris data. … <!--
 
 
 
@@ -478,41 +622,41 @@ par(op)
 
 --></p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb2" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/include_graphics.html">include_graphics</a></span><span class="op">(</span><span class="st">"images/iris-HE1.png"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb6" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/include_graphics.html">include_graphics</a></span><span class="op">(</span><span class="st">"images/iris-HE1.png"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div id="fig-iris-HE1" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-iris-HE1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <img src="images/iris-HE1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-iris-HE1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;11.2: Iris data: Data ellipses and HE plot
+Figure&nbsp;11.4: Iris data: Data ellipses and HE plot
 </figcaption></figure>
 </div>
 </div>
 </div>
-</section><section id="significance-scaling" class="level3" data-number="11.2.2"><h3 data-number="11.2.2" class="anchored" data-anchor-id="significance-scaling">
-<span class="header-section-number">11.2.2</span> Significance scaling</h3>
+</section><section id="significance-scaling" class="level3" data-number="11.2.3"><h3 data-number="11.2.3" class="anchored" data-anchor-id="significance-scaling">
+<span class="header-section-number">11.2.3</span> Significance scaling</h3>
 <p>The geometry of ellipsoids and multivariate tests allow us to go further with another re-scaling of the <span class="math inline">\(\mathbf{H}\)</span> ellipsoid that gives a <em>visual test of significance</em> for any term in a MLM. This is done simply by dividing <span class="math inline">\(\mathbf{H} / df_e\)</span> further by the <span class="math inline">\(\alpha\)</span>-critical value of the corresponding test statistic to show the strength of evidence against the null hypothesis. Among the various multivariate test statistics, Roy’s maximum root test, based on the largest eigenvalue <span class="math inline">\(\lambda_1\)</span> of <span class="math inline">\(\mathbf{H} \mathbf{E}^{-1}\)</span>, gives <span class="math inline">\(\mathbf{H} / (\lambda_\alpha df_e)\)</span> which has the visual property that the scaled <span class="math inline">\(\mathbf{H}\)</span> ellipsoid will protrude <em>somewhere</em> outside the standard <span class="math inline">\(\mathbf{E}\)</span> ellipsoid if and only if Roy’s test is significant at significance level <span class="math inline">\(\alpha\)</span>. The critical value <span class="math inline">\(\lambda_\alpha\)</span> for Roy’s test is <span class="math display">\[
 \lambda_\alpha = \left(\frac{\text{df}_1}{\text{df}_2}\right) \; F_{\text{df}_1, \text{df}_2}^{1-\alpha} \:\: ,
 \]</span> where <span class="math inline">\(\text{df}_1 = \max(p, \text{df}_h)\)</span> and <span class="math inline">\(\text{df}_2 = \text{df}_h + \text{df}_e - \text{df}_1\)</span>.</p>
 <p>For these data, the HE plot using significance scaling is shown in the right panel of .</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb3" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/include_graphics.html">include_graphics</a></span><span class="op">(</span><span class="st">"images/iris-HE2.png"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb7" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/include_graphics.html">include_graphics</a></span><span class="op">(</span><span class="st">"images/iris-HE2.png"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div id="fig-iris-HE2" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-iris-HE2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <img src="images/iris-HE2.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-iris-HE2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;11.3: HE plots for sepal width and sepal length in the iris dataset. Left: effect scaling of the <span class="math inline">\(\mathbf{H}\)</span> magtrix; right: significance scaling
+Figure&nbsp;11.5: HE plots for sepal width and sepal length in the iris dataset. Left: effect scaling of the <span class="math inline">\(\mathbf{H}\)</span> magtrix; right: significance scaling
 </figcaption></figure>
 </div>
 </div>
 </div>
-</section><section id="contrasts" class="level3" data-number="11.2.3"><h3 data-number="11.2.3" class="anchored" data-anchor-id="contrasts">
-<span class="header-section-number">11.2.3</span> Contrasts</h3>
-</section><section id="he-plot-matrices" class="level3" data-number="11.2.4"><h3 data-number="11.2.4" class="anchored" data-anchor-id="he-plot-matrices">
-<span class="header-section-number">11.2.4</span> HE plot matrices</h3>
+</section><section id="contrasts" class="level3" data-number="11.2.4"><h3 data-number="11.2.4" class="anchored" data-anchor-id="contrasts">
+<span class="header-section-number">11.2.4</span> Contrasts</h3>
+</section><section id="he-plot-matrices" class="level3" data-number="11.2.5"><h3 data-number="11.2.5" class="anchored" data-anchor-id="he-plot-matrices">
+<span class="header-section-number">11.2.5</span> HE plot matrices</h3>
 </section></section><section id="sec-candisc" class="level2" data-number="11.3"><h2 data-number="11.3" class="anchored" data-anchor-id="sec-candisc">
 <span class="header-section-number">11.3</span> Canonical discriminant analysis</h2>
 <div class="cell" data-layout-align="center">
@@ -522,7 +666,24 @@ Figure&nbsp;11.3: HE plots for sepal width and sepal length in the iris dataset.
 </div>
 
 
-</section></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" data-line-spacing="2" role="list" style="display: none">
+<div id="ref-Anderson:35" class="csl-entry" role="listitem">
+Anderson, E. (1935). The irises of the <span>Gaspé</span> peninsula. <em>Bulletin of the American Iris Society</em>, <em>35</em>, 2–5.
+</div>
+<div id="ref-Bodmer-etal-2021" class="csl-entry" role="listitem">
+Bodmer, W., Bailey, R. A., Charlesworth, B., Eyre-Walker, A., Farewell, V., Mead, A., &amp; Senn, S. (2021). The outstanding scientist, r.a. Fisher: His views on eugenics and race. <em>Heredity</em>, <em>126</em>(4), 565–576. <a href="https://doi.org/10.1038/s41437-020-00394-6">https://doi.org/10.1038/s41437-020-00394-6</a>
+</div>
+<div id="ref-Fisher:1936" class="csl-entry" role="listitem">
+Fisher, R. A. (1936). The use of multiple measurements in taxonomic problems. <em>Annals of Eugenics</em>, <em>7</em>(2), 179–188. <a href="https://doi.org/10.1111/j.1469-1809.1936.tb02137.x">https://doi.org/10.1111/j.1469-1809.1936.tb02137.x</a>
+</div>
+<div id="ref-DeSilva2020" class="csl-entry" role="listitem">
+Gayan De Silva. (2020). <em>Exploring the world of artificial neural networks -a beginner’s overview</em>. <a href="https://doi.org/10.13140/RG.2.2.14790.14406">https://doi.org/10.13140/RG.2.2.14790.14406</a>
+</div>
+</div>
+</section><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><hr>
+<ol>
+<li id="fn1"><p><a href="https://www.meganstodel.com/posts/no-to-iris/">Stop using iris</a><a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol></section></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
     const mode = bsSheetEl.getAttribute("data-mode");

@@ -71,6 +71,10 @@ ggplot(peng_plot,
   theme(legend.position = "inside",
         legend.position.inside=c(0.85, 0.15))
 
+
+ggplot(iris, aes(x=Petal.Width, y=Petal.Length, fill=Sepal.Width)) +
+  stat_density2d(geom="polygon", aes(fill = factor(..level..)))
+
 # From Cara Tompson
 
 # |- Exceptions ----
