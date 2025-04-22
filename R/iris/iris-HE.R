@@ -18,8 +18,8 @@ summary(iris.mod, univariate = TRUE)
 # tests for each response
 glance(iris.mod)
 
-# Species1: S:VV
-# Species2: V:V
+# Species1: S:Vv
+# Species2: V:v
 coef(iris.mod)
 
 linearHypothesis(iris.mod, "Species1") |> print(SSP=FALSE)
@@ -29,8 +29,8 @@ linearHypothesis(iris.mod, "Species2") |> print(SSP=FALSE)
 linearHypothesis(iris.mod, c("Species1", "Species2")) |> print(SSP=FALSE)
 
 
-col <-c("blue", "darkgreen", "brown")
-clr <- c(col, "red")
+iris_colors <-c("blue", "darkgreen", "brown4")
+clr <- c(iris_colors, "red")
 
 op <- par(mar = c(4, 4, 1, 1) + .5,
           mfrow = c(1, 2))
@@ -72,13 +72,14 @@ pairs(iris.mod,
 )
 
 # show contrasts
-hyp <- list("V:V"="Species1","S:VV"="Species2")
+hyp <- list("S:Vv"="Species1","V:v"="Species2")
 heplot(iris.mod, hypotheses=hyp,
        cex = 1.5, cex.lab = 1.5,
        fill=TRUE, fill.alpha=c(0.3,0.1),
        col = c("red", "blue", "darkgreen", "darkgreen"),
-       lty=c(0,0,1,1), label.pos=c(3, 1, 2, 1),
-       xlim = c(2,10), ylim = c(1.4,4.6))
+       lty=c(0,0,1,1), 
+       label.pos=c("N", "N", "E", "W"),
+       xlim = c(2, 10), ylim = c(1.4, 4.6))
 # compare with effect-size scaling
 #heplot(iris.mod, hypotheses=hyp, size="effect", add=TRUE)
 

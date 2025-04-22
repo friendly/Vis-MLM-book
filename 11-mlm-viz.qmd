@@ -113,10 +113,11 @@ The $\mat{E}$ ellipsoid is then translated to the overall (grand) means $\bar{\m
 In the notation of @eq-ellE, the error ellipsoid is given by
 $$
 \mathcal{E}_c (\bar{\mathbf{y}}, \mathbf{E}) = \bar{\mathbf{y}} \; \oplus \; c\,\mathbf{E}^{1/2} \comma
-$$
-where $c = \sqrt{2 F_{2, n-2}^{0.68}}$ for 2D plots and $c = \sqrt{3 F_{3, n-3}^{0.68}}$ for 3D.
+$$ {#eq-Ec}
+where $c = \sqrt{2 F_{2, n-2}^{0.68}}$ for 2D plots and $c = \sqrt{3 F_{3, n-3}^{0.68}}$ for 3D for standard 68% coverage.
 
 An ellipsoid representing variation in the means of a factor (or any other term reflected in a general linear hypothesis test, @eq-hmat) in the $\mat{H}$ matrix is simply the data ellipse of the fitted values for that term. 
+
 Dividing the hypothesis matrix by the error degrees of freedom, giving
 $\mat{H} / \text{df}_e$,
 puts this on the same scale as the \E ellipse.
@@ -124,7 +125,14 @@ puts this on the same scale as the \E ellipse.
 I refer to this as _effect size scaling_, because it is similar to an effect size index used in
 univariate models, e.g., $ES = (\bar{y}_1 - \bar{y}_2) / s_e$ in a two-group, univariate design.
 
-### Example: Iris data
+<!--
+The notation $\bar{\mathbf{y}} \; \oplus$ in @eq-Ec means that the error ellipsoid is
+shifted to be centered at the grand means of the response variables, where the $\mat{H}$
+is also centered. This allows the HE plot to also show the group means, facilitating
+interpretation.
+-->
+
+### Example: Iris data {#iris-ex}
 
 Perhaps the most famous (or infamous) dataset in the history of multivariate data analysis is that of measurements on three species of Iris flowers collected by Edgar Anderson [-@Anderson:35] in the Gaspé Peninsula of Québec, Canada. 
 Anderson wanted to quantify the outward appearance ("morphology": shape, structure, color, pattern, size) of species as a method to study variation within and between such groups. Although Anderson published in the obscure _Bulletin of the American Iris Society_, R. A. Fisher [-@Fisher:1936] saw this as a challenge and opportunity to introduce the method now called
@@ -139,12 +147,14 @@ Through guilt by association, the Iris data, having mistakenly been called "Fish
 has become deprecated, even called "racist data".[^stop-iris] The voices of the _Setosa_, _Versicolor_ and _Virginica_ of
 Gaspé protest: we don't have a racist bone in out body and nor prejudice against any
 other species.
+
 @Bodmer-etal-2021 present a careful account of Fisher's views on eugenics within the context
 of his time and his contributions to modern statistical theory and practice.
 Fisher's views on race were largely formed by Darwin and Galton,
 but "nearly all of Fisher’s statements were about populations,
 groups of populations, or the human species as a whole". Regardless, the `iris` data were
-Anderson's and should not be blamed.
+Anderson's and should not be blamed. After all, if Anderson had lent his car to Fisher,
+would the car be tainted by Fisher's eugenicist leanings?
 
 [^stop-iris]: [Stop using iris](https://www.meganstodel.com/posts/no-to-iris/)
 :::
@@ -165,45 +175,53 @@ Anderson recorded measurements of the  length and width (in cm.) of the sepals a
 ```{r}
 #| label: fig-iris-diagram
 #| echo: false
-#| out-width: "80%"
-#| fig-cap: "Diagram of an iris flower showing the measurements of petal and sepal. Each flower has three sepals and three petals. The sepals have brightly colored central sections. _Source_: @DeSilva2020"
+#| out-width: "70%"
+#| fig-cap: "Diagram of an iris flower showing the measurements of petal and sepal size. Each flower has three sepals and three alternating petals. The sepals have brightly colored central sections. _Source_: @DeSilva2020"
 knitr::include_graphics(here::here("images/iris-diagram.jpg"))
 ```
 
-So we understand what the measurements represent, @fig-iris-diagram superposes labels on a typical iris flower.
+So that we understand what the measurements represent, @fig-iris-diagram superposes labels on a typical iris flower.
 Sepals are like ostentatious petals, with attractive decorations in the central section. Length is the distance from the center
 to the tip and width is the transverse dimension.
 
 As always, it is useful to start with overview displays to see the data.
+A scatterplot matrix (@fig-iris-spm) shows that _versicolor_ and _virginica_ are more
+similar to each other than either is to _setosa_, both in their pairwise means (_setosa_ are smaller) and in the
+slopes of regression lines.
+Further, the ellipses  suggest that the
+assumption of constant within-group covariance matrices is problematic: While the shapes and sizes of the concentration ellipses for _versicolor_ and _virginica_ are reasonably similar, the shapes and sizes of the ellipses for _setosa_ are different from the other two.
 
 ```{r}
 #| label: fig-iris-spm
 #| out-width: "100%"
 #| fig-width: 10
 #| fig-height: 10
-#| fig-cap: "Scatterplot matrix of the `iris` dataset."
-scatterplotMatrix(~ Sepal.Length + Sepal.Width + Petal.Length + Petal.Width | Species,
+#| fig-cap: "Scatterplot matrix of the `iris` dataset. The species are summarized by 68% data ellipses and linear regression lines in each pairwise plot."
+iris_colors <-c("blue", "darkgreen", "brown4")
+scatterplotMatrix(~ Sepal.Length + Sepal.Width + 
+                    Petal.Length + Petal.Width | Species,
   data = iris,
-  col = scales::hue_pal()(3),
+  col = iris_colors,
   pch = 15:17,
   smooth=FALSE,
   regLine = TRUE,
   ellipse=list(levels=0.68, fill.alpha=0.1),
   diagonal = FALSE,
-  legend = list(coords = "bottomleft", cex = 1.3, pt.cex = 1.2))
+  legend = list(coords = "bottomleft", 
+                cex = 1.3, pt.cex = 1.2))
 ```
 
-### MANOVA model
-A MANOVA model for these data answers the question: "Do the means of the `Species` differ significantly
-sepal and petal variables taken together?" 
+### MANOVA model {#sec-iris-mod}
+We proceed nevertheless to fit a multivariate one-way ANOVA model to the iris data.
+The MANOVA model for these data addresses the question: "Do the means of the `Species` differ significantly for the sepal and petal variables taken together?" 
 $$
-\H0 : \mathbf{\mu}_\textrm{setosa} = \mathbf{\mu}_\textrm{versicolor} = \mathbf{\mu}_\textrm{virginica}
+\mathcal{H}_0 : \mathbf{\mu}_\textrm{setosa} = \mathbf{\mu}_\textrm{versicolor} = \mathbf{\mu}_\textrm{virginica}
 $$
 
 
-Because there are three species, the test involves 2 degrees of freedom,
+Because there are three species, the test involves $s = \min(p, g-1) =2$ degrees of freedom,
 and we are entitled to represent this by two 1-df contrasts,  or sub-questions. From the separation among the groups
-shown in @fig-iris-spm (or more botanical knowledge), it makes sense to compare
+shown in @fig-iris-spm (or more botanical knowledge), it makes sense to compare:
 
 * Setosa vs. others: $\mathbf{c}_1 = (1,\: -\frac12, \: -\frac12)$
 * Versicolor vs. Virginica: : $\mathbf{c}_1 = (0,\: 1, \: -1)$
@@ -214,11 +232,13 @@ because the contrasts in effect determine how the $\mathbf{X}$ matrix is setup, 
 names of the coefficients representing `Species`.
 
 ```{r}
-contrasts(iris$Species) <- matrix(c(1,-1/2,-1/2,  0, 1, -1), nrow=3, ncol=2)
+C <- matrix(c(1,-1/2,-1/2,  
+              0,   1,  -1), nrow=3, ncol=2)
+contrasts(iris$Species) <- C
 contrasts(iris$Species)
 ```
 
-Now fit the model. As expected, the differences among groups is highly significant. 
+Now let's fit the model. As you would expect from @fig-iris-spm, the differences among groups are highly significant. 
 
 ```{r iris-mod}
 iris.mod <- lm(cbind(Sepal.Length, Sepal.Width, Petal.Length, Petal.Width) ~
@@ -234,10 +254,46 @@ the $R^2$ values are much larger for the petal variables than the sepal length a
 glance(iris.mod)
 ```
 
+But these statistics don't help to understand _how_ the species differ. For this, we turn
+to HE plots.
 
-**Older stuff**
-@fig-iris-HE1 shows two views of the relationship between sepal length and sepal width for the iris data. ...
+### HE plots
+
+The `heplot()` function takes a `"mlm"` object and produces an HE plot for one pair
+of variables specified by the `variables` argument. By default, it plots the first two.
+
+```{r echo=-(1:2)}
+#| label: fig-iris-HE1
+#| fig-width: 10
+#| fig-height: 5
+#| fig-show: hold
+#| out-width: "100%"
+#| fig-cap: "HE plots for the multivariate model `iris.mod`. The left panel shows the plot for the Sepal variables; the right panel plots the Petal variables."
+op <- par(mar = c(4, 4, 1, 1) + .5,
+          mfrow = c(1, 2))
+heplot(iris.mod, 
+       cex = 1.5, cex.lab = 1.5,
+       fill=TRUE, fill.alpha=c(0.3, 0.1))
+heplot(iris.mod, variables = 3:4,
+       cex = 1.5, cex.lab = 1.5,
+       fill=TRUE, fill.alpha=c(0.3, 0.1))
+```
+
+The interpretation of the plots in @fig-iris-HE1 is as follows:
+
+* For the Sepal variables, length and width are positively correlated _within_ species 
+(the $\mat{E}$ = "Error" ellipsoid). The means of the groups (the $\mat{H}$ = "Species" ellipsoid), however, are negatively correlated. This plot is the HE plot representation of the data
+shown in row 2, column 1 of @fig-iris-spm. It reflects the relative **shape** of the 
+iris sepals: shorter and wider for _setosa_ than the other two species.
+
+* For the Petal variables length and width are again positively correlated _within_ species,
+but now the means of the groups are positively correlated: longer petals go with wider ones
+across species. This reflects the relative **size** of the iris petals.
+The analogous data plot appears in row 4, column 3 of @fig-iris-spm.
+
 <!--
+**Older stuff**
+@fig-iris-HE0 shows two views of the relationship between sepal length and sepal width for the iris data. ...
 ```{r}
 #| eval: false
 op <- par(mar = c(4, 4, 1, 1) + .5,
@@ -262,23 +318,24 @@ heplot(iris.mod, size = "effect",
        xlim = c(4,8), ylim = c(2,4))
 par(op)
 ```
--->
 
 ```{r}
-#| label: fig-iris-HE1
+#| label: fig-iris-HE0
 #| out-width: "100%"
 #| fig-cap: "Iris data: Data ellipses and HE plot"
 knitr::include_graphics("images/iris-HE1.png")
 ```
+-->
 
 
-### Significance scaling
+## Significance scaling
 
 The geometry of ellipsoids and multivariate tests allow us to go further with another re-scaling of the $\mat{H}$ ellipsoid
 that gives a _visual test of significance_ for any term in a MLM.
 This is done simply by dividing $\mat{H} / df_e$ further
 by the $\alpha$-critical value of the corresponding test statistic to show the strength of evidence against
 the null hypothesis.
+
 Among the various multivariate test statistics,
 Roy's maximum root test, based on the largest eigenvalue $\lambda_1$ of $\mat{H} \mat{E}^{-1}$,
 gives $\mat{H} / (\lambda_\alpha df_e)$
@@ -292,19 +349,80 @@ $$
 where $\text{df}_1 = \max(p, \text{df}_h)$ and $\text{df}_2 = \text{df}_h + \text{df}_e - \text{df}_1$.
 
 For these data, the HE plot using
-significance scaling is shown in the right panel of \figref{fig:heplot-iris1}.
+significance scaling is shown in the right panel of @fig-iris-HE2. The left panel is the same as that
+shown for sepal width and length in @fig-iris-HE1, but with axis limits to make the two plots
+directly comparable.
 
 ```{r}
 #| label: fig-iris-HE2
+#| echo: false
 #| out-width: "100%"
-#| fig-cap: "HE plots for sepal width and sepal length in the iris dataset. Left: effect scaling of the $\\mathbf{H}$ magtrix; right: significance scaling"
+#| fig-cap: "HE plots for sepal width and sepal length in the iris dataset. Left: effect scaling of the $\\mathbf{H}$ matrix; right: significance scaling, where protrusion of $\\mathbf{H}$ outside $\\mathbf{E}$ indicates a significant effect by Roy's test."
 knitr::include_graphics("images/iris-HE2.png")
 ```
 
 
-### Contrasts
+## Contrasts
 
-### HE plot matrices
+As described in @sec-contrasts, tests of linear hypotheses and contrasts represented by the
+general linear test $\mathcal{H}_0: \mathbf{C} \;\mathbf{B} = \mathbf{0}$ provide a
+powerful way to probe the _specific_ effects represented within the global null hypothesis,
+$\mathcal{H}_0: \mathbf{B} = \mathbf{0}$, that all effects are zero.
+
+Because the contrasts $\mathbf{c}_1$ ("Species1") and $\mathbf{c}_2$ ("Species2")  are orthogonal, i.e., 
+$\mathbf{c}_1^\top \mathbf{c}_2 = 0$ their tests are statistically independent, and their
+$\mathbf{H}$ matrices are additive. They fully decompose the general question of differences
+among the groups into two independent questions regarding the contrasts.
+
+$$
+\mathbf{H}_\text{Species} = \mathbf{H}_\text{Species1} + \mathbf{H}_\text{Species2}
+$$
+
+`car::linearHypothesis()` is the means for testing these statistically, and `heplot()`
+provides the way to show these tests visually. Using the contrasts set up in @sec-iris-mod,
+$\mathbf{c}_1$, representing the difference between _setosa_ and the other species
+is labeled `Species1` and the comparison of _versicolor_ with _virginica_ is `Species2`.
+The coefficients for these in $\mathbf{B}$ give the differences in the means.
+The line for `(Intercept)` gives grand means of the variables.
+
+```{r iris-mod-coef}
+coef(iris.mod)
+```
+
+Numerical tests of hypotheses using `linearHypothesis()` can be specified in a very general way
+
+```{r iris-linhyp}
+linearHypothesis(iris.mod, "Species1") |> print(SSP=FALSE)
+linearHypothesis(iris.mod, "Species2") |> print(SSP=FALSE)
+```
+
+In passing, note that the _joint_ test of these contrasts is exactly equivalent to the overall
+test of `Species` (results not shown).
+
+```{r}
+linearHypothesis(iris.mod, c("Species1", "Species2"))
+```
+
+We can show these contrasts in an HE plot by supplying a named list for the `hypotheses` argument ...
+
+```{r}
+hyp <- list("S:Vv"="Species1","V:v"="Species2")
+heplot(iris.mod, hypotheses=hyp,
+       cex = 1.5, cex.lab = 1.5,
+       fill=TRUE, fill.alpha=c(0.3,0.1),
+       col = c("red", "blue", "darkgreen", "darkgreen"),
+       lty=c(0,0,1,1), label.pos=c(3, 1, 2, 1),
+       xlim = c(2, 10), ylim = c(1.4, 4.6))
+```
+
+
+## HE plot matrices
+
+In base R graphics, 2D scatterplots are extended to all pairwise views of multivariate data
+with a `pairs()` method. For multivariate linear models, the `r pkg("heplots")` defines a
+`pairs.mlm()` method to display HE plots for all pairs of the response variables.
+
+
 
 ## Canonical discriminant analysis {#sec-candisc}
 
