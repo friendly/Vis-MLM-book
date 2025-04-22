@@ -271,10 +271,10 @@ of variables specified by the `variables` argument. By default, it plots the fir
 #| fig-cap: "HE plots for the multivariate model `iris.mod`. The left panel shows the plot for the Sepal variables; the right panel plots the Petal variables."
 op <- par(mar = c(4, 4, 1, 1) + .5,
           mfrow = c(1, 2))
-heplot(iris.mod, 
+heplot(iris.mod, size = "effect",
        cex = 1.5, cex.lab = 1.5,
        fill=TRUE, fill.alpha=c(0.3, 0.1))
-heplot(iris.mod, variables = 3:4,
+heplot(iris.mod, size = "effect", variables = 3:4,
        cex = 1.5, cex.lab = 1.5,
        fill=TRUE, fill.alpha=c(0.3, 0.1))
 ```
@@ -357,20 +357,24 @@ directly comparable.
 #| label: fig-iris-HE2
 #| echo: false
 #| out-width: "100%"
-#| fig-cap: "HE plots for sepal width and sepal length in the iris dataset. Left: effect scaling of the $\\mathbf{H}$ matrix; right: significance scaling, where protrusion of $\\mathbf{H}$ outside $\\mathbf{E}$ indicates a significant effect by Roy's test."
+#| fig-cap: "HE plots for sepal width and sepal length in the iris dataset. Left: _effect_ scaling of the $\\mathbf{H}$ matrix; right: _significance_ scaling, where protrusion of $\\mathbf{H}$ outside $\\mathbf{E}$ indicates a significant effect by Roy's test."
 knitr::include_graphics("images/iris-HE2.png")
 ```
 
+You can interpret the plot using effect scaling to indicate that the overall "size" of variation
+of the group means is roughly the same as that of within-group variation for the two sepal variables.
+Significance scaling weights the evidence against the null hypothesis that a given effect is zero.
 
-## Contrasts
+## Visualizing contrasts and linear hypotheses
 
 As described in @sec-contrasts, tests of linear hypotheses and contrasts represented by the
 general linear test $\mathcal{H}_0: \mathbf{C} \;\mathbf{B} = \mathbf{0}$ provide a
 powerful way to probe the _specific_ effects represented within the global null hypothesis,
 $\mathcal{H}_0: \mathbf{B} = \mathbf{0}$, that all effects are zero.
 
-Because the contrasts $\mathbf{c}_1$ ("Species1") and $\mathbf{c}_2$ ("Species2")  are orthogonal, i.e., 
-$\mathbf{c}_1^\top \mathbf{c}_2 = 0$ their tests are statistically independent, and their
+In this example the contrasts $\mathbf{c}_1$ ("Species1") and $\mathbf{c}_2$ ("Species2")  
+among the iris species are orthogonal, i.e., 
+$\mathbf{c}_1^\top \mathbf{c}_2 = 0$. Therefore, their tests are statistically independent, and their
 $\mathbf{H}$ matrices are additive. They fully decompose the general question of differences
 among the groups into two independent questions regarding the contrasts.
 
@@ -389,7 +393,9 @@ The line for `(Intercept)` gives grand means of the variables.
 coef(iris.mod)
 ```
 
-Numerical tests of hypotheses using `linearHypothesis()` can be specified in a very general way
+Numerical tests of hypotheses using `linearHypothesis()` can be specified in a very general way.
+A character variable or vector tests whether the named coefficients are different from zero
+for all responses.
 
 ```{r iris-linhyp}
 linearHypothesis(iris.mod, "Species1") |> print(SSP=FALSE)
@@ -400,13 +406,20 @@ In passing, note that the _joint_ test of these contrasts is exactly equivalent 
 test of `Species` (results not shown).
 
 ```{r}
+#| eval: false
 linearHypothesis(iris.mod, c("Species1", "Species2"))
 ```
 
-We can show these contrasts in an HE plot by supplying a named list for the `hypotheses` argument ...
+We can show these contrasts in an HE plot by supplying a named list for the `hypotheses` argument.
+The names are used as labels in the plot.
+In the case of a 1-df multivariate test, the $\mathbf{H}$ ellipses plot as a degenerate line.
 
 ```{r}
-hyp <- list("S:Vv"="Species1","V:v"="Species2")
+#| label: fig-iris-contrasts
+#| fig-width: 6
+#| fig-height: 6
+#| out-width: "60%"
+hyp <- list("S:Vv" = "Species1", "V:v" = "Species2")
 heplot(iris.mod, hypotheses=hyp,
        cex = 1.5, cex.lab = 1.5,
        fill=TRUE, fill.alpha=c(0.3,0.1),
@@ -415,16 +428,57 @@ heplot(iris.mod, hypotheses=hyp,
        xlim = c(2, 10), ylim = c(1.4, 4.6))
 ```
 
+This HE plot shows that, for the two sepal variables, the greatest between-species variation
+is accounted for by the contrast ("S:Vv") between _setosa_ and the others, for which the effect is very
+large in relation to error variation.  The second contrast ("V:v"), between the _versicolor_ and _virginica_
+species is relatively smaller, but still explains significant variation of the sepal variables among the species.
+The directions of these hypotheses in a given plot show _how_ the group means differ in terms of a given contrast.[^HE-contrast-geometry]
+
+[^HE-contrast-geometry]: That the $\mathbf{H}$ ellipses for the contrasts subtend that for the overall test of `Species` is no accident.
+In fact, this is true in $p$-dimensional space for _any_ linear hypothesis, and orthogonal contrasts
+have the additional geometric property that they form _conjugate axes_ for the overall $\mathbf{H}$ ellipsoid
+relative to the $\mathbf{E}$ ellipsoid [@Friendly-etal:ellipses:2013].
 
 ## HE plot matrices
 
 In base R graphics, 2D scatterplots are extended to all pairwise views of multivariate data
-with a `pairs()` method. For multivariate linear models, the `r pkg("heplots")` defines a
+with a `pairs()` method. For multivariate linear models, the `r package("heplots")` defines a
 `pairs.mlm()` method to display HE plots for all pairs of the response variables.
 
+```{r}
+#| label: fig-iris-pairs
+#| out-width: "100%"
+#| fig-cap: "All pairwise HE plots for the iris data"
+pairs(iris.mod,
+      fill=TRUE, fill.alpha=c(0.3, 0.1))
+```
 
 
-## Canonical discriminant analysis {#sec-candisc}
+## Low-D views: Canonical discriminant analysis {#sec-candisc}
+
+The HE plot framework so far provides views of all the effects in a MLM in 
+_variable_ space, that we can see in 2D for selected pairs 
+of response variables, or for all pairwise views in scatterplot matrix format.
+There is also an `heplot3d()` function giving plots for three response variables together.
+The 3D plots are interactive, in that they can be rotated and zoomed
+by mouse control, and dynamic, in that they can be made to spin and saved as movies.
+To save space, these plots are not shown here.
+
+However in a one-way MANOVA design with more than response three variables, it is difficult
+to visualize how the groups vary on _all_ responses together, and how the
+different variables contribute to discrimination among groups.
+In this situation, **canonical discriminant analysis** (CDA) is often used, to provide
+a low-D visualization of between-group variation, analogous to
+a biplot (@sec-biplot) for purely quantitative variables.
+
+The key to this is the eigenvalue decomposition, $\mat{H}\mat{E}^{-1} \lambda_i = \lambda_i \vec{v}_i$
+(\eqref{eq:mtest1})
+of $\mathbf{H}$ relative to $\mathbf{E}$. The eigenvalues, $\lambda_i$, give the "size" of each $s$ 
+orthogonal dimensions on which the multivariate tests are based. But the corresponding
+eigenvectors, $\mathbf{v}_i$, give the weights for the response variables
+in $s$ linear combinations that maximally discriminate among the groups.
+
+
 
 ```{r}
 #| echo: false

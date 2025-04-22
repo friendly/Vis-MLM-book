@@ -68,8 +68,7 @@ text(10, 4.5, expression(paste("Significance scaling:", bold(H) / (lambda[alpha]
 par(op)
 
 pairs(iris.mod,
-      fill=TRUE, fill.alpha=c(0.3,0.1)
-)
+      fill=TRUE, fill.alpha=c(0.3, 0.1))
 
 # show contrasts
 hyp <- list("S:Vv"="Species1","V:v"="Species2")
