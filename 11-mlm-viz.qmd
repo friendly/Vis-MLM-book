@@ -9,6 +9,21 @@ knitr::opts_chunk$set(fig.path = "figs/ch11/")
 
 # Visualizing Multivariate Models {#sec-vis-mlm}
 
+The methods discussed in @sec-mlm-review provide the basis for a rather complete multivariate analysis
+of traditional univariate methods for the same designs. You can carry out multiple regression,
+ANOVA, or indeed, any classical linear model with the standard collection of analysis tools you use for
+a single outcome variable, but naturally extended in most cases to having several outcomes to analyse
+together. 
+
+- everything you know about the usual univariate models-- main effects, interactions, contrasts for factors, ... applies here
+
+- by a rather clever design, called "matrix algebra" the separate univariate models can be combined, by turning vectors of responses, $\mathbf{y}_1, \mathbf{y}_2, \dots$ into a matrix $\mathbf{Y}$. Bingo! We get a
+multivariate extension
+
+- as if collection of separate models, but w/ overall test
+
+- refer to Huang: given the challenges and assumptions involved in appropriately performing and interpreting MANOVA results, researchers are better off using other less error-prone procedures.
+
 Tests of multivariate models, including multivariate analysis of variance (MANOVA) for group differences and multivariate multiple regression (MMRA) can be easily visualized by plots of a hypothesis ("H") data ellipse for the fitted values relative to the corresponding plot of the error ellipse ("E") of the residuals, which I call the HE plot framework.
 
 For more than a few response variables, these result can be projected onto a lower-dimensional "canonical discriminant" space providing an even simpler description.
@@ -16,10 +31,11 @@ For more than a few response variables, these result can be projected onto a low
 
 **Packages**
 
-In this chapter we use the following packages. Load them now
+In this chapter we use the following packages. I load them now.
 ```{r}
 library(car)
 library(heplots)
+library(candisc)
 library(ggplot2)
 library(dplyr)
 library(tidyr)
@@ -248,21 +264,39 @@ Anova(iris.mod)
 
 As a quick follow-up, it is useful to examine the univariate tests for each of the iris
 variables, using `heplots::glance()` or `heplots::uniStats()`. It is of interest that
-the $R^2$ values are much larger for the petal variables than the sepal length and width.
+the univariate $R^2$ values are much larger for the petal variables than the sepal length and width.[^rsq-anova].
+For comparison, `heplots::etasq()` gives the overall $\eta^2$ proportion of variance accounted for in 
+all responses.
+
+[^rsq-anova]: Recall that $R^2$ for a linear model is the the proportion of variation in the response that is explained by the model, calculated as $R^2 = \text{SS}_H / \text{SS}_T = \text{SS}_H / (\text{SS}_H + \text{SS}_E )$. For a multivariate model, these are obtained from the diagonal elements of $\mathbf{H}$ and $\mathbf{E}$.
 
 ```{r iris-glance}
 glance(iris.mod)
+
+etasq(iris.mod)
 ```
 
 But these statistics don't help to understand _how_ the species differ. For this, we turn
 to HE plots.
 
-### HE plots
+## HE plots
 
 The `heplot()` function takes a `"mlm"` object and produces an HE plot for one pair
 of variables specified by the `variables` argument. By default, it plots the first two.
 
-```{r echo=-(1:2)}
+<!-- duplicated the code b/c it doesn't print from the fig-iris-HE1 chunk -->
+```{r code-iris-HE1}
+#| eval: false
+heplot(iris.mod, size = "effect",
+       cex = 1.5, cex.lab = 1.5,
+       fill = TRUE, fill.alpha = c(0.3, 0.1))
+heplot(iris.mod, size = "effect", variables = 3:4,
+       cex = 1.5, cex.lab = 1.5,
+       fill = TRUE, fill.alpha = c(0.3, 0.1))
+```
+
+```{r}
+#| echo: false
 #| label: fig-iris-HE1
 #| fig-width: 10
 #| fig-height: 5
@@ -273,10 +307,10 @@ op <- par(mar = c(4, 4, 1, 1) + .5,
           mfrow = c(1, 2))
 heplot(iris.mod, size = "effect",
        cex = 1.5, cex.lab = 1.5,
-       fill=TRUE, fill.alpha=c(0.3, 0.1))
+       fill = TRUE, fill.alpha = c(0.3, 0.1))
 heplot(iris.mod, size = "effect", variables = 3:4,
        cex = 1.5, cex.lab = 1.5,
-       fill=TRUE, fill.alpha=c(0.3, 0.1))
+       fill = TRUE, fill.alpha = c(0.3, 0.1))
 ```
 
 The interpretation of the plots in @fig-iris-HE1 is as follows:
@@ -372,7 +406,7 @@ general linear test $\mathcal{H}_0: \mathbf{C} \;\mathbf{B} = \mathbf{0}$ provid
 powerful way to probe the _specific_ effects represented within the global null hypothesis,
 $\mathcal{H}_0: \mathbf{B} = \mathbf{0}$, that all effects are zero.
 
-In this example the contrasts $\mathbf{c}_1$ ("Species1") and $\mathbf{c}_2$ ("Species2")  
+In this example the contrasts $\mathbf{c}_1$ (`Species1`) and $\mathbf{c}_2$ (`Species2`)
 among the iris species are orthogonal, i.e., 
 $\mathbf{c}_1^\top \mathbf{c}_2 = 0$. Therefore, their tests are statistically independent, and their
 $\mathbf{H}$ matrices are additive. They fully decompose the general question of differences
@@ -380,7 +414,7 @@ among the groups into two independent questions regarding the contrasts.
 
 $$
 \mathbf{H}_\text{Species} = \mathbf{H}_\text{Species1} + \mathbf{H}_\text{Species2}
-$$
+$$ {#eq-H-Species}
 
 `car::linearHypothesis()` is the means for testing these statistically, and `heplot()`
 provides the way to show these tests visually. Using the contrasts set up in @sec-iris-mod,
@@ -393,17 +427,21 @@ The line for `(Intercept)` gives grand means of the variables.
 coef(iris.mod)
 ```
 
-Numerical tests of hypotheses using `linearHypothesis()` can be specified in a very general way.
+Numerical tests of hypotheses using `linearHypothesis()` can be specified in a very general way:
+A matrix (or vector) $\mathbf{C}$ giving linear combinations of coefficients by rows, or a character vector giving the hypothesis in symbolic form.
 A character variable or vector tests whether the named coefficients are different from zero
 for all responses.
 
 ```{r iris-linhyp}
 linearHypothesis(iris.mod, "Species1") |> print(SSP=FALSE)
+
 linearHypothesis(iris.mod, "Species2") |> print(SSP=FALSE)
 ```
 
-In passing, note that the _joint_ test of these contrasts is exactly equivalent to the overall
-test of `Species` (results not shown).
+The various test statistics are all equivalent here---they give the same $F$ statistics--- because they
+they have 1 degree of freedom.
+
+In passing, from @eq-H-Species, note that the _joint_ test of these contrasts is exactly equivalent to the overall test of `Species` (results not shown).
 
 ```{r}
 #| eval: false
@@ -419,20 +457,22 @@ In the case of a 1-df multivariate test, the $\mathbf{H}$ ellipses plot as a deg
 #| fig-width: 6
 #| fig-height: 6
 #| out-width: "60%"
+#| fig-cap: "HE plot for sepal length and width in the `iris` data showing the tests of the two contrasts"
 hyp <- list("S:Vv" = "Species1", "V:v" = "Species2")
 heplot(iris.mod, hypotheses=hyp,
        cex = 1.5, cex.lab = 1.5,
-       fill=TRUE, fill.alpha=c(0.3,0.1),
+       fill = TRUE, fill.alpha = c(0.3, 0.1),
        col = c("red", "blue", "darkgreen", "darkgreen"),
-       lty=c(0,0,1,1), label.pos=c(3, 1, 2, 1),
+       lty = c(0,0,1,1), label.pos = c(3, 1, 2, 1),
        xlim = c(2, 10), ylim = c(1.4, 4.6))
 ```
 
 This HE plot shows that, for the two sepal variables, the greatest between-species variation
-is accounted for by the contrast ("S:Vv") between _setosa_ and the others, for which the effect is very
-large in relation to error variation.  The second contrast ("V:v"), between the _versicolor_ and _virginica_
+is accounted for by the contrast (`S:Vv`) between _setosa_ and the others, for which the effect is very
+large in relation to error variation.  The second contrast (`V:v`), between the _versicolor_ and _virginica_
 species is relatively smaller, but still explains significant variation of the sepal variables among the species.
-The directions of these hypotheses in a given plot show _how_ the group means differ in terms of a given contrast.[^HE-contrast-geometry]
+
+The directions of these hypotheses in a given plot show _how_ the group means differ in terms of a given contrast.[^HE-contrast-geometry] For example, the contrast `S:Vv` is the line that separates _setosa_ from the others and indicates that _setosa_ flowers have shorter but wider sepals.
 
 [^HE-contrast-geometry]: That the $\mathbf{H}$ ellipses for the contrasts subtend that for the overall test of `Species` is no accident.
 In fact, this is true in $p$-dimensional space for _any_ linear hypothesis, and orthogonal contrasts
@@ -447,17 +487,25 @@ with a `pairs()` method. For multivariate linear models, the `r package("heplots
 
 ```{r}
 #| label: fig-iris-pairs
+#| fig-width: 8
+#| fig-height: 8
 #| out-width: "100%"
-#| fig-cap: "All pairwise HE plots for the iris data"
+#| fig-cap: "All pairwise HE plots for the iris data."
 pairs(iris.mod,
       fill=TRUE, fill.alpha=c(0.3, 0.1))
 ```
+
+@fig-iris-pairs provides a fairly complete visualization of the results of the multivariate tests
+and answers the question: **how** do the species differ?
+Sepal length and the two petal variables have the group means nearly perfectly correlated, in the
+order _setosa_ < _versicolor_ < _virginica_. For Sepal width, however, _setosa_ has the largest mean,
+and so the $\mathbf{H}$ ellipses show a negative correlation in the second row and column.
 
 
 ## Low-D views: Canonical discriminant analysis {#sec-candisc}
 
 The HE plot framework so far provides views of all the effects in a MLM in 
-_variable_ space, that we can see in 2D for selected pairs 
+_variable_ space. We can view this in 2D for selected pairs 
 of response variables, or for all pairwise views in scatterplot matrix format.
 There is also an `heplot3d()` function giving plots for three response variables together.
 The 3D plots are interactive, in that they can be rotated and zoomed
@@ -472,11 +520,71 @@ a low-D visualization of between-group variation, analogous to
 a biplot (@sec-biplot) for purely quantitative variables.
 
 The key to this is the eigenvalue decomposition, $\mat{H}\mat{E}^{-1} \lambda_i = \lambda_i \vec{v}_i$
-(\eqref{eq:mtest1})
+(@eq-he-eigen)
 of $\mathbf{H}$ relative to $\mathbf{E}$. The eigenvalues, $\lambda_i$, give the "size" of each $s$ 
 orthogonal dimensions on which the multivariate tests are based. But the corresponding
 eigenvectors, $\mathbf{v}_i$, give the weights for the response variables
 in $s$ linear combinations that maximally discriminate among the groups.
+
+Thus, CDA amounts to a transformation of the $p$ responses,
+$\mat{Y}_{n \times p}$
+into the canonical space,
+$$
+\mat{Z}_{n \times s} = \mat{Y} \; \mat{E}^{-1/2} \; \mat{V} \;,
+$$
+where $\mat{V}$ contains the eigenvectors of $\mat{H}\mat{E}^{-1}$
+and $s=\min ( p, df_h )$.
+It is well-known (e.g., @Gittins:85)
+that \emph{canonical discriminant plots} of the first two (or three, in 3D)
+columns of $\mat{Z}$ corresponding to the largest canonical correlations
+provide an optimal low-D display of the variation between groups relative
+to variation within groups.
+
+Canonical discriminant analysis is typically carried out in conjunction with a one-way MANOVA design.
+The `r package("candisc", cite=TRUE)` generalizes this to multi-factor designs in the `candisc()` function.
+For any given term in a `"mlm"`, the _generalized canonical discriminant analysis_ amounts to a standard discriminant analysis based on the $\mat{H}$ matrix for _that_ term in relation to the full-model $\mat{E}$ matrix.[^candiscList]
+
+[^canciscList]: `candiscList()` performs a generalized canonical discriminant analysis for _all_ terms in a multivariate linear model, returning a list of the results for each factor.
+
+Tests based on the eigenvalues $\lambda_i$,
+initially stated by @Bartlett1938 allow one to determine the number of significant canonical dimensions.
+
+<!-- Can R^2 -->
+
+For the iris data, we get the following printed summary:
+
+```{r iris-can}
+iris.can <- candisc(iris.mod) |> print()
+```
+
+This analysis shows a very simple result: The differences among the iris species can
+be nearly entirely accounted for by the first canonical dimension (99.1%).
+However, second dimension is also highly significant, even though it accounts for only 0.88%.
+
+A `coef()` method for "candisc" objects returns a matrix of weights for the response variables
+in the canonical dimensions. By default, these are given for the response variables standardized
+to mean=0 and variance=1. The `type` argument also allows for raw score weights (`type = "raw"`)
+and canonical structure coefficients, which are the correlations between each response and the
+canonical scores.
+
+```{r iris-can-coef}
+coef(iris.can)
+coef(iris.can, type = "structure")
+```
+
+
+### Canonical HE plot
+For a one-way design, the _canonical HE plot_
+is simply the HE plot of the canonical scores in the analogous MLM model
+that substitutes $\mat{Z}$ for $\mat{Y}$.  This is shown in \figref{fig:hecan-iris} for the `iris` data.
+The interpretation of this plot is the same as before: if the hypothesis ellipse extends beyond the error ellipse, then that dimension is significant.  Vectors for each predictor are then superimposed and show the relation between each and the two canonical dimensions; these are the structure coefficients (correlations) of the responses
+in $\mat{Y}$ with the canonical scores in $\mat{Z}$, scaled to conveniently fill the plot window.
+
+The interpretation of
+this plot is simple: in canonical space, variation of the means for the iris species is
+essentially one-dimensional (99.1% of the effect of `Species`), and this dimension corresponds
+to overall size of the iris flowers.  All variables except for sepal width are aligned with
+this axis, but the two petal variables show the greatest discrimination.
 
 
 

@@ -5,7 +5,7 @@ iV <- iris$Species == "versicolor"
 iG <- iris$Species == "virginica"
 
 # iris colors
-colors <-c("blue", "darkgreen", "brown")
+colors <-c("blue", "darkgreen", "brown4")
 
 #op <- par(bg = "bisque")
 matplot(c(1, 8), c(0, 4.5), type =  "n", xlab = "Length", ylab = "Width",

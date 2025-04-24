@@ -18,6 +18,8 @@ summary(iris.mod, univariate = TRUE)
 # tests for each response
 glance(iris.mod)
 
+etasq(iris.mod)
+
 # Species1: S:Vv
 # Species2: V:v
 coef(iris.mod)
@@ -95,3 +97,20 @@ heplot(iris.mod, hypotheses=hyp, fill=TRUE, fill.alpha=c(0.3,0.1), col=c("red", 
 pairs(iris.mod,
       fill=TRUE, fill.alpha=c(0.3,0.1)
 )
+
+iris.can <- candisc(iris.mod) |> print()
+
+summary(iris.can)
+
+coef(iris.can)
+
+# newlines in variable names
+vars <- names(iris)[1:4] |> str::str_sub
+plot(iris.can, 
+     ellipse=TRUE,
+     col = iris_colors,
+     pch = 15:17,
+     rev.axes = c(TRUE, FALSE))
+
+
+
