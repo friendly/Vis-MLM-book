@@ -13,21 +13,25 @@ The methods discussed in @sec-mlm-review provide the basis for a rather complete
 of traditional univariate methods for the same designs. You can carry out multiple regression,
 ANOVA, or indeed, any classical linear model with the standard collection of analysis tools you use for
 a single outcome variable, but naturally extended in most cases to having several outcomes to analyse
-together. 
+together. The key points are:
 
-- everything you know about the usual univariate models-- main effects, interactions, contrasts for factors, ... applies here
+- Everything you know about the usual univariate models-- regression coefficients, main effects and contrasts for factors, interactions of model terms,  ... applies here.
 
-- by a rather clever design, called "matrix algebra" the separate univariate models can be combined, by turning vectors of responses, $\mathbf{y}_1, \mathbf{y}_2, \dots$ into a matrix $\mathbf{Y}$. Bingo! We get a
-multivariate extension
+- By a rather clever design, called "matrix algebra" the separate univariate models can be combined, by turning vectors of responses, $\mathbf{y}_1, \mathbf{y}_2, \dots$ into a matrix $\mathbf{Y}$. Bingo! We get a
+multivariate extension.
 
-- as if collection of separate models, but w/ overall test
+- You can treat this as a collection of separate models, one for each response, because the coefficents are the same.
+But, the benefit of a multivariate approach is that you also get an overall multivariate test for each term in the model.
 
-- refer to Huang: given the challenges and assumptions involved in appropriately performing and interpreting MANOVA results, researchers are better off using other less error-prone procedures.
+As nice as these mathematical and statistical ideas might be, the fact that the analysis is conducted for the response
+variables _collectively_, means that it may be harder to interpret and explain what this means about the separate
+responses. Here's where multivariate model visualization comes to the rescue!
 
-Tests of multivariate models, including multivariate analysis of variance (MANOVA) for group differences and multivariate multiple regression (MMRA) can be easily visualized by plots of a hypothesis ("H") data ellipse for the fitted values relative to the corresponding plot of the error ellipse ("E") of the residuals, which I call the HE plot framework.
+* The tests of multivariate models, including multivariate analysis of variance (MANOVA) for group differences and multivariate multiple regression (MMRA) can be easily visualized by plots of a hypothesis ("H") data ellipse for the fitted values, relative to the corresponding plot of the error ellipse ("E") of the residuals, which I call the HE plot framework.
 
-For more than a few response variables, these result can be projected onto a lower-dimensional "canonical discriminant" space providing an even simpler description.
+* For more than a few response variables, these result can be projected onto a lower-dimensional "canonical" space providing an even simpler description.
 
+- refer to Huang: "_given the challenges and assumptions involved in appropriately performing and interpreting MANOVA results, researchers are better off using other less error-prone procedures._"
 
 **Packages**
 
@@ -283,6 +287,7 @@ to HE plots.
 
 The `heplot()` function takes a `"mlm"` object and produces an HE plot for one pair
 of variables specified by the `variables` argument. By default, it plots the first two.
+@fig-iris-HE1 shows the HE plots for the two sepal and the two petal variables.
 
 <!-- duplicated the code b/c it doesn't print from the fig-iris-HE1 chunk -->
 ```{r code-iris-HE1}
@@ -502,7 +507,7 @@ order _setosa_ < _versicolor_ < _virginica_. For Sepal width, however, _setosa_ 
 and so the $\mathbf{H}$ ellipses show a negative correlation in the second row and column.
 
 
-## Low-D views: Canonical discriminant analysis {#sec-candisc}
+## Low-D views: Canonical analysis {#sec-candisc}
 
 The HE plot framework so far provides views of all the effects in a MLM in 
 _variable_ space. We can view this in 2D for selected pairs 
@@ -516,15 +521,19 @@ However in a one-way MANOVA design with more than response three variables, it i
 to visualize how the groups vary on _all_ responses together, and how the
 different variables contribute to discrimination among groups.
 In this situation, **canonical discriminant analysis** (CDA) is often used, to provide
-a low-D visualization of between-group variation, analogous to
-a biplot (@sec-biplot) for purely quantitative variables.
+a low-D visualization of between-group variation.
+When the predictors are also continuous, the analogous term is **canonical correlation analysis** (CCA).
+The advantage here is that we can also show the relations of the response variables to these dimensions,
+similar to a biplot (@sec-biplot) for a PCA of purely quantitative variables. 
 
 The key to this is the eigenvalue decomposition, $\mat{H}\mat{E}^{-1} \lambda_i = \lambda_i \vec{v}_i$
 (@eq-he-eigen)
 of $\mathbf{H}$ relative to $\mathbf{E}$. The eigenvalues, $\lambda_i$, give the "size" of each $s$ 
 orthogonal dimensions on which the multivariate tests are based. But the corresponding
-eigenvectors, $\mathbf{v}_i$, give the weights for the response variables
-in $s$ linear combinations that maximally discriminate among the groups.
+eigenvectors, $\mathbf{v}_i$, give the _weights_ for the response variables
+in $s$ linear combinations that maximally discriminate among the groups or equivalently maximize the
+(canonical) $R^2$ of a linear combination of the predictor $\mathbf{X}$s with a linear combination of the
+response $\mathbf{Y}$s.
 
 Thus, CDA amounts to a transformation of the $p$ responses,
 $\mat{Y}_{n \times p}$
@@ -544,12 +553,15 @@ Canonical discriminant analysis is typically carried out in conjunction with a o
 The `r package("candisc", cite=TRUE)` generalizes this to multi-factor designs in the `candisc()` function.
 For any given term in a `"mlm"`, the _generalized canonical discriminant analysis_ amounts to a standard discriminant analysis based on the $\mat{H}$ matrix for _that_ term in relation to the full-model $\mat{E}$ matrix.[^candiscList]
 
-[^canciscList]: `candiscList()` performs a generalized canonical discriminant analysis for _all_ terms in a multivariate linear model, returning a list of the results for each factor.
+[^candiscList]: `candiscList()` performs a generalized canonical discriminant analysis for _all_ terms in a multivariate linear model, returning a list of the results for each factor.
 
 Tests based on the eigenvalues $\lambda_i$,
-initially stated by @Bartlett1938 allow one to determine the number of significant canonical dimensions.
-
-<!-- Can R^2 -->
+initially stated by @Bartlett1938, use  Wilks' $\Lambda$ likelihood ratio tests of these.
+This allow you to determine the number of significant canonical dimensions, or the number of different
+aspects to consider for the relations between the responses and predictors.
+These take the form of _sequential_ global tests of the hypothesis that the canonical correlation in
+the current row and all that follow are zero. Thus, if you find 
+The canonical $R^2$, `CanRsq`, gives the R-squared value of fitting the $i$th response canonical variate to the corresponding $i$th canonical variate for the predictors.
 
 For the iris data, we get the following printed summary:
 
@@ -559,12 +571,15 @@ iris.can <- candisc(iris.mod) |> print()
 
 This analysis shows a very simple result: The differences among the iris species can
 be nearly entirely accounted for by the first canonical dimension (99.1%).
-However, second dimension is also highly significant, even though it accounts for only 0.88%.
+Interestingly, the second dimension is also highly significant, even though it accounts for only 0.88%.
 
-A `coef()` method for "candisc" objects returns a matrix of weights for the response variables
+### Coeficients
+
+The `coef()` method for "candisc" objects returns a matrix of weights for the response variables
 in the canonical dimensions. By default, these are given for the response variables standardized
-to mean=0 and variance=1. The `type` argument also allows for raw score weights (`type = "raw"`)
-and canonical structure coefficients, which are the correlations between each response and the
+to $\bar{y}=0$ and $s^2_y = 1$. The `type` argument also allows for raw score weights (`type = "raw"`)
+used to compute the observation scores on `Can1`, `Can2`, ... .
+`type = "raw"` gives the canonical structure coefficients, which are the correlations between each response and the
 canonical scores.
 
 ```{r iris-can-coef}
@@ -572,20 +587,111 @@ coef(iris.can)
 coef(iris.can, type = "structure")
 ```
 
+Thus, the two weighted sums for the canonical variates, using mean-centered raw scores, can be shown as follows:
 
-### Canonical HE plot
-For a one-way design, the _canonical HE plot_
-is simply the HE plot of the canonical scores in the analogous MLM model
-that substitutes $\mat{Z}$ for $\mat{Y}$.  This is shown in \figref{fig:hecan-iris} for the `iris` data.
-The interpretation of this plot is the same as before: if the hypothesis ellipse extends beyond the error ellipse, then that dimension is significant.  Vectors for each predictor are then superimposed and show the relation between each and the two canonical dimensions; these are the structure coefficients (correlations) of the responses
-in $\mat{Y}$ with the canonical scores in $\mat{Z}$, scaled to conveniently fill the plot window.
+```{r can-vars}
+#| echo: false
+#| results: asis
+C <- coef(iris.can, type = "raw")
+names <- row.names(C)
+can1 <- paste("Can1 = ", paste0(round(C[,1], 2), " x ", names, collapse = " + "))
+#can1 <- gsub("+ -", "-", can1)
+cat(can1)
+can2 <- paste("Can2 = ", paste0(round(C[,2], 2), " x ", names, collapse = " + ")) |> cat()
+```
+
+### Canonical scores plot
+
+The `plot()` method for `"candisc"` objects gives a plot of these observation scores. 
+`ellipse=TRUE` overlays this with their standard data ellipses for each species, as shown in @fig-iris-candisc. 
+The response variables are shown as
+vectors, using the structure coefficients, as in a biplot. Thus, the relative size of the projection of these
+vectors on the canonical axes reflects the correlation of the observed response on the canonical dimension.
+For ease of interpretation I flipped the sign of the first canonical dimension, so that the positive `Can1` direction
+corresponds to larger flowers.
+
+```{r echo=-1}
+#| label: fig-iris-candisc
+#| fig-width: 8
+#| fig-height: 8
+#| out-width: "80%"
+#| fig-cap: "Plot of canonical scores for the iris data."
+op <- par(mar = c(4, 4, 4, 1) + .5)
+vars <- names(iris)[1:4] |> 
+  stringr::str_replace("\\.", "\n")
+plot(iris.can,
+     var.labels = vars,
+     var.col = "black",
+     var.lwd = 2,
+     ellipse=TRUE,
+     scale = 9,
+     col = iris_colors,
+     pch = 15:17,
+     cex = 0.7,
+     rev.axes = c(TRUE, FALSE),
+     xlim = c(-10, 10))
+```
 
 The interpretation of
 this plot is simple: in canonical space, variation of the means for the iris species is
 essentially one-dimensional (99.1% of the effect of `Species`), and this dimension corresponds
-to overall size of the iris flowers.  All variables except for sepal width are aligned with
+to overall size of the iris flowers.  All variables except for `Sepal.Width` are positively aligned with
 this axis, but the two petal variables show the greatest discrimination.
+The negative direction for `Sepal.Width` reflects the pattern seen in @fig-iris-pairs, where _setosa_
+have wider sepals.
 
+For the second dimension, look at the horizontal projections of the variable vectors on the `Can2` axis.
+All are positive, but this is dominated by `Sepal.Width`.
+
+
+
+### Canonical HE plot
+For a one-way design, the _canonical HE plot_
+is simply the HE plot of the canonical scores in the analogous MLM model that substitutes $\mat{Z}$ for $\mat{Y}$. 
+In effect, it is a more compact visual summary of the plot shown in @fig-iris-candisc.
+
+This is shown in @fig-iris-HEcan for the `iris` data.
+In canonical space, the residuals are always uncorrelated, so the $\mathbf{E}$ ellipse plots as a circle.
+The $\mathbf{H}$ ellipse for `Species` here reflects a data ellipse for the fitted values--- group means--- shown as
+labeled points in the plot. The differences among `Species` are so large that this plot uses `size = "effect"`
+scaling, making the axes comparable to those in @fig-iris-candisc.[^can-signif-scaling]
+
+[^can-signif-scaling]:  If significance scaling was used the interpretation of the canonical HE plot plot would the same as before: if the hypothesis ellipse extends beyond the error ellipse, then that dimension is significant.  
+
+The vectors for each predictor are the same structure coefficients as in the ordinary canonical plot.
+They can again be reflected for interpretation and scaled in length to fill the plot window.
+
+<!-- now depends on candisc 0.9.1 -->
+
+```{r echo=-1}
+#| label: fig-iris-HEcan
+#| fig-width: 8
+#| fig-height: 8
+#| out-width: "80%"
+#| fig-cap: "Canonical HE plot for the iris data."
+op <- par(mar = c(4, 4, 4, 1) + .5)
+heplot(iris.can,
+       size = "effect",
+       scale = 8,
+       var.labels = vars,
+       var.col = "black",
+       var.lwd = 2,
+       fill = TRUE, fill.alpha = 0.2,
+       rev.axes = c(TRUE, FALSE),
+       xlim = c(-10, 10))
+```
+
+The collection of plots shown for the iris data here can be seen as progressive visual summaries of the 
+data:
+
+* The scatterplot matrix in @fig-iris-spm shows the iris flowers in the data space of the sepal and petal variables.
+* Canonical analysis substitutes for these the two linear combinations reflected in `Can1` and `Can2`. The plot in @fig-iris-candisc portrays _exactly_ the same relations among the species, but in the reduced canonical space of only two dimensions.
+* The HE plot version, shown in @fig-iris-HEcan summarizes the separate data ellipses for the species with
+pooled, within-group variance of the $\mathbf{E}$ matrix for the canonical variables, which are always uncorrelated.
+The variation among the group means is reflected in the size and shape of the ellipse for the $\mathbf{E}$ matrix.
+
+
+## Multiple Regression designs
 
 
 ```{r}

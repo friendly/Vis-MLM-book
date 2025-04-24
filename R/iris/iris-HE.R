@@ -105,12 +105,27 @@ summary(iris.can)
 coef(iris.can)
 
 # newlines in variable names
-vars <- names(iris)[1:4] |> str::str_sub
-plot(iris.can, 
+vars <- names(iris)[1:4] |> 
+  stringr::str_replace("\\.", "\n")
+plot(iris.can,
+     var.labels = vars,
+     var.col = "black",
+     var.lwd = 2,
      ellipse=TRUE,
+     scale = 9,
      col = iris_colors,
      pch = 15:17,
-     rev.axes = c(TRUE, FALSE))
+     cex = 0.7,
+     rev.axes = c(TRUE, FALSE),
+     xlim = c(-10, 10))
 
+heplot(iris.can,
+       size = "effect",
+       scale = 8,
+       var.col = "black",
+       var.lwd = 2,
+       fill = TRUE, fill.alpha = 0.2,
+       rev.axes = c(TRUE, FALSE),
+       xlim = c(-10, 10))
 
 
