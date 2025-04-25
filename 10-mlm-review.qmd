@@ -16,7 +16,9 @@ the awed general **Multivariate Linear Model** (MLM).[^mglm]
 
 [^mglm]: There's a bit of a puzzle here, and therefore a gap in methods and therefore an opportunity. The classical linear models fit by `lm()` extend naturally to non-gaussian data  via `glm()` which provides for other families
 (binary: Bernoulli, count data: Poisson). The standard `lm()` extends quite naturally to a multivariate responses.
-Yet the combination of these ideas remains elusive, ... _mention special cases_ ... And graphical methods ???
+Yet the combination of these ideas remains elusive. The `r package("VGAM", cite=TRUE)` handles the bivariate cases
+of logistic and probit regression, but not much more. 
+... _mention special cases_ ... And graphical methods ???
 
 This can be understood as a simple extension of the univariate linear model, with the main difference being that there are multiple response variables considered **together**, instead of just one, analysed alone.
 These outcomes might reflect several different _ways_ or scales for measuring an underlying theoretical construct,
@@ -27,18 +29,15 @@ For example, in the case of different measures, there are numerous psychological
 In the second case of various aspects, student "aptitude" or "achievement" reflects competency in different various subjects (reading, math, history, science, ...) that are better studied together. We get a better understanding
 of the factors that influence each of aspects by testing them _jointly_. 
 
-In this context, just as in univariate analysis there are variously named techniques (ANOVA, regression) that can be applied to several outcomes, depending on the structure of the predictors at hand. For instance, with one or more continuous predictors and multiple response variables, you could use **multivariate** multiple regression (MMRA) to obtain estimates useful for prediction. 
+Just as in univariate analysis there are variously named techniques (ANOVA, regression) that can be applied to several outcomes, depending on the structure of the predictors at hand. For instance, with one or more continuous predictors and multiple response variables, you could use **multivariate** multiple regression (MMRA) to obtain estimates useful for prediction. 
 
 Instead, if the predictors are categorical factors, multivariate analysis of variance (MANOVA) can be applied to test for differences between groups. Again, this is akin to  ANOVA in the univariate context--- the same underlying model is utilized, but the tests for terms in the model are multivariate ones for the collection of all response variables, rather than univariate ones for a single response.
 
-<!-- **TODO** Use `\Epsilon` = $\Epsilon$ here, which is defined as `\boldsymbol{\large\varepsilon}` for residuals. -->
-<!-- Could also use a larger version, `\boldsymbol{\Large\varepsilon}` = -->
-<!-- $\boldsymbol{\Large\varepsilon}$ if that makes a difference. -->
 
-The main goal of this chapter is to describe the details of the extension of ...
-
+The main goal of this chapter is to describe the details of the extension of univariate linear models to the case
+of multiple outcome measures.
 Before considering the details and examples that apply to MANOVA and MMRA, 
-it is useful to consider the features of the multivariate linear model of which these cases are examples.
+it is useful to consider the general features of the multivariate linear model of which these cases are examples.
 
 **TODO**: Offer defense against @Huang2019 and others here; cite @Huberty-Morris1989
 
@@ -61,6 +60,11 @@ library(matlib)
 
 **TODO** Revise notation here, to be explicit about inclusion of $\boldsymbol{\beta}_0$
 
+<!-- **TODO** Use `\Epsilon` = $\Epsilon$ here, which is defined as `\boldsymbol{\large\varepsilon}` for residuals. -->
+<!-- Could also use a larger version, `\boldsymbol{\Large\varepsilon}` = -->
+<!-- $\boldsymbol{\Large\varepsilon}$ if that makes a difference. -->
+
+
 With $p$ response variables, the multivariate linear model is most easily appreciated as the collection of $p$ linear models, one for each response. We have $p$ outcomes, so why not just consider a separate model for each?
 
 \begin{align*}
@@ -68,20 +72,29 @@ With $p$ response variables, the multivariate linear model is most easily apprec
 \mathbf{y}_2 =& \mathbf{X}\boldsymbol{\beta}_2 + \boldsymbol{\epsilon}_2 \\
   \vdots      &  \\
 \mathbf{y}_p =& \mathbf{X}\boldsymbol{\beta}_p + \boldsymbol{\epsilon}_p \\
-\end{align*}
+\end{align*} {#eq-mlm-models}
+
+But the problems with fitting separate univariate models are that:
+
+* They don't give _simultaneous_ tests for all regressions. The situation is similar to that in a one-way ANOVA,
+where an overall test for group differences is applied before testing individual comparisons to avoid problems of
+
+* More importantly, fitting separate univariate models does not take _correlations_ among the $\mathbf{y}$s into account. It might be the case that the response variables are all essentially measuring the same thing, but perhaps weakly. If so, the multivariate approach can pool strength across the outcomes to detect their common relations to the predictors, giving greater power.
 
 
-The model matrix $\mathbf{X}$ is the same for all responses, but each one gets its
+
+The model matrix  $\mathbf{X}$ in @eq-mlm-models is the same for all responses, but each one gets its
 own vector $\boldsymbol{\beta}_j$ of coefficients for how the predictors in $\mathbf{X}$
 fit a given response $\mathbf{y}_j$.
 
 Among the beauties of multivariate thinking is that we can put these separate equations
 together in single equation by joining the responses $\mathbf{y}_j$ as columns in a matrix
 $\mathbf{Y}$ and similarly arranging the vectors of coefficients $\boldsymbol{\beta}_j$
-as columns in a matrix $\mathbf{B}$. 
-(A slight hiccup in notation is that the _uppercase_ for the Greek Beta ($\boldsymbol{\beta}$)
+as columns in a matrix $\mathbf{B}$.[^Beta] 
+
+[^Beta]: A slight hiccup in notation is that the _uppercase_ for the Greek Beta ($\boldsymbol{\beta}$)
 is the same as the uppercase Roman $\mathbf{B}$, so I use $\mathbf{b}_1 , \mathbf{b}_2 , \dots$ below to refer to its'
-columns.)
+columns.
 
 The MLM then becomes:
  
@@ -94,7 +107,7 @@ $$
 \sizedmat{X}{n \times (q+1)} \, \sizedmat{B}{(q+1) \times p} + \sizedmat{\Epsilon}{n \times p} \:\: ,
 $${#eq-mlm}
 
-where
+where:
 
 -   $\mathbf{Y} = (\mathbf{y}_1 , \mathbf{y}_2, \dots ,  \mathbf{y}_p )$ is the matrix of $n$ observations on $p$ responses, with typical column $\mathbf{y}_j$;
 -   $\mathbf{X}$ is the model matrix with columns $\mathbf{x}_i$ for $q$ regressors, which typically includes an initial column $\mathbf{x}_0$ of 1s for the intercept;
@@ -1252,7 +1265,29 @@ matrix (@fig-peng-ggpairs1).
 ## MRA $\rightarrow$ MMRA
 
 When all predictor variables are quantitative, the MLM @eq-mlm becomes the extension of
-univariate multiple regression to the situation where there are $p$ response variables. ...
+univariate multiple regression to the situation where there are $p$ response variables.
+Just as in univariate models, we might want to test hypotheses about subsets of the predictors,
+for example when some predictors are meant as controls or things you might want to adjust for
+in assessing the effects of predictors of main interest.
+
+**Model selection** is one topic where univariate and multivariate approaches differ.
+When there are more than a few predictors, approaches like hierarchical regression and
+stepwise selection can be used to eliminate uninformative predictors for each response,
+This gives a different interpretation of the models for each response, based on the predictors included.
+In contrast, the multivariate approach considers the outcome variables collectively.
+You can eliminate predictors that are unimportant ...
+
+### Example: NLSY data
+
+<!--
+The National Longitudinal Survey of
+Youth (NLSY) is a series of annual surveys conducted by the 
+U.S. Department of Labor to examine the transition of young people into the labor force. 
+@Curran1997 
+-->
+
+The dataset `heplots::NLSY` gives measures of 243 children on mathematics and reading achievement and also
+measures of behavioral problems (antisocial, hyperactivity). Also available are 
 
 ### Example: School data
 
