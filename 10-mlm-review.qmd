@@ -54,6 +54,8 @@ library(heplots)
 library(patchwork)
 library(tidyr)
 library(matlib)
+# set ggplot theme
+#ggplot2::theme_set(theme_bw(base_size = 14))
 ```
 
 ## Structure of the MLM
@@ -1262,7 +1264,7 @@ factors, `species`, `island` and `sex` and then `ggpairs()` scatterplot
 matrix (@fig-peng-ggpairs1).
 
 
-## MRA $\rightarrow$ MMRA
+## MRA to MMRA
 
 When all predictor variables are quantitative, the MLM @eq-mlm becomes the extension of
 univariate multiple regression to the situation where there are $p$ response variables.
@@ -1270,12 +1272,26 @@ Just as in univariate models, we might want to test hypotheses about subsets of 
 for example when some predictors are meant as controls or things you might want to adjust for
 in assessing the effects of predictors of main interest.
 
+But first, there are a couple of aspects of statistical practice that should be mentioned.
+
 **Model selection** is one topic where univariate and multivariate approaches differ.
 When there are more than a few predictors, approaches like hierarchical regression and
 stepwise selection can be used to eliminate uninformative predictors for each response,
 This gives a different interpretation of the models for each response, based on the predictors included.
 In contrast, the multivariate approach considers the outcome variables collectively.
-You can eliminate predictors that are unimportant ...
+You can eliminate predictors that are unimportant, but the mechanics are geared toward
+removing them from the models for _all_ responses.
+
+**Overall tests**
+In a one-way ANOVA, to comtrol for multiple testing, it is common practice to carry out an overall $F$-test to see if the group means differ collectively before testing comparison between specific groups.
+Similarly, in univariate multiple regression, researchers sometimes report an overall $F$-test or test of the
+$R^2$ so they can reject the nypothesis that _all_ predictors have no effect, before considering them individually.
+
+Similarly, the the case of multivariate linear models, some consider it necessary to reject the multivariate
+null hypothesis for a predictor term before considering how it contributes to each of the response variables.
+Some further suggest that the individual univariate models be tested after an overall significant effect.
+I believe the first of these is wise, but the second might be too much to require when the general goal is to
+understand the data.
 
 ### Example: NLSY data
 
@@ -1286,8 +1302,100 @@ U.S. Department of Labor to examine the transition of young people into the labo
 @Curran1997 
 -->
 
-The dataset `heplots::NLSY` gives measures of 243 children on mathematics and reading achievement and also
-measures of behavioral problems (antisocial, hyperactivity). Also available are 
+The dataset `heplots::NLSY` comes from a small part of the National Longitudinal Survey of
+Youth, a series of annual surveys conducted by the 
+U.S. Department of Labor to examine the transition of young people into the labor force.
+This particular subset gives measures of 243 children on mathematics and reading achievement and also
+measures of behavioral problems (antisocial, hyperactivity). Also available are the yearly income
+and education of the child's father.
+
+In this analysis the  `math` and `read` scores are taken at the outcome variables.[^other-vars]
+Among the remaining predictors, income and educ might be considered as background variables necessary to control for. Interest might then be focused on whether the behavioral variables antisoc and hyperact contribute beyond that.
+
+[^other-vars]: Other choices are possible: we could instead try to model the behavioral variables, `antisocial` and `hyperact`.
+
+
+```{r NLSY-data}
+data(NLSY, package = "heplots")
+str(NLSY)
+```
+
+#### Plots {.unnumbered}
+To begin, I would examine some scatterplots and univariate displays. I'll start with density plots for all the variables to see the shapes of their distributions. From @fig-NLSY-density we see that math and reading scores
+are positively skewed, anti-social and hyperactivity have distributions highly concentrated in the lower scores.
+As we would suspect, father's income is extremely positively skewed, and crys out for a log transformation.
+Father's education is reasonably symmetric, but highly peaked at 12 years of schooling in this sample.
+
+```{r}
+#| label: fig-NLSY-density
+#| fig-width: 8
+#| fig-height: 4
+#| out-width: "100%"
+#| fig-cap: "Density plots for the variables in the `NLSY` dataset."
+NLSY_long <- NLSY |> 
+  tidyr::pivot_longer(math:educ, names_to = "variable") |>
+  dplyr::mutate(variable = forcats::fct_inorder(variable))
+
+ggplot(NLSY_long, aes(x=value, fill=variable)) +
+  geom_density(alpha = 0.5) +
+  facet_wrap(~variable, scales="free") +
+  theme_bw(base_size = 14) +
+  theme(legend.position = "none") 
+```
+
+In terms of an analysis focused on `math` and `read` as outcomes, a scatterplot of one against the other is
+useful, as is collection of scatterplots of each against the remaining variables. The second of these
+is left as an exercise to the reader.
+
+```{r}
+#| label: fig-NLSY-scat1
+#| fig-width: 6
+#| fig-height: 6
+#| out-width: "70%"
+#| fig-cap: "Scatterplot of mathematics score against reading score in the NLSY data"
+set.seed(47)
+ggplot(NLSY, aes(x = read, y = math)) +
+  geom_jitter()+
+  geom_smooth(method = lm, formula = y~x, fill = "blue", alpha = 0.2) +
+  geom_smooth(method = loess, se = FALSE, color = "red", linewidth = 2)
+```
+
+
+```{r}
+#| label: fig-NLSY-scat2
+#| fig-width: 6
+#| fig-height: 6
+#| out-width: "70%"
+#| fig-cap: "Scatterplot of mathematics score against reading score in the NLSY data, highlighting noteworthy points"
+ids <- heplots::noteworthy(NLSY[, 1:2], n=5)
+ggplot(NLSY, aes(x = read, y = math)) +
+  geom_jitter()+
+  geom_smooth(method = lm, formula = y~x, fill = "blue", alpha = 0.2) +
+  geom_text(data = NLSY[ids, ], label = ids, size = 5, nudge_y = 2) 
+```
+
+#### Fitting models {.unnumbered}
+
+We could of course include all of the predictors in a single model, and perhaps be done with it.
+To develop some model-thinking, it is more useful to proceed in smaller steps to see what we can learn from each.
+If we view parents' income and education as the most obvious predictors of reading and mathematics scores,
+those are the variables to fit first.
+
+I use `log2(income)` in the models below because of the extreme skew of father's income.
+$\log_2()$ rather than natural $\ln()$ facilitates interpretation. We can interpret
+its coefficient for reading as "a doubling of income" is associated with an increase of XXX in reading".
+
+```{r NLSY-mod1}
+mod1 <- lm(cbind(read, math) ~ log2(income) + educ, 
+           data= NLSY |> filter(income != 0))
+
+anova(mod1)  # Type I, sequential test
+Anova(mod1)  # Type II, partial test
+```
+
+#### Overall test {.unnumbered}
+
+#### Coefficient plots {.unnumbered}
 
 ### Example: School data
 
