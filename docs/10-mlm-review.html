@@ -1529,8 +1529,9 @@ Figure&nbsp;10.10: Scatterplot of mathematics score against reading score in the
 </div>
 </div>
 </div>
+<p>The non-linear trend in <a href="#fig-NLSY-scat1" class="quarto-xref">Figure&nbsp;<span>10.10</span></a> may be due to the sparsity of data in the upper range of reading, and there are also a few unusual points shown in this plot. The function <code><a href="https://friendly.github.io/heplots/reference/noteworthy.html">heplots::noteworthy()</a></code> provides a variety of methods to identify such noteworthy points in scatterplots. The default <code>method</code> uses Mahalanobis <span class="math inline">\(D^2\)</span>. The plot below labels the five largest observations.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb39" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">ids</span> <span class="op">&lt;-</span> <span class="fu">heplots</span><span class="fu">::</span><span class="fu"><a href="https://friendly.github.io/heplots/reference/noteworthy.html">noteworthy</a></span><span class="op">(</span><span class="va">NLSY</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>, n<span class="op">=</span><span class="fl">5</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb39" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">ids</span> <span class="op">&lt;-</span> <span class="fu">heplots</span><span class="fu">::</span><span class="fu"><a href="https://friendly.github.io/heplots/reference/noteworthy.html">noteworthy</a></span><span class="op">(</span><span class="va">NLSY</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>, method <span class="op">=</span> <span class="st">"mahal"</span>, n<span class="op">=</span><span class="fl">5</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">NLSY</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">read</span>, y <span class="op">=</span> <span class="va">math</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_jitter.html">geom_jitter</a></span><span class="op">(</span><span class="op">)</span><span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_smooth.html">geom_smooth</a></span><span class="op">(</span>method <span class="op">=</span> <span class="va">lm</span>, formula <span class="op">=</span> <span class="va">y</span><span class="op">~</span><span class="va">x</span>, fill <span class="op">=</span> <span class="st">"blue"</span>, alpha <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span> <span class="op">+</span></span>
@@ -1548,22 +1549,12 @@ Figure&nbsp;10.11: Scatterplot of mathematics score against reading score in the
 </div>
 </section><section id="fitting-models" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="fitting-models">Fitting models</h4>
 <p>We could of course include all of the predictors in a single model, and perhaps be done with it. To develop some model-thinking, it is more useful to proceed in smaller steps to see what we can learn from each. If we view parents’ income and education as the most obvious predictors of reading and mathematics scores, those are the variables to fit first.</p>
-<p>I use <code>log2(income)</code> in the models below because of the extreme skew of father’s income. <span class="math inline">\(\log_2()\)</span> rather than natural <span class="math inline">\(\ln()\)</span> facilitates interpretation. We can interpret its coefficient for reading as “a doubling of income” is associated with an increase of XXX in reading”.</p>
+<p>I use <code>log2(income)</code> in the models below because of the extreme skew of father’s income. <span class="math inline">\(\log_2()\)</span> rather than natural <span class="math inline">\(\ln()\)</span> facilitates interpretation. We can interpret the coefficient for reading as “a doubling of income” is associated with an increase of that value in reading”.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb40" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">mod1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">read</span>, <span class="va">math</span><span class="op">)</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">log2</a></span><span class="op">(</span><span class="va">income</span><span class="op">)</span> <span class="op">+</span> <span class="va">educ</span>, </span>
+<div class="sourceCode" id="cb40" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">NLSY.mod1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">read</span>, <span class="va">math</span><span class="op">)</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">log2</a></span><span class="op">(</span><span class="va">income</span><span class="op">)</span> <span class="op">+</span> <span class="va">educ</span>, </span>
 <span>           data<span class="op">=</span> <span class="va">NLSY</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">income</span> <span class="op">!=</span> <span class="fl">0</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/stats/anova.html">anova</a></span><span class="op">(</span><span class="va">mod1</span><span class="op">)</span>  <span class="co"># Type I, sequential test</span></span>
-<span><span class="co">#&gt; Analysis of Variance Table</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;               Df Pillai approx F num Df den Df  Pr(&gt;F)    </span></span>
-<span><span class="co">#&gt; (Intercept)    1  0.913     1241      2    238 &lt; 2e-16 ***</span></span>
-<span><span class="co">#&gt; log2(income)   1  0.064        8      2    238 0.00039 ***</span></span>
-<span><span class="co">#&gt; educ           1  0.061        8      2    238 0.00054 ***</span></span>
-<span><span class="co">#&gt; Residuals    239                                          </span></span>
-<span><span class="co">#&gt; ---</span></span>
-<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova</a></span><span class="op">(</span><span class="va">mod1</span><span class="op">)</span>  <span class="co"># Type II, partial test</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova</a></span><span class="op">(</span><span class="va">NLSY.mod1</span><span class="op">)</span>  <span class="co"># Type II, partial test</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Type II MANOVA Tests: Pillai test statistic</span></span>
 <span><span class="co">#&gt;              Df test stat approx F num Df den Df  Pr(&gt;F)    </span></span>
@@ -1573,7 +1564,60 @@ Figure&nbsp;10.11: Scatterplot of mathematics score against reading score in the
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section><section id="overall-test" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="overall-test">Overall test</h4>
+<p>The <code><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova()</a></code> results above give multivariate tests of the contributions of each predictor separately to explaining reading and math and how they vary together. To get an overall test of the global null hypothesis <span class="math inline">\(\mathcal{H}_0 : \mathbf{B} = \mathbf{0}\)</span> for <em>all</em> predictors, you can use <code><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">linearHypothesis()</a></code>:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb41" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">coefs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">NLSY.mod1</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span><span class="op">]</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">linearHypothesis</a></span><span class="op">(</span><span class="va">NLSY.mod1</span>, <span class="va">coefs</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span>SSP <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Multivariate Tests: </span></span>
+<span><span class="co">#&gt;                  Df test stat approx F num Df den Df  Pr(&gt;F)    </span></span>
+<span><span class="co">#&gt; Pillai            2     0.118     7.48      4    478 7.5e-06 ***</span></span>
+<span><span class="co">#&gt; Wilks             2     0.882     7.69      4    476 5.2e-06 ***</span></span>
+<span><span class="co">#&gt; Hotelling-Lawley  2     0.133     7.91      4    474 3.6e-06 ***</span></span>
+<span><span class="co">#&gt; Roy               2     0.133    15.88      2    239 3.3e-07 ***</span></span>
+<span><span class="co">#&gt; ---</span></span>
+<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 </section><section id="coefficient-plots" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="coefficient-plots">Coefficient plots</h4>
+<p>As usual, you can display the coefficients using <code><a href="https://rdrr.io/r/stats/coef.html">coef()</a></code>. The <code>tidy</code> method for <code>"mlm"</code> objects defined in <span style="color: brown;"><strong>heplots</strong></span> shows these in a tidy format with <span class="math inline">\(t\)</span>-tests for each coefficient., arranged by the response variable.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb42" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">NLSY.mod1</span><span class="op">)</span></span>
+<span><span class="co">#&gt;                read math</span></span>
+<span><span class="co">#&gt; (Intercept)  13.909 3.47</span></span>
+<span><span class="co">#&gt; log2(income)  0.748 1.50</span></span>
+<span><span class="co">#&gt; educ          0.879 1.37</span></span>
+<span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html">tidy</a></span><span class="op">(</span><span class="va">NLSY.mod1</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 6 × 6</span></span>
+<span><span class="co">#&gt;   response term         estimate std.error statistic  p.value</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;    &lt;chr&gt;           &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1 read     (Intercept)    13.9       4.32      3.22  0.00147 </span></span>
+<span><span class="co">#&gt; 2 read     log2(income)    0.748     0.493     1.52  0.131   </span></span>
+<span><span class="co">#&gt; 3 read     educ            0.879     0.346     2.54  0.0118  </span></span>
+<span><span class="co">#&gt; 4 math     (Intercept)     3.47      4.41      0.787 0.432   </span></span>
+<span><span class="co">#&gt; 5 math     log2(income)    1.50      0.503     2.99  0.00307 </span></span>
+<span><span class="co">#&gt; 6 math     educ            1.37      0.353     3.89  0.000128</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>However, a bivariate plot of these coefficients is more useful, because it provides visual tests of multivariate hypotheses. <code><a href="https://friendly.github.io/heplots/reference/coefplot.html">heplots::coefplot.mlm()</a></code> gives displays of the coefficients for a given <em>pair</em> of response variables. For interpretation, it adds the bivariate confidence ellipse for the coefficients, as well as univariate confidence intervals for each response. The univariate intervals are simply the horizontal and vertical shadows of the ellipses on the response variable axes.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb43" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://friendly.github.io/heplots/reference/coefplot.html">coefplot</a></span><span class="op">(</span><span class="va">NLSY.mod1</span>, fill <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>   col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"darkgreen"</span>, <span class="st">"brown"</span><span class="op">)</span>,</span>
+<span>   lwd <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>   ylim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">0.5</span>, <span class="fl">3</span><span class="op">)</span>,</span>
+<span>   main <span class="op">=</span> <span class="st">"Bivariate coefficient plot for reading and math\nwith 95% confidence ellipses"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-NLSY-coefplot1" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-NLSY-coefplot1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/ch10/fig-NLSY-coefplot1-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-NLSY-coefplot1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;10.12: Bivariate coefficient plot for reading and math with 95% confidence ellipses
+</figcaption></figure>
+</div>
+</div>
+</div>
+<p>In <a href="#fig-NLSY-coefplot1" class="quarto-xref">Figure&nbsp;<span>10.12</span></a>, the confidence ellipses for <code>log2(income)</code> and <code>educ</code> both exclude the origin, which represents the multivariate hypothesis <span class="math inline">\(\mathcal{H}_0 : ( \beta_\textrm{read}, \beta_\textrm{math} ) = (0, \, 0)\)</span>, so this hypothesis is rejected. Note that if we only examined the univariate tests for each of the four parameters, we would conclude that for reading log(income) is not a significant predictor. The orientation of the confidence ellipses indicates the positive correlation between reading and mathematics scores.</p>
+</section><section id="behavioral-measures" class="level4" data-number="10.5.1.1"><h4 data-number="10.5.1.1" class="anchored" data-anchor-id="behavioral-measures">
+<span class="header-section-number">10.5.1.1</span> Behavioral measures</h4>
 </section></section><section id="example-school-data" class="level3" data-number="10.5.2"><h3 data-number="10.5.2" class="anchored" data-anchor-id="example-school-data">
 <span class="header-section-number">10.5.2</span> Example: School data</h3>
 <p><span class="citation" data-cites="Charnes-etal-1981">Charnes et al. (<a href="95-references.html#ref-Charnes-etal-1981" role="doc-biblioref">1981</a>)</span> describe a large scale social experiment in public school education. Seventy school sites across the U.S. participated and a number of variables related to attributes of parents and teachers were used to predict aspects of students’ success. It was conceived in the late 1960’s as a federally sponsored program charged with providing remedial assistance to educationally disadvantaged early primary school students. The study was designed to compare schools using Program Follow Through (PFT) management methods of taking actions to achieve goals with those of Non Follow Through (NFT), but here I focus on the relations between …</p>
@@ -1613,10 +1657,13 @@ Shapiro, S. S., &amp; Wilk, M. B. (1965). An analysis of variance test for norma
 <div id="ref-Warne2014" class="csl-entry" role="listitem">
 Warne, F. T. (2014). A primer on multivariate analysis of variance(MANOVA) for behavioral scientists. <em>Practical Assessment, Research &amp; Evaluation</em>, <em>19</em>(1). <a href="https://scholarworks.umass.edu/pare/vol19/iss1/17/">https://scholarworks.umass.edu/pare/vol19/iss1/17/</a>
 </div>
+<div id="ref-R-VGAM" class="csl-entry" role="listitem">
+Yee, T. W. (2025). <em><span>VGAM</span>: Vector generalized linear and additive models</em>. <a href="https://CRAN.R-project.org/package=VGAM">https://CRAN.R-project.org/package=VGAM</a>
+</div>
 </div>
 </section><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><hr>
 <ol>
-<li id="fn1"><p>There’s a bit of a puzzle here, and therefore a gap in methods and therefore an opportunity. The classical linear models fit by <code><a href="https://rdrr.io/r/stats/lm.html">lm()</a></code> extend naturally to non-gaussian data via <code><a href="https://rdrr.io/r/stats/glm.html">glm()</a></code> which provides for other families (binary: Bernoulli, count data: Poisson). The standard <code><a href="https://rdrr.io/r/stats/lm.html">lm()</a></code> extends quite naturally to a multivariate responses. Yet the combination of these ideas remains elusive. The <span style="color: brown;"><strong>VGAM</strong></span> package <span class="citation" data-cites="R-VGAM">(<a href="95-references.html#ref-R-VGAM" role="doc-biblioref"><strong>R-VGAM?</strong></a>)</span> handles the bivariate cases of logistic and probit regression, but not much more. … <em>mention special cases</em> … And graphical methods ???<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn1"><p>There’s a bit of a puzzle here, and therefore a gap in methods and therefore an opportunity. The classical linear models fit by <code><a href="https://rdrr.io/r/stats/lm.html">lm()</a></code> extend naturally to non-gaussian data via <code><a href="https://rdrr.io/r/stats/glm.html">glm()</a></code> which provides for other families (binary: Bernoulli, count data: Poisson). The standard <code><a href="https://rdrr.io/r/stats/lm.html">lm()</a></code> extends quite naturally to a multivariate responses. Yet the combination of these ideas remains elusive. The <span style="color: brown;"><strong>VGAM</strong></span> package <span class="citation" data-cites="R-VGAM">(<a href="95-references.html#ref-R-VGAM" role="doc-biblioref">Yee, 2025</a>)</span> handles the bivariate cases of logistic and probit regression, but not much more. … <em>mention special cases</em> … And graphical methods ???<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn2"><p>A slight hiccup in notation is that the <em>uppercase</em> for the Greek Beta (<span class="math inline">\(\boldsymbol{\beta}\)</span>) is the same as the uppercase Roman <span class="math inline">\(\mathbf{B}\)</span>, so I use <span class="math inline">\(\mathbf{b}_1 , \mathbf{b}_2 , \dots\)</span> below to refer to its’ columns.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn3"><p>Other choices are possible: we could instead try to model the behavioral variables, <code>antisocial</code> and <code>hyperact</code>.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol></section></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
