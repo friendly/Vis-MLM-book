@@ -1,19 +1,22 @@
-# contrasts
+# illustrating contrasts
 
 library(matlib)
 
 levels <- letters[1:4]
-C <- contr.treatment(levels)
-C
+C <- contr.treatment(levels) |> print()
 
+mu <- matrix(paste0("\\mu_", letters[1:4]), 4, 1)
+
+X <- cbind(Avg= 1/4, C)
+X
+
+options(print.latexMatrix = list(display.labels=FALSE))
+
+matX <- latexMatrix(X, fractions = TRUE)
+Eqn(matX,  "\\times", latexMatrix(mu), " = ",
+    matX %*% latexMatrix(mu))
 
 C <- contr.sum(levels) |> print()
-mu <- matrix(paste0("\\mu_", levels), 4, 1)
-
-X <- cbind(J(4,1), C)
-Eqn(latexMatrix(X),  "\\times", latexMatrix(mu), " = ",
-    latexMatrix(X) %*% latexMatrix(mu))
-
 
 # basic example
 

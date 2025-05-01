@@ -360,15 +360,15 @@ mm <- model.matrix(~ inc + type)
 data.frame(type, mm)
 ```
 
-As you can see, `type`, with 2 degrees of freedom is represented by two dummy (0/1) variables,
-`typeprof` and `typewc`. Together, these represent _treatment contrasts_ (comparisons) between the
+As you can see, `type`, with 2 degrees of freedom is represented by two **dummy** (0/1) variables, labeled
+`typeprof` and `typewc` here. Together, these represent _treatment contrasts_ (comparisons) between the
 _baseline_ group `type=="bc"`, which is coded (0, 0) and each of the others: `type=="prof"`,
-coded (1, 0) and `type=="wc"`, codes (0, 1).
-By default, the baseline level is the first in alphabetic or numerical order, but
-you can change this using `relevel()`.
+coded (1, 0) and `type=="wc"`, codes (0, 1). Different coding schemes are described in the following 
+section.
 
 In a model with the interaction `inc * type`, additional columns are constructed as the **product**
-of `inc` with each of the columns for `type`.
+of `inc` with each of the columns for `type`. We will see below how this generalizes to an
+arbitrary number of predictor terms and their possible interactions.
 
 ```{r model-mat2}
 model.matrix(~ inc * type)
@@ -376,14 +376,27 @@ model.matrix(~ inc * type)
  
 ### Coding factors and contrasts {#sec-contrasts}
 
-Discrete explanatory variables, such as race, type of treatment or level of education
+Discrete explanatory variables, such as race, type of occupation or level of education
 require special attention in linear models
 because, unlike continuous variables, they cannot by entered into the model equation just as they are.
 Instead, we need some way to code those variables numerically. A key insight is that your choice of
 a coding scheme changes the meaning of the model parameters, and allows you to perform different comparisons (test different statistical hypotheses) about the means of the category levels.
 
-In R, categorical variables are called **factors** and the type of coding for a factor `A` can be retrieved via 
-`contrasts(A)` or set by assigning a matrix specifying the comparisons of interest, as in `contrasts(A) <- C`.
+Each coding scheme for a factor represents the **same** model in terms of fitted values and overall significance
+for that term, but they differ in how the coefficients are parameterized and interpreted. This is crucial to understand because tests of the coefficients can directly answer different research questions depending on the coding scheme used.
+
+In R, categorical variables are called **factors** and a factor with $k$ levels is reflected in an
+overall test with $k-1$ degrees of freedom.  This can be represented as $k-1$ comparisons among the 
+factor level means.
+
+Base R provides several coding schemes through the `contrasts()` function:
+
+- `contr.treatment()`: Compares each level to a reference level using $k-1$ dummy variables. This is the default, and the reference level is taken as the first (in alphabetic or numerical order). You can change the reference level using `relevel()` or `reorder()` for the factor, or simply using `factor(A, levels = ...)`.
+
+- `contr.sum()`: Compares each level to the grand mean. 
+- `contr.helmert()`: Compares each level to the mean of _previous_ levels, treated as ordered categories
+- `contr.poly()`: For ordered factors with _numeric_ levels, this creates orthogonal polynomial contrasts, representing the linear, quadratic, cubic ... trends in the factor means, as if these appear as $x, x^2, x^3, ...$ terms in a model with $x$ as a numeric variable.
+
 
 
 

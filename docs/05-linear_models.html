@@ -356,7 +356,7 @@ window.Quarto = {
   <ul class="collapse">
 <li><a href="#sec-model-formulas" id="toc-sec-model-formulas" class="nav-link" data-scroll-target="#sec-model-formulas"><span class="header-section-number">5.2.1</span> Model formulas</a></li>
   <li><a href="#model-matrices" id="toc-model-matrices" class="nav-link" data-scroll-target="#model-matrices"><span class="header-section-number">5.2.2</span> Model matrices</a></li>
-  <li><a href="#sec-contrasts" id="toc-sec-contrasts" class="nav-link" data-scroll-target="#sec-contrasts"><span class="header-section-number">5.2.3</span> Contrasts</a></li>
+  <li><a href="#sec-contrasts" id="toc-sec-contrasts" class="nav-link" data-scroll-target="#sec-contrasts"><span class="header-section-number">5.2.3</span> Coding factors and contrasts</a></li>
   </ul>
 </li>
   <li><a href="#regression" id="toc-regression" class="nav-link" data-scroll-target="#regression"><span class="header-section-number">5.3</span> Regression</a></li>
@@ -631,8 +631,8 @@ y &amp; = &amp; \beta_0 + \beta_1 x_1 +  \beta_2 x_2 +  \beta_1 x_1 *  \beta_2 x
 <span><span class="co">#&gt; 8 prof            1  23        1      0</span></span>
 <span><span class="co">#&gt; 9 prof            1  33        1      0</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>As you can see, <code>type</code>, with 2 degrees of freedom is represented by two dummy (0/1) variables, <code>typeprof</code> and <code>typewc</code>. Together, these represent <em>treatment contrasts</em> (comparisons) between the <em>baseline</em> group <code>type=="bc"</code>, which is coded (0, 0) and each of the others: <code>type=="prof"</code>, coded (1, 0) and <code>type=="wc"</code>, codes (0, 1). By default, the baseline level is the first in alphabetic or numerical order, but you can change this using <code><a href="https://rdrr.io/r/stats/relevel.html">relevel()</a></code>.</p>
-<p>In a model with the interaction <code>inc * type</code>, additional columns are constructed as the <strong>product</strong> of <code>inc</code> with each of the columns for <code>type</code>.</p>
+<p>As you can see, <code>type</code>, with 2 degrees of freedom is represented by two <strong>dummy</strong> (0/1) variables, labeled <code>typeprof</code> and <code>typewc</code> here. Together, these represent <em>treatment contrasts</em> (comparisons) between the <em>baseline</em> group <code>type=="bc"</code>, which is coded (0, 0) and each of the others: <code>type=="prof"</code>, coded (1, 0) and <code>type=="wc"</code>, codes (0, 1). Different coding schemes are described in the following section.</p>
+<p>In a model with the interaction <code>inc * type</code>, additional columns are constructed as the <strong>product</strong> of <code>inc</code> with each of the columns for <code>type</code>. We will see below how this generalizes to an arbitrary number of predictor terms and their possible interactions.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb10" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/model.matrix.html">model.matrix</a></span><span class="op">(</span><span class="op">~</span> <span class="va">inc</span> <span class="op">*</span> <span class="va">type</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   (Intercept) inc typeprof typewc inc:typeprof inc:typewc</span></span>
@@ -652,11 +652,17 @@ y &amp; = &amp; \beta_0 + \beta_1 x_1 +  \beta_2 x_2 +  \beta_1 x_1 *  \beta_2 x
 <span><span class="co">#&gt; [1] "contr.treatment"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section><section id="sec-contrasts" class="level3" data-number="5.2.3"><h3 data-number="5.2.3" class="anchored" data-anchor-id="sec-contrasts">
-<span class="header-section-number">5.2.3</span> Contrasts</h3>
-<p>Discrete explanatory variables, such as race, type of treatment or level of education require special attention in linear models because, unlike continuous variables, they cannot by entered into the model equation just as they are.<br>
-Instead, we need some way to code those variables numerically. A key insight is that your choice of a coding scheme changes the meaning of the model parameters, and allows you to perform different comparisons (test different statistical hypotheses) about the means of the category levels.</p>
-<p>In R, categorical variables are called <strong>factors</strong> and the type of coding for a factor <code>A</code> can be retrieved via <code>contrasts(A)</code> or set by assigning a matrix specifying the comparisons of interest, as in <code>contrasts(A) &lt;- C</code>.</p>
-</section></section><section id="regression" class="level2" data-number="5.3"><h2 data-number="5.3" class="anchored" data-anchor-id="regression">
+<span class="header-section-number">5.2.3</span> Coding factors and contrasts</h3>
+<p>Discrete explanatory variables, such as race, type of occupation or level of education require special attention in linear models because, unlike continuous variables, they cannot by entered into the model equation just as they are. Instead, we need some way to code those variables numerically. A key insight is that your choice of a coding scheme changes the meaning of the model parameters, and allows you to perform different comparisons (test different statistical hypotheses) about the means of the category levels.</p>
+<p>Each coding scheme for a factor represents the <strong>same</strong> model in terms of fitted values and overall significance for that term, but they differ in how the coefficients are parameterized and interpreted. This is crucial to understand because tests of the coefficients can directly answer different research questions depending on the coding scheme used.</p>
+<p>In R, categorical variables are called <strong>factors</strong> and a factor with <span class="math inline">\(k\)</span> levels is reflected in an overall test with <span class="math inline">\(k-1\)</span> degrees of freedom. This can be represented as <span class="math inline">\(k-1\)</span> comparisons among the factor level means.</p>
+<p>Base R provides several coding schemes through the <code><a href="https://rdrr.io/r/stats/contrasts.html">contrasts()</a></code> function:</p>
+<ul>
+<li><p><code><a href="https://rdrr.io/r/stats/contrast.html">contr.treatment()</a></code>: Compares each level to a reference level using <span class="math inline">\(k-1\)</span> dummy variables. This is the default, and the reference level is taken as the first (in alphabetic or numerical order). You can change the reference level using <code><a href="https://rdrr.io/r/stats/relevel.html">relevel()</a></code> or <code><a href="https://rdrr.io/r/stats/reorder.factor.html">reorder()</a></code> for the factor, or simply using <code>factor(A, levels = ...)</code>.</p></li>
+<li><p><code><a href="https://rdrr.io/r/stats/contrast.html">contr.sum()</a></code>: Compares each level to the grand mean.</p></li>
+<li><p><code><a href="https://rdrr.io/r/stats/contrast.html">contr.helmert()</a></code>: Compares each level to the mean of <em>previous</em> levels, treated as ordered categories</p></li>
+<li><p><code><a href="https://rdrr.io/r/stats/contrast.html">contr.poly()</a></code>: For ordered factors with <em>numeric</em> levels, this creates orthogonal polynomial contrasts, representing the linear, quadratic, cubic … trends in the factor means, as if these appear as <span class="math inline">\(x, x^2, x^3, ...\)</span> terms in a model with <span class="math inline">\(x\)</span> as a numeric variable.</p></li>
+</ul></section></section><section id="regression" class="level2" data-number="5.3"><h2 data-number="5.3" class="anchored" data-anchor-id="regression">
 <span class="header-section-number">5.3</span> Regression</h2>
 </section><section id="anova" class="level2" data-number="5.4"><h2 data-number="5.4" class="anchored" data-anchor-id="anova">
 <span class="header-section-number">5.4</span> ANOVA</h2>
