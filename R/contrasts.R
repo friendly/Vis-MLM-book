@@ -6,13 +6,18 @@ levels <- letters[1:4]
 C <- contr.treatment(levels) |> print()
 
 mu <- matrix(paste0("\\mu_", letters[1:4]), 4, 1)
+beta <- matrix(paste0("\\beta_", c(0, letters[2:4])), 4, 1)
 
-X <- cbind(Avg= 1/4, C)
+X <- cbind(1, C)
 X
 
 options(print.latexMatrix = list(display.labels=FALSE))
 
-matX <- latexMatrix(X, fractions = TRUE)
+matX <- latexMatrix(X, matrix="bmatrix")
+Eqn(latexMatrix(mu), "= \\mathbf{X} \\boldsymbol{\\beta}",
+    " = ", matX, latexMatrix(beta),
+    " = ", matX %*% latexMatrix(beta))
+
 Eqn(matX,  "\\times", latexMatrix(mu), " = ",
     matX %*% latexMatrix(mu))
 

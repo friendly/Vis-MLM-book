@@ -380,26 +380,134 @@ Discrete explanatory variables, such as race, type of occupation or level of edu
 require special attention in linear models
 because, unlike continuous variables, they cannot by entered into the model equation just as they are.
 Instead, we need some way to code those variables numerically. A key insight is that your choice of
-a coding scheme changes the meaning of the model parameters, and allows you to perform different comparisons (test different statistical hypotheses) about the means of the category levels.
+a coding scheme changes the meaning of the model parameters, and allows you to perform different comparisons (test different statistical hypotheses) about the means of the category levels according to meaningful questions in your research
+design.
 
 Each coding scheme for a factor represents the **same** model in terms of fitted values and overall significance
 for that term, but they differ in how the coefficients are parameterized and interpreted. This is crucial to understand because tests of the coefficients can directly answer different research questions depending on the coding scheme used.
 
-In R, categorical variables are called **factors** and a factor with $k$ levels is reflected in an
-overall test with $k-1$ degrees of freedom.  This can be represented as $k-1$ comparisons among the 
-factor level means.
+In R, categorical variables are called **factors** usually created by `g <- factor(g)` or `g <- as.factor(g)` for a discrete
+variable `g`. If levels of the variable `g` are ordered, such as `type` of occupation with levels `"bc"` < `"wc"` < `"prof"` or dose of a drug, `"low"` < `"medium"` < `"high"`, you can use `g <- ordered(g)` to reflect this.
+
+In any case, a factor with $k$ levels is reflected in an
+overall test with $k-1$ degrees of freedom corresponding to the null hypothesis
+$\mathcal{H}_0 : \mu_1 = \mu_2 = \cdots = \mu_k$.
+This can be represented as $k-1$ comparisons among the 
+factor level means, or $k-1$ separate questions asking how the means differ.
 
 Base R provides several coding schemes through the `contrasts()` function:
 
-- `contr.treatment()`: Compares each level to a reference level using $k-1$ dummy variables. This is the default, and the reference level is taken as the first (in alphabetic or numerical order). You can change the reference level using `relevel()` or `reorder()` for the factor, or simply using `factor(A, levels = ...)`.
+- `contr.treatment()`: Compares each level to a _reference_ level using $k-1$ dummy (0, 1) variables. This is the default, and the reference level is taken as the first (in alphabetic or numerical order). You can change the reference level using `relevel()` or `reorder()` for the factor, or simply using `factor(A, levels = ...)`.
 
 - `contr.sum()`: Compares each level to the grand mean. 
-- `contr.helmert()`: Compares each level to the mean of _previous_ levels, treated as ordered categories
-- `contr.poly()`: For ordered factors with _numeric_ levels, this creates orthogonal polynomial contrasts, representing the linear, quadratic, cubic ... trends in the factor means, as if these appear as $x, x^2, x^3, ...$ terms in a model with $x$ as a numeric variable.
+- `contr.helmert()`: Compares each level to the mean of the _previous_ levels, which is useful for ordered categories such as `type` of occupation with levels `"bc"` < `"wc"` < `"prof"` or dose of a drug, `"low"` < `"medium"` < `"high"`. 
+- `contr.poly()`: For ordered factors with _numeric_ levels, this creates orthogonal polynomial contrasts, representing the linear, quadratic, cubic ... trends in the factor means, as if these appeared as $x, x^2, x^3, ...$ terms in a model with $x$ as a numeric variable.
 
+#### Treatment coding {.unnumbered}
 
+Let's examine R's default coding scheme, `contr.treatment` (also called dummy coding), for a factor with 4 levels: 'a', 'b', 'c', and 'd', with a view to understanding the relationship between the true population means,
+$\mu_a$, $\mu_b$, $\mu_c$, and $\mu_d$ and the parameters $\boldsymbol{\beta}$ estimated in a linear model. We get the following:
 
+```{r}
+C <- contr.treatment(letters[1:4]) |> print()
+```
 
+Here, the columns of `C` correspond to three dummy variables for the levels b, c, d compared to the reference level a.
+If we denote these columns as $x_b$, $x_c$, and $x_d$, then:
+
+$$
+x_b = 
+\begin{cases}
+1 & \text{if factor = b} \\
+0 & \text{otherwise}
+\end{cases}
+
+;\quad
+
+X_c = 
+\begin{cases}
+1 & \text{if factor = c} \\
+0 & \text{otherwise}
+\end{cases}
+
+;\quad
+
+X_d = 
+\begin{cases}
+1 & \text{if factor = d} \\
+0 & \text{otherwise}
+\end{cases}
+$$
+
+The design matrix $\mathbf{X} = [\mathbf{1}, \mathbf{C}] = [\mathbf{1}, \mathbf{x}_b, \mathbf{x}_c, \mathbf{x}_c]$ includes the constant column $\mathbf{1}$ representing the intercept, averaging over the factor levels when there are other
+terms in the model.
+
+$$
+\mathbf{X} = 
+\begin{pmatrix} 
+1 & 0 & 0 & 0 \\
+1 & 1 & 0 & 0 \\
+1 & 0 & 1 & 0 \\
+1 & 0 & 0 & 1
+\end{pmatrix} 
+$$
+
+With this coding, the parameters $\boldsymbol{\beta}$ in the model are related to the means $\boldsymbol{\mu}$ as,
+
+$$
+\begin{pmatrix} 
+\mu_a \\ 
+\mu_b \\ 
+\mu_c \\ 
+\mu_d \\ 
+\end{pmatrix}
+= \mathbf{X} \boldsymbol{\beta} = 
+\begin{bmatrix} 
+1 & 0 & 0 & 0 \\ 
+1 & 1 & 0 & 0 \\ 
+1 & 0 & 1 & 0 \\ 
+1 & 0 & 0 & 1 \\ 
+\end{bmatrix}
+\begin{pmatrix} 
+\beta_0 \\ 
+\beta_b \\ 
+\beta_c \\ 
+\beta_d \\ 
+\end{pmatrix}
+ = 
+ \begin{pmatrix}  
+\beta_0           \\ 
+\beta_0 + \beta_b \\ 
+\beta_0 + \beta_c \\ 
+\beta_0 + \beta_d \\ 
+\end{pmatrix}
+$$
+
+Thus we have,
+
+$$
+\begin{pmatrix} 
+\mu_a \\ 
+\mu_b \\ 
+\mu_c \\ 
+\mu_d \\ 
+\end{pmatrix}
+ = 
+ \begin{pmatrix}  
+\beta_0           \\ 
+\beta_0 + \beta_b \\ 
+\beta_0 + \beta_c \\ 
+\beta_0 + \beta_d \\ 
+\end{pmatrix}
+$$
+From this you can see how the coefficients are interpreted:
+
+- $\beta_0$: The intercept, which here is the mean response for the reference level 'a' (i.e., $\mu_a = \beta_0$)
+- $\beta_b$: The difference in mean response between level 'b' and reference level 'a' (i.e., $\mu_b = \beta_0 + \beta_b$ or $\beta_b = \mu_b - \mu_a$)
+- $\beta_c$: The difference in mean response between level 'c' and reference level 'a' (i.e., $\mu_c = \beta_0 + \beta_c$ or $\beta_c = \mu_c - \mu_a$)
+- $\beta_d$: The difference in mean response between level 'd' and reference level 'a' (i.e., $\mu_d = \beta_0 + \beta_d$ or $\beta_d = \mu_d - \mu_a$)
+
+#### Other factor codings {.unnumbered}
 
 ## Regression
 
