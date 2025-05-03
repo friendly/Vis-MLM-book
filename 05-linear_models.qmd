@@ -379,8 +379,10 @@ model.matrix(~ inc * type)
 Discrete explanatory variables, such as race, type of occupation or level of education
 require special attention in linear models
 because, unlike continuous variables, they cannot by entered into the model equation just as they are.
-Instead, we need some way to code those variables numerically. A key insight is that your choice of
-a coding scheme changes the meaning of the model parameters, and allows you to perform different comparisons (test different statistical hypotheses) about the means of the category levels according to meaningful questions in your research design. For a more general discussion of coding schemes, see @FoxWeisberg:2018, 4.7 and the vignette [Coding Matrices, Contrast Matrices
+Instead, we need some way to code those variables numerically. 
+
+A key insight is that your choice of
+a coding scheme changes the meaning of the model parameters, and allows you to perform different comparisons (test different statistical hypotheses) about the means of the category levels according to meaningful questions in your research design. For a more general discussion of coding schemes, see @FoxWeisberg:2018, $\S$4.7 and the vignette [Coding Matrices, Contrast Matrices
 and Linear Models](https://cran.r-project.org/web/packages/codingMatrices/vignettes/codingMatrices.pdf)
 for the `r pkg("codingMatrices")` package.
 
@@ -397,7 +399,8 @@ $\mathcal{H}_0 : \mu_1 = \mu_2 = \cdots = \mu_k$.
 This can be represented as $k-1$ comparisons among the 
 factor level means, or $k-1$ separate questions asking how the means differ.
 
-Base R provides several coding schemes through the `contrasts()` function:
+Base R provides several coding schemes via assignment to the `contrasts()` function for
+a factor, as in `contrasts(df$Drug) <- ...` one of:
 
 - `contr.treatment()`: Compares each level to a _reference_ level using $k-1$ dummy (0, 1) variables. This is the default, and the reference level is taken as the first (in alphabetic or numerical order). You can change the reference level using `relevel()` or `reorder()` for the factor, or simply using `factor(A, levels = ...)`.
 
@@ -405,7 +408,27 @@ Base R provides several coding schemes through the `contrasts()` function:
 - `contr.helmert()`: Compares each level to the mean of the _previous_ levels, which is useful for ordered categories such as `type` of occupation with levels `"bc"` < `"wc"` < `"prof"` or dose of a drug, `"low"` < `"medium"` < `"high"`. 
 - `contr.poly()`: For ordered factors with _numeric_ levels, this creates orthogonal polynomial contrasts, representing the linear, quadratic, cubic ... trends in the factor means, as if these appeared as $x, x^2, x^3, ...$ terms in a model with $x$ as a numeric variable.
 
-I take up some of the details of these coding schemes below.
+**TODO**: Move some stuff from 10.3.1 on contrasts here
+
+I take up some of the details of these coding schemes below. But first, it is useful to
+define exactly what I mean by a **contrast**.
+For a factor with $k$ groups, a contrast is simply a comparison of the mean of one subset of groups against the mean of another
+subset. This is specified as a weighted sum, $L$ of the means $\mathbf{\mu}$ with weights $\mathbf{c}$ that
+sum to zero,
+
+$$
+L = \mathbf{c}^\mathsf{T} \boldsymbol{\mu} = \sum_i^k c_i \mu_i \quad\text{such that}\quad \Sigma c_i = 0 \; .
+$$
+
+Two contrasts, $\mathbf{c}_1$ and $\mathbf{c}_2$ are _orthogonal_ if the sum of products
+of their weights is zero, i.e., $\mathbf{c}_1^\top \mathbf{c}_2 = \Sigma c_{1i} \times c_{2i} = 0$.
+When contrasts are placed as columns of a matrix $\mathbf{C}$, they are all _mutually orthogonal_
+if each pair is orthogonal, which means
+$\mathbf{C}^\top \mathbf{C}$ is a diagonal matrix. If the columns of $\mathbf{C}$ are normalized
+to have sums of squares = 1, then $\mathbf{C}^\top \mathbf{C} = \mathbf{I}$.
+Orthogonal contrasts correspond to statistically independent tests.
+This is nice because they reflect separate, non-overlapping research questions.
+
 
 #### Treatment coding {.unnumbered}
 
@@ -626,7 +649,7 @@ t(C) %*% C |> zapsmall()
 ```
 
 We can get a better sense of orthogonal polynomial contrasts by taking a numeric vector
-$x$, and raising it to successive powers, 0, 1, 2, 3.
+$x$, and raising it to successive powers, 1, 2, 3. $x^0 = 1$, the constant term or intercept.
 ```{r}
 M <- outer(1:8, 0:3, `^`)
 colnames(M) <- c("int", "lin", "quad", "cubic")
@@ -634,8 +657,8 @@ rownames(M) <- paste0("x", 1:8)
 M
 ```
 
-We can make the columns of `M` orthogonal using the Gram-Schmidt method,
-where each successive column after the first is made orthogonal to all previous columns by subtracting their projections on the current column. Plotting these, as in @fig-poly shows that the coefficients
+Then we can make the columns of `M` orthogonal using the Gram-Schmidt method,
+where each successive column after the first is made orthogonal to all previous columns by subtracting their projections on that column. Plotting these, as in @fig-poly shows that the coefficients
 for a linear term plot as a line, those for $x^2$ follow a quadratic, and so forth.
 
 ```{r}
@@ -656,7 +679,11 @@ matplot(M1,
 ```
 
 
+#### Custom contrasts {.unnumbered}
 
+You don't have to be constrained by the kinds of comparisons available in `contr.*` functions.
+For a factor with $k$ levels you are free to make up any $k-1$ contrasts that correspond
+to $k-1$ questions or tests of hypotheses about the factor level means.
 
 ## Regression
 
