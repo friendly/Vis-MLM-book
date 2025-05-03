@@ -380,11 +380,13 @@ Discrete explanatory variables, such as race, type of occupation or level of edu
 require special attention in linear models
 because, unlike continuous variables, they cannot by entered into the model equation just as they are.
 Instead, we need some way to code those variables numerically. A key insight is that your choice of
-a coding scheme changes the meaning of the model parameters, and allows you to perform different comparisons (test different statistical hypotheses) about the means of the category levels according to meaningful questions in your research
-design.
+a coding scheme changes the meaning of the model parameters, and allows you to perform different comparisons (test different statistical hypotheses) about the means of the category levels according to meaningful questions in your research design. For a more general discussion of coding schemes, see @FoxWeisberg:2018, 4.7 and the vignette [Coding Matrices, Contrast Matrices
+and Linear Models](https://cran.r-project.org/web/packages/codingMatrices/vignettes/codingMatrices.pdf)
+for the `r pkg("codingMatrices")` package.
+
 
 Each coding scheme for a factor represents the **same** model in terms of fitted values and overall significance
-for that term, but they differ in how the coefficients are parameterized and interpreted. This is crucial to understand because tests of the coefficients can directly answer different research questions depending on the coding scheme used.
+for that term, but they differ in how the coefficients are parameterized and interpreted. This is crucial to understand, because tests of the coefficients can directly answer different research questions depending on the coding scheme used.
 
 In R, categorical variables are called **factors** usually created by `g <- factor(g)` or `g <- as.factor(g)` for a discrete
 variable `g`. If levels of the variable `g` are ordered, such as `type` of occupation with levels `"bc"` < `"wc"` < `"prof"` or dose of a drug, `"low"` < `"medium"` < `"high"`, you can use `g <- ordered(g)` to reflect this.
@@ -408,39 +410,36 @@ Base R provides several coding schemes through the `contrasts()` function:
 Let's examine R's default coding scheme, `contr.treatment` (also called dummy coding), for a factor with 4 levels: 'a', 'b', 'c', and 'd', with a view to understanding the relationship between the true population means,
 $\mu_a$, $\mu_b$, $\mu_c$, and $\mu_d$ and the parameters $\boldsymbol{\beta}$ estimated in a linear model. We get the following:
 
-```{r}
+```{r cont-tr}
 C <- contr.treatment(letters[1:4]) |> print()
 ```
 
 Here, the columns of `C` correspond to three dummy variables for the levels b, c, d compared to the reference level a.
 If we denote these columns as $x_b$, $x_c$, and $x_d$, then:
 
-\begin{equation*}
+<!-- \begin{equation*} -->
+$$
 x_b = 
 \begin{cases}
-1 & \text{if factor=b} \\
-0 & \text{otherwise}
+1 & \! \text{if factor=b} \\
+0 & \! \text{otherwise}
 \end{cases}
-
 ;\quad
-
 X_c = 
 \begin{cases}
-1 & \text{if factor=c} \\
-0 & \text{otherwise}
+1 & \! \text{if factor=c} \\
+0 & \! \text{otherwise}
 \end{cases}
-
 ;\quad
-
 X_d = 
 \begin{cases}
-1 & \text{if factor=d} \\
-0 & \text{otherwise}
+1 & \! \text{if factor=d} \\
+0 & \! \text{otherwise}
 \end{cases}
-\end{equation*}
+$$
+<!-- \end{equation*} -->
 
-The design matrix $\mathbf{X} = [\mathbf{1}, \mathbf{C}] = [\mathbf{1}, \mathbf{x}_b, \mathbf{x}_c, \mathbf{x}_c]$ includes the constant column $\mathbf{1}$ representing the intercept, averaging over the factor levels when there are other
-terms in the model.
+The design matrix $\mathbf{X}_{(4 \times 4)} = [\mathbf{1}, \mathbf{C}] = [\mathbf{1}, \mathbf{x}_b, \mathbf{x}_c, \mathbf{x}_c]$ includes the constant column $\mathbf{1}$ representing the intercept, which averages over the factor levels when there are other terms in the model.
 
 $$
 \mathbf{X} = 
@@ -500,14 +499,59 @@ $$
 \beta_0 + \beta_d \\ 
 \end{pmatrix}
 $$
+
+Note that $\mathbf{X}$ is non-singular as long as the comparisons in $\mathbf{C}$ are linearly
+independent. It's inverse, $\mathbf{X}^{-1}$ determines how the transformed
+parameters relate to the original class means, that is, it determines the _interpretation_
+of the parameters in terms of the means.
+
+```{r Xinv}
+X <- cbind(1, C)
+Xinv <- solve(X) |> print()
+
+```
+
+Thus, you can solve for the parameters in terms of the means symbolically as follows
+
+
+$$
+\begin{pmatrix} 
+\beta_0 \\ 
+\beta_b \\ 
+\beta_c \\ 
+\beta_d \\ 
+\end{pmatrix}
+= \mathbf{X}^{-1} \boldsymbol{\mu} = \begin{bmatrix} 
+ 1 &  0 &  0 &  0 \\ 
+-1 &  1 &  0 &  0 \\ 
+-1 &  0 &  1 &  0 \\ 
+-1 &  0 &  0 &  1 \\ 
+\end{bmatrix}
+\begin{pmatrix} 
+\mu_a \\ 
+\mu_b \\ 
+\mu_c \\ 
+\mu_d \\ 
+\end{pmatrix}
+ = \begin{pmatrix}  
+\mu_a           \\ 
+\mu_b - \mu_a   \\ 
+\mu_c - \mu_a   \\ 
+\mu_d - \mu_a    \\ 
+\end{pmatrix}
+$$
+
+
+<!--
 From this you can see how the coefficients are interpreted:
 
 - $\beta_0$: The intercept, which here is the mean response for the reference level 'a' (i.e., $\mu_a = \beta_0$)
 - $\beta_b$: The difference in mean response between level 'b' and reference level 'a' (i.e., $\mu_b = \beta_0 + \beta_b$ or $\beta_b = \mu_b - \mu_a$)
 - $\beta_c$: The difference in mean response between level 'c' and reference level 'a' (i.e., $\mu_c = \beta_0 + \beta_c$ or $\beta_c = \mu_c - \mu_a$)
 - $\beta_d$: The difference in mean response between level 'd' and reference level 'a' (i.e., $\mu_d = \beta_0 + \beta_d$ or $\beta_d = \mu_d - \mu_a$)
+-->
 
-#### Other factor codings {.unnumbered}
+#### Deviation coding {.unnumbered}
 
 Another common coding scheme, useful for unordered factors, is _deviation coding_ given by `contrast.sum()`.
 This has the property that the parameters are constrained to sum to zero, $\Sigma \beta_i = 0$.
@@ -515,6 +559,101 @@ This has the property that the parameters are constrained to sum to zero, $\Sigm
 ```{r}
 C <- contr.sum(letters[1:4]) |> print()
 ```
+
+The parameters estimated with this coding are:
+With this coding, the intercept is $\beta_0 = \bar{\mu}$, the grand mean across all levels
+and the parameters are the deviations from that,
+
+- $\beta_1 = \mu_a - \bar{\mu}$
+- $\beta_2 = \mu_b - \bar{\mu}$
+- $\beta_3 = \mu_c - \bar{\mu}$
+
+A (redundant) coefficient for the last group is omitted, because with this coding
+a coefficient for that group would be equal to the negative of the sum of the others,
+$\beta_d = \mu_d - \bar{\mu} = -(\beta_1 + \beta_2 + \beta_3)$.
+
+#### Helmert contrasts {.unnumbered}
+
+For **ordered factors**, it is sensible to take the ordering into account in interpreting the 
+results. _Helmert contrasts_ are designed for this purpose. The intercept is again 
+the grand mean across all levels. Each contrast compares the mean of a given level
+to the _average of all previous_ ones in the order; they contrast the second level with the first, the third with the average of the first two, and so on.
+
+```{r}
+C <- contr.helmert(letters[1:4]) |> print()
+```
+
+It is easier to understand these if the columns are normalized so that the largest value
+in each column is 1.
+
+```{r}
+C %*% diag(1/c(1, 2, 3)) |> MASS::fractions()
+```
+
+Then we would have the coefficients as:
+
+- $\beta_0 = \bar{\mu}$
+- $\beta_1 = \mu_b - \mu_a$
+- $\beta_2 = \mu_c - \frac{\mu_a + \mu_b}{2}$
+- $\beta_3 = \mu_d - \frac{\mu_a + \mu_b + \mu_c}{3}$
+
+Note that you can easily reverse the ordering of the comparisons to contrast each of the first
+$k-1$ means with the average of all those _higher_ in the order.
+
+```{r}
+C.rev <- C[4:1, 3:1]
+row.names(C.rev) <- letters[1:4]
+C.rev
+```
+
+#### Polynomial contrasts {.unnumbered}
+
+For ordered factors that are also numeric, like `Age = c(8, 9, 10, 11)` or those that can be
+considered equally spaced along some continuum, polynomial contrasts, given by
+`contr.poly()`, provide _orthogonal_ (uncorrelated) contrasts that assess the degree to which
+the factor means vary linearly, quadratically, and so on with the factor levels.
+
+`contr.poly()` scales each column so that it's sum of squares is 1. Each pair of columns is
+orthogonal, $\mathbf{c}_i^\top \mathbf{c}_j = 0$, so that $\mathbf{C}^\top \mathbf{C} = \mathbf{I}$.
+
+```{r}
+contr.poly(4)
+
+# show they are orthonormal
+t(C) %*% C |> zapsmall()
+```
+
+We can get a better sense of orthogonal polynomial contrasts by taking a numeric vector
+$x$, and raising it to successive powers, 0, 1, 2, 3.
+```{r}
+M <- outer(1:8, 0:3, `^`)
+colnames(M) <- c("int", "lin", "quad", "cubic")
+rownames(M) <- paste0("x", 1:8)
+M
+```
+
+We can make the columns of `M` orthogonal using the Gram-Schmidt method,
+where each successive column after the first is made orthogonal to all previous columns by subtracting their projections on the current column. Plotting these, as in @fig shows that the coefficients
+for a linear term plot as a line, those for $x^2$ follow a quadratic, and so forth.
+
+```{r}
+#| label: fig-poly
+#| out-width: "70%"
+#| fig-cap: "The coefficients for polynomial contrasts for linear (1), quadratic (2) and cubic (3) terms for a numeric variable $X$. The intercept or constant term is represented as 0."
+op <- par(mar = c(4, 4, 1, 1)+.1)
+M1 <- matlib::GramSchmidt(M, normalize = FALSE)
+matplot(M1, 
+  type = "b",
+  pch = as.character(0:3),
+  cex = 1.5,
+  cex.lab = 1.5,
+  lty = 1,
+  lwd = 3,
+  xlab = "X",
+  ylab = "Coefficient")
+```
+
+
 
 
 ## Regression

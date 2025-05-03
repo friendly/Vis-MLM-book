@@ -13,10 +13,20 @@ X
 
 options(print.latexMatrix = list(display.labels=FALSE))
 
+# show mu = X beta
 matX <- latexMatrix(X, matrix="bmatrix")
 Eqn(latexMatrix(mu), "= \\mathbf{X} \\boldsymbol{\\beta}",
     " = ", matX, latexMatrix(beta),
     " = ", matX %*% latexMatrix(beta))
+
+# inverse
+Xinv <- solve(X)
+matXinv <- latexMatrix(Xinv, matrix="bmatrix")
+
+Eqn(latexMatrix(beta), "= \\mathbf{X}^{-1} \\boldsymbol{\\mu}",
+    " = ", matXinv, latexMatrix(mu),
+    " = ", matXinv %*% latexMatrix(mu))
+
 
 Eqn(matX,  "\\times", latexMatrix(mu), " = ",
     matX %*% latexMatrix(mu))
@@ -45,16 +55,15 @@ M <- outer(1:8, 0:3, `^`)
 colnames(M) <- c("int", "lin", "quad", "cubic")
 M
 
-# orthogonalize
-M1 <- GramSchmidt(M, normalize = FALSE)
-
-matplot(GramSchmidt(M), 
+# Make the columns orthogonal via Gram-Schmidt
+M1 <- matlib::GramSchmidt(M, normalize = FALSE)
+matplot(M1, 
         type = "b",
         pch = as.character(0:3),
         cex = 1.5,
         cex.lab = 1.5,
         lty = 1,
-        lwd = 2,
+        lwd = 3,
         xlab = "X",
         ylab = "Coefficient")
 
