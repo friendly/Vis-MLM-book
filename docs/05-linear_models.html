@@ -664,6 +664,7 @@ y &amp; = &amp; \beta_0 + \beta_1 x_1 +  \beta_2 x_2 +  \beta_1 x_1 *  \beta_2 x
 <li><p><code><a href="https://rdrr.io/r/stats/contrast.html">contr.helmert()</a></code>: Compares each level to the mean of the <em>previous</em> levels, which is useful for ordered categories such as <code>type</code> of occupation with levels <code>"bc"</code> &lt; <code>"wc"</code> &lt; <code>"prof"</code> or dose of a drug, <code>"low"</code> &lt; <code>"medium"</code> &lt; <code>"high"</code>.</p></li>
 <li><p><code><a href="https://rdrr.io/r/stats/contrast.html">contr.poly()</a></code>: For ordered factors with <em>numeric</em> levels, this creates orthogonal polynomial contrasts, representing the linear, quadratic, cubic … trends in the factor means, as if these appeared as <span class="math inline">\(x, x^2, x^3, ...\)</span> terms in a model with <span class="math inline">\(x\)</span> as a numeric variable.</p></li>
 </ul>
+<p>I take up some of the details of these coding schemes below.</p>
 <section id="treatment-coding" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="treatment-coding">Treatment coding</h4>
 <p>Let’s examine R’s default coding scheme, <code>contr.treatment</code> (also called dummy coding), for a factor with 4 levels: ‘a’, ‘b’, ‘c’, and ‘d’, with a view to understanding the relationship between the true population means, <span class="math inline">\(\mu_a\)</span>, <span class="math inline">\(\mu_b\)</span>, <span class="math inline">\(\mu_c\)</span>, and <span class="math inline">\(\mu_d\)</span> and the parameters <span class="math inline">\(\boldsymbol{\beta}\)</span> estimated in a linear model. We get the following:</p>
 <div class="cell" data-layout-align="center">
@@ -851,13 +852,21 @@ From this you can see how the coefficients are interpreted:
 </div>
 </section><section id="polynomial-contrasts" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="polynomial-contrasts">Polynomial contrasts</h4>
 <p>For ordered factors that are also numeric, like <code>Age = c(8, 9, 10, 11)</code> or those that can be considered equally spaced along some continuum, polynomial contrasts, given by <code><a href="https://rdrr.io/r/stats/contrast.html">contr.poly()</a></code>, provide <em>orthogonal</em> (uncorrelated) contrasts that assess the degree to which the factor means vary linearly, quadratically, and so on with the factor levels.</p>
+<p><code><a href="https://rdrr.io/r/stats/contrast.html">contr.poly()</a></code> scales each column so that it’s sum of squares is 1. Each pair of columns is orthogonal, <span class="math inline">\(\mathbf{c}_i^\top \mathbf{c}_j = 0\)</span>, so that <span class="math inline">\(\mathbf{C}^\top \mathbf{C} = \mathbf{I}\)</span>.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb17" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/contrast.html">contr.poly</a></span><span class="op">(</span><span class="fl">4</span><span class="op">)</span></span>
 <span><span class="co">#&gt;          .L   .Q     .C</span></span>
 <span><span class="co">#&gt; [1,] -0.671  0.5 -0.224</span></span>
 <span><span class="co">#&gt; [2,] -0.224 -0.5  0.671</span></span>
 <span><span class="co">#&gt; [3,]  0.224 -0.5 -0.671</span></span>
-<span><span class="co">#&gt; [4,]  0.671  0.5  0.224</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; [4,]  0.671  0.5  0.224</span></span>
+<span></span>
+<span><span class="co"># show they are orthonormal</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/t.html">t</a></span><span class="op">(</span><span class="va">C</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html">%*%</a></span> <span class="va">C</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/zapsmall.html">zapsmall</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt;      [,1] [,2] [,3]</span></span>
+<span><span class="co">#&gt; [1,]    2    0    0</span></span>
+<span><span class="co">#&gt; [2,]    0    6    0</span></span>
+<span><span class="co">#&gt; [3,]    0    0   12</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We can get a better sense of orthogonal polynomial contrasts by taking a numeric vector <span class="math inline">\(x\)</span>, and raising it to successive powers, 0, 1, 2, 3.</p>
 <div class="cell" data-layout-align="center">
@@ -875,7 +884,7 @@ From this you can see how the coefficients are interpreted:
 <span><span class="co">#&gt; x7   1   7   49   343</span></span>
 <span><span class="co">#&gt; x8   1   8   64   512</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>We can make the columns of <code>M</code> orthogonal using the Gram-Schmidt method, where each successive column after the first is made orthogonal to all previous columns by subtracting their projections on the current column. Plotting these, as in <span class="citation" data-cites="fig">(<a href="95-references.html#ref-fig" role="doc-biblioref"><strong>fig?</strong></a>)</span> shows that the coefficients for a linear term plot as a line, those for <span class="math inline">\(x^2\)</span> follow a quadratic, and so forth.</p>
+<p>We can make the columns of <code>M</code> orthogonal using the Gram-Schmidt method, where each successive column after the first is made orthogonal to all previous columns by subtracting their projections on the current column. Plotting these, as in <a href="#fig-poly" class="quarto-xref">Figure&nbsp;<span>5.6</span></a> shows that the coefficients for a linear term plot as a line, those for <span class="math inline">\(x^2\)</span> follow a quadratic, and so forth.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb19" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">op</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/par.html">par</a></span><span class="op">(</span>mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">4</span>, <span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span><span class="op">+</span><span class="fl">.1</span><span class="op">)</span></span>
 <span><span class="va">M1</span> <span class="op">&lt;-</span> <span class="fu">matlib</span><span class="fu">::</span><span class="fu">GramSchmidt</span><span class="op">(</span><span class="va">M</span>, normalize <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>

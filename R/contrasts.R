@@ -49,6 +49,14 @@ contrasts(df$Treat) <- contr.sum(3)
 contrasts(df$Sex) <- contr.sum(2)
 model.matrix(y ~ Treat + Sex, data = df)
 
+# orthogonality
+
+C.sum <- contr.sum(letters[1:4])
+t(C.sum) %*% C.sum
+
+C.helmert <- contr.helmert(letters[1:4])
+t(C.helmert) %*% C.helmert
+
 ## Polynomial contrasts
 
 M <- outer(1:8, 0:3, `^`)
