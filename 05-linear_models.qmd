@@ -426,8 +426,16 @@ When contrasts are placed as columns of a matrix $\mathbf{C}$, they are all _mut
 if each pair is orthogonal, which means
 $\mathbf{C}^\top \mathbf{C}$ is a diagonal matrix. If the columns of $\mathbf{C}$ are normalized
 to have sums of squares = 1, then $\mathbf{C}^\top \mathbf{C} = \mathbf{I}$.
+
 Orthogonal contrasts correspond to statistically independent tests.
 This is nice because they reflect separate, non-overlapping research questions.
+Another consequence is that the sums of squares for the overall hypothesis of differences 
+among the groups is _exactly decomposed_ as the sum of the sum of squares 
+accounted for by the $k-1$ contrasts $L_i$:
+
+$$
+\text{SS}_{\text{group}} = \sum_i^{k-1} \text{SS} (L_i) \; .
+$$
 
 
 #### Treatment coding {.unnumbered}
@@ -642,14 +650,14 @@ the factor means vary linearly, quadratically, and so on with the factor levels.
 orthogonal, $\mathbf{c}_i^\top \mathbf{c}_j = 0$, so that $\mathbf{C}^\top \mathbf{C} = \mathbf{I}$.
 
 ```{r}
-contr.poly(4)
+C <- contr.poly(4) |> print()
 
 # show they are orthonormal
 t(C) %*% C |> zapsmall()
 ```
 
 We can get a better sense of orthogonal polynomial contrasts by taking a numeric vector
-$x$, and raising it to successive powers, 1, 2, 3. $x^0 = 1$, the constant term or intercept.
+$x$, and raising it to successive powers, 1, 2, 3. Here $x^0 = 1$ is the constant term or intercept.
 ```{r}
 M <- outer(1:8, 0:3, `^`)
 colnames(M) <- c("int", "lin", "quad", "cubic")
@@ -664,7 +672,7 @@ for a linear term plot as a line, those for $x^2$ follow a quadratic, and so for
 ```{r}
 #| label: fig-poly
 #| out-width: "70%"
-#| fig-cap: "The coefficients for polynomial contrasts for linear (1), quadratic (2) and cubic (3) terms for a numeric variable $X$. The intercept or constant term is represented as 0."
+#| fig-cap: "The coefficients for orthogonal polynomial contrasts for linear (1), quadratic (2) and cubic (3) terms for a numeric variable $X$. The intercept or constant term is represented as 0. Orthogonality means that each pair of values is uncorrelated."
 op <- par(mar = c(4, 4, 1, 1)+.1)
 M1 <- matlib::GramSchmidt(M, normalize = FALSE)
 matplot(M1, 
@@ -682,8 +690,101 @@ matplot(M1,
 #### Custom contrasts {.unnumbered}
 
 You don't have to be constrained by the kinds of comparisons available in `contr.*` functions.
-For a factor with $k$ levels you are free to make up any $k-1$ contrasts that correspond
-to $k-1$ questions or tests of hypotheses about the factor level means.
+For a factor with $k$ levels you are free to make up _any_ $k-1$ contrasts that correspond
+to $k-1$ different questions or tests of hypotheses about the factor level means.
+Even better, if your contrasts are orthogonal, their tests are statistically independent.
+
+
+One useful idea for defining orthogonal comparisons of substantive interest is 
+the idea of **nested dichotomies**. Here you would start with 
+contrasting one meaningful subset of the groups against all the others.
+Then, successive contrasts are defined by making dichotomies among the
+groups within each subset.
+
+**TODO**: Make a figure for the two examples
+
+As one example, suppose we are looking at support on some issue among four political
+parties: A, B, C and D, where A and B are left-of-center and C and D are to the right
+of the political spectrum. The following comparisons might of interest:
+
+```{r parties}
+#| echo: false
+#| comment: ""
+library(nestedLogit)
+(ABCD <-
+    logits(AB.CD = dichotomy(c("A", "B"), c("C", "D")),
+           A.B   = dichotomy("A", "B"),
+           C.D   = dichotomy("C", "D")
+    )
+)
+```
+
+You could set up these comparisons as the following contrasts:
+
+```{r parties-cont}
+# contrasts
+AB.CD <- c(1,  1, -1, -1)
+A.B   <- c(1, -1,  0,  0)
+C.D   <- c(0,  0,  1, -1)
+
+# put them in a matrix
+C <- cbind(AB.CD, A.B, C.D)
+rownames(C) <- LETTERS[1:4]
+C
+```
+
+With a data frame like `df` with the factor `party`, you would then use these contrasts in a model by
+assigning `C` to `contrasts(df$party)`:
+
+```{r parties-data}
+set.seed(47)
+df <- data.frame(
+  party = factor(rep(LETTERS[1:4], each = 3)),
+  support = c(35, 25, 25, 15) + round(rnorm(12, 0, 1), 1)
+)
+contrasts(df$party) <- C
+```
+
+Then, in a linear model, the coefficients estimate the mean difference between the averages of the
+subset of parties in each comparison. For example, parties A and B on average are
+2.11 higher in support than parties C and D; support for party A is 2.37 greater than party B
+and so forth.
+
+```{r parties-mod}
+party.mod <- lm(support ~ party, data = df)
+coef(party.mod)
+```
+
+For another example, say we are examining differences among three
+psychiatric diagnostic patient groups, "bipolar", "manic", "depressed"
+and also have a matched normal group. One set of meaningful comparisons
+would be as follows:
+
+```{r}
+#| echo: false
+#| comment: ""
+(diagnosis <-
+  logits(D1 = dichotomy("Normal", c("Bipolar", "Depressed", "Manic")),
+         D2 = dichotomy("Bipolar", c("Depressed", "Manic")),
+         D3 = dichotomy("Depressed", "Manic")
+         )
+)
+```
+
+Weights for these contrasts are assigned by making them positive values for the groups in
+one subset and negative for the other, and giving numbers that sum to zero for each one:
+
+```{r}
+D1 <- c(3, -1, -1, -1)
+D2 <- c(0,  2, -1, -1)
+D3 <- c(0,  0,  1, -1)
+
+C <- cbind(D1, D2, D3)
+rownames(C) <- c("Normal", "Bipolar", "Depressed", "Manic")
+C
+```
+
+These have the same form as the reversed Helmert contrasts considered earlier.
 
 ## Regression
 

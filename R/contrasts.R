@@ -108,6 +108,55 @@ kronecker(X.sex, X.group, make.dimnames = TRUE)
 
 kronecker(X.group, X.sex, make.dimnames = TRUE) 
 
+# Nested dichotomies
+
+library(nestedLogit)
+
+(ABCD <-
+    logits(AB.CD = dichotomy(c("A", "B"), c("C", "D")),
+           A.B   = dichotomy("A", "B"),
+           C.D   = dichotomy("C", "D")
+    )
+)
+
+# contrasts
+AB.CD <- c(1,  1, -1, -1)
+A.B   <- c(1, -1,  0,  0)
+C.D   <- c(0,  0,  1, -1)
+
+# put them in a matrix
+C <- cbind(AB.CD, A.B, C.D)
+rownames(C) <- LETTERS[1:4]
+C
+
+
+set.seed(47)
+df <- data.frame(
+  party = factor(rep(LETTERS[1:4], each = 3)),
+  support = c(35, 25, 25, 15) + round(rnorm(12, 0, 1), 1)
+)
+contrasts(df$party) <- C
+
+car::some(df)
+
+
+party.mod <- lm(support ~ party, data = df)
+coef(party.mod)
+
+(diagnosis <-
+  logits(D1 = dichotomy("Normal", c("Bipolar", "Depressed", "Manic")),
+         D2 = dichotomy("Bipolar", c("Depressed", "Manic")),
+         D3 = dichotomy("Depressed", "Manic")
+         )
+)
+
+D1 <- c(3, -1, -1, -1)
+D2 <- c(0,  2, -1, -1)
+D3 <- c(0,  0,  1, -1)
+
+C <- cbind(D1, D2, D3)
+rownames(C) <- c("Normal", "Bipolar", "Depressed", "Manic")
+C
 
 
 

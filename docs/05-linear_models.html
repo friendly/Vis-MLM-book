@@ -670,7 +670,11 @@ y &amp; = &amp; \beta_0 + \beta_1 x_1 +  \beta_2 x_2 +  \beta_1 x_1 *  \beta_2 x
 <p><span class="math display">\[
 L = \mathbf{c}^\mathsf{T} \boldsymbol{\mu} = \sum_i^k c_i \mu_i \quad\text{such that}\quad \Sigma c_i = 0 \; .
 \]</span></p>
-<p>Two contrasts, <span class="math inline">\(\mathbf{c}_1\)</span> and <span class="math inline">\(\mathbf{c}_2\)</span> are <em>orthogonal</em> if the sum of products of their weights is zero, i.e., <span class="math inline">\(\mathbf{c}_1^\top \mathbf{c}_2 = \Sigma c_{1i} \times c_{2i} = 0\)</span>. When contrasts are placed as columns of a matrix <span class="math inline">\(\mathbf{C}\)</span>, they are all <em>mutually orthogonal</em> if each pair is orthogonal, which means <span class="math inline">\(\mathbf{C}^\top \mathbf{C}\)</span> is a diagonal matrix. If the columns of <span class="math inline">\(\mathbf{C}\)</span> are normalized to have sums of squares = 1, then <span class="math inline">\(\mathbf{C}^\top \mathbf{C} = \mathbf{I}\)</span>. Orthogonal contrasts correspond to statistically independent tests. This is nice because they reflect separate, non-overlapping research questions.</p>
+<p>Two contrasts, <span class="math inline">\(\mathbf{c}_1\)</span> and <span class="math inline">\(\mathbf{c}_2\)</span> are <em>orthogonal</em> if the sum of products of their weights is zero, i.e., <span class="math inline">\(\mathbf{c}_1^\top \mathbf{c}_2 = \Sigma c_{1i} \times c_{2i} = 0\)</span>. When contrasts are placed as columns of a matrix <span class="math inline">\(\mathbf{C}\)</span>, they are all <em>mutually orthogonal</em> if each pair is orthogonal, which means <span class="math inline">\(\mathbf{C}^\top \mathbf{C}\)</span> is a diagonal matrix. If the columns of <span class="math inline">\(\mathbf{C}\)</span> are normalized to have sums of squares = 1, then <span class="math inline">\(\mathbf{C}^\top \mathbf{C} = \mathbf{I}\)</span>.</p>
+<p>Orthogonal contrasts correspond to statistically independent tests. This is nice because they reflect separate, non-overlapping research questions. Another consequence is that the sums of squares for the overall hypothesis of differences among the groups is <em>exactly decomposed</em> as the sum of the sum of squares accounted for by the <span class="math inline">\(k-1\)</span> contrasts <span class="math inline">\(L_i\)</span>:</p>
+<p><span class="math display">\[
+\text{SS}_{\text{group}} = \sum_i^{k-1} \text{SS} (L_i) \; .
+\]</span></p>
 <section id="treatment-coding" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="treatment-coding">Treatment coding</h4>
 <p>Let’s examine R’s default coding scheme, <code>contr.treatment</code> (also called dummy coding), for a factor with 4 levels: ‘a’, ‘b’, ‘c’, and ‘d’, with a view to understanding the relationship between the true population means, <span class="math inline">\(\mu_a\)</span>, <span class="math inline">\(\mu_b\)</span>, <span class="math inline">\(\mu_c\)</span>, and <span class="math inline">\(\mu_d\)</span> and the parameters <span class="math inline">\(\boldsymbol{\beta}\)</span> estimated in a linear model. We get the following:</p>
 <div class="cell" data-layout-align="center">
@@ -860,7 +864,7 @@ From this you can see how the coefficients are interpreted:
 <p>For ordered factors that are also numeric, like <code>Age = c(8, 9, 10, 11)</code> or those that can be considered equally spaced along some continuum, polynomial contrasts, given by <code><a href="https://rdrr.io/r/stats/contrast.html">contr.poly()</a></code>, provide <em>orthogonal</em> (uncorrelated) contrasts that assess the degree to which the factor means vary linearly, quadratically, and so on with the factor levels.</p>
 <p><code><a href="https://rdrr.io/r/stats/contrast.html">contr.poly()</a></code> scales each column so that it’s sum of squares is 1. Each pair of columns is orthogonal, <span class="math inline">\(\mathbf{c}_i^\top \mathbf{c}_j = 0\)</span>, so that <span class="math inline">\(\mathbf{C}^\top \mathbf{C} = \mathbf{I}\)</span>.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb17" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/contrast.html">contr.poly</a></span><span class="op">(</span><span class="fl">4</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb17" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">C</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/contrast.html">contr.poly</a></span><span class="op">(</span><span class="fl">4</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt;          .L   .Q     .C</span></span>
 <span><span class="co">#&gt; [1,] -0.671  0.5 -0.224</span></span>
 <span><span class="co">#&gt; [2,] -0.224 -0.5  0.671</span></span>
@@ -869,12 +873,12 @@ From this you can see how the coefficients are interpreted:
 <span></span>
 <span><span class="co"># show they are orthonormal</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/t.html">t</a></span><span class="op">(</span><span class="va">C</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html">%*%</a></span> <span class="va">C</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/zapsmall.html">zapsmall</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt;      [,1] [,2] [,3]</span></span>
-<span><span class="co">#&gt; [1,]    2    0    0</span></span>
-<span><span class="co">#&gt; [2,]    0    6    0</span></span>
-<span><span class="co">#&gt; [3,]    0    0   12</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt;    .L .Q .C</span></span>
+<span><span class="co">#&gt; .L  1  0  0</span></span>
+<span><span class="co">#&gt; .Q  0  1  0</span></span>
+<span><span class="co">#&gt; .C  0  0  1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>We can get a better sense of orthogonal polynomial contrasts by taking a numeric vector <span class="math inline">\(x\)</span>, and raising it to successive powers, 1, 2, 3. <span class="math inline">\(x^0 = 1\)</span>, the constant term or intercept.</p>
+<p>We can get a better sense of orthogonal polynomial contrasts by taking a numeric vector <span class="math inline">\(x\)</span>, and raising it to successive powers, 1, 2, 3. Here <span class="math inline">\(x^0 = 1\)</span> is the constant term or intercept.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb18" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">M</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/outer.html">outer</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">8</span>, <span class="fl">0</span><span class="op">:</span><span class="fl">3</span>, <span class="va">`^`</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">M</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"int"</span>, <span class="st">"lin"</span>, <span class="st">"quad"</span>, <span class="st">"cubic"</span><span class="op">)</span></span>
@@ -909,13 +913,76 @@ From this you can see how the coefficients are interpreted:
 <img src="figs/ch05/fig-poly-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-poly-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;5.6: The coefficients for polynomial contrasts for linear (1), quadratic (2) and cubic (3) terms for a numeric variable <span class="math inline">\(X\)</span>. The intercept or constant term is represented as 0.
+Figure&nbsp;5.6: The coefficients for orthogonal polynomial contrasts for linear (1), quadratic (2) and cubic (3) terms for a numeric variable <span class="math inline">\(X\)</span>. The intercept or constant term is represented as 0. Orthogonality means that each pair of values is uncorrelated.
 </figcaption></figure>
 </div>
 </div>
 </div>
 </section><section id="custom-contrasts" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="custom-contrasts">Custom contrasts</h4>
-<p>You don’t have to be constrained by the kinds of comparisons available in <code>contr.*</code> functions. For a factor with <span class="math inline">\(k\)</span> levels you are free to make up any <span class="math inline">\(k-1\)</span> contrasts that correspond to <span class="math inline">\(k-1\)</span> questions or tests of hypotheses about the factor level means.</p>
+<p>You don’t have to be constrained by the kinds of comparisons available in <code>contr.*</code> functions. For a factor with <span class="math inline">\(k\)</span> levels you are free to make up <em>any</em> <span class="math inline">\(k-1\)</span> contrasts that correspond to <span class="math inline">\(k-1\)</span> different questions or tests of hypotheses about the factor level means. Even better, if your contrasts are orthogonal, their tests are statistically independent.</p>
+<p>One useful idea for defining orthogonal comparisons of substantive interest is the idea of <strong>nested dichotomies</strong>. Here you would start with contrasting one meaningful subset of the groups against all the others. Then, successive contrasts are defined by making dichotomies among the groups within each subset.</p>
+<p><strong>TODO</strong>: Make a figure for the two examples</p>
+<p>As one example, suppose we are looking at support on some issue among four political parties: A, B, C and D, where A and B are left-of-center and C and D are to the right of the political spectrum. The following comparisons might of interest:</p>
+<div class="cell" data-layout-align="center">
+<pre data-code-line-numbers=""><code>AB.CD: {A, B} vs. {C, D}
+A.B: {A} vs. {B}
+C.D: {C} vs. {D}</code></pre>
+</div>
+<p>You could set up these comparisons as the following contrasts:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb21" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># contrasts</span></span>
+<span><span class="va">AB.CD</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>,  <span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">A.B</span>   <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span>,  <span class="fl">0</span>,  <span class="fl">0</span><span class="op">)</span></span>
+<span><span class="va">C.D</span>   <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>,  <span class="fl">0</span>,  <span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># put them in a matrix</span></span>
+<span><span class="va">C</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">AB.CD</span>, <span class="va">A.B</span>, <span class="va">C.D</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="va">C</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">LETTERS</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span></span>
+<span><span class="va">C</span></span>
+<span><span class="co">#&gt;   AB.CD A.B C.D</span></span>
+<span><span class="co">#&gt; A     1   1   0</span></span>
+<span><span class="co">#&gt; B     1  -1   0</span></span>
+<span><span class="co">#&gt; C    -1   0   1</span></span>
+<span><span class="co">#&gt; D    -1   0  -1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>With a data frame like <code>df</code> with the factor <code>party</code>, you would then use these contrasts in a model by assigning <code>C</code> to <code>contrasts(df$party)</code>:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb22" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">47</span><span class="op">)</span></span>
+<span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span></span>
+<span>  party <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="va">LETTERS</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span>, each <span class="op">=</span> <span class="fl">3</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  support <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">35</span>, <span class="fl">25</span>, <span class="fl">25</span>, <span class="fl">15</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="fl">12</span>, <span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>, <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/contrasts.html">contrasts</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">party</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">C</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Then, in a linear model, the coefficients estimate the mean difference between the averages of the subset of parties in each comparison. For example, parties A and B on average are 2.11 higher in support than parties C and D; support for party A is 2.37 greater than party B and so forth.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb23" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">party.mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">support</span> <span class="op">~</span> <span class="va">party</span>, data <span class="op">=</span> <span class="va">df</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">party.mod</span><span class="op">)</span></span>
+<span><span class="co">#&gt; (Intercept)  partyAB.CD    partyA.B    partyC.D </span></span>
+<span><span class="co">#&gt;       24.83        2.11        2.37        1.85</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>For another example, say we are examining differences among three psychiatric diagnostic patient groups, “bipolar”, “manic”, “depressed” and also have a matched normal group. One set of meaningful comparisons would be as follows:</p>
+<div class="cell" data-layout-align="center">
+<pre data-code-line-numbers=""><code>D1: {Normal} vs. {Bipolar, Depressed, Manic}
+D2: {Bipolar} vs. {Depressed, Manic}
+D3: {Depressed} vs. {Manic}</code></pre>
+</div>
+<p>Weights for these contrasts are assigned by making them positive values for the groups in one subset and negative for the other, and giving numbers that sum to zero for each one:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb25" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">D1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="op">-</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">D2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>,  <span class="fl">2</span>, <span class="op">-</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">D3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>,  <span class="fl">0</span>,  <span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">C</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">D1</span>, <span class="va">D2</span>, <span class="va">D3</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="va">C</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Normal"</span>, <span class="st">"Bipolar"</span>, <span class="st">"Depressed"</span>, <span class="st">"Manic"</span><span class="op">)</span></span>
+<span><span class="va">C</span></span>
+<span><span class="co">#&gt;           D1 D2 D3</span></span>
+<span><span class="co">#&gt; Normal     3  0  0</span></span>
+<span><span class="co">#&gt; Bipolar   -1  2  0</span></span>
+<span><span class="co">#&gt; Depressed -1 -1  1</span></span>
+<span><span class="co">#&gt; Manic     -1 -1 -1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>These have the same form as the reversed Helmert contrasts considered earlier.</p>
 </section></section></section><section id="regression" class="level2" data-number="5.3"><h2 data-number="5.3" class="anchored" data-anchor-id="regression">
 <span class="header-section-number">5.3</span> Regression</h2>
 </section><section id="anova" class="level2" data-number="5.4"><h2 data-number="5.4" class="anchored" data-anchor-id="anova">
@@ -928,7 +995,7 @@ Figure&nbsp;5.6: The coefficients for polynomial contrasts for linear (1), quadr
 <p><strong>Package summary</strong></p>
 <div class="cell" data-layout-align="center">
 <p><strong>Packages used here</strong>:</p>
-<p>1 packages used here: knitr</p>
+<p>2 packages used here: knitr, nestedLogit</p>
 </div>
 
 
