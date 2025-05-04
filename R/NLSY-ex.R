@@ -64,13 +64,24 @@ coefplot(NLSY.mod1, fill = TRUE,
 
 cqplot(NLSY.mod1, id.n = 5)
 
-heplot(NLSY.mod1, fill=TRUE, fill.alpha = 0.2)
+heplot(NLSY.mod1, 
+  fill=TRUE, fill.alpha = 0.2, 
+  cex = 1.5, cex.lab = 1.5,
+  lwd=c(2, 3, 3),
+  label.pos = c("bottom", "top", "top")
+  )
 
 # test of overall regression
 coefs <- rownames(coef(NLSY.mod1))[-1]
 linearHypothesis(NLSY.mod1, coefs) |> print(SSP = FALSE)
 
-heplot(NLSY.mod1, fill=TRUE, hypotheses = list("Overall" = coefs))
+heplot(NLSY.mod1, 
+       hypotheses = list("Overall" = coefs),
+       fill=TRUE, fill.alpha = 0.2, 
+       cex = 1.5, cex.lab = 1.5,
+       lwd=c(2, 3, 3, 2),
+       label.pos = c("bottom", rep("top", 3))
+)
 
 
 # additional contribution of antisoc + hyperact over income + educ

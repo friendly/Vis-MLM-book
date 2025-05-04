@@ -694,9 +694,66 @@ The variation among the group means is reflected in the size and shape of the el
 
 ## Multiple Regression designs
 
+The ideas behind HE plots extend naturally to multivariate multiple regression (MMRA) and multivariate analysis of covariance (MANCOVA). In MMRA designs, the $\mathbf{X}$ matrix contains only quantitative predictors, while in MANCOVA designs, it contains a mixture of factors and quantitative predictors (covariates), but typically there is just one “group” factor.
+
+In the MANCOVA case, there is often a subtle difference in emphasis: true MANCOVA analyses focus on the differences among groups defined by the factors, adjusting for (or controlling for) the quantitative covariates. Analyses concerned with homogeneity of regression focus on quantitative predictors and attempt to test whether the regression relations are the same for all groups defined by the factors.
+
+A purely visual feature of HE plots in these cases is that the $\mathbf{H}$ ellipse for a quantitative predictor
+with 1 df appears as a degenerate line. But consequently, the angles between these for different
+predictors has a simple interpretation as as the correlation between their predicted effects.
+Moreover, it is easy to show visual overall tests of _joint_ linear hypotheses for two or more
+predictors together.
+
 * `heplots::NLSY`: National Longitudinal Survey of Youth Data
 * `heplots::schooldata`: School Data -> `R/schooldata-ex.R`
 * `heplots::Hernior`: Recovery from Elective Herniorrhaphy -> HE_mmra vignette
+
+### Example: NLSY data
+
+Here I'll continue the analysis of the NLSY data from @sec-NLSY-mmra. In the model `NLSY.mod1` I used
+only father's income (as $\log_2()$) and education to predict scores in reading and math, and both 
+of these demographic variables were highly significant.
+
+```{r}
+#| label: fig-NLSY-heplot1
+#| out-width: "80%"
+#| fig-cap: "HE plot for the simple model for the NLSY data fitting reading and math scores from income and education."
+data(NLSY, package = "heplots")
+NLSY.mod1 <- lm(cbind(read, math) ~ log2(income) + educ, 
+           data= NLSY |> filter(income != 0))
+
+heplot(NLSY.mod1, 
+  fill=TRUE, fill.alpha = 0.2, 
+  cex = 1.5, cex.lab = 1.5,
+  lwd=c(2, 3, 3),
+  label.pos = c("bottom", "top", "top")
+  )
+
+```
+
+Fathers income and education are highly correlated in their effects on the outcome scores.
+From the angles in the plot, income is slightly more related to the math score, while education
+slightly more to the reading score.
+
+The overall joint test for both predictors can then visualized as the test of the linear hypothesis
+$\mathcal{H}_0 : \mathbf{B} = [\boldsymbol{\beta}_\text{income}, \boldsymbol{\beta}_\text{educ}] = \mathbf{0}$.
+For `heplot()`, we specify the names of the coefficients to be tested with the `hypotheses` argument.
+
+```{r}
+#| label: fig-NLSY-heplot2
+#| out-width: "80%"
+#| fig-cap: "HE plot adding the $\\mathbf{H}$ ellipse for the overall test that both predictors have no effect on the outcome scores."
+coefs <- rownames(coef(NLSY.mod1))[-1] |> print()
+
+heplot(NLSY.mod1, 
+       hypotheses = list("Overall" = coefs),
+       fill=TRUE, fill.alpha = 0.2, 
+       cex = 1.5, cex.lab = 1.5,
+       lwd=c(2, 3, 3, 2),
+       label.pos = c("bottom", "top"))
+```
+
+
 
 ```{r}
 #| echo: false

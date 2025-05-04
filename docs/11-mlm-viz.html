@@ -370,7 +370,12 @@ window.Quarto = {
   <li><a href="#canonical-he-plot" id="toc-canonical-he-plot" class="nav-link" data-scroll-target="#canonical-he-plot"><span class="header-section-number">11.7.3</span> Canonical HE plot</a></li>
   </ul>
 </li>
-  <li><a href="#multiple-regression-designs" id="toc-multiple-regression-designs" class="nav-link" data-scroll-target="#multiple-regression-designs"><span class="header-section-number">11.8</span> Multiple Regression designs</a></li>
+  <li>
+<a href="#multiple-regression-designs" id="toc-multiple-regression-designs" class="nav-link" data-scroll-target="#multiple-regression-designs"><span class="header-section-number">11.8</span> Multiple Regression designs</a>
+  <ul class="collapse">
+<li><a href="#example-nlsy-data" id="toc-example-nlsy-data" class="nav-link" data-scroll-target="#example-nlsy-data"><span class="header-section-number">11.8.1</span> Example: NLSY data</a></li>
+  </ul>
+</li>
   </ul><div class="toc-actions"><ul><li><a href="https://github.com/friendly/vis-MLM-book/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
@@ -919,6 +924,9 @@ Figure&nbsp;11.9: Canonical HE plot for the iris data.
 <li>The HE plot version, shown in <a href="#fig-iris-HEcan" class="quarto-xref">Figure&nbsp;<span>11.9</span></a> summarizes the separate data ellipses for the species with pooled, within-group variance of the <span class="math inline">\(\mathbf{E}\)</span> matrix for the canonical variables, which are always uncorrelated. The variation among the group means is reflected in the size and shape of the ellipse for the <span class="math inline">\(\mathbf{E}\)</span> matrix.</li>
 </ul></section></section><section id="multiple-regression-designs" class="level2" data-number="11.8"><h2 data-number="11.8" class="anchored" data-anchor-id="multiple-regression-designs">
 <span class="header-section-number">11.8</span> Multiple Regression designs</h2>
+<p>The ideas behind HE plots extend naturally to multivariate multiple regression (MMRA) and multivariate analysis of covariance (MANCOVA). In MMRA designs, the <span class="math inline">\(\mathbf{X}\)</span> matrix contains only quantitative predictors, while in MANCOVA designs, it contains a mixture of factors and quantitative predictors (covariates), but typically there is just one “group” factor.</p>
+<p>In the MANCOVA case, there is often a subtle difference in emphasis: true MANCOVA analyses focus on the differences among groups defined by the factors, adjusting for (or controlling for) the quantitative covariates. Analyses concerned with homogeneity of regression focus on quantitative predictors and attempt to test whether the regression relations are the same for all groups defined by the factors.</p>
+<p>A purely visual feature of HE plots in these cases is that the <span class="math inline">\(\mathbf{H}\)</span> ellipse for a quantitative predictor with 1 df appears as a degenerate line. But consequently, the angles between these for different predictors has a simple interpretation as as the correlation between their predicted effects. Moreover, it is easy to show visual overall tests of <em>joint</em> linear hypotheses for two or more predictors together.</p>
 <ul>
 <li>
 <code><a href="https://friendly.github.io/heplots/reference/NLSY.html">heplots::NLSY</a></code>: National Longitudinal Survey of Youth Data</li>
@@ -928,6 +936,54 @@ Figure&nbsp;11.9: Canonical HE plot for the iris data.
 <li>
 <code><a href="https://friendly.github.io/heplots/reference/Hernior.html">heplots::Hernior</a></code>: Recovery from Elective Herniorrhaphy -&gt; HE_mmra vignette</li>
 </ul>
+<section id="example-nlsy-data" class="level3" data-number="11.8.1"><h3 data-number="11.8.1" class="anchored" data-anchor-id="example-nlsy-data">
+<span class="header-section-number">11.8.1</span> Example: NLSY data</h3>
+<p>Here I’ll continue the analysis of the NLSY data from <a href="10-mlm-review.html#sec-NLSY-mmra" class="quarto-xref"><span>Section 10.5.1</span></a>. In the model <code>NLSY.mod1</code> I used only father’s income (as <span class="math inline">\(\log_2()\)</span>) and education to predict scores in reading and math, and both of these demographic variables were highly significant.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb16" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">NLSY</span>, package <span class="op">=</span> <span class="st">"heplots"</span><span class="op">)</span></span>
+<span><span class="va">NLSY.mod1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">read</span>, <span class="va">math</span><span class="op">)</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">log2</a></span><span class="op">(</span><span class="va">income</span><span class="op">)</span> <span class="op">+</span> <span class="va">educ</span>, </span>
+<span>           data<span class="op">=</span> <span class="va">NLSY</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">income</span> <span class="op">!=</span> <span class="fl">0</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://friendly.github.io/heplots/reference/heplot.html">heplot</a></span><span class="op">(</span><span class="va">NLSY.mod1</span>, </span>
+<span>  fill<span class="op">=</span><span class="cn">TRUE</span>, fill.alpha <span class="op">=</span> <span class="fl">0.2</span>, </span>
+<span>  cex <span class="op">=</span> <span class="fl">1.5</span>, cex.lab <span class="op">=</span> <span class="fl">1.5</span>,</span>
+<span>  lwd<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">3</span>, <span class="fl">3</span><span class="op">)</span>,</span>
+<span>  label.pos <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"bottom"</span>, <span class="st">"top"</span>, <span class="st">"top"</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-NLSY-heplot1" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-NLSY-heplot1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/ch11/fig-NLSY-heplot1-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-NLSY-heplot1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;11.10: HE plot for the simple model for the NLSY data fitting reading and math scores from income and education.
+</figcaption></figure>
+</div>
+</div>
+</div>
+<p>Fathers income and education are highly correlated in their effects on the outcome scores. From the angles in the plot, income is slightly more related to the math score, while education slightly more to the reading score.</p>
+<p>The overall joint test for both predictors can then visualized as the test of the linear hypothesis <span class="math inline">\(\mathcal{H}_0 : \mathbf{B} = [\boldsymbol{\beta}_\text{income}, \boldsymbol{\beta}_\text{educ}] = \mathbf{0}\)</span>. For <code><a href="https://friendly.github.io/heplots/reference/heplot.html">heplot()</a></code>, we specify the names of the coefficients to be tested with the <code>hypotheses</code> argument.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb17" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">coefs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">NLSY.mod1</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span><span class="op">]</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "log2(income)" "educ"</span></span>
+<span></span>
+<span><span class="fu"><a href="https://friendly.github.io/heplots/reference/heplot.html">heplot</a></span><span class="op">(</span><span class="va">NLSY.mod1</span>, </span>
+<span>       hypotheses <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="st">"Overall"</span> <span class="op">=</span> <span class="va">coefs</span><span class="op">)</span>,</span>
+<span>       fill<span class="op">=</span><span class="cn">TRUE</span>, fill.alpha <span class="op">=</span> <span class="fl">0.2</span>, </span>
+<span>       cex <span class="op">=</span> <span class="fl">1.5</span>, cex.lab <span class="op">=</span> <span class="fl">1.5</span>,</span>
+<span>       lwd<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">2</span><span class="op">)</span>,</span>
+<span>       label.pos <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"bottom"</span>, <span class="st">"top"</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-NLSY-heplot2" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-NLSY-heplot2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/ch11/fig-NLSY-heplot2-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-NLSY-heplot2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;11.11: HE plot adding the <span class="math inline">\(\mathbf{H}\)</span> ellipse for the overall test that both predictors have no effect on the outcome scores.
+</figcaption></figure>
+</div>
+</div>
+</div>
 <div class="cell" data-layout-align="center">
 <pre data-code-line-numbers=""><code>#&gt; Writing packages to  C:/R/Projects/Vis-MLM-book/bib/pkgs.txt
 #&gt; 9  packages used here:
@@ -964,7 +1020,7 @@ Gittins, R. (1985). <em>Canonical analysis: A review with applications in ecolog
 Huang, F. L. (2019). <span>MANOVA</span>: A procedure whose time has passed? <em>Gifted Child Quarterly</em>, <em>64</em>(1), 56–60. <a href="https://doi.org/10.1177/0016986219887200">https://doi.org/10.1177/0016986219887200</a>
 </div>
 </div>
-</section><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><hr>
+</section></section><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><hr>
 <ol>
 <li id="fn1"><p><a href="https://www.meganstodel.com/posts/no-to-iris/">Stop using iris</a><a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn2"><p>Recall that <span class="math inline">\(R^2\)</span> for a linear model is the the proportion of variation in the response that is explained by the model, calculated as <span class="math inline">\(R^2 = \text{SS}_H / \text{SS}_T = \text{SS}_H / (\text{SS}_H + \text{SS}_E )\)</span>. For a multivariate model, these are obtained from the diagonal elements of <span class="math inline">\(\mathbf{H}\)</span> and <span class="math inline">\(\mathbf{E}\)</span>.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
