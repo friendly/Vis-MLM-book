@@ -54,6 +54,7 @@ library(heplots)
 library(patchwork)
 library(tidyr)
 library(matlib)
+library(ggrepel)
 # set ggplot theme
 #ggplot2::theme_set(theme_bw(base_size = 14))
 ```
@@ -189,7 +190,7 @@ multivariate analogs of the assumptions of normality, constant variance and inde
 of the errors in univariate models. Note that it is unnecessary to assume that the predictors 
 (regressors, columns of $\mathbf{X}$) are normally distributed. 
 
-Implicit in the above is perhaps the most important assumption---that the model has been correctly specified. This means:
+Implicit in the above is perhaps the most important assumption---that the model has been _correctly specified_. This means:
 
 * **Linearity**: The form of the relations between each $\mathbf{y}$ and the $\mathbf{x}$s is correct. Typically this means that the relations are _linear_, but if not, we have specified a correct transformation of $\mathbf{y}$ and/or $\mathbf{x}$.
 
@@ -225,13 +226,16 @@ on the left-hand side of the model formula, wrapped in `cbind()` which combines 
 lm(cbind(y1, y2, y3) ~ x1 + x2 + ..., data=)
 ```
 
+
 In the presence of possible outliers, robust methods are available for univariate linear models (e.g., `MASS::rlm()`). So too, `heplots::robmlm()` provides robust
 estimation in the multivariate case.
 
-### Example: Dog Food Data {#sec-dogfood-data}
+### Example: Dog food data {#sec-dogfood-data}
 
 As a toy example to make these ideas concrete, consider the dataset `heplots::dogfood`.
-Here, a dogfood manufacturer wanted to study preference for different dogfood formulas, two of their own ("Old", "New") and two from other manufacturers ("Major", "Alps"). In a between-dog design, 
+Here, a dogfood manufacturer wanted to study preference for different dogfood formulas, two of their own ("Old", "New") and two from other manufacturers ("Major", "Alps"). 
+
+In a between-dog design, 
 each of $n=4$ dogs were presented with a bowl of _one_ formula and the time to `start` eating and `amount` eaten were recorded. Greater preference would be seen in a shorter delay to start eating and a greater amount,
 so these responses are expected to be negatively correlated.
 
@@ -1243,9 +1247,11 @@ $\mathcal{H}_0 : \boldsymbol{\beta}_3 =  \boldsymbol{\beta}_4 =  \boldsymbol{\be
 coefficient names to be tested for their joint effect when dropped from the model.
 
 ```{r addhealth-linhyp3}
-rownames(coef(AH.mlm))
+coefs <- rownames(coef(AH.mlm)) |> print()
 ## joint test of all higher terms
-linearHypothesis(AH.mlm, rownames(coef(AH.mlm))[3:5]) |> print(SSP = FALSE)
+linearHypothesis(AH.mlm, coefs[3:5],
+                 title = "Higher-order terms") |> 
+  print(SSP = FALSE)
 ```
 
 
@@ -1266,7 +1272,7 @@ factors, `species`, `island` and `sex` and then `ggpairs()` scatterplot
 matrix (@fig-peng-ggpairs1).
 
 
-## MRA to MMRA
+## MRA $\rightarrow$ MMRA
 
 When all predictor variables are quantitative, the MLM @eq-mlm becomes the extension of
 univariate multiple regression to the situation where there are $p$ response variables.
@@ -1314,7 +1320,9 @@ and education of the child's father.
 In this analysis the  `math` and `read` scores are taken at the outcome variables.[^other-vars]
 Among the remaining predictors, income and educ might be considered as background variables necessary to control for. Interest might then be focused on whether the behavioral variables antisoc and hyperact contribute beyond that.
 
-[^other-vars]: Other choices are possible: we could instead try to model the behavioral variables, `antisocial` and `hyperact`.
+[^other-vars]: Other choices are possible: we could instead try to model the behavioral variables, `antisocial` and `hyperact` first, and then determine if the parental variables add appreciably to this.
+Modeling choices aren't arbitrary. They should reflect the aims of a study and the story you
+want to tell about the result.
 
 
 ```{r NLSY-data}
@@ -1322,7 +1330,7 @@ data(NLSY, package = "heplots")
 str(NLSY)
 ```
 
-#### Plots {.unnumbered}
+#### Exploratory plots {.unnumbered}
 To begin, I would examine some scatterplots and univariate displays. I'll start with density plots for all the variables to see the shapes of their distributions. From @fig-NLSY-density we see that math and reading scores
 are positively skewed, anti-social and hyperactivity have distributions highly concentrated in the lower scores.
 As we would suspect, father's income is extremely positively skewed, and crys out for a log transformation.
@@ -1453,7 +1461,26 @@ we would conclude that for reading log(income) is not a significant predictor.
 The orientation of the confidence ellipses indicates the positive correlation between reading and mathematics
 scores.
 
-#### Behavioral measures
+#### Behavioral measures {.unnumberd}
+
+Given that the parental background variables are highly predictive of student performance,
+we might want to know if the behavioral measures `antisoc` and `hyperact` add importantly to this.
+One way to do this is to add these predictors to the model and test for their additional
+contributions over and above the baseline model. You can do this using `update()`:
+
+```{r NLSY-mod2}
+NLSY.mod2 <- update(NLSY.mod1, . ~ . + antisoc + hyperact)
+Anova(NLSY.mod2)
+```
+
+Each of these new predictors are individually non-significant according to the Type II tests.
+Using `linearHypothesis()` you can test them jointly:
+```{r}
+coefs <- rownames(coef(NLSY.mod2))[-1] |> print()
+linearHypothesis(NLSY.mod2, coefs[3:4], title = "NLSY.mod2 | NLSY.mod1") |>
+  print(SSP = FALSE)
+```
+
 
 ### Example: School data {#sec-schooldata-mmra}
 
@@ -1463,9 +1490,84 @@ related to attributes of parents and teachers were used to predict aspects of
 students' success.
 It was conceived in the late 1960's as a federally sponsored program charged with providing remedial
 assistance to educationally disadvantaged early primary school students.
+
 The study was designed to compare schools using Program Follow Through (PFT)
 management methods of taking actions to achieve goals with those of
-Non Follow Through (NFT), but here I focus on the relations between ...
+Non Follow Through (NFT), but here I focus on the relations between outcome scores
+on tests of reading, mathematics and selfesteem in relation to
+five explanatory variables related to parents and teachers:
+
+- `education`  level of mother as measured by the percentage of high school graduates among female parents
+- `occupation`, highest occupation of a family member on a rating scale
+- `visit`, an index of the number of parental visits to the school site
+- `counseling`, a measure calculated from data on time spent with child on school-related topics such as reading together, etc.
+- `teacher`, number of teachers at the given site
+
+#### Exploratory plots {.unnumbered}
+
+There are eight variables in this example, so a scatterplot matrix or even a corrgram might not
+be sufficiently revealing. I tried a number of different methods and found a couple that were
+interesting and useful.
+
+Multivariate normality is **not** required for all the variables in $\mathbf{Y}$ and $\mathbf{X}$,
+but for MMRA problems, sometimes an initial $\chi^2$ QQ plot provides a handy way to flag 
+possibly unusual values as the analysis proceeds. ...
+
+```{r}
+#| label: fig-schooldata-cqplot
+#| fig-width: 6
+#| fig-height: 6
+#| out-width: "70%"
+#| fig-cap: "$\\chi^2$ QQ plot of the `schooldata` variables. "
+res <- cqplot(schooldata, id.n = 5) |> print()
+# get the case ID numberfs
+outliers <- rownames(res) |> as.numeric()
+```
+
+In this case, it is useful to examine the scatterplots for each $y$ variable against each of the
+predictors in $\mathbf{X}$. To prepare for this with `ggplot2`, it is necessary to 
+reshape the data to long format twice, once for the $x$ variables and again for the $y$ responses.
+That way, we can facet by `yvar ~ xvar`.
+
+```{r schooldata-long}
+# plot predictors vs each response
+xvars <- names(schooldata)[1:5]
+yvars <- names(schooldata)[6:8]
+
+school_long <- schooldata |>
+  tibble::rownames_to_column(var = "site") |>
+  pivot_longer(cols = all_of(xvars), names_to = "xvar", values_to = "x") |>
+  pivot_longer(cols = all_of(yvars), names_to = "yvar", values_to = "y") |>
+  mutate(xvar = factor(xvar, xvars), yvar = factor(yvar, yvars))
+
+car::some(school_long, n=8)
+```
+
+With this data structure, each scatterplot is a plot of a `y` against and `x`, and 
+we can facet these by `yvar ~ xvar`.
+
+
+```{r}
+#| label: fig-schooldata-scats
+#| fig-width: 10
+#| fig-height: 6
+#| out-width: "100%"
+#| fig-cap: "Scatterplots of each of the three response variables against each of the five predictors in the `schooldata` dataset. "
+p1 <- ggplot(school_long, aes(x, y)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, formula = y ~ x) +
+  stat_ellipse(geom = "polygon", 
+               level = 0.95, fill = "blue", alpha = 0.2) +
+  facet_grid(yvar ~ xvar, scales = "free") +
+  labs(x = "predictor", y = "response") +
+  theme_bw(base_size = 16)
+
+# label the 3 most unusual points in each panel
+p1 + geom_text_repel(data = school_long |> 
+                       filter(site %in% outliers[1:3]), 
+                     aes(label = site))
+```
+
 
 
 
@@ -1473,7 +1575,7 @@ Non Follow Through (NFT), but here I focus on the relations between ...
 
 ## Repeated measures designs
 
-**Package summary**
+
 
 ```{r}
 #| echo: false

@@ -86,18 +86,20 @@ heplot(NLSY.mod1,
 
 # additional contribution of antisoc + hyperact over income + educ
 # ----------------------------------------------------------------
-NLSY.mod2 <- lm(cbind(read,math) ~ antisoc + hyperact + log2(income) + educ, 
-           data = NLSY |> filter(income != 0))
+# NLSY.mod2 <- lm(cbind(read,math) ~ antisoc + hyperact + log2(income) + educ, 
+#            data = NLSY |> filter(income != 0))
 # use update
-update(NLSY.mod1, . ~ . + antisoc + hyperact)
-
+NLSY.mod2 <- update(NLSY.mod1, . ~ . + antisoc + hyperact)
 Anova(NLSY.mod2)
 
-coefs <- rownames(coef(NLSY.mod2))[-1]
+# test these jointly
+coefs <- rownames(coef(NLSY.mod2))[-1] |> print()
+linearHypothesis(NLSY.mod2, coefs[3:4], title = "NLSY.mod2 | NLSY.mod1") |>
+  print(SSP = FALSE)
+
 heplot(NLSY.mod2, fill=TRUE, 
        hypotheses=list("Overall"=coefs, "NLSY.mod2|NLSY.mod1"=coefs[1:2]))
 
-linearHypothesis(NLSY.mod2, coefs[1:2], title = "NLSY.mod2 | NLSY.mod1")
 
 linearHypothesis(NLSY.mod2, coefs, title = "Overall")
 
