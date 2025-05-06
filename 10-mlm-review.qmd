@@ -1396,6 +1396,8 @@ To develop some model-thinking, it is more useful to proceed in smaller steps to
 If we view parents' income and education as the most obvious predictors of reading and mathematics scores,
 those are the variables to fit first.
 
+**TODO**: Using log2(income) is more appropriate, but give HE plots in Ch 11 that are less dramatic. Consider using just income.
+
 I use `log2(income)` in the models below because of the extreme skew of father's income.
 $\log_2()$ rather than natural $\ln()$ facilitates interpretation. We can interpret
 the coefficient for reading as "a doubling of income" is associated with an increase of that value in reading".
@@ -1466,7 +1468,10 @@ scores.
 Given that the parental background variables are highly predictive of student performance,
 we might want to know if the behavioral measures `antisoc` and `hyperact` add importantly to this.
 One way to do this is to add these predictors to the model and test for their additional
-contributions over and above the baseline model. You can do this using `update()`:
+contributions over and above the baseline model. 
+
+You can do this using `update()`. In the model formula, "`.`" on the left hand side corresponds
+to the previous $y$ variables, and on the right-hand side to the $x$s in the previous model.
 
 ```{r NLSY-mod2}
 NLSY.mod2 <- update(NLSY.mod1, . ~ . + antisoc + hyperact)
@@ -1493,41 +1498,50 @@ assistance to educationally disadvantaged early primary school students.
 
 The study was designed to compare schools using Program Follow Through (PFT)
 management methods of taking actions to achieve goals with those of
-Non Follow Through (NFT), but here I focus on the relations between outcome scores
-on tests of reading, mathematics and selfesteem in relation to
+Non Follow Through (NFT), but here I simply focus on the relations between outcome scores
+on tests of reading, mathematics and self-esteem in relation to
 five explanatory variables related to parents and teachers:
 
-- `education`  level of mother as measured by the percentage of high school graduates among female parents
-- `occupation`, highest occupation of a family member on a rating scale
-- `visit`, an index of the number of parental visits to the school site
+- `education`  level of mother as measured by the percentage of high school graduates among female parents.
+- `occupation`, highest occupation of a family member on a rating scale.
+- `visit`, an index of the number of parental visits to the school site.
 - `counseling`, a measure calculated from data on time spent with child on school-related topics such as reading together, etc.
-- `teacher`, number of teachers at the given site
+- `teacher`, number of teachers at the given site.
+
+The dataset is given in `heplots::schooldata`.
 
 #### Exploratory plots {.unnumbered}
 
 There are eight variables in this example, so a scatterplot matrix or even a corrgram might not
-be sufficiently revealing. I tried a number of different methods and found a couple that were
+be sufficiently revealing. As usual, I tried a number of different methods and found a couple that were
 interesting and useful.
 
-Multivariate normality is **not** required for all the variables in $\mathbf{Y}$ and $\mathbf{X}$,
-but for MMRA problems, sometimes an initial $\chi^2$ QQ plot provides a handy way to flag 
-possibly unusual values as the analysis proceeds. ...
+Multivariate normality is **not** required for all the variables in $\mathbf{Y}$ and $\mathbf{X}$---
+it is only required for the residuals, $\Epsilon = \mathbf{Y} - \widehat{\mathbf{Y}}$.
+Yet, for MMRA problems, sometimes an initial $\chi^2$ QQ plot provides a handy way to flag 
+possibly unusual values to pay attention to as the analysis proceeds. In @fig-schooldata-cqplot
+we see five cases outside the 95% confidence envelope.
 
 ```{r}
 #| label: fig-schooldata-cqplot
 #| fig-width: 6
 #| fig-height: 6
 #| out-width: "70%"
-#| fig-cap: "$\\chi^2$ QQ plot of the `schooldata` variables. "
+#| fig-cap: "$\\chi^2$ QQ plot of the `schooldata` variables."
+data(schooldata, package = "heplots")
 res <- cqplot(schooldata, id.n = 5) |> print()
-# get the case ID numberfs
+# save the case ID numbers
 outliers <- rownames(res) |> as.numeric()
 ```
 
-In this case, it is useful to examine the scatterplots for each $y$ variable against each of the
-predictors in $\mathbf{X}$. To prepare for this with `ggplot2`, it is necessary to 
-reshape the data to long format twice, once for the $x$ variables and again for the $y$ responses.
-That way, we can facet by `yvar ~ xvar`.
+Rather than a complete $8 \times 8$ scatterplot matrix, it is useful here to examine the scatterplots just for each $y$ variable against each of the
+predictors in $\mathbf{X}$.[^ggduo] 
+To prepare for this with `ggplot2`, it is necessary to 
+reshape the data to long format _twice_---once for the ($q=5$) $x$ variables and again for the ($p=3$) $y$ responses to get all of their $q \times p$ combinations.
+That way, we get a data set with variables `x` and `y` whose variable names are by `xvar` and `yvar`.
+
+[^ggduo]: `r pkg("GGally")` has a function `ggduo()` that does something similar, plotting each of one set
+of variables against another. Like `ggpairs()` it allows for generalizations of a scatterplot where combinations of discrete factors and continuous variables can be displayed with appropriate visualizations for each.
 
 ```{r schooldata-long}
 # plot predictors vs each response
@@ -1536,15 +1550,18 @@ yvars <- names(schooldata)[6:8]
 
 school_long <- schooldata |>
   tibble::rownames_to_column(var = "site") |>
-  pivot_longer(cols = all_of(xvars), names_to = "xvar", values_to = "x") |>
-  pivot_longer(cols = all_of(yvars), names_to = "yvar", values_to = "y") |>
-  mutate(xvar = factor(xvar, xvars), yvar = factor(yvar, yvars))
+  pivot_longer(cols = all_of(xvars), 
+               names_to = "xvar", values_to = "x") |>
+  pivot_longer(cols = all_of(yvars), 
+               names_to = "yvar", values_to = "y") |>
+  mutate(xvar = factor(xvar, xvars), 
+         yvar = factor(yvar, yvars))
 
 car::some(school_long, n=8)
 ```
 
 With this data structure, each scatterplot is a plot of a `y` against and `x`, and 
-we can facet these by `yvar ~ xvar`.
+we can facet using `facet_grid(yvar ~ xvar)`.
 
 
 ```{r}
@@ -1552,7 +1569,7 @@ we can facet these by `yvar ~ xvar`.
 #| fig-width: 10
 #| fig-height: 6
 #| out-width: "100%"
-#| fig-cap: "Scatterplots of each of the three response variables against each of the five predictors in the `schooldata` dataset. "
+#| fig-cap: "Scatterplots of each of the three response variables against each of the five predictors in the `schooldata` dataset. Three of the points identified as possible multivariate outliers are labeled."
 p1 <- ggplot(school_long, aes(x, y)) +
   geom_point() +
   geom_smooth(method = "lm", se = FALSE, formula = y ~ x) +
@@ -1568,8 +1585,57 @@ p1 + geom_text_repel(data = school_long |>
                      aes(label = site))
 ```
 
+All of the predictors except for number of teachers
+show very strong linear relations with the outcome scores. Among the identified points, cases
+44 and 59 stand out in all the plots, case 59 being particularly high on all the measures.
+As well, there is a small cluster of unusual points in the plots for number of teachers.
 
+#### Fiting models {.unnumbered}
 
+Let's proceed to fit the multivariate regression model. Here "`.`" on the right-hand side
+of the model formula means all the other variables in the dataset.
+```{r school-mod}
+school.mod <- lm(cbind(reading, mathematics, selfesteem) ~ ., 
+                 data=schooldata)
+car::Anova(school.mod)
+```
+
+These multivariate tests have a seemingly simple interpretation: parent's education and occupation
+and their visits to the schools are highly predictive of student's outcomes;
+their counseling efforts and the number of teachers in the schools, not so much.
+
+You can get an assessment of the _strength_ of multivariate association from the $R^2$ for each of the
+responses using `glance()` for the MLM. All of these are very high.
+
+```{r school-glance}
+glance(school.mod)
+```
+
+Similarly `etasq()` for an MLM gives an $R^2$-like measure of the partial association accounted for each
+of the predictor terms in the model. In spite of the overwhelming significance of the first three
+predictors, their variance accounted for is more modest, and highest for parent's occupation.
+
+```{r school-etasq}
+etasq(school.mod)
+```
+
+Finally, given that we found a few noteworthy points in @fig-schooldata-cqplot, a $\chi^2$ QQ plot
+of the residuals in the model will tell us if any of these are really problematic.
+
+```{r}
+#| label: fig-schoolmod-cqplot
+#| fig-width: 6
+#| fig-height: 6
+#| out-width: "70%"
+#| fig-cap: "$\\chi^2$ QQ plot of the residuals in the `schooldat` multivariate regression model."
+cqplot(school.mod, id.n = 5)
+```
+
+So, you can see that among the cases that stood out in the `cqplot()` of the observed variables
+(@fig-schooldata-cqplot) only case 35 attracts attention here, and it is well within the confidence
+band. Case 59, which was the largest in all the pairwise scatterplots (@fig-schooldata-scats)
+is not unusual in the fitted model. It is a high-leverage point, but appeared to be well-fitted in all the
+simple regression, except in those for `teacher`.
 
 ## ANCOVA $\rightarrow$ MANCOVA
 

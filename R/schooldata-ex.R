@@ -5,6 +5,7 @@ library(dplyr)
 library(ggplot2)
 library(ggrepel)
 library(heplots)
+library(candisc)
 
 data(schooldata, package = "heplots")
 
@@ -60,11 +61,23 @@ car::Anova(school.mod)
 res <- cqplot(school.mod, id.n = 5)
 res
 
+## Multivariate influence
+library(mvinfluence)
+
+influencePlot(school.mod, id.n=4, type="stres")
+
+influencePlot(school.mod, id.n=4, type="LR")
 
 # HE plots
-heplot(school.mod, fill=TRUE, fill.alpha=0.1)
+heplot(school.mod, 
+       fill=TRUE, fill.alpha=0.1,
+       cex = 1.5,
+       cex.lab = 1.5)
 
-pairs(school.mod, fill=TRUE, fill.alpha=0.1)
+pairs(school.mod, 
+      fill=TRUE, fill.alpha=0.1,
+      var.cex = 2.5,
+      cex = 1.3)
 
 library(candisc)
 

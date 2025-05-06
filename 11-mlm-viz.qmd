@@ -20,7 +20,7 @@ together. The key points are:
 - By a rather clever design, called "matrix algebra" the separate univariate models can be combined, by turning vectors of responses, $\mathbf{y}_1, \mathbf{y}_2, \dots$ into a matrix $\mathbf{Y}$. Bingo! We get a
 multivariate extension.
 
-- You can treat this as a collection of separate models, one for each response, because the coefficents are the same.
+- You can treat this as a collection of separate models, one for each response, because the coefficients are the same.
 But, the benefit of a multivariate approach is that you also get an overall multivariate test for each term in the model.
 
 As nice as these mathematical and statistical ideas might be, the fact that the analysis is conducted for the response
@@ -32,7 +32,9 @@ responses. Here's where multivariate model visualization comes to the rescue!
 * For more than a few response variables, these result can be projected onto a lower-dimensional "canonical" space providing an even simpler description. Vectors for the response variables in this space show how these relate to the canonical dimension, facilitating interpretation. This answers the objection of @Huang2019 and others that multivariate models are difficult to understand
 because they are framed in terms of linear combinations of the the responses.
 
-- refer to Huang: "_given the challenges and assumptions involved in appropriately performing and interpreting MANOVA results, researchers are better off using other less error-prone procedures._"
+<!-- 
+- refer to Huang: "_given the challenges and assumptions involved in appropriately performing and interpreting MANOVA results, researchers are better off using other less error-prone procedures._" 
+-->
 
 **Packages**
 
@@ -177,7 +179,7 @@ groups of populations, or the human species as a whole". Regardless, the `iris` 
 Anderson's and should not be blamed. After all, if Anderson had lent his car to Fisher,
 would the car be tainted by Fisher's eugenicist leanings?
 
-[^stop-iris]: [Stop using iris](https://www.meganstodel.com/posts/no-to-iris/)
+[^stop-iris]: For example, Megan Stodel in a blog post [Stop using iris](https://www.meganstodel.com/posts/no-to-iris/) says, "_It is clear to me that knowingly using work that was itself used in pursuit of racist ideals is totally unacceptable._" A Reddit discussion on this topic, [Is it socially acceptable to use the Iris dataset?](https://www.reddit.com/r/MachineLearning/comments/ii9urh/d_is_it_socially_acceptable_to_use_the_iris/) has some interesting replies. 
 :::
 
 <!--
@@ -704,11 +706,25 @@ predictors has a simple interpretation as as the correlation between their predi
 Moreover, it is easy to show visual overall tests of _joint_ linear hypotheses for two or more
 predictors together.
 
+### Canonical correlation analysis
+
+Just as we saw for MANOVA designs, a canonical analysis for multivariate regression involves finding
+a low-D view of the relations between predictors and outcomes that maximally explains their
+relations in terms of linear combinations of each. That is, the goal is to find  weights
+for one set of variables, say $\mathbf{X}$ not to predict each of the other set 
+$\mathbf{Y} =[\mathbf{y}_1, \mathbf{y}_2, \dots]$ _individually_, but rather also finding weights
+for these which is most highly correlated with the linear combination of the $\mathbf{x}$s.
+
+
+
+**TODO**: Use these examples
 * `heplots::NLSY`: National Longitudinal Survey of Youth Data
 * `heplots::schooldata`: School Data -> `R/schooldata-ex.R`
 * `heplots::Hernior`: Recovery from Elective Herniorrhaphy -> HE_mmra vignette
 
-### Example: NLSY data
+### Example: NLSY data {#sec-NLSY-HE}
+
+**TODO**: The HE plots are nicer w/o using log(income)
 
 Here I'll continue the analysis of the NLSY data from @sec-NLSY-mmra. In the model `NLSY.mod1` I used
 only father's income (as $\log_2()$) and education to predict scores in reading and math, and both 
@@ -753,7 +769,73 @@ heplot(NLSY.mod1,
        label.pos = c("bottom", "top"))
 ```
 
+### Example: School data {#sec-schooldata-HE}
 
+The `schooldata` dataset analyzed in @sec-schooldata-mmra can also be illuminated by the methods of this
+chapter. There we fit the multivariate regression model predicting students scores on
+reading, mathematics and a measure of self-esteem using as predictors measures of parents' education, occupation,
+school visits, counseling help with school assignments and number of teachers per school.
+
+
+```{r}
+data(schooldata, package = "heplots")
+school.mod <- lm(cbind(reading, mathematics, selfesteem) ~ 
+                   education + occupation + visit + counseling + teacher, 
+                 data=schooldata)
+
+```
+
+In this model, parent's education and occupation
+and their visits to the schools were highly predictive of student's outcomes but
+their counseling efforts and the number of teachers in the schools did not contribute much.
+However, the nature of these relationships was largely uninterpreted in that analysis.
+
+Here is where HE plots can help. You can think of this as a way to visualize what is entailed
+in the coefficients for this model by showing the _magnitude_ of the predictor effects by their size
+and their relations to the outcome variable by their _direction_. The table of raw score coefficients
+isn't very helpful in this regard.
+
+```{r}
+coef(school.mod)
+```
+
+
+@fig-school-heplot1 shows the HE plot for reading and mathematics scores in this model, using the default
+significance scaling.
+```{r echo = -1}
+#| label: fig-school-heplot1
+#| out-width: "80%"
+#| fig-cap: "HE plot for reading and mathematics scores in the multivariate regression model..."
+op <- par(mar = c(4, 4, 1, 2) + .1)
+heplot(school.mod, 
+       fill=TRUE, fill.alpha=0.1,
+       cex = 1.5,
+       cex.lab = 1.5)
+```
+
+Parent's occupation and education are both significant in this view, but what is more important is their
+orientation. Both are positively associated with reading and math scores, but education is somewhat more
+related to reading than to mathematics. Visits to school and number of teachers are not significant in
+this plot, but both are positively correlated with reading and math. The parent time counseling measure,
+while also insignificant,
+tilts in the opposite direction, having different signs for reading and math.
+
+In the `pairs()` plot for all three responses (@fig-school-heplot2), we see something different in the relations for self-esteem. ...
+
+```{r}
+#| label: fig-school-heplot2
+#| fig-width: 9
+#| fig-height: 9
+#| out-width: "100%"
+#| fig-cap: "Pairwise HE plots for the three outcome variables in the multivariate regression model ..."
+pairs(school.mod, 
+      fill=TRUE, fill.alpha=0.1,
+      var.cex = 2.5,
+      cex = 1.3)
+```
+
+
+**Packages**:
 
 ```{r}
 #| echo: false

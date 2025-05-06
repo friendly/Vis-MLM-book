@@ -1554,6 +1554,7 @@ Figure&nbsp;10.11: Scatterplot of mathematics score against reading score in the
 </div>
 </section><section id="fitting-models" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="fitting-models">Fitting models</h4>
 <p>We could of course include all of the predictors in a single model, and perhaps be done with it. To develop some model-thinking, it is more useful to proceed in smaller steps to see what we can learn from each. If we view parents’ income and education as the most obvious predictors of reading and mathematics scores, those are the variables to fit first.</p>
+<p><strong>TODO</strong>: Using log2(income) is more appropriate, but give HE plots in Ch 11 that are less dramatic. Consider using just income.</p>
 <p>I use <code>log2(income)</code> in the models below because of the extreme skew of father’s income. <span class="math inline">\(\log_2()\)</span> rather than natural <span class="math inline">\(\ln()\)</span> facilitates interpretation. We can interpret the coefficient for reading as “a doubling of income” is associated with an increase of that value in reading”.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb40" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">NLSY.mod1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">read</span>, <span class="va">math</span><span class="op">)</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">log2</a></span><span class="op">(</span><span class="va">income</span><span class="op">)</span> <span class="op">+</span> <span class="va">educ</span>, </span>
@@ -1623,7 +1624,8 @@ Figure&nbsp;10.12: Bivariate coefficient plot for reading and math with 95% conf
 <p>In <a href="#fig-NLSY-coefplot1" class="quarto-xref">Figure&nbsp;<span>10.12</span></a>, the confidence ellipses for <code>log2(income)</code> and <code>educ</code> both exclude the origin, which represents the multivariate hypothesis <span class="math inline">\(\mathcal{H}_0 : ( \beta_\textrm{read}, \beta_\textrm{math} ) = (0, \, 0)\)</span>, so this hypothesis is rejected. Note that if we only examined the univariate tests for each of the four parameters, we would conclude that for reading log(income) is not a significant predictor. The orientation of the confidence ellipses indicates the positive correlation between reading and mathematics scores.</p>
 </section><section id="behavioral-measures" class="level4 unnumberd" data-number="10.5.1.1"><h4 class="unnumberd anchored" data-number="10.5.1.1" data-anchor-id="behavioral-measures">
 <span class="header-section-number">10.5.1.1</span> Behavioral measures</h4>
-<p>Given that the parental background variables are highly predictive of student performance, we might want to know if the behavioral measures <code>antisoc</code> and <code>hyperact</code> add importantly to this. One way to do this is to add these predictors to the model and test for their additional contributions over and above the baseline model. You can do this using <code><a href="https://rdrr.io/r/stats/update.html">update()</a></code>:</p>
+<p>Given that the parental background variables are highly predictive of student performance, we might want to know if the behavioral measures <code>antisoc</code> and <code>hyperact</code> add importantly to this. One way to do this is to add these predictors to the model and test for their additional contributions over and above the baseline model.</p>
+<p>You can do this using <code><a href="https://rdrr.io/r/stats/update.html">update()</a></code>. In the model formula, “<code>.</code>” on the left hand side corresponds to the previous <span class="math inline">\(y\)</span> variables, and on the right-hand side to the <span class="math inline">\(x\)</span>s in the previous model.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb44" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">NLSY.mod2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/update.html">update</a></span><span class="op">(</span><span class="va">NLSY.mod1</span>, <span class="va">.</span> <span class="op">~</span> <span class="va">.</span> <span class="op">+</span> <span class="va">antisoc</span> <span class="op">+</span> <span class="va">hyperact</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova</a></span><span class="op">(</span><span class="va">NLSY.mod2</span><span class="op">)</span></span>
@@ -1656,31 +1658,33 @@ Figure&nbsp;10.12: Bivariate coefficient plot for reading and math with 95% conf
 </section></section><section id="sec-schooldata-mmra" class="level3" data-number="10.5.2"><h3 data-number="10.5.2" class="anchored" data-anchor-id="sec-schooldata-mmra">
 <span class="header-section-number">10.5.2</span> Example: School data</h3>
 <p><span class="citation" data-cites="Charnes-etal-1981">Charnes et al. (<a href="95-references.html#ref-Charnes-etal-1981" role="doc-biblioref">1981</a>)</span> describe a large scale social experiment in public school education. Seventy school sites across the U.S. participated and a number of variables related to attributes of parents and teachers were used to predict aspects of students’ success. It was conceived in the late 1960’s as a federally sponsored program charged with providing remedial assistance to educationally disadvantaged early primary school students.</p>
-<p>The study was designed to compare schools using Program Follow Through (PFT) management methods of taking actions to achieve goals with those of Non Follow Through (NFT), but here I focus on the relations between outcome scores on tests of reading, mathematics and selfesteem in relation to five explanatory variables related to parents and teachers:</p>
+<p>The study was designed to compare schools using Program Follow Through (PFT) management methods of taking actions to achieve goals with those of Non Follow Through (NFT), but here I simply focus on the relations between outcome scores on tests of reading, mathematics and self-esteem in relation to five explanatory variables related to parents and teachers:</p>
 <ul>
 <li>
-<code>education</code> level of mother as measured by the percentage of high school graduates among female parents</li>
+<code>education</code> level of mother as measured by the percentage of high school graduates among female parents.</li>
 <li>
-<code>occupation</code>, highest occupation of a family member on a rating scale</li>
+<code>occupation</code>, highest occupation of a family member on a rating scale.</li>
 <li>
-<code>visit</code>, an index of the number of parental visits to the school site</li>
+<code>visit</code>, an index of the number of parental visits to the school site.</li>
 <li>
 <code>counseling</code>, a measure calculated from data on time spent with child on school-related topics such as reading together, etc.</li>
 <li>
-<code>teacher</code>, number of teachers at the given site</li>
+<code>teacher</code>, number of teachers at the given site.</li>
 </ul>
+<p>The dataset is given in <code><a href="https://friendly.github.io/heplots/reference/schooldata.html">heplots::schooldata</a></code>.</p>
 <section id="exploratory-plots-3" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="exploratory-plots-3">Exploratory plots</h4>
-<p>There are eight variables in this example, so a scatterplot matrix or even a corrgram might not be sufficiently revealing. I tried a number of different methods and found a couple that were interesting and useful.</p>
-<p>Multivariate normality is <strong>not</strong> required for all the variables in <span class="math inline">\(\mathbf{Y}\)</span> and <span class="math inline">\(\mathbf{X}\)</span>, but for MMRA problems, sometimes an initial <span class="math inline">\(\chi^2\)</span> QQ plot provides a handy way to flag possibly unusual values as the analysis proceeds. …</p>
+<p>There are eight variables in this example, so a scatterplot matrix or even a corrgram might not be sufficiently revealing. As usual, I tried a number of different methods and found a couple that were interesting and useful.</p>
+<p>Multivariate normality is <strong>not</strong> required for all the variables in <span class="math inline">\(\mathbf{Y}\)</span> and <span class="math inline">\(\mathbf{X}\)</span>— it is only required for the residuals, <span class="math inline">\(\boldsymbol{\Large\varepsilon}= \mathbf{Y} - \widehat{\mathbf{Y}}\)</span>. Yet, for MMRA problems, sometimes an initial <span class="math inline">\(\chi^2\)</span> QQ plot provides a handy way to flag possibly unusual values to pay attention to as the analysis proceeds. In <a href="#fig-schooldata-cqplot" class="quarto-xref">Figure&nbsp;<span>10.13</span></a> we see five cases outside the 95% confidence envelope.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb46" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://friendly.github.io/heplots/reference/cqplot.html">cqplot</a></span><span class="op">(</span><span class="va">schooldata</span>, id.n <span class="op">=</span> <span class="fl">5</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb46" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">schooldata</span>, package <span class="op">=</span> <span class="st">"heplots"</span><span class="op">)</span></span>
+<span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://friendly.github.io/heplots/reference/cqplot.html">cqplot</a></span><span class="op">(</span><span class="va">schooldata</span>, id.n <span class="op">=</span> <span class="fl">5</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt;     DSQ quantile       p</span></span>
 <span><span class="co">#&gt; 59 44.6     21.0 0.00714</span></span>
 <span><span class="co">#&gt; 44 38.8     18.0 0.02143</span></span>
 <span><span class="co">#&gt; 33 27.9     16.5 0.03571</span></span>
 <span><span class="co">#&gt; 66 24.0     15.5 0.05000</span></span>
 <span><span class="co">#&gt; 35 21.7     14.7 0.06429</span></span>
-<span><span class="co"># get the case ID numberfs</span></span>
+<span><span class="co"># save the case ID numbers</span></span>
 <span><span class="va">outliers</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div id="fig-schooldata-cqplot" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
@@ -1693,7 +1697,7 @@ Figure&nbsp;10.13: <span class="math inline">\(\chi^2\)</span> QQ plot of the <c
 </div>
 </div>
 </div>
-<p>In this case, it is useful to examine the scatterplots for each <span class="math inline">\(y\)</span> variable against each of the predictors in <span class="math inline">\(\mathbf{X}\)</span>. To prepare for this with <code>ggplot2</code>, it is necessary to reshape the data to long format twice, once for the <span class="math inline">\(x\)</span> variables and again for the <span class="math inline">\(y\)</span> responses. That way, we can facet by <code>yvar ~ xvar</code>.</p>
+<p>Rather than a complete <span class="math inline">\(8 \times 8\)</span> scatterplot matrix, it is useful here to examine the scatterplots just for each <span class="math inline">\(y\)</span> variable against each of the predictors in <span class="math inline">\(\mathbf{X}\)</span>.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a> To prepare for this with <code>ggplot2</code>, it is necessary to reshape the data to long format <em>twice</em>—once for the (<span class="math inline">\(q=5\)</span>) <span class="math inline">\(x\)</span> variables and again for the (<span class="math inline">\(p=3\)</span>) <span class="math inline">\(y\)</span> responses to get all of their <span class="math inline">\(q \times p\)</span> combinations. That way, we get a data set with variables <code>x</code> and <code>y</code> whose variable names are by <code>xvar</code> and <code>yvar</code>.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb47" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># plot predictors vs each response</span></span>
 <span><span class="va">xvars</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">schooldata</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span></span>
@@ -1701,9 +1705,12 @@ Figure&nbsp;10.13: <span class="math inline">\(\chi^2\)</span> QQ plot of the <c
 <span></span>
 <span><span class="va">school_long</span> <span class="op">&lt;-</span> <span class="va">schooldata</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html">rownames_to_column</a></span><span class="op">(</span>var <span class="op">=</span> <span class="st">"site"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html">pivot_longer</a></span><span class="op">(</span>cols <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/all_of.html">all_of</a></span><span class="op">(</span><span class="va">xvars</span><span class="op">)</span>, names_to <span class="op">=</span> <span class="st">"xvar"</span>, values_to <span class="op">=</span> <span class="st">"x"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html">pivot_longer</a></span><span class="op">(</span>cols <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/all_of.html">all_of</a></span><span class="op">(</span><span class="va">yvars</span><span class="op">)</span>, names_to <span class="op">=</span> <span class="st">"yvar"</span>, values_to <span class="op">=</span> <span class="st">"y"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>xvar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">xvar</span>, <span class="va">xvars</span><span class="op">)</span>, yvar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">yvar</span>, <span class="va">yvars</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html">pivot_longer</a></span><span class="op">(</span>cols <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/all_of.html">all_of</a></span><span class="op">(</span><span class="va">xvars</span><span class="op">)</span>, </span>
+<span>               names_to <span class="op">=</span> <span class="st">"xvar"</span>, values_to <span class="op">=</span> <span class="st">"x"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html">pivot_longer</a></span><span class="op">(</span>cols <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/all_of.html">all_of</a></span><span class="op">(</span><span class="va">yvars</span><span class="op">)</span>, </span>
+<span>               names_to <span class="op">=</span> <span class="st">"yvar"</span>, values_to <span class="op">=</span> <span class="st">"y"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>xvar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">xvar</span>, <span class="va">xvars</span><span class="op">)</span>, </span>
+<span>         yvar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">yvar</span>, <span class="va">yvars</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">car</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/car/man/some.html">some</a></span><span class="op">(</span><span class="va">school_long</span>, n<span class="op">=</span><span class="fl">8</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 8 × 5</span></span>
@@ -1718,7 +1725,7 @@ Figure&nbsp;10.13: <span class="math inline">\(\chi^2\)</span> QQ plot of the <c
 <span><span class="co">#&gt; 7 62    visit       9.89 reading      9.35</span></span>
 <span><span class="co">#&gt; 8 64    occupation  8.91 mathematics 24.5</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>With this data structure, each scatterplot is a plot of a <code>y</code> against and <code>x</code>, and we can facet these by <code>yvar ~ xvar</code>.</p>
+<p>With this data structure, each scatterplot is a plot of a <code>y</code> against and <code>x</code>, and we can facet using <code>facet_grid(yvar ~ xvar)</code>.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb48" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">school_long</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
@@ -1739,11 +1746,65 @@ Figure&nbsp;10.13: <span class="math inline">\(\chi^2\)</span> QQ plot of the <c
 <img src="figs/ch10/fig-schooldata-scats-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-schooldata-scats-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;10.14: Scatterplots of each of the three response variables against each of the five predictors in the <code>schooldata</code> dataset.
+Figure&nbsp;10.14: Scatterplots of each of the three response variables against each of the five predictors in the <code>schooldata</code> dataset. Three of the points identified as possible multivariate outliers are labeled.
 </figcaption></figure>
 </div>
 </div>
 </div>
+<p>All of the predictors except for number of teachers show very strong linear relations with the outcome scores. Among the identified points, cases 44 and 59 stand out in all the plots, case 59 being particularly high on all the measures. As well, there is a small cluster of unusual points in the plots for number of teachers.</p>
+</section><section id="fiting-models" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="fiting-models">Fiting models</h4>
+<p>Let’s proceed to fit the multivariate regression model. Here “<code>.</code>” on the right-hand side of the model formula means all the other variables in the dataset.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb49" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">school.mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">reading</span>, <span class="va">mathematics</span>, <span class="va">selfesteem</span><span class="op">)</span> <span class="op">~</span> <span class="va">.</span>, </span>
+<span>                 data<span class="op">=</span><span class="va">schooldata</span><span class="op">)</span></span>
+<span><span class="fu">car</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova</a></span><span class="op">(</span><span class="va">school.mod</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Type II MANOVA Tests: Pillai test statistic</span></span>
+<span><span class="co">#&gt;            Df test stat approx F num Df den Df  Pr(&gt;F)    </span></span>
+<span><span class="co">#&gt; education   1     0.376    12.43      3     62 1.8e-06 ***</span></span>
+<span><span class="co">#&gt; occupation  1     0.567    27.02      3     62 2.7e-11 ***</span></span>
+<span><span class="co">#&gt; visit       1     0.260     7.27      3     62 0.00029 ***</span></span>
+<span><span class="co">#&gt; counseling  1     0.065     1.43      3     62 0.24297    </span></span>
+<span><span class="co">#&gt; teacher     1     0.049     1.07      3     62 0.37003    </span></span>
+<span><span class="co">#&gt; ---</span></span>
+<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>These multivariate tests have a seemingly simple interpretation: parent’s education and occupation and their visits to the schools are highly predictive of student’s outcomes; their counseling efforts and the number of teachers in the schools, not so much.</p>
+<p>You can get an assessment of the <em>strength</em> of multivariate association from the <span class="math inline">\(R^2\)</span> for each of the responses using <code><a href="https://generics.r-lib.org/reference/glance.html">glance()</a></code> for the MLM. All of these are very high.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb50" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://generics.r-lib.org/reference/glance.html">glance</a></span><span class="op">(</span><span class="va">school.mod</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 3 × 8</span></span>
+<span><span class="co">#&gt;   response    r.squared sigma fstatistic numdf dendf  p.value  nobs</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;           &lt;dbl&gt; &lt;dbl&gt;      &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt; &lt;int&gt;</span></span>
+<span><span class="co">#&gt; 1 reading         0.929  4.83       167.     5    64 2.34e-35    70</span></span>
+<span><span class="co">#&gt; 2 mathematics     0.917  6.16       141.     5    64 3.37e-33    70</span></span>
+<span><span class="co">#&gt; 3 selfesteem      0.993  1.17      1852.     5    64 8.47e-68    70</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Similarly <code><a href="https://friendly.github.io/heplots/reference/etasq.html">etasq()</a></code> for an MLM gives an <span class="math inline">\(R^2\)</span>-like measure of the partial association accounted for each of the predictor terms in the model. In spite of the overwhelming significance of the first three predictors, their variance accounted for is more modest, and highest for parent’s occupation.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb51" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://friendly.github.io/heplots/reference/etasq.html">etasq</a></span><span class="op">(</span><span class="va">school.mod</span><span class="op">)</span></span>
+<span><span class="co">#&gt;             eta^2</span></span>
+<span><span class="co">#&gt; education  0.3756</span></span>
+<span><span class="co">#&gt; occupation 0.5666</span></span>
+<span><span class="co">#&gt; visit      0.2603</span></span>
+<span><span class="co">#&gt; counseling 0.0647</span></span>
+<span><span class="co">#&gt; teacher    0.0491</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Finally, given that we found a few noteworthy points in <a href="#fig-schooldata-cqplot" class="quarto-xref">Figure&nbsp;<span>10.13</span></a>, a <span class="math inline">\(\chi^2\)</span> QQ plot of the residuals in the model will tell us if any of these are really problematic.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb52" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://friendly.github.io/heplots/reference/cqplot.html">cqplot</a></span><span class="op">(</span><span class="va">school.mod</span>, id.n <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-schoolmod-cqplot" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-schoolmod-cqplot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/ch10/fig-schoolmod-cqplot-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-schoolmod-cqplot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;10.15: <span class="math inline">\(\chi^2\)</span> QQ plot of the residuals in the <code>schooldat</code> multivariate regression model.
+</figcaption></figure>
+</div>
+</div>
+</div>
+<p>So, you can see that among the cases that stood out in the <code><a href="https://friendly.github.io/heplots/reference/cqplot.html">cqplot()</a></code> of the observed variables (<a href="#fig-schooldata-cqplot" class="quarto-xref">Figure&nbsp;<span>10.13</span></a>) only case 35 attracts attention here, and it is well within the confidence band. Case 59, which was the largest in all the pairwise scatterplots (<a href="#fig-schooldata-scats" class="quarto-xref">Figure&nbsp;<span>10.14</span></a>) is not unusual in the fitted model. It is a high-leverage point, but appeared to be well-fitted in all the simple regression, except in those for <code>teacher</code>.</p>
 </section></section></section><section id="ancova-rightarrow-mancova" class="level2" data-number="10.6"><h2 data-number="10.6" class="anchored" data-anchor-id="ancova-rightarrow-mancova">
 <span class="header-section-number">10.6</span> ANCOVA <span class="math inline">\(\rightarrow\)</span> MANCOVA</h2>
 </section><section id="repeated-measures-designs" class="level2" data-number="10.7"><h2 data-number="10.7" class="anchored" data-anchor-id="repeated-measures-designs">
@@ -1794,6 +1855,7 @@ Yee, T. W. (2025). <em><span>VGAM</span>: Vector generalized linear and additive
 <li id="fn1"><p>There’s a bit of a puzzle here, and therefore a gap in methods and therefore an opportunity. The classical linear models fit by <code><a href="https://rdrr.io/r/stats/lm.html">lm()</a></code> extend naturally to non-gaussian data via <code><a href="https://rdrr.io/r/stats/glm.html">glm()</a></code> which provides for other families (binary: Bernoulli, count data: Poisson). The standard <code><a href="https://rdrr.io/r/stats/lm.html">lm()</a></code> extends quite naturally to a multivariate responses. Yet the combination of these ideas— non-gaussian multivariate models— remains elusive. The <span style="color: brown;"><strong>VGAM</strong></span> (<span class="citation" data-cites="Yee2015">Yee (<a href="95-references.html#ref-Yee2015" role="doc-biblioref">2015</a>)</span>, <span class="citation" data-cites="R-VGAM">Yee (<a href="95-references.html#ref-R-VGAM" role="doc-biblioref">2025</a>)</span>) handles the bivariate cases of logistic (and probit) regression, but not much more. See <span class="citation" data-cites="FriendlyMeyer:2016:DDAR">Friendly &amp; Meyer (<a href="95-references.html#ref-FriendlyMeyer:2016:DDAR" role="doc-biblioref">2016</a>)</span>, Sec. 10.4 for an example and graphs of odds ratios in these models. There is a lot more to do on this topic.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn2"><p>A slight hiccup in notation is that the <em>uppercase</em> for the Greek Beta (<span class="math inline">\(\boldsymbol{\beta}\)</span>) is the same as the uppercase Roman <span class="math inline">\(\mathbf{B}\)</span>, so I use <span class="math inline">\(\mathbf{b}_1 , \mathbf{b}_2 , \dots\)</span> below to refer to its’ columns.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn3"><p>Other choices are possible: we could instead try to model the behavioral variables, <code>antisocial</code> and <code>hyperact</code> first, and then determine if the parental variables add appreciably to this. Modeling choices aren’t arbitrary. They should reflect the aims of a study and the story you want to tell about the result.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p><span style="color: brown;"><strong>GGally</strong></span> has a function <code>ggduo()</code> that does something similar, plotting each of one set of variables against another. Like <code>ggpairs()</code> it allows for generalizations of a scatterplot where combinations of discrete factors and continuous variables can be displayed with appropriate visualizations for each.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol></section></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
