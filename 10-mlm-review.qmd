@@ -55,6 +55,7 @@ library(patchwork)
 library(tidyr)
 library(matlib)
 library(ggrepel)
+library(mvinfluence)
 # set ggplot theme
 #ggplot2::theme_set(theme_bw(base_size = 14))
 ```
@@ -176,8 +177,10 @@ where $\mathbf{\Sigma}$
 is a non-singular error-covariance matrix. 
 Statistical tests of multivariate normality of the residuals include the Shapiro-Wilk [@ShapiroWilk1965]
 and Mardia [@Mardia:1970:MMS]
-tests (in the **MVN** package);
-<!-- mshapiro.test( )[in the mvnormtest package] can be used to perform the Shapiro-Wilk test for multivariate normality -->
+tests (and others, in the `r package("MVN")` package).
+<!-- mshapiro.test( )[in the `r package("mvnormtest")`  package] can be used to perform the Shapiro-Wilk test for multivariate normality -->
+
+However, as in univariate models, the MLM is relatively robust 
 however this is often better assessed visually using a $\chi^2$ QQ plot
 of Mahalanobis squared distance against their corresponding $\chi^2_p$ values for $p$ degrees of freedom using `heplots::cqplot()`.
 * **Homoscedasticity**: The error-covariance matrix $\mathbf{\Sigma}$ is constant across all observations and grouping factors.
@@ -194,7 +197,7 @@ Implicit in the above is perhaps the most important assumption---that the model 
 
 * **Linearity**: The form of the relations between each $\mathbf{y}$ and the $\mathbf{x}$s is correct. Typically this means that the relations are _linear_, but if not, we have specified a correct transformation of $\mathbf{y}$ and/or $\mathbf{x}$.
 
-* **Completeness**: No relevant predictors have been omitted from the model. 
+* **Completeness**: No relevant predictors have been omitted from the model. For example in the coffee, stress example (@sec-coffee-stress), omitting stress from the model biases the effect of coffee on heart disease.
 
 * **Additive effects**:  The combined effect of different predictors is the sum of their individual effects.
 
@@ -1489,16 +1492,19 @@ linearHypothesis(NLSY.mod2, coefs[3:4], title = "NLSY.mod2 | NLSY.mod1") |>
 
 ### Example: School data {#sec-schooldata-mmra}
 
-@Charnes-etal-1981 describe a large scale social experiment in public school education.
+@Charnes-etal-1981 describe a large scale "social experiment" in public school education.
 Seventy school sites across the U.S. participated and a number of variables
 related to attributes of parents and teachers were used to predict aspects of
-students' success.
-It was conceived in the late 1960's as a federally sponsored program charged with providing remedial
-assistance to educationally disadvantaged early primary school students.
+students' success in academic indicators (reading, mathematics), but also in their
+self-esteem.
+It was conceived in the late 1960's in relation to a federally sponsored program charged with providing remedial assistance to educationally disadvantaged early primary school students.
 
-The study was designed to compare schools using Program Follow Through (PFT)
+The study was focused on the management styles used to guide educational planning across schools. In particular, it was
+primarily designed to compare schools using Program Follow Through (PFT)
 management methods of taking actions to achieve goals with those of
-Non Follow Through (NFT), but here I simply focus on the relations between outcome scores
+Non Follow Through (NFT).
+
+Here, I simply focus on the relations between outcome scores
 on tests of reading, mathematics and self-esteem in relation to
 five explanatory variables related to parents and teachers:
 
@@ -1508,7 +1514,11 @@ five explanatory variables related to parents and teachers:
 - `counseling`, a measure calculated from data on time spent with child on school-related topics such as reading together, etc.
 - `teacher`, number of teachers at the given site.
 
-The dataset is given in `heplots::schooldata`.
+The dataset, given in `heplots::schooldata` contains observations for `r nrow(heplots::schooldata)` schools.[^schoolsites]
+
+[^schoolsites]: In this, schools 1--49 were PFT sites and the remaining sites 50--70 were NFT.
+A separate dataset `heplots::schoolsites` provides other information on the schools, such as
+the general education style, region of the U.S., size of the city and that of the student population.
 
 #### Exploratory plots {.unnumbered}
 
@@ -1530,12 +1540,15 @@ we see five cases outside the 95% confidence envelope.
 #| fig-cap: "$\\chi^2$ QQ plot of the `schooldata` variables."
 data(schooldata, package = "heplots")
 res <- cqplot(schooldata, id.n = 5) |> print()
+
 # save the case ID numbers
 outliers <- rownames(res) |> as.numeric()
 ```
 
-Rather than a complete $8 \times 8$ scatterplot matrix, it is useful here to examine the scatterplots just for each $y$ variable against each of the
-predictors in $\mathbf{X}$.[^ggduo] 
+Rather than a complete $8 \times 8$ scatterplot matrix, it is useful here to examine the scatterplots _only_ for each $y$ variable against each of the
+predictors in $\mathbf{X}$.[^ggduo] I'll take steps to flag some of these possibly unusual cases
+to see where they appear in these pairwise relations.
+
 To prepare for this with `ggplot2`, it is necessary to 
 reshape the data to long format _twice_---once for the ($q=5$) $x$ variables and again for the ($p=3$) $y$ responses to get all of their $q \times p$ combinations.
 That way, we get a data set with variables `x` and `y` whose variable names are by `xvar` and `yvar`.
@@ -1611,15 +1624,30 @@ responses using `glance()` for the MLM. All of these are very high.
 glance(school.mod)
 ```
 
-Similarly `etasq()` for an MLM gives an $R^2$-like measure of the partial association accounted for each
-of the predictor terms in the model. In spite of the overwhelming significance of the first three
-predictors, their variance accounted for is more modest, and highest for parent's occupation.
+Similarly `etasq()` for an MLM gives an $R^2$-like measure called $\eta^2$ of the _partial association_ accounted for each
+of the _predictor terms_ in the model. These are analogous to the Type II tests from `Anova()`,
+which test the additional contribution of each term in the model beyond all the others.
+
+In spite of the overwhelming significance of the first three
+predictors, their variance accounted for is more modest. It is highest for parent's occupation, followed
+by education. Parent counseling and teachers contribute very little.
 
 ```{r school-etasq}
 etasq(school.mod)
 ```
 
-Finally, given that we found a few noteworthy points in @fig-schooldata-cqplot, a $\chi^2$ QQ plot
+## Model diagnostics for MLMs
+
+Model building, visualization and interpretation is often an iterative process. You fit a model and
+calculate some goodness of fit measures ($R^2$ for responses, $\eta^2$ for predictors).
+If these are reasonably strong, you feel happy and
+proceed to graphical displays to help you understand what you've found and explain it to others.
+But **wait**: did you check the assumptions of the MLM? ...
+
+**TODO**: Flesh this out further
+
+One easy thing to do is to check for multivariate normality of the residuals.
+Given that we found a few noteworthy points in @fig-schooldata-cqplot, a $\chi^2$ QQ plot
 of the residuals in the model will tell us if any of these are really problematic.
 
 ```{r}
@@ -1632,10 +1660,29 @@ cqplot(school.mod, id.n = 5)
 ```
 
 So, you can see that among the cases that stood out in the `cqplot()` of the observed variables
-(@fig-schooldata-cqplot) only case 35 attracts attention here, and it is well within the confidence
+(@fig-schooldata-cqplot), only case 35 attracts attention here, and it is well within the confidence
 band. Case 59, which was the largest in all the pairwise scatterplots (@fig-schooldata-scats)
-is not unusual in the fitted model. It is a high-leverage point, but appeared to be well-fitted in all the
-simple regression, except in those for `teacher`.
+seems not unusual in the fitted model. It is a high-leverage point, but appeared to be well-fitted in all the simple regressions, except in those for `teacher`.
+
+#### Multivariate influence {.unnumbered}
+
+Again, what we see in simple scatterplots can be misleading because they ignore all the other
+variables in a model. The multivariate extension of the diagnostic measures of leverage and influence,
+and influence plots (@sec-leverage) is provided by the `r package("mvinfluence", cite = TRUE)`.
+@fig-schoolmod-infl shows one form of an influence plot for the `school.mod` model.
+
+```{r echo = -1}
+#| label: fig-schoolmod-infl
+#| fig-width: 6
+#| fig-height: 6
+#| out-width: "70%"
+#| fig-cap: "Influence plot for the `schooldat` multivariate regression model."
+op <- par(mar = c(4, 4, 1, 1) + .1)
+influencePlot(school.mod, id.n=4, 
+              type="stres",
+              cex.lab = 1.5)
+```
+
 
 ## ANCOVA $\rightarrow$ MANCOVA
 

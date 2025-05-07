@@ -52,21 +52,26 @@ p1 + geom_text_repel(data = school_long |> filter(site %in% outliers[1:3]),
 
 #fit the MMreg model
 school.mod <- lm(cbind(reading, mathematics, selfesteem) ~ 
-                   education + occupation + visit + counseling + teacher, data=schooldata)
+                       education + occupation + visit + counseling + teacher, 
+                 data=schooldata)
 
 # shorthand: fit all others
 school.mod <- lm(cbind(reading, mathematics, selfesteem) ~ ., data=schooldata)
 car::Anova(school.mod)
 
+# check for MVN
 res <- cqplot(school.mod, id.n = 5)
 res
 
-## Multivariate influence
-library(mvinfluence)
+library(MVN)
+residuals <- residuals(school.mod)
+mvn(residuals)  # `hz` test default
 
-influencePlot(school.mod, id.n=4, type="stres")
-
-influencePlot(school.mod, id.n=4, type="LR")
+mvn(residuals, 
+    mvnTest = "mardia",
+    multivariatePlot = "qq",
+    showOutlier = TRUE
+    )
 
 # HE plots
 heplot(school.mod, 
@@ -79,27 +84,64 @@ pairs(school.mod,
       var.cex = 2.5,
       cex = 1.3)
 
+
+## Multivariate influence
+library(mvinfluence)
+
+influencePlot(school.mod, id.n=4, type="stres")
+
+influencePlot(school.mod, id.n=4, type="LR")
+
+## Robust MLM
+
+school.rlm <- robmlm(cbind(reading, mathematics, selfesteem) ~ 
+                   education + occupation + visit + counseling + teacher, 
+                 data=schooldata)
+
+#plot(school.rlm)
+
+
+wts <- school.rlm$weights
+small <- 0.6
+notable <- which(wts < small)
+plot(wts, type = "h", col="gray", 
+     ylab = "Observation weight",
+     cex.lab = 1.5)
+points(seq_along(wts), wts, 
+       pch=16,
+       col = ifelse(wts < small, "red", "black"))
+text(notable, wts[notable],
+     labels = notable,
+     pos = 3,
+     col = "red")
+
+# compare coefficients
+
+coef(school.mod) - coef(school.rlm)
+
+
+
 library(candisc)
 
 # canonical correlation analysis
-school.cc <- cancor(cbind(reading, mathematics, selfesteem) ~ 
+school.can <- cancor(cbind(reading, mathematics, selfesteem) ~ 
                       education + occupation + visit + counseling + teacher, data=schooldata)
-school.cc
+school.can
 
-redundancy(school.cc)
+redundancy(school.can)
 
 # coef
-school.cc$coef$X |> round(3)
+school.can$coef$X |> round(3)
 
-school.cc$coef$Y |> round(3)
+school.can$coef$Y |> round(3)
 
 
 # plot canonical scores
-plot(school.cc, pch=16, id.n = 3)
-text(-5, 1, paste("Can R =", round(school.cc$cancor[1], 3)), pos = 4)
+plot(school.can, pch=16, id.n = 3)
+text(-5, 1, paste("Can R =", round(school.can$cancor[1], 3)), pos = 4)
 
-plot(school.cc, which = 2, pch=16, id.n = 3)
-text(-3, 3, paste("Can R =", round(school.cc$cancor[2], 3)), pos = 4)
+plot(school.can, which = 2, pch=16, id.n = 3)
+text(-3, 3, paste("Can R =", round(school.can$cancor[2], 3)), pos = 4)
 
 
-heplot(school.cc, xpd=TRUE, scale=0.3)
+heplot(school.can, xpd=TRUE, scale=0.3)

@@ -3,6 +3,7 @@ library(heplots)
 library(car)
 library(ggplot2)
 library(dplyr)
+library(mvinfluence)
 
 data(NLSY, package = "heplots")
 
@@ -110,6 +111,11 @@ coefplot(NLSY.mod2, fill = TRUE)
 
 idx < cqplot(NLSY.mod2, id.n = 5)
 
+# Influence
+
+influencePlot(NLSY.mod2)
+
+
 #-- robust methods
 
 NLSY.rlm <-  heplots::robmlm(cbind(read,math) ~ antisoc + hyperact + log2(income) + educ, 
@@ -134,7 +140,11 @@ text(index[small], wts[small],
 # doesn't handle observation weights-- fix Mahalanobis?
 cqplot(NLSY.rlm, id.n = 5)
 
+library(candisc)
 
+NLSY.can <- cancor(cbind(read,math) ~ antisoc + hyperact + log2(income) + educ, 
+                   data = NLSY |> filter(income != 0)) |> 
+  print()
 
 
 # Is there an update method for the LHS of an mlm?
