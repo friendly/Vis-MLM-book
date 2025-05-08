@@ -23,7 +23,7 @@ ggbiplot(iris.lda, #obs.scale = 1, var.scale = 1,
          varname.size = 6)
 
 # view in data space
-if(!require(klar)) install.packages("klaR")
+if(!require(klaR)) install.packages("klaR")
 library(klaR)
 partimat(Species ~ ., data = iris, 
          method = "lda",

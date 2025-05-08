@@ -16,7 +16,7 @@ check_model(Wages.mod)
 # visualize predictions
 ggeffects(Wages.mod) |>
   plot() |>
-  sjplot::plot_grid()
+  sjPlot::plot_grid()
 
 # display contrasts in a table
 gtsummary::tbl_regressions(Wages.mod,
