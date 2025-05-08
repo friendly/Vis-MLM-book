@@ -90,7 +90,7 @@ ggord(peng.lda, peng$species,
 
 
 # view in data space
-#if(!require(klar)) install.packages("klaR")
+#if(!require(klaR)) install.packages("klaR")
 library(klaR)
 peng.partimat <- peng |>
   dplyr::select(species, bill_length:body_mass) |>
