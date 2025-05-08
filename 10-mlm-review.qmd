@@ -56,6 +56,7 @@ library(tidyr)
 library(matlib)
 library(ggrepel)
 library(mvinfluence)
+library(MVN)
 # set ggplot theme
 #ggplot2::theme_set(theme_bw(base_size = 14))
 ```
@@ -176,7 +177,7 @@ $\mathcal{N}_{p}(\mathbf{0},\boldsymbol{\Sigma})$,
 where $\mathbf{\Sigma}$ 
 is a non-singular error-covariance matrix. 
 Statistical tests of multivariate normality of the residuals include the Shapiro-Wilk [@ShapiroWilk1965]
-and Mardia [@Mardia:1970:MMS]
+and Mardia [-@Mardia:1970:MMS; -@Mardia:1974]
 tests (and others, in the `r package("MVN")` package).
 <!-- mshapiro.test( )[in the `r package("mvnormtest")`  package] can be used to perform the Shapiro-Wilk test for multivariate normality -->
 
@@ -1642,13 +1643,21 @@ Model building, visualization and interpretation is often an iterative process. 
 calculate some goodness of fit measures ($R^2$ for responses, $\eta^2$ for predictors).
 If these are reasonably strong, you feel happy and
 proceed to graphical displays to help you understand what you've found and explain it to others.
-But **wait**: did you check the assumptions of the MLM? ...
 
-**TODO**: Flesh this out further
+But **wait**: did you check the assumptions of the MLM? As in univariate models, diagnostic plots
+can help you spot problems in the data (unusual cases) or in the model (nonlinear relations, omitted predictors or interactions). You sometimes need to go circle back and fit a revised model,
+starting the process again.
+
+Among the MLM assumptions, the question of homogeneity of covariance matrices is deferred until
+@sec-eqcov. Here, I consider the assumed multivariate normality of residuals and multivariate influence.
+
+### Multivariate normality of residuals
 
 One easy thing to do is to check for multivariate normality of the residuals.
 Given that we found a few noteworthy points in @fig-schooldata-cqplot, a $\chi^2$ QQ plot
 of the residuals in the model will tell us if any of these are really problematic.
+The pattern of points relative to the confidence band gives a rough indication of overall
+multivariate normality.
 
 ```{r}
 #| label: fig-schoolmod-cqplot
@@ -1664,25 +1673,64 @@ So, you can see that among the cases that stood out in the `cqplot()` of the obs
 band. Case 59, which was the largest in all the pairwise scatterplots (@fig-schooldata-scats)
 seems not unusual in the fitted model. It is a high-leverage point, but appeared to be well-fitted in all the simple regressions, except in those for `teacher`.
 
-#### Multivariate influence {.unnumbered}
+**TODO**: Results from MVN package are too unweildly here. Replace with something different.
+
+It is useful to contrast this with what we get from formal tests that the residuals
+are _strictly_ multivariate normal. The `r package("MVN", cite=TRUE)` provides `mvn()` for this,
+which performs a wide variety of normality tests. The most widely used of these is due to @Mardia:1974,
+which gives multivariate tests of skewness (lack of symmetry) and kurtosis (length of the tails).
+
+Applying this to the **residuals** from the schools multivariate regression shows that multivariate normality is rejected here. Based on other evidence, this doesn't seem particularly troubling.
+
+```{r school-mvn}
+school.mvn.mardia <- mvn(residuals, mvnTest = "mardia")
+# print multivariate and univariate tests
+school.mvn.mardia$multivariateNormality
+school.mvn.mardia$univariateNormality
+```
+
+`mvn()` also provides a variety of tests for univariate normality for each of the
+response variables. These are all OK.
+
+
+
+### Multivariate influence 
 
 Again, what we see in simple scatterplots can be misleading because they ignore all the other
-variables in a model. The multivariate extension of the diagnostic measures of leverage and influence,
+variables in a model. But looking back after fitting a model and examining diagnostic
+plots can often be illuminating. Among the ideas we inherit from univariate models,
+the influence of particular observations on the results of analysis should be high on your list.
+
+The multivariate extension of the diagnostic measures of leverage and influence,
 and influence plots (@sec-leverage) is provided by the `r package("mvinfluence", cite = TRUE)`.
-@fig-schoolmod-infl shows one form of an influence plot for the `school.mod` model.
+The theory behind this is due to @BarrettLing:92 and better illustrated in @Barrett:2003.
+Mathematical details of this generalization are given in `help("mvinfluence-package")`.
+
+@fig-schoolmod-infl shows one form of an influence plot for the `school.mod` model. Because multiple response variables are involved, this plots a measure of the _squared_ studentized residuals
+for each observation against a generalized version of hat values, so potentially "bad" observations
+appear in the upper left corner. The size of the bubble symbol is proportional to a generalization of 
+Cook's distance.
 
 ```{r echo = -1}
 #| label: fig-schoolmod-infl
 #| fig-width: 6
 #| fig-height: 6
 #| out-width: "70%"
-#| fig-cap: "Influence plot for the `schooldat` multivariate regression model."
+#| fig-cap: 'Influence plot for the `schooldat` multivariate regression model. Five cases are labeled as "noteworthy" on either axis.  '
 op <- par(mar = c(4, 4, 1, 1) + .1)
 influencePlot(school.mod, id.n=4, 
               type="stres",
               cex.lab = 1.5)
 ```
 
+From this, you can see that cases 44 and 59 are actually troublesome here, but for different reasons.
+Take another look at @fig-schooldata-scats. You can see that case 59 is the most extreme on all the predictors, giving it very high leverage and therefore pulling the regression lines toward it in most of
+the plots, except those for number of teachers, where it also has large residuals.
+Case 44, on the other hand, stands out as high-leverage on only a few of the predictor--response combinations, but enough to give it a large multivariate hat value. It is also a point that is furthest
+from the regression lines.
+
+Consequently, one appropriate action would be to re-fit the model, ignoring these cases, in what
+I call a **sensitivity test**: Do the main conclusions change with ...
 
 ## ANCOVA $\rightarrow$ MANCOVA
 
