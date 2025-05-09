@@ -65,13 +65,13 @@ res
 
 library(MVN)
 residuals <- residuals(school.mod)
-mvn(residuals)  # `hz` test default
+school.mvn.hz <- mvn(residuals, mvnTest = "hz")  # `hz` test default
 
-mvn(residuals, 
-    mvnTest = "mardia",
-    multivariatePlot = "qq",
-    showOutlier = TRUE
-    )
+school.mvn.hz$multivariateNormality
+
+school.mvn.mardia <- mvn(residuals, mvnTest = "mardia")
+school.mvn.mardia$multivariateNormality
+school.mvn.mardia$univariateNormality
 
 # HE plots
 heplot(school.mod, 
@@ -119,7 +119,7 @@ text(notable, wts[notable],
 
 coef(school.mod) - coef(school.rlm)
 
-
+100 * abs(coef(school.mod) - coef(school.rlm)) / coef(school.mod)
 
 library(candisc)
 
