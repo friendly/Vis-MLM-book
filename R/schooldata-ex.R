@@ -7,9 +7,6 @@ library(candisc)
 
 data(schooldata, package = "heplots")
 
-
-
-
 #fit the MMreg model
 school.mod <- lm(cbind(reading, mathematics, selfesteem) ~ 
                        education + occupation + visit + counseling + teacher, 
@@ -25,8 +22,8 @@ res
 
 library(MVN)
 residuals <- residuals(school.mod)
-school.mvn.hz <- mvn(residuals, mvnTest = "hz")  # `hz` test default
 
+school.mvn.hz <- mvn(residuals, mvnTest = "hz")  # `hz` test default
 school.mvn.hz$multivariateNormality
 
 school.mvn.mardia <- mvn(residuals, mvnTest = "mardia")
@@ -69,6 +66,18 @@ reldiff <- function(x, y, pct=TRUE) {
 reldiff(coef(school.mod)[-1,], coef(school.mod2)[-1,]) |>
   round(1)
 
+# Re-do HE plots
+heplot(school.mod2, 
+       fill=TRUE, fill.alpha=0.1,
+       cex = 1.5,
+       cex.lab = 1.5)
+
+pairs(school.mod2, 
+      fill=TRUE, fill.alpha=0.1,
+      var.cex = 2.5,
+      cex = 1.3)
+
+
 
 ## Robust MLM
 
@@ -100,9 +109,12 @@ text(notable, wts[notable],
 
 library(candisc)
 
+#------------------
 # canonical correlation analysis
+
 school.can <- cancor(cbind(reading, mathematics, selfesteem) ~ 
-                      education + occupation + visit + counseling + teacher, data=schooldata)
+                           education + occupation + visit + counseling + teacher, 
+                     data=schooldata)
 school.can
 
 redundancy(school.can)
@@ -114,11 +126,31 @@ school.can$coef$Y |> round(3)
 
 
 # plot canonical scores
-plot(school.can, pch=16, id.n = 3)
+plot(school.can, 
+     pch=16, id.n = 3)
 text(-5, 1, paste("Can R =", round(school.can$cancor[1], 3)), pos = 4)
 
 plot(school.can, which = 2, pch=16, id.n = 3)
 text(-3, 3, paste("Can R =", round(school.can$cancor[2], 3)), pos = 4)
 
+heplot(school.can, xpd=TRUE)
 
-heplot(school.can, xpd=TRUE, scale=0.3)
+# re-do, w/ out bad cases
+school.can2 <- cancor(cbind(reading, mathematics, selfesteem) ~ 
+                       education + occupation + visit + counseling + teacher, 
+                     data=schooldata[OK, ])
+school.can2
+
+plot(school.can2, 
+     pch=16, id.n = 3)
+text(-2, 1.5, paste("Can R =", round(school.can2$cancor[1], 3)), pos = 4)
+
+plot(school.can2, which = 2, 
+     pch=16, id.n = 3)
+text(-3, 3, paste("Can R =", round(school.can2$cancor[2], 3)), pos = 4)
+
+heplot(school.can2, 
+       fill = TRUE, fill.alpha = 0.2,
+       var.col = "black",
+       xpd=TRUE)
+
