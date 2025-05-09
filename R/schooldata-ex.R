@@ -1,9 +1,7 @@
 library(car)
-library(corrgram)
 library(tidyr)
 library(dplyr)
 library(ggplot2)
-library(ggrepel)
 library(heplots)
 library(candisc)
 
@@ -60,13 +58,16 @@ bad <- c(44, 59)
 OK <- (1:nrow(schooldata)) |> setdiff(bad)
 school.mod2 <- update(school.mod, data = schooldata[OK,])
 
+Anova(school.mod2)
+
 reldiff <- function(x, y, pct=TRUE) {
   res <- abs(x - y) / x
   if (pct) res <- 100 * res
   res
 }
 
-reldiff(coef(school.mod)[-1,], coef(school.mod2)[-1,])
+reldiff(coef(school.mod)[-1,], coef(school.mod2)[-1,]) |>
+  round(1)
 
 
 ## Robust MLM

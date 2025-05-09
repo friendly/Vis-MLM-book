@@ -1475,7 +1475,8 @@ One way to do this is to add these predictors to the model and test for their ad
 contributions over and above the baseline model. 
 
 You can do this using `update()`. In the model formula, "`.`" on the left hand side corresponds
-to the previous $y$ variables, and on the right-hand side to the $x$s in the previous model.
+to the previous $y$ variables; on the right-hand side it refers to the $x$s in the previous model,
+so I just add the new predictors to that.
 
 ```{r NLSY-mod2}
 NLSY.mod2 <- update(NLSY.mod1, . ~ . + antisoc + hyperact)
@@ -1648,8 +1649,10 @@ But **wait**: did you check the assumptions of the MLM? As in univariate models,
 can help you spot problems in the data (unusual cases) or in the model (nonlinear relations, omitted predictors or interactions). You sometimes need to go circle back and fit a revised model,
 starting the process again.
 
-Among the MLM assumptions, the question of homogeneity of covariance matrices is deferred until
-@sec-eqcov. Here, I consider the assumed multivariate normality of residuals and multivariate influence.
+<!-- Among the MLM assumptions, the question of homogeneity of covariance matrices is deferred until -->
+<!-- @sec-eqcov.  -->
+
+For multivariate regression models, I consider the assumed multivariate normality of residuals and multivariate influence here.
 
 ### Multivariate normality of residuals
 
@@ -1723,14 +1726,44 @@ influencePlot(school.mod, id.n=4,
               cex.lab = 1.5)
 ```
 
-From this, you can see that cases 44 and 59 are actually quite troublesome here, but for different reasons.
+That does not look good!
+You can see that cases 44 and 59 are actually quite troublesome here, but it turns out for different reasons.
 Take another look at @fig-schooldata-scats. You can see that case 59 is the most extreme on all the predictors, giving it very high leverage and therefore pulling the regression lines toward it in most of
 the plots, except those for number of teachers, where it also has large residuals.
 Case 44, on the other hand, stands out as high-leverage on only a few of the predictor--response combinations, but enough to give it a large multivariate hat value. It is also a point that is furthest
 from the regression lines.
 
-Consequently, one appropriate action would be to re-fit the model, ignoring these cases, in what
-I call a **sensitivity test**: Do the main conclusions change with ...
+What should be done? An appropriate action would be to re-fit the model, reducing the impact of these cases, in what
+I call a **sensitivity test**: 
+
+* Do the main conclusions change with those cases removed? That is, do any model terms change in significance tests or do coefficients change sign?
+* Do the relative sizes of effects for predictors change enough to affect interpretation? That is, how much do the coefficients change?
+
+The easiest solution is to just omit these troubling cases. You can do this using `update()`, specifying the
+`data` argument to be the subset of rows without the bad boys.
+
+```{r school-mod2}
+bad <- c(44, 59)
+OK <- (1:nrow(schooldata)) |> setdiff(bad)
+school.mod2 <- update(school.mod, data = schooldata[OK,])
+Anova(school.mod2)
+```
+
+The results of `Anova()` on this model tell us that the three significant predictors--- occupation, education and visit---
+are still so, but slightly less so for the last two of these. To compare the coefficients in the new model compared to
+the old you can calculate the _relative difference_, $| \mathbf{B}_1 - \mathbf{B}_2 | / \mathbf{B}_1$, which are 
+
+```{r}
+reldiff <- function(x, y, pct=TRUE) {
+  res <- abs(x - y) / x
+  if (pct) res <- 100 * res
+  res
+}
+
+reldiff(coef(school.mod)[-1,], coef(school.mod2)[-1,]) |>
+  round(1)
+```
+
 
 ## ANCOVA $\rightarrow$ MANCOVA
 
