@@ -767,7 +767,7 @@ heplot(NLSY.mod1,
 Just as we saw for MANOVA designs, a canonical analysis for multivariate regression involves finding
 a low-D view of the relations between predictors and outcomes that maximally explains their
 relations in terms of linear combinations of each. That is, the goal is to find  weights
-for one set of variables, say $\mathbf{X}$ not to predict each of the other set 
+for one set of variables, say $\mathbf{X}$ _not_ to predict each of the other set 
 $\mathbf{Y} =[\mathbf{y}_1, \mathbf{y}_2, \dots]$ _individually_, but rather also finding weights
 for these which is most highly correlated with the linear combination of the $\mathbf{x}$s.
 
@@ -775,19 +775,27 @@ for these which is most highly correlated with the linear combination of the $\m
 
 ### Example: School data {#sec-schooldata-HE}
 
-**TODO**: This should be redone, omitting the influential cases, 44, 59
+<!-- **TODO**: This should be redone, omitting the influential cases, 44, 59 -->
 
 The `schooldata` dataset analyzed in @sec-schooldata-mmra can also be illuminated by the methods of this
-chapter. There we fit the multivariate regression model predicting students scores on
+chapter. There I fit the multivariate regression model predicting students scores on
 reading, mathematics and a measure of self-esteem using as predictors measures of parents' education, occupation,
 school visits, counseling help with school assignments and number of teachers per school.
+But I also found two highly influential observations (cases 44, 59; see @fig-schoolmod-infl) whose effect on the
+coefficients is rather large; so, I remove them from the analysis here.[^removed-cases]
 
+[^removed-cases]: An alternative to fitting the model removing specific cases deemed troublesome is to use
+a robust method, such as `heplots::roblm()` which uses re-weighted least squares to down-weight observations
+with large residuals or other problems.
 
 ```{r}
 data(schooldata, package = "heplots")
-school.mod <- lm(cbind(reading, mathematics, selfesteem) ~ 
-                   education + occupation + visit + counseling + teacher, 
-                 data=schooldata)
+
+bad <- c(44, 59)
+OK <- (1:nrow(schooldata)) |> setdiff(bad)
+
+school.mod2 <- lm(cbind(reading, mathematics, selfesteem) ~ ., 
+                  data=schooldata[OK, ])
 
 ```
 
@@ -802,7 +810,7 @@ and their relations to the outcome variable by their _direction_. The table of r
 isn't very helpful in this regard.
 
 ```{r}
-coef(school.mod)
+coef(school.mod2)
 ```
 
 
@@ -813,7 +821,7 @@ significance scaling.
 #| out-width: "80%"
 #| fig-cap: "HE plot for reading and mathematics scores in the multivariate regression model..."
 op <- par(mar = c(4, 4, 1, 2) + .1)
-heplot(school.mod, 
+heplot(school.mod2, 
        fill=TRUE, fill.alpha=0.1,
        cex = 1.5,
        cex.lab = 1.5)
@@ -821,12 +829,14 @@ heplot(school.mod,
 
 Parent's occupation and education are both significant in this view, but what is more important is their
 orientation. Both are positively associated with reading and math scores, but education is somewhat more
-related to reading than to mathematics. Visits to school and number of teachers are not significant in
+related to reading than to mathematics. Number of teachers and degree of parental counseling have a
+similar orientation, with teachers having a greater relation to mathematics scores.
+Visits to school and number of teachers are not significant in
 this plot, but both are positively correlated with reading and math and are coincident in the plot. The parent time counseling measure, while also insignificant,
 tilts in the opposite direction, having different signs for reading and math.
 
 In the `pairs()` plot for all three responses (@fig-school-heplot2), we see something different in the relations for self-esteem. While occupation has a large positive relation in all the plots in the third row and column,
-education and visits have negative relations in these plots.
+education, counseling and teachers have negative relations in these plots, particularly with mathematics scores.
 
 ```{r}
 #| label: fig-school-heplot2
@@ -834,7 +844,7 @@ education and visits have negative relations in these plots.
 #| fig-height: 9
 #| out-width: "100%"
 #| fig-cap: "Pairwise HE plots for the three outcome variables in the multivariate regression model ..."
-pairs(school.mod, 
+pairs(school.mod2, 
       fill=TRUE, fill.alpha=0.1,
       var.cex = 2.5,
       cex = 1.3)
@@ -843,7 +853,16 @@ pairs(school.mod,
 
 ### Canonical analysis
 
-```{r}
+With $p = 3$ responses and $q = 5$ predictors there are three possible sets of canonical variables
+which together account for 100% of the total linear relations between them. `heplots::cancor()`
+gives the percentage associated with each of the eigenvalues and the canonical correlations.
+
+For this dataset, the first canonical variates, with Can $R = 0.995$, 
+account for 98.6%, so you might think that that is
+sufficient. Yet the likelihood ratio tests show that the second set, with Can $R = 0.774$,
+is also significant, even though it only accounts for 1.3%.
+
+```{r school-can}
 bad <- c(44, 59)
 OK <- (1:nrow(schooldata)) |> setdiff(bad)
 school.can2 <- cancor(cbind(reading, mathematics, selfesteem) ~ 
@@ -852,7 +871,43 @@ school.can2 <- cancor(cbind(reading, mathematics, selfesteem) ~
 school.can2
 ```
 
+Plotting the canonical scores:
 
+```{r}
+#| label: fig-school-can
+#| fig-width: 10
+#| fig-height: 5
+#| out-width: "100%"
+#| fig-cap: "Plots of canonical scores..."
+op <- par(mar = c(4,4,1,1) + .1,
+          mfrow = c(1, 2))
+plot(school.can2, 
+     pch=16, id.n = 3,
+     cex.lab = 1.5, id.cex = 1.5,
+     ellipse.args = list(fill = TRUE, fill.alpha = 0.1))
+text(-2, 1.5, paste("Can R =", round(school.can2$cancor[1], 3)), 
+     cex = 1.4, pos = 4)
+
+plot(school.can2, which = 2, 
+     pch=16, id.n = 3,  id.cex = 1.5,
+     ellipse.args = list(fill = TRUE, fill.alpha = 0.1))
+text(-3, 3, paste("Can R =", round(school.can2$cancor[2], 3)), 
+     cex = 1.4, pos = 4)
+par(op)
+```
+
+Canonical HE plot:
+
+```{r}
+#| label: fig-school-hecan
+#| fig-width: 8
+#| fig-height: 8
+#| out-width: "70%"
+heplot(school.can2, 
+       fill = TRUE, fill.alpha = 0.2,
+       var.col = "black",
+       xpd=TRUE)
+```
 
 **Packages**:
 

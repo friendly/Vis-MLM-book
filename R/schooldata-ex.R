@@ -67,10 +67,13 @@ reldiff(coef(school.mod)[-1,], coef(school.mod2)[-1,]) |>
   round(1)
 
 # Re-do HE plots
+# also, reverse position of labels for counseling, teacher
 heplot(school.mod2, 
        fill=TRUE, fill.alpha=0.1,
        cex = 1.5,
-       cex.lab = 1.5)
+       cex.lab = 1.5,
+       label.pos = c(rep("top", 4), "bottom", "bottom")
+       )
 
 pairs(school.mod2, 
       fill=TRUE, fill.alpha=0.1,
@@ -141,13 +144,22 @@ school.can2 <- cancor(cbind(reading, mathematics, selfesteem) ~
                      data=schooldata[OK, ])
 school.can2
 
+op <- par(mar = c(4,4,1,1) + .1,
+          mfrow = c(1, 2))
 plot(school.can2, 
-     pch=16, id.n = 3)
-text(-2, 1.5, paste("Can R =", round(school.can2$cancor[1], 3)), pos = 4)
+     pch=16, id.n = 3,
+     cex.lab = 1.5, id.cex = 1.5,
+     ellipse.args = list(fill = TRUE, fill.alpha = 0.1))
+text(-2, 1.5, paste("Can R =", round(school.can2$cancor[1], 3)), 
+     cex = 1.4, pos = 4)
 
 plot(school.can2, which = 2, 
-     pch=16, id.n = 3)
-text(-3, 3, paste("Can R =", round(school.can2$cancor[2], 3)), pos = 4)
+     pch=16, id.n = 3,  id.cex = 1.5,
+     ellipse.args = list(fill = TRUE, fill.alpha = 0.1))
+text(-3, 3, paste("Can R =", round(school.can2$cancor[2], 3)), 
+     cex = 1.4, pos = 4)
+par(op)
+
 
 heplot(school.can2, 
        fill = TRUE, fill.alpha = 0.2,
