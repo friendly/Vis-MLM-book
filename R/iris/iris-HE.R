@@ -115,9 +115,10 @@ plot(iris.can,
      scale = 9,
      col = iris_colors,
      pch = 15:17,
-     cex = 0.7,
+     cex = 0.7, var.cex = 1.25,
      rev.axes = c(TRUE, FALSE),
-     xlim = c(-10, 10))
+     xlim = c(-10, 10),
+     cex.lab = 1.5)
 
 heplot(iris.can,
        size = "effect",

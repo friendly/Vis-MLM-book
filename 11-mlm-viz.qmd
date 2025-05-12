@@ -579,27 +579,28 @@ Interestingly, the second dimension is also highly significant, even though it a
 ### Coeficients
 
 The `coef()` method for "candisc" objects returns a matrix of weights for the response variables
-in the canonical dimensions. By default, these are given for the response variables standardized
+in the canonical dimensions. By default, these are given for the response variables _standardized_
 to $\bar{y}=0$ and $s^2_y = 1$. The `type` argument also allows for raw score weights (`type = "raw"`)
 used to compute the observation scores on `Can1`, `Can2`, ... .
-`type = "raw"` gives the canonical structure coefficients, which are the correlations between each response and the
+`type = "structure"` gives the canonical structure coefficients, which are the correlations between each response and the
 canonical scores.
 
 ```{r iris-can-coef}
-coef(iris.can)
+coef(iris.can, type = "std")
 coef(iris.can, type = "structure")
 ```
 
-Thus, the two weighted sums for the canonical variates, using mean-centered raw scores, can be shown as follows:
+Thus, the two weighted sums for the canonical variates, using mean-centered standardized scores, can be shown as follows:
 
 ```{r can-vars}
 #| echo: false
 #| results: asis
-C <- coef(iris.can, type = "raw")
+C <- coef(iris.can, type = "std")
 names <- row.names(C)
+names <- c("S.len", "S.wid", "P.len", "P.wid")
 can1 <- paste("Can1 = ", paste0(round(C[,1], 2), " x ", names, collapse = " + "))
 #can1 <- gsub("+ -", "-", can1)
-cat(can1)
+cat(can1,"\n")
 can2 <- paste("Can2 = ", paste0(round(C[,2], 2), " x ", names, collapse = " + ")) |> cat()
 ```
 
@@ -618,7 +619,7 @@ corresponds to larger flowers.
 ```{r echo=-1}
 #| label: fig-iris-candisc
 #| fig-width: 8
-#| fig-height: 8
+#| fig-height: 7
 #| out-width: "80%"
 #| fig-cap: "Plot of canonical scores for the iris data."
 op <- par(mar = c(4, 4, 4, 1) + .5)
@@ -632,9 +633,10 @@ plot(iris.can,
      scale = 9,
      col = iris_colors,
      pch = 15:17,
-     cex = 0.7,
+     cex = 0.7, var.cex = 1.25,
      rev.axes = c(TRUE, FALSE),
-     xlim = c(-10, 10))
+     xlim = c(-10, 10),
+     cex.lab = 1.5)
 ```
 
 The interpretation of
@@ -645,8 +647,8 @@ this axis, but the two petal variables show the greatest discrimination.
 The negative direction for `Sepal.Width` reflects the pattern seen in @fig-iris-pairs, where _setosa_
 have wider sepals.
 
-For the second dimension, look at the horizontal projections of the variable vectors on the `Can2` axis.
-All are positive, but this is dominated by `Sepal.Width`.
+For the second dimension, look at the projections of the variable vectors on the `Can2` axis.
+All are positive, but this is dominated by `Sepal.Width`. We could call this a flower shape dimension.
 
 
 
@@ -768,8 +770,22 @@ Just as we saw for MANOVA designs, a canonical analysis for multivariate regress
 a low-D view of the relations between predictors and outcomes that maximally explains their
 relations in terms of linear combinations of each. That is, the goal is to find  weights
 for one set of variables, say $\mathbf{X}$ _not_ to predict each of the other set 
-$\mathbf{Y} =[\mathbf{y}_1, \mathbf{y}_2, \dots]$ _individually_, but rather also finding weights
-for these which is most highly correlated with the linear combination of the $\mathbf{x}$s.
+$\mathbf{Y} =[\mathbf{y}_1, \mathbf{y}_2, \dots]$ _individually_, but rather to also find weights
+for the $\mathbf{y}$s which is most highly correlated with the linear combination of the $\mathbf{x}$s.
+
+Geometrically, these linear combinations are vectors representing projections in the observation space of the $x$ and $y$ variables, and canonical correlation analysis can also be thought of as
+minimizing the angle or distance between these vectors.
+
+
+Specifically, we want to find one set of weights $\mathbf{a}_1$ for the $x$ variables and another
+for the $y$ variables to give the linear combinations $\mathbf{u}_1$ and $\mathbf{u}_1$
+
+$$
+\mathbf{u}_1 = \mathbf{X} \ \mathbf{a}_1 = a_{11} \mathbf{x}_1 + a_{12} \mathbf{x}_2 + \cdots + a_{11} \mathbf{x}_q \\
+\mathbf{v}_1 = \mathbf{Y} \ \mathbf{b}_1 = b_{11} \mathbf{y}_1 + b_{12} \mathbf{y}_1 + \cdots + b_{11} \mathbf{y}_p \; ,
+$$
+such that the correlation $\rho = \textrm{corr}(\mathbf{u}_1, \mathbf{v}_1)$ is maximized.
+
 
 **TODO**: Fill in details of canonical correlations
 
@@ -824,7 +840,8 @@ op <- par(mar = c(4, 4, 1, 2) + .1)
 heplot(school.mod2, 
        fill=TRUE, fill.alpha=0.1,
        cex = 1.5,
-       cex.lab = 1.5)
+       cex.lab = 1.5,
+       label.pos = c(rep("top", 4), "bottom", "bottom"))
 ```
 
 Parent's occupation and education are both significant in this view, but what is more important is their
@@ -871,6 +888,12 @@ school.can2 <- cancor(cbind(reading, mathematics, selfesteem) ~
 school.can2
 ```
 
+The class `"cancor"` object returned by `cancor()` contains the canonical coefficients, for which there
+is a `coef()` method as in `candisc()`, and also a `scores()` method to return the scores on the canonical
+variables, called `Xcan1`, `Xcan2`, ... and Ycan1`, `Ycan2`, ...
+The virtue of CCA is that _all_ correlations between the X and Y variables are completely captured
+in the correlations between (`Xcan1`, `Ycan1`), (`Xcan2`, `Ycan2`), ...
+
 Plotting the canonical scores:
 
 ```{r}
@@ -908,6 +931,8 @@ heplot(school.can2,
        var.col = "black",
        xpd=TRUE)
 ```
+
+The variable vectors shown in these plots are intended only to show the correlations of Y variables with the canonical dimensions. Only their relative lengths and angles with respect to the Y canonical dimensions have meaning. Relative lengths correspond to proportions of variance accounted for in the Y canonical dimensions plotted; angles between the variable vectors and the canonical axes correspond to the structure correlations. The absolute lengths of these vectors are typically manipulated by the scale argument to provide better visual resolution and labeling for the variables.
 
 **Packages**:
 

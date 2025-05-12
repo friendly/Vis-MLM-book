@@ -138,11 +138,24 @@ text(-3, 3, paste("Can R =", round(school.can$cancor[2], 3)), pos = 4)
 
 heplot(school.can, xpd=TRUE)
 
+# -------------------------
 # re-do, w/ out bad cases
 school.can2 <- cancor(cbind(reading, mathematics, selfesteem) ~ 
                        education + occupation + visit + counseling + teacher, 
-                     data=schooldata[OK, ])
+                     data=schooldata[OK, ],
+                     set.names = c("Predictors", "Outcomes"))
 school.can2
+
+redundancy(school.can2)
+
+# coef
+# school.can2$coef$X |> round(3)
+# 
+# school.can2$coef$Y |> round(3)
+
+coef(school.can2, type = "x", standardize = TRUE)
+
+coef(school.can2, type="both", standardize=TRUE)
 
 op <- par(mar = c(4,4,1,1) + .1,
           mfrow = c(1, 2))
@@ -160,8 +173,9 @@ text(-3, 3, paste("Can R =", round(school.can2$cancor[2], 3)),
      cex = 1.4, pos = 4)
 par(op)
 
-
-heplot(school.can2, 
+# would be better to reflect dim 1
+heplot(school.can2,
+#       var.vectors = c("X", "Y"),
        fill = TRUE, fill.alpha = 0.2,
        var.col = "black",
        xpd=TRUE)
