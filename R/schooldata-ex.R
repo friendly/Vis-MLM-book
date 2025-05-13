@@ -130,8 +130,11 @@ school.can$coef$Y |> round(3)
 
 # plot canonical scores
 plot(school.can, 
-     pch=16, id.n = 3)
-text(-5, 1, paste("Can R =", round(school.can$cancor[1], 3)), pos = 4)
+     pch=16, id.n = 3,
+     cex.lab = 1.5, id.cex = 1.5,
+     ellipse.args = list(fill = TRUE, fill.alpha = 0.1))
+text(-5, 1, paste("Can R =", round(school.can$cancor[1], 3)), 
+     cex = 1.4, pos = 4)
 
 plot(school.can, which = 2, pch=16, id.n = 3)
 text(-3, 3, paste("Can R =", round(school.can$cancor[2], 3)), pos = 4)
@@ -157,6 +160,13 @@ coef(school.can2, type = "x", standardize = TRUE)
 
 coef(school.can2, type="both", standardize=TRUE)
 
+# correlations among canonical scores
+scores(school.can2, type = "both") |> 
+  as.data.frame() |> 
+  cor() |> 
+  zapsmall()
+
+
 op <- par(mar = c(4,4,1,1) + .1,
           mfrow = c(1, 2))
 plot(school.can2, 
@@ -175,8 +185,8 @@ par(op)
 
 # would be better to reflect dim 1
 heplot(school.can2,
-#       var.vectors = c("X", "Y"),
        fill = TRUE, fill.alpha = 0.2,
-       var.col = "black",
-       xpd=TRUE)
+       var.col = "red", 
+       asp = NA, scale = 0.2,
+       prefix="Y canonical dimension")
 
