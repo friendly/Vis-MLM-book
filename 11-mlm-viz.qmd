@@ -772,6 +772,7 @@ relations in terms of linear combinations of each. That is, the goal is to find 
 for one set of variables, say $\mathbf{X}$ _not_ to predict each of the other set 
 $\mathbf{Y} =[\mathbf{y}_1, \mathbf{y}_2, \dots]$ _individually_, but rather to also find weights
 for the $\mathbf{y}$s which is most highly correlated with the linear combination of the $\mathbf{x}$s.
+For a thorough treatment of this topic, see @Gittins:85.
 
 Geometrically, these linear combinations are vectors representing projections in the observation space of the $x$ and $y$ variables, and canonical correlation analysis can also be thought of as
 minimizing the angle between these vectors or maximizing the cosine of this angle. This is illustrated in @fig-cancor-diagram (with a slight difference in notation relative to the discussion below.)
@@ -800,14 +801,50 @@ $\mathbf{S}_{xx}$, $\mathbf{S}_{yy}$ to represent the covariance matrices of the
 and $\mathbf{S}_{xy}$ for the cross-covariances between the two sets, the 
 correlation between the linear combinations of each can be expressed as
 
-$$
-\rho_1 = \textrm{corr}(\mathbf{u}_1, \mathbf{v}_1) 
-   = \textrm{corr}(\mathbf{X} \ \mathbf{a}_1, \mathbf{Y} \ \mathbf{b}_1) 
-   = \frac{\mathbf{a}_1^\top \ \mathbf{S}_{xy} \ \mathbf{b}_1 }{\sqrt{\mathbf{a}_1^\top \ \mathbf{S}_{xx} \  \mathbf{a}_1 } \sqrt{\mathbf{b}_1^\top \ \mathbf{S}_{yy} \ \mathbf{b}_1 }}
-$$
+\begin{eqnarray*}
+\rho_1 & = \textrm{corr}(\mathbf{u}_1, \mathbf{v}_1) 
+         = \textrm{corr}(\mathbf{X} \ \mathbf{a}_1, \mathbf{Y} \ \mathbf{b}_1) 
+       & = \frac{\mathbf{a}_1^\top \ \mathbf{S}_{xy} \ \mathbf{b}_1 }{\sqrt{\mathbf{a}_1^\top \ \mathbf{S}_{xx} \  \mathbf{a}_1 } \sqrt{\mathbf{b}_1^\top \ \mathbf{S}_{yy} \ \mathbf{b}_1 }}
+\end{eqnarray*}
 
 But, the $y$ variables lie in a $p$-dimensional (observation) space, and the $x$ in $q$ dimensions, so
-what they common is a space of $s = \min(p, q)$ dimensions. 
+what they have common is a space of $s = \min(p, q)$ dimensions. Therefore, we can find additional
+pairs of canonical variables,
+
+$$
+\mathbf{u}_2 = \mathbf{X} \ \mathbf{a}_2 \quad\quad \mathbf{v}_2 = \mathbf{Y} \ \mathbf{b}_2 \\
+\vdots \\
+\mathbf{u}_s = \mathbf{X} \ \mathbf{a}_s \quad\quad \mathbf{v}_s = \mathbf{Y} \ \mathbf{b}_s \\
+$$
+
+such that each pair $(\mathbf{u}_i, \mathbf{v}_i)$ has the maximum possible correlation
+and all distinct pairs are uncorrelated:
+
+\begin{aligned} 
+\rho_i & =\max _{\mathbf{a}_i, \mathbf{b}_i}\left\{\mathbf{u}_i^{\top} \mathbf{v}_i\right\} \\ 
+\left\|\mathbf{u}_i\right\| & =1, \quad\left\|\mathbf{v}_i\right\|=1, \\ 
+\mathbf{u}_i^{{\top}} \mathbf{u}_j & =0, \quad \mathbf{v}_i^{\top} \mathbf{v}_j=0 \quad\quad \forall j \neq i: i, j \in\{1,2, \ldots, s\} \ .
+\end{aligned}
+
+In words, the correlations among canonical variables are zero except when when they are associated with the same canonical correlation or the weights $(\mathbf{a}_i, \mathbf{b}_i)$ for the same pair.
+Alternatively, all $p \times q$ correlations the variables in $\mathbf{Y}$ and $\mathbf{X}$
+are fully summarized in the $s = \min(p, q)$ canonical correlations $\rho_i$ for $i = 1, 2, \dots, s$.
+
+The solution, developed by @Hotelling1936, is a form of a generalized eigenvalue problem, that can be
+stated in two equivalent ways,
+
+<!-- $$ -->
+<!-- \left(\mathbf{S}_{y y}^{-1} \ \mathbf{S}_{y x} \ \mathbf{S}_{x x}^{-1} \ \mathbf{S}_{x y}-\rho^2 \ \mathbf{I}\right) \mathbf{v} = \mathbf{0} -->
+<!-- $$ -->
+
+
+$$
+\begin{aligned}
+& \left(\mathbf{S}_{y x} \ \mathbf{S}_{x x}^{-1} \ \mathbf{S}_{x y} - \rho^2 \ \mathbf{S}_{y y}\right) \mathbf{b} = \mathbf{0} \\
+& \left(\mathbf{S}_{x y} \ \mathbf{S}_{y y}^{-1} \ \mathbf{S}_{y x} - \rho^2 \ \mathbf{S}_{x x}\right) \mathbf{a} = \mathbf{0} \ .
+\end{aligned}
+$$
+Both equations have the same form and have the same eigenvalues. And, given the eigenvectors for one of these equations, we can find the eigenvectors for the other.
 
 **TODO**: Fill in details of canonical correlations
 
@@ -823,7 +860,7 @@ But I also found two highly influential observations (cases 44, 59; see @fig-sch
 coefficients is rather large; so, I remove them from the analysis here.[^removed-cases]
 
 [^removed-cases]: An alternative to fitting the model removing specific cases deemed troublesome is to use
-a robust method, such as `heplots::roblm()` which uses re-weighted least squares to down-weight observations
+a **robust** method, such as `heplots::roblm()` which uses re-weighted least squares to down-weight observations
 with large residuals or other problems.
 
 ```{r}
