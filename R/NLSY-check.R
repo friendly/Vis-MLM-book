@@ -35,7 +35,6 @@ heplot(NLSY_notlogged,
        lwd=c(2, 3, 3),
        label.pos = c("bottom", "top", "top"))
 
-data(NLSY, package = "heplots")
 cor(log2(NLSY$income[NLSY$income!=0]), NLSY$educ[NLSY$income!=0])
 cor(log2(NLSY$income[NLSY$income!=0]*10000), NLSY$educ[NLSY$income!=0])
 stem(log2(NLSY$income))

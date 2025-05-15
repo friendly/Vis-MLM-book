@@ -4,6 +4,7 @@ library(car)
 library(ggplot2)
 library(dplyr)
 library(mvinfluence)
+library(ggrepel)
 
 data(NLSY, package = "heplots")
 
@@ -40,6 +41,37 @@ ggplot(NLSY_long, aes(x=value, fill=variable)) +
   facet_wrap(~variable, scales="free") +
   theme_bw(base_size = 14) +
   theme(legend.position = "none") 
+
+# outliers?
+res <- cqplot(NLSY, id.n = 4)
+res
+outliers <- rownames(res) |> as.numeric()
+
+
+# pairwise scatterplots
+
+xvars <- names(NLSY)[c(5, 6, 3, 4)]
+yvars <- names(NLSY)[1:2]
+
+NLSY_rect <- NLSY |>
+  mutate(ID = row_number()) |>
+  pivot_longer(cols = all_of(xvars), names_to = "xvar", values_to = "x") |>
+  pivot_longer(cols = all_of(yvars), names_to = "yvar", values_to = "y") |>
+  mutate(xvar = factor(xvar, xvars), yvar = factor(yvar, yvars))
+
+
+ggplot(NLSY_rect, aes(x, y)) +
+  geom_point(size = 1) +
+  geom_smooth(method = "lm", se = FALSE, formula = y ~ x) +
+  geom_smooth(method = "loess", se = FALSE, formula = y ~ x, color = "red") +
+  stat_ellipse(geom = "polygon", 
+               level = 0.95, fill = "blue", alpha = 0.2) +
+  facet_grid(yvar ~ xvar, scales = "free") +
+  labs(x = "predictor", y = "response") +
+  theme_bw(base_size = 16) +
+  geom_text_repel(data = NLSY_rect |> filter(ID %in% outliers), 
+                  aes(label = ID))
+
 
 
 mod0 <- lm(cbind(read, math) ~ log2(income) + educ + antisoc + hyperact, 
