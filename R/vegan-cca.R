@@ -1,4 +1,19 @@
 library(vegan)
+
+
+# Example using intercountry life-cycle savings data, 50 countries
+data(LifeCycleSavings)
+pop <- LifeCycleSavings[, 2:3]
+oec <- LifeCycleSavings[, -(2:3)]
+out <- CCorA(pop, oec)
+out
+biplot(out, xlabs = NA)
+
+biplot(out, "ov")
+biplot(out, "b")
+
+
+
 # Example using two mite groups. The mite data are available in vegan
 data(mite)
 # Two mite species associations (Legendre 2005, Fig. 4)
