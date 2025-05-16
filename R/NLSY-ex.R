@@ -37,6 +37,7 @@ NLSY_long <- NLSY |>
 
 ggplot(NLSY_long, aes(x=value, fill=variable)) +
   geom_density(alpha = 0.5) +
+  geom_rug() +
   facet_wrap(~variable, scales="free") +
   theme_bw(base_size = 14) +
   theme(legend.position = "none") 
