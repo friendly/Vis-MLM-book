@@ -579,27 +579,28 @@ Interestingly, the second dimension is also highly significant, even though it a
 ### Coeficients
 
 The `coef()` method for "candisc" objects returns a matrix of weights for the response variables
-in the canonical dimensions. By default, these are given for the response variables standardized
+in the canonical dimensions. By default, these are given for the response variables _standardized_
 to $\bar{y}=0$ and $s^2_y = 1$. The `type` argument also allows for raw score weights (`type = "raw"`)
 used to compute the observation scores on `Can1`, `Can2`, ... .
-`type = "raw"` gives the canonical structure coefficients, which are the correlations between each response and the
+`type = "structure"` gives the canonical structure coefficients, which are the correlations between each response and the
 canonical scores.
 
 ```{r iris-can-coef}
-coef(iris.can)
+coef(iris.can, type = "std")
 coef(iris.can, type = "structure")
 ```
 
-Thus, the two weighted sums for the canonical variates, using mean-centered raw scores, can be shown as follows:
+Thus, the two weighted sums for the canonical variates, using mean-centered standardized scores, can be shown as follows:
 
 ```{r can-vars}
 #| echo: false
 #| results: asis
-C <- coef(iris.can, type = "raw")
+C <- coef(iris.can, type = "std")
 names <- row.names(C)
+names <- c("S.len", "S.wid", "P.len", "P.wid")
 can1 <- paste("Can1 = ", paste0(round(C[,1], 2), " x ", names, collapse = " + "))
 #can1 <- gsub("+ -", "-", can1)
-cat(can1)
+cat(can1,"\n")
 can2 <- paste("Can2 = ", paste0(round(C[,2], 2), " x ", names, collapse = " + ")) |> cat()
 ```
 
@@ -618,7 +619,7 @@ corresponds to larger flowers.
 ```{r echo=-1}
 #| label: fig-iris-candisc
 #| fig-width: 8
-#| fig-height: 8
+#| fig-height: 7
 #| out-width: "80%"
 #| fig-cap: "Plot of canonical scores for the iris data."
 op <- par(mar = c(4, 4, 4, 1) + .5)
@@ -632,9 +633,10 @@ plot(iris.can,
      scale = 9,
      col = iris_colors,
      pch = 15:17,
-     cex = 0.7,
+     cex = 0.7, var.cex = 1.25,
      rev.axes = c(TRUE, FALSE),
-     xlim = c(-10, 10))
+     xlim = c(-10, 10),
+     cex.lab = 1.5)
 ```
 
 The interpretation of
@@ -645,8 +647,8 @@ this axis, but the two petal variables show the greatest discrimination.
 The negative direction for `Sepal.Width` reflects the pattern seen in @fig-iris-pairs, where _setosa_
 have wider sepals.
 
-For the second dimension, look at the horizontal projections of the variable vectors on the `Can2` axis.
-All are positive, but this is dominated by `Sepal.Width`.
+For the second dimension, look at the projections of the variable vectors on the `Can2` axis.
+All are positive, but this is dominated by `Sepal.Width`. We could call this a flower shape dimension.
 
 
 
@@ -762,33 +764,116 @@ heplot(NLSY.mod1,
        label.pos = c("bottom", "top"))
 ```
 
-### Canonical correlation analysis
+## Canonical correlation analysis {#sec-cancor}
 
 Just as we saw for MANOVA designs, a canonical analysis for multivariate regression involves finding
 a low-D view of the relations between predictors and outcomes that maximally explains their
 relations in terms of linear combinations of each. That is, the goal is to find  weights
-for one set of variables, say $\mathbf{X}$ not to predict each of the other set 
-$\mathbf{Y} =[\mathbf{y}_1, \mathbf{y}_2, \dots]$ _individually_, but rather also finding weights
-for these which is most highly correlated with the linear combination of the $\mathbf{x}$s.
+for one set of variables, say $\mathbf{X}$ _not_ to predict each of the other set 
+$\mathbf{Y} =[\mathbf{y}_1, \mathbf{y}_2, \dots]$ _individually_, but rather to also find weights
+for the $\mathbf{y}$s which is most highly correlated with the linear combination of the $\mathbf{x}$s.
+For a thorough treatment of this topic, see @Gittins:85.
+
+Geometrically, these linear combinations are vectors representing projections in the observation space of the $x$ and $y$ variables, and canonical correlation analysis can also be thought of as
+minimizing the angle between these vectors or maximizing the cosine of this angle. This is illustrated in @fig-cancor-diagram.
+
+```{r}
+#| label: fig-cancor-diagram
+#| echo: false
+#| out-width: "100%"
+#| fig-cap: "Diagram illustrating canonical correlation. For two $y$ variables, all linear combinations are vectors in their plane, and similarly for the $x$ variables. Maximizing the correlation between linear combinations of each is equivalent to making the angle $\\theta$ between them as small as possible, or maximizing $\\cos({\\theta})$, shown in the diagram at the right. The thick grey arrow indignates that the two planes should be overlaid at a common origin. _Source_: Re-drawn by Udi Alter following a Cross-Validated discussion by user 'ttnphns', https://bit.ly/4dgq2cp"
+knitr::include_graphics("images/cancor-diagram-udi.png")
+```
+
+
+
+Specifically, we want to find one set of weights $\mathbf{a}_1$ for the $x$ variables and another
+for the $y$ variables to give the linear combinations $\mathbf{u}_1$ and $\mathbf{v}_1$,
+
+\begin{eqnarray*}
+\mathbf{u}_1 & = \mathbf{X} \ \mathbf{a}_1 = a_{11} \mathbf{x}_1 + a_{12} \mathbf{x}_2 + \cdots + a_{11} \mathbf{x}_q \\
+\mathbf{v}_1 & = \mathbf{Y} \ \mathbf{b}_1 = b_{11} \mathbf{y}_1 + b_{12} \mathbf{y}_1 + \cdots + b_{11} \mathbf{y}_p \; ,
+\end{eqnarray*}
+
+such that the correlation $\rho_1 = \textrm{corr}(\mathbf{u}_1, \mathbf{v}_1)$ is maximized, or
+equivalently, minimizing the angle between them.
+
+Using
+$\mathbf{S}_{xx}$, $\mathbf{S}_{yy}$ to represent the covariance matrices of the $x$ and $y$ variables,
+and $\mathbf{S}_{xy}$ for the cross-covariances between the two sets, the 
+correlation between the linear combinations of each can be expressed as
+
+\begin{eqnarray*}
+\rho_1 & = \textrm{corr}(\mathbf{u}_1, \mathbf{v}_1) 
+         = \textrm{corr}(\mathbf{X} \ \mathbf{a}_1, \mathbf{Y} \ \mathbf{b}_1) \\
+       & = \frac{\mathbf{a}_1^\top \ \mathbf{S}_{xy} \ \mathbf{b}_1 }{\sqrt{\mathbf{a}_1^\top \ \mathbf{S}_{xx} \  \mathbf{a}_1 } \sqrt{\mathbf{b}_1^\top \ \mathbf{S}_{yy} \ \mathbf{b}_1 }}
+\end{eqnarray*}
+
+But, the $y$ variables lie in a $p$-dimensional (observation) space, and the $x$ in $q$ dimensions, so
+what they have common is a space of $s = \min(p, q)$ dimensions. Therefore, we can find additional
+pairs of canonical variables,
+
+
+\begin{eqnarray*}
+\mathbf{u}_2 = \mathbf{X} \ \mathbf{a}_2 & \quad\quad \mathbf{v}_2 = \mathbf{Y} \ \mathbf{b}_2 \\
+                                         & \vdots \\
+\mathbf{u}_s = \mathbf{X} \ \mathbf{a}_s & \quad\quad \mathbf{v}_s = \mathbf{Y} \ \mathbf{b}_s \\
+\end{eqnarray*}
+
+
+such that each pair $(\mathbf{u}_i, \mathbf{v}_i)$ has the maximum possible correlation
+and all distinct pairs are uncorrelated:
+
+\begin{eqnarray*} 
+\rho_i & =\max _{\mathbf{a}_i, \mathbf{b}_i}\left\{\mathbf{u}_i^{\top} \mathbf{v}_i\right\} = \\ 
+\left\|\mathbf{u}_i\right\| & =1, \quad\left\|\mathbf{v}_i\right\|=1, \\ 
+\mathbf{u}_i^{{\top}} \mathbf{u}_j & =0, \quad \mathbf{v}_i^{\top} \mathbf{v}_j=0 \quad\quad \forall j \neq i: i, j \in\{1,2, \ldots, s\} \ .
+\end{eqnarray*}
+
+In words, the correlations among canonical variables are zero except when when they are associated with the same canonical correlation or the weights $(\mathbf{a}_i, \mathbf{b}_i)$ for the same pair.
+Alternatively, all $p \times q$ correlations the variables in $\mathbf{Y}$ and $\mathbf{X}$
+are fully summarized in the $s = \min(p, q)$ canonical correlations $\rho_i$ for $i = 1, 2, \dots, s$.
+
+The solution, developed by @Hotelling1936, is a form of a generalized eigenvalue problem, that can be
+stated in two equivalent ways,
+
+<!-- $$ -->
+<!-- \left(\mathbf{S}_{y y}^{-1} \ \mathbf{S}_{y x} \ \mathbf{S}_{x x}^{-1} \ \mathbf{S}_{x y}-\rho^2 \ \mathbf{I}\right) \mathbf{v} = \mathbf{0} -->
+<!-- $$ -->
+
+
+$$
+\begin{aligned}
+& \left(\mathbf{S}_{y x} \ \mathbf{S}_{x x}^{-1} \ \mathbf{S}_{x y} - \rho^2 \ \mathbf{S}_{y y}\right) \mathbf{b} = \mathbf{0} \\
+& \left(\mathbf{S}_{x y} \ \mathbf{S}_{y y}^{-1} \ \mathbf{S}_{y x} - \rho^2 \ \mathbf{S}_{x x}\right) \mathbf{a} = \mathbf{0} \ .
+\end{aligned}
+$$
+Both equations have the same form and have the same eigenvalues. And, given the eigenvectors for one of these equations, we can find the eigenvectors for the other.
 
 **TODO**: Fill in details of canonical correlations
 
 ### Example: School data {#sec-schooldata-HE}
 
-**TODO**: This should be redone, omitting the influential cases, 44, 59
+<!-- **TODO**: This should be redone, omitting the influential cases, 44, 59 -->
 
 The `schooldata` dataset analyzed in @sec-schooldata-mmra can also be illuminated by the methods of this
-chapter. There we fit the multivariate regression model predicting students scores on
+chapter. There I fit the multivariate regression model predicting students scores on
 reading, mathematics and a measure of self-esteem using as predictors measures of parents' education, occupation,
 school visits, counseling help with school assignments and number of teachers per school.
+But I also found two highly influential observations (cases 44, 59; see @fig-schoolmod-infl) whose effect on the
+coefficients is rather large; so, I remove them from the analysis here.[^removed-cases]
 
+[^removed-cases]: An alternative to fitting the model removing specific cases deemed troublesome is to use
+a **robust** method, such as `heplots::roblm()` which uses re-weighted least squares to down-weight observations
+with large residuals or other problems.
 
 ```{r}
 data(schooldata, package = "heplots")
-school.mod <- lm(cbind(reading, mathematics, selfesteem) ~ 
-                   education + occupation + visit + counseling + teacher, 
-                 data=schooldata)
 
+bad <- c(44, 59)
+OK <- (1:nrow(schooldata)) |> setdiff(bad)
+school.mod2 <- lm(cbind(reading, mathematics, selfesteem) ~ ., 
+                  data=schooldata[OK, ])
 ```
 
 In this model, parent's education and occupation
@@ -802,7 +887,7 @@ and their relations to the outcome variable by their _direction_. The table of r
 isn't very helpful in this regard.
 
 ```{r}
-coef(school.mod)
+coef(school.mod2)
 ```
 
 
@@ -813,20 +898,23 @@ significance scaling.
 #| out-width: "80%"
 #| fig-cap: "HE plot for reading and mathematics scores in the multivariate regression model..."
 op <- par(mar = c(4, 4, 1, 2) + .1)
-heplot(school.mod, 
+heplot(school.mod2, 
        fill=TRUE, fill.alpha=0.1,
        cex = 1.5,
-       cex.lab = 1.5)
+       cex.lab = 1.5,
+       label.pos = c(rep("top", 4), "bottom", "bottom"))
 ```
 
 Parent's occupation and education are both significant in this view, but what is more important is their
 orientation. Both are positively associated with reading and math scores, but education is somewhat more
-related to reading than to mathematics. Visits to school and number of teachers are not significant in
+related to reading than to mathematics. Number of teachers and degree of parental counseling have a
+similar orientation, with teachers having a greater relation to mathematics scores.
+Visits to school and number of teachers are not significant in
 this plot, but both are positively correlated with reading and math and are coincident in the plot. The parent time counseling measure, while also insignificant,
 tilts in the opposite direction, having different signs for reading and math.
 
 In the `pairs()` plot for all three responses (@fig-school-heplot2), we see something different in the relations for self-esteem. While occupation has a large positive relation in all the plots in the third row and column,
-education and visits have negative relations in these plots.
+education, counseling and teachers have negative relations in these plots, particularly with mathematics scores.
 
 ```{r}
 #| label: fig-school-heplot2
@@ -834,7 +922,7 @@ education and visits have negative relations in these plots.
 #| fig-height: 9
 #| out-width: "100%"
 #| fig-cap: "Pairwise HE plots for the three outcome variables in the multivariate regression model ..."
-pairs(school.mod, 
+pairs(school.mod2, 
       fill=TRUE, fill.alpha=0.1,
       var.cex = 2.5,
       cex = 1.3)
@@ -843,16 +931,102 @@ pairs(school.mod,
 
 ### Canonical analysis
 
-```{r}
-bad <- c(44, 59)
-OK <- (1:nrow(schooldata)) |> setdiff(bad)
-school.can2 <- cancor(cbind(reading, mathematics, selfesteem) ~ 
-                       education + occupation + visit + counseling + teacher, 
+With $p = 3$ responses and $q = 5$ predictors there are three possible sets of canonical variables
+which together account for 100% of the total linear relations between them. `heplots::cancor()`
+gives the percentage associated with each of the eigenvalues and the canonical correlations.
+
+For this dataset, the first canonical variates, with Can $R = 0.995$, 
+account for 98.6%, so you might think that that is
+sufficient. Yet the likelihood ratio tests show that the second set, with Can $R = 0.774$,
+is also significant, even though it only accounts for 1.3%.
+
+```{r school-can}
+# bad <- c(44, 59)
+# OK <- (1:nrow(schooldata)) |> setdiff(bad)
+school.can2 <- cancor(cbind(reading, mathematics, selfesteem) ~
+                        education + occupation + visit + counseling + teacher,
                      data=schooldata[OK, ])
 school.can2
 ```
 
+The class `"cancor"` object returned by `cancor()` contains the canonical coefficients, for which there
+is a `coef()` method as in `candisc()`, and also a `scores()` method to return the scores on the canonical
+variables, called `Xcan1`, `Xcan2`, ... and `Ycan1`, `Ycan2`, ...
+The virtue of CCA is that _all_ correlations between the X and Y variables are completely captured
+in the correlations between the pairs of canonical scores, ...
 
+The `plot()` method plots the canonical X scores against the Y scores for a given dimension
+(selected by the `which` argument):
+
+```{r}
+#| label: fig-school-can
+#| fig-width: 10
+#| fig-height: 5
+#| out-width: "100%"
+#| fig-cap: "Plots of canonical scores for the first two canonical dimensions of the `schooldata` dataset, omitting the two highly influential cases."
+op <- par(mar = c(4,4,1,1) + .1,
+          mfrow = c(1, 2))
+plot(school.can2, 
+     pch=16, id.n = 3,
+     cex.lab = 1.5, id.cex = 1.5,
+     ellipse.args = list(fill = TRUE, fill.alpha = 0.1))
+text(-2, 1.5, paste("Can R =", round(school.can2$cancor[1], 3)), 
+     cex = 1.4, pos = 4)
+
+plot(school.can2, which = 2, 
+     pch=16, id.n = 3,
+     cex.lab = 1.5, id.cex = 1.5,
+     ellipse.args = list(fill = TRUE, fill.alpha = 0.1))
+text(-3, 3, paste("Can R =", round(school.can2$cancor[2], 3)), 
+     cex = 1.4, pos = 4)
+par(op)
+```
+
+It is worthwhile to look at an analogous plot of canonical scores for the original dataset including
+the two highly influential cases. As you can see in @fig-school-can0, cases 44 and 59 are way outside
+the range of the rest of the data. Their influence increases the canonical correlation to a near perfect 
+$\rho = 0.997$.
+
+```{r}
+#| label: fig-school-can0
+#| fig-width: 8
+#| fig-height: 8
+#| out-width: "70%"
+#| fig-cap: "Plots of canonical scores on the first canonical dimension for the `schooldata`, including the influential cases."
+school.can <- cancor(cbind(reading, mathematics, selfesteem) ~
+                       education + occupation + visit + counseling + teacher,
+                     data=schooldata)
+plot(school.can, 
+     pch=16, id.n = 3,
+     cex.lab = 1.5, id.cex = 1.5,
+     ellipse.args = list(fill = TRUE, fill.alpha = 0.1))
+text(-5, 1, paste("Can R =", round(school.can$cancor[1], 3)), 
+     cex = 1.4, pos = 4)
+```
+
+
+Plots of canonical scores tell us of the strength of the canonical dimensions, but do not help
+interpreting the analysis in relation to the original variables.
+The HE plot version for canonical correlation analysis re-fits a multivariate regression model
+for the Y variables against the Xs, but substitutes the canonical scores for each, essentially
+projecting the data into canonical space.
+
+**TODO**: Check out signs of structure coefs from `cancor()`. Would be better to reflect the vectors
+for `Ycan1`.
+
+
+```{r}
+#| label: fig-school-hecan
+#| fig-width: 8
+#| fig-height: 8
+#| out-width: "70%"
+heplot(school.can2, 
+       fill = TRUE, fill.alpha = 0.2,
+       var.col = "black",
+       xpd=TRUE)
+```
+
+The variable vectors shown in these plots are intended only to show the correlations of Y variables with the canonical dimensions. Only their _relative lengths_ and angles with respect to the Y canonical dimensions have meaning. Relative lengths correspond to proportions of variance accounted for in the Y canonical dimensions plotted; angles between the variable vectors and the canonical axes correspond to the structure correlations. The absolute lengths of these vectors are typically manipulated by the `scale` argument to provide better visual resolution and labeling for the variables.
 
 **Packages**:
 

@@ -77,10 +77,13 @@ reldiff(coef(school.mod)[-1,], coef(school.mod2)[-1,]) |>
   round(1)
 
 # Re-do HE plots
+# also, reverse position of labels for counseling, teacher
 heplot(school.mod2, 
        fill=TRUE, fill.alpha=0.1,
        cex = 1.5,
-       cex.lab = 1.5)
+       cex.lab = 1.5,
+       label.pos = c(rep("top", 4), "bottom", "bottom")
+       )
 
 pairs(school.mod2, 
       fill=TRUE, fill.alpha=0.1,
@@ -137,30 +140,63 @@ school.can$coef$Y |> round(3)
 
 # plot canonical scores
 plot(school.can, 
-     pch=16, id.n = 3)
-text(-5, 1, paste("Can R =", round(school.can$cancor[1], 3)), pos = 4)
+     pch=16, id.n = 3,
+     cex.lab = 1.5, id.cex = 1.5,
+     ellipse.args = list(fill = TRUE, fill.alpha = 0.1))
+text(-5, 1, paste("Can R =", round(school.can$cancor[1], 3)), 
+     cex = 1.4, pos = 4)
 
 plot(school.can, which = 2, pch=16, id.n = 3)
 text(-3, 3, paste("Can R =", round(school.can$cancor[2], 3)), pos = 4)
 
 heplot(school.can, xpd=TRUE)
 
+# -------------------------
 # re-do, w/ out bad cases
 school.can2 <- cancor(cbind(reading, mathematics, selfesteem) ~ 
                        education + occupation + visit + counseling + teacher, 
-                     data=schooldata[OK, ])
+                     data=schooldata[OK, ],
+                     set.names = c("Predictors", "Outcomes"))
 school.can2
 
+redundancy(school.can2)
+
+# coef
+# school.can2$coef$X |> round(3)
+# 
+# school.can2$coef$Y |> round(3)
+
+coef(school.can2, type = "x", standardize = TRUE)
+
+coef(school.can2, type="both", standardize=TRUE)
+
+# correlations among canonical scores
+scores(school.can2, type = "both") |> 
+  as.data.frame() |> 
+  cor() |> 
+  zapsmall()
+
+
+op <- par(mar = c(4,4,1,1) + .1,
+          mfrow = c(1, 2))
 plot(school.can2, 
-     pch=16, id.n = 3)
-text(-2, 1.5, paste("Can R =", round(school.can2$cancor[1], 3)), pos = 4)
+     pch=16, id.n = 3,
+     cex.lab = 1.5, id.cex = 1.5,
+     ellipse.args = list(fill = TRUE, fill.alpha = 0.1))
+text(-2, 1.5, paste("Can R =", round(school.can2$cancor[1], 3)), 
+     cex = 1.4, pos = 4)
 
 plot(school.can2, which = 2, 
-     pch=16, id.n = 3)
-text(-3, 3, paste("Can R =", round(school.can2$cancor[2], 3)), pos = 4)
+     pch=16, id.n = 3,  id.cex = 1.5,
+     ellipse.args = list(fill = TRUE, fill.alpha = 0.1))
+text(-3, 3, paste("Can R =", round(school.can2$cancor[2], 3)), 
+     cex = 1.4, pos = 4)
+par(op)
 
-heplot(school.can2, 
+# would be better to reflect dim 1
+heplot(school.can2,
        fill = TRUE, fill.alpha = 0.2,
-       var.col = "black",
-       xpd=TRUE)
+       var.col = "red", 
+       asp = NA, scale = 0.2,
+       prefix="Y canonical dimension")
 
