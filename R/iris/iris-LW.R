@@ -1,5 +1,6 @@
 # iris data -- length vs width
 
+library(dplyr)
 library(tidyr)
 library(car)
 data(iris)
