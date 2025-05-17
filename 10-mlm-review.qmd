@@ -35,7 +35,9 @@ Instead, if the predictors are categorical factors, multivariate analysis of var
 
 
 The main goal of this chapter is to describe the details of the extension of univariate linear models to the case
-of multiple outcome measures.
+of multiple outcome measures. But the larger goal is to set the stage for the visualization methods using HE plots
+and low-D views
+discussed separately in @sec-vis-mlm. 
 Before considering the details and examples that apply to MANOVA and MMRA, 
 it is useful to consider the general features of the multivariate linear model of which these cases are examples.
 
@@ -1287,12 +1289,18 @@ in assessing the effects of predictors of main interest.
 But first, there are a couple of aspects of statistical practice that should be mentioned.
 
 **Model selection** is one topic where univariate and multivariate approaches differ.
-When there are more than a few predictors, approaches like hierarchical regression and
-stepwise selection can be used to eliminate uninformative predictors for each response,
-This gives a different interpretation of the models for each response, based on the predictors included.
+When there are more than a few predictors, approaches like hierarchical regression,
+LASSO [@Tibshriani:regr:1996] and
+stepwise selection can be used to eliminate uninformative predictors for each response.[^stepwise]
+But this gives a different models for each response, based on the predictors included, each with its own interpretation.
 In contrast, the multivariate approach considers the outcome variables collectively.
 You can eliminate predictors that are unimportant, but the mechanics are geared toward
 removing them from the models for _all_ responses.
+
+[^stepwise]: "Automatic" model selection procedures like stepwise regression, while seemingly attractive are
+dangerous in that can increase false positives or drop variables that should, on logical grounds, be included in the model.
+See [Stepwise selection of variables in regression is Evil](https://freerangestats.info/blog/2024/09/14/stepwise)
+and Harrell [@RMS].
 
 **Overall tests**
 In a one-way ANOVA, to control for multiple testing, it is common practice to carry out an overall $F$-test to see if the group means differ collectively before testing comparison between specific groups.
@@ -1306,13 +1314,6 @@ I believe the first of these is wise, but the second might be too much to requir
 understand the data.
 
 ### Example: NLSY data {#sec-NLSY-mmra}
-
-<!--
-The National Longitudinal Survey of
-Youth (NLSY) is a series of annual surveys conducted by the 
-U.S. Department of Labor to examine the transition of young people into the labor force. 
-@Curran1997 
--->
 
 The dataset `heplots::NLSY` comes from a small part of the National Longitudinal Survey of
 Youth, a series of annual surveys conducted by the 
@@ -1335,15 +1336,17 @@ str(NLSY)
 ```
 
 #### Exploratory plots {.unnumbered}
-To begin, I would examine some scatterplots and univariate displays. I'll start with density plots for all the variables to see the shapes of their distributions. From @fig-NLSY-density we see that math and reading scores
+To begin, I would examine some scatterplots and univariate displays. I'll start with density plots for all the variables to see the shapes of their distributions, wikh rug plots at the bottom to show where the observations are located.
+From @fig-NLSY-density we see that math and reading scores
 are positively skewed, anti-social and hyperactivity have distributions highly concentrated in the lower scores.
-As we would suspect, father's income is extremely positively skewed, and crys out for a log transformation.
-Father's education is reasonably symmetric, but highly peaked at 12 years of schooling in this sample.
+As we would suspect, father's income is quite positively skewed.
+Father's education is reasonably symmetric, but highly peaked at 12 years of schooling in this sample. The spikes
+reflect the fact that education is measured in discrete years.
 
 ```{r}
 #| label: fig-NLSY-density
 #| fig-width: 8
-#| fig-height: 4
+#| fig-height: 5
 #| out-width: "100%"
 #| fig-cap: "Density plots for the variables in the `NLSY` dataset."
 NLSY_long <- NLSY |> 
@@ -1352,6 +1355,7 @@ NLSY_long <- NLSY |>
 
 ggplot(NLSY_long, aes(x=value, fill=variable)) +
   geom_density(alpha = 0.5) +
+  geom_rug() +
   facet_wrap(~variable, scales="free") +
   theme_bw(base_size = 14) +
   theme(legend.position = "none") 
@@ -1402,30 +1406,35 @@ those are the variables to fit first.
 
 **TODO**: Using log2(income) is more appropriate, but give HE plots in Ch 11 that are less dramatic. Consider using just income.
 
-I use `log2(income)` in the models below because of the extreme skew of father's income.
-$\log_2()$ rather than natural $\ln()$ facilitates interpretation. We can interpret
-the coefficient for reading as "a doubling of income" is associated with an increase of that value in reading".
+<!-- I use `log2(income)` in the models below because of the extreme skew of father's income. -->
+<!-- $\log_2()$ rather than natural $\ln()$ facilitates interpretation. We can interpret -->
+<!-- the coefficient for reading as "a doubling of income" is associated with an increase of that value in reading". -->
 
 
 ```{r NLSY-mod1}
-NLSY.mod1 <- lm(cbind(read, math) ~ log2(income) + educ, 
-           data= NLSY |> filter(income != 0))
+NLSY.mod1 <- lm(cbind(read, math) ~ income + educ, 
+                data = NLSY)
 
 Anova(NLSY.mod1)  # Type II, partial test
 ```
 
 #### Overall test {.unnumbered}
 
-The `Anova()` results above give multivariate tests of the contributions of each predictor separately
+The `Anova()` results above give multivariate tests of the contributions of each predictor _separately_
 to explaining reading and math and how they vary together. To get an overall test of the global
-null hypothesis $\mathcal{H}_0 : \mathbf{B} = \mathbf{0}$ for _all_ predictors, you can use
+null hypothesis 
+$\mathcal{H}_0 : \mathbf{B} =(\boldsymbol{\beta}_{\text{inc}}, \boldsymbol{\beta}_{\text{educ}}) =\mathbf{0}$ 
+for _all_ predictors together, you can use
 `linearHypothesis()`:
 
 ```{r}
 coefs <- rownames(coef(NLSY.mod1))[-1]
-linearHypothesis(NLSY.mod1, coefs) |> print(SSP = FALSE)
+linearHypothesis(NLSY.mod1, coefs, title = "income, educ = 0") |> 
+  print(SSP = FALSE)
 ```
 
+This joint multivariate test is more highly significant than either of those for the separate effects of the predictors,
+again because it pools strength.
 
 #### Coefficient plots {.unnumbered}
 
@@ -1435,6 +1444,7 @@ arranged by the response variable.
 
 ```{r NLSY-coef}
 coef(NLSY.mod1)
+
 tidy(NLSY.mod1)
 ```
 
@@ -1445,25 +1455,40 @@ For interpretation, it adds the bivariate confidence ellipse for the coefficient
 as univariate confidence intervals for each response. The univariate intervals are simply the
 horizontal and vertical shadows of the ellipses on the response variable axes.
 
+A wrinkle here, as in @sec-coefficient-displays, is that the coefficients are measured in different units
+and so coefficient plots for different predictors are more easily compared for standardized variables.
+To do this, I first re-fit the model using `scale(NLSY)` ...
+
 ```{r}
+NLSY_std <- scale(NLSY) |>
+  as.data.frame()
+
+NLSY_std.mod1 <- lm(cbind(read, math) ~ income + educ, 
+                data = NLSY_std)
+```
+
+
+```{r echo = -1}
 #| label: fig-NLSY-coefplot1
 #| fig-width: 6
 #| fig-height: 6
 #| out-width: "70%"
-#| fig-cap: "Bivariate coefficient plot for reading and math with 95% confidence ellipses"
-coefplot(NLSY.mod1, fill = TRUE,
+#| fig-cap: "Bivariate coefficient plot for reading and math with 95% confidence ellipses. The variables have been standardized to make their units comparable."
+op <- par(cex.lab = 1.5, mar = c(4,4,1,1)+.1)
+coefplot(NLSY_std.mod1, fill = TRUE,
    col = c("darkgreen", "brown"),
    lwd = 2,
-   ylim = c(-0.5, 3),
-   main = "Bivariate coefficient plot for reading and math\nwith 95% confidence ellipses")
-
+   cex.lab = 1.5,
+   ylim = c(-0.1, 0.5),
+   xlab = "read coefficient (std)",
+   ylab = "math coefficient (std)")
 ```
 
-In @fig-NLSY-coefplot1, the confidence ellipses for `log2(income)` and `educ` both exclude the
+In @fig-NLSY-coefplot1, the confidence ellipses for `income` and `educ` both exclude the
 origin, which represents the multivariate hypothesis
 $\mathcal{H}_0 : ( \beta_\textrm{read}, \beta_\textrm{math} ) = (0, \, 0)$, so this hypothesis is rejected.
 Note that if we only examined the univariate tests for each of the four parameters,
-we would conclude that for reading log(income) is not a significant predictor. 
+we would conclude that for reading,  `income` is not a significant predictor. 
 The orientation of the confidence ellipses indicates the positive correlation between reading and mathematics
 scores.
 
@@ -1487,7 +1512,9 @@ Each of these new predictors are individually non-significant according to the T
 Using `linearHypothesis()` you can test them jointly:
 ```{r}
 coefs <- rownames(coef(NLSY.mod2))[-1] |> print()
-linearHypothesis(NLSY.mod2, coefs[3:4], title = "NLSY.mod2 | NLSY.mod1") |>
+
+linearHypothesis(NLSY.mod2, coefs[3:4], 
+                 title = "NLSY.mod2 | NLSY.mod1") |>
   print(SSP = FALSE)
 ```
 
@@ -1764,6 +1791,7 @@ reldiff(coef(school.mod)[-1,], coef(school.mod2)[-1,]) |>
   round(1)
 ```
 
+As you can see, the effects on the coefficients for `visit` and counseling` are dramatic.
 
 ## ANCOVA $\rightarrow$ MANCOVA
 

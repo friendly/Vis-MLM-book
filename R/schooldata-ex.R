@@ -30,6 +30,16 @@ school.mvn.mardia <- mvn(residuals, mvnTest = "mardia")
 school.mvn.mardia$multivariateNormality
 school.mvn.mardia$univariateNormality
 
+# try to fix
+mardia.result <- school.mvn.mardia$multivariateNormality
+mardia.result$Statistic <- as.numeric(mardia.result$Statistic)
+mardia.result$`p value` <- as.numeric(mardia.result$`p value`)
+mardia.result
+
+univar.result <- school.mvn.mardia$univariateNormality
+str(univar.result)
+
+
 # HE plots
 heplot(school.mod, 
        fill=TRUE, fill.alpha=0.1,
