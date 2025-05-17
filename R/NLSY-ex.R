@@ -191,3 +191,15 @@ update(NLSY.mod1, cbind(read, math, antisoc, hyperact) ~ .)
 library(equatiomatic)
 extract_eq(NLSY.mod1)
 
+# try vegan
+library(vegan)
+
+resp <- NLSY[, 1:2]
+pred <- NLSY[, 3:6]
+NLSY.canv <- CCorA(resp, pred)
+NLSY.canv
+
+biplot(NLSY.canv, "ov")
+
+biplot(NLSY.canv, type="biplot", xlabs = NULL, lwd=2)
+
