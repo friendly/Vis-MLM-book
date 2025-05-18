@@ -34,14 +34,14 @@ Just as in univariate analysis there are variously named techniques (ANOVA, regr
 Instead, if the predictors are categorical factors, multivariate analysis of variance (MANOVA) can be applied to test for differences between groups. Again, this is akin to  ANOVA in the univariate context--- the same underlying model is utilized, but the tests for terms in the model are multivariate ones for the collection of all response variables, rather than univariate ones for a single response.
 
 
-The main goal of this chapter is to describe the details of the extension of univariate linear models to the case
-of multiple outcome measures. But the larger goal is to set the stage for the visualization methods using HE plots
-and low-D views
-discussed separately in @sec-vis-mlm. 
-Before considering the details and examples that apply to MANOVA and MMRA, 
+The main goal of this chapter is to describe the details of the extension of univariate linear models to the case of multiple outcome measures. But the larger goal is to set the stage for the visualization methods using HE plots and low-D views discussed separately in @sec-vis-mlm. 
+Some of the example datasets used here will re-appear there, and also in @sec-eqcov
+which concerns some model-diagnostic graphical methods.
+
+However, before considering the details and examples that apply separately to MANOVA and MMRA, 
 it is useful to consider the general features of the multivariate linear model of which these cases are examples.
 
-**TODO**: Offer defense against @Huang2019 and others here; cite @Huberty-Morris1989
+**TODO**: Offer defense against @Huang2019 and others here; cite @Huberty-Morris1989. Or, maybe not!
 
 **Packages**
 
@@ -65,8 +65,6 @@ library(MVN)
 
 ## Structure of the MLM
 
-**TODO** Revise notation here, to be explicit about inclusion of $\boldsymbol{\beta}_0$
-
 <!-- **TODO** Use `\Epsilon` = $\Epsilon$ here, which is defined as `\boldsymbol{\large\varepsilon}` for residuals. -->
 <!-- Could also use a larger version, `\boldsymbol{\Large\varepsilon}` = -->
 <!-- $\boldsymbol{\Large\varepsilon}$ if that makes a difference. -->
@@ -84,10 +82,14 @@ With $p$ response variables, the multivariate linear model is most easily apprec
 But the problems with fitting separate univariate models are that:
 
 * They don't give _simultaneous_ tests for all regressions. The situation is similar to that in a one-way ANOVA,
-where an overall test for group differences is applied before testing individual comparisons to avoid problems of
+where an _overall_ test for group differences is usually applied before testing individual comparisons to avoid problems of multiple testing: $g$ groups gives $g \times (g-1)/2$ pairwise tests.
 
-* More importantly, fitting separate univariate models does not take _correlations_ among the $\mathbf{y}$s into account. It might be the case that the response variables are all essentially measuring the same thing, but perhaps weakly. If so, the multivariate approach can pool strength across the outcomes to detect their common relations to the predictors, giving greater power.
+* More importantly, fitting separate univariate models does not take _correlations_ among the $\mathbf{y}$s into account. 
 
+  * It might be the case that the response variables are all essentially measuring the same thing, but perhaps weakly. If so, the multivariate approach can pool strength across the outcomes to detect their common relations to the predictors, giving greater power.
+  * On the other hand, perhaps the responses are related in _different ways_ to the predictors.
+A multivariate approach can help you understand _how many_ different ways there are, and
+characterize each.
 
 
 The model matrix  $\mathbf{X}$ in @eq-mlm-models is the same for all responses, but each one gets its
@@ -102,6 +104,9 @@ as columns in a matrix $\mathbf{B}$.[^Beta]
 [^Beta]: A slight hiccup in notation is that the _uppercase_ for the Greek Beta ($\boldsymbol{\beta}$)
 is the same as the uppercase Roman $\mathbf{B}$, so I use $\mathbf{b}_1 , \mathbf{b}_2 , \dots$ below to refer to its'
 columns.
+
+**TODO** Revise notation here, to be explicit about inclusion of $\boldsymbol{\beta}_0$
+
 
 The MLM then becomes:
  
@@ -170,7 +175,7 @@ The structure of the model matrix $\mathbf{X}$ is exactly the same as the univar
 * **categorical predictors** ("factors"), such as treatment (Control, Drug A, drug B), or sex; internally a factor with `k` levels is transformed to `k-1` dummy (0, 1) variables, representing comparisons with a reference level, typically the first.
 * **interaction terms**, involving either quantitative or categorical predictors, e.g., `age * sex`, `treatment * sex`.
 
-### Assumptions
+### Assumptions {#sec-mlm-assumptions}
 Just as in univariate models, the assumptions of the multivariate linear model almost entirely concern the behavior of the errors (residuals). 
 Let $\mathbf{\epsilon}_{i}^{\prime}$ represent the $i$th row of $\Epsilon$. Then it is assumed that:
 
@@ -178,16 +183,19 @@ Let $\mathbf{\epsilon}_{i}^{\prime}$ represent the $i$th row of $\Epsilon$. Then
 $\mathcal{N}_{p}(\mathbf{0},\boldsymbol{\Sigma})$, 
 where $\mathbf{\Sigma}$ 
 is a non-singular error-covariance matrix. 
-Statistical tests of multivariate normality of the residuals include the Shapiro-Wilk [@ShapiroWilk1965]
+
+  + Statistical tests of multivariate normality of the residuals include the Shapiro-Wilk [@ShapiroWilk1965]
 and Mardia [-@Mardia:1970:MMS; -@Mardia:1974]
 tests (and others, in the `r package("MVN")` package).
 <!-- mshapiro.test( )[in the `r package("mvnormtest")`  package] can be used to perform the Shapiro-Wilk test for multivariate normality -->
 
-However, as in univariate models, the MLM is relatively robust 
+  + However, as in univariate models, the MLM is relatively robust 
 however this is often better assessed visually using a $\chi^2$ QQ plot
 of Mahalanobis squared distance against their corresponding $\chi^2_p$ values for $p$ degrees of freedom using `heplots::cqplot()`.
+
 * **Homoscedasticity**: The error-covariance matrix $\mathbf{\Sigma}$ is constant across all observations and grouping factors.
 Graphical methods to show if this assumption is met are described in @sec-eqcov.
+
 * **Independence**: $\mathbf{\epsilon}_{i}^{\prime}$ and $\mathbf{\epsilon}_{j}^{\prime}$ are independent for $i\neq j$, so knowing the data for case $i$ gives no information about case $j$ (as would be true if the data consisted of pairs of husbands and wives); 
 * The predictors, $\mathbf{X}$, are fixed and measured without error or at least they are independent of the errors, $\Epsilon$. 
 
@@ -1795,13 +1803,76 @@ As you can see, the effects on the coefficients for `visit` and counseling` are 
 
 ## ANCOVA $\rightarrow$ MANCOVA
 
-In linear models analysis of covariance (ANCOVA) is most often used in a situation that comprises
-a multi-group or multi-factor design, but one where there are one or more continuous predictors,
-$x_1, x_2, \dots$ of an outcome $y$ that need to be taken into account. ...
+**TODO**: Consider moving this to @sec-vis-mlm and use much of the heplots MMRA vignette.
 
-**TODO**: Rohwer data here
+In univariate linear models, analysis of covariance (ANCOVA) is most often used in a situation 
+where we want to compare the mean response, $\bar{y}_j$ for different groups (defined by one or more factors), but where there are one or more quantitative predictors $\mathbf{x}_1, \dots$ that should be taken into account for our comparisons to make sense.
+The simplest case is when $\mathbf{x}$ is a pre-test score on the same measure, or when it is
+a background measure like age or level of education that we want to control for,
+to adjust differences among the groups.
+
+More generally, ANCOVA and its' multivariate MANCOVA brother
+are used for situations where the model matrix $\mathbf{X}$ contains
+a mixture of factor variables and quantitative predictors, called "covariates" in this setting.
+In this wider context, there are two flavors of analysis with different emphasis on the
+factors or the covariates.
+
+* true ANCOVA/MANOVA: Attention is centered on the differences between the group means.
+
+* homogeneity of regression: Here the focus is on the regression relations between the $\mathbf{y}$s
+and the predictors, but we might also want to determine if the regression slopes are the same for
+all groups defined by the factors.
+
+**TODO**: Complete this, explaining how MANCOVA requires equal slopes for covariates, while homogeneity of regression tests that. ...
+
+**TODO**: Needs a diagram here?
+
+<!-- Useful univariate example: 
+data('teengamb', package='faraway')
+Analysis in https://bookdown.org/dereksonderegger/571/5-ANCOVA-Chapter.html
+-->
+
+### Example: Paired-associate tasks and academic performance
+
+To what extent can simple tests of paired-associate learning[^paired-associate] predict measures of aptitude and achievement in kindergarten children? This was the question behind an experiment
+by William D. Rohwer at the University of California, Berkeley.
+
+[^paired-associate]: Paired-associate learning are among the simplest tests of memory and learning.
+The subject is given a list of pairs of words or nonsense syllables, like "banana - house" or
+"YYZ - Toronto" to learn. On subsequent trials she is given the stimulus term of each pair ("banana", "YYZ") and asked to reply with the correct response ("house", "Toronto").
+
+There were three outcome measures: A student achievement test (SAT),
+and two visually-based measures, the Peabody Picture Vocabulary test (PPVT) and the Raven
+Progressive Matrices test (Raven). Four paired-associate tasks were used, which differed in the
+syntactic and semantic relationship between the stimulus and response terms in each pair. 
+These are `n` (named), `s` (sentence), `ns` (named sentence), `na` (named action) and
+`ss` (sentence still).
+
+His data, originally from @Timm:75, p. 281,313, is given in `heplots::Rohwer`. But there's a MANCOVA wrinkle: Performance on the academic tasks is well-known to vary with socioeconomic status of the parents or the school they attend. A simple design was to collect data from children in two
+schools, one in a low SES neighborhood and the other a high SES one.
+
+<!-- Rohwer & PA tasks: track down a reference, and the PA tasks, n, na, ss, ... 
+See: https://files.eric.ed.gov/fulltext/ED053807.pdf.
+Maybe its:
+Rohwer, W.D., Jr., & Levin, J.R. Action, meaning and stimulus selection
+in paired-associate learning. Journal
+of Verbal Learning and Verbal Behavior,
+1968, 7: 137-141.
+-->
+
+
 
 ## Repeated measures designs
+
+**TODO**: Include this, if at all, for the multivariate formulation of repeated measures...
+
+Of all the assumptions described in @sec-mlm-assumptions the most fundamental is that
+of independence of the observations: There are no reasons to suspect that knowing the
+scores of subject $i$ tells you anything about subject $j$, so that their residuals
+$\epsilon_i$ and $\epsilon_j$ are uncorrelated. 
+
+That assumption goes out the window in so-called _repeated measures designs_, where each person
+is observed on the same task(s) over as series of trials, that vary by time or circumstance.
 
 
 
