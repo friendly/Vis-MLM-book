@@ -1943,19 +1943,46 @@ Figure&nbsp;10.16: Influence plot for the <code>schooldat</code> multivariate re
 </section></section><section id="ancova-rightarrow-mancova" class="level2" data-number="10.7"><h2 data-number="10.7" class="anchored" data-anchor-id="ancova-rightarrow-mancova">
 <span class="header-section-number">10.7</span> ANCOVA <span class="math inline">\(\rightarrow\)</span> MANCOVA</h2>
 <p><strong>TODO</strong>: Consider moving this to <a href="11-mlm-viz.html" class="quarto-xref"><span>Chapter 11</span></a> and use much of the heplots MMRA vignette.</p>
-<p>In univariate linear models, analysis of covariance (ANCOVA) is most often used in a situation where we want to compare the mean response, <span class="math inline">\(\bar{y}_j\)</span> for different groups (defined by one or more factors), but where there are one or more quantitative predictors <span class="math inline">\(\mathbf{x}_1, \dots\)</span> that should be taken into account for our comparisons to make sense. The simplest case is when <span class="math inline">\(\mathbf{x}\)</span> is a pre-test score on the same measure, or when it is a background measure like age or level of education that we want to control for, to adjust differences among the groups.</p>
-<p>More generally, ANCOVA and its’ multivariate MANCOVA brother are used for situations where the model matrix <span class="math inline">\(\mathbf{X}\)</span> contains a mixture of factor variables and quantitative predictors, called “covariates” in this setting. In this wider context, there are two flavors of analysis with different emphasis on the factors or the covariates.</p>
+<p>In univariate linear models, analysis of covariance (ANCOVA) is most often used in a situation where we want to compare the mean response, <span class="math inline">\(\bar{y}_j\)</span> for different groups (defined by one or more factors), but where there are one or more quantitative predictors <span class="math inline">\(\mathbf{x}_1, \dots\)</span> that should be taken into account for our comparisons to make sense. The simplest case is when <span class="math inline">\(\mathbf{x}\)</span> is a pre-test score on the same measure, or when it is a background measure like age or level of education that we want to control for, to adjust for differences among the groups.</p>
+<p>More generally, ANCOVA and its’ multivariate MANCOVA brother are used for situations where the model matrix <span class="math inline">\(\mathbf{X}\)</span> contains a mixture of factor variables and quantitative predictors, called “covariates”. In this wider context, there are two flavors of analysis with different emphasis on the factors or the covariates:</p>
 <ul>
-<li><p>true ANCOVA/MANOVA: Attention is centered on the differences between the group means.</p></li>
-<li><p>homogeneity of regression: Here the focus is on the regression relations between the <span class="math inline">\(\mathbf{y}\)</span>s and the predictors, but we might also want to determine if the regression slopes are the same for all groups defined by the factors.</p></li>
+<li><p><strong>true ANCOVA/MANOVA</strong>: Attention is centered on the differences between the group means, but controlling for any difference in the covariate(s). This requires assuming that the slopes for the groups are all the same.</p></li>
+<li><p><strong>homogeneity of regression</strong>: Here the focus is on the regression relations between the <span class="math inline">\(\mathbf{y}\)</span>s and the predictor <span class="math inline">\(\mathbf{x}\)</span>s, but we might also want to determine if the regression slopes are the same for all groups defined by the factors.</p></li>
 </ul>
-<p><strong>TODO</strong>: Complete this, explaining how MANCOVA requires equal slopes for covariates, while homogeneity of regression tests that. …</p>
-<p><strong>TODO</strong>: Needs a diagram here.</p>
+<p>In the ANCOVA flavor, the model fits additive effects of the group factor(s) and the covariate(s), while the homogeneity of regression flavor adds interaction terms between groups and the <span class="math inline">\(\mathbf{x}\)</span>s. The test for homogeneity of regression is the added effect of the interaction terms:</p>
+<pre data-code-line-numbers=""><code>mod1 &lt;- lm(y ~ Group + x)            # ANCOVA model
+mod2 &lt;- lm(y ~ Group + x + Group:x)  # allow separate slopes
+
+anova(mod1, mod2)                    # test homogeneity of regression</code></pre>
+<!-- **TODO**: Complete this, explaining how MANCOVA requires equal slopes for covariates, while homogeneity of regression tests that. ... -->
+<p><a href="#fig-ANCOVA-ex" class="quarto-xref">Figure&nbsp;<span>10.17</span></a> illustrates these cases for a hypothetical two-group design studying the the effect of an exercise program treatment on weight, recorded pre- (<span class="math inline">\(x\)</span>) and post- (<span class="math inline">\(y\)</span>) compared to a control group given no treatment. In panel (a) the slopes for the two groups are approximately equal, so the effect of treatment can be estimated by the difference in the fitted values of <span class="math inline">\(\hat{y}_i\)</span> at the average value of <span class="math inline">\(x\)</span>. In panel (b), the slope for the treated group is considerably greater than that for the control group, so the difference between the groups varies with <span class="math inline">\(x\)</span>.</p>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div id="fig-ANCOVA-ex" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-ANCOVA-ex-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="images/ANCOVA-ex.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-ANCOVA-ex-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;10.17: Two possible outcome patterns for a two-group design assessing the effect of a treatment on weight, measured pre- and post-treatment. (a) Additive effects of Group and <span class="math inline">\(x\)</span>; (b) Different slopes for the two groups. Plus signs show the means <span class="math inline">\((\bar{x}_i, \bar{y}_i)\)</span> for the two groups.
+</figcaption></figure>
+</div>
+</div>
+</div>
+<!-- Useful univariate example: 
+data('teengamb', package='faraway')
+Analysis in https://bookdown.org/dereksonderegger/571/5-ANCOVA-Chapter.html
+-->
 <section id="example-paired-associate-tasks-and-academic-performance" class="level3" data-number="10.7.1"><h3 data-number="10.7.1" class="anchored" data-anchor-id="example-paired-associate-tasks-and-academic-performance">
 <span class="header-section-number">10.7.1</span> Example: Paired-associate tasks and academic performance</h3>
-<p>To what extent can simple tests of paired-associate learning<a href="#fn7" class="footnote-ref" id="fnref7" role="doc-noteref"><sup>7</sup></a> predict measures of aptitude and achievement in kindergarten children? This was the question behind an experiment by William D. Rohwer at the University of California, Berkeley.</p>
-<p>There were three outcome measures: A student achievement test (SAT), and two visually-based measures, the Peabody Picture Vocabulary test (PPVT) and the Raven Progressive Matrices test (Raven). Four paired-associate tasks were used, which differed in the syntactic and semantic relationship between the stimulus and response terms in each pair. These are <code>n</code> (named), <code>s</code> (sentence), <code>ns</code> (named sentence), <code>na</code> (named action) and <code>ss</code> (sentence still).</p>
-<p>His data, originally from <span class="citation" data-cites="Timm:75">Timm (<a href="95-references.html#ref-Timm:75" role="doc-biblioref">1975</a>)</span>, p.&nbsp;281,313, is given in <code><a href="https://friendly.github.io/heplots/reference/Rohwer.html">heplots::Rohwer</a></code>. But there’s a MANCOVA wrinkle: Performance on the academic tasks is well-known to vary with socioeconomic status of the parents or the school they attend. A simple design was to collect data from children in two schools, one in a low SES neighborhood and the other a high SES one.</p>
+<p>To what extent can simple tests of paired-associate learning<a href="#fn7" class="footnote-ref" id="fnref7" role="doc-noteref"><sup>7</sup></a> predict measures of aptitude and achievement in kindergarten children? This was the question behind an experiment by William Rohwer at the University of California, Berkeley.</p>
+<p>There were three outcome measures, one verbal and two visually-based:</p>
+<ul>
+<li>A student achievement test (SAT),</li>
+<li>Peabody Picture Vocabulary test (PPVT),</li>
+<li>Raven Progressive Matrices test (Raven).</li>
+</ul>
+<p>Four paired-associate tasks were used, which differed in the syntactic and semantic relationship between the stimulus and response terms in each pair. These are called <em>named</em> (<code>n</code>), <em>still</em> (<code>s</code>), <em>named still</em> (<code>ns</code>), <em>named action</em> (<code>na</code>), and <em>sentence still</em> (<code>ss</code>).</p>
+<p>Rohwer’s data, taken from <span class="citation" data-cites="Timm:75">Timm (<a href="95-references.html#ref-Timm:75" role="doc-biblioref">1975</a>)</span>, is given in <code><a href="https://friendly.github.io/heplots/reference/Rohwer.html">heplots::Rohwer</a></code>. But there’s a MANCOVA wrinkle: Performance on the academic tasks is well-known to vary with socioeconomic status of the parents or the school they attend. A simple design was to collect data from children in two schools, one in a low SES neighborhood (<span class="math inline">\(n=37\)</span>) and the other a high SES one (<span class="math inline">\(n=32\)</span>). The data look like this:</p>
 <!-- Rohwer & PA tasks: track down a reference, and the PA tasks, n, na, ss, ... 
 See: https://files.eric.ed.gov/fulltext/ED053807.pdf.
 Maybe its:
@@ -1964,6 +1991,43 @@ in paired-associate learning. Journal
 of Verbal Learning and Verbal Behavior,
 1968, 7: 137-141.
 -->
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb59" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">Rohwer</span>, package <span class="op">=</span> <span class="st">"heplots"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
+<span><span class="va">Rohwer</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/sample_n.html">sample_n</a></span><span class="op">(</span><span class="fl">6</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    group SES SAT PPVT Raven n  s ns na ss</span></span>
+<span><span class="co">#&gt; 49     2  Hi  88  105    21 2 11 10 26 22</span></span>
+<span><span class="co">#&gt; 65     2  Hi  50   96    13 5  8 20 28 26</span></span>
+<span><span class="co">#&gt; 25     1  Lo   6   57    10 0  1 16 15 17</span></span>
+<span><span class="co">#&gt; 18     1  Lo  45   54    10 0  6  6 14 16</span></span>
+<span><span class="co">#&gt; 69     2  Hi  50   78    19 5 10 18 27 26</span></span>
+<span><span class="co">#&gt; 64     2  Hi  24  102    16 4 17 21 27 31</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Fit the MANCOVA model, assuming equal slopes for all predictors</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb60" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">Rohwer.mod1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">SAT</span>, <span class="va">PPVT</span>, <span class="va">Raven</span><span class="op">)</span> <span class="op">~</span> <span class="va">SES</span> <span class="op">+</span> <span class="va">n</span> <span class="op">+</span> <span class="va">s</span> <span class="op">+</span> <span class="va">ns</span> <span class="op">+</span> <span class="va">na</span> <span class="op">+</span> <span class="va">ss</span>, </span>
+<span>                 data<span class="op">=</span><span class="va">Rohwer</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova</a></span><span class="op">(</span><span class="va">Rohwer.mod1</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Type II MANOVA Tests: Pillai test statistic</span></span>
+<span><span class="co">#&gt;     Df test stat approx F num Df den Df  Pr(&gt;F)    </span></span>
+<span><span class="co">#&gt; SES  1     0.379    12.18      3     60 2.5e-06 ***</span></span>
+<span><span class="co">#&gt; n    1     0.040     0.84      3     60  0.4773    </span></span>
+<span><span class="co">#&gt; s    1     0.093     2.04      3     60  0.1173    </span></span>
+<span><span class="co">#&gt; ns   1     0.193     4.78      3     60  0.0047 ** </span></span>
+<span><span class="co">#&gt; na   1     0.231     6.02      3     60  0.0012 ** </span></span>
+<span><span class="co">#&gt; ss   1     0.050     1.05      3     60  0.3770    </span></span>
+<span><span class="co">#&gt; ---</span></span>
+<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
+<span></span>
+<span><span class="fu"><a href="https://generics.r-lib.org/reference/glance.html">glance</a></span><span class="op">(</span><span class="va">Rohwer.mod1</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 3 × 8</span></span>
+<span><span class="co">#&gt;   response r.squared sigma fstatistic numdf dendf  p.value  nobs</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;        &lt;dbl&gt; &lt;dbl&gt;      &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt; &lt;int&gt;</span></span>
+<span><span class="co">#&gt; 1 SAT          0.295 26.3        4.33     6    62 1.04e- 3    69</span></span>
+<span><span class="co">#&gt; 2 PPVT         0.628 10.6       17.5      6    62 1.02e-11    69</span></span>
+<span><span class="co">#&gt; 3 Raven        0.211  2.88       2.76     6    62 1.92e- 2    69</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 </section></section><section id="repeated-measures-designs" class="level2" data-number="10.8"><h2 data-number="10.8" class="anchored" data-anchor-id="repeated-measures-designs">
 <span class="header-section-number">10.8</span> Repeated measures designs</h2>
 <p><strong>TODO</strong>: Include this, if at all, for the multivariate formulation of repeated measures…</p>

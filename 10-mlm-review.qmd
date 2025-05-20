@@ -1809,23 +1809,49 @@ In univariate linear models, analysis of covariance (ANCOVA) is most often used 
 where we want to compare the mean response, $\bar{y}_j$ for different groups (defined by one or more factors), but where there are one or more quantitative predictors $\mathbf{x}_1, \dots$ that should be taken into account for our comparisons to make sense.
 The simplest case is when $\mathbf{x}$ is a pre-test score on the same measure, or when it is
 a background measure like age or level of education that we want to control for,
-to adjust differences among the groups.
+to adjust for differences among the groups.
 
 More generally, ANCOVA and its' multivariate MANCOVA brother
 are used for situations where the model matrix $\mathbf{X}$ contains
-a mixture of factor variables and quantitative predictors, called "covariates" in this setting.
+a mixture of factor variables and quantitative predictors, called "covariates". 
 In this wider context, there are two flavors of analysis with different emphasis on the
-factors or the covariates.
+factors or the covariates:
 
-* true ANCOVA/MANOVA: Attention is centered on the differences between the group means.
+* **true ANCOVA/MANOVA**: Attention is centered on the differences between the group means, but controlling for any difference in the covariate(s). This requires assuming that the slopes
+for the groups are all the same.
 
-* homogeneity of regression: Here the focus is on the regression relations between the $\mathbf{y}$s
-and the predictors, but we might also want to determine if the regression slopes are the same for
+* **homogeneity of regression**: Here the focus is on the regression relations between the $\mathbf{y}$s
+and the predictor $\mathbf{x}$s, but we might also want to determine if the regression slopes are the same for
 all groups defined by the factors.
 
-**TODO**: Complete this, explaining how MANCOVA requires equal slopes for covariates, while homogeneity of regression tests that. ...
+In the ANCOVA flavor, the model fits additive effects of the group factor(s) and the covariate(s),
+while the homogeneity of regression flavor adds interaction terms between groups and the $\mathbf{x}$s.  The test for homogeneity of regression is the added effect of the interaction terms:
 
-**TODO**: Needs a diagram here?
+```
+mod1 <- lm(y ~ Group + x)            # ANCOVA model
+mod2 <- lm(y ~ Group + x + Group:x)  # allow separate slopes
+
+anova(mod1, mod2)                    # test homogeneity of regression
+```
+
+<!-- **TODO**: Complete this, explaining how MANCOVA requires equal slopes for covariates, while homogeneity of regression tests that. ... -->
+
+@fig-ANCOVA-ex illustrates these cases for a hypothetical two-group design studying the
+the effect of an exercise program treatment on weight, recorded pre- ($x$) and post- ($y$)
+compared to a control group given no treatment. In panel (a) the slopes for the two groups
+are approximately equal, so the effect of treatment can be estimated by the difference
+in the fitted values of $\hat{y}_i$ at the average value of $x$. In panel (b), the slope for
+the treated group is considerably greater than that for the control group, so the difference
+between the groups varies with $x$.
+
+```{r}
+#| label: fig-ANCOVA-ex
+#| echo: false
+#| out-width: "100%"
+#| fig-cap: "Two possible outcome patterns for a two-group design assessing the effect of a treatment on weight, measured pre- and post-treatment. (a) Additive effects of Group and $x$; (b) Different slopes for the two groups. Plus signs show the means $(\\bar{x}_i, \\bar{y}_i)$ for the two groups."
+knitr::include_graphics("images/ANCOVA-ex.png")
+```
+
 
 <!-- Useful univariate example: 
 data('teengamb', package='faraway')
@@ -1835,21 +1861,25 @@ Analysis in https://bookdown.org/dereksonderegger/571/5-ANCOVA-Chapter.html
 ### Example: Paired-associate tasks and academic performance
 
 To what extent can simple tests of paired-associate learning[^paired-associate] predict measures of aptitude and achievement in kindergarten children? This was the question behind an experiment
-by William D. Rohwer at the University of California, Berkeley.
+by William Rohwer at the University of California, Berkeley.
 
 [^paired-associate]: Paired-associate learning are among the simplest tests of memory and learning.
 The subject is given a list of pairs of words or nonsense syllables, like "banana - house" or
 "YYZ - Toronto" to learn. On subsequent trials she is given the stimulus term of each pair ("banana", "YYZ") and asked to reply with the correct response ("house", "Toronto").
 
-There were three outcome measures: A student achievement test (SAT),
-and two visually-based measures, the Peabody Picture Vocabulary test (PPVT) and the Raven
-Progressive Matrices test (Raven). Four paired-associate tasks were used, which differed in the
-syntactic and semantic relationship between the stimulus and response terms in each pair. 
-These are `n` (named), `s` (sentence), `ns` (named sentence), `na` (named action) and
-`ss` (sentence still).
+There were three outcome measures, one verbal and two visually-based:
 
-His data, originally from @Timm:75, p. 281,313, is given in `heplots::Rohwer`. But there's a MANCOVA wrinkle: Performance on the academic tasks is well-known to vary with socioeconomic status of the parents or the school they attend. A simple design was to collect data from children in two
-schools, one in a low SES neighborhood and the other a high SES one.
+* A student achievement test (SAT), 
+* Peabody Picture Vocabulary test (PPVT),
+* Raven Progressive Matrices test (Raven). 
+
+Four paired-associate tasks were used, which differed in the
+syntactic and semantic relationship between the stimulus and response terms in each pair. 
+These are called *named* (`n`), *still* (`s`), *named still* (`ns`), 
+*named action* (`na`), and *sentence still* (`ss`).
+
+Rohwer's data, taken  from @Timm:75, is given in `heplots::Rohwer`. But there's a MANCOVA wrinkle: Performance on the academic tasks is well-known to vary with socioeconomic status of the parents or the school they attend. A simple design was to collect data from children in two
+schools, one in a low SES neighborhood ($n=37$) and the other a high SES one ($n=32$). The data look like this:
 
 <!-- Rohwer & PA tasks: track down a reference, and the PA tasks, n, na, ss, ... 
 See: https://files.eric.ed.gov/fulltext/ED053807.pdf.
@@ -1860,6 +1890,21 @@ of Verbal Learning and Verbal Behavior,
 1968, 7: 137-141.
 -->
 
+```{r, rohwer-some}
+data(Rohwer, package = "heplots")
+set.seed(42)
+Rohwer |> dplyr::sample_n(6)
+```
+
+Fit the MANCOVA model, assuming equal slopes for all predictors
+
+```{r}
+Rohwer.mod1 <- lm(cbind(SAT, PPVT, Raven) ~ SES + n + s + ns + na + ss, 
+                 data=Rohwer)
+Anova(Rohwer.mod1)
+
+glance(Rohwer.mod1)
+```
 
 
 ## Repeated measures designs
