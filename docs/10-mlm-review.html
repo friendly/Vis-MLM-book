@@ -401,7 +401,8 @@ window.Quarto = {
 <li><a href="#example-paired-associate-tasks-and-academic-performance" id="toc-example-paired-associate-tasks-and-academic-performance" class="nav-link" data-scroll-target="#example-paired-associate-tasks-and-academic-performance"><span class="header-section-number">10.7.1</span> Example: Paired-associate tasks and academic performance</a></li>
   </ul>
 </li>
-  <li><a href="#repeated-measures-designs" id="toc-repeated-measures-designs" class="nav-link" data-scroll-target="#repeated-measures-designs"><span class="header-section-number">10.8</span> Repeated measures designs</a></li>
+  <li><a href="#separate-models" id="toc-separate-models" class="nav-link" data-scroll-target="#separate-models"><span class="header-section-number">10.8</span> Separate models</a></li>
+  <li><a href="#repeated-measures-designs" id="toc-repeated-measures-designs" class="nav-link" data-scroll-target="#repeated-measures-designs"><span class="header-section-number">10.9</span> Repeated measures designs</a></li>
   </ul><div class="toc-actions"><ul><li><a href="https://github.com/friendly/vis-MLM-book/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
@@ -1952,8 +1953,9 @@ Figure&nbsp;10.16: Influence plot for the <code>schooldat</code> multivariate re
 <p>In the ANCOVA flavor, the model fits additive effects of the group factor(s) and the covariate(s), while the homogeneity of regression flavor adds interaction terms between groups and the <span class="math inline">\(\mathbf{x}\)</span>s. The test for homogeneity of regression is the added effect of the interaction terms:</p>
 <pre data-code-line-numbers=""><code>mod1 &lt;- lm(y ~ Group + x)            # ANCOVA model
 mod2 &lt;- lm(y ~ Group + x + Group:x)  # allow separate slopes
+mod2 &lt;- lm(y ~ Group * x)            # same as above
 
-anova(mod1, mod2)                    # test homogeneity of regression</code></pre>
+anova(mod1, mod2)            # test homogeneity of regression</code></pre>
 <!-- **TODO**: Complete this, explaining how MANCOVA requires equal slopes for covariates, while homogeneity of regression tests that. ... -->
 <p><a href="#fig-ANCOVA-ex" class="quarto-xref">Figure&nbsp;<span>10.17</span></a> illustrates these cases for a hypothetical two-group design studying the the effect of an exercise program treatment on weight, recorded pre- (<span class="math inline">\(x\)</span>) and post- (<span class="math inline">\(y\)</span>) compared to a control group given no treatment. In panel (a) the slopes for the two groups are approximately equal, so the effect of treatment can be estimated by the difference in the fitted values of <span class="math inline">\(\hat{y}_i\)</span> at the average value of <span class="math inline">\(x\)</span>. In panel (b), the slope for the treated group is considerably greater than that for the control group, so the difference between the groups varies with <span class="math inline">\(x\)</span>.</p>
 <div class="cell" data-layout-align="center">
@@ -1982,7 +1984,7 @@ Analysis in https://bookdown.org/dereksonderegger/571/5-ANCOVA-Chapter.html
 <li>Raven Progressive Matrices test (Raven).</li>
 </ul>
 <p>Four paired-associate tasks were used, which differed in the syntactic and semantic relationship between the stimulus and response terms in each pair. These are called <em>named</em> (<code>n</code>), <em>still</em> (<code>s</code>), <em>named still</em> (<code>ns</code>), <em>named action</em> (<code>na</code>), and <em>sentence still</em> (<code>ss</code>).</p>
-<p>Rohwer’s data, taken from <span class="citation" data-cites="Timm:75">Timm (<a href="95-references.html#ref-Timm:75" role="doc-biblioref">1975</a>)</span>, is given in <code><a href="https://friendly.github.io/heplots/reference/Rohwer.html">heplots::Rohwer</a></code>. But there’s a MANCOVA wrinkle: Performance on the academic tasks is well-known to vary with socioeconomic status of the parents or the school they attend. A simple design was to collect data from children in two schools, one in a low SES neighborhood (<span class="math inline">\(n=37\)</span>) and the other a high SES one (<span class="math inline">\(n=32\)</span>). The data look like this:</p>
+<p>Rohwer’s data, taken from <span class="citation" data-cites="Timm:75">Timm (<a href="95-references.html#ref-Timm:75" role="doc-biblioref">1975</a>)</span>, is given in <code><a href="https://friendly.github.io/heplots/reference/Rohwer.html">heplots::Rohwer</a></code>. But there’s a MANCOVA wrinkle: Performance on the academic tasks is well-known to vary with socioeconomic status of the parents or the school they attend. A simple design was to collect data from children in two schools, one in a low SES neighborhood (<span class="math inline">\(n=37\)</span>) and the other an upper-class high SES one (<span class="math inline">\(n=32\)</span>). The data look like this:</p>
 <!-- Rohwer & PA tasks: track down a reference, and the PA tasks, n, na, ss, ... 
 See: https://files.eric.ed.gov/fulltext/ED053807.pdf.
 Maybe its:
@@ -2003,9 +2005,13 @@ of Verbal Learning and Verbal Behavior,
 <span><span class="co">#&gt; 69     2  Hi  50   78    19 5 10 18 27 26</span></span>
 <span><span class="co">#&gt; 64     2  Hi  24  102    16 4 17 21 27 31</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Fit the MANCOVA model, assuming equal slopes for all predictors</p>
+<section id="mancova-model" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="mancova-model">MANCOVA model</h4>
+<p>First, I fit the MANCOVA model that allows a test of different means for the two SES groups on the responses, but constrains the slopes for the PA covariates to be equal. Only two of the PA tasks (<code>na</code> and <code>ns</code>) show significant effects in the multivariate tests.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb60" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">Rohwer.mod1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">SAT</span>, <span class="va">PPVT</span>, <span class="va">Raven</span><span class="op">)</span> <span class="op">~</span> <span class="va">SES</span> <span class="op">+</span> <span class="va">n</span> <span class="op">+</span> <span class="va">s</span> <span class="op">+</span> <span class="va">ns</span> <span class="op">+</span> <span class="va">na</span> <span class="op">+</span> <span class="va">ss</span>, </span>
+<div class="sourceCode" id="cb60" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># Make SES == 'Lo' the reference category</span></span>
+<span><span class="va">Rohwer</span><span class="op">$</span><span class="va">SES</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/relevel.html">relevel</a></span><span class="op">(</span><span class="va">Rohwer</span><span class="op">$</span><span class="va">SES</span>, ref <span class="op">=</span> <span class="st">"Lo"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">Rohwer.mod1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">SAT</span>, <span class="va">PPVT</span>, <span class="va">Raven</span><span class="op">)</span> <span class="op">~</span> <span class="va">SES</span> <span class="op">+</span> <span class="va">n</span> <span class="op">+</span> <span class="va">s</span> <span class="op">+</span> <span class="va">ns</span> <span class="op">+</span> <span class="va">na</span> <span class="op">+</span> <span class="va">ss</span>, </span>
 <span>                 data<span class="op">=</span><span class="va">Rohwer</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova</a></span><span class="op">(</span><span class="va">Rohwer.mod1</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -2018,18 +2024,117 @@ of Verbal Learning and Verbal Behavior,
 <span><span class="co">#&gt; na   1     0.231     6.02      3     60  0.0012 ** </span></span>
 <span><span class="co">#&gt; ss   1     0.050     1.05      3     60  0.3770    </span></span>
 <span><span class="co">#&gt; ---</span></span>
-<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
-<span></span>
-<span><span class="fu"><a href="https://generics.r-lib.org/reference/glance.html">glance</a></span><span class="op">(</span><span class="va">Rohwer.mod1</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # A tibble: 3 × 8</span></span>
-<span><span class="co">#&gt;   response r.squared sigma fstatistic numdf dendf  p.value  nobs</span></span>
-<span><span class="co">#&gt;   &lt;chr&gt;        &lt;dbl&gt; &lt;dbl&gt;      &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt; &lt;int&gt;</span></span>
-<span><span class="co">#&gt; 1 SAT          0.295 26.3        4.33     6    62 1.04e- 3    69</span></span>
-<span><span class="co">#&gt; 2 PPVT         0.628 10.6       17.5      6    62 1.02e-11    69</span></span>
-<span><span class="co">#&gt; 3 Raven        0.211  2.88       2.76     6    62 1.92e- 2    69</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-</section></section><section id="repeated-measures-designs" class="level2" data-number="10.8"><h2 data-number="10.8" class="anchored" data-anchor-id="repeated-measures-designs">
-<span class="header-section-number">10.8</span> Repeated measures designs</h2>
+<p>You can also examine the tests of the univariate ANCOVA models for each of the responses using <code><a href="https://generics.r-lib.org/reference/glance.html">glance()</a></code> or <code><a href="https://friendly.github.io/heplots/reference/uniStats.html">heplots::uniStats()</a></code>. All are significantly related, but the <code>PPVT</code> measure has the largest <span class="math inline">\(R^2\)</span> by far.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb61" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://friendly.github.io/heplots/reference/uniStats.html">uniStats</a></span><span class="op">(</span><span class="va">Rohwer.mod1</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Univariate tests for responses in the multivariate linear model Rohwer.mod1 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;         R^2     F df1 df2 Pr(&gt;F)    </span></span>
+<span><span class="co">#&gt; SAT   0.295  4.33   6  62  0.001 ** </span></span>
+<span><span class="co">#&gt; PPVT  0.628 17.47   6  62  1e-11 ***</span></span>
+<span><span class="co">#&gt; Raven 0.211  2.76   6  62  0.019 *  </span></span>
+<span><span class="co">#&gt; ---</span></span>
+<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Bivariate coefficient plots for the paired associate tasks are shown in <a href="#fig-rohwer-mod1-coef" class="quarto-xref">Figure&nbsp;<span>10.18</span></a>. (The coefficients for the group variable <code>SES</code> are on a different scale and so are omitted here.) From this you can see that the named still and named action tasks have opposite signs: contrary to expectations, <code>ns</code> is negatively associated with the measures of aptitude and achievement (when the other predictors are adjusted for).</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb62" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://friendly.github.io/heplots/reference/coefplot.html">coefplot</a></span><span class="op">(</span><span class="va">Rohwer.mod1</span>, parm <span class="op">=</span> <span class="fl">2</span><span class="op">:</span><span class="fl">6</span>,</span>
+<span>         fill <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>         level <span class="op">=</span> <span class="fl">0.68</span>,</span>
+<span>         cex.lab <span class="op">=</span> <span class="fl">1.5</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://friendly.github.io/heplots/reference/coefplot.html">coefplot</a></span><span class="op">(</span><span class="va">Rohwer.mod1</span>, parm <span class="op">=</span> <span class="fl">2</span><span class="op">:</span><span class="fl">6</span>, variables <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">3</span><span class="op">)</span>,</span>
+<span>         fill <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>         level <span class="op">=</span> <span class="fl">0.68</span>,</span>
+<span>         cex.lab <span class="op">=</span> <span class="fl">1.5</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-rohwer-mod1-coef" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-rohwer-mod1-coef-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/ch10/fig-rohwer-mod1-coef-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-rohwer-mod1-coef-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;10.18: Bivariate coefficient plots for the MANCOVA model with confidence ellipses of 68% coverage.
+</figcaption></figure>
+</div>
+</div>
+</div>
+<p><strong>TODO</strong>: For interpretation, it would be nice to know how many items were used for each of the PA tasks. The range of <code>na</code> goes up to 35, but others are less.</p>
+</section><section id="adjusted-means" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="adjusted-means">Adjusted means</h4>
+<p>From the analysis of covariance perspective, interest is often centered on estimating the differences between the group means, but adjusting or controlling for differences on the covariates. From the table of means below, you can see that the high SES group performs better on all three response variables, but this group also has higher scores on the paired associate tasks.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb63" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">means</span> <span class="op">&lt;-</span> <span class="va">Rohwer</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">SES</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise_all.html">summarise_all</a></span><span class="op">(</span><span class="va">mean</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 2 × 10</span></span>
+<span><span class="co">#&gt;   SES   group   SAT  PPVT Raven     n     s    ns    na    ss</span></span>
+<span><span class="co">#&gt;   &lt;fct&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1 Lo        1  31.3  62.6  13.2  2.54  6.92  13.5  22.4  18.4</span></span>
+<span><span class="co">#&gt; 2 Hi        2  47.7  83.1  15    4.59  7.25  14.5  24.3  21.5</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The adjusted mean differences are simply the values estimated by the coefficients for <code>SES</code> in the model. These are smaller than the differences between the observed means.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb64" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">means</span><span class="op">[</span><span class="fl">2</span>, <span class="fl">3</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span> <span class="op">-</span> <span class="va">means</span><span class="op">[</span><span class="fl">1</span>, <span class="fl">3</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span>  </span>
+<span><span class="co">#&gt;    SAT PPVT Raven</span></span>
+<span><span class="co">#&gt; 1 16.4 20.4  1.76</span></span>
+<span></span>
+<span><span class="co"># adjusted means</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">Rohwer.mod1</span><span class="op">)</span><span class="op">[</span><span class="fl">2</span>,<span class="op">]</span></span>
+<span><span class="co">#&gt;   SAT  PPVT Raven </span></span>
+<span><span class="co">#&gt;  8.80 16.88  1.59</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section><section id="homogeneity-of-regression" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="homogeneity-of-regression">Homogeneity of regression</h4>
+<p>The MANCOVA model, <code>Rohwer.mod1</code>, has relatively simple interpretations (a large effect of <code>SES</code>, with <code>ns</code> and <code>na</code> as the major predictors) but the test of the <code>SES</code> effect relies on the assumption of homogeneity of slopes for the predictors. We can test this assumption as follows, by adding interactions of <code>SES</code> with each of the covariates:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb65" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">Rohwer.mod2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">SAT</span>, <span class="va">PPVT</span>, <span class="va">Raven</span><span class="op">)</span> <span class="op">~</span> <span class="va">SES</span> <span class="op">*</span> <span class="op">(</span><span class="va">n</span> <span class="op">+</span> <span class="va">s</span> <span class="op">+</span> <span class="va">ns</span> <span class="op">+</span> <span class="va">na</span> <span class="op">+</span> <span class="va">ss</span><span class="op">)</span>,</span>
+<span>                  data<span class="op">=</span><span class="va">Rohwer</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova</a></span><span class="op">(</span><span class="va">Rohwer.mod2</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Type II MANOVA Tests: Pillai test statistic</span></span>
+<span><span class="co">#&gt;        Df test stat approx F num Df den Df  Pr(&gt;F)    </span></span>
+<span><span class="co">#&gt; SES     1     0.391    11.78      3     55 4.5e-06 ***</span></span>
+<span><span class="co">#&gt; n       1     0.079     1.57      3     55 0.20638    </span></span>
+<span><span class="co">#&gt; s       1     0.125     2.62      3     55 0.05952 .  </span></span>
+<span><span class="co">#&gt; ns      1     0.254     6.25      3     55 0.00100 ***</span></span>
+<span><span class="co">#&gt; na      1     0.307     8.11      3     55 0.00015 ***</span></span>
+<span><span class="co">#&gt; ss      1     0.060     1.17      3     55 0.32813    </span></span>
+<span><span class="co">#&gt; SES:n   1     0.072     1.43      3     55 0.24417    </span></span>
+<span><span class="co">#&gt; SES:s   1     0.099     2.02      3     55 0.12117    </span></span>
+<span><span class="co">#&gt; SES:ns  1     0.118     2.44      3     55 0.07383 .  </span></span>
+<span><span class="co">#&gt; SES:na  1     0.148     3.18      3     55 0.03081 *  </span></span>
+<span><span class="co">#&gt; SES:ss  1     0.057     1.12      3     55 0.35094    </span></span>
+<span><span class="co">#&gt; ---</span></span>
+<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>It appears from the above that there is only weak evidence of unequal slopes from the separate <code>SES:</code> terms; only that for <code>SES:na</code> is individually significant. The evidence for heterogeneity is stronger, however, when these terms are tested <em>collectively</em> using <code><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">linearHypothesis()</a></code>. I use a small <code><a href="https://rdrr.io/r/base/grep.html">grep()</a></code> trick here to find the interaction terms, which have a <code>":"</code> in their names.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb66" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># test interaction terms jointly</span></span>
+<span><span class="va">coefs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">Rohwer.mod2</span><span class="op">)</span><span class="op">)</span> </span>
+<span><span class="va">interactions</span> <span class="op">&lt;-</span> <span class="va">coefs</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html">grep</a></span><span class="op">(</span><span class="st">":"</span>, <span class="va">coefs</span><span class="op">)</span><span class="op">]</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">linearHypothesis</a></span><span class="op">(</span><span class="va">Rohwer.mod2</span>, <span class="va">interactions</span><span class="op">)</span>, SSP<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Multivariate Tests: </span></span>
+<span><span class="co">#&gt;                  Df test stat approx F num Df den Df Pr(&gt;F)   </span></span>
+<span><span class="co">#&gt; Pillai            5     0.418     1.85     15    171 0.0321 * </span></span>
+<span><span class="co">#&gt; Wilks             5     0.624     1.89     15    152 0.0277 * </span></span>
+<span><span class="co">#&gt; Hotelling-Lawley  5     0.539     1.93     15    161 0.0240 * </span></span>
+<span><span class="co">#&gt; Roy               5     0.385     4.38      5     57 0.0019 **</span></span>
+<span><span class="co">#&gt; ---</span></span>
+<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section></section></section><section id="separate-models" class="level2" data-number="10.8"><h2 data-number="10.8" class="anchored" data-anchor-id="separate-models">
+<span class="header-section-number">10.8</span> Separate models</h2>
+<p>Model <code>Rohwer.mod2</code> with all interaction terms essentially fits a separate slope for each of the low and high SES groups for all responses with each of the predictor PA tasks. This is similar in spirit to what we would get if we fit a separate multivariate regression model for each of the groups, but parameterized differently. This approach is <em>not</em> generally recommended because it lacks power (smaller sample sizes in each group than a combined analysis) and does not allow hypotheses about equality of slopes and intercepts to be tested directly. …</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb67" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">rohwer.sesHi</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">SAT</span>, <span class="va">PPVT</span>, <span class="va">Raven</span><span class="op">)</span> <span class="op">~</span> <span class="va">n</span> <span class="op">+</span> <span class="va">s</span> <span class="op">+</span> <span class="va">ns</span> <span class="op">+</span> <span class="va">na</span> <span class="op">+</span> <span class="va">ss</span>, data<span class="op">=</span><span class="va">Rohwer</span>, </span>
+<span>                  subset<span class="op">=</span><span class="va">SES</span><span class="op">==</span><span class="st">"Hi"</span><span class="op">)</span></span>
+<span><span class="va">rohwer.sesLo</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">SAT</span>, <span class="va">PPVT</span>, <span class="va">Raven</span><span class="op">)</span> <span class="op">~</span> <span class="va">n</span> <span class="op">+</span> <span class="va">s</span> <span class="op">+</span> <span class="va">ns</span> <span class="op">+</span> <span class="va">na</span> <span class="op">+</span> <span class="va">ss</span>, data<span class="op">=</span><span class="va">Rohwer</span>, </span>
+<span>                  subset<span class="op">=</span><span class="va">SES</span><span class="op">==</span><span class="st">"Lo"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section><section id="repeated-measures-designs" class="level2" data-number="10.9"><h2 data-number="10.9" class="anchored" data-anchor-id="repeated-measures-designs">
+<span class="header-section-number">10.9</span> Repeated measures designs</h2>
 <p><strong>TODO</strong>: Include this, if at all, for the multivariate formulation of repeated measures…</p>
 <p>Of all the assumptions described in <a href="#sec-mlm-assumptions" class="quarto-xref"><span>Section 10.1.1</span></a> the most fundamental is that of independence of the observations: There are no reasons to suspect that knowing the scores of subject <span class="math inline">\(i\)</span> tells you anything about subject <span class="math inline">\(j\)</span>, so that their residuals <span class="math inline">\(\epsilon_i\)</span> and <span class="math inline">\(\epsilon_j\)</span> are uncorrelated.</p>
 <p>That assumption goes out the window in so-called <em>repeated measures designs</em>, where each person is observed on the same task(s) over as series of trials, that vary by time or circumstance.</p>

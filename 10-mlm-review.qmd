@@ -1830,8 +1830,9 @@ while the homogeneity of regression flavor adds interaction terms between groups
 ```
 mod1 <- lm(y ~ Group + x)            # ANCOVA model
 mod2 <- lm(y ~ Group + x + Group:x)  # allow separate slopes
+mod2 <- lm(y ~ Group * x)            # same as above
 
-anova(mod1, mod2)                    # test homogeneity of regression
+anova(mod1, mod2)            # test homogeneity of regression
 ```
 
 <!-- **TODO**: Complete this, explaining how MANCOVA requires equal slopes for covariates, while homogeneity of regression tests that. ... -->
@@ -1879,7 +1880,7 @@ These are called *named* (`n`), *still* (`s`), *named still* (`ns`),
 *named action* (`na`), and *sentence still* (`ss`).
 
 Rohwer's data, taken  from @Timm:75, is given in `heplots::Rohwer`. But there's a MANCOVA wrinkle: Performance on the academic tasks is well-known to vary with socioeconomic status of the parents or the school they attend. A simple design was to collect data from children in two
-schools, one in a low SES neighborhood ($n=37$) and the other a high SES one ($n=32$). The data look like this:
+schools, one in a low SES neighborhood ($n=37$) and the other an upper-class high SES one ($n=32$). The data look like this:
 
 <!-- Rohwer & PA tasks: track down a reference, and the PA tasks, n, na, ss, ... 
 See: https://files.eric.ed.gov/fulltext/ED053807.pdf.
@@ -1896,14 +1897,120 @@ set.seed(42)
 Rohwer |> dplyr::sample_n(6)
 ```
 
-Fit the MANCOVA model, assuming equal slopes for all predictors
+#### MANCOVA model {.unnumbered}
+
+First, I fit the MANCOVA model that allows a test of different means for the two SES groups on the responses, but constrains the slopes for the PA covariates to be equal. Only two of the PA tasks (`na` and `ns`) show
+significant effects in the multivariate tests.
 
 ```{r}
+# Make SES == 'Lo' the reference category
+Rohwer$SES <- relevel(Rohwer$SES, ref = "Lo")
+
 Rohwer.mod1 <- lm(cbind(SAT, PPVT, Raven) ~ SES + n + s + ns + na + ss, 
                  data=Rohwer)
 Anova(Rohwer.mod1)
+```
 
-glance(Rohwer.mod1)
+You can also examine the tests of the univariate ANCOVA models for each of the responses using `glance()`
+or `heplots::uniStats()`. All are significantly related, but the `PPVT` measure has the largest $R^2$ by far.
+
+```{r}
+uniStats(Rohwer.mod1)
+```
+
+Bivariate coefficient plots for the paired associate tasks are shown in @fig-rohwer-mod1-coef.
+(The coefficients for the group variable `SES` are on a different scale and so are omitted here.)
+From this you can see that the named still and named action tasks have opposite signs: contrary to expectations,
+`ns` is negatively associated with the measures of aptitude and achievement (when the other predictors are adjusted for).
+```{r echo = -1}
+#| label: fig-rohwer-mod1-coef
+#| fig-width: 10
+#| fig-height: 5
+#| out-width: "100%"
+#| fig-cap: "Bivariate coefficient plots for the MANCOVA model with confidence ellipses of 68% coverage."
+op <- par(mar = c(4,4,1,1)+.1, mfrow = c(1,2))
+coefplot(Rohwer.mod1, parm = 2:6,
+         fill = TRUE,
+         level = 0.68,
+         cex.lab = 1.5)
+coefplot(Rohwer.mod1, parm = 2:6, variables = c(1,3),
+         fill = TRUE,
+         level = 0.68,
+         cex.lab = 1.5)
+```
+
+**TODO**: For interpretation, it would be nice to know how many items were used for each of the PA tasks. The range of `na` goes up to 35, but others are less.
+
+#### Adjusted means {.unnumbered}
+
+From the analysis of covariance perspective, interest is often centered on estimating the differences between
+the group means, but adjusting or controlling for differences on the covariates. From the table of means
+below, you can see that the high SES group performs better on all three response variables, but this group
+also has higher scores on the paired associate tasks.
+
+```{r rohwer-means}
+means <- Rohwer |>
+  group_by(SES) |>
+  summarise_all(mean) |>
+  print()
+```
+
+The adjusted mean differences are simply the values estimated by the coefficients for `SES` in the model.
+These are smaller than the differences between the observed means.
+```{r}
+means[2, 3:5] - means[1, 3:5]  
+
+# adjusted means
+coef(Rohwer.mod1)[2,]
+```
+
+
+#### Homogeneity of regression {.unnumbered}
+
+The MANCOVA model, `Rohwer.mod1`, has relatively simple interpretations
+(a large effect of `SES`, with `ns` and `na` as the major predictors)
+but the test of the `SES` effect relies on the assumption of homogeneity of slopes for the predictors.
+We can test this assumption as follows, by adding interactions of `SES`
+with each of the covariates:
+
+
+```{r}
+Rohwer.mod2 <- lm(cbind(SAT, PPVT, Raven) ~ SES * (n + s + ns + na + ss),
+                  data=Rohwer)
+Anova(Rohwer.mod2)
+```
+
+It appears from the above that there is only weak evidence of unequal slopes
+from the separate `SES:` terms; only that for `SES:na` is individually significant.
+The evidence for heterogeneity is
+stronger, however, when these terms are tested _collectively_ using 
+`linearHypothesis()`. I use a small `grep()` trick here to find the interaction terms, which have a `":"` in their names.
+
+```{r, rohwer-mod2-test}
+# test interaction terms jointly
+coefs <- rownames(coef(Rohwer.mod2)) 
+interactions <- coefs[grep(":", coefs)]
+
+print(linearHypothesis(Rohwer.mod2, interactions), SSP=FALSE)
+```
+
+
+
+## Separate models
+
+Model `Rohwer.mod2` with all interaction terms essentially fits a separate slope for each of the low and high SES groups
+for all responses with each of the predictor PA tasks. This is similar in spirit to what we would get if we fit a separate 
+multivariate regression model for each of the groups, but parameterized differently. 
+This approach is *not* generally recommended because it
+lacks power (smaller sample sizes in each group than a combined analysis)
+and does not allow hypotheses about equality of slopes and intercepts
+to be tested directly. ...
+
+```{r, rohwer-separate}
+rohwer.sesHi <- lm(cbind(SAT, PPVT, Raven) ~ n + s + ns + na + ss, data=Rohwer, 
+                  subset=SES=="Hi")
+rohwer.sesLo <- lm(cbind(SAT, PPVT, Raven) ~ n + s + ns + na + ss, data=Rohwer, 
+                  subset=SES=="Lo")
 ```
 
 
