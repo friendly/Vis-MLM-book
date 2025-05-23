@@ -1611,7 +1611,7 @@ car::some(school_long, n=8)
 ```
 
 With this data structure, each scatterplot is a plot of a `y` against and `x`, and 
-we can facet using `facet_grid(yvar ~ xvar)`.
+we can facet this using `facet_grid(yvar ~ xvar)`, giving @fig-schooldata-scats.
 
 
 ```{r}
@@ -1870,9 +1870,9 @@ The subject is given a list of pairs of words or nonsense syllables, like "banan
 
 There were three outcome measures, one verbal and two visually-based:
 
-* A student achievement test (SAT), 
-* Peabody Picture Vocabulary test (PPVT),
-* Raven Progressive Matrices test (Raven). 
+* A student achievement test (`SAT`), 
+* Peabody Picture Vocabulary test (`PPVT`),
+* Raven Progressive Matrices test (`Raven`). 
 
 Four paired-associate tasks were used, which differed in the
 syntactic and semantic relationship between the stimulus and response terms in each pair. 
@@ -1897,10 +1897,51 @@ set.seed(42)
 Rohwer |> dplyr::sample_n(6)
 ```
 
+Following the scheme for reshaping the data used in @fig-schooldata-scats, a set of scatterplots of
+each predictor against each response will give a useful initial look at the data. There's a lot to
+see here, so the plot in @fig-Rohwer-scats focuses attention on the regression lines for the two groups
+and their data ellipses.
+
+```{r}
+#| label: fig-Rohwer-scats
+#| code-fold: true
+#| fig-width: 10
+#| fig-height: 6
+#| out-width: "100%"
+#| fig-cap: "Scatterplots of each of the three response variables against each of the five predictors in the `Rohwer` dataset."
+yvars <- c("SAT", "PPVT", "Raven" )      # outcome variables
+xvars <- c("n", "s", "ns", "na", "ss")   # predictors
+
+Rohwer_long <- Rohwer %>%
+  dplyr::select(-group) |>
+  tidyr::pivot_longer(cols = all_of(xvars), 
+                      names_to = "xvar", values_to = "x") |>
+  tidyr::pivot_longer(cols = all_of(yvars), 
+                      names_to = "yvar", values_to = "y") |>
+  dplyr::mutate(xvar = factor(xvar, levels = xvars),
+                yvar = factor(yvar, levels = yvars))
+
+ggplot(Rohwer_long, aes(x, y, color = SES, shape = SES, fill = SES)) +
+  geom_jitter(size=0.8) +
+  geom_smooth(method = "lm", 
+              se = FALSE, 
+              formula = y ~ x, 
+              linewidth = 1.5) +
+  stat_ellipse(geom = "polygon", alpha = 0.1) +
+  labs(x = "Predictor (PA task)",
+       y = "Response (Academic)") +
+  facet_grid(yvar ~ xvar,            # plot matrix of Y by X
+             scales = "free") +
+  theme_bw(base_size = 16) +
+  theme(legend.position = "bottom")
+```
+
+You can see here that the high-SES group generally performs better than the low group. The regression
+lines have similar slopes in some of the panels, but not all. The low SES group also appears to have larger variance on most of the PA tasks.
+
 #### MANCOVA model {.unnumbered}
 
-First, I fit the MANCOVA model that allows a test of different means for the two SES groups on the responses, but constrains the slopes for the PA covariates to be equal. Only two of the PA tasks (`na` and `ns`) show
-significant effects in the multivariate tests.
+Nevertheless, I fit the MANCOVA model that allows a test of different means for the two SES groups on the responses, but constrains the slopes for the PA covariates to be equal. Only two of the PA tasks (`na` and `ns`) show individually significant effects in the multivariate tests.
 
 ```{r}
 # Make SES == 'Lo' the reference category
@@ -1918,7 +1959,7 @@ or `heplots::uniStats()`. All are significantly related, but the `PPVT` measure 
 uniStats(Rohwer.mod1)
 ```
 
-Bivariate coefficient plots for the paired associate tasks are shown in @fig-rohwer-mod1-coef.
+To help interpret these effects, bivariate coefficient plots for the paired associate tasks are shown in @fig-rohwer-mod1-coef.
 (The coefficients for the group variable `SES` are on a different scale and so are omitted here.)
 From this you can see that the named still and named action tasks have opposite signs: contrary to expectations,
 `ns` is negatively associated with the measures of aptitude and achievement (when the other predictors are adjusted for).
@@ -1964,6 +2005,7 @@ means[2, 3:5] - means[1, 3:5]
 coef(Rohwer.mod1)[2,]
 ```
 
+**TODO**: do this with a CI for the effects
 
 #### Homogeneity of regression {.unnumbered}
 
@@ -1984,7 +2026,7 @@ It appears from the above that there is only weak evidence of unequal slopes
 from the separate `SES:` terms; only that for `SES:na` is individually significant.
 The evidence for heterogeneity is
 stronger, however, when these terms are tested _collectively_ using 
-`linearHypothesis()`. I use a small `grep()` trick here to find the interaction terms, which have a `":"` in their names.
+`linearHypothesis()`. I use a small `grep()` trick here to find the interaction terms, which have a ":" in their names.
 
 ```{r, rohwer-mod2-test}
 # test interaction terms jointly
@@ -1996,21 +2038,25 @@ print(linearHypothesis(Rohwer.mod2, interactions), SSP=FALSE)
 
 
 
-## Separate models
+
+#### Separate models {.unnumbered}
 
 Model `Rohwer.mod2` with all interaction terms essentially fits a separate slope for each of the low and high SES groups
-for all responses with each of the predictor PA tasks. This is similar in spirit to what we would get if we fit a separate 
-multivariate regression model for each of the groups, but parameterized differently. 
-This approach is *not* generally recommended because it
-lacks power (smaller sample sizes in each group than a combined analysis)
+for all responses with each of the predictor PA tasks. This is similar in spirit to what we would get if we fit a separate  multivariate regression model for each of the groups, but parameterized differently:
+it gives separate slope estimates for each of the groups rather than estimates of the difference
+in slopes.
+
+This approach is *not* generally recommended for testing hypotheses because it
+lacks power (smaller sample sizes in each group than in a combined analysis)
 and does not allow hypotheses about equality of slopes and intercepts
-to be tested directly. ...
+to be tested directly. Here, I simply illustrate the mechanics of fitting separate models
+using the `subset` argument to `lm()`. 
 
 ```{r, rohwer-separate}
-rohwer.sesHi <- lm(cbind(SAT, PPVT, Raven) ~ n + s + ns + na + ss, data=Rohwer, 
-                  subset=SES=="Hi")
-rohwer.sesLo <- lm(cbind(SAT, PPVT, Raven) ~ n + s + ns + na + ss, data=Rohwer, 
-                  subset=SES=="Lo")
+Rohwer.sesHi <- lm(cbind(SAT, PPVT, Raven) ~ n + s + ns + na + ss, 
+                   data=Rohwer, subset = SES=="Hi")
+Rohwer.sesLo <- lm(cbind(SAT, PPVT, Raven) ~ n + s + ns + na + ss, 
+                   data=Rohwer, subset = SES=="Lo")
 ```
 
 

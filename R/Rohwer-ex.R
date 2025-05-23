@@ -2,6 +2,7 @@ library(heplots)
 library(broom)
 library(car)
 library(dplyr)
+library(purrr)
 
 data(Rohwer, package = "heplots")
 # Make SES == 'Lo' the reference category
@@ -61,4 +62,17 @@ interactions <- coefs[grep(":", coefs)]
 
 print(linearHypothesis(rohwer.mod2, interactions), SSP=FALSE)
 
+# separate models
 
+Rohwer.sesHi <- lm(cbind(SAT, PPVT, Raven) ~ n + s + ns + na + ss, 
+                   data=Rohwer, subset = SES=="Hi")
+Rohwer.sesLo <- lm(cbind(SAT, PPVT, Raven) ~ n + s + ns + na + ss, 
+                   data=Rohwer, subset = SES=="Lo")
+
+Anova(Rohwer.sesHi)
+Anova(Rohwer.sesLo)
+
+# use nested data?
+Rohwer |>
+  nest_by(SES) |>
+  mutate(model = map(data, function(df) lm(cbind(SAT, PPVT, Raven) ~ n + s + ns + na + ss), data=df))
