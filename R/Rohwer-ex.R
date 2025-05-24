@@ -29,6 +29,7 @@ coefplot(Rohwer.mod1, parm = 2:6, variables = c(1,3),
          cex.lab = 1.5)
 par(op)
 
+# Compare observed mean diff with adjusted
 means <- Rohwer |>
   group_by(SES) |>
   summarise_all(mean) |>
@@ -38,6 +39,15 @@ means[2, 3:5] - means[1, 3:5]
 
 # adjusted means
 coef(Rohwer.mod1)[2,]
+
+library(lmtest)
+ct <- coeftest(Rohwer.mod1) 
+broom::tidy(ct)
+
+confint(ct, parm = c(2,9,12))
+confint(ct, parm = rownames(ct) %>% grep("SES", .))
+
+
 
 #coefplot(mod1, lwd=2, fill=TRUE, parm=(1:5),
 #' 	main="Bivariate 68% coefficient plot for SAT and PPVT", level=0.68)

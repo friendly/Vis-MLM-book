@@ -41,3 +41,13 @@ ggplot(Rohwer_long, aes(x, y, color = SES, shape = SES)) +
              scales = "free") +
   theme_bw(base_size = 16) +
   theme(legend.position = "bottom")
+
+# try GGally::ggduo
+library(GGally)
+
+# doesn't have a panel function like ggpairs(lower=, upper=)
+ggduo(data = Rohwer,
+      mapping = ggplot2::aes(color = SES),
+      columnsX = c("SAT", "PPVT", "Raven" ),
+      columnsY = c("n", "s", "ns", "na", "ss")) +
+  geom_smooth(method = lm, formula = y~x)
