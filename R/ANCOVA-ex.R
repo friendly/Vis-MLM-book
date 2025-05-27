@@ -2,6 +2,7 @@
 
 library(ggplot2)
 library(patchwork)
+library(dplyr)
 
 
 
@@ -59,4 +60,17 @@ sstable <- car::Anova(lm(post_weight ~ pre_weight + Group), type = 3)
 sstable$pes <- c(sstable$'Sum Sq'[-nrow(sstable)], NA)/(sstable$'Sum Sq' + sstable$'Sum Sq'[nrow(sstable)]) # SS for each effect divided by the last SS (SS_residual)
 
 sstable
+
+library(equatiomatic)
+
+df <- df |>
+  rename(pre = pre_weight,
+         post = post_weight,
+         post2 = post_weight2)
+# ANCOVA model
+mod <- lm(post2 ~ Group + pre, data = df)
+extract_eq(mod)
+
+mod2 <- lm(post2 ~ Group * pre, data = df)
+extract_eq(mod2)
 
