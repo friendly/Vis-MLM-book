@@ -197,6 +197,7 @@ par(op)
 heplot(school.can2,
        fill = TRUE, fill.alpha = 0.2,
        var.col = "red", 
-       asp = NA, scale = 0.2,
-       prefix="Y canonical dimension")
+       asp = NA, scale = 0.25,
+       cex.lab = 1.5, cex = 1.25,
+       prefix="Y canonical dimension ")
 

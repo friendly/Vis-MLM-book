@@ -108,7 +108,7 @@ Rexpr = function(expr, digits = 3) {
 
 #' colorize text: 
 # use inline as `r colorize(text, color)` to print `text` in a given `color`
-# can also be used to color a color name, as in r colorize("red")`
+# can also be used to color a color name, as in `r colorize("red")`
 #
 
 #' Render text in color using LaTeX or CSS styles
