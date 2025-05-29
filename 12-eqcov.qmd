@@ -20,9 +20,10 @@ ANOVA setting to the analogous multivariate (MANOVA) setting. Such tests are a r
 Beyond issues of model assumptions, 
 the question of equality of covariance matrices is often of general interest itself. For instance,
 variability is often an important issue in studies of strict equivalence in laboratories comparing across  multiple patient measurements and in other applied contexts [see @Gastwirth-etal:2009 for other exemplars].
+
 Moreover the outcome of such tests often have important consequences
 for the details of a main method of analysis.  Just as the Welsh $t$-test [@Welch:1947] is now commonly
-used and reported for a two-group test of differences in means under unequal variances,
+used and reported for a two-group test of differences in means under _unequal_ variances,
 a preliminary test of equality of covariance matrices is often used in discriminant analysis
 to decide whether linear (LDA) or quadratic discriminant analysis (QDA) should be applied in a
 given problem. In such cases, the data at hand should inform the choice of statistical analysis to utilize.
@@ -36,7 +37,7 @@ We provide some answers to the following questions:
   
 - **Low-D views**:  When there are more than a few response variables, what low-dimensional
   views can show the most interesting properties related to the equality of covariance matrices?
-  Projecting the data into the space of the principal components serves well again here. Surprisingly, we will see that the small dimensions contain useful information about differences among the group covariance matrices.
+  Projecting the data into the space of the principal components serves well again here. Surprisingly, we will see that the _small dimensions_ contain useful information about differences among the group covariance matrices, similar to what we find for outlier detection.
   
 - **Other statistics**: Box's $M$-test is most widely used. Are there other worthwhile test statistics? We will see that graphics methods suggest alternatives.
 
@@ -44,9 +45,11 @@ The following subsections provide a capsule summary of the issues in this topic.
 Most of the discussion is couched in terms of a one-way design for simplicity,
 but the same ideas can apply to two-way (and higher) designs, where a "group" factor
 is defined as the product combination (interaction) of two or more factor
-variables. When there are also numeric covariates, this topic can also be extended
-to the multivariate analysis of covariance (MANCOVA) setting. This can be 
-accomplished by applying these techniques to the residuals from predictions by 
+variables. 
+
+When there are also numeric covariates, this topic can also be extended
+to the multivariate analysis of covariance (MANCOVA) setting. This is
+accomplished simply by applying these techniques to the residuals from predictions by 
 the covariates alone.
 
 **Packages**
@@ -120,8 +123,11 @@ like so:
 ```{r levene-peng1}
 data(peng, package = "heplots")
 leveneTest(bill_length ~ species, data=peng)
-  # ...
+
+# ...
+
 leveneTest(body_mass ~ species, data=peng)
+
 ```
 
 
@@ -140,7 +146,7 @@ So, this tells us that the groups do not differ in variances on first three vari
 ## Visualizing Levene's test {#sec-mlevene}
 
 To gain some insight into the problem of homogeneity of variance it is helpful how the situation looks in terms of data.
-For the Penguin data, it might be simplest just boxplots of the variables and try to see whether the 
+For the Penguin data, it might be simplest just just to look at boxplots of the variables and try to see whether the 
 **widths** of the
 central 50% boxes seem to be the same, as in @fig-peng-boxplots.
 However, it is perceptually difficult to focus on differences with widths of
@@ -173,7 +179,7 @@ peng_long |>
   theme(legend.position = 'none') 
 ```
 
-Instead, you can see more _directly_ what is tested by the Levene test by graphing the absolute deviations from the group means or medians. This is another example of the graphic idea that to make visual comparisons easier
+Instead, you can see more _directly_ what is tested by the Levene test by graphing the _absolute deviations_ from the group means or medians. This is another example of the graphic idea that to make visual comparisons easier
 by plotting quantities of direct interest.
 You can calculate these values as follows:
 
@@ -184,7 +190,7 @@ pengDevs <- colDevs(peng[, vars], peng$species, median) |>
 ```
 
 From a boxplot of the absolute deviations in @fig-peng-devplots your eye can now focus on the central
-value, shown by the median '|' line, because Levene's method is testing whether these differ
+value, shown by the **median** '|' line, because Levene's method is testing whether these differ
 across groups.
 
 ```{r}
@@ -229,7 +235,8 @@ $$
 $$
 This is much stronger than in the univariate case, because it also requires that all the correlations between pairs of variables are the same for all groups. For example, for two responses, there are three
 parameters ($\rho, \sigma_1^2, \sigma_2^2$) assumed equal across all groups; for $p$ responses, there
-are $p (p+1) / 2$ assumed equal.
+are $p (p+1) / 2$ assumed equal. The variances relate to _size_ differences among data ellipses
+while the differences in the covariances appear as differences in _shape_.
 
 <!--
 For example, in the case of two responses,
@@ -258,8 +265,16 @@ $$
 
 To preview the main example, @fig-peng-covEllipse0 shows data ellipses for the
 main size variables in the `palmerpenguins::penguins` data.
+`heplots::covEllipses()` is specialized for viewing the relations among 
+the data ellipsoids representing the sample covariance matrices,
+$\mathbf{S}_1 = \mathbf{S}_2 = \cdots = \mathbf{S}_g$.
+It draws the data ellipse for each group, and also for the pooled within-group
+$\mathbf{S}_p$, as shown in @fig-peng-covEllipse0 for bill length and bill depth.
 
-To view the relations ...
+You can see that the sizes and shapes of the data ellipses are sort of similar
+in the left panel. The visual comparison becomes more precise when the data
+ellipses are all shifted to a common origin at the grand means (using `center = TRUE`).
+From this you can see that the Adelie group differs most from the others.
 
 ```{r}
 #| label: fig-peng-covEllipse0
@@ -288,10 +303,12 @@ covEllipses(cbind(bill_length, bill_depth) ~ species, data=peng,
 par(op)
 ```
 
-All pairs:
+All pairwise plots in scatterplot matrix format are produced using the `variables` argument.
 ```{r}
 #| label: fig-peng-covEllipse-pairs
 #| fig-align: center
+#| fig-width: 8
+#| fig-height: 8
 #| out-width: "100%"
 #| code-fold: show
 #| fig-cap: "All pairwise covariance ellipses for the penguins data."
@@ -312,18 +329,21 @@ boxM(cbind(bill_length, bill_depth, flipper_length, body_mass) ~ species, data=p
 ```
 
 
-## Assessing heterogeneity of covariance matrices: Box's M test {#sec-boxM}
+## Testing heterogeneity of covariance matrices: Box's M test {#sec-boxM}
 
-@Box:1949 proposed the following likelihood-ratio test (LRT) statistic for testing the
+@Box:1949 proposed the following likelihood-ratio test (LRT) statistic $\mathcal{M}$ for testing the
 hypothesis of equal covariance matrices,
 $$
-M = (N -g) \ln \;|\; \mathbf{S}_p \;|\; - \sum_{i=1}^g (n_i -1) \ln \;|\; \mathbf{S}_i \;|\; \; ,
-$$ {eq-boxm}
+\mathcal{M} = (N -g) \ln \;|\; \mathbf{S}_p \;|\; - \sum_{i=1}^g (n_i -1) \ln \;|\; \mathbf{S}_i \;|\; \; ,
+$$ {#eq-boxm}
 
 where $N = \sum n_i$ is the total sample size and
-$\mathbf{S}_p = (N-g)^{-1} \sum_{i=1}^g (n_i - 1) \mathbf{S}_i$ 
+
+$$\mathbf{S}_p = (N-g)^{-1} \sum_{i=1}^g (n_i - 1) \mathbf{S}_i$$
+
 is the pooled covariance matrix.
-$M$ can thus be thought of as a ratio of the determinant of the pooled $\mathbf{S}_p$
+
+$\mathcal{M}$ can thus be thought of as a ratio of the determinant of the pooled $\mathbf{S}_p$
 to the geometric mean of the determinants of the separate $\mathbf{S}_i$.
 
 In practice, there are various transformations of the value of $M$ to yield a
@@ -331,10 +351,10 @@ test statistic with an approximately known distribution [@Timm:75].
 Roughly speaking, when each $n_i > 20$, a $\chi^2$ approximation is often used;
 otherwise an $F$ approximation is known to be more accurate.
 
-Asymptotically, $-2 \ln (M)$ has a $\chi^2$ distribution. The $\chi^2$ approximation
+Asymptotically, $-2 \ln (\mathcal{M})$ has a $\chi^2$ distribution. The $\chi^2$ approximation
 due to Box [-@Box:1949; -@Box:1950] is that
 $$
-X^2 = -2 (1-c_1) \ln (M) \quad \sim \quad \chi^2_{df}
+X^2 = -2 (1-c_1) \ln (\mathcal{M}) \quad \sim \quad \chi^2_{df}
 $$
 with $df = (g-1) p (p+1)/2$ degrees of freedom, and a bias correction constant:
 $$
@@ -374,6 +394,23 @@ $\mathbf{S}_i$ together with that of the pooled $\mathbf{S}_p$. Extensions of th
 
 (c) the connection between Levene-type tests and an ANOVA (of centered absolute differences) suggests a parallel with a multivariate extension of Levene-type tests and a MANOVA.  We explore this with a version of
 Hypothesis-Error (HE) plots we have found useful for visualizing mean differences in MANOVA designs.
+
+## Visualizing Box's $\mathcal{M}$
+
+Box's test is based on a comparison of the log determinants of the $\mathbf{S}_i$ relative to that of the pooled $\mathbf{S}_p$, so the simplest thing to do is just plot them!
+
+## Low-rank views
+
+With $p>3$ response variables, a simple alternative to the pairwise 2D projections shown in 
+\figref{fig:iris-cov-pairs2} is the projection into the principal component space accounting for the
+greatest amounts of total variance in the data.
+For the Iris data, a simple PCA of the covariance matrix shows that nearly 98\% of total variance in the data
+is accounted for in the first two dimensions.
+
+## Other measures of heterogeneity
+
+
+**Packages used here**
 
 ```{r write-pkgs}
 #| echo: false

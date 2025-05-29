@@ -974,7 +974,7 @@ names(school.can2)
 
 You can use the `plot()` method or `heplot()` method to visualize and help interpret the results.
 The `plot()` method plots the canonical `scores$X` against the `scores$Y` for a given dimension
-(selected by the `which` argument):
+(selected by the `which` argument). The `id.n` argument gives a way to flag noteworthy observations.
 
 ```{r echo=-(1:2)}
 #| label: fig-school-can
@@ -1010,7 +1010,7 @@ $\rho = 0.997$.
 #| fig-width: 8
 #| fig-height: 8
 #| out-width: "70%"
-#| fig-cap: "Plots of canonical scores on the first canonical dimension for the `schooldata`, including the influential cases."
+#| fig-cap: "Plots of canonical scores on the first canonical dimension for the `schooldata`, including the influential cases, which stand out as so far frome the rest of the observations."
 school.can <- cancor(cbind(reading, mathematics, selfesteem) ~
                        education + occupation + visit + counseling + teacher,
                      data=schooldata)
@@ -1057,15 +1057,16 @@ typically manipulated by the `scale` argument to provide better visual resolutio
 ## MANCOVA models
 
 HE plots for designs containing a collection of quantitative predictors and one or more factors
-are a bit more challenging when you allow _separate_ slopes for groups on all quantitative 
-variables, because there get to be too many terms to usefully display. But these models are complicated!
+are quite simple in MANCOVA models where the effects are additive, i.e., don't involve interactions.
+They are a bit more challenging when you allow _separate_ slopes for groups on all quantitative 
+variables, because there get to be too many terms to usefully display. But these models are more complicated!
 
 If the evidence for heterogeneity of regressions is not very strong, it is still useful
 to fit the MANCOVA model and display it in an HE plot.
 
 An alternative is to fit separate models for the groups and display these as HE plots.
-As noted earlier (@sec-PA-tasks), this is not ideal for testing hypotheses, but provides a useful and informative
-display of the relations between the predictors and responses and the groups effect.
+As noted earlier (@sec-PA-tasks), this is not ideal for testing hypotheses, but provides a useful and informative display of the relations between the predictors and responses and the groups effect.
+I illustrate these approaches for the Rohwer data, encountered in @sec-PA-tasks, below.
 
 ### Example: Rohwer data
 
@@ -1088,7 +1089,7 @@ is added to the basic plot using the `hypotheses` argument.
 ```{r}
 #| label: fig-rohwer-HE-mod1-pairs
 #| fig-width: 10
-#| fig-height: 8
+#| fig-height: 9
 #| out-width: "100%"
 #| fig-cap: "All-pairs HE plot for SAT, PPVT and Raven using the MANCOVA model. The ellipses labeled ‘Regr’ show the test of the overall effect of the quantitative predictors."
 colors <- c("red", "blue", rep("black",5), "#969696")
@@ -1146,17 +1147,20 @@ heplot(Rohwer.mod2, col=c(colors, "darkgreen"),
 
 #### Separate models {.unnumbered}
 
-An alternative representation is to use submodels for the two groups separately.
-Here I make use of the fact that several HE plots can be overlaid using the option `add=TRUE` as shown in @fig-rohwer-HE-lohi.
-The axis limits may need adjustment in the first plot so that the second one will fit.
+When there is heterogeneity of regressions,
+using submodels for each of the groups has the advantage that you can easily visualize the slopes for
+the predictors in each of the groups, particularly if you overlay the individual HE plots.
+In this example, I'm using the models `Rohwer.sesLo` and `Rohwer.sesLo` fit to each of the groups.
 
-
-```{r echo=FALSE}
+```{r rohwer-submodels}
 Rohwer.sesLo <- lm(cbind(SAT, PPVT, Raven) ~ n + s + ns + na + ss, 
                    data=Rohwer, subset = SES=="Lo")
 Rohwer.sesHi <- lm(cbind(SAT, PPVT, Raven) ~ n + s + ns + na + ss, 
                    data=Rohwer, subset = SES=="Hi")
 ```
+
+Here I make use of the fact that several HE plots can be overlaid using the option `add=TRUE` as shown in @fig-rohwer-HE-lohi.
+The axis limits may need adjustment in the first plot so that the second one will fit.
 
 
 
@@ -1165,6 +1169,7 @@ Rohwer.sesHi <- lm(cbind(SAT, PPVT, Raven) ~ n + s + ns + na + ss,
 #| fig-width: 6
 #| fig-height: 6
 #| out-width: "70%"
+#| fig-cap: "Overlaid HE plots for SAT and PPVT, for the low and high SES groups, when each group is fit separately."
 heplot(Rohwer.sesLo, 
        xlim = c(0,100),               # adjust axis limits
        ylim = c(40,110), 
@@ -1180,7 +1185,18 @@ heplot(Rohwer.sesHi,
        lwd=2, cex=1.2)
 ```
 
-We can readily see the difference in means for the two SES groups (Hi has greater scores on both variables) and it also appears that the slopes of the predictor ellipses are shallower for the High than the Low group, indicating greater relation with the SAT score.
+We can readily see the difference in means for the two SES groups (Hi has greater scores on both variables) and it also appears that the slopes of the `s` and `n` predictor ellipses are shallower for the High than the Low group, indicating greater relation with the SAT score. As well, the error ellipses show that on these measures, error variation is somewhat smaller in the low SES group.
+
+## Chapter summary
+
+**TODO**: Insert chapter summary
+
+* This chapter explains and illustrates the use of HE plots for understanding the effects and significance tests of model terms in multivariate linear models for factor predictors (MANOVA), quantitative predictors
+(MMRA) and models for mixtures of these types, that I've collectively called MANCOVA models.
+
+*
+
+*
 
 **Packages**:
 

@@ -148,7 +148,7 @@ peng.boxm <- boxM(cbind(bill_length, bill_depth, flipper_length, body_mass) ~ sp
 peng.boxm
 
 op <- par(mar=c(4,5,1,1)+.1)
-plot(peng.boxm, gplabel="Species")
+plot(peng.boxm, gplabel="Species", cex.lab = 1.5)
 par(op)
 
 #' ## View in PCA space
