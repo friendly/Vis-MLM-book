@@ -17,6 +17,8 @@ library(heplots)
 library(car)    # actually, loaded by heplots
 data(iris)
 
+iris.colors <- c("red", "darkgreen", "blue")
+
 #' ## Initial scatterplots and data ellipses
 
 op <- par(mfcol=c(1,2), mar=c(5,4,1,1)+.1)
@@ -46,9 +48,12 @@ covEllipses(iris[,1:4], iris$Species,
 	fill=c(rep(FALSE,3), TRUE), variables=1:4, 
 	fill.alpha=.1)
 
-covEllipses(iris[,1:4], iris$Species, center=TRUE,
-	fill=c(rep(FALSE,3), TRUE), variables=1:4, 
-	label.pos=c(1:3,0), fill.alpha=.1)
+covEllipses(iris[,1:4], iris$Species, 
+  variables=1:4, 
+  fill = TRUE,
+	fill.alpha=.1,
+	col = c(iris.colors, "black"),
+	label.pos=c(1:3,0))
 
 
 #' ## view in PCA space   
@@ -59,12 +64,17 @@ summary(iris.pca)
 
 op <- par(mfcol=c(1,2), mar=c(5,4,1,1)+.1)
 covEllipses(iris.pca$x, iris$Species, 
-	fill=c(rep(FALSE,3), TRUE), 
-	label.pos=1:4, fill.alpha=.1, asp=1)
+  col = c(iris.colors, "black"),
+	fill=TRUE, fill.alpha=.1,
+  cex.lab = 1.5,
+	label.pos = c(1, 3, 3, 0), asp=1)
 
-covEllipses(iris.pca$x, iris$Species, 
-	fill=c(rep(FALSE,3), TRUE), center=TRUE,
-	label.pos=1:4, fill.alpha=.1, asp=1)
+covEllipses(iris.pca$x, iris$Species,
+  center=TRUE,        
+  col = c(iris.colors, "black"),
+  fill=TRUE, fill.alpha=.1,
+  cex.lab = 1.5,
+  label.pos = c(1, 3, 3, 0), asp=1)
 par(op)
 
 # all variables
@@ -85,13 +95,34 @@ covEllipses(iris.pca$x, iris$Species,
 	fill=c(rep(FALSE,3), TRUE), center=TRUE, variables=3:4, 
 	label.pos=c(1:3,0), fill.alpha=.1, asp=1)
 
+# do these side-by-side, with iris colors
+op <- par(mfcol=c(1,2), mar=c(5,4,1,1)+.1)
+covEllipses(iris.pca$x, iris$Species, 
+            variables = 3:4,
+            col = c(iris.colors, "black"),
+            fill=TRUE, fill.alpha=.1,
+            cex.lab = 1.5,
+            label.pos = c(1, 3, 3, 0), asp=1)
+
+covEllipses(iris.pca$x, iris$Species,
+            variables = 3:4,
+            center=TRUE,        
+            col = c(iris.colors, "black"),
+            fill=TRUE, fill.alpha=.1,
+            cex.lab = 1.5,
+            label.pos = c(1, 3, 3, 0), asp=1)
+par(op)
+
 
 #' ## compare classical and robust covariance estimates
 covEllipses(iris[,1:4], iris$Species)
 covEllipses(iris[,1:4], iris$Species, fill=TRUE, method="mve", add=TRUE, labels="")
 
-#' Box's M test 	
-iris.boxm <- boxM(iris[, 1:4], iris[, "Species"])
+#' Box's M test 
+iris.mod <- lm(cbind(Sepal.Length + Sepal.Width + Petal.Length + Petal.Width) ~ Species,
+               data = iris)	
+iris.boxm <- boxM( cbind(Sepal.Length, Sepal.Width, Petal.Length, Petal.Width) ~ Species, data=iris)
+
 iris.boxm
 
 op <- par(mar=c(4,5,1,1)+.1)
