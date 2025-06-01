@@ -129,6 +129,15 @@ op <- par(mar=c(4,5,1,1)+.1)
 plot(iris.boxm, gplabel="Species", cex.lab = 1.5)
 par(op)
 
+op <- par(mfrow=c(2,2), mar=c(5,4,1,1))
+plot(iris.boxm, which="product", gplabel="Species")
+plot(iris.boxm, which="sum", gplabel="Species")
+plot(iris.boxm, which="precision", gplabel="Species")
+plot(iris.boxm, which="max", gplabel="Species")
+par(op)
+
+
+
 #' covEllipses has a method for `"boxm"` objects
 covEllipses(iris.boxm, fill=c(rep(FALSE,3), TRUE) )
 covEllipses(iris.boxm, fill=c(rep(FALSE,3), TRUE), center=TRUE, label.pos=1:4 )

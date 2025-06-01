@@ -151,6 +151,14 @@ op <- par(mar=c(4,5,1,1)+.1)
 plot(peng.boxm, gplabel="Species", cex.lab = 1.5)
 par(op)
 
+op <- par(mfrow=c(2,2), mar=c(5,4,1,1))
+plot(peng.boxm, which="product", gplabel="Species")
+plot(peng.boxm, which="sum", gplabel="Species")
+plot(peng.boxm, which="precision", gplabel="Species")
+plot(peng.boxm, which="max", gplabel="Species")
+par(op)
+
+
 #' ## View in PCA space
 #'
 peng.pca <- prcomp(peng[, 3:6], scale = TRUE) 

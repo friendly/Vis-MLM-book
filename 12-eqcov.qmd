@@ -149,7 +149,7 @@ So, this tells us that the groups do not differ in variances on first three vari
 
 ## Visualizing Levene's test {#sec-mlevene}
 
-To gain some insight into the problem of homogeneity of variance it is helpful how the situation looks in terms of data.
+To gain some insight into the problem of homogeneity of variance it is helpful so see how the situation looks in terms of data.
 For the Penguin data, it might be simplest just just to look at boxplots of the variables and try to see whether the 
 **widths** of the
 central 50% boxes seem to be the same, as in @fig-peng-boxplots.
@@ -183,9 +183,9 @@ peng_long |>
   theme(legend.position = 'none') 
 ```
 
-Instead, you can see more _directly_ what is tested by the Levene test by graphing the _absolute deviations_ from the group means or medians. This is another example of the graphic idea that to make visual comparisons easier
+Instead, you can see more _directly_ what is tested by the Levene test by graphing the _absolute deviations_ from the group means or medians. This is another example of the graphic idea that you can make visual comparisons easier
 by plotting quantities of direct interest.
-You can calculate these values as follows:
+You can calculate the median deviation values as follows:
 
 ```{r}
 vars <- c("bill_length", "bill_depth", "flipper_length", "body_mass")
@@ -267,7 +267,7 @@ $$
 
 <!-- **Insert** pairs covEllipses for penguins data -->
 
-To preview the main example, @fig-peng-covEllipse0 shows data ellipses for the
+To preview a main example, @fig-peng-covEllipse0 shows data ellipses for the
 main size variables in the `palmerpenguins::penguins` data.
 `heplots::covEllipses()` is specialized for viewing the relations among 
 the data ellipsoids representing the sample covariance matrices,
@@ -288,7 +288,7 @@ From this you can see that the Adelie group differs most from the others.
 #| out-width: "100%"
 #| code-fold: true
 #| code-summary: "See the code"
-#| fig-cap: "Data ellipses for bill length and bill depth in the penguins data, also showing the pooled covariance. Left: As is; right: centered at the grand means for easier comparison."
+#| fig-cap: "Data ellipses for bill length and bill depth in the penguins data, also showing the pooled covariance. Left: As is; right: these are centered at the grand means for easier comparison."
 op <- par(mar = c(4, 4, 1, 1) + .5,
           mfrow = c(c(1,2)))
 covEllipses(cbind(bill_length, bill_depth) ~ species, data=peng,
@@ -307,7 +307,7 @@ covEllipses(cbind(bill_length, bill_depth) ~ species, data=peng,
 par(op)
 ```
 
-All pairwise plots in scatterplot matrix format are produced using the `variables` argument, giving
+All such pairwise plots in scatterplot matrix format are produced using the `variables` argument to `covEllipses()`, giving
 @fig-peng-covEllipse-pairs
 ```{r}
 #| label: fig-peng-covEllipse-pairs
@@ -338,7 +338,7 @@ peng.boxm <- boxM(cbind(bill_length, bill_depth, flipper_length, body_mass)
 ```
 
 
-It will be useful to have another example as we proceed, so @fig-iris-covEllipse-pairs shows an analogous plot for the iris data we examined in @sec-he-plot-matrices. Even when these are shown uncentered,
+It will be useful to have another example as we proceed, so @fig-iris-covEllipse-pairs shows an analogous plot for the iris data we examined in @sec-HEplot-matrices. Even when these are shown uncentered,
 the differences in size, shape and orientation are much more apparent. Iris _setosa_ stands out as
 having smaller variance on some of the variables, while the ellipses for _virginica_ tend to be larger.
 
@@ -520,7 +520,7 @@ so we might think we are done here. Yet, as we've seen in other problems
 (outliers, collinearity), important information also exists in the space of the _smallest_ principal component dimensions.
 
 This is also true, as we will see for Box's M test, because it is a (linear) function of all the eigenvalues
-of the between and within group covariance matrices, is therefore also subject to the influence of the smaller dimensions, where differences among $\mat{S}_i$ and of $\mat{S}_p$ can lurk.
+of the between and within group covariance matrices, is therefore also subject to the influence of the smaller dimensions, where differences among $\mathbf{S}_i$ and of $\mathbf{S}_p$ can lurk.
 
 ```{r echo=-1}
 #| label: fig-iris-pca-covellipses-dim34
@@ -546,6 +546,56 @@ other two groups.
 
 ## Other measures of heterogeneity
 
+As we saw above @sec-homogeneity-MANOVA, the question of equality of covariance matrices
+can be expressed in terms of the similarity in size and shape of the data ellipses
+for the individual group $\mathbf{S}_i$ relative to that of $\mathbf{S}_p$.
+Box's $\mathcal{M}$ test uses just one possible function to describe this size: the logs of their determinants.
+
+When $\mathbf{\Sigma}$ is the covariance matrix of a multivariate vector $\vec{y}$ with eigenvalues
+$\lambda_1 \ge \lambda_2 \ge \dots \lambda_p$,
+the properties shown in @tab-eigval-ellipse represent methods of describing the size and shape of the ellipsoid in $\Real{p}$.
+More general theory and statistical applications of the geometry of ellispoids is given by
+@Friendly-etal:ellipses:2013.
+
+```{=latex}
+#| label: tab-eigval-ellipse
+\begin{table}[!htb]
+\caption{Statistical and geometrical properties of ``size'' of an ellipsoid}\label{tab:ell-size}
+\begin{tabular}{llll}
+    Size                   &  Conceptual formula                    & Geometry       & Function \\
+\hline
+(a) Generalized variance:  & $\det{\mathbf{\Sigma}} = \prod_i \lambda_i$ & area, (hyper)volume & geometric mean\\  
+(b) Average variance:        & $\text{tr}({\mathbf{\Sigma}}) = \sum_i \lambda_i $ & linear sum & arithmetic mean\\     %% superscripts turned to subscripts / GM
+(c) Average precision:        & $1/ \text{tr}({\mathbf{\Sigma}^{-1}}) = 1/\sum_i (1/\lambda_i) $ &  & harmonic mean\\
+(d) Maximal variance:      & $\lambda_1$ & maximum dimension & supremum
+ \end{tabular}
+\end{table}
+```
+Hence, for a sample covariance matrix $\mathbf{S}$, $\vert \mathbf{S} \vert$ is a measure of generalized variance and
+$\ln \vert \mathbf{S} \vert$ is a measure of average variance across the $p$ dimensions.
+
+The `"boxM"` plot methods in `r `\pkg{"heplots"}` can compute and plot all of the functions of the eigenvalues 
+in @tab-eigval-ellipse.  The results are shown in @fig-peng-boxm-plots.
+
+```{r echo=-1}
+#| label: fig-peng-boxm-plots
+#| #| fig-show: "hold"
+#| fig-height: 10
+#| fig-width: 8
+#| out-width: "100%"
+#| fig-cap: "Plot of eigenvalue statistics of the covariance matrices for the Penguin data"
+op <- par(mfrow=c(2,2), mar=c(5,4,1,1))
+plot(peng.boxm, which="product", gplabel="Species")
+plot(peng.boxm, which="sum", gplabel="Species")
+plot(peng.boxm, which="precision", gplabel="Species")
+plot(peng.boxm, which="max", gplabel="Species")
+```
+
+Except for the absence of error bars, the plot for log product in the upper left panel of
+@fig-peng-boxm-plots is the same as that in @fig-peng-iris-boxm-plots.  In principle, it is possible to add such confidence intervals for all these measures through the use of bootstrapping, but this has not yet been implemented.
+
+For this data set, the pattern of points in the plot for Box's $\mathcal{M}$ is also more or less the same 
+as that for the precision measure. The plots for the sum of and maximum eigenvalue are also similar to each other, but differ from those of the two measures in the left column of @fig-peng-boxm-plots. The main point is that these are not _all the same_, so different functions reflect different patterns of the eigenvalues.
 
 **Packages used here**
 
