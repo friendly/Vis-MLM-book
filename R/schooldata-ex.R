@@ -23,20 +23,24 @@ res
 library(MVN)
 residuals <- residuals(school.mod)
 
-school.mvn.hz <- mvn(residuals, mvnTest = "hz")  # `hz` test default
-school.mvn.hz$multivariateNormality
+school.mvn.hz <- mvn(residuals, mvn_test = "hz")  # `hz` test default
+school.mvn.hz$multivariate_normality
 
-school.mvn.mardia <- mvn(residuals, mvnTest = "mardia")
-school.mvn.mardia$multivariateNormality
-school.mvn.mardia$univariateNormality
+school.mvn <- mvn(residuals, mvn_test = "mardia")
+school.mvn$multivariate_normality
+school.mvn$univariate_normality
+
+# or
+summary(school.mvn, select = "mvn")
+summary(school.mvn, select = "univariate")
 
 # try to fix
-mardia.result <- school.mvn.mardia$multivariateNormality
-mardia.result$Statistic <- as.numeric(mardia.result$Statistic)
-mardia.result$`p value` <- as.numeric(mardia.result$`p value`)
-mardia.result
+# mardia.result <- school.mvn.mardia$multivariateNormality
+# mardia.result$Statistic <- as.numeric(mardia.result$Statistic)
+# mardia.result$`p value` <- as.numeric(mardia.result$`p value`)
+# mardia.result
 
-univar.result <- school.mvn.mardia$univariateNormality
+univar.result <- school.mvn.mardia$univariate_normality
 str(univar.result)
 
 

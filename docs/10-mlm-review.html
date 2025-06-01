@@ -426,7 +426,7 @@ window.Quarto = {
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/friendly/matlib">matlib</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggrepel.slowkow.com/">ggrepel</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/friendly/mvinfluence">mvinfluence</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">MVN</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://selcukorkmaz.github.io/mvn-tutorial/">MVN</a></span><span class="op">)</span></span>
 <span><span class="co"># set ggplot theme</span></span>
 <span><span class="co">#ggplot2::theme_set(theme_bw(base_size = 14))</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
@@ -1855,21 +1855,19 @@ Figure&nbsp;10.15: <span class="math inline">\(\chi^2\)</span> QQ plot of the re
 </div>
 </div>
 <p>So, you can see that among the cases that stood out in the <code><a href="https://friendly.github.io/heplots/reference/cqplot.html">cqplot()</a></code> of the observed variables (<a href="#fig-schooldata-cqplot" class="quarto-xref">Figure&nbsp;<span>10.13</span></a>), only case 35 attracts attention here, and it is well within the confidence band. Case 59, which was the largest in all the pairwise scatterplots (<a href="#fig-schooldata-scats" class="quarto-xref">Figure&nbsp;<span>10.14</span></a>) seems not unusual in the fitted model. It is a high-leverage point, but appeared to be well-fitted in all the simple regressions, except in those for <code>teacher</code>.</p>
-<p><strong>TODO</strong>: Results from MVN package are too unweildly here. Replace with something different.</p>
 <p>It is useful to contrast this with what we get from formal tests that the residuals are <em>strictly</em> multivariate normal. The <span style="color: brown;"><strong>MVN</strong></span> package <span class="citation" data-cites="R-MVN">(<a href="95-references.html#ref-R-MVN" role="doc-biblioref">Korkmaz et al., 2021</a>)</span> provides <code><a href="https://rdrr.io/pkg/MVN/man/mvn.html">mvn()</a></code> for this, which performs a wide variety of normality tests. The most widely used of these is due to <span class="citation" data-cites="Mardia:1974">Mardia (<a href="95-references.html#ref-Mardia:1974" role="doc-biblioref">1974</a>)</span>, which gives multivariate tests of skewness (lack of symmetry) and kurtosis (length of the tails).</p>
 <p>Applying this to the <strong>residuals</strong> from the schools multivariate regression shows that multivariate normality is rejected here. Based on other evidence, this doesn’t seem particularly troubling.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb54" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">school.mvn.mardia</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/MVN/man/mvn.html">mvn</a></span><span class="op">(</span><span class="va">residuals</span>, mvnTest <span class="op">=</span> <span class="st">"mardia"</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb54" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">school.mvn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/MVN/man/mvn.html">mvn</a></span><span class="op">(</span><span class="va">residuals</span>, mvn_test <span class="op">=</span> <span class="st">"mardia"</span><span class="op">)</span></span>
 <span><span class="co"># print multivariate and univariate tests</span></span>
-<span><span class="va">school.mvn.mardia</span><span class="op">$</span><span class="va">multivariateNormality</span></span>
-<span><span class="co">#&gt;              Test        Statistic           p value Result</span></span>
-<span><span class="co">#&gt; 1 Mardia Skewness 1.92115580916202 0.750257629435775    YES</span></span>
-<span><span class="co">#&gt; 2 Mardia Kurtosis -1.1651516770826 0.243957601939425    YES</span></span>
-<span><span class="co">#&gt; 3             MVN             &lt;NA&gt;              &lt;NA&gt;    YES</span></span>
-<span><span class="va">school.mvn.mardia</span><span class="op">$</span><span class="va">univariateNormality</span></span>
-<span><span class="co">#&gt;               Test  Variable Statistic   p value Normality</span></span>
-<span><span class="co">#&gt; 1 Anderson-Darling   start       0.307    0.5238    YES   </span></span>
-<span><span class="co">#&gt; 2 Anderson-Darling  amount       0.625    0.0852    YES</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">school.mvn</span>, select <span class="op">=</span> <span class="st">"mvn"</span><span class="op">)</span></span>
+<span><span class="co">#&gt;              Test Statistic p.value      MVN</span></span>
+<span><span class="co">#&gt; 1 Mardia Skewness      1.92   0.750 ✓ Normal</span></span>
+<span><span class="co">#&gt; 2 Mardia Kurtosis     -1.16   0.244 ✓ Normal</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">school.mvn</span>, select <span class="op">=</span> <span class="st">"univariate"</span><span class="op">)</span></span>
+<span><span class="co">#&gt;               Test Variable Statistic p.value Normality</span></span>
+<span><span class="co">#&gt; 1 Anderson-Darling    start     0.307   0.524  ✓ Normal</span></span>
+<span><span class="co">#&gt; 2 Anderson-Darling   amount     0.625   0.085  ✓ Normal</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p><code><a href="https://rdrr.io/pkg/MVN/man/mvn.html">mvn()</a></code> also provides a variety of tests for univariate normality for each of the response variables. These are all OK.</p>
 </section><section id="multivariate-influence" class="level3" data-number="10.6.2"><h3 data-number="10.6.2" class="anchored" data-anchor-id="multivariate-influence">
