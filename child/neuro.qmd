@@ -67,7 +67,7 @@ As always, plot the data first! We want an overview of the distributions of the 
 the centers, spread,  shape and possible outliers for each group on each variable.
 
 The plot below combines the use of boxplots and violin plots to give an informative display.
-As we saw earlier (Chapter XXX), doing this with `ggplot2` requires reshaping the data to
+As we saw earlier (e.g., @sec-NLSY-mmra), doing this with `ggplot2` requires reshaping the data to
 long format.
 
 ```{r NC-long}
@@ -200,6 +200,17 @@ contrast, `Dx2`, comparing the schizophrenic and schizoaffective group, is not.
 print(linearHypothesis(NC.mlm, "Dx2"), SSP=FALSE)
 ```
 
+As a quick check on the model, a $\chi^2$ QQ plot (@fig-NC-cqplot) reveals no problems with multivariate normality of residuals
+nor potentially harmful residuals
+
+```{r}
+#| label: fig-NC-cqplot
+#| fig-width: 7
+#| fig-height: 7
+#| out-width: "70%"
+cqplot(NC.mlm, id.n = 3)
+```
+
 ### HE plot
 So the question becomes: how to understand these results.  
 `heplot()` shows the visualization of the multivariate model in the space
@@ -217,8 +228,8 @@ NeuroCog$Dx <- factor(NeuroCog$Dx,
 NC.mlm <- update(NC.mlm)
 ```
  
-
-```{r}
+Then, feed the model to `heplot()` for a plot of the first two response variables, `Speed` and `Attention`.
+```{r echo = -1}
 #| label: fig-NC-HEplot
 #| fig-align: center
 #| out-width: "70%"
@@ -231,11 +242,13 @@ heplot(NC.mlm,
 par(op)
 ```
 
-This pattern is consistent across all of the response variables,
+This pattern, of the control group higher than the others, is consistent across all of the response variables,
 as we see from a plot of `pairs(NC.mlm)`:
 
 ```{r}
 #| label: fig-NC-HE-pairs
+#| fig-height: 9
+#| fig-width: 9
 #| fig-align: center
 #| out-width: "100%"
 #| fig-cap: "HE plot matrix of the MLM for `NeuroCog` data."
@@ -245,11 +258,13 @@ pairs(NC.mlm,
       var.cex=2)
 ```
 
+It signals that we are likely to see a simpler representation of the data in canonical space.
+
 ### Canonical space
 
 We can gain further insight, and a simplified plot showing all the response variables by projecting the MANOVA into the canonical space, which is entirely 2-dimensional (because $df_h=2$).
 However, the output from `candisc()` shows that 98.5% of the mean differences among groups
-can be accounted for in one canonical dimension.
+can be accounted for in just one canonical dimension.
 ```{r NC-can}
 NC.can <- candisc(NC.mlm)
 NC.can
@@ -260,15 +275,15 @@ that is, the result of calling `plot(NC.can, ...)`.
 It plots the two canonical scores, $\mathbf{Z}_{n \times 2}$ for the subjects,
 together with data ellipses for each of the three groups.
 
-```{r}
+```{r echo=-1}
 #| label: fig-NC-candisc
 #| fig-align: center
 #| out-width: "100%"
 #| fig-cap: "Canonical discriminant plot for the `NeuroCog` data MANOVA. Scores on the two canonical dimensions are plotted, together with 68% data ellipses for each group."
 #| fig-show: hold
+op <- par(mar=c(5,4,1,1)+.1)
 pos <- c(4, 1, 4, 4, 1, 3)
 col <- c("red", "darkgreen", "blue")
-op <- par(mar=c(5,4,1,1)+.1)
 plot(NC.can, 
      ellipse=TRUE, 
      rev.axes=c(TRUE,FALSE), 
@@ -277,11 +292,10 @@ plot(NC.can,
      col=col,
 	   var.col="black", var.pos=pos,
      prefix="Canonical dimension ")
-par(op)
 ```
 
 The interpretation of @fig-NC-candisc is again fairly straightforward.
-As noted earlier (REF???), the projections of the variable vectors in this plot on the coordinate axes are proportional to the correlations of the responses with the canonical scores.
+As noted earlier (@sec-candisc), the projections of the variable vectors in this plot on the coordinate axes are proportional to the correlations of the responses with the canonical scores.
 From this, we see that the normal group differs from the two patient groups, having higher scores on all the neurocognitive variables, most of which are highyl correlated. The problem solving measure is slightly different, and this, compared to the cluster of memory, verbal and attention, is what distinguishes the schizophrenic group from the schizoaffectives.
 
 The separation of the groups is essentially one-dimensional, with the control group higher on all measures. Moreover, the variables processing speed and visual memory are the purest measures of this dimension, but all variables contribute positively.
@@ -344,7 +358,7 @@ Each contrast has a corresponding $\mathbf{H}$ ellipse, which we can show in the
 using the `hypotheses` argument. With a single degree of freedom, these degenerate
 ellipses plot as lines.
 
-```{r}
+```{r echo=-1}
 #| label: fig-SC-HEplot
 #| fig-align: center
 #| out-width: "70%"
@@ -355,7 +369,6 @@ heplot(SC.mlm,
        hypotheses=list("Dx1"="Dx1", "Dx2"="Dx2"),
        fill=TRUE, fill.alpha=.1,
        cex.lab=1.5, cex=1.2)
-par(op)
 ```
 
 It can be seen that the three group
@@ -402,7 +415,7 @@ It is immediately apparent that there is one extreme multivariate outlier; three
 points are identified, but the remaining observations
 are nearly within the 95% confidence envelope (using a robust MVE estimate of $\mathbf{S}$).
 
-```{r}
+```{r echo=-1}
 #| label: fig-SC-cqplot
 #| fig-align: center
 #| out-width: "70%"
@@ -413,7 +426,6 @@ cqplot(SC.mlm, method="mve",
        id.n=4, 
        main="", 
        cex.lab=1.25)
-par(op)
 ```
 
 Further checking revealed that this was a data entry error where one case (15) in the

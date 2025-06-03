@@ -5,16 +5,18 @@
 
 library(ggplot2)
 library(ggbiplot)
-data(penguins, package = "palmerpenguins")
-peng <- penguins |>
-  rename(
-    bill_length = bill_length_mm, 
-    bill_depth = bill_depth_mm, 
-    flipper_length = flipper_length_mm, 
-    body_mass = body_mass_g
-  ) |>
-  filter(!is.na(bill_depth),
-         !is.na(sex))
+data(peng, package = "heplots")
+
+# data(penguins, package = "palmerpenguins")
+# peng <- penguins |>
+#   rename(
+#     bill_length = bill_length_mm, 
+#     bill_depth = bill_depth_mm, 
+#     flipper_length = flipper_length_mm, 
+#     body_mass = body_mass_g
+#   ) |>
+#   filter(!is.na(bill_depth),
+#          !is.na(sex))
 
 
 peng.pca <- prcomp (~ bill_length + bill_depth + flipper_length + body_mass,
@@ -31,6 +33,7 @@ peng.gg <-
   labs(fill = "Species", color = "Species") +
   theme_minimal(base_size = 14) +
   theme(legend.direction = 'horizontal', legend.position = 'top')
+peng.gg
 
 # label the ellipses
 group.labs <-

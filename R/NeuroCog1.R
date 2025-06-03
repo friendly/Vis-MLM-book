@@ -106,7 +106,11 @@ NC_long |>
   tidy(fit) |>
   unnest()
 
-  
+# diagnostic plots
 
+res <- cqplot(NC.mlm, id.n = 3)
+
+library(mvinfluence)
+influencePlot(NC.mlm, type = "LR")
 
 
