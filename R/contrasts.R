@@ -108,6 +108,12 @@ kronecker(X.sex, X.group, make.dimnames = TRUE)
 
 kronecker(X.group, X.sex, make.dimnames = TRUE) 
 
+X <- expand.grid(group = paste0("A", 1:3), sex = c("F", "M"))
+contrasts(X$group) <- contr.sum(3)
+contrasts(X$sex) <- contr.treatment(2)
+
+model.matrix(~ group * sex, data=X ) 
+
 # Nested dichotomies
 
 library(nestedLogit)

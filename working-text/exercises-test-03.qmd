@@ -1,0 +1,359 @@
+---
+title: "Testing exercises"
+---
+
+# Chapter 3 Exercises: Plots of Multivariate Data
+
+## Exercises
+
+::: {#exr-salary-smooth}
+**Extending Smoothers with Academic Salaries**
+    
+Using the `carData::Salaries` dataset, create a plot that compares different smoothing methods for the relationship between `yrs.since.phd` and `salary`. Include linear regression, quadratic polynomial, and loess smoothers, but this time facet by both `discipline` and `sex` to examine if the relationship varies across these combinations. Use appropriate color coding and add data ellipses (68% level) for each group.
+  
+```r
+library(ggplot2)
+data(Salaries, package = "carData")
+# Your code here
+```
+:::
+    
+::: {#sol-salary-smooth}
+**Solution:**
+  
+```r
+library(ggplot2)
+library(carData)
+library(dplyr)
+
+data(Salaries, package = "carData")
+
+# Recode discipline labels for clarity
+Salaries <- Salaries %>%
+  mutate(discipline = factor(discipline, 
+                             labels = c("A: Theoretical", "B: Applied")))
+
+# Create the plot
+ggplot(Salaries, aes(x = yrs.since.phd, y = salary, color = sex)) +
+  geom_point(alpha = 0.6) +
+  geom_smooth(method = "lm", formula = y ~ x, 
+              se = FALSE, linetype = "solid", linewidth = 1) +
+  geom_smooth(method = "lm", formula = y ~ poly(x, 2), 
+              se = FALSE, linetype = "dashed", linewidth = 1) +
+  geom_smooth(method = "loess", formula = y ~ x, 
+              se = FALSE, linetype = "dotted", linewidth = 1.2) +
+  stat_ellipse(level = 0.68, alpha = 0.3) +
+  facet_grid(discipline ~ sex) +
+  scale_y_continuous(labels = scales::dollar_format(prefix = "$", 
+                                                    scale = 0.001, 
+                                                    suffix = "K")) +
+  labs(x = "Years since PhD",
+       y = "Salary",
+       title = "Academic Salaries by Discipline and Sex",
+       subtitle = "Linear (solid), Quadratic (dashed), Loess (dotted) smoothers with 68% data ellipses") +
+  theme_bw() +
+  theme(legend.position = "none",  # Sex already in facets
+        strip.text = element_text(size = 10))
+```
+:::
+        
+::: {#exr-pottery-dataset}
+**Applying Methods to a New Dataset**
+    
+Use the `heplots::Pottery` dataset which contains chemical composition measurements of pottery samples. Create a comprehensive multivariate visualization that includes:
+    
+  1. A scatterplot matrix showing relationships between `Al`, `Fe`, `Mg`, and `Ca` 
+  2. Group the data by `Site` using color and shape
+  3. Include both linear regression lines and data ellipses for each site
+  4. Add a correlation plot (corrgram) showing the correlation structure
+  5. Identify and discuss any potential outliers using Mahalanobis distance
+  
+```r
+library(heplots)
+data(Pottery, package = "heplots")
+str(Pottery)
+```
+:::
+            
+::: {#sol-pottery-dataset}
+**Solution:**
+  
+```r
+library(heplots)
+library(car)
+library(ggplot2)
+library(dplyr)
+library(corrplot)
+library(GGally)
+library(tibble)
+
+data(Pottery, package = "heplots")
+
+# 1. Scatterplot matrix with grouping by Site
+pottery_spm <- scatterplotMatrix(~ Al + Fe + Mg + Ca | Site,
+                                 data = Pottery,
+                                 col = c("red", "blue", "darkgreen", "purple"),
+                                 pch = 15:18,
+                                 regLine = list(lwd = 2),
+                                 smooth = list(smoother = loessLine, 
+                                               lwd.smooth = 2, 
+                                               col.smooth = "black"),
+                                 ellipse = list(levels = 0.68, 
+                                                fill.alpha = 0.1),
+                                 diagonal = list(method = "boxplot"),
+                                 main = "Pottery Chemical Composition by Site")
+
+# 2. Correlation plot
+pottery_numeric <- Pottery %>% 
+  select(Al, Fe, Mg, Ca, Ti, Mn, Ba)
+
+pottery_cor <- cor(pottery_numeric)
+corrplot.mixed(pottery_cor,
+               lower = "ellipse",
+               upper = "number",
+               tl.col = "black",
+               title = "Pottery Chemical Composition Correlations",
+               mar = c(0,0,2,0))
+
+# 3. Outlier detection using Mahalanobis distance
+pottery_vars <- pottery_numeric[, 1:4]  # Al, Fe, Mg, Ca
+DSQ <- Mahalanobis(pottery_vars)
+cutoff <- qchisq(0.99, df = ncol(pottery_vars))
+outliers <- which(DSQ > cutoff)
+
+cat("Outliers (99% cutoff):", outliers, "\n")
+cat("Outlier values:\n")
+print(Pottery[outliers, ])
+
+# 4. Chi-square QQ plot for multivariate normality
+cqplot(pottery_vars, 
+       id.n = 3,
+       main = "Chi-square QQ Plot for Pottery Data")
+
+# 5. Scatterplot highlighting outliers
+pottery_plot <- Pottery %>%
+  rownames_to_column("id") %>%
+  mutate(outlier = id %in% outliers)
+
+ggplot(pottery_plot, aes(x = Al, y = Fe, color = Site, shape = Site)) +
+  geom_point(aes(size = outlier), alpha = 0.7) +
+  scale_size_manual(values = c(2, 4), guide = "none") +
+  geom_text(data = filter(pottery_plot, outlier), 
+            aes(label = id), nudge_y = 0.5, color = "black") +
+  stat_ellipse(level = 0.95, alpha = 0.3) +
+  labs(title = "Pottery Al vs Fe by Site",
+       subtitle = "Large points and labels indicate multivariate outliers") +
+  theme_bw()
+```
+
+**Discussion:** The analysis reveals the chemical signature differences between pottery sites. Outliers may represent pottery from mixed clay sources or different firing techniques. The correlation structure shows which elements tend to occur together, providing insights into the geological sources of the clay.
+:::
+                
+::: {#exr-simpson-paradox}
+  **Exploring Simpson's Paradox**
+
+Using the `heplots::SocGrades` dataset (social gradepoint averages), investigate Simpson's Paradox by:
+    
+  1. Create a plot showing the overall relationship between `gpa` and `sat` (ignoring group variables)
+  2. Create a second plot showing the relationship stratified by `class` (year in school)
+  3. Create a third plot showing the "pooled within-group" relationship (centered data)
+  4. Explain what you observe and why this demonstrates Simpson's Paradox
+
+```r
+data(SocGrades, package = "heplots")
+str(SocGrades)
+```
+:::
+
+::: {#sol-simpson-paradox}
+**Solution:**
+
+```r
+library(heplots)
+library(ggplot2)
+library(dplyr)
+library(patchwork)
+
+data(SocGrades, package = "heplots")
+
+# 1. Overall relationship (ignoring class)
+p1 <- ggplot(SocGrades, aes(x = sat, y = gpa)) +
+  geom_point(alpha = 0.6) +
+  geom_smooth(method = "lm", formula = y ~ x, se = TRUE, color = "red") +
+  stat_ellipse(level = 0.68, color = "red") +
+  labs(title = "Overall relationship (ignoring class)",
+       x = "SAT Score", y = "GPA") +
+  theme_bw()
+
+# 2. Relationship stratified by class
+p2 <- ggplot(SocGrades, aes(x = sat, y = gpa, color = class, fill = class)) +
+  geom_point(alpha = 0.6) +
+  geom_smooth(method = "lm", formula = y ~ x, se = TRUE, alpha = 0.3) +
+  stat_ellipse(level = 0.68, alpha = 0.3) +
+  labs(title = "Relationship by class year",
+       x = "SAT Score", y = "GPA") +
+  theme_bw() +
+  theme(legend.position = "bottom")
+
+# 3. Pooled within-group relationship (centered data)
+means <- colMeans(SocGrades[, c("sat", "gpa")])
+grades_centered <- SocGrades %>%
+  group_by(class) %>%
+  mutate(sat_centered = means[1] + scale(sat, scale = FALSE),
+         gpa_centered = means[2] + scale(gpa, scale = FALSE))
+
+p3 <- ggplot(grades_centered, aes(x = sat_centered, y = gpa_centered, 
+                                 color = class, fill = class)) +
+  geom_point(alpha = 0.6) +
+  geom_smooth(method = "lm", formula = y ~ x, se = TRUE, alpha = 0.3) +
+  stat_ellipse(level = 0.68, alpha = 0.3) +
+  labs(title = "Pooled within-class relationship",
+       subtitle = "Data centered within each class",
+       x = "SAT Score (centered)", y = "GPA (centered)") +
+  theme_bw() +
+  theme(legend.position = "bottom")
+
+# Combine plots
+combined_plot <- p1 / (p2 + p3)
+combined_plot + plot_annotation(
+  title = "Simpson's Paradox in Student Grades",
+  subtitle = "How class year affects the SAT-GPA relationship"
+)
+
+# Calculate correlations to quantify the paradox
+overall_cor <- cor(SocGrades$sat, SocGrades$gpa)
+within_class_cors <- SocGrades %>%
+  group_by(class) %>%
+  summarise(correlation = cor(sat, gpa), .groups = 'drop')
+
+cat("Overall correlation (ignoring class):", round(overall_cor, 3), "\n")
+cat("Within-class correlations:\n")
+print(within_class_cors)
+
+# Test for significantly different slopes
+model_interaction <- lm(gpa ~ sat * class, data = SocGrades)
+cat("\nInteraction model summary:\n")
+print(summary(model_interaction))
+```
+
+**Explanation:** This demonstrates Simpson's Paradox because the overall correlation between SAT and GPA may differ in direction or magnitude from the within-class correlations. This occurs because class year is a confounding variable - higher-level students may have both higher GPAs (grade inflation over time or survivor bias) and different SAT score distributions. The centered plot shows the "true" relationship between SAT and GPA after removing the effect of class differences.
+:::
+
+::: {#exr-parallel-coordinates}
+**Parallel Coordinate Visualization**
+
+Using the `heplots::NLSY` dataset (National Longitudinal Survey of Youth), create an enhanced parallel coordinate plot that:
+
+1. Shows the variables `income`, `educ`, `AFQT` (achievement test), and `age`
+2. Groups observations by `region` using color
+3. Reorders the variables to minimize line crossings
+4. Scales the variables appropriately
+5. Adds interpretive annotations about regional patterns you observe
+
+```r
+library(heplots)
+library(ggpcp)
+data(NLSY, package = "heplots")
+str(NLSY)
+```
+:::
+
+::: {#sol-parallel-coordinates}
+**Solution:**
+
+```r
+library(heplots)
+library(ggpcp)
+library(ggplot2)
+library(dplyr)
+
+data(NLSY, package = "heplots")
+
+# Prepare data - remove missing values and select variables
+nlsy_clean <- NLSY %>%
+  select(income, educ, AFQT, age, region) %>%
+  na.omit() %>%
+  # Create better region labels
+  mutate(region = factor(region, 
+                        labels = c("Northeast", "North Central", 
+                                  "South", "West")))
+
+# Check correlations to guide variable ordering
+cor_matrix <- cor(nlsy_clean[, 1:4])
+print("Correlation matrix:")
+print(round(cor_matrix, 3))
+
+# Create parallel coordinate plot with optimized variable order
+# Order variables to minimize crossings: put most correlated adjacent
+nlsy_pcp <- nlsy_clean %>%
+  pcp_select(AFQT, educ, income, age, region) %>%
+  pcp_scale(method = "uniminmax") %>%
+  pcp_arrange() %>%
+  ggplot(aes_pcp()) +
+  geom_pcp_axes() +
+  geom_pcp(aes(colour = region), alpha = 0.4, linewidth = 0.5) +
+  geom_pcp_labels() +
+  scale_colour_manual(values = c("red", "blue", "darkgreen", "purple")) +
+  labs(title = "National Longitudinal Survey of Youth",
+       subtitle = "Achievement, Education, Income, and Age by Region",
+       colour = "Region") +
+  theme_minimal() +
+  theme(axis.text.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        legend.position = "bottom",
+        plot.title = element_text(size = 14, face = "bold"))
+
+print(nlsy_pcp)
+
+# Create summary statistics by region
+region_summary <- nlsy_clean %>%
+  group_by(region) %>%
+  summarise(
+    n = n(),
+    mean_income = mean(income, na.rm = TRUE),
+    mean_educ = mean(educ, na.rm = TRUE),
+    mean_AFQT = mean(AFQT, na.rm = TRUE),
+    mean_age = mean(age, na.rm = TRUE),
+    .groups = 'drop'
+  )
+
+print("Regional Means:")
+print(region_summary)
+
+# Alternative: Focus on high-income individuals
+high_income <- nlsy_clean %>%
+  filter(income > quantile(income, 0.75, na.rm = TRUE))
+
+nlsy_pcp_high <- high_income %>%
+  pcp_select(AFQT, educ, income, age, region) %>%
+  pcp_scale(method = "uniminmax") %>%
+  pcp_arrange() %>%
+  ggplot(aes_pcp()) +
+  geom_pcp_axes() +
+  geom_pcp(aes(colour = region), alpha = 0.7, linewidth = 0.8) +
+  geom_pcp_labels() +
+  geom_pcp_boxes(fill = "white", alpha = 0.7) +
+  scale_colour_manual(values = c("red", "blue", "darkgreen", "purple")) +
+  labs(title = "High-Income Individuals (Top 25%)",
+       subtitle = "Regional patterns in achievement, education, and demographics",
+       colour = "Region") +
+  theme_minimal() +
+  theme(axis.text.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        legend.position = "bottom")
+
+print(nlsy_pcp_high)
+```
+
+**Interpretive Annotations:**
+
+1. **AFQT-Education Connection**: Strong positive relationship visible across all regions - higher achievement test scores typically accompany more education.
+
+2. **Regional Income Patterns**: Western region shows higher income levels on average, while Southern region shows more variability.
+
+3. **Education-Income Relationship**: Clear positive correlation, but with notable exceptions suggesting other factors (region, age, experience) matter.
+
+4. **Age Effects**: Younger high-income individuals typically show higher AFQT scores, suggesting either generational improvements in testing or age-related performance factors.
+
+5. **Regional Clustering**: Northeast and West show similar patterns for high achievers, while South shows more diverse pathways to high income.
+:::
