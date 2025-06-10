@@ -1,14 +1,16 @@
 # from: https://blog.djnavarro.net/posts/2025-06-03_ggplot2-scatterplot-pairs/
 
-#' Pivot a dataset to pairwise format to support pairs() plots al la \code{\link[GGally]{ggpairs}} or
-#' \code{\link[GGally]{ggduo}} 
+#' Pivot a dataset to pairwise format
+#' 
+#' Pivot a dataset to pairwise format to support \code{\link[graphics] {pairs}} plots al la \code{\link[GGally]{ggpairs}} or
+#' \code{\link[GGally]{ggduo}} when you want to plot a set of \code{Y} variables against each of a set of \code{X}s.
 #'
-#' @param data 
+#' @param data dataset to pivot
 #' @param pivot_cols Provides a tidy selection of columns. These columns are the ones that we need in “pairwise” format
 #' @param other_cols a tidy selection of columns, but for those variables that you will want to use in 
 #'        your plot but aren’t actually part of the “pairwise” specification. 
-#' @param xvars A character vector of variable names, used to select the X variables to keep
-#' @param yvars A character vector of variable names, used to select the Y variables to keep
+#' @param xvars A character vector of variable names, used to select the \code{X} variables to keep
+#' @param yvars A character vector of variable names, used to select the \code{Y} variables to keep
 #' @param names_to specify the name of the column that stores the variable names
 #' @param values_to a string specifying the name of the column storing the measured values for each variable
 #' @param pair_labels labels for the \code{x} and \code{y} variables in each pair
@@ -16,7 +18,8 @@
 #' @param row_id name for row ID variable
 #' @importFrom dplyr mutate select row_number rename full_join relocate left_join
 #' @importFrom tidyselect all_of
-#' @author Daniel Navarro
+#' @author Daniel Navarro, Michael Friendly
+#' @source Originally from \url{https://blog.djnavarro.net/posts/2025-06-03_ggplot2-scatterplot-pairs/}
 
 pivot_pairwise <- function(data, 
                            pivot_cols, 
@@ -52,12 +55,10 @@ pivot_pairwise <- function(data,
   long_x <- base |>
     dplyr::select(
       {{pivot_cols}},  
-#      all_of(xvars),
       tidyselect::all_of(row_id)
     ) |>
     tidyr::pivot_longer(
       cols = {{pivot_cols}},
-#      cols = all_of(yvars),
       names_to = {{x_name}},
       values_to = {{x_value}}
     )
