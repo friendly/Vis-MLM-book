@@ -11,8 +11,31 @@ data(workers, package = "matlib")
 str(workers)
 
 
-mod1 <- lm(Income ~ Experience, data=workers)
-mod2 <- lm(Income ~ poly(Experience, 2), data=workers)
+workers.mod1 <- lm(Income ~ Experience, data=workers)
+workers.mod2 <- lm(Income ~ poly(Experience, 2), data=workers)
+
+coef(workers.mod1)
+coef(workers.mod2)
+
+equatiomatic::extract_eq(workers.mod1, use_coefs = TRUE)
+equatiomatic::extract_eq(workers.mod2, use_coefs = TRUE)
+
+# to get interpretable coefficients, use centered values
+workers <- workers |>
+  mutate(Exp_centered = Experience - mean(Experience))
+workers.mod2a <- lm(Income ~ Exp_centered + I(Exp_centered^2), data=workers)
+coef(workers.mod2a)
+
+equatiomatic::extract_eq(workers.mod2a, use_coefs = TRUE)
+
+# to get interpretable coefficients, use raw=TRUE
+workers.mod2b <- lm(Income ~ poly(Experience, 2, raw = TRUE), data=workers)
+coef(workers.mod2b)
+equatiomatic::extract_eq(workers.mod2b, use_coefs = TRUE, coef_digits = 3)
+
+
+anova(workers.mod1, workers.mod2)
+
 mod3 <- lm(Income ~ Experience + Skill, data=workers)
 mod4 <- lm(Income ~ Gender, data = workers)
 mod5 <- lm(Income ~ Experience + Gender, data = workers)
@@ -20,18 +43,30 @@ mod6 <- lm(Income ~ Experience * Gender, data = workers)
 
 theme_set(theme_bw(base_size = 14))
 
+ggplot(data = workers,
+       aes(x = Experience, y = Income)) +
+  geom_point(size = 3) +
+  geom_smooth(method = "lm", formula = y~x,
+              se = FALSE, linewidth = 2,
+              color = "blue") +
+  geom_smooth(method = "lm", formula = y ~ poly(x,2),
+              se = FALSE, linewidth = 2,
+              color = "red") 
+
+
+# separate plots
 p1 <- ggplot(data = workers,
              aes(x = Experience, y = Income)) +
   geom_point(size = 2.5) 
 p1
 
-# mod1
+# workers.mod1
 p2 <- p1 + 
   geom_smooth(method = "lm", formula = y~x,
               color = "red", fill = "red", alpha = 0.2)
 p2
 
-# mod2
+# workers.mod2
 p1 + 
   geom_smooth(method = "lm", formula = y ~ x,
               color = "red", se = FALSE) +

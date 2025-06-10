@@ -26,10 +26,11 @@ noteworthy <- order(DSQ, decreasing = TRUE)[1:3] |> print()
 
 peng |> subset(rownames(peng) %in% noteworthy)
 
+# trick: using scale(), need to drop attributes and dimensions
 peng |>
   tibble::rownames_to_column(var = "id") |> 
   select(id, species, bill_length:body_mass) |>
-  mutate(across(bill_length:body_mass, c(scale))) |>
+  mutate(across(bill_length:body_mass, ~ drop(scale(.x)))) |>
   filter(id %in% noteworthy)
 
 peng |>
@@ -46,7 +47,7 @@ peng |>
 
 peng |>
    tibble::rownames_to_column(var = "id") |> 
-   mutate(across(bill_length:body_mass, scale)) |>
+   mutate(across(bill_length:body_mass, ~ drop(scale(.x)))) |>
    filter(id %in% noteworthy)  
 
 

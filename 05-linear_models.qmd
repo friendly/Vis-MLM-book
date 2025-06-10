@@ -108,9 +108,15 @@ Elliot Cramer (UNC) -> Clyde, Cramer & Shering (1966) MANOVA
 Dixon, UCLA (1965): BMD
 -->
 
-
-
 :::
+
+**Packages**
+
+In this chapter I use the following packages. Load them now:
+
+```{r load-pkgs}
+library(ggplot2)
+```
 
 **TODO**: This stuff on linear combinations seems out of place here. Where to move it?
 
@@ -142,7 +148,7 @@ This expresses a response variable, $\mathbf{y} = (y_1, y_2, \dots , y_n)^\maths
 or, expressed in matrices,
 
 $$
-\Large{\sizedmat{y}{n \times 1} = \sizedmat{X}{n \times (p+1)}\; \sizedmat{\boldsymbol{\beta}}{(p+1) \times 1} + \boldsymbol{\epsilon}}
+\large{\sizedmat{y}{n \times 1} = \sizedmat{X}{n \times (p+1)}\; \sizedmat{\boldsymbol{\beta}}{(p+1) \times 1} + \boldsymbol{\epsilon}}
 $$
 
 The matrix $\mathbf{X}$ is called the _model matrix_ and contains the numerical representations of the predictor variables called _regressors_. The essential thing about a linear model
@@ -233,6 +239,71 @@ This differs from the model `y ~ poly(x, 2)` in that the former uses the raw `x,
 while `poly()` converts these to orthogonal polynomial scores, which are uncorrelated
 (and therefore free from problems of collinearity).
 
+::: {#exm-workers1 title = "Workers data"}
+
+For the `workers` data (@sec-workers-data-pca) you can fit simple regression models predicting
+income from years of experience using a linear and quadratic model as follows:
+
+```{r workers-mods}
+data(workers, package = "matlib")
+workers.mod1 <- lm(Income ~ Experience, data=workers) |>
+  print()
+
+workers.mod2 <- lm(Income ~ poly(Experience, 2), data=workers) |>
+  print()
+```
+
+It is simplest to understand  these models by plotting the data overlaid with the fitted regressions.
+Ths uses `geom_smooth()` and specifies the smoothing model as `method = "lm"` with a `formula`,
+which is `y ~ x` for the linear model and `y ~ poly(x, 2)` for the quadratic.
+
+```{r}
+#| label: fig-workers-fits
+#| out-width: "70^"
+#| fig-cap: "Workers data with fitted linear and quadratic models for years of experience."
+ggplot(data = workers,
+       aes(x = Experience, y = Income)) +
+  geom_point(size = 3) +
+  geom_smooth(method = "lm", formula = y ~ x,
+              se = FALSE, linewidth = 2,
+              color = "blue") +
+  geom_smooth(method = "lm", formula = y ~ poly(x, 2),
+              se = FALSE, linewidth = 2,
+              color = "red") 
+```
+
+The coefficients of the linear model are also easy to interpret:
+
+```{r workers-coeffs1, results = 'asis', echo=FALSE}
+equatiomatic::extract_eq(workers.mod1, use_coefs = TRUE, coef_digits = 3)
+```
+
+So a worker with zero years of experience can expect an income of \$29162 and this should increase by \$1119
+for each additional year. However, it is not so simple to interpret the coefficients when a `poly()` term
+is used. Naively plugging in the coefficients for `workers.mod2` gives
+
+```{r workers-coeffs2, results = 'asis', echo=FALSE}
+equatiomatic::extract_eq(workers.mod2, use_coefs = TRUE, coef_digits = 3)
+```
+
+The problem is that $x$ = `Experience` in model `workers.mod` is represented not by the raw values, but rather
+by values of $x$ and $x^2$ that have been made to be uncorrelated. If you really want to interpret the coefficient values in terms of years of experience, use the option `raw = TRUE` in `poly()`:
+
+```{r}
+workers.mod2b <- lm(Income ~ poly(Experience, 2, raw = TRUE), 
+                    data=workers) |>
+  print()
+```
+
+$$
+\operatorname{\widehat{Income}} = 23.07 + 2.3(\operatorname{Experience}) - 0.03(\operatorname{Experience}^2)
+$$
+This says that income is predicted to be \$23,068 with no experience, increase initially by \$2295, but that
+yearly increase decreases by $330. Some further details of orthogonal polynomials are explained below.
+
+:::
+
+#### Factors
 Factor variables are treated specially in linear models, but have simple
 notations in R formulas. The following examples use `A, B, C` to represent
 discrete factors with two or more levels.
@@ -261,7 +332,7 @@ $x_2$, but rather changes with the value of $x_2$. If $\beta_2 > 0$, the slope f
 $x_1$ increases with $x_2$ and vice-versa.
 
 `y ~ A * B` for factors is similar, expanding to `y ~ A + B + A:B`, but the columns in the model matrix
-represent contrasts among the factor levels as describe above. The main effects, `A` and `B` 
+represent contrasts among the factor levels as described in detail below (@sec-contrasts). The main effects, `A` and `B` 
 come from contrasts among the means of their factor levels and the interaction term `A:B`
 reflects _differences_ among means of `A` across the levels of `B` (and vice-versa).
 
@@ -331,7 +402,8 @@ $p$ columns representing the regressors $\mathbf{x}_1, \mathbf{x}_2, \dots , \ma
 Internally, `lm()` uses `stats::model.matrix()` and you can use this to explore how factors,
 interactions and other model terms are represented in a model object.
 
-For a small example, here are a few observations representing income (`inc`) and `type` of occupation.
+For a small example, here are a few observations representing income (`inc`) and `type` of occupation,
+taking on values `bc` (blue colar), `wc` (white colar) and `prof` (professional).
 `model.matrix()` takes a _one-sided_ formula with the terms on the right-hand side.
 The main effect model looks like this:
 

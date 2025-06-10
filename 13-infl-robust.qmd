@@ -1,0 +1,163 @@
+```{r include=FALSE}
+source("R/common.R")
+knitr::opts_chunk$set(fig.path = "figs/infl-robust/")
+```
+
+::: {.content-visible unless-format="pdf"}
+{{< include latex/latex-commands.qmd >}}
+:::
+  
+# Multiviate Influence and Robust Estimation
+
+In the analysis of linear models, the identification and treatment of outliers and
+influential observations represents one of the most critical yet challenging
+aspects of statistical modeling. As you saw earlier (@sec-leverage), even a single "bad"
+observation can completely alter the results of a linear model fit by ordinary
+least squares.
+
+Univariate influence diagnostics have
+been well-established since the pioneering work of @Cook:77 and others
+(@Belsley-etal:80;@CookWeisberg:82) and their wide implementation in R packages
+such as `r pkg("stats")` and `r pkg("car")` makes these readily accessible
+in statistical practice. If you seek statistical advice regarding a
+perplexing model, the consultant may well ask:
+
+> Did you make any influence or other diagnostic plots?
+
+However, the
+extension to multivariate response models introduces additional complexity that
+goes far beyond simply applying univariate methods to each response variable
+separately. The multivariate case requires consideration of the _joint influence_
+structure across all responses simultaneously, accounting for the correlation
+patterns among dependent variables and the potential for observations to be
+influential in some linear combinations of responses while appearing benign when
+examined multivariate. This multivariate perspective can reveal influence patterns
+that would otherwise remain hidden, as an observation might exert substantial
+leverage on the overall model fit through subtle but systematic effects across
+multiple responses.
+
+Detecting outliers and influential observations 
+has now progressed to the point where the methods described below can usefully
+be applied to multivariate linear models. But having found some troublesome
+cases, the question arises, what to do about them?
+
+**Packages**
+
+In this chapter we use the following packages. Load them now
+```{r pkg-load}
+library(car)
+library(heplots)
+library(candisc)
+library(mvinfluence)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+```
+
+## Multivariate influence {#sec-multivariate-influence}
+
+An elegant extension of the ideas behind leverage, studentized residuals and measures of
+influence to the case of multivariate response data is due to @BarrettLing:92
+(see also: @Barrett:2003). These methods have been implemented in the `r package("mvinfluence", cite=TRUE)`
+which makes available several forms of influence plots to visualize the results.
+
+As in the univariate case, the measures of multivariate influence stem from case-deletion idea
+of comparing some statistic calculated from the full sample to that statistic calculated when
+case $i$ is deleted. The Barrett-Ling approach generalized this to the case of deleting a set $I$ of
+$m \ge 1$ cases. This can be useful because some cases can "mask" the influence of others
+in the sense that when one is deleted, others become much more influential.
+
+The following sections describe the notation and measures used in the calculations.
+
+### Notation
+
+Let $\mathbf{X}$ be the model matrix in the multivariate linear model, 
+$\mathbf{Y}_{n \times p} = \mathbf{X}_{n \times q} \; \mathbf{B}_{q \times p} + \mathbf{E}_{n \times p}$.
+The usual least squares estimate of $\mathbf{B}$ is given by
+$\mathbf{B} = (\mathbf{X}^\top \mathbf{X})^{-1}  \mathbf{X}^\top \mathbf{Y}$.
+
+Then let 
+
+* $\mathbf{X}_I$ be the submatrix of $\mathbf{X}$ whose $m$ rows are indexed by $I$,
+* $\mathbf{X}_{(-I)}$ is the complement, the submatrix of $\mathbf{X}$ with the $m$ rows in $I$ deleted,
+
+ 
+Matrices $\mathbf{Y}_I$, $\mathbf{Y}_{(-I)}$ are defined similarly, denoting the submatrix of $m$ rows of $\mathbf{Y}$
+and the submatrix with those rows deleted, respectively.
+
+In the calculation of regression coefficients,
+$\mathbf{B}_{(-I)} = (\mathbf{X}_{(-I)}^\top \mathbf{X}_{(-I)})^{-1} \mathbf{X}_{(-I)}^\top \mathbf{Y}_{I}$ are the estimated 
+coefficients
+when the cases indexed by $I$ have been removed. The corresponding residuals are
+$\mathbf{E}_{(-I)} = \mathbf{Y}_{(-I)} - \mathbf{X}_{(-I)} \mathbf{B}_{(-I)}$.
+ 
+### Hat values and residuals
+ 
+The influence measures defined by @BarrettLing:92 are functions of two matrices $\mathbf{H}_I$ and $\mathbf{Q}_I$
+corresponding to hat values and residuals, 
+defined as follows:
+
+* For the full data set, the "hat matrix", $\mathbf{H}$, is given by
+      $\mathbf{H} = \mathbf{X} (\mathbf{X}^\top \mathbf{X})^{-1} \mathbf{X}^\top$,
+* $\mathbf{H}_I$ is the $m \times m$ the submatrix of $\mathbf{H}$ corresponding to the index set $I$,
+      $\mathbf{H}_I = \mathbf{X} (\mathbf{X}_I^\top \mathbf{X}_I)^{-1} \mathbf{X}^\top$,
+* $\mathbf{Q}$ is the analog of $\mathbf{H}$ defined for the residual matrix $\mathbf{E}$, that is,
+      $\mathbf{Q} = \mathbf{E} (\mathbf{E}^\top \mathbf{E})^{-1} \mathbf{E}^\top$, with corresponding submatrix
+      $\mathbf{Q}_I = \mathbf{E} \, (\mathbf{E}_I^\top \mathbf{E}_I)^{-1} \, \mathbf{E}^\top$,
+
+   
+### Cook's distance
+ 
+In these terms, Cook's distance is defined for a univariate response by
+$$
+D_I = (\mathbf{b} - \mathbf{b}_{(-I)})^T (\mathbf{X}^T \mathbf{X}) (\mathbf{b} - \mathbf{b}_{(-I)}) / p s^2 \; ,
+$$
+a measure of the squared distance between the coefficients $\mathbf{b}$ for the full data set and those
+$\mathbf{b}_{(-I)}$ 
+obtained when the cases in $I$ are deleted.  
+
+In the multivariate case, Cook's distance is obtained
+by replacing the vector of coefficients $\mathbf{b}$ by $\mathrm{vec} (\mathbf{B})$, the result of stringing out
+the coefficients for all responses in a single $n \times p$-length vector.
+
+$$
+D_I = \frac{1}{p} [\mathrm{vec} (\mathbf{B} - \mathbf{B}_{(-I)})]^T (S^{-1} \otimes \mathbf{X}^T \mathbf{X}) \mathrm{vec} (\mathbf{B} - \mathbf{B}_{(-I)})  \; ,
+$$
+where $\otimes$ is the Kronecker (direct) product and
+$\mathbf{S} = \mathbf{E}^T \mathbf{E} / (n-p)$ is the covariance matrix of the residuals.
+
+
+### Leverage and residual components
+ 
+For a univariate response, and when $m = 1$, Cook's distance can be re-written as a product of leverage and residual components as
+$$
+D_i = \left(\frac{n-p}{p} \right) \frac{h_{ii} q_{ii}}{(1 - h_{ii})^2  } \;.
+$$
+
+Then we can define a leverage component $L_i$ and residual component $R_i$ as
+
+$$
+L_i = \frac{h_{ii}}{1 - h_{ii}} \quad\quad R_i = \frac{q_{ii}}{1 - h_{ii}} \;.
+$$
+
+$R_i$ is the studentized residual, and $D_i \propto L_i \times R_i$.
+
+In the general, multivariate case there are analogous matrix expressions for $\mathbf{L}$ and $\mathbf{R}$.
+When `m > 1`, the quantities $\mathbf{H}_I$, $\mathbf{Q}_I$, $\mathbf{L}_I$, and
+$\mathbf{R}_I$ are $m \times m$ matrices.  Where scalar quantities are needed, the `r pkg("mvinfluence")`
+functions apply
+a function, `FUN`, either `det()` or `tr()` to calculate a measure of "size", as in
+
+```
+  H <- sapply(x$H, FUN)
+  Q <- sapply(x$Q, FUN)
+  L <- sapply(x$L, FUN)
+  R <- sapply(x$R, FUN)
+````
+ 
+
+## Robust Estimation {#sec-robust-estimation}
+
+ 
+
+  
