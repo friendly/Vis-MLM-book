@@ -19,10 +19,11 @@ x <- renv::dependencies()
 "biplot2d3d"
 "ggord"
 "galahr"
-install.packages("p3d", repos = "http://R-Forge.R-project.org")
+pak::repo_add(RForge = "http://R-Forge.R-project.org")
 pak::pak(c(
   'gmonette/spida2',
   'gmonette/spida',
+  "p3d",
   'Andros-Spica/biplot2d3d',
   'uschiLaa/galahr',
   'fawda123/ggord', #,
