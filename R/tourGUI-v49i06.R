@@ -61,7 +61,7 @@ gui_stars()
 # Click "Pause" to stop it at this position
 # Click "Quit" to close down the GUI window
 
-Figure 9
+# Figure 9
 music <- read.csv("music-sub.csv", row.names = 1)
 head(music)
 gui_xy(music)
