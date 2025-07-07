@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.29">
+<meta name="generator" content="quarto-1.6.33">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <title>10&nbsp; Multivariate Linear Models – Visualizing Multivariate Data and Models in R</title>
 <style>
@@ -18,9 +18,8 @@ ul.task-list li input[type="checkbox"] {
   vertical-align: middle;
 }
 /* CSS for syntax highlighting */
-html { -webkit-text-size-adjust: 100%; }
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -31,7 +30,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -84,16 +83,15 @@ div.csl-indent {
 <link href="./11-mlm-viz.html" rel="next">
 <link href="./09-hotelling.html" rel="prev">
 <link href="./images/favicon/favicon.ico" rel="icon">
-<script src="site_libs/quarto-html/quarto.js" type="module"></script>
-<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/quarto.js"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-0815c480559380816a4d1ea211a47e91.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-07ba0ad10f5680c660e360ac31d2f3b6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-b5345210c3a79db27e5ded64c8911254.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-ea39f032adc390b90fcf9279f0596fbc.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <link href="site_libs/quarto-contrib/line-highlight-1.0.0/line-highlight.css" rel="stylesheet"><script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -147,7 +145,7 @@ window.Quarto = {
 };
 </script>
 </head>
-<body class="nav-sidebar floating quarto-light">
+<body class="nav-sidebar floating">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top quarto-banner"><nav class="quarto-secondary-nav"><div class="container-fluid d-flex">
@@ -482,44 +480,51 @@ window.Quarto = {
 <span class="math inline">\(\boldsymbol{\Large\varepsilon}\)</span> is a matrix of errors in predicting <span class="math inline">\(\mathbf{Y}\)</span>.</li>
 </ul>
 <p>Writing <a href="#eq-mlm" class="quarto-xref">Equation&nbsp;<span>10.2</span></a> in terms of its elements, we have</p>
-<p><span class="math display">\[
-\begin{align*}
-\overset{\mathbf{Y}}
-  {\begin{bmatrix}
-  y_{11} &amp; y_{12} &amp; \cdots &amp; y_{1p} \\
-  y_{21} &amp; y_{22} &amp; \cdots &amp; y_{2p} \\
-  \vdots &amp; \vdots &amp; \ddots &amp; \vdots \\
-  y_{n1} &amp; y_{n2} &amp; \cdots &amp; y_{np}
-  \end{bmatrix}
-  }
-&amp; =
-\overset{\mathbf{X}}
-  {\begin{bmatrix}
-  1 &amp; x_{11} &amp; \cdots &amp; x_{1q} \\
-  1 &amp; x_{21} &amp; \cdots &amp; x_{2q} \\
-  \vdots &amp; \vdots &amp; \ddots &amp; \vdots \\
-  1 &amp; x_{n1} &amp; \cdots &amp; x_{nq}
-  \end{bmatrix}
-  }
-\overset{\mathbf{B}}
-  {\begin{bmatrix}
-  \beta_{01} &amp; \beta_{02} &amp; \cdots &amp; \beta_{0p} \\
-  \beta_{11} &amp; \beta_{12} &amp; \cdots &amp; \beta_{1p} \\
-  \vdots &amp; \vdots &amp; \ddots &amp; \vdots \\
-  \beta_{q1} &amp; \beta_{q2} &amp; \cdots &amp; \beta_{qp}
-  \end{bmatrix}
-  } \\
-&amp; + \quad\quad
-\overset{\mathcal{\boldsymbol{\Large\varepsilon}}}
-  {\begin{bmatrix}
-  \epsilon_{11} &amp; \epsilon_{12} &amp; \cdots &amp; \epsilon_{1p} \\
-  \epsilon_{21} &amp; \epsilon_{22} &amp; \cdots &amp; \epsilon_{2p} \\
-  \vdots &amp; \vdots &amp; \ddots &amp; \vdots \\
-  \epsilon_{n1} &amp; \epsilon_{n2} &amp; \cdots &amp; \epsilon_{np}
-  \end{bmatrix}
-  }
-\end{align*}
-\]</span></p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb2" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># FIXME: TeXLive 2025 does not like the immediately following latex code</span></span>
+<span><span class="co"># Package amsmath Error: Erroneous nesting of equation structures;</span></span>
+<span><span class="co"># (amsmath)                trying to recover with `aligned'.</span></span>
+<span><span class="co"># </span></span>
+<span><span class="co"># See the amsmath package documentation for explanation.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<!-- $$ -->
+<!-- \begin{align*} -->
+<!-- \overset{\mathbf{Y}} -->
+<!--   {\begin{bmatrix}  -->
+<!--   y_{11} & y_{12} & \cdots & y_{1p} \\ -->
+<!--   y_{21} & y_{22} & \cdots & y_{2p} \\ -->
+<!--   \vdots & \vdots & \ddots & \vdots \\ -->
+<!--   y_{n1} & y_{n2} & \cdots & y_{np} -->
+<!--   \end{bmatrix} -->
+<!--   } -->
+<!-- & =  -->
+<!-- \overset{\mathbf{X}} -->
+<!--   {\begin{bmatrix} -->
+<!--   1 & x_{11} & \cdots & x_{1q} \\ -->
+<!--   1 & x_{21} & \cdots & x_{2q} \\ -->
+<!--   \vdots & \vdots & \ddots & \vdots \\ -->
+<!--   1 & x_{n1} & \cdots & x_{nq} -->
+<!--   \end{bmatrix} -->
+<!--   }  -->
+<!-- \overset{\mathbf{B}} -->
+<!--   {\begin{bmatrix} -->
+<!--   \beta_{01} & \beta_{02} & \cdots & \beta_{0p} \\ -->
+<!--   \beta_{11} & \beta_{12} & \cdots & \beta_{1p} \\ -->
+<!--   \vdots & \vdots & \ddots & \vdots \\ -->
+<!--   \beta_{q1} & \beta_{q2} & \cdots & \beta_{qp} -->
+<!--   \end{bmatrix} -->
+<!--   } \\ -->
+<!-- & + \quad\quad -->
+<!-- \overset{\mathcal{\boldsymbol{\Large\varepsilon}}} -->
+<!--   {\begin{bmatrix} -->
+<!--   \epsilon_{11} & \epsilon_{12} & \cdots & \epsilon_{1p} \\ -->
+<!--   \epsilon_{21} & \epsilon_{22} & \cdots & \epsilon_{2p} \\ -->
+<!--   \vdots & \vdots & \ddots & \vdots \\ -->
+<!--   \epsilon_{n1} & \epsilon_{n2} & \cdots & \epsilon_{np} -->
+<!--   \end{bmatrix} -->
+<!--   } -->
+<!-- \end{align*} -->
+<!-- $$ -->
 <p>The structure of the model matrix <span class="math inline">\(\mathbf{X}\)</span> is exactly the same as the univariate linear model, and may therefore contain,</p>
 <ul>
 <li>
@@ -570,7 +575,7 @@ window.Quarto = {
 \widehat{\mathbf{B}} = [ \widehat{\mathbf{b}}_1, \widehat{\mathbf{b}}_2, \dots , \widehat{\mathbf{b}}_p] \:\: .
 \]</span> In R, we fit the multivariate linear model with <code><a href="https://rdrr.io/r/stats/lm.html">lm()</a></code> simply by giving a collection of response variables <code>y1, y2, ...</code> on the left-hand side of the model formula, wrapped in <code><a href="https://rdrr.io/r/base/cbind.html">cbind()</a></code> which combines them to form a matrix response.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb2" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">y1</span>, <span class="va">y2</span>, <span class="va">y3</span><span class="op">)</span> <span class="op">~</span> <span class="va">x1</span> <span class="op">+</span> <span class="va">x2</span> <span class="op">+</span> <span class="va">...</span>, data<span class="op">=</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb3" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">y1</span>, <span class="va">y2</span>, <span class="va">y3</span><span class="op">)</span> <span class="op">~</span> <span class="va">x1</span> <span class="op">+</span> <span class="va">x2</span> <span class="op">+</span> <span class="va">...</span>, data<span class="op">=</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>In the presence of possible outliers, robust methods are available for univariate linear models (e.g., <code><a href="https://rdrr.io/pkg/MASS/man/rlm.html">MASS::rlm()</a></code>). So too, <code><a href="https://friendly.github.io/heplots/reference/robmlm.html">heplots::robmlm()</a></code> provides robust estimation in the multivariate case.</p>
 <section id="sec-dogfood-data" class="level3" data-number="10.2.1"><h3 data-number="10.2.1" class="anchored" data-anchor-id="sec-dogfood-data">
@@ -578,7 +583,7 @@ window.Quarto = {
 <p>As a toy example to make these ideas concrete, consider the dataset <code><a href="https://friendly.github.io/heplots/reference/dogfood.html">heplots::dogfood</a></code>. Here, a dogfood manufacturer wanted to study preference for different dogfood formulas, two of their own (“Old”, “New”) and two from other manufacturers (“Major”, “Alps”).</p>
 <p>In a between-dog design, each of <span class="math inline">\(n=4\)</span> dogs were presented with a bowl of <em>one</em> formula and the time to <code>start</code> eating and <code>amount</code> eaten were recorded. Greater preference would be seen in a shorter delay to start eating and a greater amount, so these responses are expected to be negatively correlated.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb3" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">dogfood</span>, package <span class="op">=</span> <span class="st">"heplots"</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb4" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">dogfood</span>, package <span class="op">=</span> <span class="st">"heplots"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span><span class="op">(</span><span class="va">dogfood</span><span class="op">)</span></span>
 <span><span class="co">#&gt; 'data.frame':  16 obs. of  3 variables:</span></span>
 <span><span class="co">#&gt;  $ formula: Factor w/ 4 levels "Old","New","Major",..: 1 1 1 1 2 2 2 2 3 3 ...</span></span>
@@ -587,7 +592,7 @@ window.Quarto = {
 </div>
 <p>For this data, boxplots for the two responses provide an initial look, shown in <a href="#fig-dogfood-boxplot" class="quarto-xref">Figure&nbsp;<span>10.1</span></a>. Putting these side-by-side makes it easy to see the inverse relation between the medians on the two response variables.</p>
 <div class="cell" data-layout-align="center">
-<details class="code-fold"><summary>Code</summary><div class="sourceCode" id="cb4" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">dog_long</span> <span class="op">&lt;-</span> <span class="va">dogfood</span> <span class="op">|&gt;</span></span>
+<details class="code-fold"><summary>Code</summary><div class="sourceCode" id="cb5" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">dog_long</span> <span class="op">&lt;-</span> <span class="va">dogfood</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html">pivot_longer</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">start</span>, <span class="va">amount</span><span class="op">)</span>,</span>
 <span>               names_to <span class="op">=</span> <span class="st">"variable"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">dog_long</span>, </span>
@@ -610,7 +615,7 @@ Figure&nbsp;10.1: Boxplots for time to start eating and amount eaten by dogs giv
 </div>
 <p>As suggested above, the multivariate model for testing mean differences due to the dogfood <code>formula</code> is fit using <code><a href="https://rdrr.io/r/stats/lm.html">lm()</a></code> on the matrix <span class="math inline">\(\mathbf{Y}\)</span> constructed with <code>cbind(start, amount)</code>.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb5" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">dogfood.mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">start</span>, <span class="va">amount</span><span class="op">)</span> <span class="op">~</span> <span class="va">formula</span>, </span>
+<div class="sourceCode" id="cb6" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">dogfood.mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">start</span>, <span class="va">amount</span><span class="op">)</span> <span class="op">~</span> <span class="va">formula</span>, </span>
 <span>                  data<span class="op">=</span><span class="va">dogfood</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -627,7 +632,7 @@ Figure&nbsp;10.1: Boxplots for time to start eating and amount eaten by dogs giv
 <p>By default, the factor <code>formula</code> is represented by three columns in the <span class="math inline">\(\mathbf{X}\)</span> matrix that correspond to treatment contrasts, which are comparisons of the Old formula (a baseline level) with each of the others. The coefficients, for example <code>formulaNEW</code>, are the difference in means from those for Old.</p>
 <p>Then, the overall multivariate test that means on both variables do not differ is carried out using <code><a href="https://rdrr.io/pkg/car/man/Anova.html">car::Anova()</a></code>.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb6" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">dogfood.aov</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova</a></span><span class="op">(</span><span class="va">dogfood.mod</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<div class="sourceCode" id="cb7" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">dogfood.aov</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova</a></span><span class="op">(</span><span class="va">dogfood.mod</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Type II MANOVA Tests: Pillai test statistic</span></span>
@@ -695,19 +700,19 @@ Figure&nbsp;10.2: Breakdown of the total <span class="math inline">\(\mathbf{SSP
 <p>This is the decomposition that we visualize in HE plots, where the size and direction of <span class="math inline">\(\mathbf{H}\)</span> and <span class="math inline">\(\mathbf{E}\)</span> can be represented as ellipsoids.</p>
 <p>But first, let’s find these results for the example. The easy way is to get them from the result returned by <code><a href="https://rdrr.io/pkg/car/man/Anova.html">car::Anova()</a></code>, where the hypothesis <span class="math inline">\(\mathbf{SSP}_{H}\)</span> for each term in the model is returned as an element in a named list <code>SSP</code> and the error <span class="math inline">\(\mathbf{SSP}_{E}\)</span> is returned as the matrix <code>SSPE</code>.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb7" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">SSP_H</span> <span class="op">&lt;-</span> <span class="va">dogfood.aov</span><span class="op">$</span><span class="va">SSP</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb8" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">SSP_H</span> <span class="op">&lt;-</span> <span class="va">dogfood.aov</span><span class="op">$</span><span class="va">SSP</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; $formula</span></span>
 <span><span class="co">#&gt;         start amount</span></span>
 <span><span class="co">#&gt; start    9.69  -70.9</span></span>
 <span><span class="co">#&gt; amount -70.94  585.7</span></span>
 <span><span class="va">SSP_E</span> <span class="op">&lt;-</span> <span class="va">dogfood.aov</span><span class="op">$</span><span class="va">SSPE</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt;        start amount</span></span>
-<span><span class="co">#&gt; start   25.8   11.8</span></span>
-<span><span class="co">#&gt; amount  11.8  390.3</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; start   25.7   11.7</span></span>
+<span><span class="co">#&gt; amount  11.7  390.3</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>You can calculate these directly as shown below. <code><a href="https://rdrr.io/r/base/sweep.html">sweep()</a></code> is used to subtract the <code><a href="https://rdrr.io/r/base/colSums.html">colMeans()</a></code> from <span class="math inline">\(\mathbf{Y}\)</span> and <span class="math inline">\(\widehat{\mathbf{Y}}\)</span> and <code><a href="https://rdrr.io/r/base/crossprod.html">crossprod()</a></code> premultiplies a matrix by its’ transpose.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb8" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">Y</span> <span class="op">&lt;-</span> <span class="va">dogfood</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"start"</span>, <span class="st">"amount"</span><span class="op">)</span><span class="op">]</span></span>
+<div class="sourceCode" id="cb9" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">Y</span> <span class="op">&lt;-</span> <span class="va">dogfood</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"start"</span>, <span class="st">"amount"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="va">Ydev</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sweep.html">sweep</a></span><span class="op">(</span><span class="va">Y</span>, <span class="fl">2</span>, <span class="fu"><a href="https://rdrr.io/r/base/colSums.html">colMeans</a></span><span class="op">(</span><span class="va">Y</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">SSP_T</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/crossprod.html">crossprod</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span><span class="op">(</span><span class="va">Ydev</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt;        start amount</span></span>
@@ -724,8 +729,8 @@ Figure&nbsp;10.2: Breakdown of the total <span class="math inline">\(\mathbf{SSP
 <span><span class="va">residuals</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/residuals.html">residuals</a></span><span class="op">(</span><span class="va">dogfood.mod</span><span class="op">)</span></span>
 <span><span class="va">SSP_E</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/crossprod.html">crossprod</a></span><span class="op">(</span><span class="va">residuals</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt;        start amount</span></span>
-<span><span class="co">#&gt; start   25.8   11.8</span></span>
-<span><span class="co">#&gt; amount  11.8  390.3</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; start   25.7   11.7</span></span>
+<span><span class="co">#&gt; amount  11.7  390.3</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>The decomposition of the total sum of squares and products in <a href="#eq-SSP" class="quarto-xref">Equation&nbsp;<span>10.3</span></a> can be shown as:</p>
 <p><span class="math display">\[
@@ -764,7 +769,7 @@ Figure&nbsp;10.2: Breakdown of the total <span class="math inline">\(\mathbf{SSP
 <p>However, when the hypothesized model terms have <span class="math inline">\(\text{df}_h\)</span> degrees of freedom (columns of the <span class="math inline">\(\mathbf{X}\)</span> matrix for that term), <span class="math inline">\(\mathbf{H}\)</span> is of rank <span class="math inline">\(\text{df}_h\)</span>, so only <span class="math inline">\(s=\min(p, \text{df}_h)\)</span> eigenvalues can be non-zero. For example, a test for a hypothesis about a single quantitative predictor <span class="math inline">\(\mathbf{x}\)</span>, has <span class="math inline">\(\text{df}_h = 1\)</span> degree of freedom and <span class="math inline">\(\mathrm{rank} (\mathbf{H}) = 1\)</span>; for a factor with <span class="math inline">\(g\)</span> groups, <span class="math inline">\(\text{df}_h = \mathrm{rank} (\mathbf{H}) = g-1\)</span>.</p>
 <p>For the <code>dogfood</code> data, we get the following results:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb9" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">HEinv</span> <span class="op">&lt;-</span> <span class="va">SSP_H</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html">%*%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/solve.html">solve</a></span><span class="op">(</span><span class="va">SSP_E</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb10" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">HEinv</span> <span class="op">&lt;-</span> <span class="va">SSP_H</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html">%*%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/solve.html">solve</a></span><span class="op">(</span><span class="va">SSP_E</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         start amount</span></span>
 <span><span class="co">#&gt; start   0.466 -0.196</span></span>
 <span><span class="co">#&gt; amount -3.488  1.606</span></span>
@@ -789,7 +794,7 @@ Figure&nbsp;10.2: Breakdown of the total <span class="math inline">\(\mathbf{SSP
 <p>The eigenvectors <span class="math inline">\(\mathbf{v}_i\)</span> in <a href="#eq-he-eigen" class="quarto-xref">Equation&nbsp;<span>10.5</span></a> are also important. These are the weights for the variables in a linear combination <span class="math inline">\(v_{i1} \mathbf{y}_1 + v_{i2} \mathbf{y}_2 + \cdots + v_{ip} \mathbf{y}_p\)</span> which produces the largest univariate <span class="math inline">\(F\)</span> statistic for the <span class="math inline">\(i\)</span>-th dimension. We exploit this in canonical discriminant analysis and the corresponding canonical HE plots (<a href="11-mlm-viz.html#sec-candisc" class="quarto-xref"><span>Section 11.7</span></a>).</p>
 <p>The eigenvectors of <span class="math inline">\(\mathbf{H}\mathbf{E}^{-1}\)</span> for the dogfood model are shown below:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb10" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="va">eig</span><span class="op">$</span><span class="va">vectors</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="va">HEinv</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb11" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="va">eig</span><span class="op">$</span><span class="va">vectors</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="va">HEinv</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">eig</span><span class="op">$</span><span class="va">vectors</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="st">"Dim"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">)</span></span>
 <span><span class="va">eig</span><span class="op">$</span><span class="va">vectors</span></span>
 <span><span class="co">#&gt;         Dim 1  Dim 2</span></span>
@@ -953,7 +958,7 @@ L_3 &amp; = \mu_M - \mu_A                     &amp; \rightarrow\: &amp; \mathbf{
 <p>Note that these correspond to <em>nested dichotomies</em> among the four groups: first we compare groups (Old and New) against groups (Major and Alps), then subsequently within each of these sets. Nested dicontomy contrasts are always <em>orthogonal</em>, and therefore correspond to statistically independent tests. We are effectively taking a three degree-of-freedom question, “do the means differ?” and breaking it down into three separate 1 df tests that answer specific parts of that overall question.</p>
 <p>In R, contrasts for a factor are specified as columns of matrix, each of which sums to zero. For this example, we can set this up by creating each as a vector and joining them as columns using <code><a href="https://rdrr.io/r/base/cbind.html">cbind()</a></code>:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb11" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">c1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>,  <span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span><span class="op">/</span><span class="fl">2</span>    <span class="co"># Old,New vs. Major,Alps</span></span>
+<div class="sourceCode" id="cb12" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">c1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>,  <span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span><span class="op">/</span><span class="fl">2</span>    <span class="co"># Old,New vs. Major,Alps</span></span>
 <span><span class="va">c2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span>,  <span class="fl">0</span>,  <span class="fl">0</span><span class="op">)</span>      <span class="co"># Old vs. New</span></span>
 <span><span class="va">c3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>,  <span class="fl">0</span>,  <span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span>      <span class="co"># Major vs. Alps</span></span>
 <span><span class="va">C</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">c1</span>,<span class="va">c2</span>,<span class="va">c3</span><span class="op">)</span> </span>
@@ -975,7 +980,7 @@ L_3 &amp; = \mu_M - \mu_A                     &amp; \rightarrow\: &amp; \mathbf{
 </div>
 <p>For the <code>dogfood</code> data, with <code>formula</code> as the group factor, you can set up the analyses to use these contrasts by assigning the matrix <code>C</code> to <code><a href="https://rdrr.io/r/stats/contrasts.html">contrasts()</a></code> for that factor in the dataset itself. When the contrasts are changed, it is necessary to refit the model. The estimated coefficients then become the estimated mean differences for the contrasts.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb12" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/contrasts.html">contrasts</a></span><span class="op">(</span><span class="va">dogfood</span><span class="op">$</span><span class="va">formula</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">C</span></span>
+<div class="sourceCode" id="cb13" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/contrasts.html">contrasts</a></span><span class="op">(</span><span class="va">dogfood</span><span class="op">$</span><span class="va">formula</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">C</span></span>
 <span><span class="va">dogfood.mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">start</span>, <span class="va">amount</span><span class="op">)</span> <span class="op">~</span> <span class="va">formula</span>, </span>
 <span>                  data<span class="op">=</span><span class="va">dogfood</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">dogfood.mod</span><span class="op">)</span></span>
@@ -993,7 +998,7 @@ L_3 &amp; = \mu_M - \mu_A                     &amp; \rightarrow\: &amp; \mathbf{
 <p>exactly as the univariate <span class="math inline">\(\text{SS}_H\)</span> can be decomposed using orthogonal contrasts in an ANOVA.</p>
 <p>You can test such contrasts or any other hypotheses involving linear combinations of the coefficients using <code><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">car::linearHypothesis</a></code>. Here, <code>"formulac1"</code> refers to the contrast <code>c1</code> for the difference between Ours and Theirs. Note that because this is a 1 df test, all four test statistics yield the same <span class="math inline">\(F\)</span> values.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb13" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hyp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">dogfood.mod</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span><span class="op">]</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb14" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">hyp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">dogfood.mod</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span><span class="op">]</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "formulac1" "formulac2" "formulac3"</span></span>
 <span><span class="va">H1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">linearHypothesis</a></span><span class="op">(</span><span class="va">dogfood.mod</span>, <span class="va">hyp</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, title<span class="op">=</span><span class="st">"Ours vs. Theirs"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
@@ -1019,7 +1024,7 @@ L_3 &amp; = \mu_M - \mu_A                     &amp; \rightarrow\: &amp; \mathbf{
 </div>
 <p>Similarly we can test the other two contrasts within these each of these two subsets, but I don’t print the results</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb14" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">H2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">linearHypothesis</a></span><span class="op">(</span><span class="va">dogfood.mod</span>, <span class="va">hyp</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>, </span>
+<div class="sourceCode" id="cb15" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">H2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">linearHypothesis</a></span><span class="op">(</span><span class="va">dogfood.mod</span>, <span class="va">hyp</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>, </span>
 <span>                       title<span class="op">=</span><span class="st">"Old vs. New"</span><span class="op">)</span></span>
 <span><span class="va">H3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">linearHypothesis</a></span><span class="op">(</span><span class="va">dogfood.mod</span>, <span class="va">hyp</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span>, </span>
 <span>                       title<span class="op">=</span><span class="st">"Alps vs. Major"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -1101,7 +1106,7 @@ Figure&nbsp;10.4: A simple MANOVA design involving three groups and two response
 <p>The main questions concern whether the group means differ on these scales, and the nature of these differences. That is, do the means differ significantly on all three measures? Is there a consistent order of groups across these three aspects of parenting?</p>
 <p>More specific questions are: (a) Do the fathers of typical children differ from the other two groups on average? (b) Do the physical and mental groups differ? These questions can be tested using contrasts, and are specified by assigning a matrix to <code>contrasts(Parenting$group)</code>; each column is a contrast whose values sum to zero. They are given labels <code>"group1"</code> (normal vs.&nbsp;other) and <code>"group2"</code> (physical vs.&nbsp;mental) in some output.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb15" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">Parenting</span>, package<span class="op">=</span><span class="st">"heplots"</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb16" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">Parenting</span>, package<span class="op">=</span><span class="st">"heplots"</span><span class="op">)</span></span>
 <span><span class="va">C</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">.5</span>, <span class="op">-</span><span class="fl">.5</span>,</span>
 <span>              <span class="fl">0</span>,  <span class="fl">1</span>,  <span class="op">-</span><span class="fl">1</span><span class="op">)</span>, </span>
 <span>            nrow <span class="op">=</span> <span class="fl">3</span>, ncol <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
@@ -1114,7 +1119,7 @@ Figure&nbsp;10.4: A simple MANOVA design involving three groups and two response
 <section id="exploratory-plots" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="exploratory-plots">Exploratory plots</h4>
 <p>Before setting up a model and testing, it is well-advised to examine the data graphically. The simplest plots are side-by-side boxplots (or violin plots) for the three responses. With <code>ggplot2</code>, this is easily done by reshaping the data to long format and using faceting. In <a href="#fig-parenting-boxpl" class="quarto-xref">Figure&nbsp;<span>10.5</span></a>, I’ve also plotted the group means with white dots.</p>
 <div class="cell" data-layout-align="center">
-<details class="code-fold"><summary>See the ggplot code</summary><div class="sourceCode" id="cb16" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">parenting_long</span> <span class="op">&lt;-</span> <span class="va">Parenting</span> <span class="op">|&gt;</span></span>
+<details class="code-fold"><summary>See the ggplot code</summary><div class="sourceCode" id="cb17" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">parenting_long</span> <span class="op">&lt;-</span> <span class="va">Parenting</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html">pivot_longer</a></span><span class="op">(</span>cols<span class="op">=</span><span class="va">caring</span><span class="op">:</span><span class="va">play</span>, </span>
 <span>                      names_to <span class="op">=</span> <span class="st">"variable"</span><span class="op">)</span></span>
 <span></span>
@@ -1148,7 +1153,7 @@ Figure&nbsp;10.5: Faceted boxplots of scores on the three parenting scales, show
 <p>In this figure, differences among the groups on <code>play</code> are most apparent, with fathers of non-disabled children scoring highest. Differences among the groups on <code>emotion</code> are very small, but one high outlier for the fathers of mentally disabled children is apparent. On <code>caring</code>, fathers of children with a physical disability stand out as highest.</p>
 <p>For exploratory purposes, you might also make a scatterplot matrix. Here, because the MLM assumes homogeneity of the variances and covariance matrices <span class="math inline">\(\mathbf{S}_i\)</span>, I show only the data ellipses in scatterplot matrix format, using <code>heplots:covEllipses()</code> (with 50% coverage, for clarity):</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb17" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">colors</span> <span class="op">&lt;-</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/pal_hue.html">hue_pal</a></span><span class="op">(</span><span class="op">)</span><span class="op">(</span><span class="fl">3</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/rev.html">rev</a></span><span class="op">(</span><span class="op">)</span>  <span class="co"># match color use in ggplot</span></span>
+<div class="sourceCode" id="cb18" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">colors</span> <span class="op">&lt;-</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/pal_hue.html">hue_pal</a></span><span class="op">(</span><span class="op">)</span><span class="op">(</span><span class="fl">3</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/rev.html">rev</a></span><span class="op">(</span><span class="op">)</span>  <span class="co"># match color use in ggplot</span></span>
 <span><span class="fu"><a href="https://friendly.github.io/heplots/reference/covEllipses.html">covEllipses</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">caring</span>, <span class="va">play</span>, <span class="va">emotion</span><span class="op">)</span> <span class="op">~</span> <span class="va">group</span>, </span>
 <span>  data<span class="op">=</span><span class="va">Parenting</span>,</span>
 <span>  variables <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span>,</span>
@@ -1172,7 +1177,7 @@ Figure&nbsp;10.6: Bivariate data ellipses for pairs of the three responses, show
 <span class="header-section-number">10.4.1.1</span> Testing the model</h4>
 <p>Let’s proceed to fit the multivariate model predicting all three scales from the <code>group</code> factor. <code><a href="https://rdrr.io/r/stats/lm.html">lm()</a></code> for a multivariate response returns an object of class <code>"mlm"</code>, for which there are many methods (use <code>methods(class="mlm")</code> to find them).</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb18" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">parenting.mlm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">caring</span>, <span class="va">play</span>, <span class="va">emotion</span><span class="op">)</span> <span class="op">~</span> <span class="va">group</span>, </span>
+<div class="sourceCode" id="cb19" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">parenting.mlm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">caring</span>, <span class="va">play</span>, <span class="va">emotion</span><span class="op">)</span> <span class="op">~</span> <span class="va">group</span>, </span>
 <span>                    data<span class="op">=</span><span class="va">Parenting</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Call:</span></span>
@@ -1187,7 +1192,7 @@ Figure&nbsp;10.6: Bivariate data ellipses for pairs of the three responses, show
 <p>The coefficients in this model are the values of the contrasts set up above. <code>group1</code> is the mean of the typical group minus the average of the other two, which is negative on <code>caring</code> and <code>emotion</code> but positive for <code>play</code>. <code>group2</code> is the difference in means for the physical vs.&nbsp;mental groups.</p>
 <p>Before doing multivariate tests, it is useful to see what would happen if we ran univariate ANOVAs on each of the responses. These can be extracted from an MLM using <code><a href="https://rdrr.io/r/stats/summary.aov.html">stats::summary.aov()</a></code> and they give tests of the model terms for each response variable separately:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb19" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/summary.aov.html">summary.aov</a></span><span class="op">(</span><span class="va">parenting.mlm</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb20" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/summary.aov.html">summary.aov</a></span><span class="op">(</span><span class="va">parenting.mlm</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  Response caring :</span></span>
 <span><span class="co">#&gt;             Df Sum Sq Mean Sq F value Pr(&gt;F)    </span></span>
 <span><span class="co">#&gt; group        2    130    65.2    18.6  6e-07 ***</span></span>
@@ -1209,7 +1214,7 @@ Figure&nbsp;10.6: Bivariate data ellipses for pairs of the three responses, show
 </div>
 <p>For a more condensed summary, you can instead extract the univariate model fit statistics from the <code>"mlm"</code> object using the <code>heplots::glance()</code> method for a multivariate model object. The code below selects just the <span class="math inline">\(R^2\)</span> and <span class="math inline">\(F\)</span>-statistic for the overall model for each response, together with the associated <span class="math inline">\(p\)</span>-value.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb20" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://generics.r-lib.org/reference/glance.html">glance</a></span><span class="op">(</span><span class="va">parenting.mlm</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<div class="sourceCode" id="cb21" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://generics.r-lib.org/reference/glance.html">glance</a></span><span class="op">(</span><span class="va">parenting.mlm</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">response</span>, <span class="va">r.squared</span>, <span class="va">fstatistic</span>, <span class="va">p.value</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 3 × 4</span></span>
 <span><span class="co">#&gt;   response r.squared fstatistic       p.value</span></span>
@@ -1220,7 +1225,7 @@ Figure&nbsp;10.6: Bivariate data ellipses for pairs of the three responses, show
 </div>
 <p>From this, one might conclude that there are differences only in <code>caring</code> and <code>play</code> and therefore ignore <code>emotion</code>, but this would be short-sighted. <code><a href="https://rdrr.io/pkg/car/man/Anova.html">car::Anova()</a></code>, shown below, gives the overall multivariate test <span class="math inline">\(\mathcal{H}_0: \mathbf{B} = 0\)</span> of the <code>group</code> effect, that the groups don’t differ on <em>any</em> of the response variables. Note that this has a much smaller <span class="math inline">\(p\)</span>-value than any of the univariate <span class="math inline">\(F\)</span> tests.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb21" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova</a></span><span class="op">(</span><span class="va">parenting.mlm</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb22" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova</a></span><span class="op">(</span><span class="va">parenting.mlm</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Type II MANOVA Tests: Pillai test statistic</span></span>
 <span><span class="co">#&gt;       Df test stat approx F num Df den Df Pr(&gt;F)    </span></span>
@@ -1230,7 +1235,7 @@ Figure&nbsp;10.6: Bivariate data ellipses for pairs of the three responses, show
 </div>
 <p><code><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova()</a></code> returns an object of class <code>"Anova.mlm"</code> which has various methods. The <code><a href="https://rdrr.io/r/base/summary.html">summary()</a></code> method for this gives more details, including all four test statistics. With <span class="math inline">\(p=3\)</span> responses, these tests have <span class="math inline">\(s = \min(p, \text{df}_h) = \min(3,2) = 2\)</span> dimensions and the <span class="math inline">\(F\)</span> approximations are <em>not</em> equivalent here. All four tests are highly significant, with Roy’s test giving the largest <span class="math inline">\(F\)</span> statistic.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb22" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">parenting.summary</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova</a></span><span class="op">(</span><span class="va">parenting.mlm</span><span class="op">)</span> <span class="op">|&gt;</span>  <span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="op">)</span> </span>
+<div class="sourceCode" id="cb23" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">parenting.summary</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova</a></span><span class="op">(</span><span class="va">parenting.mlm</span><span class="op">)</span> <span class="op">|&gt;</span>  <span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="op">)</span> </span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">parenting.summary</span>, SSP<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Type II MANOVA Tests:</span></span>
@@ -1250,7 +1255,7 @@ Figure&nbsp;10.6: Bivariate data ellipses for pairs of the three responses, show
 </div>
 <p>The <code><a href="https://rdrr.io/r/base/summary.html">summary()</a></code> method by default prints the SSH = <span class="math inline">\(\mathbf{H}\)</span> and SSE = <span class="math inline">\(\mathbf{E}\)</span> matrices, but I suppressed them above. The data structure returned contains nested elements which can be extracted more easily from the object using <code><a href="https://purrr.tidyverse.org/reference/pluck.html">purrr::pluck()</a></code>:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb23" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">H</span> <span class="op">&lt;-</span> <span class="va">parenting.summary</span> <span class="op">|&gt;</span> </span>
+<div class="sourceCode" id="cb24" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">H</span> <span class="op">&lt;-</span> <span class="va">parenting.summary</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/pluck.html">pluck</a></span><span class="op">(</span><span class="st">"multivariate.tests"</span>, <span class="st">"group"</span>, <span class="st">"SSPH"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         caring    play emotion</span></span>
@@ -1261,15 +1266,15 @@ Figure&nbsp;10.6: Bivariate data ellipses for pairs of the three responses, show
 <span>  <span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/pluck.html">pluck</a></span><span class="op">(</span><span class="st">"multivariate.tests"</span>, <span class="st">"group"</span>, <span class="st">"SSPE"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         caring  play emotion</span></span>
-<span><span class="co">#&gt; caring   199.8 -45.8    35.2</span></span>
+<span><span class="co">#&gt; caring   199.8 -45.8    35.3</span></span>
 <span><span class="co">#&gt; play     -45.8 182.7    80.6</span></span>
-<span><span class="co">#&gt; emotion   35.2  80.6   408.0</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#&gt; emotion   35.3  80.6   408.1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section><section id="linear-hypotheses-contrasts" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="linear-hypotheses-contrasts">Linear hypotheses &amp; contrasts</h4>
 <p>With three or more groups or with a more complex MANOVA design, contrasts provide a way of testing questions of substantive interest regarding differences among group means.</p>
 <p>The test of the contrast comparing the typical group to the average of the others is the test using the contrast <span class="math inline">\(c_1 = (1, -\frac12, -\frac12)\)</span> which produces the coefficients labeled <code>"group1"</code>. The function <code><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">car::linearHypothesis()</a></code> carries out the multivariate test that this difference is zero. This is a 1 df test, so all four test statistics produce the same <span class="math inline">\(F\)</span> and <span class="math inline">\(p\)</span>-values.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb24" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">parenting.mlm</span><span class="op">)</span><span class="op">[</span><span class="st">"group1"</span>,<span class="op">]</span></span>
+<div class="sourceCode" id="cb25" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">parenting.mlm</span><span class="op">)</span><span class="op">[</span><span class="st">"group1"</span>,<span class="op">]</span></span>
 <span><span class="co">#&gt;  caring    play emotion </span></span>
 <span><span class="co">#&gt; -0.3833  2.4167 -0.0667</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">linearHypothesis</a></span><span class="op">(</span><span class="va">parenting.mlm</span>, <span class="st">"group1"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
@@ -1286,7 +1291,7 @@ Figure&nbsp;10.6: Bivariate data ellipses for pairs of the three responses, show
 </div>
 <p>Similarly, the difference between the physical and mental groups uses the contrast <span class="math inline">\(c_2 = (0, 1, -1)\)</span> and the test that these means are equal is given by <code><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">linearHypothesis()</a></code> applied to <code>group2</code>.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb25" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">parenting.mlm</span><span class="op">)</span><span class="op">[</span><span class="st">"group2"</span>,<span class="op">]</span></span>
+<div class="sourceCode" id="cb26" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">parenting.mlm</span><span class="op">)</span><span class="op">[</span><span class="st">"group2"</span>,<span class="op">]</span></span>
 <span><span class="co">#&gt;  caring    play emotion </span></span>
 <span><span class="co">#&gt;   1.775  -0.225  -0.600</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">linearHypothesis</a></span><span class="op">(</span><span class="va">parenting.mlm</span>, <span class="st">"group2"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
@@ -1304,7 +1309,7 @@ Figure&nbsp;10.6: Bivariate data ellipses for pairs of the three responses, show
 <p><code><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">linearHypothesis()</a></code> is very general. The second argument (<code>hypothesis.matrix</code>) corresponds to <span class="math inline">\(\mathbf{C}\)</span>, and can be specified as numeric matrix giving the linear combinations of coefficients by rows to be tested, or a character vector giving the hypothesis in symbolic form; <code>"group1"</code> is equivalent to <code>"group1 = 0"</code>.</p>
 <p>Because the two contrasts used here are orthogonal, they add together to give the overall test of <span class="math inline">\(\mathbf{B} = \mathbf{0}\)</span>, which implies that the means of the three groups are all equal. The test below gives the same results as <code>Anova(parenting.mlm)</code>.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb26" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">linearHypothesis</a></span><span class="op">(</span><span class="va">parenting.mlm</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"group1"</span>, <span class="st">"group2"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<div class="sourceCode" id="cb27" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">linearHypothesis</a></span><span class="op">(</span><span class="va">parenting.mlm</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"group1"</span>, <span class="st">"group2"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span>SSP<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Multivariate Tests: </span></span>
@@ -1323,7 +1328,7 @@ Figure&nbsp;10.6: Bivariate data ellipses for pairs of the three responses, show
 <span class="header-section-number">10.4.3</span> Example: Adolescent mental health</h3>
 <p>The dataset <code><a href="https://friendly.github.io/heplots/reference/AddHealth.html">heplots::AddHealth</a></code> contains a large cross-sectional sample of participants from grades 7–12 from the National Longitudinal Study of Adolescent Health, described by <span class="citation" data-cites="Warne2014">Warne (<a href="95-references.html#ref-Warne2014" role="doc-biblioref">2014</a>)</span>. It contains responses to two Likert-scale (1–5) items, <code>anxiety</code> and <code>depression</code>. <code>grade</code> is an <em>ordered</em> factor, which means that the default contrasts are taken as orthogonal polynomials with linear (<code>grade.L</code>), quadratic (<code>grade.Q</code>), up to 5th degree (<code>grade^5</code>) trends, which decompose the total effect of grade.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb27" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">AddHealth</span>, package<span class="op">=</span><span class="st">"heplots"</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb28" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">AddHealth</span>, package<span class="op">=</span><span class="st">"heplots"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span><span class="op">(</span><span class="va">AddHealth</span><span class="op">)</span></span>
 <span><span class="co">#&gt; 'data.frame':  4344 obs. of  3 variables:</span></span>
 <span><span class="co">#&gt;  $ grade     : Ord.factor w/ 6 levels "7"&lt;"8"&lt;"9"&lt;"10"&lt;..: 5 4 6 1 2 2 2 3 3 3 ...</span></span>
@@ -1353,7 +1358,7 @@ Figure&nbsp;10.6: Bivariate data ellipses for pairs of the three responses, show
 <section id="exploratory-plots-1" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="exploratory-plots-1">Exploratory plots</h4>
 <p>Some exploratory analysis is useful before fitting and visualizing models. As a first step, we find the means, standard deviations, and standard errors of the means.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb28" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">means</span> <span class="op">&lt;-</span> <span class="va">AddHealth</span> <span class="op">|&gt;</span></span>
+<div class="sourceCode" id="cb29" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">means</span> <span class="op">&lt;-</span> <span class="va">AddHealth</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">grade</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html">summarise</a></span><span class="op">(</span></span>
 <span>    n <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/context.html">n</a></span><span class="op">(</span><span class="op">)</span>,</span>
@@ -1377,7 +1382,7 @@ Figure&nbsp;10.6: Bivariate data ellipses for pairs of the three responses, show
 </div>
 <p>Now, plot the means with <span class="math inline">\(\pm 1\)</span> error bars. It appears that average level of both depression and anxiety increase steadily with grade, except for grades 11 and 12 which don’t differ much. Alternatively, we could describe this as relationships that seem largely linear, with a hint of curvature at the upper end.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb29" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">p1</span> <span class="op">&lt;-</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">means</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">grade</span>, y <span class="op">=</span> <span class="va">anxiety</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<div class="sourceCode" id="cb30" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">p1</span> <span class="op">&lt;-</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">means</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">grade</span>, y <span class="op">=</span> <span class="va">anxiety</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">4</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_line</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>group <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>, linewidth <span class="op">=</span> <span class="fl">1.2</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_linerange.html">geom_errorbar</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>ymin <span class="op">=</span> <span class="va">anxiety</span> <span class="op">-</span> <span class="va">anx_se</span>, </span>
@@ -1405,7 +1410,7 @@ Figure&nbsp;10.7: Means of anxiety and depression by grade, with <span class="ma
 </div>
 <p>It is also useful to within-group correlations using <code><a href="https://friendly.github.io/heplots/reference/covEllipses.html">covEllipses()</a></code>, as shown in <a href="#fig-addhealth-covellipse" class="quarto-xref">Figure&nbsp;<span>10.8</span></a>. This also plots the bivariate means showing the form of the association , treating anxiety and depression as multivariate outcomes. (Because the variability of the scores within groups is so large compared to the range of the means, I show the data ellipses with coverage of only 10%.)</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb30" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://friendly.github.io/heplots/reference/covEllipses.html">covEllipses</a></span><span class="op">(</span><span class="va">AddHealth</span><span class="op">[</span>, <span class="fl">3</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>, group <span class="op">=</span> <span class="va">AddHealth</span><span class="op">$</span><span class="va">grade</span>,</span>
+<div class="sourceCode" id="cb31" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://friendly.github.io/heplots/reference/covEllipses.html">covEllipses</a></span><span class="op">(</span><span class="va">AddHealth</span><span class="op">[</span>, <span class="fl">3</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>, group <span class="op">=</span> <span class="va">AddHealth</span><span class="op">$</span><span class="va">grade</span>,</span>
 <span>            pooled <span class="op">=</span> <span class="cn">FALSE</span>, level <span class="op">=</span> <span class="fl">0.1</span>,</span>
 <span>            center.cex <span class="op">=</span> <span class="fl">2.5</span>, cex <span class="op">=</span> <span class="fl">1.5</span>, cex.lab <span class="op">=</span> <span class="fl">1.5</span>,</span>
 <span>            fill <span class="op">=</span> <span class="cn">TRUE</span>, fill.alpha <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -1427,7 +1432,7 @@ Figure&nbsp;10.8: Within-group covariance ellipses for the <code>grade</code> gr
 \mathcal{H}_0: \boldsymbol{\beta}_1 =  \boldsymbol{\beta}_2  = \cdots =  \boldsymbol{\beta}_5 = \boldsymbol{0} \; .
 \]</span> We fit the MANOVA model, and test the grade effect using <code><a href="https://rdrr.io/pkg/car/man/Anova.html">car::Anova()</a></code>. The effect of <code>grade</code> is highly significant, as we could tell from <a href="#fig-addhealth-means-each" class="quarto-xref">Figure&nbsp;<span>10.7</span></a>.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb31" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">AH.mlm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">anxiety</span>, <span class="va">depression</span><span class="op">)</span> <span class="op">~</span> <span class="va">grade</span>, data <span class="op">=</span> <span class="va">AddHealth</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb32" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">AH.mlm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">anxiety</span>, <span class="va">depression</span><span class="op">)</span> <span class="op">~</span> <span class="va">grade</span>, data <span class="op">=</span> <span class="va">AddHealth</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># overall test of `grade`</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova</a></span><span class="op">(</span><span class="va">AH.mlm</span><span class="op">)</span></span>
@@ -1440,13 +1445,13 @@ Figure&nbsp;10.8: Within-group covariance ellipses for the <code>grade</code> gr
 </div>
 <p>However, the overall test, with 5 degrees of freedom is diffuse, in that it can be rejected if any pair of means differ. Given that <code>grade</code> is an ordered factor, it makes sense to examine narrower hypotheses of linear and nonlinear trends, <code><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">car::linearHypothesis()</a></code> on the coefficients of model <code>AH.mlm</code>.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb32" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">AH.mlm</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb33" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">AH.mlm</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "(Intercept)" "grade.L"     "grade.Q"     "grade.C"    </span></span>
 <span><span class="co">#&gt; [5] "grade^4"     "grade^5"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>The joint test of the linear coefficients <span class="math inline">\(\boldsymbol{\beta}_1 = (\beta_{1,\text{anx}},  \beta_{1,\text{dep}})^\mathsf{T}\)</span> for anxiety and depression, <span class="math inline">\(\mathcal{H}_0 : \boldsymbol{\beta}_1 = \boldsymbol{0}\)</span> is highly significant,</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb33" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co">## linear effect</span></span>
+<div class="sourceCode" id="cb34" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co">## linear effect</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">linearHypothesis</a></span><span class="op">(</span><span class="va">AH.mlm</span>, <span class="st">"grade.L"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span>SSP <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Multivariate Tests: </span></span>
@@ -1460,7 +1465,7 @@ Figure&nbsp;10.8: Within-group covariance ellipses for the <code>grade</code> gr
 </div>
 <p>The test of the quadratic coefficients <span class="math inline">\(\mathcal{H}_0 : \boldsymbol{\beta}_2 = \boldsymbol{0}\)</span> indicates significant curvature in trends across grade, as we saw in the plots of their means in <a href="#fig-addhealth-means-each" class="quarto-xref">Figure&nbsp;<span>10.7</span></a>. One interpretation might be that depression and anxiety after increasing steadily up to grade eleven could level off thereafter.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb34" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co">## quadratic effect</span></span>
+<div class="sourceCode" id="cb35" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co">## quadratic effect</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">linearHypothesis</a></span><span class="op">(</span><span class="va">AH.mlm</span>, <span class="st">"grade.Q"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span>SSP <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Multivariate Tests: </span></span>
@@ -1474,7 +1479,7 @@ Figure&nbsp;10.8: Within-group covariance ellipses for the <code>grade</code> gr
 </div>
 <p>An advantage of linear hypotheses is that we can test several terms <em>jointly</em>. Of interest here is the hypothesis that all higher order terms beyond the quadratic are zero, <span class="math inline">\(\mathcal{H}_0 : \boldsymbol{\beta}_3 =  \boldsymbol{\beta}_4 =  \boldsymbol{\beta}_5 = \boldsymbol{0}\)</span>. Using <code>linearHypothesis</code> you can supply a vector of coefficient names to be tested for their joint effect when dropped from the model.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb35" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">coefs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">AH.mlm</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb36" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">coefs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">AH.mlm</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "(Intercept)" "grade.L"     "grade.Q"     "grade.C"    </span></span>
 <span><span class="co">#&gt; [5] "grade^4"     "grade^5"</span></span>
 <span><span class="co">## joint test of all higher terms</span></span>
@@ -1508,7 +1513,7 @@ Figure&nbsp;10.8: Within-group covariance ellipses for the <code>grade</code> gr
 <p>The dataset <code><a href="https://friendly.github.io/heplots/reference/NLSY.html">heplots::NLSY</a></code> comes from a small part of the National Longitudinal Survey of Youth, a series of annual surveys conducted by the U.S. Department of Labor to examine the transition of young people into the labor force. This particular subset gives measures of 243 children on mathematics and reading achievement and also measures of behavioral problems (antisocial, hyperactivity). Also available are the yearly income and education of the child’s father.</p>
 <p>In this analysis the <code>math</code> and <code>read</code> scores are taken at the outcome variables.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a> Among the remaining predictors, income and educ might be considered as background variables necessary to control for. Interest might then be focused on whether the behavioral variables antisoc and hyperact contribute beyond that.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb36" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">NLSY</span>, package <span class="op">=</span> <span class="st">"heplots"</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb37" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">NLSY</span>, package <span class="op">=</span> <span class="st">"heplots"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span><span class="op">(</span><span class="va">NLSY</span><span class="op">)</span></span>
 <span><span class="co">#&gt; 'data.frame':  243 obs. of  6 variables:</span></span>
 <span><span class="co">#&gt;  $ math    : num  50 28.6 50 32.1 21.4 ...</span></span>
@@ -1521,7 +1526,7 @@ Figure&nbsp;10.8: Within-group covariance ellipses for the <code>grade</code> gr
 <section id="exploratory-plots-2" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="exploratory-plots-2">Exploratory plots</h4>
 <p>To begin, I would examine some scatterplots and univariate displays. I’ll start with density plots for all the variables to see the shapes of their distributions, wikh rug plots at the bottom to show where the observations are located. From <a href="#fig-NLSY-density" class="quarto-xref">Figure&nbsp;<span>10.9</span></a> we see that math and reading scores are positively skewed, anti-social and hyperactivity have distributions highly concentrated in the lower scores. As we would suspect, father’s income is quite positively skewed. Father’s education is reasonably symmetric, but highly peaked at 12 years of schooling in this sample. The spikes reflect the fact that education is measured in discrete years.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb37" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">NLSY_long</span> <span class="op">&lt;-</span> <span class="va">NLSY</span> <span class="op">|&gt;</span> </span>
+<div class="sourceCode" id="cb38" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">NLSY_long</span> <span class="op">&lt;-</span> <span class="va">NLSY</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html">pivot_longer</a></span><span class="op">(</span><span class="va">math</span><span class="op">:</span><span class="va">educ</span>, names_to <span class="op">=</span> <span class="st">"variable"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>variable <span class="op">=</span> <span class="fu">forcats</span><span class="fu">::</span><span class="fu"><a href="https://forcats.tidyverse.org/reference/fct_inorder.html">fct_inorder</a></span><span class="op">(</span><span class="va">variable</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
@@ -1544,7 +1549,7 @@ Figure&nbsp;10.9: Density plots for the variables in the <code>NLSY</code> datas
 </div>
 <p>In terms of an analysis focused on <code>math</code> and <code>read</code> as outcomes, a scatterplot of one against the other is useful, as is collection of scatterplots of each against the remaining variables. The second of these is left as an exercise to the reader.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb38" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">47</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb39" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">47</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">NLSY</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">read</span>, y <span class="op">=</span> <span class="va">math</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_jitter.html">geom_jitter</a></span><span class="op">(</span><span class="op">)</span><span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_smooth.html">geom_smooth</a></span><span class="op">(</span>method <span class="op">=</span> <span class="va">lm</span>, formula <span class="op">=</span> <span class="va">y</span><span class="op">~</span><span class="va">x</span>, fill <span class="op">=</span> <span class="st">"blue"</span>, alpha <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span> <span class="op">+</span></span>
@@ -1562,7 +1567,7 @@ Figure&nbsp;10.10: Scatterplot of mathematics score against reading score in the
 </div>
 <p>The non-linear trend in <a href="#fig-NLSY-scat1" class="quarto-xref">Figure&nbsp;<span>10.10</span></a> may be due to the sparsity of data in the upper range of reading, and there are also a few unusual points shown in this plot. The function <code><a href="https://friendly.github.io/heplots/reference/noteworthy.html">heplots::noteworthy()</a></code> provides a variety of methods to identify such noteworthy points in scatterplots. The default <code>method</code> uses Mahalanobis <span class="math inline">\(D^2\)</span>. The plot below labels the five largest observations.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb39" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">ids</span> <span class="op">&lt;-</span> <span class="fu">heplots</span><span class="fu">::</span><span class="fu"><a href="https://friendly.github.io/heplots/reference/noteworthy.html">noteworthy</a></span><span class="op">(</span><span class="va">NLSY</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>, method <span class="op">=</span> <span class="st">"mahal"</span>, n<span class="op">=</span><span class="fl">5</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb40" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">ids</span> <span class="op">&lt;-</span> <span class="fu">heplots</span><span class="fu">::</span><span class="fu"><a href="https://friendly.github.io/heplots/reference/noteworthy.html">noteworthy</a></span><span class="op">(</span><span class="va">NLSY</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>, method <span class="op">=</span> <span class="st">"mahal"</span>, n<span class="op">=</span><span class="fl">5</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">NLSY</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">read</span>, y <span class="op">=</span> <span class="va">math</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_jitter.html">geom_jitter</a></span><span class="op">(</span><span class="op">)</span><span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_smooth.html">geom_smooth</a></span><span class="op">(</span>method <span class="op">=</span> <span class="va">lm</span>, formula <span class="op">=</span> <span class="va">y</span><span class="op">~</span><span class="va">x</span>, fill <span class="op">=</span> <span class="st">"blue"</span>, alpha <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span> <span class="op">+</span></span>
@@ -1585,7 +1590,7 @@ Figure&nbsp;10.11: Scatterplot of mathematics score against reading score in the
 <!-- $\log_2()$ rather than natural $\ln()$ facilitates interpretation. We can interpret -->
 <!-- the coefficient for reading as "a doubling of income" is associated with an increase of that value in reading". -->
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb40" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">NLSY.mod1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">read</span>, <span class="va">math</span><span class="op">)</span> <span class="op">~</span> <span class="va">income</span> <span class="op">+</span> <span class="va">educ</span>, </span>
+<div class="sourceCode" id="cb41" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">NLSY.mod1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">read</span>, <span class="va">math</span><span class="op">)</span> <span class="op">~</span> <span class="va">income</span> <span class="op">+</span> <span class="va">educ</span>, </span>
 <span>                data <span class="op">=</span> <span class="va">NLSY</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova</a></span><span class="op">(</span><span class="va">NLSY.mod1</span><span class="op">)</span>  <span class="co"># Type II, partial test</span></span>
@@ -1600,7 +1605,7 @@ Figure&nbsp;10.11: Scatterplot of mathematics score against reading score in the
 </section><section id="overall-test" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="overall-test">Overall test</h4>
 <p>The <code><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova()</a></code> results above give multivariate tests of the contributions of each predictor <em>separately</em> to explaining reading and math and how they vary together. To get an overall test of the global null hypothesis <span class="math inline">\(\mathcal{H}_0 : \mathbf{B} =(\boldsymbol{\beta}_{\text{inc}}, \boldsymbol{\beta}_{\text{educ}}) =\mathbf{0}\)</span> for <em>all</em> predictors together, you can use <code><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">linearHypothesis()</a></code>:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb41" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">coefs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">NLSY.mod1</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span><span class="op">]</span></span>
+<div class="sourceCode" id="cb42" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">coefs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">NLSY.mod1</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span><span class="op">]</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">linearHypothesis</a></span><span class="op">(</span><span class="va">NLSY.mod1</span>, <span class="va">coefs</span>, title <span class="op">=</span> <span class="st">"income, educ = 0"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span>SSP <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -1617,7 +1622,7 @@ Figure&nbsp;10.11: Scatterplot of mathematics score against reading score in the
 </section><section id="coefficient-plots" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="coefficient-plots">Coefficient plots</h4>
 <p>As usual, you can display the coefficients using <code><a href="https://rdrr.io/r/stats/coef.html">coef()</a></code>. The <code>tidy</code> method for <code>"mlm"</code> objects defined in <span style="color: brown;"><strong>heplots</strong></span> shows these in a tidy format with <span class="math inline">\(t\)</span>-tests for each coefficient., arranged by the response variable.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb42" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">NLSY.mod1</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb43" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">NLSY.mod1</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                read   math</span></span>
 <span><span class="co">#&gt; (Intercept) 15.8848 8.7829</span></span>
 <span><span class="co">#&gt; income       0.0137 0.0893</span></span>
@@ -1637,14 +1642,14 @@ Figure&nbsp;10.11: Scatterplot of mathematics score against reading score in the
 <p>However, a bivariate plot of these coefficients is more useful, because it provides visual tests of multivariate hypotheses. <code><a href="https://friendly.github.io/heplots/reference/coefplot.html">heplots::coefplot.mlm()</a></code> gives displays of the coefficients for a given <em>pair</em> of response variables. For interpretation, it adds the bivariate confidence ellipse for the coefficients, as well as univariate confidence intervals for each response. The univariate intervals are simply the horizontal and vertical shadows of the ellipses on the response variable axes.</p>
 <p>A wrinkle here, as in <a href="06-linear_models-plots.html#sec-coefficient-displays" class="quarto-xref"><span>Section 6.3</span></a>, is that the coefficients are measured in different units and so coefficient plots for different predictors are more easily compared for standardized variables. To do this, I first re-fit the model using <code>scale(NLSY)</code> …</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb43" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">NLSY_std</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/scale.html">scale</a></span><span class="op">(</span><span class="va">NLSY</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<div class="sourceCode" id="cb44" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">NLSY_std</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/scale.html">scale</a></span><span class="op">(</span><span class="va">NLSY</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">NLSY_std.mod1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">read</span>, <span class="va">math</span><span class="op">)</span> <span class="op">~</span> <span class="va">income</span> <span class="op">+</span> <span class="va">educ</span>, </span>
 <span>                data <span class="op">=</span> <span class="va">NLSY_std</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb44" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://friendly.github.io/heplots/reference/coefplot.html">coefplot</a></span><span class="op">(</span><span class="va">NLSY_std.mod1</span>, fill <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<div class="sourceCode" id="cb45" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://friendly.github.io/heplots/reference/coefplot.html">coefplot</a></span><span class="op">(</span><span class="va">NLSY_std.mod1</span>, fill <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>   col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"darkgreen"</span>, <span class="st">"brown"</span><span class="op">)</span>,</span>
 <span>   lwd <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>   cex.lab <span class="op">=</span> <span class="fl">1.5</span>,</span>
@@ -1668,7 +1673,7 @@ Figure&nbsp;10.12: Bivariate coefficient plot for reading and math with 95% conf
 <p>Given that the parental background variables are highly predictive of student performance, we might want to know if the behavioral measures <code>antisoc</code> and <code>hyperact</code> add importantly to this. One way to do this is to add these predictors to the model and test for their additional contributions over and above the baseline model.</p>
 <p>You can do this using <code><a href="https://rdrr.io/r/stats/update.html">update()</a></code>. In the model formula, “<code>.</code>” on the left hand side corresponds to the previous <span class="math inline">\(y\)</span> variables; on the right-hand side it refers to the <span class="math inline">\(x\)</span>s in the previous model, so I just add the new predictors to that.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb45" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">NLSY.mod2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/update.html">update</a></span><span class="op">(</span><span class="va">NLSY.mod1</span>, <span class="va">.</span> <span class="op">~</span> <span class="va">.</span> <span class="op">+</span> <span class="va">antisoc</span> <span class="op">+</span> <span class="va">hyperact</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb46" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">NLSY.mod2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/update.html">update</a></span><span class="op">(</span><span class="va">NLSY.mod1</span>, <span class="va">.</span> <span class="op">~</span> <span class="va">.</span> <span class="op">+</span> <span class="va">antisoc</span> <span class="op">+</span> <span class="va">hyperact</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova</a></span><span class="op">(</span><span class="va">NLSY.mod2</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Type II MANOVA Tests: Pillai test statistic</span></span>
@@ -1682,7 +1687,7 @@ Figure&nbsp;10.12: Bivariate coefficient plot for reading and math with 95% conf
 </div>
 <p>Each of these new predictors are individually non-significant according to the Type II tests. Using <code><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">linearHypothesis()</a></code> you can test them jointly:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb46" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">coefs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">NLSY.mod2</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span><span class="op">]</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb47" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">coefs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">NLSY.mod2</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span><span class="op">]</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "income"   "educ"     "antisoc"  "hyperact"</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">linearHypothesis</a></span><span class="op">(</span><span class="va">NLSY.mod2</span>, <span class="va">coefs</span><span class="op">[</span><span class="fl">3</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span>, </span>
@@ -1720,7 +1725,7 @@ Figure&nbsp;10.12: Bivariate coefficient plot for reading and math with 95% conf
 <p>There are eight variables in this example, so a scatterplot matrix or even a corrgram might not be sufficiently revealing. As usual, I tried a number of different methods and found a couple that were interesting and useful.</p>
 <p>Multivariate normality is <strong>not</strong> required for all the variables in <span class="math inline">\(\mathbf{Y}\)</span> and <span class="math inline">\(\mathbf{X}\)</span>— it is only required for the residuals, <span class="math inline">\(\boldsymbol{\Large\varepsilon}= \mathbf{Y} - \widehat{\mathbf{Y}}\)</span>. Yet, for MMRA problems, sometimes an initial <span class="math inline">\(\chi^2\)</span> QQ plot provides a handy way to flag possibly unusual values to pay attention to as the analysis proceeds. In <a href="#fig-schooldata-cqplot" class="quarto-xref">Figure&nbsp;<span>10.13</span></a> we see five cases outside the 95% confidence envelope.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb47" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">schooldata</span>, package <span class="op">=</span> <span class="st">"heplots"</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb48" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">schooldata</span>, package <span class="op">=</span> <span class="st">"heplots"</span><span class="op">)</span></span>
 <span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://friendly.github.io/heplots/reference/cqplot.html">cqplot</a></span><span class="op">(</span><span class="va">schooldata</span>, id.n <span class="op">=</span> <span class="fl">5</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt;     DSQ quantile       p</span></span>
 <span><span class="co">#&gt; 59 44.6     21.0 0.00714</span></span>
@@ -1745,7 +1750,7 @@ Figure&nbsp;10.13: <span class="math inline">\(\chi^2\)</span> QQ plot of the <c
 <p>Rather than a complete <span class="math inline">\(8 \times 8\)</span> scatterplot matrix, it is useful here to examine the scatterplots <em>only</em> for each <span class="math inline">\(y\)</span> variable against each of the predictors in <span class="math inline">\(\mathbf{X}\)</span>.<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a> I’ll take steps to flag some of these possibly unusual cases to see where they appear in these pairwise relations.</p>
 <p>To prepare for this with <code>ggplot2</code>, it is necessary to reshape the data to long format <em>twice</em>—once for the (<span class="math inline">\(q=5\)</span>) <span class="math inline">\(x\)</span> variables and again for the (<span class="math inline">\(p=3\)</span>) <span class="math inline">\(y\)</span> responses to get all of their <span class="math inline">\(q \times p\)</span> combinations. That way, we get a data set with variables <code>x</code> and <code>y</code> whose variable names are by <code>xvar</code> and <code>yvar</code>.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb48" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># plot predictors vs each response</span></span>
+<div class="sourceCode" id="cb49" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># plot predictors vs each response</span></span>
 <span><span class="va">xvars</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">schooldata</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span></span>
 <span><span class="va">yvars</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">schooldata</span><span class="op">)</span><span class="op">[</span><span class="fl">6</span><span class="op">:</span><span class="fl">8</span><span class="op">]</span></span>
 <span></span>
@@ -1773,7 +1778,7 @@ Figure&nbsp;10.13: <span class="math inline">\(\chi^2\)</span> QQ plot of the <c
 </div>
 <p>With this data structure, each scatterplot is a plot of a <code>y</code> against and <code>x</code>, and we can facet this using <code>facet_grid(yvar ~ xvar)</code>, giving <a href="#fig-schooldata-scats" class="quarto-xref">Figure&nbsp;<span>10.14</span></a>.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb49" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">school_long</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<div class="sourceCode" id="cb50" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">school_long</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_smooth.html">geom_smooth</a></span><span class="op">(</span>method <span class="op">=</span> <span class="st">"lm"</span>, se <span class="op">=</span> <span class="cn">FALSE</span>, formula <span class="op">=</span> <span class="va">y</span> <span class="op">~</span> <span class="va">x</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/stat_ellipse.html">stat_ellipse</a></span><span class="op">(</span>geom <span class="op">=</span> <span class="st">"polygon"</span>, </span>
@@ -1801,7 +1806,7 @@ Figure&nbsp;10.14: Scatterplots of each of the three response variables against 
 </section><section id="fiting-models" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="fiting-models">Fiting models</h4>
 <p>Let’s proceed to fit the multivariate regression model. Here “<code>.</code>” on the right-hand side of the model formula means all the other variables in the dataset.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb50" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">school.mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">reading</span>, <span class="va">mathematics</span>, <span class="va">selfesteem</span><span class="op">)</span> <span class="op">~</span> <span class="va">.</span>, </span>
+<div class="sourceCode" id="cb51" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">school.mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">reading</span>, <span class="va">mathematics</span>, <span class="va">selfesteem</span><span class="op">)</span> <span class="op">~</span> <span class="va">.</span>, </span>
 <span>                 data<span class="op">=</span><span class="va">schooldata</span><span class="op">)</span></span>
 <span><span class="fu">car</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova</a></span><span class="op">(</span><span class="va">school.mod</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -1818,7 +1823,7 @@ Figure&nbsp;10.14: Scatterplots of each of the three response variables against 
 <p>These multivariate tests have a seemingly simple interpretation: parent’s education and occupation and their visits to the schools are highly predictive of student’s outcomes; their counseling efforts and the number of teachers in the schools, not so much.</p>
 <p>You can get an assessment of the <em>strength</em> of multivariate association from the <span class="math inline">\(R^2\)</span> for each of the responses using <code><a href="https://generics.r-lib.org/reference/glance.html">glance()</a></code> for the MLM. All of these are very high.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb51" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://generics.r-lib.org/reference/glance.html">glance</a></span><span class="op">(</span><span class="va">school.mod</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb52" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://generics.r-lib.org/reference/glance.html">glance</a></span><span class="op">(</span><span class="va">school.mod</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 3 × 8</span></span>
 <span><span class="co">#&gt;   response    r.squared sigma fstatistic numdf dendf  p.value  nobs</span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;           &lt;dbl&gt; &lt;dbl&gt;      &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt; &lt;int&gt;</span></span>
@@ -1829,7 +1834,7 @@ Figure&nbsp;10.14: Scatterplots of each of the three response variables against 
 <p>Similarly <code><a href="https://friendly.github.io/heplots/reference/etasq.html">etasq()</a></code> for an MLM gives an <span class="math inline">\(R^2\)</span>-like measure called <span class="math inline">\(\eta^2\)</span> of the <em>partial association</em> accounted for each of the <em>predictor terms</em> in the model. These are analogous to the Type II tests from <code><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova()</a></code>, which test the additional contribution of each term in the model beyond all the others.</p>
 <p>In spite of the overwhelming significance of the first three predictors, their variance accounted for is more modest. It is highest for parent’s occupation, followed by education. Parent counseling and teachers contribute very little.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb52" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://friendly.github.io/heplots/reference/etasq.html">etasq</a></span><span class="op">(</span><span class="va">school.mod</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb53" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://friendly.github.io/heplots/reference/etasq.html">etasq</a></span><span class="op">(</span><span class="va">school.mod</span><span class="op">)</span></span>
 <span><span class="co">#&gt;             eta^2</span></span>
 <span><span class="co">#&gt; education  0.3756</span></span>
 <span><span class="co">#&gt; occupation 0.5666</span></span>
@@ -1848,7 +1853,7 @@ Figure&nbsp;10.14: Scatterplots of each of the three response variables against 
 <span class="header-section-number">10.6.1</span> Multivariate normality of residuals</h3>
 <p>One easy thing to do is to check for multivariate normality of the residuals. Given that we found a few noteworthy points in <a href="#fig-schooldata-cqplot" class="quarto-xref">Figure&nbsp;<span>10.13</span></a>, a <span class="math inline">\(\chi^2\)</span> QQ plot of the residuals in the model will tell us if any of these are really problematic. The pattern of points relative to the confidence band gives a rough indication of overall multivariate normality.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb53" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://friendly.github.io/heplots/reference/cqplot.html">cqplot</a></span><span class="op">(</span><span class="va">school.mod</span>, id.n <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb54" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://friendly.github.io/heplots/reference/cqplot.html">cqplot</a></span><span class="op">(</span><span class="va">school.mod</span>, id.n <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div id="fig-schoolmod-cqplot" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-schoolmod-cqplot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -1864,12 +1869,12 @@ Figure&nbsp;10.15: <span class="math inline">\(\chi^2\)</span> QQ plot of the re
 <p>It is useful to contrast this with what we get from formal tests that the residuals are <em>strictly</em> multivariate normal. The <span style="color: brown;"><strong>MVN</strong></span> package <span class="citation" data-cites="R-MVN">(<a href="95-references.html#ref-R-MVN" role="doc-biblioref">Korkmaz et al., 2025</a>)</span> provides <code><a href="https://rdrr.io/pkg/MVN/man/mvn.html">mvn()</a></code> for this, which performs a wide variety of normality tests. The most widely used of these is due to <span class="citation" data-cites="Mardia:1974">Mardia (<a href="95-references.html#ref-Mardia:1974" role="doc-biblioref">1974</a>)</span>, which gives multivariate tests of skewness (lack of symmetry) and kurtosis (length of the tails).</p>
 <p>Applying this to the <strong>residuals</strong> from the schools multivariate regression shows that multivariate normality is rejected here. Based on other evidence, this doesn’t seem particularly troubling.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb54" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">school.mvn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/MVN/man/mvn.html">mvn</a></span><span class="op">(</span><span class="va">residuals</span>, mvn_test <span class="op">=</span> <span class="st">"mardia"</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb55" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">school.mvn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/MVN/man/mvn.html">mvn</a></span><span class="op">(</span><span class="va">residuals</span>, mvn_test <span class="op">=</span> <span class="st">"mardia"</span><span class="op">)</span></span>
 <span><span class="co"># print multivariate and univariate tests</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">school.mvn</span>, select <span class="op">=</span> <span class="st">"mvn"</span><span class="op">)</span></span>
-<span><span class="co">#&gt;              Test Statistic p.value      MVN</span></span>
-<span><span class="co">#&gt; 1 Mardia Skewness      1.92   0.750 ✓ Normal</span></span>
-<span><span class="co">#&gt; 2 Mardia Kurtosis     -1.16   0.244 ✓ Normal</span></span>
+<span><span class="co">#&gt;              Test Statistic p.value     Method      MVN</span></span>
+<span><span class="co">#&gt; 1 Mardia Skewness      1.92   0.750 asymptotic ✓ Normal</span></span>
+<span><span class="co">#&gt; 2 Mardia Kurtosis     -1.17   0.244 asymptotic ✓ Normal</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">school.mvn</span>, select <span class="op">=</span> <span class="st">"univariate"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;               Test Variable Statistic p.value Normality</span></span>
 <span><span class="co">#&gt; 1 Anderson-Darling    start     0.307   0.524  ✓ Normal</span></span>
@@ -1879,10 +1884,10 @@ Figure&nbsp;10.15: <span class="math inline">\(\chi^2\)</span> QQ plot of the re
 </section><section id="multivariate-influence" class="level3" data-number="10.6.2"><h3 data-number="10.6.2" class="anchored" data-anchor-id="multivariate-influence">
 <span class="header-section-number">10.6.2</span> Multivariate influence</h3>
 <p>Again, what we see in simple scatterplots can be misleading because they ignore all the other variables in a model. But looking back after fitting a model and examining diagnostic plots can often be illuminating. Among the ideas we inherit from univariate models, the influence of particular observations on the results of analysis should be high on your list.</p>
-<p>The multivariate extension of the diagnostic measures of leverage and influence, and influence plots (<a href="06-linear_models-plots.html#sec-leverage" class="quarto-xref"><span>Section 6.6</span></a>) is provided by the <span style="color: brown;"><strong>mvinfluence</strong></span> package <span class="citation" data-cites="R-mvinfluence">(<a href="95-references.html#ref-R-mvinfluence" role="doc-biblioref">Friendly, 2025</a>)</span>. The theory behind this is due to <span class="citation" data-cites="BarrettLing:92">Barrett &amp; Ling (<a href="95-references.html#ref-BarrettLing:92" role="doc-biblioref">1992</a>)</span> and better illustrated in <span class="citation" data-cites="Barrett:2003">Barrett (<a href="95-references.html#ref-Barrett:2003" role="doc-biblioref">2003</a>)</span>. Mathematical details of this generalization are given in <code><a href="http://friendly.github.io/mvinfluence/reference/mvinfluence-package.html">help("mvinfluence-package")</a></code>.</p>
+<p>The multivariate extension of the diagnostic measures of leverage and influence, and influence plots (<a href="06-linear_models-plots.html#sec-leverage" class="quarto-xref"><span>Section 6.6</span></a>) is provided by the <span style="color: brown;"><strong>mvinfluence</strong></span> package <span class="citation" data-cites="R-mvinfluence">(<a href="95-references.html#ref-R-mvinfluence" role="doc-biblioref">Friendly, 2025</a>)</span>. The theory behind this is due to <span class="citation" data-cites="BarrettLing:92">Barrett &amp; Ling (<a href="95-references.html#ref-BarrettLing:92" role="doc-biblioref">1992</a>)</span> and better illustrated in <span class="citation" data-cites="Barrett:2003">Barrett (<a href="95-references.html#ref-Barrett:2003" role="doc-biblioref">2003</a>)</span>. Mathematical details of this generalization are given in <code><a href="https://rdrr.io/pkg/mvinfluence/man/mvinfluence.html">help("mvinfluence-package")</a></code>.</p>
 <p><a href="#fig-schoolmod-infl" class="quarto-xref">Figure&nbsp;<span>10.16</span></a> shows one form of an influence plot for the <code>school.mod</code> model. Because multiple response variables are involved, this plots a measure of the <em>squared</em> studentized residuals for each observation against a generalized version of hat values, so potentially “bad” observations appear in the upper left corner. The size of the bubble symbol is proportional to a generalization of Cook’s distance, the measure of influence based on the change in all coefficients if each case was deleted from the analysis.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb55" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/car/man/influencePlot.html">influencePlot</a></span><span class="op">(</span><span class="va">school.mod</span>, id.n<span class="op">=</span><span class="fl">4</span>, </span>
+<div class="sourceCode" id="cb56" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/car/man/influencePlot.html">influencePlot</a></span><span class="op">(</span><span class="va">school.mod</span>, id.n<span class="op">=</span><span class="fl">4</span>, </span>
 <span>              type<span class="op">=</span><span class="st">"stres"</span>,</span>
 <span>              cex.lab <span class="op">=</span> <span class="fl">1.5</span><span class="op">)</span></span>
 <span><span class="co">#&gt;        H      Q  CookD     L      R</span></span>
@@ -1910,7 +1915,7 @@ Figure&nbsp;10.16: Influence plot for the <code>schooldat</code> multivariate re
 </ul>
 <p>The easiest solution is to just omit these troubling cases. You can do this using <code><a href="https://rdrr.io/r/stats/update.html">update()</a></code>, specifying the <code>data</code> argument to be the subset of rows without the bad boys.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb56" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">bad</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">44</span>, <span class="fl">59</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb57" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">bad</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">44</span>, <span class="fl">59</span><span class="op">)</span></span>
 <span><span class="va">OK</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">schooldata</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://generics.r-lib.org/reference/setops.html">setdiff</a></span><span class="op">(</span><span class="va">bad</span><span class="op">)</span></span>
 <span><span class="va">school.mod2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/update.html">update</a></span><span class="op">(</span><span class="va">school.mod</span>, data <span class="op">=</span> <span class="va">schooldata</span><span class="op">[</span><span class="va">OK</span>,<span class="op">]</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova</a></span><span class="op">(</span><span class="va">school.mod2</span><span class="op">)</span></span>
@@ -1927,7 +1932,7 @@ Figure&nbsp;10.16: Influence plot for the <code>schooldat</code> multivariate re
 </div>
 <p>The results of <code><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova()</a></code> on this model tell us that the three significant predictors— occupation, education and visit— are still so, but slightly less so for the last two of these. To compare the coefficients in the new model compared to the old you can calculate the <em>relative difference</em>, <span class="math inline">\(| \mathbf{B}_1 - \mathbf{B}_2 | / \mathbf{B}_1\)</span>, which are</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb57" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">reldiff</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span>, <span class="va">pct</span><span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span> <span class="op">{</span></span>
+<div class="sourceCode" id="cb58" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">reldiff</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span>, <span class="va">pct</span><span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">abs</a></span><span class="op">(</span><span class="va">x</span> <span class="op">-</span> <span class="va">y</span><span class="op">)</span> <span class="op">/</span> <span class="va">x</span></span>
 <span>  <span class="kw">if</span> <span class="op">(</span><span class="va">pct</span><span class="op">)</span> <span class="va">res</span> <span class="op">&lt;-</span> <span class="fl">100</span> <span class="op">*</span> <span class="va">res</span></span>
 <span>  <span class="va">res</span></span>
@@ -1996,7 +2001,7 @@ of Verbal Learning and Verbal Behavior,
 1968, 7: 137-141.
 -->
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb59" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">Rohwer</span>, package <span class="op">=</span> <span class="st">"heplots"</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb60" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">Rohwer</span>, package <span class="op">=</span> <span class="st">"heplots"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
 <span><span class="va">Rohwer</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/sample_n.html">sample_n</a></span><span class="op">(</span><span class="fl">6</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    group SES SAT PPVT Raven n  s ns na ss</span></span>
@@ -2009,7 +2014,7 @@ of Verbal Learning and Verbal Behavior,
 </div>
 <p>Following the scheme for reshaping the data used in <a href="#fig-schooldata-scats" class="quarto-xref">Figure&nbsp;<span>10.14</span></a>, a set of scatterplots of each predictor against each response will give a useful initial look at the data. There’s a lot to see here, so the plot in <a href="#fig-Rohwer-scats" class="quarto-xref">Figure&nbsp;<span>10.18</span></a> focuses attention on the regression lines for the two groups and their data ellipses.</p>
 <div class="cell" data-layout-align="center">
-<details class="code-fold"><summary>Code</summary><div class="sourceCode" id="cb60" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">yvars</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"SAT"</span>, <span class="st">"PPVT"</span>, <span class="st">"Raven"</span> <span class="op">)</span>      <span class="co"># outcome variables</span></span>
+<details class="code-fold"><summary>Code</summary><div class="sourceCode" id="cb61" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">yvars</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"SAT"</span>, <span class="st">"PPVT"</span>, <span class="st">"Raven"</span> <span class="op">)</span>      <span class="co"># outcome variables</span></span>
 <span><span class="va">xvars</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"n"</span>, <span class="st">"s"</span>, <span class="st">"ns"</span>, <span class="st">"na"</span>, <span class="st">"ss"</span><span class="op">)</span>   <span class="co"># predictors</span></span>
 <span></span>
 <span><span class="va">Rohwer_long</span> <span class="op">&lt;-</span> <span class="va">Rohwer</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span></span>
@@ -2049,7 +2054,7 @@ Figure&nbsp;10.18: Scatterplots of each of the three response variables against 
 <section id="mancova-model" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="mancova-model">MANCOVA model</h4>
 <p>Nevertheless, I fit the MANCOVA model that allows a test of different means for the two SES groups on the responses, but constrains the slopes for the PA covariates to be equal. Only two of the PA tasks (<code>na</code> and <code>ns</code>) show individually significant effects in the multivariate tests.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb61" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># Make SES == 'Lo' the reference category</span></span>
+<div class="sourceCode" id="cb62" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># Make SES == 'Lo' the reference category</span></span>
 <span><span class="va">Rohwer</span><span class="op">$</span><span class="va">SES</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/relevel.html">relevel</a></span><span class="op">(</span><span class="va">Rohwer</span><span class="op">$</span><span class="va">SES</span>, ref <span class="op">=</span> <span class="st">"Lo"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">Rohwer.mod1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">SAT</span>, <span class="va">PPVT</span>, <span class="va">Raven</span><span class="op">)</span> <span class="op">~</span> <span class="va">SES</span> <span class="op">+</span> <span class="va">n</span> <span class="op">+</span> <span class="va">s</span> <span class="op">+</span> <span class="va">ns</span> <span class="op">+</span> <span class="va">na</span> <span class="op">+</span> <span class="va">ss</span>, </span>
@@ -2069,7 +2074,7 @@ Figure&nbsp;10.18: Scatterplots of each of the three response variables against 
 </div>
 <p>You can also examine the tests of the univariate ANCOVA models for each of the responses using <code><a href="https://generics.r-lib.org/reference/glance.html">glance()</a></code> or <code><a href="https://friendly.github.io/heplots/reference/uniStats.html">heplots::uniStats()</a></code>. All are significantly related, but the <code>PPVT</code> measure has the largest <span class="math inline">\(R^2\)</span> by far.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb62" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://friendly.github.io/heplots/reference/uniStats.html">uniStats</a></span><span class="op">(</span><span class="va">Rohwer.mod1</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb63" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://friendly.github.io/heplots/reference/uniStats.html">uniStats</a></span><span class="op">(</span><span class="va">Rohwer.mod1</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Univariate tests for responses in the multivariate linear model Rohwer.mod1 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;         R^2     F df1 df2 Pr(&gt;F)    </span></span>
@@ -2079,9 +2084,8 @@ Figure&nbsp;10.18: Scatterplots of each of the three response variables against 
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>To help interpret these effects, bivariate coefficient plots for the paired associate tasks are shown in <a href="#fig-rohwer-mod1-coef" class="quarto-xref">Figure&nbsp;<span>10.19</span></a>. (The coefficients for the group variable <code>SES</code> are on a different scale and so are omitted here.) From this you can see that the named still and named action tasks have opposite signs: contrary to expectations, <code>ns</code> is negatively associated with the measures of aptitude and achievement (when the other predictors are adjusted for).</p>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb63" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://friendly.github.io/heplots/reference/coefplot.html">coefplot</a></span><span class="op">(</span><span class="va">Rohwer.mod1</span>, parm <span class="op">=</span> <span class="fl">2</span><span class="op">:</span><span class="fl">6</span>,</span>
+<p>To help interpret these effects, bivariate coefficient plots for the paired associate tasks are shown in <a href="#fig-rohwer-mod1-coef" class="quarto-xref">Figure&nbsp;<span>10.19</span></a>. (The coefficients for the group variable <code>SES</code> are on a different scale and so are omitted here.) From this you can see that the named still and named action tasks have opposite signs: contrary to expectations, <code>ns</code> is negatively associated with the measures of aptitude and achievement (when the other predictors are adjusted for). ::: {.cell layout-align=“center”}</p>
+<div class="sourceCode" id="cb64" data-code-line-numbers=""><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://friendly.github.io/heplots/reference/coefplot.html">coefplot</a></span><span class="op">(</span><span class="va">Rohwer.mod1</span>, parm <span class="op">=</span> <span class="fl">2</span><span class="op">:</span><span class="fl">6</span>,</span>
 <span>         fill <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>         level <span class="op">=</span> <span class="fl">0.68</span>,</span>
 <span>         cex.lab <span class="op">=</span> <span class="fl">1.5</span><span class="op">)</span></span>
@@ -2099,12 +2103,12 @@ Figure&nbsp;10.19: Bivariate coefficient plots for the MANCOVA model with confid
 </figcaption></figure>
 </div>
 </div>
-</div>
+<p>:::</p>
 <p><strong>TODO</strong>: For interpretation, it would be nice to know how many items were used for each of the PA tasks. The range of <code>na</code> goes up to 35, but others are less.</p>
 </section><section id="adjusted-means" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="adjusted-means">Adjusted means</h4>
 <p>From the analysis of covariance perspective, interest is often centered on estimating the differences between the group means, but adjusting or controlling for differences on the covariates. From the table of means below, you can see that the high SES group performs better on all three response variables, but this group also has higher scores on the paired associate tasks.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb64" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">means</span> <span class="op">&lt;-</span> <span class="va">Rohwer</span> <span class="op">|&gt;</span></span>
+<div class="sourceCode" id="cb65" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">means</span> <span class="op">&lt;-</span> <span class="va">Rohwer</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">SES</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise_all.html">summarise_all</a></span><span class="op">(</span><span class="va">mean</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
@@ -2114,9 +2118,8 @@ Figure&nbsp;10.19: Bivariate coefficient plots for the MANCOVA model with confid
 <span><span class="co">#&gt; 1 Lo        1  31.3  62.6  13.2  2.54  6.92  13.5  22.4  18.4</span></span>
 <span><span class="co">#&gt; 2 Hi        2  47.7  83.1  15    4.59  7.25  14.5  24.3  21.5</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>The adjusted mean differences are simply the values estimated by the coefficients for <code>SES</code> in the model. These are smaller than the differences between the observed means.</p>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb65" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">means</span><span class="op">[</span><span class="fl">2</span>, <span class="fl">3</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span> <span class="op">-</span> <span class="va">means</span><span class="op">[</span><span class="fl">1</span>, <span class="fl">3</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span>  </span>
+<p>The adjusted mean differences are simply the values estimated by the coefficients for <code>SES</code> in the model. These are smaller than the differences between the observed means. ::: {.cell layout-align=“center”}</p>
+<div class="sourceCode" id="cb66" data-code-line-numbers=""><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">means</span><span class="op">[</span><span class="fl">2</span>, <span class="fl">3</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span> <span class="op">-</span> <span class="va">means</span><span class="op">[</span><span class="fl">1</span>, <span class="fl">3</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span>  </span>
 <span><span class="co">#&gt;    SAT PPVT Raven</span></span>
 <span><span class="co">#&gt; 1 16.4 20.4  1.76</span></span>
 <span></span>
@@ -2124,12 +2127,12 @@ Figure&nbsp;10.19: Bivariate coefficient plots for the MANCOVA model with confid
 <span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">Rohwer.mod1</span><span class="op">)</span><span class="op">[</span><span class="fl">2</span>,<span class="op">]</span></span>
 <span><span class="co">#&gt;   SAT  PPVT Raven </span></span>
 <span><span class="co">#&gt;  8.80 16.88  1.59</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
+<p>:::</p>
 <p><strong>TODO</strong>: do this with a CI for the effects</p>
 </section><section id="homogeneity-of-regression" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="homogeneity-of-regression">Homogeneity of regression</h4>
 <p>The MANCOVA model, <code>Rohwer.mod1</code>, has relatively simple interpretations (a large effect of <code>SES</code>, with <code>ns</code> and <code>na</code> as the major predictors) but the test of the <code>SES</code> effect relies on the assumption of homogeneity of slopes for the predictors. We can test this assumption as follows, by adding interactions of <code>SES</code> with each of the covariates:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb66" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">Rohwer.mod2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">SAT</span>, <span class="va">PPVT</span>, <span class="va">Raven</span><span class="op">)</span> <span class="op">~</span> <span class="va">SES</span> <span class="op">*</span> <span class="op">(</span><span class="va">n</span> <span class="op">+</span> <span class="va">s</span> <span class="op">+</span> <span class="va">ns</span> <span class="op">+</span> <span class="va">na</span> <span class="op">+</span> <span class="va">ss</span><span class="op">)</span>,</span>
+<div class="sourceCode" id="cb67" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">Rohwer.mod2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">SAT</span>, <span class="va">PPVT</span>, <span class="va">Raven</span><span class="op">)</span> <span class="op">~</span> <span class="va">SES</span> <span class="op">*</span> <span class="op">(</span><span class="va">n</span> <span class="op">+</span> <span class="va">s</span> <span class="op">+</span> <span class="va">ns</span> <span class="op">+</span> <span class="va">na</span> <span class="op">+</span> <span class="va">ss</span><span class="op">)</span>,</span>
 <span>                  data<span class="op">=</span><span class="va">Rohwer</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova</a></span><span class="op">(</span><span class="va">Rohwer.mod2</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -2151,7 +2154,7 @@ Figure&nbsp;10.19: Bivariate coefficient plots for the MANCOVA model with confid
 </div>
 <p>It appears from the above that there is only weak evidence of unequal slopes from the separate <code>SES:</code> terms; only that for <code>SES:na</code> is individually significant. The evidence for heterogeneity is stronger, however, when these terms are tested <em>collectively</em> using <code><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">linearHypothesis()</a></code>. I use a small <code><a href="https://rdrr.io/r/base/grep.html">grep()</a></code> trick here to find the interaction terms, which have a “:” in their names.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb67" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># test interaction terms jointly</span></span>
+<div class="sourceCode" id="cb68" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># test interaction terms jointly</span></span>
 <span><span class="va">coefs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">Rohwer.mod2</span><span class="op">)</span><span class="op">)</span> </span>
 <span><span class="va">interactions</span> <span class="op">&lt;-</span> <span class="va">coefs</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html">grep</a></span><span class="op">(</span><span class="st">":"</span>, <span class="va">coefs</span><span class="op">)</span><span class="op">]</span></span>
 <span></span>
@@ -2170,7 +2173,7 @@ Figure&nbsp;10.19: Bivariate coefficient plots for the MANCOVA model with confid
 <p>Model <code>Rohwer.mod2</code> with all interaction terms essentially fits a separate slope for each of the low and high SES groups for all responses with each of the predictor PA tasks. This is similar in spirit to what we would get if we fit a separate multivariate regression model for each of the groups, but parameterized differently: The heterogeneous regression model gives, for the interaction terms estimates of the difference in slopes between groups, while the separate-regressions approach gives separate slope estimates for each of the groups. These are equivalent, in the sense that the estimates for each approach can be derived from the other.</p>
 <p>They are not equivalent in testing however, because the full model uses a combined pooled within-group error covariance, allows hypotheses about equality of slopes and intercepts to be tested directly and has greater power because it uses the total sample size. Here, I simply illustrate the mechanics of fitting separate models using the <code>subset</code> argument to <code><a href="https://rdrr.io/r/stats/lm.html">lm()</a></code>.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb68" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">Rohwer.sesHi</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">SAT</span>, <span class="va">PPVT</span>, <span class="va">Raven</span><span class="op">)</span> <span class="op">~</span> <span class="va">n</span> <span class="op">+</span> <span class="va">s</span> <span class="op">+</span> <span class="va">ns</span> <span class="op">+</span> <span class="va">na</span> <span class="op">+</span> <span class="va">ss</span>, </span>
+<div class="sourceCode" id="cb69" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">Rohwer.sesHi</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">SAT</span>, <span class="va">PPVT</span>, <span class="va">Raven</span><span class="op">)</span> <span class="op">~</span> <span class="va">n</span> <span class="op">+</span> <span class="va">s</span> <span class="op">+</span> <span class="va">ns</span> <span class="op">+</span> <span class="va">na</span> <span class="op">+</span> <span class="va">ss</span>, </span>
 <span>                   data<span class="op">=</span><span class="va">Rohwer</span>, subset <span class="op">=</span> <span class="va">SES</span><span class="op">==</span><span class="st">"Hi"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova</a></span><span class="op">(</span><span class="va">Rohwer.sesHi</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -2287,242 +2290,239 @@ Yee, T. W. (2025). <em><span>VGAM</span>: Vector generalized linear and additive
 <li id="fn6"><p><span style="color: brown;"><strong>GGally</strong></span> has a function <code>ggduo()</code> that does something similar, plotting each of one set of variables against another. Like <code>ggpairs()</code> it allows for generalizations of a scatterplot where combinations of discrete factors and continuous variables can be displayed with appropriate visualizations for each.<a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn7"><p>Paired-associate learning are among the simplest tests of memory and learning. The subject is given a list of pairs of words or nonsense syllables, like “banana - house” or “YYZ - Toronto” to learn. On subsequent trials she is given the stimulus term of each pair (“banana”, “YYZ”) and asked to reply with the correct response (“house”, “Toronto”).<a href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol></section></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
-  window.document.addEventListener("DOMContentLoaded", function (event) {
-    const icon = "";
-    const anchorJS = new window.AnchorJS();
-    anchorJS.options = {
-      placement: 'right',
-      icon: icon
-    };
-    anchorJS.add('.anchored');
-    const isCodeAnnotation = (el) => {
-      for (const clz of el.classList) {
-        if (clz.startsWith('code-annotation-')) {                     
-          return true;
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
       }
-      return false;
-    }
-    const onCopySuccess = function(e) {
-      // button target
-      const button = e.trigger;
-      // don't keep focus
-      button.blur();
-      // flash "checked"
-      button.classList.add('code-copy-button-checked');
-      var currentTitle = button.getAttribute("title");
-      button.setAttribute("title", "Copied!");
-      let tooltip;
-      if (window.bootstrap) {
-        button.setAttribute("data-bs-toggle", "tooltip");
-        button.setAttribute("data-bs-placement", "left");
-        button.setAttribute("data-bs-title", "Copied!");
-        tooltip = new bootstrap.Tooltip(button, 
-          { trigger: "manual", 
-            customClass: "code-copy-button-tooltip",
-            offset: [0, -8]});
-        tooltip.show();    
-      }
-      setTimeout(function() {
-        if (tooltip) {
-          tooltip.hide();
-          button.removeAttribute("data-bs-title");
-          button.removeAttribute("data-bs-toggle");
-          button.removeAttribute("data-bs-placement");
-        }
-        button.setAttribute("title", currentTitle);
-        button.classList.remove('code-copy-button-checked');
-      }, 1000);
-      // clear code selection
-      e.clearSelection();
-    }
-    const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
-        }
-        return codeEl.innerText;
-    }
-    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
-      text: getTextToCopy
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
     });
-    clipboard.on('success', onCopySuccess);
-    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
-      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
-        text: getTextToCopy,
-        container: window.document.getElementById('quarto-embedded-source-code-modal')
-      });
-      clipboardModal.on('success', onCopySuccess);
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
     }
-      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
-      var mailtoRegex = new RegExp(/^mailto:/);
-        var filterRegex = new RegExp('/' + window.location.host + '/');
-      var isInternal = (href) => {
-          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
-      }
-      // Inspect non-navigation links and adorn them if external
-     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
-      for (var i=0; i<links.length; i++) {
-        const link = links[i];
-        if (!isInternal(link.href)) {
-          // undo the damage that might have been done by quarto-nav.js in the case of
-          // links that we want to consider external
-          if (link.dataset.originalHref !== undefined) {
-            link.href = link.dataset.originalHref;
-          }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
         }
       }
-    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
-      const config = {
-        allowHTML: true,
-        maxWidth: 500,
-        delay: 100,
-        arrow: false,
-        appendTo: function(el) {
-            return el.parentElement;
-        },
-        interactive: true,
-        interactiveBorder: 10,
-        theme: 'quarto',
-        placement: 'bottom-start',
-      };
-      if (contentFn) {
-        config.content = contentFn;
-      }
-      if (onTriggerFn) {
-        config.onTrigger = onTriggerFn;
-      }
-      if (onUntriggerFn) {
-        config.onUntrigger = onUntriggerFn;
-      }
-      window.tippy(el, config); 
     }
-    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
-    for (var i=0; i<noterefs.length; i++) {
-      const ref = noterefs[i];
-      tippyHover(ref, function() {
-        // use id or data attribute instead here
-        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
-        try { href = new URL(href).hash; } catch {}
-        const id = href.replace(/^#\/?/, "");
-        const note = window.document.getElementById(id);
-        if (note) {
-          return note.innerHTML;
-        } else {
-          return "";
-        }
-      });
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
     }
-    const xrefs = window.document.querySelectorAll('a.quarto-xref');
-    const processXRef = (id, note) => {
-      // Strip column container classes
-      const stripColumnClz = (el) => {
-        el.classList.remove("page-full", "page-columns");
-        if (el.children) {
-          for (const child of el.children) {
-            stripColumnClz(child);
-          }
-        }
-      }
-      stripColumnClz(note)
-      if (id === null || id.startsWith('sec-')) {
-        // Special case sections, only their first couple elements
-        const container = document.createElement("div");
-        if (note.children && note.children.length > 2) {
-          container.appendChild(note.children[0].cloneNode(true));
-          for (let i = 1; i < note.children.length; i++) {
-            const child = note.children[i];
-            if (child.tagName === "P" && child.innerText === "") {
-              continue;
-            } else {
-              container.appendChild(child.cloneNode(true));
-              break;
-            }
-          }
-          if (window.Quarto?.typesetMath) {
-            window.Quarto.typesetMath(container);
-          }
-          return container.innerHTML
-        } else {
-          if (window.Quarto?.typesetMath) {
-            window.Quarto.typesetMath(note);
-          }
-          return note.innerHTML;
-        }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
       } else {
-        // Remove any anchor links if they are present
-        const anchorLink = note.querySelector('a.anchorjs-link');
-        if (anchorLink) {
-          anchorLink.remove();
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
         }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
         if (window.Quarto?.typesetMath) {
           window.Quarto.typesetMath(note);
         }
-        if (note.classList.contains("callout")) {
-          return note.outerHTML;
-        } else {
-          return note.innerHTML;
-        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
       }
     }
-    for (var i=0; i<xrefs.length; i++) {
-      const xref = xrefs[i];
-      tippyHover(xref, undefined, function(instance) {
-        instance.disable();
-        let url = xref.getAttribute('href');
-        let hash = undefined; 
-        if (url.startsWith('#')) {
-          hash = url;
-        } else {
-          try { hash = new URL(url).hash; } catch {}
-        }
-        if (hash) {
-          const id = hash.replace(/^#\/?/, "");
-          const note = window.document.getElementById(id);
-          if (note !== null) {
-            try {
-              const html = processXRef(id, note.cloneNode(true));
-              instance.setContent(html);
-            } finally {
-              instance.enable();
-              instance.show();
-            }
-          } else {
-            // See if we can fetch this
-            fetch(url.split('#')[0])
-            .then(res => res.text())
-            .then(html => {
-              const parser = new DOMParser();
-              const htmlDoc = parser.parseFromString(html, "text/html");
-              const note = htmlDoc.getElementById(id);
-              if (note !== null) {
-                const html = processXRef(id, note);
-                instance.setContent(html);
-              } 
-            }).finally(() => {
-              instance.enable();
-              instance.show();
-            });
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
           }
         } else {
-          // See if we can fetch a full url (with no hash to target)
-          // This is a special case and we should probably do some content thinning / targeting
-          fetch(url)
+          // See if we can fetch this
+          fetch(url.split('#')[0])
           .then(res => res.text())
           .then(html => {
             const parser = new DOMParser();
             const htmlDoc = parser.parseFromString(html, "text/html");
-            const note = htmlDoc.querySelector('main.content');
+            const note = htmlDoc.getElementById(id);
             if (note !== null) {
-              // This should only happen for chapter cross references
-              // (since there is no id in the URL)
-              // remove the first header
-              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
-                note.children[0].remove();
-              }
-              const html = processXRef(null, note);
+              const html = processXRef(id, note);
               instance.setContent(html);
             } 
           }).finally(() => {
@@ -2530,161 +2530,185 @@ Yee, T. W. (2025). <em><span>VGAM</span>: Vector generalized linear and additive
             instance.show();
           });
         }
-      }, function(instance) {
-      });
-    }
-        let selectedAnnoteEl;
-        const selectorForAnnotation = ( cell, annotation) => {
-          let cellAttr = 'data-code-cell="' + cell + '"';
-          let lineAttr = 'data-code-annotation="' +  annotation + '"';
-          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
-          return selector;
-        }
-        const selectCodeLines = (annoteEl) => {
-          const doc = window.document;
-          const targetCell = annoteEl.getAttribute("data-target-cell");
-          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
-          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
-          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
-          const lineIds = lines.map((line) => {
-            return targetCell + "-" + line;
-          })
-          let top = null;
-          let height = null;
-          let parent = null;
-          if (lineIds.length > 0) {
-              //compute the position of the single el (top and bottom and make a div)
-              const el = window.document.getElementById(lineIds[0]);
-              top = el.offsetTop;
-              height = el.offsetHeight;
-              parent = el.parentElement.parentElement;
-            if (lineIds.length > 1) {
-              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
-              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
-              height = bottom - top;
-            }
-            if (top !== null && height !== null && parent !== null) {
-              // cook up a div (if necessary) and position it 
-              let div = window.document.getElementById("code-annotation-line-highlight");
-              if (div === null) {
-                div = window.document.createElement("div");
-                div.setAttribute("id", "code-annotation-line-highlight");
-                div.style.position = 'absolute';
-                parent.appendChild(div);
-              }
-              div.style.top = top - 2 + "px";
-              div.style.height = height + 4 + "px";
-              div.style.left = 0;
-              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
-              if (gutterDiv === null) {
-                gutterDiv = window.document.createElement("div");
-                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
-                gutterDiv.style.position = 'absolute';
-                const codeCell = window.document.getElementById(targetCell);
-                const gutter = codeCell.querySelector('.code-annotation-gutter');
-                gutter.appendChild(gutterDiv);
-              }
-              gutterDiv.style.top = top - 2 + "px";
-              gutterDiv.style.height = height + 4 + "px";
-            }
-            selectedAnnoteEl = annoteEl;
-          }
-        };
-        const unselectCodeLines = () => {
-          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
-          elementsIds.forEach((elId) => {
-            const div = window.document.getElementById(elId);
-            if (div) {
-              div.remove();
-            }
-          });
-          selectedAnnoteEl = undefined;
-        };
-          // Handle positioning of the toggle
-      window.addEventListener(
-        "resize",
-        throttle(() => {
-          elRect = undefined;
-          if (selectedAnnoteEl) {
-            selectCodeLines(selectedAnnoteEl);
-          }
-        }, 10)
-      );
-      function throttle(fn, ms) {
-      let throttle = false;
-      let timer;
-        return (...args) => {
-          if(!throttle) { // first call gets through
-              fn.apply(this, args);
-              throttle = true;
-          } else { // all the others get throttled
-              if(timer) clearTimeout(timer); // cancel #2
-              timer = setTimeout(() => {
-                fn.apply(this, args);
-                timer = throttle = false;
-              }, ms);
-          }
-        };
-      }
-        // Attach click handler to the DT
-        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
-        for (const annoteDlNode of annoteDls) {
-          annoteDlNode.addEventListener('click', (event) => {
-            const clickedEl = event.target;
-            if (clickedEl !== selectedAnnoteEl) {
-              unselectCodeLines();
-              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
-              if (activeEl) {
-                activeEl.classList.remove('code-annotation-active');
-              }
-              selectCodeLines(clickedEl);
-              clickedEl.classList.add('code-annotation-active');
-            } else {
-              // Unselect the line
-              unselectCodeLines();
-              clickedEl.classList.remove('code-annotation-active');
-            }
-          });
-        }
-    const findCites = (el) => {
-      const parentEl = el.parentElement;
-      if (parentEl) {
-        const cites = parentEl.dataset.cites;
-        if (cites) {
-          return {
-            el,
-            cites: cites.split(' ')
-          };
-        } else {
-          return findCites(el.parentElement)
-        }
       } else {
-        return undefined;
-      }
-    };
-    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
-    for (var i=0; i<bibliorefs.length; i++) {
-      const ref = bibliorefs[i];
-      const citeInfo = findCites(ref);
-      if (citeInfo) {
-        tippyHover(citeInfo.el, function() {
-          var popup = window.document.createElement('div');
-          citeInfo.cites.forEach(function(cite) {
-            var citeDiv = window.document.createElement('div');
-            citeDiv.classList.add('hanging-indent');
-            citeDiv.classList.add('csl-entry');
-            var biblioDiv = window.document.getElementById('ref-' + cite);
-            if (biblioDiv) {
-              citeDiv.innerHTML = biblioDiv.innerHTML;
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
             }
-            popup.appendChild(citeDiv);
-          });
-          return popup.innerHTML;
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
         });
       }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
     }
-  });
-  </script><nav class="page-navigation"><div class="nav-page nav-page-previous">
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script><nav class="page-navigation"><div class="nav-page nav-page-previous">
       <a href="./09-hotelling.html" class="pagination-link" aria-label="Hotelling's $T^2$">
         <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Hotelling’s <span class="math inline">\(T^2\)</span></span></span>
       </a>          

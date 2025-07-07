@@ -1,5 +1,5 @@
 # partreee - partition tree package
-http://grantmcdermott.com/parttree/
+# http://grantmcdermott.com/parttree/
 
 install.packages("partree")
 library(parttree)  # This package
@@ -27,7 +27,7 @@ tree_cont |>
   plot(pch = 16, palette = "viridis")
   
 # Alongside the rpart model objects that we have been working with thus far, parttree also supports decision trees created by the partykit package. 
-#Here we see how the latter’s ctree (conditional inference tree) algorithm yields a slightly more sophisticated partitioning that the former’s default.
+#Here we see how the latter?s ctree (conditional inference tree) algorithm yields a slightly more sophisticated partitioning that the former?s default.
 
 library(partykit)
 ctree(species ~ flipper_length_mm + bill_length_mm, data = penguins) |>

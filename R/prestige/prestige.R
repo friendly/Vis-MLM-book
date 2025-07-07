@@ -98,7 +98,7 @@ scatterplotMatrix(~ prestige + income + education + women,
               lty.smooth=1, lwd.smooth=3, col.smooth="red"),
   ellipse=list(levels=0.68, fill.alpha=0.1))
 
-scatterplotMatrix(~ prestige income + education + women,
+scatterplotMatrix(~ prestige + income + education + women,
   data=Prestige,
   id = list(n=1, col="black"),    # why are labels not black?
   regLine = list(method=lm, lty=1, lwd=2, col="black"),
