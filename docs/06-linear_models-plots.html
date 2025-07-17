@@ -751,7 +751,7 @@ Table&nbsp;6.1: Table of coefficients for the main effects model.
 
       function styleCell_bj8ysfr4r1hnh4kzzhqc(i, j, css_id) {
           var table = document.getElementById("tinytable_bj8ysfr4r1hnh4kzzhqc");
-          var cell = table.rows[i]?.cells[j];  // Safe navigation to avoid errors
+          var cell = table.querySelector(`[data-row="${i}"][data-col="${j}"]`);
           if (cell) {
               console.log(`Styling cell at (${i}, ${j}) with class ${css_id}`);
               cell.classList.add(css_id);
@@ -761,53 +761,58 @@ Table&nbsp;6.1: Table of coefficients for the main effects model.
       }
       function insertSpanRow(i, colspan, content) {
         var table = document.getElementById('tinytable_bj8ysfr4r1hnh4kzzhqc');
-        var newRow = table.insertRow(i);
+        // Find the row with data-row attribute matching i
+        var targetRow = table.querySelector(`tr [data-row="${i}"]`).closest('tr');
+        var newRow = table.insertRow(targetRow.rowIndex);
         var newCell = newRow.insertCell(0);
         newCell.setAttribute("colspan", colspan);
+        newCell.setAttribute("data-col", "0");
+        newCell.setAttribute("data-row", i - 1);
         // newCell.innerText = content;
         // this may be unsafe, but innerText does not interpret <br>
         newCell.innerHTML = content;
       }
       function spanCell_bj8ysfr4r1hnh4kzzhqc(i, j, rowspan, colspan) {
         var table = document.getElementById("tinytable_bj8ysfr4r1hnh4kzzhqc");
-        const targetRow = table.rows[i];
-        const targetCell = targetRow.cells[j];
+        const targetCell = table.querySelector(`[data-row="${i}"][data-col="${j}"]`);
+        if (!targetCell) {
+          console.warn(`Cell at (${i}, ${j}) not found.`);
+        }
+
+        // Get all cells that need to be removed
+        const cellsToRemove = [];
         for (let r = 0; r < rowspan; r++) {
-          // Only start deleting cells to the right for the first row (r == 0)
-          if (r === 0) {
-            // Delete cells to the right of the target cell in the first row
-            for (let c = colspan - 1; c > 0; c--) {
-              if (table.rows[i + r].cells[j + c]) {
-                table.rows[i + r].deleteCell(j + c);
-              }
-            }
-          }
-          // For rows below the first, delete starting from the target column
-          if (r > 0) {
-            for (let c = colspan - 1; c >= 0; c--) {
-              if (table.rows[i + r] && table.rows[i + r].cells[j]) {
-                table.rows[i + r].deleteCell(j);
-              }
+          for (let c = 0; c < colspan; c++) {
+            if (r === 0 && c === 0) continue; // Skip the target cell
+            const cell = table.querySelector(`[data-row="${i + r}"][data-col="${j + c}"]`);
+            if (cell) {
+              cellsToRemove.push(cell);
             }
           }
         }
-        // Set rowspan and colspan of the target cell
-        targetCell.rowSpan = rowspan;
-        targetCell.colSpan = colspan;
+
+        // Remove all cells
+        cellsToRemove.forEach(cell => cell.remove());
+
+        // Set rowspan and colspan of the target cell if it exists
+        if (targetCell) {
+          targetCell.rowSpan = rowspan;
+          targetCell.colSpan = colspan;
+        }
       }
       // tinytable span after
       window.addEventListener('load', function () {
           var cellsToStyle = [
             // tinytable style arrays after
-          { positions: [ { i: 0, j: 3 }, { i: 0, j: 2 },  ], css_id: 'tinytable_css_awdrwszvl64uvhct1r2w',}, 
-          { positions: [ { i: 4, j: 3 }, { i: 4, j: 1 }, { i: 4, j: 2 },  ], css_id: 'tinytable_css_k59n6db9o1yxquqfznkj',}, 
-          { positions: [ { i: 3, j: 1 }, { i: 3, j: 2 }, { i: 2, j: 1 }, { i: 2, j: 2 }, { i: 2, j: 3 }, { i: 3, j: 3 },  ], css_id: 'tinytable_css_6qt4ljar8mpairkzlotk',}, 
-          { positions: [ { i: 0, j: 1 },  ], css_id: 'tinytable_css_ofnwlpjekxo0darhxzje',}, 
-          { positions: [ { i: 1, j: 1 }, { i: 1, j: 2 }, { i: 1, j: 3 },  ], css_id: 'tinytable_css_7f2cb0tu5f968o2hresj',}, 
-          { positions: [ { i: 4, j: 0 },  ], css_id: 'tinytable_css_puvgqtzjag8gcu0gwr1u',}, 
-          { positions: [ { i: 2, j: 0 }, { i: 3, j: 0 },  ], css_id: 'tinytable_css_nxordx1uvq9r94yddrwy',}, 
-          { positions: [ { i: 0, j: 0 },  ], css_id: 'tinytable_css_gd5fuxtv5lu5jexmbp01',}, 
-          { positions: [ { i: 1, j: 0 },  ], css_id: 'tinytable_css_ivfsg8k7s0cd48fpwsov',}, 
+          { positions: [ { i: '-1', j: 3 }, { i: '-1', j: 2 },  ], css_id: 'tinytable_css_awdrwszvl64uvhct1r2w',}, 
+          { positions: [ { i: '3', j: 3 }, { i: '3', j: 1 }, { i: '3', j: 2 },  ], css_id: 'tinytable_css_k59n6db9o1yxquqfznkj',}, 
+          { positions: [ { i: '2', j: 1 }, { i: '2', j: 2 }, { i: '1', j: 1 }, { i: '1', j: 2 }, { i: '1', j: 3 }, { i: '2', j: 3 },  ], css_id: 'tinytable_css_6qt4ljar8mpairkzlotk',}, 
+          { positions: [ { i: '-1', j: 1 },  ], css_id: 'tinytable_css_ofnwlpjekxo0darhxzje',}, 
+          { positions: [ { i: '0', j: 1 }, { i: '0', j: 2 }, { i: '0', j: 3 },  ], css_id: 'tinytable_css_7f2cb0tu5f968o2hresj',}, 
+          { positions: [ { i: '3', j: 0 },  ], css_id: 'tinytable_css_puvgqtzjag8gcu0gwr1u',}, 
+          { positions: [ { i: '1', j: 0 }, { i: '2', j: 0 },  ], css_id: 'tinytable_css_nxordx1uvq9r94yddrwy',}, 
+          { positions: [ { i: '-1', j: 0 },  ], css_id: 'tinytable_css_gd5fuxtv5lu5jexmbp01',}, 
+          { positions: [ { i: '0', j: 0 },  ], css_id: 'tinytable_css_ivfsg8k7s0cd48fpwsov',}, 
           ];
 
           // Loop over the arrays to style the cells
@@ -833,34 +838,34 @@ Table&nbsp;6.1: Table of coefficients for the main effects model.
       <table class="table table-borderless" id="tinytable_bj8ysfr4r1hnh4kzzhqc" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
 <thead>
 <tr>
-<th scope="col" align="center" colspan="1"> </th>
-<th scope="col" align="center" colspan="3">Model1</th>
+<th scope="col" align="center" colspan="1" data-row="-1" data-col="0"> </th>
+<th scope="col" align="center" colspan="3" data-row="-1" data-col="1">Model1</th>
 </tr>
 <tr>
-<th scope="col"> </th>
-                <th scope="col">Est.</th>
-                <th scope="col">S.E.</th>
-                <th scope="col">p</th>
+<th scope="col" data-row="0" data-col="0"> </th>
+                <th scope="col" data-row="0" data-col="1">Est.</th>
+                <th scope="col" data-row="0" data-col="2">S.E.</th>
+                <th scope="col" data-row="0" data-col="3">p</th>
               </tr>
 </thead>
 <tbody>
 <tr>
-<td>education</td>
-                  <td>4.187 [3.4153, 4.9580]</td>
-                  <td>0.389</td>
-                  <td>0.000</td>
+<td data-row="1" data-col="0">education</td>
+                  <td data-row="1" data-col="1">4.187 [3.4153, 4.9580]</td>
+                  <td data-row="1" data-col="2">0.389</td>
+                  <td data-row="1" data-col="3">0.000</td>
                 </tr>
 <tr>
-<td>income</td>
-                  <td>0.001 [0.0008, 0.0019]</td>
-                  <td>0.000</td>
-                  <td>0.000</td>
+<td data-row="2" data-col="0">income</td>
+                  <td data-row="2" data-col="1">0.001 [0.0008, 0.0019]</td>
+                  <td data-row="2" data-col="2">0.000</td>
+                  <td data-row="2" data-col="3">0.000</td>
                 </tr>
 <tr>
-<td>women</td>
-                  <td>-0.009 [-0.0692, 0.0514]</td>
-                  <td>0.030</td>
-                  <td>0.770</td>
+<td data-row="3" data-col="0">women</td>
+                  <td data-row="3" data-col="1">-0.009 [-0.0692, 0.0514]</td>
+                  <td data-row="3" data-col="2">0.030</td>
+                  <td data-row="3" data-col="3">0.770</td>
                 </tr>
 </tbody>
 </table>
@@ -920,7 +925,7 @@ Table&nbsp;6.2: Table of coefficients for three models.
 
       function styleCell_4d09bl0324jxmzj8q2uh(i, j, css_id) {
           var table = document.getElementById("tinytable_4d09bl0324jxmzj8q2uh");
-          var cell = table.rows[i]?.cells[j];  // Safe navigation to avoid errors
+          var cell = table.querySelector(`[data-row="${i}"][data-col="${j}"]`);
           if (cell) {
               console.log(`Styling cell at (${i}, ${j}) with class ${css_id}`);
               cell.classList.add(css_id);
@@ -930,55 +935,60 @@ Table&nbsp;6.2: Table of coefficients for three models.
       }
       function insertSpanRow(i, colspan, content) {
         var table = document.getElementById('tinytable_4d09bl0324jxmzj8q2uh');
-        var newRow = table.insertRow(i);
+        // Find the row with data-row attribute matching i
+        var targetRow = table.querySelector(`tr [data-row="${i}"]`).closest('tr');
+        var newRow = table.insertRow(targetRow.rowIndex);
         var newCell = newRow.insertCell(0);
         newCell.setAttribute("colspan", colspan);
+        newCell.setAttribute("data-col", "0");
+        newCell.setAttribute("data-row", i - 1);
         // newCell.innerText = content;
         // this may be unsafe, but innerText does not interpret <br>
         newCell.innerHTML = content;
       }
       function spanCell_4d09bl0324jxmzj8q2uh(i, j, rowspan, colspan) {
         var table = document.getElementById("tinytable_4d09bl0324jxmzj8q2uh");
-        const targetRow = table.rows[i];
-        const targetCell = targetRow.cells[j];
+        const targetCell = table.querySelector(`[data-row="${i}"][data-col="${j}"]`);
+        if (!targetCell) {
+          console.warn(`Cell at (${i}, ${j}) not found.`);
+        }
+
+        // Get all cells that need to be removed
+        const cellsToRemove = [];
         for (let r = 0; r < rowspan; r++) {
-          // Only start deleting cells to the right for the first row (r == 0)
-          if (r === 0) {
-            // Delete cells to the right of the target cell in the first row
-            for (let c = colspan - 1; c > 0; c--) {
-              if (table.rows[i + r].cells[j + c]) {
-                table.rows[i + r].deleteCell(j + c);
-              }
-            }
-          }
-          // For rows below the first, delete starting from the target column
-          if (r > 0) {
-            for (let c = colspan - 1; c >= 0; c--) {
-              if (table.rows[i + r] && table.rows[i + r].cells[j]) {
-                table.rows[i + r].deleteCell(j);
-              }
+          for (let c = 0; c < colspan; c++) {
+            if (r === 0 && c === 0) continue; // Skip the target cell
+            const cell = table.querySelector(`[data-row="${i + r}"][data-col="${j + c}"]`);
+            if (cell) {
+              cellsToRemove.push(cell);
             }
           }
         }
-        // Set rowspan and colspan of the target cell
-        targetCell.rowSpan = rowspan;
-        targetCell.colSpan = colspan;
+
+        // Remove all cells
+        cellsToRemove.forEach(cell => cell.remove());
+
+        // Set rowspan and colspan of the target cell if it exists
+        if (targetCell) {
+          targetCell.rowSpan = rowspan;
+          targetCell.colSpan = colspan;
+        }
       }
       // tinytable span after
       window.addEventListener('load', function () {
           var cellsToStyle = [
             // tinytable style arrays after
-          { positions: [ { i: 0, j: 9 }, { i: 0, j: 8 }, { i: 0, j: 7 }, { i: 0, j: 6 }, { i: 0, j: 5 }, { i: 0, j: 4 },  ], css_id: 'tinytable_css_t3rw5jd8run5la8hiwaw',}, 
-          { positions: [ { i: 10, j: 7 }, { i: 10, j: 2 }, { i: 10, j: 6 }, { i: 10, j: 8 }, { i: 10, j: 5 }, { i: 10, j: 4 }, { i: 10, j: 3 }, { i: 10, j: 9 }, { i: 10, j: 1 },  ], css_id: 'tinytable_css_rvtxynxnrhtlpjut7oy0',}, 
-          { positions: [ { i: 8, j: 5 }, { i: 8, j: 6 }, { i: 8, j: 1 }, { i: 8, j: 3 }, { i: 8, j: 4 }, { i: 8, j: 9 }, { i: 8, j: 8 }, { i: 8, j: 7 }, { i: 8, j: 2 },  ], css_id: 'tinytable_css_rgzxqspkycxzr9vqw0dv',}, 
-          { positions: [ { i: 4, j: 1 }, { i: 2, j: 1 }, { i: 3, j: 5 }, { i: 6, j: 1 }, { i: 3, j: 1 }, { i: 2, j: 2 }, { i: 5, j: 1 }, { i: 4, j: 2 }, { i: 7, j: 1 }, { i: 6, j: 2 }, { i: 9, j: 1 }, { i: 3, j: 6 }, { i: 2, j: 3 }, { i: 5, j: 6 }, { i: 4, j: 3 }, { i: 3, j: 2 }, { i: 6, j: 3 }, { i: 5, j: 2 }, { i: 3, j: 7 }, { i: 7, j: 2 }, { i: 5, j: 7 }, { i: 9, j: 2 }, { i: 7, j: 7 }, { i: 2, j: 4 }, { i: 3, j: 4 }, { i: 4, j: 4 }, { i: 3, j: 3 }, { i: 6, j: 4 }, { i: 5, j: 3 }, { i: 3, j: 8 }, { i: 7, j: 3 }, { i: 5, j: 8 }, { i: 9, j: 3 }, { i: 7, j: 8 }, { i: 2, j: 5 }, { i: 9, j: 8 }, { i: 4, j: 5 }, { i: 5, j: 5 }, { i: 6, j: 5 }, { i: 5, j: 4 }, { i: 3, j: 9 }, { i: 7, j: 4 }, { i: 5, j: 9 }, { i: 9, j: 4 }, { i: 7, j: 9 }, { i: 2, j: 6 }, { i: 9, j: 9 }, { i: 4, j: 6 }, { i: 7, j: 5 }, { i: 6, j: 6 }, { i: 7, j: 6 }, { i: 9, j: 7 }, { i: 2, j: 7 }, { i: 9, j: 6 }, { i: 9, j: 5 }, { i: 2, j: 8 }, { i: 6, j: 7 }, { i: 4, j: 8 }, { i: 4, j: 7 }, { i: 6, j: 8 }, { i: 4, j: 9 }, { i: 2, j: 9 }, { i: 6, j: 9 },  ], css_id: 'tinytable_css_xkihnsxl3mgj8ikgx630',}, 
-          { positions: [ { i: 0, j: 1 }, { i: 0, j: 2 }, { i: 0, j: 3 },  ], css_id: 'tinytable_css_btyjpo7jrwkx4b2h07tj',}, 
-          { positions: [ { i: 1, j: 1 }, { i: 1, j: 7 }, { i: 1, j: 9 }, { i: 1, j: 6 }, { i: 1, j: 8 }, { i: 1, j: 5 }, { i: 1, j: 4 }, { i: 1, j: 3 }, { i: 1, j: 2 },  ], css_id: 'tinytable_css_9ebyvx0c6aacxedprhgx',}, 
-          { positions: [ { i: 10, j: 0 },  ], css_id: 'tinytable_css_97uryj7v2achk4ujh27i',}, 
-          { positions: [ { i: 8, j: 0 },  ], css_id: 'tinytable_css_wad1yrff77um9aqmwle3',}, 
-          { positions: [ { i: 2, j: 0 }, { i: 3, j: 0 }, { i: 4, j: 0 }, { i: 5, j: 0 }, { i: 6, j: 0 }, { i: 7, j: 0 }, { i: 9, j: 0 },  ], css_id: 'tinytable_css_vk29k6isnstyxkpw5mhk',}, 
-          { positions: [ { i: 0, j: 0 },  ], css_id: 'tinytable_css_i9c0ap9eg7z59qjonff2',}, 
-          { positions: [ { i: 1, j: 0 },  ], css_id: 'tinytable_css_9wj5s3q8mpb9mqxforem',}, 
+          { positions: [ { i: '-1', j: 9 }, { i: '-1', j: 8 }, { i: '-1', j: 7 }, { i: '-1', j: 6 }, { i: '-1', j: 5 }, { i: '-1', j: 4 },  ], css_id: 'tinytable_css_t3rw5jd8run5la8hiwaw',}, 
+          { positions: [ { i: '9', j: 7 }, { i: '9', j: 2 }, { i: '9', j: 6 }, { i: '9', j: 8 }, { i: '9', j: 5 }, { i: '9', j: 4 }, { i: '9', j: 3 }, { i: '9', j: 9 }, { i: '9', j: 1 },  ], css_id: 'tinytable_css_rvtxynxnrhtlpjut7oy0',}, 
+          { positions: [ { i: '7', j: 5 }, { i: '7', j: 6 }, { i: '7', j: 1 }, { i: '7', j: 3 }, { i: '7', j: 4 }, { i: '7', j: 9 }, { i: '7', j: 8 }, { i: '7', j: 7 }, { i: '7', j: 2 },  ], css_id: 'tinytable_css_rgzxqspkycxzr9vqw0dv',}, 
+          { positions: [ { i: '3', j: 1 }, { i: '1', j: 1 }, { i: '2', j: 5 }, { i: '5', j: 1 }, { i: '2', j: 1 }, { i: '1', j: 2 }, { i: '4', j: 1 }, { i: '3', j: 2 }, { i: '6', j: 1 }, { i: '5', j: 2 }, { i: '8', j: 1 }, { i: '2', j: 6 }, { i: '1', j: 3 }, { i: '4', j: 6 }, { i: '3', j: 3 }, { i: '2', j: 2 }, { i: '5', j: 3 }, { i: '4', j: 2 }, { i: '2', j: 7 }, { i: '6', j: 2 }, { i: '4', j: 7 }, { i: '8', j: 2 }, { i: '6', j: 7 }, { i: '1', j: 4 }, { i: '2', j: 4 }, { i: '3', j: 4 }, { i: '2', j: 3 }, { i: '5', j: 4 }, { i: '4', j: 3 }, { i: '2', j: 8 }, { i: '6', j: 3 }, { i: '4', j: 8 }, { i: '8', j: 3 }, { i: '6', j: 8 }, { i: '1', j: 5 }, { i: '8', j: 8 }, { i: '3', j: 5 }, { i: '4', j: 5 }, { i: '5', j: 5 }, { i: '4', j: 4 }, { i: '2', j: 9 }, { i: '6', j: 4 }, { i: '4', j: 9 }, { i: '8', j: 4 }, { i: '6', j: 9 }, { i: '1', j: 6 }, { i: '8', j: 9 }, { i: '3', j: 6 }, { i: '6', j: 5 }, { i: '5', j: 6 }, { i: '6', j: 6 }, { i: '8', j: 7 }, { i: '1', j: 7 }, { i: '8', j: 6 }, { i: '8', j: 5 }, { i: '1', j: 8 }, { i: '5', j: 7 }, { i: '3', j: 8 }, { i: '3', j: 7 }, { i: '5', j: 8 }, { i: '3', j: 9 }, { i: '1', j: 9 }, { i: '5', j: 9 },  ], css_id: 'tinytable_css_xkihnsxl3mgj8ikgx630',}, 
+          { positions: [ { i: '-1', j: 1 }, { i: '-1', j: 2 }, { i: '-1', j: 3 },  ], css_id: 'tinytable_css_btyjpo7jrwkx4b2h07tj',}, 
+          { positions: [ { i: '0', j: 1 }, { i: '0', j: 7 }, { i: '0', j: 9 }, { i: '0', j: 6 }, { i: '0', j: 8 }, { i: '0', j: 5 }, { i: '0', j: 4 }, { i: '0', j: 3 }, { i: '0', j: 2 },  ], css_id: 'tinytable_css_9ebyvx0c6aacxedprhgx',}, 
+          { positions: [ { i: '9', j: 0 },  ], css_id: 'tinytable_css_97uryj7v2achk4ujh27i',}, 
+          { positions: [ { i: '7', j: 0 },  ], css_id: 'tinytable_css_wad1yrff77um9aqmwle3',}, 
+          { positions: [ { i: '1', j: 0 }, { i: '2', j: 0 }, { i: '3', j: 0 }, { i: '4', j: 0 }, { i: '5', j: 0 }, { i: '6', j: 0 }, { i: '8', j: 0 },  ], css_id: 'tinytable_css_vk29k6isnstyxkpw5mhk',}, 
+          { positions: [ { i: '-1', j: 0 },  ], css_id: 'tinytable_css_i9c0ap9eg7z59qjonff2',}, 
+          { positions: [ { i: '0', j: 0 },  ], css_id: 'tinytable_css_9wj5s3q8mpb9mqxforem',}, 
           ];
 
           // Loop over the arrays to style the cells
@@ -1006,133 +1016,133 @@ Table&nbsp;6.2: Table of coefficients for three models.
       <table class="table table-borderless" id="tinytable_4d09bl0324jxmzj8q2uh" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
 <thead>
 <tr>
-<th scope="col" align="center" colspan="1"> </th>
-<th scope="col" align="center" colspan="3">Model1</th>
-<th scope="col" align="center" colspan="3">Model2</th>
-<th scope="col" align="center" colspan="3">Model3</th>
+<th scope="col" align="center" colspan="1" data-row="-1" data-col="0"> </th>
+<th scope="col" align="center" colspan="3" data-row="-1" data-col="1">Model1</th>
+<th scope="col" align="center" colspan="3" data-row="-1" data-col="2">Model2</th>
+<th scope="col" align="center" colspan="3" data-row="-1" data-col="3">Model3</th>
 </tr>
 <tr>
-<th scope="col"> </th>
-                <th scope="col">Est.</th>
-                <th scope="col">S.E.</th>
-                <th scope="col">p</th>
-                <th scope="col">Est.</th>
-                <th scope="col">S.E.</th>
-                <th scope="col">p</th>
-                <th scope="col">Est.</th>
-                <th scope="col">S.E.</th>
-                <th scope="col">p</th>
+<th scope="col" data-row="0" data-col="0"> </th>
+                <th scope="col" data-row="0" data-col="1">Est.</th>
+                <th scope="col" data-row="0" data-col="2">S.E.</th>
+                <th scope="col" data-row="0" data-col="3">p</th>
+                <th scope="col" data-row="0" data-col="4">Est.</th>
+                <th scope="col" data-row="0" data-col="5">S.E.</th>
+                <th scope="col" data-row="0" data-col="6">p</th>
+                <th scope="col" data-row="0" data-col="7">Est.</th>
+                <th scope="col" data-row="0" data-col="8">S.E.</th>
+                <th scope="col" data-row="0" data-col="9">p</th>
               </tr>
 </thead>
 <tfoot><tr><td colspan="10">+ p &lt; 0.1, * p &lt; 0.05, ** p &lt; 0.01, *** p &lt; 0.001</td></tr></tfoot>
 <tbody>
 <tr>
-<td>education</td>
-                  <td>4.19***</td>
-                  <td>0.39</td>
-                  <td>&lt;0.01</td>
-                  <td>3.66***</td>
-                  <td>0.65</td>
-                  <td>&lt;0.01</td>
-                  <td>2.80***</td>
-                  <td>0.59</td>
-                  <td>&lt;0.01</td>
+<td data-row="1" data-col="0">education</td>
+                  <td data-row="1" data-col="1">4.19***</td>
+                  <td data-row="1" data-col="2">0.39</td>
+                  <td data-row="1" data-col="3">&lt;0.01</td>
+                  <td data-row="1" data-col="4">3.66***</td>
+                  <td data-row="1" data-col="5">0.65</td>
+                  <td data-row="1" data-col="6">&lt;0.01</td>
+                  <td data-row="1" data-col="7">2.80***</td>
+                  <td data-row="1" data-col="8">0.59</td>
+                  <td data-row="1" data-col="9">&lt;0.01</td>
                 </tr>
 <tr>
-<td>income</td>
-                  <td>0.00***</td>
-                  <td>0.00</td>
-                  <td>&lt;0.01</td>
-                  <td>0.00***</td>
-                  <td>0.00</td>
-                  <td>&lt;0.01</td>
-                  <td>0.00***</td>
-                  <td>0.00</td>
-                  <td>&lt;0.01</td>
+<td data-row="2" data-col="0">income</td>
+                  <td data-row="2" data-col="1">0.00***</td>
+                  <td data-row="2" data-col="2">0.00</td>
+                  <td data-row="2" data-col="3">&lt;0.01</td>
+                  <td data-row="2" data-col="4">0.00***</td>
+                  <td data-row="2" data-col="5">0.00</td>
+                  <td data-row="2" data-col="6">&lt;0.01</td>
+                  <td data-row="2" data-col="7">0.00***</td>
+                  <td data-row="2" data-col="8">0.00</td>
+                  <td data-row="2" data-col="9">&lt;0.01</td>
                 </tr>
 <tr>
-<td>women</td>
-                  <td>-0.01</td>
-                  <td>0.03</td>
-                  <td>0.77</td>
-                  <td>0.01</td>
-                  <td>0.03</td>
-                  <td>0.83</td>
-                  <td>0.08*</td>
-                  <td>0.03</td>
-                  <td>0.02</td>
+<td data-row="3" data-col="0">women</td>
+                  <td data-row="3" data-col="1">-0.01</td>
+                  <td data-row="3" data-col="2">0.03</td>
+                  <td data-row="3" data-col="3">0.77</td>
+                  <td data-row="3" data-col="4">0.01</td>
+                  <td data-row="3" data-col="5">0.03</td>
+                  <td data-row="3" data-col="6">0.83</td>
+                  <td data-row="3" data-col="7">0.08*</td>
+                  <td data-row="3" data-col="8">0.03</td>
+                  <td data-row="3" data-col="9">0.02</td>
                 </tr>
 <tr>
-<td>typewc</td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td>-2.92</td>
-                  <td>2.67</td>
-                  <td>0.28</td>
-                  <td>3.43</td>
-                  <td>5.37</td>
-                  <td>0.52</td>
+<td data-row="4" data-col="0">typewc</td>
+                  <td data-row="4" data-col="1"></td>
+                  <td data-row="4" data-col="2"></td>
+                  <td data-row="4" data-col="3"></td>
+                  <td data-row="4" data-col="4">-2.92</td>
+                  <td data-row="4" data-col="5">2.67</td>
+                  <td data-row="4" data-col="6">0.28</td>
+                  <td data-row="4" data-col="7">3.43</td>
+                  <td data-row="4" data-col="8">5.37</td>
+                  <td data-row="4" data-col="9">0.52</td>
                 </tr>
 <tr>
-<td>typeprof</td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td>5.91</td>
-                  <td>3.94</td>
-                  <td>0.14</td>
-                  <td>27.55***</td>
-                  <td>5.41</td>
-                  <td>&lt;0.01</td>
+<td data-row="5" data-col="0">typeprof</td>
+                  <td data-row="5" data-col="1"></td>
+                  <td data-row="5" data-col="2"></td>
+                  <td data-row="5" data-col="3"></td>
+                  <td data-row="5" data-col="4">5.91</td>
+                  <td data-row="5" data-col="5">3.94</td>
+                  <td data-row="5" data-col="6">0.14</td>
+                  <td data-row="5" data-col="7">27.55***</td>
+                  <td data-row="5" data-col="8">5.41</td>
+                  <td data-row="5" data-col="9">&lt;0.01</td>
                 </tr>
 <tr>
-<td>income × typewc</td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td>-0.00</td>
-                  <td>0.00</td>
-                  <td>0.21</td>
+<td data-row="6" data-col="0">income × typewc</td>
+                  <td data-row="6" data-col="1"></td>
+                  <td data-row="6" data-col="2"></td>
+                  <td data-row="6" data-col="3"></td>
+                  <td data-row="6" data-col="4"></td>
+                  <td data-row="6" data-col="5"></td>
+                  <td data-row="6" data-col="6"></td>
+                  <td data-row="6" data-col="7">-0.00</td>
+                  <td data-row="6" data-col="8">0.00</td>
+                  <td data-row="6" data-col="9">0.21</td>
                 </tr>
 <tr>
-<td>income × typeprof</td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td>-0.00***</td>
-                  <td>0.00</td>
-                  <td>&lt;0.01</td>
+<td data-row="7" data-col="0">income × typeprof</td>
+                  <td data-row="7" data-col="1"></td>
+                  <td data-row="7" data-col="2"></td>
+                  <td data-row="7" data-col="3"></td>
+                  <td data-row="7" data-col="4"></td>
+                  <td data-row="7" data-col="5"></td>
+                  <td data-row="7" data-col="6"></td>
+                  <td data-row="7" data-col="7">-0.00***</td>
+                  <td data-row="7" data-col="8">0.00</td>
+                  <td data-row="7" data-col="9">&lt;0.01</td>
                 </tr>
 <tr>
-<td>RMSE</td>
-                  <td>7.69</td>
-                  <td></td>
-                  <td></td>
-                  <td>6.91</td>
-                  <td></td>
-                  <td></td>
-                  <td>6.02</td>
-                  <td></td>
-                  <td></td>
+<td data-row="8" data-col="0">RMSE</td>
+                  <td data-row="8" data-col="1">7.69</td>
+                  <td data-row="8" data-col="2"></td>
+                  <td data-row="8" data-col="3"></td>
+                  <td data-row="8" data-col="4">6.91</td>
+                  <td data-row="8" data-col="5"></td>
+                  <td data-row="8" data-col="6"></td>
+                  <td data-row="8" data-col="7">6.02</td>
+                  <td data-row="8" data-col="8"></td>
+                  <td data-row="8" data-col="9"></td>
                 </tr>
 <tr>
-<td>R2</td>
-                  <td>0.798</td>
-                  <td></td>
-                  <td></td>
-                  <td>0.835</td>
-                  <td></td>
-                  <td></td>
-                  <td>0.875</td>
-                  <td></td>
-                  <td></td>
+<td data-row="9" data-col="0">R2</td>
+                  <td data-row="9" data-col="1">0.798</td>
+                  <td data-row="9" data-col="2"></td>
+                  <td data-row="9" data-col="3"></td>
+                  <td data-row="9" data-col="4">0.835</td>
+                  <td data-row="9" data-col="5"></td>
+                  <td data-row="9" data-col="6"></td>
+                  <td data-row="9" data-col="7">0.875</td>
+                  <td data-row="9" data-col="8"></td>
+                  <td data-row="9" data-col="9"></td>
                 </tr>
 </tbody>
 </table>
@@ -2045,15 +2055,15 @@ Figure&nbsp;6.27: Added variable plots for the Duncan model, highlighting the im
 </div>
 </section></section><section id="what-we-have-learned" class="level2" data-number="6.7"><h2 data-number="6.7" class="anchored" data-anchor-id="what-we-have-learned">
 <span class="header-section-number">6.7</span> What We Have Learned</h2>
-<p>This chapter unveils the sophisticated visual toolkit that transforms regression models from black boxes into transparent, interpretable analyses. Here are the essential insights that will revolutionize how you understand and communicate model results:</p>
+<p>This chapter unveils the sophisticated visual toolkit that transforms regression models from black boxes into transparent interpretable analyses. Here are the essential insights that will revolutionize how you understand and communicate model results:</p>
 <ul>
 <li><p><strong>The regression quartet reveals model reality beyond the summary statistics</strong>: The four diagnostic plots (residuals vs.&nbsp;fitted, Q-Q plot, scale-location, and leverage plots) form a comprehensive health check for your regression models. Like a medical examination, each plot diagnoses different potential problems—linearity violations, non-normality, heteroscedasticity, and influential observations. The enhanced versions in R packages like <code>car</code> and <code>performance</code> don’t just show problems; they label the troublemakers and guide you toward solutions.</p></li>
 <li><p><strong>Coefficient plots make model comparisons effortless and honest</strong>: Raw coefficient tables hide the forest for the trees, especially when predictors have wildly different scales (years vs.&nbsp;dollars vs.&nbsp;percentages). Standardized coefficient plots and meaningful rescaling transform incomprehensible tables into intuitive visual comparisons. When Duncan’s income coefficient (0.0013) appears invisible next to education’s coefficient (4.19), the plot reveals they’re actually comparable forces shaping occupational prestige.</p></li>
 <li><p><strong>Added-variable plots expose the truth behind “controlling for other variables”</strong>: These magical plots perform visual surgery, removing the effects of all other predictors to show the pure relationship between response and focal predictor. They reveal Simpson’s paradox in action–—how coffee can appear harmful marginally but beneficial conditionally when stress is controlled. The relationship between marginal and conditional ellipses tells the complete story of confounding and adjustment.</p></li>
-<li><p><strong>Effect displays translate complex models into understandable stories</strong>: When interactions, transformations, and multiple predictors make coefficient interpretation impossible, effect displays come to the rescue. They show exactly how prestige changes with income for different occupation types, or how education effects vary across meaningful ranges, with other variables sensibly controlled. These plots transform “significant at p &lt; 0.05” into “here’s exactly what this means in practice.”</p></li>
-<li><p><strong>Influence diagnostics separate the signal from the statistical noise</strong>: The leverage-influence framework reveals which observations truly matter versus which just look unusual. Through Cook’s distance, hat values, and studentized residuals, we learn that minister and conductor in Duncan’s data weren’t just outliers—they were the puppet masters controlling his key finding about equal effects of income and education. Remove them, and the entire conclusion changes.</p></li>
+<li><p><strong>Effect displays translate complex models into understandable stories</strong>: When interactions, transformations, and multiple predictors make coefficient interpretation impossible, effect displays come to the rescue. They show exactly how prestige changes with income for different occupation types, or how the effects of education varies across meaningful ranges, controlling for other variables These plots transform “significant at p &lt; 0.05” into “here’s exactly what this means in practice.”</p></li>
+<li><p><strong>Influence diagnostics separate the signal from the statistical noise</strong>: The leverage-influence framework reveals which observations affect your model the most versus which are merely unusual. Through Cook’s distance, hat values, and studentized residuals, we learned that <code>minister</code> and <code>conductor</code> in Duncan’s data weren’t just outliers—they were the puppet masters controlling his key findings about the equal effects of income and education. Remove them, and the entire conclusion changes.</p></li>
 </ul>
-<p>The chapter’s profound message is that regression modeling without visualization is like navigation without a compass. In our R-powered world of complex models and large datasets, sophisticated plotting techniques aren’t just helpful—they’re essential for understanding what your models actually say about the world.</p>
+<p>The chapter’s profound message is that regression modeling without visualization is like navigating without a compass. In our R-powered world of complex models and large datasets, sophisticated plotting techniques aren’t just helpful—they’re essential for understanding what your models actually say about the world.</p>
 <p><strong>Package summary</strong></p>
 <div class="cell" data-layout-align="center">
 <p>29 packages used here: bayestestR, car, carData, correlation, datawizard, dplyr, easystats, effects, effectsize, forcats, ggeffects, ggplot2, ggstats, insight, knitr, lubridate, marginaleffects, modelbased, modelsummary, parameters, performance, purrr, readr, report, see, stringr, tibble, tidyr, tidyverse</p>
