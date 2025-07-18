@@ -18,6 +18,9 @@ options(
   # crayon.enabled = FALSE
 )
 
+# Ensure CMYK for PDF (issue #32)
+grDevices::pdf.options(colormodel = "cmyk")
+
 # --------------
 # knitr related
 # --------------
