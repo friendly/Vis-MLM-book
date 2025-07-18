@@ -1,0 +1,46 @@
+---
+title: "Test modelsummary"
+---
+
+```{r prestige}
+data(Prestige, package="carData")
+# Reorder levels of type
+Prestige$type <- factor(Prestige$type, 
+                        levels=c("bc", "wc", "prof")) 
+str(Prestige)
+```
+
+
+For illustration, I'll consider three models for the `Prestige` data of increasing complexity:
+
+* `mod1` fits the main effects of the three quantitative predictors; 
+* `mod2` adds the categorical variable `type` of occupation;
+* `mod3` allows an interaction of `income` with `type`. 
+
+```{r prestige-models}
+mod1 <- lm(prestige ~ education + income + women,
+           data=Prestige)
+mod2 <- lm(prestige ~ education + women + income + type,
+           data=Prestige)
+mod3 <- lm(prestige ~ education + women + income * type,
+           data=Prestige)
+```
+
+The main function
+`modelsummary()` can produce highly customizable tables of coefficients
+in a wide variety of output formats, including HTML, PDF, LaTeX, Markdown, and MS Word.
+You can select the statistics displayed for any model term with the `estimate` and
+`statistic` arguments. 
+```{r}
+#| label: tbl-modelsummary1
+#| tbl-cap: Table of coefficients for the main effects model.
+modelsummary(list("Model1" = mod1),
+  coef_omit = "Intercept",
+  shape = term ~ statistic,
+  estimate = "{estimate} [{conf.low}, {conf.high}]",
+  statistic = c("std.error", "p.value"),
+  fmt = fmt_statistic("estimate" = 3, "conf.low" = 4, "conf.high" = 4),
+  gof_omit = ".")
+```
+
+
