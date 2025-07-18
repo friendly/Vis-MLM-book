@@ -184,12 +184,24 @@ pkgname_face = "mono"
 pkgname_color ="brown"
 
 pkg <- function(package, cite=FALSE) {
-  pkgname <- dplyr::case_when(
-    pkgname_font == "ital"      ~ paste0("_", package, "_"),
-    pkgname_font == "bold"      ~ paste0("**", package, "**"),
-    pkgname_font == "boldital"  ~ paste0("***", package, "***"),
-    .default = package
-  )
+  if (knitr::is_html_output()) {
+      pkgname <- dplyr::case_when(
+      pkgname_font == "ital"      ~ paste0("\\textit{", package, "}"),
+      pkgname_font == "bold"      ~ paste0("\\textbf{", package, "}"),
+      pkgname_font == "boldital"  ~ paste0("\\textit{\\textbf{", package, "}}"),
+      .default = package
+    )
+  }
+  # latex output
+  else {
+    pkgname <- dplyr::case_when(
+      pkgname_font == "ital"      ~ paste0("_", package, "_"),
+      pkgname_font == "bold"      ~ paste0("**", package, "**"),
+      pkgname_font == "boldital"  ~ paste0("***", package, "***"),
+      .default = package
+    )
+  }
+
   ref <- pkgname
   if (!is.null(pkgname_color)) ref <- colorize(pkgname, pkgname_color)
   if (cite) ref <- paste0(ref, " [@R-", package, "]")
@@ -201,12 +213,24 @@ pkg <- function(package, cite=FALSE) {
 
 # Same, but say `pkgname` package cite
 package <- function(package, cite=FALSE) {
-  pkgname <- dplyr::case_when(
-    pkgname_font == "ital"      ~ paste0("_", package, "_"),
-    pkgname_font == "bold"      ~ paste0("**", package, "**"),
-    pkgname_font == "boldital"  ~ paste0("***", package, "***"),
-    .default = package
-  )
+  if (knitr::is_html_output()) {
+    pkgname <- dplyr::case_when(
+      pkgname_font == "ital"      ~ paste0("\\textit{", package, "}"),
+      pkgname_font == "bold"      ~ paste0("\\textbf{", package, "}"),
+      pkgname_font == "boldital"  ~ paste0("\\textit{\\textbf{", package, "}}"),
+      .default = package
+    )
+  }
+  # latex output
+  else {
+    pkgname <- dplyr::case_when(
+      pkgname_font == "ital"      ~ paste0("_", package, "_"),
+      pkgname_font == "bold"      ~ paste0("**", package, "**"),
+      pkgname_font == "boldital"  ~ paste0("***", package, "***"),
+      .default = package
+    )
+  }
+  
   ref <- pkgname
   if (!is.null(pkgname_color)) ref <- colorize(pkgname, pkgname_color)
   if (cite) ref <- paste0(ref, " package [@R-", package, "]")
