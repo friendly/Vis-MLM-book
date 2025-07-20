@@ -114,7 +114,7 @@ Rexpr = function(expr, digits = 3) {
 # can also be used to color a color name, as in `r colorize("red")`
 #
 
-#' Render text in color using LaTeX or CSS styles
+#' Render text in color for Markdown / Quarto documents using LaTeX or CSS styles
 #' 
 #' This function uses `\textcolor{}{}` from the `xcolor` package for LaTeX output
 #' or a CSS `<span>` for HTML output.
@@ -126,11 +126,14 @@ Rexpr = function(expr, digits = 3) {
 #' @param text  Text to display, a character string
 #' @param color Color to use, a valid color designation
 #'
-#' @return A character string
+#' @return A character string with color-encoded text
 #' @export
 #'
 #' @examples
-#' See the `r color`
+#' # In inline text, use 
+#' #     `r colorize("Gentoo", "orange")` and  `r colorize("Adelie", "purple")` are Penguins.
+#' #     The `r colorize("red")` points and the `r colorize("blue")` points are nice
+#' 
 colorize <- function(text, color) {
   if (missing(color)) color <- text
   if (knitr::is_latex_output()) {
@@ -140,7 +143,7 @@ colorize <- function(text, color) {
   } else text
 }
 
-# define some color names for use in figure captions.
+# Define some color names for use in figure captions.
 # use as: 
 #    #| fig-cap: !expr glue::glue("Some points are ", {red}, " some are ", {blue}, "some are ", {green})
 
@@ -171,24 +174,26 @@ $\\newcommand*{\\diag}[1]{\\ensuremath{\\mathrm{diag}\\, #1}}$
 
 # References to package inline in text
 #   Use as: `r pkg("lattice")` or `r pkg("lattice", cite=TRUE)`
+#
 #   Assumes the bibtex key will be of the form: R-package
-# TODO: add styles (color, font); do it differently for PDF output
-#   Want to be able to use bold (**...**), italic (_ ... _) or bold-italic (*** ... ***)
-
+# * Produces appropriate markup for HTML and PDF
+# * Allows package names to be printed in color and in different font styles (bold, ital, ...)
+#
+#
 # See: Demonstration of how to use other fonts in an Rmarkdown document 
 #      https://gist.github.com/richarddmorey/27e74bcbf28190d150d266ae141f5117
 
 # attributes for displaying the package name
-pkgname_font = "bold" # or: plain, ital, boldital
-pkgname_face = "mono"
-pkgname_color ="brown"
+pkgname_font = "bold"    # or: plain, ital, boldital
+pkgname_color ="brown"   # uses colorize()
+pkgname_face = "mono"    # not implemented
 
 pkg <- function(package, cite=FALSE) {
   if (knitr::is_html_output()) {
       pkgname <- dplyr::case_when(
-      pkgname_font == "ital"      ~ paste0("\\textit{", package, "}"),
-      pkgname_font == "bold"      ~ paste0("\\textbf{", package, "}"),
-      pkgname_font == "boldital"  ~ paste0("\\textit{\\textbf{", package, "}}"),
+      pkgname_font == "ital"      ~ paste0("\\texttt{\\textit{", package, "}}"),
+      pkgname_font == "bold"      ~ paste0("\\texttt{\\textbf{", package, "}}"),
+      pkgname_font == "boldital"  ~ paste0("\\texttt{\\textit{\\textbf{", package, "}}}"),
       .default = package
     )
   }
@@ -206,13 +211,13 @@ pkg <- function(package, cite=FALSE) {
   if (!is.null(pkgname_color)) ref <- colorize(pkgname, pkgname_color)
   if (cite) ref <- paste0(ref, " [@R-", package, "]")
   if (knitr::is_latex_output()) {
-    ref <- paste0(ref, "\\index{`", package, " package`}",
-                        "\\index{packages!", package, "}")
+    ref <- paste0(ref, "\\index{`", pkgname, " package`}",
+                        "\\index{packages!", pkgname, "}")
   }
   ref
 }
 
-# Same, but say `pkgname` package cite
+# Same, but say "`pkgname` package cite"
 package <- function(package, cite=FALSE) {
   if (knitr::is_html_output()) {
     pkgname <- dplyr::case_when(
@@ -236,15 +241,34 @@ package <- function(package, cite=FALSE) {
   if (!is.null(pkgname_color)) ref <- colorize(pkgname, pkgname_color)
   if (cite) ref <- paste0(ref, " package [@R-", package, "]")
   if (knitr::is_latex_output()) {
-    ref <- paste0(ref, "\\index{`", package, "`}")
+    ref <- paste0(ref, "\\index{`", pkgname, " package`}",
+                  "\\index{packages!", pkgname, "}")
   }
   ref
 }
 
+## Datasets -- format the dataset name and produce index entries
+# Use as:
+#   `r dataset("prestige", "car")`
+# or perhaps
+#   `r dataset("car::prestige")`
 
+dsetname_color <- "black"
 
+dataset <- function(name, package) {
+  # handle pkg::name
+  if (stringr::str_detect(name, "::")) {
+    wds <- name |> stringr::str_split("::", 2) |> unlist()
+    name <- wds[1]
+    package <- wds[2]
+  }
+  
+}
+
+# -------------------------
 # packages to be cited here. Code at the end automatically updates `packages.bib`
-# These should be packages not used in actual code via `library()` or `require()`. 
+# .tocite lists packages not used in actual code via `library()` or `require()`,
+# but are cited in the text.
 # Packages only referenced via `data()` need to be listed here.
 .to.cite <- c(
   "rgl",
