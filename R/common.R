@@ -189,7 +189,7 @@ pkgname_color ="brown"   # uses colorize()
 pkgname_face = "mono"    # not implemented
 
 pkg <- function(package, cite=FALSE) {
-  if (knitr::is_html_output()) {
+  if (knitr::is_latex_output()) {
       pkgname <- dplyr::case_when(
       pkgname_font == "ital"      ~ paste0("\\texttt{\\textit{", package, "}}"),
       pkgname_font == "bold"      ~ paste0("\\texttt{\\textbf{", package, "}}"),
@@ -197,13 +197,13 @@ pkg <- function(package, cite=FALSE) {
       .default = package
     )
   }
-  # latex output
+  # HTML output
   else {
     pkgname <- dplyr::case_when(
       pkgname_font == "ital"      ~ paste0("_", package, "_"),
       pkgname_font == "bold"      ~ paste0("**", package, "**"),
       pkgname_font == "boldital"  ~ paste0("***", package, "***"),
-      .default = package
+      .default = paste0("\\texttt{", package, "}}")
     )
   }
 
@@ -211,23 +211,23 @@ pkg <- function(package, cite=FALSE) {
   if (!is.null(pkgname_color)) ref <- colorize(pkgname, pkgname_color)
   if (cite) ref <- paste0(ref, " [@R-", package, "]")
   if (knitr::is_latex_output()) {
-    ref <- paste0(ref, "\\index{`", pkgname, " package`}",
-                        "\\index{packages!", pkgname, "}")
+    ref <- paste0(ref, "\n\\index{`", pkgname, " package`}",
+                        "\n\\index{packages!", pkgname, "}")
   }
   ref
 }
 
 # Same, but say "`pkgname` package cite"
 package <- function(package, cite=FALSE) {
-  if (knitr::is_html_output()) {
+  if (knitr::is_latex_output()) {
     pkgname <- dplyr::case_when(
-      pkgname_font == "ital"      ~ paste0("\\textit{", package, "}"),
-      pkgname_font == "bold"      ~ paste0("\\textbf{", package, "}"),
-      pkgname_font == "boldital"  ~ paste0("\\textit{\\textbf{", package, "}}"),
-      .default = package
+      pkgname_font == "ital"      ~ paste0("\\texttt{\\textit{", package, "}}"),
+      pkgname_font == "bold"      ~ paste0("\\texttt{\\textbf{", package, "}}"),
+      pkgname_font == "boldital"  ~ paste0("\\texttt{\\textit{\\textbf{", package, "}}}"),
+      .default = paste0("\\texttt{", package, "}}")
     )
   }
-  # latex output
+  # HTML output
   else {
     pkgname <- dplyr::case_when(
       pkgname_font == "ital"      ~ paste0("_", package, "_"),
@@ -241,8 +241,8 @@ package <- function(package, cite=FALSE) {
   if (!is.null(pkgname_color)) ref <- colorize(pkgname, pkgname_color)
   if (cite) ref <- paste0(ref, " package [@R-", package, "]")
   if (knitr::is_latex_output()) {
-    ref <- paste0(ref, "\\index{`", pkgname, " package`}",
-                  "\\index{packages!", pkgname, "}")
+    ref <- paste0(ref, "\n\\index{`", pkgname, " package`}",
+                  "\n\\index{packages!", pkgname, "}")
   }
   ref
 }
@@ -254,6 +254,7 @@ package <- function(package, cite=FALSE) {
 #   `r dataset("car::prestige")`
 
 dsetname_color <- "black"
+dsetname_font <- "plain"
 
 dataset <- function(name, package) {
   # handle pkg::name
@@ -262,6 +263,28 @@ dataset <- function(name, package) {
     name <- wds[1]
     package <- wds[2]
   }
+  
+  if (knitr::is_latex_output()) {
+    dsetname <- dplyr::case_when(
+      dsetname_font == "ital"      ~ paste0("\\texttt{\\textit{", package, "}}"),
+      dsetname_font == "bold"      ~ paste0("\\texttt{\\textbf{", package, "}}"),
+      dsetname_font == "boldital"  ~ paste0("\\texttt{\\textit{\\textbf{", package, "}}}"),
+      .default = package
+    )
+  }
+  # HTML output
+  else {
+    dsetname <- dplyr::case_when(
+      dsetname_font == "ital"      ~ paste0("_", package, "_"),
+      dsetname_font == "bold"      ~ paste0("**", package, "**"),
+      dsetname_font == "boldital"  ~ paste0("***", package, "***"),
+      .default = package
+    )
+  }
+  
+  ref <- dsetname
+  if (!is.null(dsetname_color)) ref <- colorize(pkgname, pkgname_color)
+  
   
 }
 
