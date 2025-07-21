@@ -211,8 +211,8 @@ pkg <- function(package, cite=FALSE) {
   if (!is.null(pkgname_color)) ref <- colorize(pkgname, pkgname_color)
   if (cite) ref <- paste0(ref, " [@R-", package, "]")
   if (knitr::is_latex_output()) {
-    ref <- paste0(ref, "\n\\index{`", pkgname, " package`}",
-                        "\n\\index{packages!", pkgname, "}")
+    ref <- paste0(ref, "\n\\index{", package, " package}",
+                        "\n\\index{packages!", package, "}")
   }
   ref
 }
@@ -241,8 +241,8 @@ package <- function(package, cite=FALSE) {
   if (!is.null(pkgname_color)) ref <- colorize(pkgname, pkgname_color)
   if (cite) ref <- paste0(ref, " package [@R-", package, "]")
   if (knitr::is_latex_output()) {
-    ref <- paste0(ref, "\n\\index{`", pkgname, " package`}",
-                  "\n\\index{packages!", pkgname, "}")
+    ref <- paste0(ref, "\n\\index{", package, " package}",
+                  "\n\\index{packages!", package, "}")
   }
   ref
 }
@@ -260,31 +260,36 @@ dataset <- function(name, package) {
   # handle pkg::name
   if (stringr::str_detect(name, "::")) {
     wds <- name |> stringr::str_split("::", 2) |> unlist()
-    name <- wds[1]
-    package <- wds[2]
+    name <- wds[2]
+    package <- wds[1]
   }
   
   if (knitr::is_latex_output()) {
     dsetname <- dplyr::case_when(
-      dsetname_font == "ital"      ~ paste0("\\texttt{\\textit{", package, "}}"),
-      dsetname_font == "bold"      ~ paste0("\\texttt{\\textbf{", package, "}}"),
-      dsetname_font == "boldital"  ~ paste0("\\texttt{\\textit{\\textbf{", package, "}}}"),
+      dsetname_font == "ital"      ~ paste0("\\texttt{\\textit{", name, "}}"),
+      dsetname_font == "bold"      ~ paste0("\\texttt{\\textbf{", name, "}}"),
+      dsetname_font == "boldital"  ~ paste0("\\texttt{\\textit{\\textbf{", name, "}}}"),
       .default = package
     )
   }
   # HTML output
   else {
     dsetname <- dplyr::case_when(
-      dsetname_font == "ital"      ~ paste0("_", package, "_"),
-      dsetname_font == "bold"      ~ paste0("**", package, "**"),
-      dsetname_font == "boldital"  ~ paste0("***", package, "***"),
+      dsetname_font == "ital"      ~ paste0("_", name, "_"),
+      dsetname_font == "bold"      ~ paste0("**", name, "**"),
+      dsetname_font == "boldital"  ~ paste0("***", name, "***"),
       .default = package
     )
   }
   
   ref <- dsetname
-  if (!is.null(dsetname_color)) ref <- colorize(pkgname, pkgname_color)
+  if (!is.null(dsetname_color)) ref <- colorize(dsetname, pkgname_color)
   
+  if (knitr::is_latex_output()) {
+    ref <- paste0(ref, "\n\\index{", dsetname, " data}",
+                  "\n\\index{datasets!", dsetname, "}")
+  }
+  ref
   
 }
 
