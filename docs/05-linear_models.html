@@ -583,28 +583,22 @@ responses, $\mathbf{y}_1, \mathbf{y}_2, \dots$ and a set of predictors, $\mathbf
 <p>The intercept <span class="math inline">\(\beta_0\)</span> is automatically included in the model without need to specify it explicitly. The minus sign, <code>-</code> on the right-hand side removes terms from the model, so a model with no intercept <span class="math inline">\(\beta_0 = 0\)</span> can be specifies as <code>y ~ X -1</code> (or perhaps more naturally, <code>y ~ 0 + X</code>).</p>
 <p>Function calls on the RHS, such as <code>poly(x, 3)</code> are evaluated directly, but to use a special model operator, like <code>^</code> must be “protected” by wrapping the term in <code><a href="https://rdrr.io/r/base/AsIs.html">I()</a></code>, meaning “identity” or “inhibit”. Thus, the model <code>y ~ x + I(x^2)</code> means the quadratic model <span class="math inline">\(y = \beta_0 + \beta_1 x + \beta_2 x^2\)</span>. This differs from the model <code>y ~ poly(x, 2)</code> in that the former uses the raw <code>x, x^2</code> values (which are necessarily positively correlated) while <code><a href="https://rdrr.io/r/stats/poly.html">poly()</a></code> converts these to orthogonal polynomial scores, which are uncorrelated (and therefore free from problems of collinearity).</p>
 <div id="exm-workers1" class="theorem example">
-<p><span class="theorem-title"><strong>Example 5.1</strong></span> <strong>Workers data: Regression models</strong> For the <code>workers</code> data (<span class="quarto-unresolved-ref">?sec-workers-data-pca</span>) you can fit simple regression models predicting income from years of experience using a linear and quadratic model as follows:</p>
+<p><span class="theorem-title"><strong>Example 5.1</strong></span> <strong>Workers data: Regression models</strong></p>
+<p>For the <code>workers</code> data (<span class="quarto-unresolved-ref">?sec-workers-data-pca</span>) you can fit simple regression models predicting income from years of experience using a linear and quadratic model as follows:</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb4" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">workers</span>, package <span class="op">=</span> <span class="st">"matlib"</span><span class="op">)</span></span>
-<span><span class="va">workers.mod1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">Income</span> <span class="op">~</span> <span class="va">Experience</span>, data<span class="op">=</span><span class="va">workers</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Call:</span></span>
-<span><span class="co">#&gt; lm(formula = Income ~ Experience, data = workers)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Coefficients:</span></span>
-<span><span class="co">#&gt; (Intercept)   Experience  </span></span>
-<span><span class="co">#&gt;       29.16         1.12</span></span>
+<span><span class="va">workers.mod1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">Income</span> <span class="op">~</span> <span class="va">Experience</span>, data<span class="op">=</span><span class="va">workers</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">workers.mod1</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/t.html">t</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/t.html">t</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt;              [,1]</span></span>
+<span><span class="co">#&gt; (Intercept) 29.16</span></span>
+<span><span class="co">#&gt; Experience   1.12</span></span>
 <span></span>
-<span><span class="va">workers.mod2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">Income</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/poly.html">poly</a></span><span class="op">(</span><span class="va">Experience</span>, <span class="fl">2</span><span class="op">)</span>, data<span class="op">=</span><span class="va">workers</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Call:</span></span>
-<span><span class="co">#&gt; lm(formula = Income ~ poly(Experience, 2), data = workers)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Coefficients:</span></span>
-<span><span class="co">#&gt;          (Intercept)  poly(Experience, 2)1  poly(Experience, 2)2  </span></span>
-<span><span class="co">#&gt;                 46.5                  39.1                 -11.2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="va">workers.mod2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">Income</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/poly.html">poly</a></span><span class="op">(</span><span class="va">Experience</span>, <span class="fl">2</span><span class="op">)</span>, data<span class="op">=</span><span class="va">workers</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">workers.mod2</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/t.html">t</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/t.html">t</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt;                       [,1]</span></span>
+<span><span class="co">#&gt; (Intercept)           46.5</span></span>
+<span><span class="co">#&gt; poly(Experience, 2)1  39.1</span></span>
+<span><span class="co">#&gt; poly(Experience, 2)2 -11.2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>It is simplest to understand these models by plotting the data overlaid with the fitted regressions. Ths uses <code><a href="https://ggplot2.tidyverse.org/reference/geom_smooth.html">geom_smooth()</a></code> and specifies the smoothing model as <code>method = "lm"</code> with a <code>formula</code>, which is <code>y ~ x</code> for the linear model and <code>y ~ poly(x, 2)</code> for the quadratic.</p>
 <div class="cell" data-layout-align="center">
