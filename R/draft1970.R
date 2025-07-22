@@ -1,7 +1,14 @@
+#' ---
+#' title: 1970 Draft Lottery
+#' ---
+#' 
+
 data(Draft1970, package = "vcdExtra")
 
 library(ggplot2)
 library(lubridate)
+library(dplyr)
+
 # scatterplot
 plot(Rank ~ Day, data=Draft1970)
 with(Draft1970, lines(lowess(Day, Rank), col="red", lwd=2))
@@ -99,8 +106,10 @@ ggplot(means, aes(x = Day, y = Rank)) +
   geom_point(size = 4) +
   geom_smooth(method = "lm", formula = y~x,
               color = "blue", fill = "blue", alpha = 0.2) +
-  geom_errorbar(aes(ymin = Rank-se, ymax = Rank+se), width = 8) +
+  geom_errorbar(aes(ymin = Rank-se, ymax = Rank+se), 
+                width = 8, linewidth = 1.3) +
   geom_text(data=months, aes(x=mid, y=100, label=month), nudge_x = 5) +
+  ylim(100, 250) +
   labs(x = "Average day of the year",
        y = "Average lottery rank")
 

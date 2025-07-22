@@ -59,6 +59,8 @@ In 1973, Francis Anscombe [@Anscombe:73] famously constructed a set of four data
 illustrate the importance of plotting the graphs before analyzing and model building, and the effect of unusual observations on fitted models.
 Now known as _Anscombe's Quartet_, these datasets had identical statistical properties: the same
 means, standard deviations, correlations and regression lines. 
+\ix{Anscombe's quartet}
+\ix{quartet!Anscombe}
 
 His purpose was to debunk three notions that had been prevalent at the time:
 
@@ -115,6 +117,7 @@ knitr::include_graphics("figs/ch02/ch02-anscombe1.png")
 This figure is produced as follows, using a single call to `ggplot()`, faceted by `dataset`.
 As we will see later (@sec-data-ellipse), the data ellipse (produced by `stat_ellipse()`)
 reflects the correlation between the variables.
+\ix{data ellipse}
 
 ```{r}
 #| eval: false
@@ -137,12 +140,16 @@ ggplot(anscombe_long, aes(x = x, y = y)) +
 The subplots are labeled with the statistical idea they reflect:
 
 * dataset 1: **Pure error**. This is the typical case with well-behaved data. Variation of the points around the line reflect only measurement error or unreliability in the response, $y$.
+\ix{pure error}
 
 * dataset 2: **Lack of fit**. The data is clearly curvilinear, and would be very well described by a quadratic, `y ~ poly(x, 2)`. This violates the assumption of linear regression that the fitted model has the correct form.
+\ix{lack of fit}
 
 * dataset 3: **Outlier**. One point, second from the right, has a very large residual. Because this point is near the extreme of $x$, it pulls the regression line towards it, as you can see by imagining a line through the remaining points.
+\ix{outliers}
 
 * dataset 4: **Influence**. All but one of the points have the same $x$ value. The one unusual point has sufficient influence to force the regression line to fit it **exactly**.
+\ix{influence}
 
 One moral from this example:
 
@@ -158,6 +165,7 @@ has $(n-2)$ degrees of freedom, so it is possible to choose $n-2$ of the $(x, y)
 pairs to yield any given value.
 As it happens, it is also possible to create any number of datasets with the same means, 
 standard deviations and correlations with nearly any shape you like --- even a dinosaur!
+\ix{datasaurus dozen}
 
 The _Datasaurus Dozen_ was first publicized by Alberto Cairo in a [blog post](http://www.thefunctionalart.com/2016/08/download-datasaurus-never-trust-summary.html)
 and are available in the `r package("datasauRus", cite=TRUE)`.
@@ -210,6 +218,10 @@ In all cases, the paradox is solved when
 their visualization reveals the distinct ways
 of understanding structure in the data.
 The [**quartets**](https://r-causal.github.io/quartets/) package contains these and other variations on this theme.
+\ix{quartet!causal}
+\ix{quartet!Rashamon}
+
+
 :::
 
 <!-- was: "child/02-davis.qmd" -->
@@ -257,11 +269,12 @@ Davis |>
 
 "What could be wrong here?", the client asked. The consultant replied with the obvious question:
 
-> _Did you plot your data?_
+> _**Did you plot your data?**_
 
 The answer turned out to be one discrepant point, a female, whose measured weight was 166 kg
 (366 lbs!). This single point exerted so much influence that it pulled the fitted regression line
 down to a slope of only 0.26.
+\ix{influence}
 
 ```{r}
 #| label: fig-ch02-davis-reg1
@@ -280,8 +293,10 @@ Davis |>
              color = sex, shape = sex, linetype = sex)) +
   geom_point(size = ifelse(Davis$weight==166, 6, 2)) +
   geom_smooth(method = "lm", formula = y~x, se = FALSE) +
-  labs(x = "Measured weight (kg)", y = "Reported weight (kg)") +
-  scale_linetype_manual(values = c(F = "longdash", M = "solid")) +
+  labs(x = "Measured weight (kg)", 
+       y = "Reported weight (kg)") +
+  scale_linetype_manual(values = c(F = "longdash", 
+                                   M = "solid")) +
   legend_inside(c(.8, .8))
 ```
 
@@ -297,7 +312,8 @@ In `ggplot` this can easily be done by reversing the `x` and `y` aesthetics.
 Davis |>
   ggplot(aes(y = weight, x = repwt, color = sex, shape=sex)) +
   geom_point(size = ifelse(Davis$weight==166, 6, 2)) +
-  labs(y = "Measured weight (kg)", x = "Reported weight (kg)") +
+  labs(y = "Measured weight (kg)", 
+       x = "Reported weight (kg)") +
     geom_smooth(method = "lm", formula = y~x, se = FALSE) +
   legend_inside(c(.8, .8))
 ```
@@ -314,19 +330,239 @@ but also help identify their reasons and suggest corrective action.
 What went wrong here? Examination of the original data showed that this person switched
 the values, recording her reported weight in the box for measured weight and vice versa.
 
-```{r child="child/02-draft1970.qmd"}
+
+<!-- was: {r child="child/02-draft1970.qmd"} -->
+
+
+### Shaken, not stirred: The 1970 Draft Lottery {#sec-draft1970}
+
+\ixon{1970 draft lottery}
+
+>Although we often hear that data speak for themselves, their voices can be soft and sly.---Frederick Mosteller (1983), _Beginning Statistics with Data Analysis_, p. 234.
+
+The power of graphics is particularly evident when data contains a weak signal embedded in a field of noise. To the casual glance, there may seem to be nothing going on, but the signal can be made apparent in an incisive graph.
+
+A dramatic example of this occurred in 1969 when the U.S. military conducted a lottery, the first since World War II,
+to determine which young men would be called up to serve in the Vietnam War for 1970. The U.S. Selective Service had devised a system to rank eligible men according to a random drawing of their birthdays. 
+There were 366 blue plastic capsules containing birth dates placed in a transparent glass container and drawn by hand to assign ranked order-of-call numbers to all men within the 18-26 age range.
+
+```{r}
+#| label: fig-draft-lottery-photo
+#| fig-align: center
+#| out-width: "90%"
+#| echo: false
+#| fig-cap: "Congressman Alexander Pirnie (R-NY) drawing the first capsule for the Selective Service draft, Dec 1, 1969. Source: [https://bit.ly/45c23sB](https://bit.ly/45c23sB)"
+knitr::include_graphics("images/1969_draft_lottery_photo.jpg")
 ```
+<!-- https://en.wikipedia.org/wiki/Draft_lottery_(1969)#/media/File:1969_draft_lottery_photo.jpg" -->
+
+In an attempt to make the selection process also transparent, the proceeding was
+covered on radio, TV and film and the dates posted in order on a large display board.
+The first capsule---drawn by Congressman Alexander Pirnie (R-NY) of the House Armed Services Committee---contained the date September 14, so all men born on September 14 in any year between 1944 and 1950 were assigned lottery number 1,
+and would be drafted first.
+April 24 was drawn next, then December 30, February 14, and so on until June 8,
+selected last. At the time of the drawing, US officials stated that those with birthdays drawn in the first third
+would almost certainly be drafted, while those in the last third would probably avoid the draft [@Fienberg:71].
+
+I watched this unfold with considerable interest because I was eligible for the Draft that
+year. I was dismayed when my birthday, May 7, came up ranked 35. **Ugh!** Could some data
+analysis and graphics get me out of my funk?
+
+
+The data, from the official [Selective Service listing](https://www.sss.gov/wp-content/uploads/2020/03/1970-Vietnam-Lottery.pdf)
+are contained in the dataset `vcdExtra::Draft1970`, ordered by `Month` and birthdate (`Day`),
+with `Rank` as the order in which the birthdates were drawn.
+
+<!-- figure-code: R/draft1970.R -->
+
+```{r draft-data}
+library(ggplot2)
+library(dplyr)
+data(Draft1970, package = "vcdExtra")
+dplyr::glimpse(Draft1970)
+```
+
+A basic scatterplot, slightly prettified, is shown in @fig-draft-gg1. 
+The points are colored by month, and month labels are shown at the bottom.
+
+```{r}
+#| label: fig-draft-gg1
+#| fig-align: center
+#| out-width: "100%"
+#| code-fold: true
+#| code-summary: "Show the code"
+#| fig-cap: "Basic scatterplot of 1970 Draft Lottery data plotting rank order of selection against birthdates in the year. Points are colored by month. The horizontal line is at the average rank."
+# make markers for months at their mid points
+months <- data.frame(
+  month =unique(Draft1970$Month),
+  mid = seq(15, 365-15, by = 30))
+
+ggplot2:: theme_set(theme_bw(base_size = 16))
+gg <- ggplot(Draft1970, aes(x = Day, y = Rank)) +
+  geom_point(size = 2.5, shape = 21, 
+             alpha = 0.3, 
+             color = "black", 
+             aes(fill=Month)
+  ) +
+  scale_fill_manual(values = rainbow(12)) +
+  geom_text(data=months, aes(x=mid, y=0, label=month), nudge_x = 5) +
+  geom_smooth(method = "lm", formula = y ~ 1,
+              col = "black", fill="grey", linetype = "dashed", alpha=0.6) +
+  labs(x = "Day of the year",
+       y = "Lottery rank") +
+  theme(legend.position = "none") 
+gg
+```
+
+The ranks do seem to be essentially random.  Is there any reason to suspect
+a flaw in the selection process, as I firmly hoped at the time?
+  
+If you stare at the graph in @fig-draft-gg1 long enough, you just can make out a sparsity of points in the upper right corner and also in the lower left corner compared to the opposite corners. 
+But probably not until I told you.
+
+\ixoff{1970 draft lottery}
+
+#### Visual smoothers {.unnumbered}
+Fitting a linear regression line or a smoothed (loess) curve can bring out the signal lurking in the background of a field of nearly random points. @fig-draft-gg2 shows a definite trend to lower 
+ranks for birthdays toward the end of the year. Those born earlier in the
+year were more likely to be given lower ranks, calling them up sooner for the draft.
+\ix{loess}
+\ix{smoother!loess}
+
+```{r}
+#| label: fig-draft-gg2
+#| fig-align: center
+#| out-width: "100%"
+#| code-fold: true
+#| code-summary: "Show the code"
+#| fig-cap: "Enhanced scatterplot of 1970 Draft Lottery data adding a linear regression line and loess smooth."
+ggplot(Draft1970, aes(x = Day, y = Rank)) +
+  geom_point(size = 2.5, shape = 21, 
+             alpha = 0.3, 
+             color = "black", 
+             aes(fill=Month)) +
+  scale_fill_manual(values = rainbow(12)) +
+  geom_smooth(method = "lm", formula = y~1,
+              se = FALSE,
+              col = "black", fill="grey", linetype = "dashed", alpha=0.6) +
+  geom_smooth(method = "loess", formula = y~x,
+              color = "blue", se = FALSE,
+              alpha=0.25) +
+  geom_smooth(method = "lm", formula = y~x,
+              color = "darkgreen",
+              fill = "darkgreen", 
+              alpha=0.25) +
+  geom_text(data=months, aes(x=mid, y=0, label=month), nudge_x = 5) +
+  labs(x = "Day of the year",
+       y = "Lottery rank") +
+  theme(legend.position = "none") 
+```
+
+Is this a real effect? 
+Even though the points seem to be random over the year, linear regression of `Rank` on `Day` shows a highly significant negative effect even though the 
+correlation[^rank-cor] is small ($r = -0.226$). The slope, -0.226,
+means that for each additional day in the year the lottery rank decreases about 1/4 toward
+the front of the draft line; that's nearly 7 ranks per month.
+
+[^rank-cor]: Because both days of the year and rank in the lottery are the integers, 1 to 366,
+the Pearson correlation and Spearman rank order correlation are identical.
+
+```{r draft-mod}
+draft.mod <- lm(Rank ~ Day, data=Draft1970)
+with(Draft1970, cor(Day, Rank))
+coef(draft.mod)
+```
+
+So, smoothing the data, using either the linear regression line or a nonparametric smoother is one important
+technique for seeing a weak signal in a noisy background.
+
+#### Statistical summaries {.unnumbered}
+Another way to enhance the signal-to-noise ratio of a graph is to plot summaries of the messy data points.
+For example, you might make boxplots of the ranks by month, or calculate and plot the mean or median
+rank by month and plot those together with some indication of variability within month.
+
+@fig-draft-means plots the average `Rank` for each month with error bars showing the mean $\pm 1$ standard errors against the average `Day`. The message of rank decreasing nearly linearly with month is now more dramatic. The correlation between the means is $r = -0.867$; the slope is -0.231, similar to what we found for the raw data.
+
+```{r}
+#| label: fig-draft-means
+#| fig-align: center
+#| out-width: "100%"
+#| code-fold: show
+#| fig-cap: "Plot of the average rank per month with $\\pm 1$ standard error bars. The line shows the least squares regression line, treating months as equally spaced."
+means <- Draft1970 |>
+  group_by(Month) |>
+  summarize(Day = mean(Day),
+            se = sd(Rank/ sqrt(n())),
+            Rank = mean(Rank)) 
+
+ggplot(aes(x = Day, y = Rank), data=means) +
+  geom_point(size = 4) +
+  geom_smooth(method = "lm", formula = y~x,
+              color = "blue", fill = "blue", alpha = 0.1) +
+  geom_errorbar(aes(ymin = Rank-se, ymax = Rank+se), 
+                width = 8, linewidth = 1.3) +
+  geom_text(data=months, aes(x=mid, y=0, label=month), nudge_x = 5) +
+  ylim(100, 250) +
+  labs(x = "Average day of the year",
+       y = "Average lottery rank")
+```
+
+The visual impression of a linearly decreasing trend in lottery rank is much stronger in @fig-draft-means
+than in @fig-draft-gg2 for two reasons: 
+  
+* Replacing the data points with their means strengthens the signal in relation to noise, which is essentially eliminated by plotting means and error bars rather than the raw data.
+* The narrower vertical range (100--250) in the plot of means makes the slope of the line appear steeper. (However, the slope of the means, $b = -0.231$ is nearly the same as that for the data points.)
+The narrower range also makes deviations from the regression line more noticeable.
+
+#### What happened here? {.unnumbered}
+
+Previous lotteries carried out by drawing capsules from a container had occasionally suffered the embarrassment that an empty capsule was selected 
+because of vigorous mixing [@Fienberg:71]. So for the 1970 lottery, the birthdate capsules were
+put in cardboard boxes, one for each month and these were carefully emptied into the glass container in order of month: Jan., Feb., ... Dec., gently shaken in atop the pile already there.  All might have been well had the persons drawing the capsules
+put their hand in truly randomly, but generally they picked from toward the top of the container.
+Consequently, those born later in the year had a greater chance of being picked earlier.
+
+There was considerable criticism of this procedure once the flaw had been revealed by analyses
+such as described here. In the following year, the Selective Service called upon the National
+Bureau of Standards to devise a better procedure. In 1971 they used two drums, one with the
+dates of the year and another with the rank numbers 1-366. As a date capsule was drawn randomly from the
+first drum, another from the numbers drum was picked simultaneously, giving a doubly-randomized
+sequence. 
+
+Of course, if they had R, the entire process could have been done using `sample()`:
+
+```{r sample}
+set.seed(42)
+date = seq(as.Date("1971-01-01"), as.Date("1971-12-31"), by="+1 day")
+rank = sample(seq_along(date))
+draft1971 <- data.frame(date, rank)
+
+head(draft1971, 4)
+tail(draft1971, 4)
+```
+
+And, what would have happened to me and all others born on a May 7th, if they did it this way?
+My lottery rank would have 274![^personal]
+
+[^personal]: A personal note: I escaped being drafted, but I moved to Canada in 1971. Looking back
+today, it's one of the best decisions I ever made.
+
+```{r}
+me <- as.Date("1971-05-07")
+draft1971[draft1971$date == me,]
+```
+
 
 ## Plots for data analysis
 
 
-Visualization methods take an enormous variety of forms,  so it is useful to distinguish several broad categories according to their use in data analysis:
+Visualization methods take an enormous variety of forms,  so it is useful to distinguish several broad categories according to their _use in data analysis_:
 
-* __data plots__ : primarily plot the raw data, often with annotations to aid interpretation (regression lines and smooths, data ellipses, marginal distributions). A survey of these methods is presented in @sec-multivariate_plots.
+* __data plots__ : primarily plot the raw data, often with annotations to aid interpretation (regression lines and smooths, data ellipses, marginal distributions). A survey of these methods is presented in @sec-bivariate_summaries.
 
 * __reconnaissance plots__ : with more than a few variables, reconnaissance plots provide a high-level,
-bird's-eye overview of the data, allowing you to see patterns that might not be visible in a set of separate plots. Some examples are scatterplot matrices, showing all bivariate plots of variables
-in a dataset; correlation diagrams, using visual glyphs to represent the correlations between
+bird's-eye overview of the data, allowing you to see patterns that might not be visible in a set of separate plots. Some examples are scatterplot matrices (@sec-scatmat) showing all bivariate plots of variables
+in a dataset; correlation diagrams (@sec-corrgram), using visual glyphs to represent the correlations between
 all pairs of variables and "trellis" or faceted plots that show how a focal relation of
 one or more variables differs across values of other variables.
 
@@ -336,13 +572,14 @@ together with confidence intervals.
 Other model plots try to take into account that 
 a fitted model may involve more variables than can be shown in a static 2D plot.
 Some examples of these are added variable plots (@sec-avplots), and marginal effect plots (@sec-effect-displays), both of which
-attempt to show the net relation of two focal variables, controlling or adjusting for other variables
+attempt to show the _net_ relation of two focal variables, controlling or adjusting for other variables
 in a model.
 
-* __diagnostic plots__ : indicating potential problems with the fitted model. These include residual plots, influence plots, plots for testing homogeneity of variance and so forth.
+* __diagnostic plots__ : indicating potential problems with the fitted model. These include residual plots, influence plots, plots for testing homogeneity of variance and so forth, illustrated in @sec-diagnostic_plots.
 
 * __dimension reduction plots__ : plot representations of the data into a space of fewer dimensions than the number of variables in the dataset. Simple examples include principal components analysis (PCA) and the related biplots, and multidimensional scaling (MDS) methods. This is the topic of @sec-pca-biplot, but this powerful idea runs through the rest of the book.
 
+<!--  This seems unnecessary
 We give some more details and a few examples in the sections that follow.
 
 **TODO** Reduce or eliminate the stuff in the section below.
@@ -374,6 +611,7 @@ Model plots show the fitted or predicted values from a statistical model and pro
 effects to be seen
 - Visual thinning: As the data becomes more complex, focus more on impactful summaries
 
+-->
 
 ```{r child = "child/Ch02-summary.qmd"}
 ```
