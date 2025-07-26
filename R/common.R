@@ -253,6 +253,10 @@ package <- function(package, cite=FALSE) {
 #   `r dataset("prestige", "carData")`
 # or perhaps
 #   `r dataset("carData::prestige")`
+#
+# regular expression to find / replace [assume pkg::func() has final ()]
+#   find: `(\w)+::(\w+)`
+#   repl: `r dataset("\2")`
 
 # dsetname_color <- "black"
 # dsetname_font <- "plain"
