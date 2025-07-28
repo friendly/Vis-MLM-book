@@ -24,11 +24,13 @@ ggplot(peng,
            color = species, shape = species, fill=species)) +
   geom_smooth(method = "lm", formula = y ~ x,
               se=FALSE, linewidth=2) +
-  theme_penguins("dark") +
   geom_bagplot(bag.alpha = 0.5,
-               coef = 2.5,
+               outlier.size = 5,
+               fraction = 0.5,    # bag fraction
+               coef = 2.5,        # fence factor
                show.legend = FALSE) +
+  theme_penguins("dark") +
   theme_bw(base_size = 14) +
   theme(legend.position = "inside",
-        legend.position.inside = c(0.85, 0.15)) 
+        legend.position.inside = c(0.87, 0.15)) 
 

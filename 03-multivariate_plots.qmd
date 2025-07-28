@@ -69,6 +69,7 @@ library(patchwork)
 library(ggpcp)
 library(tourr)
 library(heplots)
+library(gggda)
 ```
 
 ## Bivariate summaries {#sec-bivariate_summaries}
@@ -626,9 +627,9 @@ visual insight that these formed concentric shapes that were tolerably close to 
 He then calculated summaries,  $\text{Ave}(Y | X)$, and, for symmetry, $\text{Ave}(X | Y)$, and plotted these as lines of means on his diagram. Lo and behold, he had a second visual
 insight: the lines of means of ($Y | X$) and ($X | Y$) corresponded approximately to
 the loci of  horizontal and vertical tangents to the concentric ellipses. 
-To complete the picture, he added lines showing the major and minor axes of the
+To complete the picture, he added lines showing the geometric major and minor axes of the
 family of ellipses (which turned out to be the principal components) with the result shown in @fig-galton-corr.
-
+\ix{principal components}
 
 ```{r}
 #| label: fig-galton-corr
@@ -756,7 +757,7 @@ A number of packages provide functions for drawing data ellipses in a scatterplo
 color, etc. Importantly, the `r pkg("car")` package generally allows automatic identification of "noteworthy" points by their labels in the plot using a variety of methods. For example, `method = "mahal"` labels cases with the most extreme Mahalanobis distances;
 `method = "r"` selects points according to their value of `abs(y)`, which is
 appropriate in residual plots.
-* `car::dataEllipse()`: plots  classical or robust data (using `MASS::cov/trob()`) ellipses for one or more groups, with the same facilities for point identification.
+* `car::dataEllipse()`: plots  classical or robust data ellipses for one or more groups, with the same facilities for point identification. The robust version (`robust=TRUE`) uses the multivariate $t$ distribution (using `MASS::cov/trob()`) rather than the Gaussian,
 * `heplots::covEllipses()`: draws classical or robust data ellipses for one or more groups in a one-way design and optionally for the pooled total sample, where the focus is on homogeneity of within-group covariance matrices.
 * `ggplot2::stat_ellipse()`: uses the calculation methods of `car::dataEllipse()` to add unfilled (`geom = "path"`) or filled (`geom = polygon"`) data ellipses in a `ggplot` scatterplot, using inherited aesthetics.
 
@@ -964,8 +965,13 @@ collected from 3 islands in the Palmer Archipelago
 between 2007--2009 [@Gorman2014]. The purpose was to examine differences in size or appearance of these species,
 particularly differences among the sexes (sexual dimorphism) in relation to foraging and habitat.
 
-Here, I use a slightly altered version of the dataset, `peng`, renaming variables to remove the units,
-making factors of character variables and deleting a few cases with missing data.
+Here, I use a slightly altered version of the dataset, `r dataset("heplots::peng")`,
+constructed by renaming variables to remove the units,
+making factors of character variables and deleting a few cases with missing data.[^penguins]
+
+[^penguins]: In R 4.5.0, a revised version of the `palmerpenguins` dataset, named `r dataset("penguins")`
+was added to the base R `r package("datasets")`. This corrected a few of the problems that led me to create
+`r dataset("heplots::peng")`, but still retains the cases with missing data.
 
 ```{r}
 data(penguins, package = "palmerpenguins")
@@ -1079,6 +1085,9 @@ ggplot(peng,
         legend.position.inside = c(0.85, 0.15))
 ```
 
+### Visual thinning
+\ixon{visual thinning}
+
 Overall, the three species occupy different regions of this 2D space and for each species the relation between bill length and depth appears reasonably linear. Given this, we can suppress plotting the
 data points to get a visual summary of the data using the fitted regression lines and data ellipses,
 as shown in @fig-peng-ggplot2. 
@@ -1086,7 +1095,7 @@ as shown in @fig-peng-ggplot2.
 This idea, of **visual thinning** a graph to focus on what should be seen,
 becomes increasingly useful as the data becomes more complex. The `ggplot2` framework encourages this,
 because we can think of various components as layers, to be included or not.
-Here I chose to include only the regression line and
+In @fig-peng-ggplot2 I chose to include only the regression line and
 add data ellipses of 40%, 68% and 95% coverage to highlight the increasing bivariate 
 density around the group means.
 
@@ -1108,6 +1117,13 @@ ggplot(peng,
 ```
 
 \ixoff{data ellipse}
+\ixoff{visual thinning}
+
+<!-- **TODO**: Add bagplot here -->
+
+```{r child="child/03-bagplot.qmd"}
+```
+
 
 ## Non-parametric bivariate density plots
 
@@ -1115,7 +1131,7 @@ ggplot(peng,
 \ixon{bivariate density plot}
 
 While I emphasize data ellipses (because I like their beautiful geometry), other visual summaries of the bivariate density are possible and often useful. 
-If you are worried about the assumption of normality entailed in a data ellipse,
+To see more detail about the "shape" of bivariate data in a non-parametric way
 you can use one of the methods described below to see a model-free representation
 of your data.
 
@@ -1135,6 +1151,7 @@ computing the high density regions that bound given levels of probability
 and maps these to the `alpha` transparency aesthetic. 
 A `method` argument allows you to specify various nonparametric (`method ="kde"` is the default)
 and parametric (`method ="mvnorm"` gives normal data ellipses) ways to estimate the underlying bivariate distribution.
+\ix{high density region}
 
 @fig-peng-ggdensity shows these side-by-side for comparison.
 With `geom_density_2d()` you can specify either the number of contour `bins` or the
@@ -1174,6 +1191,9 @@ p2 <- ggplot(peng,
 p1 + p2
 ```
 
+Compared with the data ellipse, which is highly smoothed by the Gaussian assumption and the bagplot,
+which is smoothed by the concept of contours of data depth, the plots in @fig-peng-ggdensity show considerably
+more detail, and an intriguing suggestion of two peaks for our Chinstrap penguins.
 \ixoff{non-parametric!bivariate density plot}
 \ixoff{bivariate density plot}
 
@@ -1186,12 +1206,13 @@ the data ellipse is ideally suited as a tool for illustrating and
 explicating various phenomena that occur in the analysis of linear models.
 One class of simple, but important, examples concerns the difference between the _marginal relationship_ between variables, ignoring some important factor or covariate, and the _conditional_ relationship, adjusting (controlling) for that variable.
 
-Simpson's [-@Simpson:51] paradox  occurs when the marginal and
+An important example is **Simpson's paradox** [@Simpson:51] which occurs when the marginal and
 conditional relationships differ in direction. That is, the overall correlation
 in a model `y ~ x` might be negative, while the within-group correlations
 in separate models for each group `y[g] ~ x[g]` might be positive, or vice versa.
+For Flatlanders in 2D space, this is a puzzlement.
 
-This may be seen in the plots
+We can see this paradox in the plots
 of bill length against bill depth for the penguin data shown in @fig-peng-simpsons. Ignoring penguin species, the marginal, total-sample correlation is slightly negative
 as seen in panel (a). The individual-sample ellipses in panel (b) show
 that the conditional, within-species correlations are all positive, with
@@ -1201,7 +1222,7 @@ relationship, accounting for the negative marginal correlation when species is i
 ```{r}
 #| label: fig-peng-simpsons
 #| echo: false
-#| out-width: "120%"
+#| out-width: "100%"
 #| fig-cap: "Marginal (a), conditional (b), and pooled within-sample (c) relationships
 #|  of bill length and depth in the Penguins data. Each plot shows the 68% data ellipse and regression line(s) with 95% confidence bands."
 knitr::include_graphics("images/peng-simpsons.png")
@@ -1232,6 +1253,8 @@ error covariances in multivariate models.
 The `ggplot2` code for the panels in this figure are shown below. Note that for components that will be the same across panels, you can define elements
 (e.g., `labels`, `theme_penguins()`, `legend_position`) once, and then re-use
 these across several graphs.
+
+**TODO** This panel tabset looks fine in HTML but is awkward in PDF
 
 ::: {.panel-tabset}
 
