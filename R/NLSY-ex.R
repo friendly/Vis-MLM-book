@@ -144,7 +144,7 @@ coefplot(NLSY.mod2, fill = TRUE)
 
 idx < cqplot(NLSY.mod2, id.n = 5)
 
-# Influence
+# Influence plots
 
 influencePlot(NLSY.mod2)
 

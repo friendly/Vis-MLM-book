@@ -1,6 +1,6 @@
 ```{r include=FALSE}
 source("R/common.R")
-knitr::opts_chunk$set(fig.path = "figs/infl-robust/")
+knitr::opts_chunk$set(fig.path = "figs/Ch13/")
 ```
 
 ::: {.content-visible unless-format="pdf"}
@@ -47,13 +47,14 @@ cases, the question arises, what to do about them?
 
 In this chapter we use the following packages. Load them now
 ```{r pkg-load}
+library(dplyr)
+library(tidyr)
 library(car)
 library(heplots)
 library(candisc)
 library(mvinfluence)
 library(ggplot2)
-library(dplyr)
-library(tidyr)
+library(patchwork)
 ```
 
 ## Multivariate influence {#sec-multivariate-influence}
@@ -67,18 +68,21 @@ As in the univariate case, the measures of multivariate influence stem from case
 of comparing some statistic calculated from the full sample to that statistic calculated when
 case $i$ is deleted. The Barrett-Ling approach generalized this to the case of deleting a set $I$ of
 $m \ge 1$ cases. This can be useful because some cases can "mask" the influence of others
-in the sense that when one is deleted, others become much more influential.
+in the sense that when one is deleted, others become much more influential. However, in most
+cases the default of deleting individual observations ($m=1$) is sufficent
 
 The following sections describe the notation and measures used in the calculations.
 
 ### Notation
 
+It is useful to define the notation used to designate terms in the model calculated from the complete dataset
+versus those calculated with one or more observations excluded.
 Let $\mathbf{X}$ be the model matrix in the multivariate linear model, 
 $\mathbf{Y}_{n \times p} = \mathbf{X}_{n \times q} \; \mathbf{B}_{q \times p} + \mathbf{E}_{n \times p}$.
 The usual least squares estimate of $\mathbf{B}$ is given by
 $\mathbf{B} = (\mathbf{X}^\top \mathbf{X})^{-1}  \mathbf{X}^\top \mathbf{Y}$.
 
-Then let 
+Then let: 
 
 * $\mathbf{X}_I$ be the submatrix of $\mathbf{X}$ whose $m$ rows are indexed by $I$,
 * $\mathbf{X}_{(-I)}$ is the complement, the submatrix of $\mathbf{X}$ with the $m$ rows in $I$ deleted,
@@ -150,13 +154,176 @@ $\mathbf{R}_I$ are $m \times m$ matrices.  Where scalar quantities are needed, t
 functions apply
 a function, `FUN`, either `det()` or `tr()` to calculate a measure of "size", as in
 
-```
-  H <- sapply(x$H, FUN)
-  Q <- sapply(x$Q, FUN)
-  L <- sapply(x$L, FUN)
-  R <- sapply(x$R, FUN)
 ````
- 
+H <- sapply(x$H, FUN)
+Q <- sapply(x$Q, FUN)
+L <- sapply(x$L, FUN)
+R <- sapply(x$R, FUN)
+````
+
+This is the same trick used in the calculation of the various multivariate test statistics like Wilks' Lambda
+and Pillai's trace.
+
+## Toy example
+
+To illustrate these ides, this example, from @Barrett:2003, considers the simplest case, of one predictor (`x`) and
+two response variables, `y1` and `y2`.
+
+```{r toy-data}
+Toy <- tibble(
+   case = 1:9,
+   x =  c(1,    1,    2,    2,    3,    3,    4,    4,    10),
+   y1 = c(0.10, 1.90, 1.00, 2.95, 2.10, 4.00, 2.95, 4.95, 10.00),
+   y2 = c(0.10, 1.80, 1.00, 2.93, 2.00, 4.10, 3.05, 4.93, 10.00)
+)
+```
+
+A quick peek at the data indicates that `y1` and `y2` are nearly perfectly correlated with each other.
+Both of these are also strongly linear with `x` and there is one extreme point (case 9). The data is pecuiliar,
+but looking at these pairwise plots doesn't suggest that anything is terribly wrong. 
+In the plots of `y1` and `y2` agains `x`, case 9 simply looks like a good leverage point (@sec-leverage).
+
+```{r}
+#| label: fig-toy-scatmat
+#| fig-width: 8
+#| fig-height: 8
+#| out-width: "100%"
+#| fig-cap: "Scatterplot matrix for the toy example."
+scatterplotMatrix(~ y1 + y2 + x, data=Toy, 
+  cex=2,
+  col = "blue", pch = 16,
+  id = list(n=1, cex=2), 
+  regLine = list(lwd = 2, col="red"),
+  smooth = FALSE)
+```
+
+For this example, we fit the univariate models with `y1` and `y2` separately and then the multivariate model.
+
+```{r toy-models}
+Toy.lm1 <- lm(y1 ~ x, data=Toy)
+Toy.lm2 <- lm(y2 ~ x, data=Toy)
+Toy.mlm <- lm(cbind(y1, y2) ~ x, data=Toy)
+```
+
+### Cook's D
+
+First, let's examine the Cook's D statistics for the models. Note that the function `cooks.distance()`
+invokes `stats::cooks.distance.lm()` for the univariate response models, but
+invokes `mvinfluence::cooks.distance.mlm()` for the multivariate model.
+
+```{r toy-cooks-distance}
+df <- Toy
+df$D1  <- cooks.distance(Toy.lm1)
+df$D2  <- cooks.distance(Toy.lm2)
+df$D12 <- cooks.distance(Toy.mlm)
+
+df
+```
+
+The only thing remarkable here is for case 9:  The univariate Cook's Ds, `D1` and `D2` are very small,
+yet the multivariate statistic, `D12` is over 10 times the next smallest value.
+
+
+We can see how case 9 stands out in the influence plots. It has an extreme hat value. But, because it's residual is
+very small, it does not have much influence on the fitted models for either `y1` or `y2`. Neither of these plots
+suggest that anything is terribly wrong with the univariate models---none of the points are in the "danger" zones
+of the upper- and lower-right corners.
+
+```{r echo=-1}
+#| label: fig-toy-inflplots
+#| fig-width: 10
+#| fig-height: 5
+#| out-width: "100%"
+#| fig-cap: "Influence plots for the univariate models for `y1` and `y2`"
+par(mar = c(4, 4, 3, 1)+.1, mfrow = c(1,2))
+ip1 <- car::influencePlot(Toy.lm1, 
+                          id = list(cex=1.5), cex.lab = 1.5)
+ip2 <- car::influencePlot(Toy.lm2, 
+                          id = list(cex=1.5), cex.lab = 1.5)
+```
+
+Contrast these results with what we get for the model for `y1` and `y2` jointly. 
+In the multivariate version, `mvinfluence::influencePlot.mlm()` plots the squared studentized residual (denoted `Q` in the output) against the hat value, referred to as a `type = "stres" plot.[^cutoffs] 
+Case 9 stands in @fig-toy-inflplot-mlm-stres out as wildly influential on the joint regression model.
+
+[^cutoffs]: Similar to the univariate version, hat values greater than 2 or 3 times their average, $\bar{h} = p/n$ here,
+are considered large in the multivariate case. Values of the squared studentized residual $R_i$
+are calibrated by the Beta distribution, $\text{Beta}(\alpha=0.95, q/2, (n-p-q)/2)$.
+
+```{r echo=-1}
+#| label: fig-toy-inflplot-mlm-stres
+#| out-width: "80%"
+#| fig-cap: "Studentized residual influence plot for the multivariate model `(y1, y2) ~ x`. Dotted vertical lines mark large hat values, $H > {2, 3} p/n$. The dotted horizontal line marks large values of the squared studentized residual."
+par(mar = c(4,4,1,1)+.1)
+influencePlot(Toy.mlm, type = "stres",
+              id.n=2, id.cex = 1.3,
+              cex.lab = 1.5)
+```
+
+
+An alternative form of the multivariate influence plot (@fig-toy-inflplot-mlm-LR) uses the leverage (`L`) and residual (`R`) components
+(`type = "LR"`).
+Because influence is the product of leverage and residual, a plot of $\log(L)$ versus $\log(R)$ has the attractive property
+that contours of constant Cook's distance fall on diagonal lines with slope = -1. 
+Adjacent reference lines represent constant _multiples_ of influence.
+
+```{r echo=-1}
+#| label: fig-toy-inflplot-mlm-LR
+#| out-width: "80%"
+#| fig-cap: "LR plot of $\\log(L)$ versus $\\log(R)$ for the multivariate model `(y1, y2) ~ x`. Dotted lines show contours of constant Cook's distance."
+par(mar = c(4,4,1,1)+.1)
+influencePlot(Toy.mlm, type="LR",
+              id.n=2, id.cex = 1.3,
+              cex.lab = 1.5) -> infl
+```
+
+### DFBETAS
+
+The DFBETAS statistics give the estimated change in the regression coefficients when each case is deleted in turn.
+We can gain some insight as to why case 9 is unremarkable in the univariate regressions by plotting these, shown in
+@fig-toy-dfbetas.
+The values come from `stats::dfbetas()` and return the standardized values.
+
+```{r}
+#| label: fig-toy-dfbetas
+#| fig-width: 10
+#| fig-height: 5
+#| out-width: "100%"
+#| fig-cap: ""
+db1 <- as.data.frame(dfbetas(Toy.lm1))
+gg1 <- ggplot(data = db1, aes(x=`(Intercept)`, y=x, label=rownames(db1))) +
+  geom_point(size=1.5) +
+  geom_label(size=6, fill="pink") +
+  xlab(expression(paste("Deletion Intercept  ", b[0]))) +
+  ylab(expression(paste("Deletion Slope  ", b[1]))) +
+  ggtitle("dfbetas for y1") +
+  theme_bw(base_size = 16)
+
+db2 <- as.data.frame(dfbetas(Toy.lm2))
+gg2 <- ggplot(data = db2, aes(x=`(Intercept)`, y=x, label=rownames(db2))) +
+  geom_point(size=1.5) +
+  geom_label(size=6, fill="pink") +
+  xlab(expression(paste("Deletion Intercept  ", b[0]))) +
+  ylab(expression(paste("Deletion Slope  ", b[1]))) +
+  ggtitle("dfbetas for y2") +
+  theme_bw(base_size = 16)
+
+gg1 + gg2
+```
+
+The values for case 9 are nearly (0, 0) in both plots, indicating that deleting this case has negligible effect
+in both _univariate_ regressions.
+Yet, case 9 appeared very influential in the multivariate model. Why did this happen?
+
+In this contrived example the problem arose from the very high correlation between `y1` and `y2`,
+$r = 0.9997$ as can be seen in the (y1, y2) panel in @fig-toy-scatmat.
+Although each of the `y1` and `y2` values for the high-leverage cases are in-line with the univariate regressions (and thus have small univariate Cook's Ds), the ill-conditioning magnifies small discrepancies in their positions, making the multivariate Cook's D larger.
+
+
+
+
+## Example: NLSY data
+
 
 ## Robust Estimation {#sec-robust-estimation}
 

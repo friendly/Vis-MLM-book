@@ -89,4 +89,4 @@ heplot(NLSY.rlm,
        label.pos = c("bottom", "top", "top", "top", "bottom")
 )
 
-
+influencePlot(NLSY.mod1)
