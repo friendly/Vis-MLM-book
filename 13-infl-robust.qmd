@@ -69,32 +69,30 @@ of comparing some statistic calculated from the full sample to that statistic ca
 case $i$ is deleted. The Barrett-Ling approach generalized this to the case of deleting a set $I$ of
 $m \ge 1$ cases. This can be useful because some cases can "mask" the influence of others
 in the sense that when one is deleted, others become much more influential. However, in most
-cases the default of deleting individual observations ($m=1$) is sufficent
-
-The following sections describe the notation and measures used in the calculations.
+cases the default of deleting individual observations ($m=1$) is sufficient.
 
 ### Notation
 
-It is useful to define the notation used to designate terms in the model calculated from the complete dataset
-versus those calculated with one or more observations excluded.
-Let $\mathbf{X}$ be the model matrix in the multivariate linear model, 
+It is useful to define some notation used to designate terms in the model calculated from the _complete_ dataset
+versus those calculated with one or more observations _excluded_.
+As before, let $\mathbf{X}$ be the model matrix in the multivariate linear model, 
 $\mathbf{Y}_{n \times p} = \mathbf{X}_{n \times q} \; \mathbf{B}_{q \times p} + \mathbf{E}_{n \times p}$.
-The usual least squares estimate of $\mathbf{B}$ is given by
+As we know, the usual least squares estimate of $\mathbf{B}$ is given by
 $\mathbf{B} = (\mathbf{X}^\top \mathbf{X})^{-1}  \mathbf{X}^\top \mathbf{Y}$.
 
 Then let: 
 
-* $\mathbf{X}_I$ be the submatrix of $\mathbf{X}$ whose $m$ rows are indexed by $I$,
-* $\mathbf{X}_{(-I)}$ is the complement, the submatrix of $\mathbf{X}$ with the $m$ rows in $I$ deleted,
+* $\mathbf{X}_I$ be the _submatrix_ of $\mathbf{X}$ whose $m$ rows are indexed by $I$,
+* $\mathbf{X}_{(-I)}$ is the _complement_, the submatrix of $\mathbf{X}$ with the $m$ rows in $I$ deleted,
 
  
 Matrices $\mathbf{Y}_I$, $\mathbf{Y}_{(-I)}$ are defined similarly, denoting the submatrix of $m$ rows of $\mathbf{Y}$
 and the submatrix with those rows deleted, respectively.
 
-In the calculation of regression coefficients,
-$\mathbf{B}_{(-I)} = (\mathbf{X}_{(-I)}^\top \mathbf{X}_{(-I)})^{-1} \mathbf{X}_{(-I)}^\top \mathbf{Y}_{I}$ are the estimated 
-coefficients
-when the cases indexed by $I$ have been removed. The corresponding residuals are
+The calculation of regression coefficients when the cases indexed by $I$ have been removed
+has the form
+$\mathbf{B}_{(-I)} = (\mathbf{X}_{(-I)}^\top \mathbf{X}_{(-I)})^{-1} \mathbf{X}_{(-I)}^\top \mathbf{Y}_{I}$.
+The corresponding residuals are expressed as
 $\mathbf{E}_{(-I)} = \mathbf{Y}_{(-I)} - \mathbf{X}_{(-I)} \mathbf{B}_{(-I)}$.
  
 ### Hat values and residuals
@@ -114,7 +112,9 @@ defined as follows:
    
 ### Cook's distance
  
-In these terms, Cook's distance is defined for a univariate response by
+Multivariate analogs of all the usual influence diagnostics (Cook's D, CovRatio, ...) can be defined in terms of
+$\mathbf{H}$ and $\mathbf{Q}$. For instance,
+Cook's distance is defined for a univariate response by
 $$
 D_I = (\mathbf{b} - \mathbf{b}_{(-I)})^T (\mathbf{X}^T \mathbf{X}) (\mathbf{b} - \mathbf{b}_{(-I)}) / p s^2 \; ,
 $$
@@ -124,7 +124,7 @@ obtained when the cases in $I$ are deleted.
 
 In the multivariate case, Cook's distance is obtained
 by replacing the vector of coefficients $\mathbf{b}$ by $\mathrm{vec} (\mathbf{B})$, the result of stringing out
-the coefficients for all responses in a single $n \times p$-length vector.
+the coefficients for all responses in a single $(n \times p)$-length vector.
 
 $$
 D_I = \frac{1}{p} [\mathrm{vec} (\mathbf{B} - \mathbf{B}_{(-I)})]^T (S^{-1} \otimes \mathbf{X}^T \mathbf{X}) \mathrm{vec} (\mathbf{B} - \mathbf{B}_{(-I)})  \; ,
@@ -134,19 +134,20 @@ $\mathbf{S} = \mathbf{E}^T \mathbf{E} / (n-p)$ is the covariance matrix of the r
 
 
 ### Leverage and residual components
- 
-For a univariate response, and when $m = 1$, Cook's distance can be re-written as a product of leverage and residual components as
+
+We gain further insight by considering how far we can generalize from the case for a
+univariate response. When $m = 1$, Cook's distance can be re-written as a product of leverage and residual components as
 $$
 D_i = \left(\frac{n-p}{p} \right) \frac{h_{ii} q_{ii}}{(1 - h_{ii})^2  } \;.
 $$
 
-Then we can define a leverage component $L_i$ and residual component $R_i$ as
+This suggests that we define a _leverage component_ $L_i$ and _residual component_ $R_i$ as
 
 $$
 L_i = \frac{h_{ii}}{1 - h_{ii}} \quad\quad R_i = \frac{q_{ii}}{1 - h_{ii}} \;.
 $$
 
-$R_i$ is the studentized residual, and $D_i \propto L_i \times R_i$.
+$R_i$ is the studentized residual here, and $D_i \propto L_i \times R_i$.
 
 In the general, multivariate case there are analogous matrix expressions for $\mathbf{L}$ and $\mathbf{R}$.
 When `m > 1`, the quantities $\mathbf{H}_I$, $\mathbf{Q}_I$, $\mathbf{L}_I$, and
@@ -161,10 +162,11 @@ L <- sapply(x$L, FUN)
 R <- sapply(x$R, FUN)
 ````
 
-This is the same trick used in the calculation of the various multivariate test statistics like Wilks' Lambda
-and Pillai's trace.
+This is the same trick used in the calculation of the various multivariate test statistics like Wilks' Lambda and Pillai's trace. In this way, the full range of multivariate influence measures discussed by @Barrett:2003
+can be calculated.
 
-## Toy example
+
+## The Misterious Case 9
 
 To illustrate these ides, this example, from @Barrett:2003, considers the simplest case, of one predictor (`x`) and
 two response variables, `y1` and `y2`.
@@ -178,7 +180,7 @@ Toy <- tibble(
 )
 ```
 
-A quick peek at the data indicates that `y1` and `y2` are nearly perfectly correlated with each other.
+A quick peek (@fig-toy-scatmat) at the data indicates that `y1` and `y2` are nearly perfectly correlated with each other.
 Both of these are also strongly linear with `x` and there is one extreme point (case 9). The data is pecuiliar,
 but looking at these pairwise plots doesn't suggest that anything is terribly wrong. 
 In the plots of `y1` and `y2` agains `x`, case 9 simply looks like a good leverage point (@sec-leverage).
@@ -221,10 +223,10 @@ df
 ```
 
 The only thing remarkable here is for case 9:  The univariate Cook's Ds, `D1` and `D2` are very small,
-yet the multivariate statistic, `D12` is over 10 times the next smallest value.
+yet the multivariate statistic, `D12=3.22` is over 10 times the next largest value.
 
 
-We can see how case 9 stands out in the influence plots. It has an extreme hat value. But, because it's residual is
+Let's see how case 9 stands out in the influence plots (@fig-toy-inflplots). It has an extreme hat value. But, because it's residual is
 very small, it does not have much influence on the fitted models for either `y1` or `y2`. Neither of these plots
 suggest that anything is terribly wrong with the univariate models---none of the points are in the "danger" zones
 of the upper- and lower-right corners.
@@ -242,9 +244,12 @@ ip2 <- car::influencePlot(Toy.lm2,
                           id = list(cex=1.5), cex.lab = 1.5)
 ```
 
-Contrast these results with what we get for the model for `y1` and `y2` jointly. 
-In the multivariate version, `mvinfluence::influencePlot.mlm()` plots the squared studentized residual (denoted `Q` in the output) against the hat value, referred to as a `type = "stres" plot.[^cutoffs] 
-Case 9 stands in @fig-toy-inflplot-mlm-stres out as wildly influential on the joint regression model.
+**TODO**: Check how these are defined in mvinfluence
+
+Contrast these results with what we get for the model for `y1` and `y2` jointly (@fig-toy-inflplot-mlm-stres)
+In the multivariate version, `mvinfluence::influencePlot.mlm()` plots the squared studentized residual (denoted `R` in the output) against the hat value; this is referred to as a `type = "stres" plot.[^cutoffs] 
+Case 9 stands in @fig-toy-inflplot-mlm-stres out as wildly influential on the joint regression model. But there's more: The cases in @fig-toy-inflplots with large Cook's D (bubble size)
+have only tiny influence in the multivariate model.
 
 [^cutoffs]: Similar to the univariate version, hat values greater than 2 or 3 times their average, $\bar{h} = p/n$ here,
 are considered large in the multivariate case. Values of the squared studentized residual $R_i$
@@ -260,9 +265,23 @@ influencePlot(Toy.mlm, type = "stres",
               cex.lab = 1.5)
 ```
 
+::: {.callout-note title="Theory into Practice"}
+Chairman Mao said, "Theory into practice", but @Tukey:59 said that,
+"The practical power of a statistical test is the product of its' statistical power and the probability of use". The story for multivariate influence here illustrates
+a nice feature of the connections between statistical theory, graphic development
+and implemented in software here. 
 
-An alternative form of the multivariate influence plot (@fig-toy-inflplot-mlm-LR) uses the leverage (`L`) and residual (`R`) components
-(`type = "LR"`).
+A statistical development proposes a new way of
+thinking about a problem. People with a graphical bent look at this and think,
+"How can I visualize this?". A software developer then solves the remaining problem
+of how to incorporate that into easy-to-use functions or applications.
+If only this was easy, but sometimes, all three roles appear within a given person.
+
+:::
+
+The general formulation of @Barrett:2003 suggests
+an alternative form of the multivariate influence plot (@fig-toy-inflplot-mlm-LR) that uses the leverage (`L`) and residual (`R`) components (`type = "LR"`) directly.
+
 Because influence is the product of leverage and residual, a plot of $\log(L)$ versus $\log(R)$ has the attractive property
 that contours of constant Cook's distance fall on diagonal lines with slope = -1. 
 Adjacent reference lines represent constant _multiples_ of influence.
@@ -286,6 +305,7 @@ The values come from `stats::dfbetas()` and return the standardized values.
 
 ```{r}
 #| label: fig-toy-dfbetas
+#| code-fold: true
 #| fig-width: 10
 #| fig-height: 5
 #| out-width: "100%"
@@ -315,9 +335,10 @@ The values for case 9 are nearly (0, 0) in both plots, indicating that deleting 
 in both _univariate_ regressions.
 Yet, case 9 appeared very influential in the multivariate model. Why did this happen?
 
-In this contrived example the problem arose from the very high correlation between `y1` and `y2`,
+In this contrived example, the problem arose from the very high correlation between `y1` and `y2`,
 $r = 0.9997$ as can be seen in the (y1, y2) panel in @fig-toy-scatmat.
-Although each of the `y1` and `y2` values for the high-leverage cases are in-line with the univariate regressions (and thus have small univariate Cook's Ds), the ill-conditioning magnifies small discrepancies in their positions, making the multivariate Cook's D larger.
+Although each of the `y1` and `y2` values for the high-leverage cases are in-line with the univariate regressions (and thus have small univariate Cook's Ds), the ill-conditioning magnifies small discrepancies in their positions, making the multivariate Cook's D larger. And that's the solution to the
+Mysterious Case 9.
 
 
 

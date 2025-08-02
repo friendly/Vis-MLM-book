@@ -202,6 +202,19 @@
 \renewcommand{\bottomfraction}{0.8}
 \renewcommand{\floatpagefraction}{0.75}
 
+% for tinytable / modelsummary
+\usepackage{tabularray}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage{rotating}
+\usepackage[normalem]{ulem}
+\UseTblrLibrary{booktabs}
+\UseTblrLibrary{siunitx}
+% \newcommand{\tinytableTabularrayUnderline}[1]{\underline{#1}}
+% \newcommand{\tinytableTabularrayStrikeout}[1]{\sout{#1}}
+% \NewTableCommand{\tinytableDefineColor}[3]{\definecolor{#1}{#2}{#3}}
+
+
 % krantz VF format is ugly!
 %\renewenvironment{quote}{\begin{VF}}{\end{VF}}
 
@@ -230,17 +243,19 @@
 
 \renewenvironment{Shaded}{\begin{kframe}}{\end{kframe}}
 
-\usepackage{makeidx}
-\makeindex
-
-\usepackage[small,firstabbrev]{authorindex}
-\aimaxauthors{5}   % maximum number of authors to index
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Index generation
 % Indexentry for a word/phrase (Word inserted into the text)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\usepackage{makeidx}
+\makeindex
+
+\usepackage[small,firstabbrev]{authorindex}
+\aimaxauthors{5}   % maximum number of authors to index
+
 \newcommand{\IX}[1]{\index{#1}#1}
 \newcommand{\ix}[1]{\index{#1}}
 \newcommand{\ixmain}[1]{\index{#1|textbf}}
@@ -255,7 +270,7 @@
 % R packages:  indexed under both package name and packages!
 \newcommand{\ixp}[1]{%
    \index{#1@\textsf{#1} package}%
-   \index{package!#1@\textsf{#1}}%
+   \index{packages!#1@\texttt{#1}}%
 	}
 
 % data sets: 
@@ -275,7 +290,18 @@
   \thm@preskip=8pt plus 2pt minus 4pt
   \thm@postskip=\thm@preskip
 }
+
+% Fix for modelsummary problem with \num{}
+\renewcommand*{\num}[1]{#1}
+
+
 \makeatother
+
+% This doesn't work
+% l.300 \includegraphics
+%                       [width=\textwidth]{images/cover-ellipse.jpg}
+
+%\includegraphics[width=\textwidth]{images/cover-ellipse.jpg}
 
 \frontmatter
   
@@ -345,9 +371,9 @@
 \newcommand*\listoflistings{\listof{codelisting}{List of Listings}}
 \usepackage{amsthm}
 \theoremstyle{definition}
-\newtheorem{example}{Example}[chapter]
-\theoremstyle{definition}
 \newtheorem{exercise}{Exercise}[chapter]
+\theoremstyle{definition}
+\newtheorem{example}{Example}[chapter]
 \theoremstyle{remark}
 \AtBeginDocument{\renewcommand*{\proofname}{Proof}}
 \newtheorem*{remark}{Remark}
@@ -368,10 +394,10 @@
 \@ifundefined{shadecolor}{\definecolor{shadecolor}{rgb}{.97, .97, .97}}{}
 \makeatother
 \makeatletter
-\@ifundefined{codebgcolor}{\definecolor{codebgcolor}{HTML}{dce8e7}}{}
+\@ifundefined{codebgcolor}{\definecolor{codebgcolor}{HTML}{e4f0ef}}{}
 \makeatother
 \makeatletter
-\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[boxrule=0pt, colback={codebgcolor}, breakable, enhanced, frame hidden, sharp corners]}{\end{tcolorbox}}\fi
+\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[colback={codebgcolor}, enhanced, frame hidden, boxrule=0pt, breakable, sharp corners]}{\end{tcolorbox}}\fi
 \makeatother
 \makeatletter
 \@ifpackageloaded{sidenotes}{}{\usepackage{sidenotes}}
@@ -393,7 +419,7 @@
 
 \title{Visualizing Multivariate Data and Models in R}
 \author{Michael Friendly}
-\date{2025-07-22}
+\date{2025-08-02}
 \begin{document}
 \maketitle
 
@@ -438,10 +464,12 @@ data, and their uses in understanding relationships when there are
 several aspects to be considered together. Data visualization methods
 for statistical analysis are well-developed for simple linear models
 with a single outcome variable. However, with applied research in the
-social and behavioral sciences, it is often the case that the phenomena
-of interest (e.g., depression, job satisfaction, academic achievement,
-childhood ADHD disorders, etc.) can be measured in several different
-ways or related aspects.
+sciences, social and behavioral in particular, it is often the case that
+the phenomena of interest (e.g., depression, job satisfaction, academic
+achievement, childhood ADHD disorders, etc.) can be measured in several
+different ways or related aspects. Understanding how these different
+aspects are \emph{related} contributes to our knowledge of the general
+phenomenon.
 
 For example, if academic achievement can be measured for adolescents by
 reading, mathematics, science and history scores, how do predictors such
@@ -541,8 +569,8 @@ Recognition. But in reality it is a Solid, as you shall learn by the
 sense of Feeling. --- Edwin A. Abbott, \emph{Flatland}
 \end{quote}
 
-But how did it feel to be a member of a flatland society? How could a
-point (a newborn child?) understand a line (a woman)? How does a
+But how did it \emph{feel} to be a member of a flatland society? How
+could a point (a newborn child?) understand a line (a woman)? How does a
 Triangle ``see'' a Hexagon or even a infinitely-sided Circle? Abbott
 introduces the very idea of different dimensions of existence through
 dreams and visions:
@@ -661,8 +689,8 @@ and z dimensions: a \texttt{ridge} along x, a \texttt{nub} in the y
 direction, and a \texttt{crack} in along the z dimension. The fourth
 variable is pollen grain \texttt{weight}, and the fifth is
 \texttt{density}. The challenge was to ``find something interesting'' in
-this dataset, now available as \texttt{animation::pollen}. \ixd{pollen}
-\ixp{animation}
+this dataset, now available as \texttt{pollen} \index{pollen data}
+\index{datasets!pollen}. \ixp{animation}
 
 Those who solved the puzzle were able to find an orientation of this
 5-dimensional dataset, such that zooming in revealed a magic word,
@@ -880,14 +908,13 @@ The following typographic conventions are used in this book:
   \index{matlib package} \index{packages!matlib}, including ``package''
   between the name and citation.
 \item
-  Datasets are rendered as \textcolor{brown}{car} \index{car data}
-  \index{datasets!car} or \textcolor{brown}{car} \index{car data}
-  \index{datasets!car}. Some other nice datasets are
-  \textcolor{brown}{palmerpenguins} \index{palmerpenguins data}
-  \index{datasets!palmerpenguins}, \textcolor{brown}{VisCollin}
-  \index{VisCollin data} \index{datasets!VisCollin},
-  \textcolor{brown}{heplots} \index{heplots data}
-  \index{datasets!heplots}
+  Datasets are rendered as \texttt{prestige} \index{prestige data}
+  \index{datasets!prestige} or \texttt{car::prestige}
+  \index{prestige data} \index{datasets!prestige}. Some other nice
+  datasets are \texttt{Penguin} \index{Penguin data}
+  \index{datasets!Penguin}, \texttt{cars} \index{cars data}
+  \index{datasets!cars}, \texttt{mathscore} \index{mathscore data}
+  \index{datasets!mathscore}
 \item
   \texttt{fixed-width} : is used in program listings as well as in text
   to refer to variable and function names, R statement elements and
@@ -988,7 +1015,7 @@ relations of each response to the predictors. Equally, or perhaps more
 importantly, are questions of how the response variables are predicted
 \emph{jointly}.
 
-\begin{tcolorbox}[enhanced jigsaw, colframe=quarto-callout-note-color-frame, bottomrule=.15mm, opacityback=0, rightrule=.15mm, colback=white, breakable, bottomtitle=1mm, left=2mm, titlerule=0mm, toptitle=1mm, toprule=.15mm, colbacktitle=quarto-callout-note-color!10!white, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{SEM}, coltitle=black, leftrule=.75mm, arc=.35mm, opacitybacktitle=0.6]
+\begin{tcolorbox}[enhanced jigsaw, bottomtitle=1mm, toptitle=1mm, titlerule=0mm, breakable, toprule=.15mm, colframe=quarto-callout-note-color-frame, opacityback=0, leftrule=.75mm, coltitle=black, rightrule=.15mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{SEM}, arc=.35mm, bottomrule=.15mm, colbacktitle=quarto-callout-note-color!10!white, left=2mm, opacitybacktitle=0.6, colback=white]
 
 Structural equation modeling (SEM) offers another route to explore and
 analyze the relationships among multiple predictors and multiple
@@ -998,7 +1025,7 @@ these methods are often far removed from data analysis \emph{per se} and
 except for path diagrams offer little in the way of visualization
 methods to aid in understanding and communicating the results. The
 graphical methods we describe here can also be useful in a SEM context.
-\ix{Structural equation model}
+\index{Structural equation model}
 
 \end{tcolorbox}
 
@@ -1018,7 +1045,7 @@ or, in matrix terms,
 
 generalizes directly to an analogous multivariate linear model (MLM),
 
-\[\mathbf{Y} = [\mathbf{y_1}, \mathbf{y_2}, \dots, \mathbf{y_p}] = \mathbf{X} \; \mathbf{B} + \Epsilon \quad\mbox{   with   }\quad \Epsilon \sim \mathcal{N} (\mathbf{0}, \mathbf{\Sigma})\]
+\[\mathbf{Y} = [\mathbf{y_1}, \mathbf{y_2}, \dots, \mathbf{y_p}] = \mathbf{X} \; \mathbf{B} + \boldsymbol{\Large\varepsilon}\quad\mbox{   with   }\quad \boldsymbol{\Large\varepsilon}\sim \mathcal{N} (\mathbf{0}, \mathbf{\Sigma})\]
 
 for multiple responses (as will be discussed in detail). The design
 matrix, \(\mathbf{X}\) remains the same, and the vector \(\beta\) of
@@ -1052,7 +1079,7 @@ methods rely on \emph{data ellipsoids} as simple, minimally sufficient
 visualizations of variance that can be shown in 2D and 3D plots. As will
 be demonstrated, the \emph{Hypothesis-Error (HE) plot} framework applies
 this idea to the results of multivariate tests of linear hypotheses.
-\ix{data ellipse} \ix{HE plot}
+\index{data ellipse} \index{HE plot}
 
 Further, in the case where there are more than just a few outcome
 variables, the important nectar of their relationships to predictors can
@@ -1060,7 +1087,7 @@ often be distilled in a multivariate juicer--- a \textbf{projection} of
 the multivariate relationships to the predictors in the low-D space that
 captures most of the flavor. This idea can be applied using
 \emph{canonical correlation plots} and with \emph{canonical discriminant
-HE plots}. \ix{canonical correlation} \ix{projection}
+HE plots}. \index{canonical correlation} \index{projection}
 
 \begin{figure}[htb!]
 
@@ -1142,7 +1169,18 @@ cucumber. Farquhar \& Farquhar
 
 At the time the Farhquhar brothers wrote this pithy aphorism, graphical
 methods for understanding data had advanced considerably, but were not
-universally practiced, prompting their complaint.
+universally practiced, prompting their complaint. Most data tables we
+see are designed for looking something up like the number of measles
+cases in Ontario compared to other provinces. They are not usually
+designed to reveal \emph{patterns, trends or anomalies}, although this
+can be accomplished with modern table generating software such as the
+\textcolor{brown}{\texttt{\textbf{tinytable}}} \index{tinytable package}
+\index{packages!tinytable} or \textcolor{brown}{\texttt{\textbf{gt}}}
+\index{gt package} \index{packages!gt} packages.\footnote{For example, a
+  cell in a table can be used to show a ``sparklines'' (Tufte
+  (\citeproc{ref-Tufte:83}{1983})), tiny versions of a line graph or bar
+  chart. As well, table rows and/or columns can be sorted to show trends
+  or background colors can be used to show unusual values.}
 
 The main graphic forms we use today---the pie chart, line graphs and
 bar---were invented by William Playfair around 1800
@@ -1153,7 +1191,8 @@ showing the spatial distributions of social variables (crime, suicides,
 literacy) were used for the first time to reason about important
 societal questions (\citeproc{ref-Guerry:1833}{Guerry, 1833}) such as
 ``is increased education associated with lower rates of crime?''
-\ix{pie chart} \ix{bar chart} \ix{line graph} \ix{scatterplot}
+\index{pie chart} \index{bar chart} \index{line graph}
+\index{scatterplot}
 
 In the last half of the 18th Century, the idea of correlation was
 developed (\citeproc{ref-Galton:1886}{Galton, 1886};
@@ -1162,12 +1201,13 @@ developed (\citeproc{ref-Galton:1886}{Galton, 1886};
 (\citeproc{ref-Funkhouser:1937}{Funkhouser, 1937}) became the richest
 period of innovation and beauty in the entire history of data
 visualization. During this time there was an incredible development of
-visual thinking, represented by the work of Charles Joseph Minard,
-advances in the role of visualization within scientific discovery, as
-illustrated through Francis Galton, and graphical excellence, embodied
-in state statistical atlases produced in France and elsewhere. See
-Friendly (\citeproc{ref-Friendly:2008:golden}{2008}); Friendly \& Wainer
-(\citeproc{ref-FriendlyWainer:2021:TOGS}{2021}) for this history.
+\emph{visual thinking}, represented by the work of Charles Joseph
+Minard, advances in the role of visualization within scientific
+discovery, as illustrated through Francis Galton, and graphical
+excellence, embodied in state statistical atlases produced in France and
+elsewhere. See Friendly (\citeproc{ref-Friendly:2008:golden}{2008});
+Friendly \& Wainer (\citeproc{ref-FriendlyWainer:2021:TOGS}{2021}) for
+this history. \index{visual thinking}.
 
 This chapter introduces the importance of graphing data through three
 nearly classic stories with the following themes:
@@ -1196,7 +1236,7 @@ plotting the graphs before analyzing and model building, and the effect
 of unusual observations on fitted models. Now known as \emph{Anscombe's
 Quartet}, these datasets had identical statistical properties: the same
 means, standard deviations, correlations and regression lines.
-\ix{Anscombe's quartet} \ix{quartet!Anscombe}
+\index{Anscombe's quartet} \index{quartet!Anscombe}
 
 His purpose was to debunk three notions that had been prevalent at the
 time:
@@ -1214,8 +1254,9 @@ time:
   looking at the data is cheating.
 \end{itemize}
 
-The dataset \texttt{datasets::anscombe} has 11 observations, recorded in
-wide format, with variables \texttt{x1:x4} and \texttt{y1:y4}.
+The dataset \texttt{datasets::anscombe} \index{anscombe data}
+\index{datasets!anscombe} has 11 observations, recorded in wide format,
+with variables \texttt{x1:x4} and \texttt{y1:y4}.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -1287,7 +1328,7 @@ This figure is produced as follows, using a single call to
 \texttt{ggplot()}, faceted by \texttt{dataset}. As we will see later
 (Section~\ref{sec-data-ellipse}), the data ellipse (produced by
 \texttt{stat\_ellipse()}) reflects the correlation between the
-variables. \ix{data ellipse}
+variables. \index{data ellipse}
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -1315,22 +1356,22 @@ The subplots are labeled with the statistical idea they reflect:
   dataset 1: \textbf{Pure error}. This is the typical case with
   well-behaved data. Variation of the points around the line reflect
   only measurement error or unreliability in the response, \(y\).
-  \ix{pure error}
+  \index{pure error}
 \item
   dataset 2: \textbf{Lack of fit}. The data is clearly curvilinear, and
   would be very well described by a quadratic,
   \texttt{y\ \textasciitilde{}\ poly(x,\ 2)}. This violates the
   assumption of linear regression that the fitted model has the correct
-  form. \ix{lack of fit}
+  form. \index{lack of fit}
 \item
   dataset 3: \textbf{Outlier}. One point, second from the right, has a
   very large residual. Because this point is near the extreme of \(x\),
   it pulls the regression line towards it, as you can see by imagining a
-  line through the remaining points. \ix{outliers}
+  line through the remaining points. \index{outliers}
 \item
   dataset 4: \textbf{Influence}. All but one of the points have the same
   \(x\) value. The one unusual point has sufficient influence to force
-  the regression line to fit it \textbf{exactly}. \ix{influence}
+  the regression line to fit it \textbf{exactly}. \index{influence}
 \end{itemize}
 
 One moral from this example:
@@ -1342,7 +1383,7 @@ pulls the line toward discrepant points to minimize the sum of squared
 residuals.}
 \end{quote}
 
-\begin{tcolorbox}[enhanced jigsaw, colframe=quarto-callout-note-color-frame, bottomrule=.15mm, opacityback=0, rightrule=.15mm, colback=white, breakable, bottomtitle=1mm, left=2mm, titlerule=0mm, toptitle=1mm, toprule=.15mm, colbacktitle=quarto-callout-note-color!10!white, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Datasaurus Dozen}, coltitle=black, leftrule=.75mm, arc=.35mm, opacitybacktitle=0.6]
+\begin{tcolorbox}[enhanced jigsaw, bottomtitle=1mm, toptitle=1mm, titlerule=0mm, breakable, toprule=.15mm, colframe=quarto-callout-note-color-frame, opacityback=0, leftrule=.75mm, coltitle=black, rightrule=.15mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Datasaurus Dozen}, arc=.35mm, bottomrule=.15mm, colbacktitle=quarto-callout-note-color!10!white, left=2mm, opacitybacktitle=0.6, colback=white]
 
 The method Anscombe used to compose his quartet is unknown, but it turns
 out that that there is a method to construct a wider collection of
@@ -1352,7 +1393,7 @@ degrees of freedom, so it is possible to choose \(n-2\) of the
 \((x, y)\) pairs to yield any given value. As it happens, it is also
 possible to create any number of datasets with the same means, standard
 deviations and correlations with nearly any shape you like --- even a
-dinosaur! \ix{datasaurus dozen}
+dinosaur! \index{datasaurus dozen}
 
 The \emph{Datasaurus Dozen} was first publicized by Alberto Cairo in a
 \href{http://www.thefunctionalart.com/2016/08/download-datasaurus-never-trust-summary.html}{blog
@@ -1394,7 +1435,7 @@ Korkmaz on X}}
 
 \end{figure}%
 
-\begin{tcolorbox}[enhanced jigsaw, colframe=quarto-callout-note-color-frame, bottomrule=.15mm, opacityback=0, rightrule=.15mm, colback=white, breakable, bottomtitle=1mm, left=2mm, titlerule=0mm, toptitle=1mm, toprule=.15mm, colbacktitle=quarto-callout-note-color!10!white, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Quartets}, coltitle=black, leftrule=.75mm, arc=.35mm, opacitybacktitle=0.6]
+\begin{tcolorbox}[enhanced jigsaw, bottomtitle=1mm, toptitle=1mm, titlerule=0mm, breakable, toprule=.15mm, colframe=quarto-callout-note-color-frame, opacityback=0, leftrule=.75mm, coltitle=black, rightrule=.15mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Quartets}, arc=.35mm, bottomrule=.15mm, colbacktitle=quarto-callout-note-color!10!white, left=2mm, opacitybacktitle=0.6, colback=white]
 
 The essential idea of a statistical ``quartet'' is to illustrate four
 quite different datasets or circumstances that seem superficially the
@@ -1414,8 +1455,8 @@ performance. In all cases, the paradox is solved when their
 visualization reveals the distinct ways of understanding structure in
 the data. The
 \href{https://r-causal.github.io/quartets/}{\textbf{quartets}} package
-contains these and other variations on this theme. \ix{quartet!causal}
-\ix{quartet!Rashamon}
+contains these and other variations on this theme.
+\index{quartet!causal} \index{quartet!Rashamon}
 
 \end{tcolorbox}
 
@@ -1431,7 +1472,8 @@ self-reported weight could be taken as a reliable indicator of true
 weight measured on a scale. It was expected that the correlations
 between reported and measured weight should be close to 1.0, and the
 slope of the regression lines for men and women should also be close to
-1.0. The dataset is \texttt{car::Davis}.
+1.0. The dataset is \texttt{carData::Davis} \index{Davis data}
+\index{datasets!Davis}.
 
 She was therefore very surprised to see the following numerical results:
 For men, the correlation was nearly perfect, but not so for women.
@@ -1483,7 +1525,7 @@ with the obvious question:
 The answer turned out to be one discrepant point, a female, whose
 measured weight was 166 kg (366 lbs!). This single point exerted so much
 influence that it pulled the fitted regression line down to a slope of
-only 0.26. \ix{influence}
+only 0.26. \index{influence}
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -1572,7 +1614,7 @@ reported weight in the box for measured weight and vice versa.
 \subsection{Shaken, not stirred: The 1970 Draft
 Lottery}\label{sec-draft1970}
 
-\ixon{1970 draft lottery}
+\index{1970 draft lottery|(}
 
 \begin{quote}
 Although we often hear that data speak for themselves, their voices can
@@ -1629,7 +1671,8 @@ out of my funk?
 The data, from the official
 \href{https://www.sss.gov/wp-content/uploads/2020/03/1970-Vietnam-Lottery.pdf}{Selective
 Service listing} are contained in the dataset
-\texttt{vcdExtra::Draft1970}, ordered by \texttt{Month} and birthdate
+\texttt{vcdExtra::Draft1970} \index{Draft1970 data}
+\index{datasets!Draft1970}, ordered by \texttt{Month} and birthdate
 (\texttt{Day}), with \texttt{Rank} as the order in which the birthdates
 were drawn.
 
@@ -1699,7 +1742,7 @@ just can make out a sparsity of points in the upper right corner and
 also in the lower left corner compared to the opposite corners. But
 probably not until I told you.
 
-\ixoff{1970 draft lottery}
+\index{1970 draft lottery|)}
 
 \subsubsection*{Visual smoothers}\label{visual-smoothers}
 \addcontentsline{toc}{subsubsection}{Visual smoothers}
@@ -1709,7 +1752,7 @@ out the signal lurking in the background of a field of nearly random
 points. Figure~\ref{fig-draft-gg2} shows a definite trend to lower ranks
 for birthdays toward the end of the year. Those born earlier in the year
 were more likely to be given lower ranks, calling them up sooner for the
-draft. \ix{loess} \ix{smoother!loess}
+draft. \index{loess} \index{smoother!loess}
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -1988,7 +2031,7 @@ display}\label{principles-of-graphical-display}
 
 --\textgreater{}
 
-\section{What We Have Learned}\label{what-we-have-learned}
+\section{What have we learned?}\label{what-have-we-learned}
 
 This chapter demonstrates why visualization isn't just a
 ``nice-to-have'' feature in data analysis-----it's absolutely essential.
@@ -2051,11 +2094,6 @@ Farquhar brothers noted over a century ago, getting information from
 tables alone is like extracting sunlight from a cucumber---possible in
 theory, but why make it so hard on yourself?
 
-\textbf{Package summary}
-
-12 packages used here: broom, dplyr, forcats, ggplot2, knitr, lubridate,
-purrr, readr, stringr, tibble, tidyr, tidyverse
-
 \part{Exploratory Methods}
 
 \chapter{Plots of Multivariate Data}\label{sec-multivariate_plots}
@@ -2065,7 +2103,7 @@ There is no excuse for failing to plot and look.
 
 The greatest value of a picture is when it forces us to notice what we
 never expected to see. --- John W. Tukey, \emph{Exploratory Data
-Analysis}, 1977
+Analysis}, 1977 \index{Tukey, John}
 \end{quote}
 
 These quotes from John Tukey remind us that data analysis should nearly
@@ -2076,7 +2114,7 @@ approximately linear or non-linear? But it is also important to spot
 \emph{anomalies}: ``unusual'' observations, groups of points that seem
 to differ from the rest, and so forth. As we saw with Anscombe's quartet
 (Section~\ref{sec-anscombe}) numerical summaries hide features that are
-immediately apparent in a plot.
+immediately apparent in a plot. \index{quartet!Anscombe}
 
 This chapter introduces a toolbox of basic graphical methods for
 visualizing multivariate datasets. It starts with some simple techniques
@@ -2091,7 +2129,7 @@ increases, we may need to suppress details with stronger summaries for a
 high-level reconnaissance of our data terrain, as we do by zooming out
 on a map. For example, we can simply remove the data points or make them
 nearly transparent to focus on the visual summaries provided by fitted
-lines or other graphical summaries.
+lines or other graphical summaries. \index{scatterplot matrix}
 
 \textbf{Packages}
 
@@ -2111,6 +2149,7 @@ In this chapter I use the following packages. Load them now:
 \FunctionTok{library}\NormalTok{(ggpcp)}
 \FunctionTok{library}\NormalTok{(tourr)}
 \FunctionTok{library}\NormalTok{(heplots)}
+\FunctionTok{library}\NormalTok{(gggda)}
 \end{Highlighting}
 \end{Shaded}
 
@@ -2139,7 +2178,8 @@ clearly. We consider the following here:
 \item
   \textbf{Data ellipses}: A compact 2D visual summary of bivariate
   linear relations and uncertainty assuming normality; more generally,
-  contour plots of bivariate density.
+  contour plots of bivariate density. \index{smoother}
+  \index{stratifier} \index{data ellipse}
 \end{itemize}
 
 \textbf{Example: Academic salaries}
@@ -2147,9 +2187,10 @@ clearly. We consider the following here:
 Let's start with data on the academic salaries of faculty members
 collected at a U.S. college for the purpose of assessing salary
 differences between male and female faculty members, and perhaps address
-anomalies in compensation. The dataset \texttt{carData::Salaries} gives
-data on nine-month salaries and other variables for 397 faculty members
-in the 2008-2009 academic year.
+anomalies in compensation. The dataset \texttt{carData::Salaries}
+\index{Salaries data} \index{datasets!Salaries} gives data on nine-month
+salaries and other variables for 397 faculty members in the 2008-2009
+academic year.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -2222,6 +2263,8 @@ but the main things are:
 \end{itemize}
 
 \subsection{Smoothers}\label{smoothers}
+
+\index{smoother|(}
 
 Smoothers are among the most useful graphical annotations you can add to
 such plots, giving a visual summary of how \(y\) changes with \(x\). The
@@ -2300,11 +2343,14 @@ bands.\footnote{Confidence bands allow us to visualize the uncertainty
   to the additional variance reflected in one observation.} These are
 necessarily narrower in the center of the range of \(x\) where there is
 typically more data; they get wider toward the highest values of
-experience where the data are thinner.
+experience where the data are thinner. \index{uncertainty}
+\index{precision}
 
 \subsubsection*{Non-parametric
 smoothers}\label{non-parametric-smoothers}
 \addcontentsline{toc}{subsubsection}{Non-parametric smoothers}
+
+\index{smoother!non-parametric}
 
 The most generally useful idea is a smoother that tracks an average
 value, \(\mathbb{E} (y | x)\), of \(y\) as \(x\) varies across its'
@@ -2378,6 +2424,8 @@ then decline? The predicted salary for someone still working 50 years
 after earning their degree is about the same as a person at 15 years.
 What else is going on here?
 
+\index{smoother|)}
+
 \subsection{Stratifiers}\label{stratifiers}
 
 Very often, we have a main relationship of interest, but various groups
@@ -2417,7 +2465,7 @@ techniques:
   eye must scan from one panel to another.
 \end{itemize}
 
-\begin{tcolorbox}[enhanced jigsaw, colframe=quarto-callout-note-color-frame, bottomrule=.15mm, opacityback=0, rightrule=.15mm, colback=white, breakable, bottomtitle=1mm, left=2mm, titlerule=0mm, toptitle=1mm, toprule=.15mm, colbacktitle=quarto-callout-note-color!10!white, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{History Corner}, coltitle=black, leftrule=.75mm, arc=.35mm, opacitybacktitle=0.6]
+\begin{tcolorbox}[enhanced jigsaw, bottomtitle=1mm, toptitle=1mm, titlerule=0mm, breakable, toprule=.15mm, colframe=quarto-callout-note-color-frame, opacityback=0, leftrule=.75mm, coltitle=black, rightrule=.15mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{History Corner}, arc=.35mm, bottomrule=.15mm, colbacktitle=quarto-callout-note-color!10!white, left=2mm, opacitybacktitle=0.6, colback=white]
 
 Recognition of the roles of visual grouping by factors within a panel
 and conditioning in multi-panel displays was an important advance in the
@@ -2694,6 +2742,8 @@ since PhD, grouped by sex, faceted by discipline and rank.}
 
 \section{Data Ellipses}\label{sec-data-ellipse}
 
+\index{data ellipse|(}
+
 The \emph{data ellipse} (\citeproc{ref-Monette:90}{Monette, 1990}), or
 \emph{concentration ellipse} (\citeproc{ref-Dempster:69}{Dempster,
 1969}) is a remarkably simple and effective display for viewing and
@@ -2828,9 +2878,10 @@ He then calculated summaries, \(\text{Ave}(Y | X)\), and, for symmetry,
 diagram. Lo and behold, he had a second visual insight: the lines of
 means of (\(Y | X\)) and (\(X | Y\)) corresponded approximately to the
 loci of horizontal and vertical tangents to the concentric ellipses. To
-complete the picture, he added lines showing the major and minor axes of
-the family of ellipses (which turned out to be the principal components)
-with the result shown in Figure~\ref{fig-galton-corr}.
+complete the picture, he added lines showing the geometric major and
+minor axes of the family of ellipses (which turned out to be the
+principal components) with the result shown in
+Figure~\ref{fig-galton-corr}. \index{principal components}
 
 \begin{figure}[htb!]
 
@@ -2992,9 +3043,11 @@ scatterplot, with various features.
   selects points according to their value of \texttt{abs(y)}, which is
   appropriate in residual plots.
 \item
-  \texttt{car::dataEllipse()}: plots classical or robust data (using
-  \texttt{MASS::cov/trob()}) ellipses for one or more groups, with the
-  same facilities for point identification.
+  \texttt{car::dataEllipse()}: plots classical or robust data ellipses
+  for one or more groups, with the same facilities for point
+  identification. The robust version (\texttt{robust=TRUE}) uses the
+  multivariate \(t\) distribution (using \texttt{MASS::cov/trob()})
+  rather than the Gaussian,
 \item
   \texttt{heplots::covEllipses()}: draws classical or robust data
   ellipses for one or more groups in a one-way design and optionally for
@@ -3007,12 +3060,15 @@ scatterplot, with various features.
   \texttt{ggplot} scatterplot, using inherited aesthetics.
 \end{itemize}
 
-\subsection{Example: Canadian occupational prestige}\label{sec-prestige}
+\begin{example}[]\protect\hypertarget{exm-prestige}{}\label{exm-prestige}
+
+\textbf{Canadian occupational prestige}
 
 These examples use the data on the prestige of 102 occupational
 categories and other measures from the 1971 Canadian Census, recorded in
-\texttt{carData::Prestige}.\footnote{The dataset was collected by
-  Bernard Blishen, William Carroll and Catherine Moore, but apparently
+\texttt{Prestige} \index{Prestige data}
+\index{datasets!Prestige}.\footnote{The dataset was collected by Bernard
+  Blishen, William Carroll and Catherine Moore, but apparently
   unpublished. A version updated to the 1981 census is described in
   Blishen et al. (\citeproc{ref-Blishen-etal-1987}{1987}).} Our interest
 is in understanding how \texttt{prestige} (the Pineo \& Porter
@@ -3331,9 +3387,18 @@ was to examine differences in size or appearance of these species,
 particularly differences among the sexes (sexual dimorphism) in relation
 to foraging and habitat.
 
-Here, I use a slightly altered version of the dataset, \texttt{peng},
-renaming variables to remove the units, making factors of character
-variables and deleting a few cases with missing data.
+Here, I use a slightly altered version of the dataset,
+\texttt{heplots::peng} \index{peng data} \index{datasets!peng},
+constructed by renaming variables to remove the units, making factors of
+character variables and deleting a few cases with missing
+data.\footnote{In R 4.5.0, a revised version of the
+  \texttt{palmerpenguins} dataset, named \texttt{penguins}
+  \index{penguins data} \index{datasets!penguins} was added to the base
+  R \textcolor{brown}{\texttt{\textbf{datasets}}}
+  \index{datasets package} \index{packages!datasets}. This corrected a
+  few of the problems that led me to create \texttt{heplots::peng}
+  \index{peng data} \index{datasets!peng}, but still retains the cases
+  with missing data.}
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -3487,6 +3552,10 @@ according to species.}
 
 \end{figure}%
 
+\subsection{Visual thinning}\label{visual-thinning}
+
+\index{visual thinning|(}
+
 Overall, the three species occupy different regions of this 2D space and
 for each species the relation between bill length and depth appears
 reasonably linear. Given this, we can suppress plotting the data points
@@ -3496,10 +3565,10 @@ and data ellipses, as shown in Figure~\ref{fig-peng-ggplot2}.
 This idea, of \textbf{visual thinning} a graph to focus on what should
 be seen, becomes increasingly useful as the data becomes more complex.
 The \texttt{ggplot2} framework encourages this, because we can think of
-various components as layers, to be included or not. Here I chose to
-include only the regression line and add data ellipses of 40\%, 68\% and
-95\% coverage to highlight the increasing bivariate density around the
-group means.
+various components as layers, to be included or not. In
+Figure~\ref{fig-peng-ggplot2} I chose to include only the regression
+line and add data ellipses of 40\%, 68\% and 95\% coverage to highlight
+the increasing bivariate density around the group means.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -3530,12 +3599,112 @@ length and bill depth using the regression line and data ellipses.}
 
 \end{figure}%
 
-\subsubsection{Non-parametric bivariate density
+\index{data ellipse|)}
+\index{visual thinning|)}
+
+\section{Bagplots}\label{bagplots}
+
+\index{bagplot|(}
+
+If you are concerned about the assumption of bivariate normality
+entailed by the data ellipse, a very nice non-parametric and robust
+alternative is a 2D generalization of a boxplot called a
+\textbf{bagplot}, introduced by Rousseeuw et al.
+(\citeproc{ref-Rousseeuw-etal:2012}{1999}). The idea is very simple. The
+bagplot consists of three nested polygons, called the ``bag'', the
+``fence'', and the ``loop'':
+
+\begin{itemize}
+\item
+  \textbf{bag}: The central 50\% box of the boxplot is replaced by a
+  polygon called the ``bag'', constructed on the basis of \emph{depth}
+  of points from the bivariate depth median point. Depth generalizes the
+  univariate concept of rank, but counted from the medians point outward
+  in any direction. The bag contains at most 50\% of the most central
+  data points. \index{depth}
+\item
+  \textbf{fence}: The univariate fences are replaced by a ``fence''
+  polygon, by expanding the bag outward by a factor (\texttt{coef}),
+  usually 3, from the depth median.
+\item
+  \textbf{loop}: Points beyond the fence (the ``loop'') are potential
+  outliers, sometimes plotted as a convex hull surrounding \emph{all} of
+  the observations, but better rendered simply as a scatterplot of just
+  those points.
+\end{itemize}
+
+In this way, the bagplot visualizes the bivariate location (median),
+spread, correlation, skewness, and tails of the data. Compared with a
+standard data ellipse, it serves as a visual test of normality and
+provides a simple way to identify outliers.
+
+Bagplots are implemented in \textcolor{brown}{\texttt{\textbf{gggda}}}
+(\citeproc{ref-R-gggda}{Brunson \& Gracey, 2025}) \index{gggda package}
+\index{packages!gggda} in the \texttt{ggplot2} framework as
+\texttt{geom\_bagplot()} with computations done via
+\texttt{stat\_bagplot()}. For the Penguin data, the bagplot version of
+Figure~\ref{fig-peng-ggplot2} is shown in Figure~\ref{fig-peng-bagplot}.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{ggplot}\NormalTok{(peng, }
+       \FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ bill\_length, }\AttributeTok{y =}\NormalTok{ bill\_depth,}
+           \AttributeTok{color =}\NormalTok{ species, }\AttributeTok{shape =}\NormalTok{ species, }\AttributeTok{fill=}\NormalTok{species)) }\SpecialCharTok{+}
+  \FunctionTok{geom\_smooth}\NormalTok{(}\AttributeTok{method =} \StringTok{"lm"}\NormalTok{, }\AttributeTok{formula =}\NormalTok{ y }\SpecialCharTok{\textasciitilde{}}\NormalTok{ x,}
+              \AttributeTok{se=}\ConstantTok{FALSE}\NormalTok{, }\AttributeTok{linewidth=}\DecValTok{2}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{geom\_bagplot}\NormalTok{(}\AttributeTok{bag.alpha =} \FloatTok{0.5}\NormalTok{,}
+               \AttributeTok{outlier.size =} \DecValTok{5}\NormalTok{,}
+               \AttributeTok{fraction =} \FloatTok{0.5}\NormalTok{,    }\CommentTok{\# bag fraction}
+               \AttributeTok{coef =} \FloatTok{2.5}\NormalTok{,        }\CommentTok{\# fence factor}
+               \AttributeTok{show.legend =} \ConstantTok{FALSE}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{theme\_penguins}\NormalTok{(}\StringTok{"dark"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{theme}\NormalTok{(}\AttributeTok{legend.position =} \StringTok{"inside"}\NormalTok{,}
+        \AttributeTok{legend.position.inside =} \FunctionTok{c}\NormalTok{(}\FloatTok{0.87}\NormalTok{, }\FloatTok{0.15}\NormalTok{)) }
+\end{Highlighting}
+\end{Shaded}
+
+\begin{figure}[htb!]
+
+\centering{
+
+\includegraphics[width=0.8\linewidth,height=\textheight,keepaspectratio]{figs/ch03/fig-peng-bagplot-1.pdf}
+
+}
+
+\caption{\label{fig-peng-bagplot}\textbf{Bagplot}: For each Penguin
+species the darker inner (bag) polygon reflects the innermost 50\% of
+the data points. The outer (fence) polygon corresponds to points
+enclosed by a multiple of the bag. Points outside the fence for each
+species are ploted individually.}
+
+\end{figure}%
+
+Compared with the data ellipses shown in Figure~\ref{fig-peng-ggplot2},
+the bag polygons have shapes very close to ellipses, giving credence to
+the assumption of (approximate) normality. Using the factor
+\texttt{coef\ =\ 2.5} causes five points to be flagged as potential
+outliers. Bivariate skewness is indicated when the bag and fence is not
+symmetric around the central median in some direction, as is slightly
+true for all three species.
+
+I discuss other visual tests of multivariate normality in
+Section~\ref{sec-multivar-normality} and consider outlier identification
+for the Penguin data in Section~\ref{sec-multnorm-penguin} below.
+\index{outliers}
+
+\index{bagplot|)}
+
+\section{Non-parametric bivariate density
 plots}\label{non-parametric-bivariate-density-plots}
+
+\index{non-parametric!bivariate density plot|(}
+\index{bivariate density plot|(}
 
 While I emphasize data ellipses (because I like their beautiful
 geometry), other visual summaries of the bivariate density are possible
-and often useful.
+and often useful. To see more detail about the ``shape'' of bivariate
+data in a non-parametric way you can use one of the methods described
+below to see a model-free representation of your data.
 
 For a single variable, \texttt{stats::density()} and
 \texttt{ggplot2::geom\_density()} calculate a smoothed estimate of the
@@ -3559,6 +3728,7 @@ transparency aesthetic. A \texttt{method} argument allows you to specify
 various nonparametric (\texttt{method\ ="kde"} is the default) and
 parametric (\texttt{method\ ="mvnorm"} gives normal data ellipses) ways
 to estimate the underlying bivariate distribution.
+\index{high density region}
 
 Figure~\ref{fig-peng-ggdensity} shows these side-by-side for comparison.
 With \texttt{geom\_density\_2d()} you can specify either the number of
@@ -3609,8 +3779,17 @@ distribution of bill length and bill depth.}
 
 \end{figure}%
 
+Compared with the data ellipse, which is highly smoothed by the Gaussian
+assumption and the bagplot, which is smoothed by the concept of contours
+of data depth, the plots in Figure~\ref{fig-peng-ggdensity} show
+considerably more detail, and an intriguing suggestion of two peaks for
+our Chinstrap penguins. \index{non-parametric!bivariate density plot|)}
+\index{bivariate density plot|)}
+
 \section{Simpson's paradox: marginal and conditional
 relationships}\label{simpsons-paradox-marginal-and-conditional-relationships}
+
+\index{Simpson's paradox|(}
 
 Because it provides a visual representation of means, variances, and
 correlations, the data ellipse is ideally suited as a tool for
@@ -3621,27 +3800,29 @@ variables, ignoring some important factor or covariate, and the
 \emph{conditional} relationship, adjusting (controlling) for that
 variable.
 
-Simpson's (\citeproc{ref-Simpson:51}{1951}) paradox occurs when the
+An important example is \textbf{Simpson's paradox}
+(\citeproc{ref-Simpson:51}{Simpson, 1951}) which occurs when the
 marginal and conditional relationships differ in direction. That is, the
 overall correlation in a model \texttt{y\ \textasciitilde{}\ x} might be
 negative, while the within-group correlations in separate models for
 each group \texttt{y{[}g{]}\ \textasciitilde{}\ x{[}g{]}} might be
-positive, or vice versa.
+positive, or vice versa. For Flatlanders in 2D space, this is a
+puzzlement.
 
-This may be seen in the plots of bill length against bill depth for the
-penguin data shown in Figure~\ref{fig-peng-simpsons}. Ignoring penguin
-species, the marginal, total-sample correlation is slightly negative as
-seen in panel (a). The individual-sample ellipses in panel (b) show that
-the conditional, within-species correlations are all positive, with
-approximately equal regression slopes. However the group means have a
-negative relationship, accounting for the negative marginal correlation
-when species is ignored.
+We can see this paradox in the plots of bill length against bill depth
+for the penguin data shown in Figure~\ref{fig-peng-simpsons}. Ignoring
+penguin species, the marginal, total-sample correlation is slightly
+negative as seen in panel (a). The individual-sample ellipses in panel
+(b) show that the conditional, within-species correlations are all
+positive, with approximately equal regression slopes. However the group
+means have a negative relationship, accounting for the negative marginal
+correlation when species is ignored.
 
 \begin{figure}[htb!]
 
 \centering{
 
-\includegraphics[width=1.2\linewidth,height=\textheight,keepaspectratio]{images/peng-simpsons.png}
+\includegraphics[width=1\linewidth,height=\textheight,keepaspectratio]{images/peng-simpsons.png}
 
 }
 
@@ -3682,6 +3863,8 @@ Note that for components that will be the same across panels, you can
 define elements (e.g., \texttt{labels}, \texttt{theme\_penguins()},
 \texttt{legend\_position}) once, and then re-use these across several
 graphs.
+
+\textbf{TODO} This panel tabset looks fine in HTML but is awkward in PDF
 
 \section{(a) Ignoring species}
 
@@ -3766,6 +3949,8 @@ graphs.
 \NormalTok{plt3}
 \end{Highlighting}
 \end{Shaded}
+
+\index{Simpson's paradox|)}
 
 \section{Multivariate normality and
 outliers}\label{sec-multivar-normality}
@@ -4085,6 +4270,8 @@ and there would be cause for concern if the residuals from this model,
 
 \section{Scatterplot matrices}\label{sec-scatmat}
 
+\index{scatterplot matrix|(}
+
 Going beyond bivariate scatterplots, a \emph{pairs} plot (or
 \emph{scatterplot matrix}) displays all possible \(p \times p\) pairs of
 \(p\) variables in a matrix-like display where variables \((x_i, x_j)\)
@@ -4263,7 +4450,7 @@ others, while \textcolor{green}{Gentoo} penguins have smaller bill
 depth, but longer flippers and are heavier than
 \textcolor{purple}{Chinstrap} and \textcolor{orange}{Adelie} penguins.
 
-\begin{tcolorbox}[enhanced jigsaw, colframe=quarto-callout-note-color-frame, bottomrule=.15mm, opacityback=0, rightrule=.15mm, colback=white, breakable, bottomtitle=1mm, left=2mm, titlerule=0mm, toptitle=1mm, toprule=.15mm, colbacktitle=quarto-callout-note-color!10!white, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Looking ahead}, coltitle=black, leftrule=.75mm, arc=.35mm, opacitybacktitle=0.6]
+\begin{tcolorbox}[enhanced jigsaw, bottomtitle=1mm, toptitle=1mm, titlerule=0mm, breakable, toprule=.15mm, colframe=quarto-callout-note-color-frame, opacityback=0, leftrule=.75mm, coltitle=black, rightrule=.15mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Looking ahead}, arc=.35mm, bottomrule=.15mm, colbacktitle=quarto-callout-note-color!10!white, left=2mm, opacitybacktitle=0.6, colback=white]
 
 Figure~\ref{fig-peng-spm} provides a reasonably complete visual summary
 of the data in relation to multivariate models that ask ``do the species
@@ -4303,7 +4490,9 @@ Chapter~\ref{sec-eqcov}.
 
 \end{tcolorbox}
 
-\subsection{Visual thinning}\label{visual-thinning}
+\subsection{Visual thinning}\label{visual-thinning-1}
+
+\index{visual thinning|(}
 
 What can you do if there are even more variables than in these examples?
 If what you want is a high-level, zoomed-out display summarizing the
@@ -4376,7 +4565,12 @@ the nonparametric smooth doesn't differ much from the linear regression
 line. Exceptions to this appear mainly in the columns for
 \texttt{robbery} and \texttt{auto} (auto theft).
 
+\index{visual thinning|)}
+\index{scatterplot matrix|)}
+
 \section{Corrgrams}\label{sec-corrgram}
+
+\index{corrgram|(}
 
 What if you want to summarize the data even further simple visual
 thinning. For example with many variables you might want to show only
@@ -4558,7 +4752,11 @@ archival value. Including the numeric value (rounded here, for
 presentation purposes), makes this an attractive alternative to boring
 tables of correlations.
 
+\index{corrgram|)}
+
 \section{Generalized pairs plots}\label{sec-ggpairs}
+
+\index{scatterplot matrix!generalized|(}
 
 When a dataset contains one or more discrete variables, the traditional
 pairs plot cannot cope, because the discrete categories would plot as
@@ -4879,7 +5077,11 @@ visual thinning of the scatterplots, showing only the data ellipses and
 regression lines gives a simple view as it did in
 Figure~\ref{fig-peng-spm}.
 
+\index{scatterplot matrix!generalized|)}
+
 \section{Parallel coordinate plots}\label{sec-parcoord}
+
+\index{parallel coordinate plots|(}
 
 As we have seen above, scatterplot matrices and generalized pairs plots
 extend data visualization to multivariate data, but these variables
@@ -4904,7 +5106,7 @@ intersect in a point in projective space. What this does is to map
 \(n\)-dimensional relations into 2D patterns we can see in a parallel
 coordinates plot.
 
-\begin{tcolorbox}[enhanced jigsaw, colframe=quarto-callout-note-color-frame, bottomrule=.15mm, opacityback=0, rightrule=.15mm, colback=white, breakable, bottomtitle=1mm, left=2mm, titlerule=0mm, toptitle=1mm, toprule=.15mm, colbacktitle=quarto-callout-note-color!10!white, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{History Corner}, coltitle=black, leftrule=.75mm, arc=.35mm, opacitybacktitle=0.6]
+\begin{tcolorbox}[enhanced jigsaw, bottomtitle=1mm, toptitle=1mm, titlerule=0mm, breakable, toprule=.15mm, colframe=quarto-callout-note-color-frame, opacityback=0, leftrule=.75mm, coltitle=black, rightrule=.15mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{History Corner}, arc=.35mm, bottomrule=.15mm, colbacktitle=quarto-callout-note-color!10!white, left=2mm, opacitybacktitle=0.6, colback=white]
 
 \begin{quote}
 Those who don't know history are doomed to plagarize it ---The author
@@ -5060,6 +5262,7 @@ are highly \emph{negatively} correlated (such as \texttt{bill\_depth}
 and \texttt{flipper\_length} here), crossings can be reduced simply by
 reversing the scale of one of the variables, e.g., by plotting
 \texttt{-bill\_depth}. \index{ordering!variables}
+\index{parallel coordinate plots|)}
 
 \section{Animated tours}\label{animated-tours}
 
@@ -5893,8 +6096,8 @@ represent the dominant aspects of all of personality. These factors are
 easily remembered by the acronum \textbf{OCEAN}: \textbf{O}penness,
 \textbf{C}onscientiousness, \textbf{E}xtraversion,
 \textbf{A}greeableness and \textbf{N}euroticism. The dataset,
-\texttt{psych::bfi}, contains data from an online sample of \(n=2800\)
-with 5 items for each scale.
+\texttt{bfi} \index{bfi data} \index{datasets!bfi}, contains data from
+an online sample of \(n=2800\) with 5 items for each scale.
 
 In this figure (taken from \href{https://bit.ly/3A6kvq5}{Rodrigues
 (2021)}), the item nodes are labeled according to the OCEAN factor they
@@ -6213,7 +6416,7 @@ Massachusetts (MA) is noteworthy because auto theft in that state is
 considerably higher than what would be predicted from all other
 variables.
 
-\section{What We Have Learned}\label{what-we-have-learned-1}
+\section{What have we learned?}\label{what-have-we-learned-1}
 
 This chapter provides a comprehensive toolkit for visualizing
 multivariate relationships, transforming the humble scatterplot into a
@@ -6229,21 +6432,22 @@ powerful engine for data exploration and discovery.
   annotations help turn static dots into informative stories about
   relationships in your data.
 \item
-  \textbf{Data ellipses are visualization Swiss Army knives}: These
-  simple geometric summaries encode a remarkable amount of
-  information-----means, standard deviations, correlation, regression
-  slopes, and confidence regions---all in one visual package. When your
-  data are roughly bivariate normal, the ellipse becomes a sufficient
-  summary, telling you everything you need to know about the
-  relationship between two variables.
+  \textbf{Data ellipses are a visualization Multi-Tool}: These simple
+  geometric summaries encode a remarkable amount of information---means,
+  standard deviations, correlation, regression slopes, and confidence
+  regions---all in one visual package. When your data are roughly
+  bivariate normal, the ellipse becomes a sufficient summary, telling
+  you everything you need to know about the relationship between two
+  variables. Relaxing the normality assumption, robust methods like the
+  bagplot can serve nearly as well.
 \item
   \textbf{Simpson's Paradox lurks everywhere}: The grouping variables
   you ignore can completely reverse the relationships you see, once you
   properly account for the grouping variables. Marginal correlations can
-  be negative while all within-group correlations--conditional on the
+  be negative while all within-group correlations---conditional on the
   grouping variable--are positive (or vice versa). This fundamental
-  lesson reminds us that \textbf{context matters}-\/---always consider
-  what variables you might be overlooking.
+  lesson reminds us that \textbf{context matters}---always consider what
+  variables you might be overlooking.
 \item
   \textbf{Scatterplot matrices scale gracefully}: When you have multiple
   variables, pairs plots let you see all pairwise relationships
@@ -6300,8 +6504,9 @@ space in which important effects can be more easily seen.
 
 \begin{exercise}[]\protect\hypertarget{exr-salary-smooth}{}\label{exr-salary-smooth}
 
-Using the \texttt{carData::Salaries} dataset, create one or more plots
-to compare different smoothing methods for the relationship between
+Using the \texttt{Salaries} \index{Salaries data}
+\index{datasets!Salaries} dataset, create one or more plots to compare
+different smoothing methods for the relationship between
 \texttt{yrs.since.phd} and \texttt{salary} shown in
 Figure~\ref{fig-Salaries-discipline}. Include linear regression,
 quadratic polynomial, and loess smoothers,
@@ -6332,9 +6537,9 @@ this smoothing method for several values of \texttt{df}.
 
 For development, keep track of the packages used in each chapter.
 
-18 packages used here: broom, car, carData, corrgram, corrplot, dplyr,
-GGally, ggdensity, ggpcp, ggplot2, grid, heplots, knitr, patchwork,
-qgraph, tidyr, tourr, vcd
+19 packages used here: broom, car, carData, corrgram, corrplot, dplyr,
+GGally, ggdensity, gggda, ggpcp, ggplot2, grid, heplots, knitr,
+patchwork, qgraph, tidyr, tourr, vcd
 
 \chapter{Dimension Reduction}\label{sec-pca-biplot}
 
@@ -6450,7 +6655,7 @@ show how the original variables relate to this space. For exploratory
 analysis to get an initial, incisive view of a multivariate dataset, a
 biplot is often my first choice.
 
-\begin{tcolorbox}[enhanced jigsaw, colframe=quarto-callout-note-color-frame, bottomrule=.15mm, opacityback=0, rightrule=.15mm, colback=white, breakable, bottomtitle=1mm, left=2mm, titlerule=0mm, toptitle=1mm, toprule=.15mm, colbacktitle=quarto-callout-note-color!10!white, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Looking ahead}, coltitle=black, leftrule=.75mm, arc=.35mm, opacitybacktitle=0.6]
+\begin{tcolorbox}[enhanced jigsaw, bottomtitle=1mm, toptitle=1mm, titlerule=0mm, breakable, toprule=.15mm, colframe=quarto-callout-note-color-frame, opacityback=0, leftrule=.75mm, coltitle=black, rightrule=.15mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Looking ahead}, arc=.35mm, bottomrule=.15mm, colbacktitle=quarto-callout-note-color!10!white, left=2mm, opacitybacktitle=0.6, colback=white]
 
 I'm using the term \emph{multivariate juicer} here to refer the wider
 class of \textbf{dimension reduction} techniques, used for various
@@ -6712,7 +6917,7 @@ To explain this, it is helpful to use a bit of matrix math:
             \end{pmatrix}
            \\
            & = \lambda_1 \mathbf{v}_1 \mathbf{v}_1^\mathsf{T} + \lambda_2 \mathbf{v}_2 \mathbf{v}_2^\mathsf{T} + \cdots + \lambda_p \mathbf{v}_p \mathbf{v}_p^\mathsf{T}
-\end{align} \{\#eq-S-eigen\}
+\end{align}\{\#eq-S-eigen\}
 
 In this equation,
 
@@ -6784,17 +6989,15 @@ v2 of a covariance matrix}
 
 \end{figure}%
 
-\subsubsection*{Example: Workers' experience and
+\subsubsection{Example: Workers' experience and
 income}\label{sec-workers-data-pca}
-\addcontentsline{toc}{subsubsection}{Example: Workers' experience and
-income}
 
 For a small example, consider the relation between years of experience
 and income in a small (contrived) sample (\(n = 10\)) of workers in a
-factory. The dataset \texttt{matlib::workers} contains these and other
-variables. In a wider context, we might want to fit a regression model
-to predict \texttt{Income}, but here we focus on a PCA of just these two
-variables.
+factory. The dataset \texttt{workers} \index{workers data}
+\index{datasets!workers} contains these and other variables. In a wider
+context, we might want to fit a regression model to predict
+\texttt{Income}, but here we focus on a PCA of just these two variables.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -6897,7 +7100,7 @@ package (\citeproc{ref-R-matlib}{Friendly et al., 2024})
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\FunctionTok{options}\NormalTok{(}\AttributeTok{digits =} \DecValTok{4}\NormalTok{)}
+\FunctionTok{options}\NormalTok{(}\AttributeTok{digits =} \DecValTok{3}\NormalTok{)}
 \FunctionTok{rownames}\NormalTok{(S) }\OtherTok{\textless{}{-}} \FunctionTok{colnames}\NormalTok{(S) }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{small }\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{text\{Exp\}"}\NormalTok{, }
                                 \StringTok{"}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{small }\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{text\{Inc\}"}\NormalTok{)}
 \NormalTok{spacer }\OtherTok{\textless{}{-}} \StringTok{"}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{phantom\{00000000000000\}"}
@@ -7470,7 +7673,7 @@ necessary to do a bit of processing, including making the
 \texttt{row.names()} into an explicit variable for the purpose of
 labeling.
 
-\begin{tcolorbox}[enhanced jigsaw, colframe=quarto-callout-warning-color-frame, bottomrule=.15mm, opacityback=0, rightrule=.15mm, colback=white, breakable, bottomtitle=1mm, left=2mm, titlerule=0mm, toptitle=1mm, toprule=.15mm, colbacktitle=quarto-callout-warning-color!10!white, title=\textcolor{quarto-callout-warning-color}{\faExclamationTriangle}\hspace{0.5em}{\texttt{rownames} in R}, coltitle=black, leftrule=.75mm, arc=.35mm, opacitybacktitle=0.6]
+\begin{tcolorbox}[enhanced jigsaw, bottomtitle=1mm, toptitle=1mm, titlerule=0mm, breakable, toprule=.15mm, colframe=quarto-callout-warning-color-frame, opacityback=0, leftrule=.75mm, coltitle=black, rightrule=.15mm, title=\textcolor{quarto-callout-warning-color}{\faExclamationTriangle}\hspace{0.5em}{\texttt{rownames} in R}, arc=.35mm, bottomrule=.15mm, colbacktitle=quarto-callout-warning-color!10!white, left=2mm, opacitybacktitle=0.6, colback=white]
 
 R software evolved over many years, particularly in conventions for
 labeling cases in printed output and graphics. In base-R, the convention
@@ -8276,7 +8479,7 @@ assault, rape) are associated with greater rates of illiteracy among the
 states, which as we earlier saw (Figure~\ref{fig-crime-biplot2}) were
 more often Southern states. Crimes against property (auto theft,
 larceny) at the bottom of this dimension are associated with higher
-levels of income and high school graduates
+levels of income and high school graduates.
 
 \subsection{Example: Diabetes data}\label{example-diabetes-data}
 
@@ -8285,9 +8488,9 @@ As another example, consider the data from Reaven \& Miller
 glucose shown in Figure~\ref{fig-diabetes1} and that led to the
 discovery of two distinct types of development of Type 2 diabetes
 (\textbf{?@sec-discoveries}). This dataset is available as
-\texttt{heplots::Diabetes}. The three groups are \texttt{Normal},
-\texttt{Chemical\_Diabetic} and \texttt{Overt\_Diabetic}, and the
-(numerical) diagnostic variables are:
+\texttt{Diabetes} \index{Diabetes data} \index{datasets!Diabetes}. The
+three groups are \texttt{Normal}, \texttt{Chemical\_Diabetic} and
+\texttt{Overt\_Diabetic}, and the (numerical) diagnostic variables are:
 
 \begin{itemize}
 \tightlist
@@ -9110,7 +9313,7 @@ use for visualization for multivariate data covered here, that rely on
 its' ability as a \textbf{dimension reduction} technique, that is, to
 find a low-dimensional approximation to a high-dimensional dataset.
 
-\begin{tcolorbox}[enhanced jigsaw, colframe=quarto-callout-note-color-frame, bottomrule=.15mm, opacityback=0, rightrule=.15mm, colback=white, breakable, bottomtitle=1mm, left=2mm, titlerule=0mm, toptitle=1mm, toprule=.15mm, colbacktitle=quarto-callout-note-color!10!white, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Machine learning uses}, coltitle=black, leftrule=.75mm, arc=.35mm, opacitybacktitle=0.6]
+\begin{tcolorbox}[enhanced jigsaw, bottomtitle=1mm, toptitle=1mm, titlerule=0mm, breakable, toprule=.15mm, colframe=quarto-callout-note-color-frame, opacityback=0, leftrule=.75mm, coltitle=black, rightrule=.15mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Machine learning uses}, arc=.35mm, bottomrule=.15mm, colbacktitle=quarto-callout-note-color!10!white, left=2mm, opacitybacktitle=0.6, colback=white]
 
 In machine learning, for example, PCA is a method used to reduce model
 complexity and avoid overfitting by \emph{feature extraction}, which
@@ -9609,7 +9812,7 @@ the high end of dimension 3 with a highly curved beak. case 35 is at the
 high end of dimension 4, so probably is much heavier than most and has
 short flippers.
 
-\section{What We Have Learned}\label{what-we-have-learned-2}
+\section{What have we learned?}\label{what-have-we-learned-2}
 
 Welcome to the world of \textbf{multivariate juicers}-----those magical
 tools that squeeze the most meaningful information from high-dimensional
@@ -9673,12 +9876,6 @@ dimension reduction methods bridge the gap between statistical technique
 and practical insight. These aren't just mathematical
 curiosities---they're essential tools for making sense of our
 increasingly high-dimensional world.
-
-\textbf{Package summary}
-
-16 packages used here: car, carData, corrplot, dplyr, factoextra,
-FactoMineR, ggbiplot, ggplot2, ggpubr, imager, knitr, magrittr, matlib,
-patchwork, Rtsne, tidyr
 
 \part{Univariate Linear Models}
 
@@ -9762,7 +9959,7 @@ gender or level of education, methods like the simple \(t\)-test,
 one-way ANOVA and factorial ANOVA with \(q=1\) outcome measures all have
 simple extensions to the case of \(q>1\) outcomes.
 
-\begin{tcolorbox}[enhanced jigsaw, colframe=quarto-callout-note-color-frame, bottomrule=.15mm, opacityback=0, rightrule=.15mm, colback=white, breakable, bottomtitle=1mm, left=2mm, titlerule=0mm, toptitle=1mm, toprule=.15mm, colbacktitle=quarto-callout-note-color!10!white, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{History Corner}, coltitle=black, leftrule=.75mm, arc=.35mm, opacitybacktitle=0.6]
+\begin{tcolorbox}[enhanced jigsaw, bottomtitle=1mm, toptitle=1mm, titlerule=0mm, breakable, toprule=.15mm, colframe=quarto-callout-note-color-frame, opacityback=0, leftrule=.75mm, coltitle=black, rightrule=.15mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{History Corner}, arc=.35mm, bottomrule=.15mm, colbacktitle=quarto-callout-note-color!10!white, left=2mm, opacitybacktitle=0.6, colback=white]
 
 Why are there so many different names for regression vs.~ANOVA concepts,
 statistics and techniques? In regression, we use notation like
@@ -10001,9 +10198,9 @@ problems of collinearity).
 
 \textbf{Workers data: Regression models}
 
-For the \texttt{workers} data (\textbf{?@sec-workers-data-pca}) you can
-fit simple regression models predicting income from years of experience
-using a linear and quadratic model as follows:
+For the \texttt{workers} data (Section~\ref{sec-workers-data-pca}) you
+can fit simple regression models predicting income from years of
+experience using a linear and quadratic model as follows:
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -10889,48 +11086,62 @@ numbers that sum to zero for each one:
 These have the same form as the reversed Helmert contrasts considered
 earlier.
 
-\textbf{TODO}: Do I need to go throught the details of univariate
-regression, ANOVA, \ldots{} here? \#\# Regression
+\section{What have we learned?}\label{what-have-we-learned-3}
 
-\section{ANOVA}\label{anova}
+This chapter introduced the fundamental building blocks of linear
+modeling in R, focusing on the versatile \texttt{lm()} function as our
+primary tool for fitting and understanding linear relationships in data.
+The goal for the chapter is to help you understand the mechanics of
+translating between the algebraic formulation of a linear model and your
+research questions using the tools in the \texttt{lm()} family.
 
-\section{ANCOVA}\label{ancova}
+Here are the essential takeaways:
 
-Not shown in Figure~\ref{fig-techniques} are rows for cases where
-predictor variables include a mixture quantitative and discrete factors.
-These have two ``flavors'', depending on our emphasis.
+\begin{itemize}
+\tightlist
+\item
+  \textbf{The \texttt{lm()} function is your Swiss Army knife for linear
+  modeling} -- Whether you're fitting simple regression, multiple
+  regression, ANOVA, or ANCOVA models, \texttt{lm()} provides a unified
+  interface through R's elegant formula syntax. The beauty lies in how a
+  model foprmula like \texttt{y\ \textasciitilde{}\ x1\ +\ x2\ +\ x1:x2}
+  captures complex relationships with intuitive notation.
+\end{itemize}
 
 \begin{itemize}
 \item
-  \textbf{Analysis of covariance} (ANCOVA) is the term for models where
-  the main emphasis on on comparing means of different groups, but where
-  there are one or more quantitative predictors (for example a pre-test
-  score on the outcome variable) that need to be taken into account, so
-  we can assess the differences among groups \emph{controlling} or
-  \emph{adjusting} for those predictors, which are called
-  \emph{covariates}. (Strictly speaking, ANCOVA models typically assume
-  that the regression slopes are the same for all groups.)
+  \textbf{Model objects contain a wealth of information} -- An
+  \texttt{"lm"} object isn't just coefficients; it's a comprehensive
+  container holding fitted values, residuals, the design matrix, and
+  diagnostic information. Learning to extract and manipulate these
+  components with functions like \texttt{coef()}, \texttt{fitted()},
+  \texttt{residuals()}, and \texttt{model.matrix()} unlocks the full
+  power of linear modeling.
 \item
-  \textbf{Homogeneity of regression} treats the same type of data, but
-  the main interest is on the regression relation between \(\mathbf{y}\)
-  and a set of quantitative \(\mathbf{x}\)s, but there is also one or
-  more grouping factors. In this case, we want to determine if the
-  \emph{same regression} relation applies in all groups or whether the
-  groups differ in their intercepts and/or slopes. Another term for this
-  class of questions is \textbf{moderator} effects, which refers to
-  interactions between the quantitative predictors and group factors.
+  \textbf{Model matrices reveal the algebraic heart of your analysis} --
+  Understanding how R transforms your formula into a design matrix via
+  \texttt{model.matrix()} is fundamental to grasping what linear models
+  actually compute. The journey from a formula like
+  \texttt{y\ \textasciitilde{}\ treatment\ +\ block} to a matrix of 0s
+  and 1s illuminates how categorical predictors are used in mathematical
+  operations to calculate fitted values.
+\item
+  \textbf{Contrasts control how factors speak to your research
+  questions} -- The choice between treatment, sum, or Helmert contrasts
+  isn't just technical housekeeping -- it determines which comparisons
+  your model coefficients represent. Using \texttt{contrasts()} and
+  \texttt{C()} strategically means your model output directly answers
+  your scientific questions rather than leaving you to decode cryptic
+  parameter estimates.
 \end{itemize}
 
-\textbf{TODO} Move the initial discussion of ANCOVA from
-Section~\ref{sec-ANCOVA-MANCOVA} here with the generic example.
-
-\section{Regression trees}\label{regression-trees}
-
-\textbf{Package summary}
-
-\textbf{Packages used here}:
-
-3 packages used here: ggplot2, knitr, nestedLogit
+However fitting a model is just the first step. While \texttt{summary()}
+and \texttt{anova()} provide essential numerical summaries, diagnostic
+plots created with \texttt{plot(lm\_object)} expose patterns in
+residuals. Other plots help toidentify influential observations, and
+validate model assumptions. The interplay between numerical and
+graphical summaries is where true understanding emerges. This is the
+topic of Chapter~\ref{sec-linear-models-plots}.
 
 \chapter{Plots for univariate response
 models}\label{sec-linear-models-plots}
@@ -11381,11 +11592,12 @@ prestige}\label{sec-example-prestige}
 
 Following Duncan (\citeproc{ref-Duncan:61}{1961}), occupational prestige
 was studied in a Canadian context by Bernard Blishen and others at York
-University, giving the dataset \texttt{carData::Prestige} which we
-looked at in Section~\ref{sec-prestige}. It differs from the
-\texttt{Duncan} dataset primarily in that the main variables---prestige,
-income and education were revamped to better reflect the underlying
-constructs in more meaningful units.
+University, giving the dataset \texttt{Prestige} \index{Prestige data}
+\index{datasets!Prestige} which we looked at in
+Example~\ref{exm-prestige}. It differs from the \texttt{Duncan} dataset
+primarily in that the main variables---prestige, income and education
+were revamped to better reflect the underlying constructs in more
+meaningful units.
 
 \begin{itemize}
 \item
@@ -11409,9 +11621,9 @@ levels \texttt{"bc"} (blue collar), \texttt{"wc"} (white collar) and
   For analysis and graphing it is useful to reorder the levels in the
   natural increasing order. An alternative is to make \texttt{type} an
   \emph{ordered} factor, but this would represent it using polynomial
-  contrasts for linear and quadratic trends, which seems unuseful in
-  this context. \index{ordering!factor levels}}, but in addition
-includes the percent of \texttt{women} in these occupational categories.
+  contrasts for linear and quadratic trends, which seems useful in this
+  context. \index{ordering!factor levels}}, but in addition includes the
+percent of \texttt{women} in these occupational categories.
 
 Our interest again is in understanding how \texttt{prestige} is related
 to census measures of the average education, income, percent women of
@@ -11517,9 +11729,10 @@ data of increasing complexity:
 \end{Highlighting}
 \end{Shaded}
 
-From our earlier analyses (Section~\ref{sec-prestige}) we saw that the
-marginal relationship between \texttt{income} and \texttt{prestige} was
-nonlinear Figure~\ref{fig-Prestige-scatterplot-income1}), and was better
+From our earlier analyses (\textbf{?@sec-prestige})
+(Example~\ref{exm-prestige}) we saw that the marginal relationship
+between \texttt{income} and \texttt{prestige} was nonlinear
+Figure~\ref{fig-Prestige-scatterplot-income1}), and was better
 represented in a linear model using \texttt{log(income)}
 (Section~\ref{sec-log-scale}) shown in
 Figure~\ref{fig-Prestige-scatterplot2}. However, this possibly
@@ -11580,7 +11793,7 @@ statistics displayed for any model term with the \texttt{estimate} and
   \AttributeTok{shape =}\NormalTok{ term }\SpecialCharTok{\textasciitilde{}}\NormalTok{ statistic,}
   \AttributeTok{estimate =} \StringTok{"\{estimate\} [\{conf.low\}, \{conf.high\}]"}\NormalTok{,}
   \AttributeTok{statistic =} \FunctionTok{c}\NormalTok{(}\StringTok{"std.error"}\NormalTok{, }\StringTok{"p.value"}\NormalTok{),}
-  \AttributeTok{fmt =} \FunctionTok{fmt\_statistic}\NormalTok{(}\StringTok{"estimate"} \OtherTok{=} \DecValTok{3}\NormalTok{, }\StringTok{"conf.low"} \OtherTok{=} \DecValTok{4}\NormalTok{, }\StringTok{"conf.high"} \OtherTok{=} \DecValTok{4}\NormalTok{),}
+  \AttributeTok{fmt =} \FunctionTok{fmt\_statistic}\NormalTok{(}\StringTok{"estimate"} \OtherTok{=} \DecValTok{3}\NormalTok{, }\StringTok{"conf.low"} \OtherTok{=} \DecValTok{3}\NormalTok{, }\StringTok{"conf.high"} \OtherTok{=} \DecValTok{3}\NormalTok{),}
   \AttributeTok{gof\_omit =} \StringTok{"."}\NormalTok{)}
 \end{Highlighting}
 \end{Shaded}
@@ -11621,9 +11834,9 @@ cell{1}{2}={c=3,}{halign=c, halign=c, halign=c,},
 \toprule
 & Model1 &  &  \\ \cmidrule[lr]{2-4}
 & Est. & S.E. & p \\ \midrule %% TinyTableHeader
-education & \num{\num{4.187}} [\num{\num{3.4153}}, \num{\num{4.9580}}] & \num{\num{0.389}} & \num{\num{0.000}} \\
-income & \num{\num{0.001}} [\num{\num{0.0008}}, \num{\num{0.0019}}] & \num{\num{0.000}} & \num{\num{0.000}} \\
-women & \num{\num{-0.009}} [\num{\num{-0.0692}}, \num{\num{0.0514}}] & \num{\num{0.030}} & \num{\num{0.770}} \\
+education & 4.187 [3.415, 4.958] & 0.389 & 0.000 \\
+income & 0.001 [0.001, 0.002] & 0.000 & 0.000 \\
+women & -0.009 [-0.069, 0.051] & 0.030 & 0.770 \\
 \bottomrule
 \end{tblr}
 
@@ -11832,15 +12045,15 @@ hline{10}={1,2,3,4,5,6,7,8,9,10}{solid, black, 0.05em},
 \toprule
 & Model1 &  &  & Model2 &  &  & Model3 &  &  \\ \cmidrule[lr]{2-4}\cmidrule[lr]{5-7}\cmidrule[lr]{8-10}
 & Est. & S.E. & p & Est. & S.E. & p & Est. & S.E. & p \\ \midrule %% TinyTableHeader
-education & \num{4.19}*** & \num{0.39} & \num{<0.01} & \num{3.66}*** & \num{0.65} & \num{<0.01} & \num{2.80}*** & \num{0.59} & \num{<0.01} \\
-income & \num{0.00}*** & \num{0.00} & \num{<0.01} & \num{0.00}*** & \num{0.00} & \num{<0.01} & \num{0.00}*** & \num{0.00} & \num{<0.01} \\
-women & \num{-0.01} & \num{0.03} & \num{0.77} & \num{0.01} & \num{0.03} & \num{0.83} & \num{0.08}* & \num{0.03} & \num{0.02} \\
-typewc &  &  &  & \num{-2.92} & \num{2.67} & \num{0.28} & \num{3.43} & \num{5.37} & \num{0.52} \\
-typeprof &  &  &  & \num{5.91} & \num{3.94} & \num{0.14} & \num{27.55}*** & \num{5.41} & \num{<0.01} \\
-income × typewc &  &  &  &  &  &  & \num{-0.00} & \num{0.00} & \num{0.21} \\
-income × typeprof &  &  &  &  &  &  & \num{-0.00}*** & \num{0.00} & \num{<0.01} \\
-RMSE & \num{7.69} &  &  & \num{6.91} &  &  & \num{6.02} &  &  \\
-R2 & \num{0.798} &  &  & \num{0.835} &  &  & \num{0.875} &  &  \\
+education & 4.19*** & 0.39 & <0.01 & 3.66*** & 0.65 & <0.01 & 2.80*** & 0.59 & <0.01 \\
+income & 0.00*** & 0.00 & <0.01 & 0.00*** & 0.00 & <0.01 & 0.00*** & 0.00 & <0.01 \\
+women & -0.01 & 0.03 & 0.77 & 0.01 & 0.03 & 0.83 & 0.08* & 0.03 & 0.02 \\
+typewc &  &  &  & -2.92 & 2.67 & 0.28 & 3.43 & 5.37 & 0.52 \\
+typeprof &  &  &  & 5.91 & 3.94 & 0.14 & 27.55*** & 5.41 & <0.01 \\
+income × typewc &  &  &  &  &  &  & -0.00 & 0.00 & 0.21 \\
+income × typeprof &  &  &  &  &  &  & -0.00*** & 0.00 & <0.01 \\
+RMSE & 7.69 &  &  & 6.91 &  &  & 6.02 &  &  \\
+R2 & 0.798 &  &  & 0.835 &  &  & 0.875 &  &  \\
 \bottomrule
 \end{talltblr}
 
@@ -12532,7 +12745,7 @@ solid \textcolor{red}{red} curve is the loess smooth.}
 The partial relation between prestige and income is clearly curved, so
 it would be appropriate to transform income or to include a polynomial
 (quadratic) term and refit the model. As suggested earlier
-(Section~\ref{sec-prestige}) it makes sense statistically and
+(Example~\ref{exm-prestige}) it makes sense statistically and
 substantively to model the effect of income on a log scale, so then the
 slope for \texttt{log(income)} would measure the increment in prestige
 for a constant \emph{percentage increase} in income.
@@ -13208,12 +13421,9 @@ correlations among the predictors must be taken into account. It is
 demonstrated below that
 \(h_i \propto D^2 (\mathbf{x} - \bar{\mathbf{x}})\), the Mahalanobis
 squared distance of \(\mathbf{x}\) from the centroid
-\(\bar{\mathbf{x}}\)\footnote{If group sizes are greatly unequal
-  \textbf{and} homogeneity of variance is violated, then the \(F\)
-  statistic is too liberal (\(p\) values too large) when large sample
-  variances are associated with small group sizes. Conversely, the \(F\)
-  statistic is too conservative if large variances are associated with
-  large group sizes.}.
+\(\bar{\mathbf{x}}\)\footnote{See this
+  \href{https://bit.ly/45x2T0Q}{Stats StackExchange discussion} for a
+  proof.}.
 
 The generalized version of Equation~\ref{eq-hat-univar} is
 
@@ -13666,7 +13876,7 @@ then becomes 2.6 times that of education.
 \end{Highlighting}
 \end{Shaded}
 
-\section{What We Have Learned}\label{what-we-have-learned-3}
+\section{What have we learned?}\label{what-have-we-learned-4}
 
 This chapter unveils the sophisticated visual toolkit that transforms
 regression models from black boxes into transparent interpretable
@@ -13727,14 +13937,6 @@ visualization is like navigating without a compass. In our R-powered
 world of complex models and large datasets, sophisticated plotting
 techniques aren't just helpful---they're essential for understanding
 what your models actually say about the world.
-
-\textbf{Package summary}
-
-29 packages used here: bayestestR, car, carData, correlation,
-datawizard, dplyr, easystats, effects, effectsize, forcats, ggeffects,
-ggplot2, ggstats, insight, knitr, lubridate, marginaleffects,
-modelbased, modelsummary, parameters, performance, purrr, readr, report,
-see, stringr, tibble, tidyr, tidyverse
 
 \chapter{Topics in Linear Models}\label{topics-in-linear-models}
 
@@ -14474,7 +14676,7 @@ model.}
 
 \end{figure}%
 
-\section{What We Have Learned}\label{what-we-have-learned-4}
+\section{What have we learned?}\label{what-have-we-learned-5}
 
 \begin{itemize}
 \item
@@ -14521,11 +14723,6 @@ model.}
   abstract statistical concepts into concrete geometric relationships
   that you can literally see and manipulate.
 \end{itemize}
-
-\textbf{Packages used here}:
-
-10 packages used here: car, carData, dplyr, forcats, gganimate, ggplot2,
-knitr, matlib, patchwork, tidyr
 
 \chapter{Collinearity \& Ridge Regression}\label{sec-collin}
 
@@ -14578,12 +14775,12 @@ In this chapter we use the following packages. Load them now.
 
 Researchers who have studies standard treatments of linear models (e.g,
 Graybill (\citeproc{ref-Graybill1961}{1961}); Hocking
-(\citeproc{ref-Hocking2013}{2013})) are often confused about what
+(\citeproc{ref-Hocking2013}{2013})) are often less than clear about what
 collinearity is, how to find its sources and how to take steps to
 resolve them. There are a number of important diagnostic measures that
 can help, but these are usually presented in a tabular display like
 Figure~\ref{fig-collinearity-diagnostics-SPSS}, which prompted this
-querry on an online forum:
+query on an online forum:
 
 \begin{quote}
 Some of my collinearity diagnostics have large values, or small values,
@@ -14616,18 +14813,23 @@ https://bit.ly/3YRB82b}
 The trouble with displays like
 Figure~\ref{fig-collinearity-diagnostics-SPSS} is that the important
 information is hidden in a sea of numbers, some of which are bad when
-large, others bad when they are small and a large bunch which are
-irrelevant. In Friendly \& Kwan
-(\citeproc{ref-FriendlyKwan:2009}{2009}), we liken this problem to that
-of the reader of Martin Hansford's successful series of books,
-\emph{Where's Waldo}. These consist of a series of full-page
-illustrations of hundreds of people and things and a few Waldos--- a
-character wearing a red and white striped shirt and hat, glasses, and
-carrying a walking stick or other paraphernalia. Waldo was never
-disguised, yet the complex arrangement of misleading visual cues in the
-pictures made him very hard to find. Collinearity diagnostics often
-provide a similar puzzle: where should you look in traditional tabular
-displays?
+\emph{large}, others bad when they are \emph{small} and a large bunch
+which are irrelevant to interpretation.
+
+In Friendly \& Kwan (\citeproc{ref-FriendlyKwan:2009}{2009}), we liken
+this problem to that of the reader of Martin Hansford's successful
+series of books, \emph{Where's Waldo}. These consist of a series of
+full-page illustrations of hundreds of people and things and a few
+Waldos--- a character wearing a red and white striped shirt and hat,
+glasses, and carrying a walking stick or other paraphernalia. Waldo was
+never disguised, yet the complex arrangement of misleading visual cues
+in the pictures made him very hard to find. Collinearity diagnostics
+often provide a similar puzzle: where should you look in traditional
+tabular displays?\footnote{The ``Where's Waldo'' problem has attracted
+  attention in machine learning, AI and computational image analysis
+  circles. One approach uses convolutional neural networks.
+  \href{https://github.com/agnarbjoernstad/FindWaldo}{FindWaldo} is one
+  example implemented in Python.}
 
 \begin{figure}[htb!]
 
@@ -14637,9 +14839,9 @@ displays?
 
 }
 
-\caption{\label{fig-wheres-waldo}A scene from one of the Where's Waldo
-books. Waldo wears a red-striped shirt, but far too many of the other
-figures in the scene have horizontal red stripes, making it very
+\caption{\label{fig-wheres-waldo}A scene from one of the \emph{Where's
+Waldo} books. Waldo wears a red-striped shirt, but far too many of the
+other figures in the scene have horizontal red stripes, making it very
 difficult to find him among all the distractors. This is often the
 problem with collinearity diagnostics. \emph{Source}: Modified from
 https://bit.ly/48KPcOo}
@@ -14692,7 +14894,7 @@ on tests of reading, math, spelling and geography. With ipsatized
 scores, any one of these is necessarily 1 \(-\) sum of the others, i.e.,
 if reading is 0.5, math and geography are both 0.15, then geography must
 be 0.2. Once thre of the four scores are known, the last provides no new
-information.
+information. \index{ipsatized scores}
 
 More generally, collinearity refers to the case when there are very high
 \textbf{multiple correlations} among the predictors, such as
@@ -14794,12 +14996,10 @@ confidence ellipses for coefficients in \textbf{beta space}. To do so in
 this example, I generate data from a known model
 \(y = 3 x_1 + 3 x_2 + \epsilon\) with
 \(\epsilon \sim \mathcal{N} (0, 100)\) and various true correlations
-between \(x_1\) and \(x_2\), \(\rho_{12} = (0, 0.8, 0.97)\) \footnote{If
-  group sizes are greatly unequal \textbf{and} homogeneity of variance
-  is violated, then the \(F\) statistic is too liberal (\(p\) values too
-  large) when large sample variances are associated with small group
-  sizes. Conversely, the \(F\) statistic is too conservative if large
-  variances are associated with large group sizes.}.
+between \(x_1\) and \(x_2\), \(\rho_{12} = (0, 0.8, 0.97)\) \footnote{This
+  example is adapted from one by John Fox (2022),
+  \href{https://socialsciences.mcmaster.ca/jfox/Courses/SORA-TABA/slides-collinearity.pdf}{Collinearity
+  Diagnostics}}.
 
 \marginnote{\begin{footnotesize}
 
@@ -14877,21 +15077,21 @@ that variance inflation can be assessed visually.
 \NormalTok{do\_plots }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(XY, mod, r) \{}
 \NormalTok{  X }\OtherTok{\textless{}{-}} \FunctionTok{as.matrix}\NormalTok{(XY[, }\DecValTok{1}\SpecialCharTok{:}\DecValTok{2}\NormalTok{])}
   \FunctionTok{dataEllipse}\NormalTok{(X,}
-              \AttributeTok{levels=} \FloatTok{0.95}\NormalTok{,}
-              \AttributeTok{col =} \StringTok{"darkgreen"}\NormalTok{,}
-              \AttributeTok{fill =} \ConstantTok{TRUE}\NormalTok{, }\AttributeTok{fill.alpha =} \FloatTok{0.05}\NormalTok{,}
-              \AttributeTok{xlim =} \FunctionTok{c}\NormalTok{(}\SpecialCharTok{{-}}\DecValTok{3}\NormalTok{, }\DecValTok{3}\NormalTok{),}
-              \AttributeTok{ylim =} \FunctionTok{c}\NormalTok{(}\SpecialCharTok{{-}}\DecValTok{3}\NormalTok{, }\DecValTok{3}\NormalTok{), }\AttributeTok{asp =} \DecValTok{1}\NormalTok{)}
+    \AttributeTok{levels=} \FloatTok{0.95}\NormalTok{,}
+    \AttributeTok{col =} \StringTok{"darkgreen"}\NormalTok{,}
+    \AttributeTok{fill =} \ConstantTok{TRUE}\NormalTok{, }\AttributeTok{fill.alpha =} \FloatTok{0.05}\NormalTok{,}
+    \AttributeTok{xlim =} \FunctionTok{c}\NormalTok{(}\SpecialCharTok{{-}}\DecValTok{3}\NormalTok{, }\DecValTok{3}\NormalTok{),}
+    \AttributeTok{ylim =} \FunctionTok{c}\NormalTok{(}\SpecialCharTok{{-}}\DecValTok{3}\NormalTok{, }\DecValTok{3}\NormalTok{), }\AttributeTok{asp =} \DecValTok{1}\NormalTok{)}
   \FunctionTok{text}\NormalTok{(}\DecValTok{0}\NormalTok{, }\DecValTok{3}\NormalTok{, }\FunctionTok{bquote}\NormalTok{(rho }\SpecialCharTok{==}\NormalTok{ .(r)), }\AttributeTok{cex =} \DecValTok{2}\NormalTok{, }\AttributeTok{pos =} \ConstantTok{NULL}\NormalTok{)}
 
   \FunctionTok{confidenceEllipse}\NormalTok{(mod,}
-                    \AttributeTok{col =} \StringTok{"red"}\NormalTok{,}
-                    \AttributeTok{fill =} \ConstantTok{TRUE}\NormalTok{, }\AttributeTok{fill.alpha =} \FloatTok{0.1}\NormalTok{,}
-                    \AttributeTok{xlab =} \FunctionTok{expression}\NormalTok{(}\FunctionTok{paste}\NormalTok{(}\StringTok{"x1 coefficient, "}\NormalTok{, beta[}\DecValTok{1}\NormalTok{])),}
-                    \AttributeTok{ylab =} \FunctionTok{expression}\NormalTok{(}\FunctionTok{paste}\NormalTok{(}\StringTok{"x2 coefficient, "}\NormalTok{, beta[}\DecValTok{2}\NormalTok{])),}
-                    \AttributeTok{xlim =} \FunctionTok{c}\NormalTok{(}\SpecialCharTok{{-}}\DecValTok{5}\NormalTok{, }\DecValTok{10}\NormalTok{),}
-                    \AttributeTok{ylim =} \FunctionTok{c}\NormalTok{(}\SpecialCharTok{{-}}\DecValTok{5}\NormalTok{, }\DecValTok{10}\NormalTok{),}
-                    \AttributeTok{asp =} \DecValTok{1}\NormalTok{)}
+    \AttributeTok{col =} \StringTok{"red"}\NormalTok{,}
+    \AttributeTok{fill =} \ConstantTok{TRUE}\NormalTok{, }\AttributeTok{fill.alpha =} \FloatTok{0.1}\NormalTok{,}
+    \AttributeTok{xlab =} \FunctionTok{expression}\NormalTok{(}\FunctionTok{paste}\NormalTok{(}\StringTok{"x1 coefficient, "}\NormalTok{, beta[}\DecValTok{1}\NormalTok{])),}
+    \AttributeTok{ylab =} \FunctionTok{expression}\NormalTok{(}\FunctionTok{paste}\NormalTok{(}\StringTok{"x2 coefficient, "}\NormalTok{, beta[}\DecValTok{2}\NormalTok{])),}
+    \AttributeTok{xlim =} \FunctionTok{c}\NormalTok{(}\SpecialCharTok{{-}}\DecValTok{5}\NormalTok{, }\DecValTok{10}\NormalTok{),}
+    \AttributeTok{ylim =} \FunctionTok{c}\NormalTok{(}\SpecialCharTok{{-}}\DecValTok{5}\NormalTok{, }\DecValTok{10}\NormalTok{),}
+    \AttributeTok{asp =} \DecValTok{1}\NormalTok{)}
   \FunctionTok{points}\NormalTok{(beta[}\DecValTok{1}\NormalTok{], beta[}\DecValTok{2}\NormalTok{], }\AttributeTok{pch =} \StringTok{"+"}\NormalTok{, }\AttributeTok{cex=}\DecValTok{2}\NormalTok{)}
   \FunctionTok{abline}\NormalTok{(}\AttributeTok{v=}\DecValTok{0}\NormalTok{, }\AttributeTok{h=}\DecValTok{0}\NormalTok{, }\AttributeTok{lwd=}\DecValTok{2}\NormalTok{)}
 \NormalTok{\}}
@@ -15110,7 +15310,7 @@ get the generalized GVIF:
 \end{Highlighting}
 \end{Shaded}
 
-\begin{tcolorbox}[enhanced jigsaw, colframe=quarto-callout-tip-color-frame, bottomrule=.15mm, opacityback=0, rightrule=.15mm, colback=white, breakable, bottomtitle=1mm, left=2mm, titlerule=0mm, toptitle=1mm, toprule=.15mm, colbacktitle=quarto-callout-tip-color!10!white, title=\textcolor{quarto-callout-tip-color}{\faLightbulb}\hspace{0.5em}{Connection with inverse of correlation matrix}, coltitle=black, leftrule=.75mm, arc=.35mm, opacitybacktitle=0.6]
+\begin{tcolorbox}[enhanced jigsaw, bottomtitle=1mm, toptitle=1mm, titlerule=0mm, breakable, toprule=.15mm, colframe=quarto-callout-tip-color-frame, opacityback=0, leftrule=.75mm, coltitle=black, rightrule=.15mm, title=\textcolor{quarto-callout-tip-color}{\faLightbulb}\hspace{0.5em}{Connection with inverse of correlation matrix}, arc=.35mm, bottomrule=.15mm, colbacktitle=quarto-callout-tip-color!10!white, left=2mm, opacitybacktitle=0.6, colback=white]
 
 In the linear regression model with standardized predictors, the
 covariance matrix of the estimated intercept-excluding parameter vector
@@ -15168,15 +15368,16 @@ the following diagnostic statistics for collinearity:
 
 \begin{itemize}
 \item
-  \textbf{Condition indices}: The smallest of the eigenvalues, those for
-  which \(\lambda_j \approx 0\), indicate collinearity and the number of
-  small values indicates the number of near collinear relations. Because
-  the sum of the eigenvalues, \(\Sigma \lambda_i = p\) increases with
-  the number of predictors \(p\), it is useful to scale them all in
-  relation to the largest. This leads to \emph{condition indices},
-  defined as \(\kappa_j = \sqrt{ \lambda_1 / \lambda_j}\). These have
-  the property that the resulting numbers have common interpretations
-  regardless of the number of predictors.
+  \textbf{Condition indices}: \index{condition indices} The smallest of
+  the eigenvalues, those for which \(\lambda_j \approx 0\), indicate
+  collinearity and the number of small values indicates the number of
+  near collinear relations. Because the sum of the eigenvalues,
+  \(\Sigma \lambda_i = p\) increases with the number of predictors
+  \(p\), it is useful to scale them all in relation to the largest. This
+  leads to \emph{condition indices}, defined as
+  \(\kappa_j = \sqrt{ \lambda_1 / \lambda_j}\). These have the property
+  that the resulting numbers have common interpretations regardless of
+  the number of predictors.
 
   \begin{itemize}
   \tightlist
@@ -15258,7 +15459,9 @@ second component creates no problem and should be ignored because (a)
 the condition index is low and (b) it shares nothing with other
 predictors.
 
-\subsection{Tableplots}\label{tableplots}
+\section{Tableplots}\label{sec-tableplot}
+
+\index{tableplots|(}
 
 The default tabular display of condition indices and variance
 proportions from \texttt{colldiag()} is what triggered the comparison to
@@ -15331,7 +15534,12 @@ scaled relative to a maximum of 100.}
 
 \end{figure}%
 
-\subsection{Collinearity biplots}\label{collinearity-biplots}
+\index{tableplots|)}
+
+\section{Collinearity biplots}\label{collinearity-biplots}
+
+\index{collinearity biplots|(}
+\index{biplots!collinearity|(}
 
 As we have seen, the collinearity diagnostics are all functions of the
 eigenvalues and eigenvectors of the correlation matrix of the predictors
@@ -15453,16 +15661,19 @@ in predictor space, far from the centroid. It turns out that this
 vehicle, a Buick Estate wagon, is an early-year (1970) American
 behemoth, with an 8-cylinder, 455 cu. in, 225 horse-power engine, and
 able to go from 0 to 60 mph in 10 sec. (Its MPG is only slightly
-under-predicted from the regression model, however.)
+under-predicted from the regression model, however.) \index{outliers}
 
 With PCA and the biplot, we are used to looking at the dimensions that
 account for the most variation, but the answer to \emph{Where's Waldo?}
-is that he is hiding in the smallest data dimensions, just as he does in
-Figure~\ref{fig-wheres-waldo} where the weak signals of his stripped
-shirt, hat and glasses are embedded in a visual field of noise. As we
-just saw, outliers hide there also, hoping to escape detection. These
-small dimensions are also implicated in ridge regression as we will see
-shortly (Section~\ref{sec-ridge}).
+is that he is hiding in the \emph{smallest} data dimensions, just as he
+does in Figure~\ref{fig-wheres-waldo} where the weak signals of his
+stripped shirt, hat and glasses are embedded in a visual field of noise.
+As we just saw, outliers hide there also, hoping to escape detection.
+These small dimensions are also implicated in ridge regression as we
+will see shortly (Section~\ref{sec-ridge}).
+
+\index{collinearity biplots|)}
+\index{biplots!collinearity|)}
 
 \section{Remedies for collinearity: What can I do?}\label{sec-remedies}
 
@@ -15623,13 +15834,11 @@ nessessary correlation in a quadratic regression}
 
 \textbf{Example}: Interactions
 
-The dataset \texttt{genridge::Acetylene} gives data from Marquardt \&
-Snee (\citeproc{ref-MarquardtSnee1975}{1975}) on the \texttt{yield} of a
-chemical manufacturing process to produce acetylene in relation to
-reactor temperature (\texttt{temp}), the \texttt{ratio} of two
-components and the contact \texttt{time} in the reactor. A naive
-response surface model might suggest that yield is quadratic in time and
-there are potential interactions among all pairs of predictors.
+manufacturing process to produce acetylene in relation to reactor
+temperature (\texttt{temp}), the \texttt{ratio} of two components and
+the contact \texttt{time} in the reactor. A naive response surface model
+might suggest that yield is quadratic in time and there are potential
+interactions among all pairs of predictors.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -15843,7 +16052,7 @@ squares of coefficients,
 The red ellipses show the covariance ellipse of two coefficients
 \(\boldsymbol{\beta}\). Ridge regression finds the point
 \(\widehat{\boldsymbol{\beta}}^{\mathrm{RR}}_k\) where the OLS contours
-just kiss the constraint region. \_Source: Friendly et al.
+just kiss the constraint region. \emph{Source}: Friendly et al.
 (\citeproc{ref-Friendly-etal:ellipses:2013}{2013}).}
 
 \end{figure}%
@@ -15972,10 +16181,10 @@ bivariate plots of coefficients in PCA space
 
 A classic example for ridge regression is Longley's (1967) data,
 consisting of 7 economic variables, observed yearly from 1947 to 1962
-(n=16), in the dataset \texttt{datasets::longley}. The goal is to
-predict Employed from \texttt{GNP}, \texttt{Unemployed},
-\texttt{Armed.Forces}, \texttt{Population}, \texttt{Year}, and
-\texttt{GNP.deflator}.
+(n=16), in the dataset \texttt{longley} \index{longley data}
+\index{datasets!longley}. The goal is to predict Employed from
+\texttt{GNP}, \texttt{Unemployed}, \texttt{Armed.Forces},
+\texttt{Population}, \texttt{Year}, and \texttt{GNP.deflator}.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -16506,7 +16715,7 @@ predictors contribute to shrinkage in ridge regression. Here, Year and
 Population largely contribute to dimension 5; a contrast between (Year,
 Population) and GNP contributes to dimension 6.
 
-\section{What have we learned?}\label{what-have-we-learned}
+\section{What have we learned?}\label{what-have-we-learned-6}
 
 This chapter has considered the problems in regression models which stem
 from high correlations among the predictors. We saw that collinearity
@@ -16719,12 +16928,12 @@ complex multivariate tests.
 \subsection*{Example}\label{example-1}
 \addcontentsline{toc}{subsection}{Example}
 
-The data set \texttt{heplots::mathscore} gives (fictitious) scores on a
-test of basic math skills (BM) and solving word problems (WP) for two
-groups of \(N=6\) students in an algebra course, each taught by
-different instructors. The null hypothesis is that the means are equal
-for both variables,
-\(\mathcal{H}_0: \mu_{\text{BM}} = \mu_{\text{WP}}\).
+The data set \texttt{mathscore} \index{mathscore data}
+\index{datasets!mathscore} gives (fictitious) scores on a test of basic
+math skills (BM) and solving word problems (WP) for two groups of
+\(N=6\) students in an algebra course, each taught by different
+instructors. The null hypothesis is that the means are equal for both
+variables, \(\mathcal{H}_0: \mu_{\text{BM}} = \mu_{\text{WP}}\).
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -17251,13 +17460,14 @@ tests. Multivariate methods become increasingly useful as the number of
 response variables increases because it is harder to show them all
 together and see how they relate to differences between groups.
 
-A classic example is the dataset \texttt{mbclust::banknote}, containing
-six size measures made on 100 genuine and 100 counterfeit old-Swiss
-1000-franc bank notes (\citeproc{ref-FluryReidwyl-1988}{Flury \&
-Riedwyl, 1988}). The goal is to see how well the real and fake banknotes
-can be distinguished. The measures are the \texttt{Length} and
-\texttt{Diagonal} lengths of a banknote and the \texttt{Left},
-\texttt{Right}, \texttt{Top} and \texttt{Bottom} edge margins in mm.
+A classic example is the dataset \texttt{banknote} \index{banknote data}
+\index{datasets!banknote}, containing six size measures made on 100
+genuine and 100 counterfeit old-Swiss 1000-franc bank notes
+(\citeproc{ref-FluryReidwyl-1988}{Flury \& Riedwyl, 1988}). The goal is
+to see how well the real and fake banknotes can be distinguished. The
+measures are the \texttt{Length} and \texttt{Diagonal} lengths of a
+banknote and the \texttt{Left}, \texttt{Right}, \texttt{Top} and
+\texttt{Bottom} edge margins in mm.
 
 Before considering hypothesis tests, let's look at some exploratory
 graphics. Figure~\ref{fig-banknote-violin} shows univariate violin and
@@ -17309,7 +17519,7 @@ measures, with the counterfeit ones slightly larger on Left, Right,
 Bottom and Top margins. But univariate plots don't give an overall sense
 of how these variables are related to one another.
 
-\begin{tcolorbox}[enhanced jigsaw, colframe=quarto-callout-note-color-frame, bottomrule=.15mm, opacityback=0, rightrule=.15mm, colback=white, breakable, bottomtitle=1mm, left=2mm, titlerule=0mm, toptitle=1mm, toprule=.15mm, colbacktitle=quarto-callout-note-color!10!white, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{\textbf{Graph craft}: Layers and transparency}, coltitle=black, leftrule=.75mm, arc=.35mm, opacitybacktitle=0.6]
+\begin{tcolorbox}[enhanced jigsaw, bottomtitle=1mm, toptitle=1mm, titlerule=0mm, breakable, toprule=.15mm, colframe=quarto-callout-note-color-frame, opacityback=0, leftrule=.75mm, coltitle=black, rightrule=.15mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{\textbf{Graph craft}: Layers and transparency}, arc=.35mm, bottomrule=.15mm, colbacktitle=quarto-callout-note-color!10!white, left=2mm, opacitybacktitle=0.6, colback=white]
 
 Figure~\ref{fig-banknote-violin} is somewhat complex, so it is useful to
 understand the steps needed to make this figure show what I wanted. The
@@ -17520,6 +17730,8 @@ variance of multivariate data. We will meet another multivariate juicer,
 \textbf{canonical discriminant analysis} in Chapter~\ref{sec-vis-mlm}.
 
 \section{What we've learned}\label{what-weve-learned}
+
+\textbf{TODO}: Combine with `summary/Ch09-summary.qmd
 
 This chapter was designed to illustrate the main ideas for visualizing
 differences between means on multiple response variables in a two-group
@@ -17936,9 +18148,10 @@ multivariate case.
 \subsection{Example: Dog food data}\label{sec-dogfood-data}
 
 As a toy example to make these ideas concrete, consider the dataset
-\texttt{heplots::dogfood}. Here, a dogfood manufacturer wanted to study
-preference for different dogfood formulas, two of their own (``Old'',
-``New'') and two from other manufacturers (``Major'', ``Alps'').
+\texttt{dogfood} \index{dogfood data} \index{datasets!dogfood}. Here, a
+dogfood manufacturer wanted to study preference for different dogfood
+formulas, two of their own (``Old'', ``New'') and two from other
+manufacturers (``Major'', ``Alps'').
 
 In a between-dog design, each of \(n=4\) dogs were presented with a bowl
 of \emph{one} formula and the time to \texttt{start} eating and
@@ -18052,7 +18265,7 @@ the off-diagonal. elements. For the MLM this is expressed as:
 & =  \left(\widehat {\mathbf{Y}}^{\top}\widehat{\mathbf{Y}} - n\overline{\mathbf{y}}\,\overline{\mathbf{y}}^{\top} \right) + \widehat{\boldsymbol{\Large\varepsilon}}^{\top}\widehat{\boldsymbol{\Large\varepsilon}} \\
 & =   \mathbf{SSP}_{H} + \mathbf{SSP}_{E} \\
 & \equiv  \mathbf{H} + \mathbf{E} \:\: ,
-\end{align*} \{\#eq-SSP\}
+\end{align*}\{\#eq-SSP\}
 
 where,
 
@@ -18376,7 +18589,7 @@ each has an analog of the \(R^2\)-like partial \(\eta^2\) measure,
 giving the partial association accounted for by each term in the MLM.
 
 \subsection{Testing contrasts and linear
-hypotheses}\label{sec-contrasts}
+hypotheses}\label{sec-contrasts2}
 
 Even more generally, these multivariate tests apply to \emph{every}
 linear hypothesis concerning the coefficients in \(\mathbf{B}\). Suppose
@@ -18555,7 +18768,7 @@ exactly as the univariate \(\text{SS}_H\) can be decomposed using
 orthogonal contrasts in an ANOVA.
 
 You can test such contrasts or any other hypotheses involving linear
-combinations of the coefficients using \texttt{car::linearHypothesis}.
+combinations of the coefficients using \texttt{car::linearHypothesis()}.
 Here, \texttt{"formulac1"} refers to the contrast \texttt{c1} for the
 difference between Ours and Theirs. Note that because this is a 1 df
 test, all four test statistics yield the same \(F\) values.
@@ -18736,11 +18949,11 @@ illustrate the basic ideas of fitting MLMs in R and testing hypotheses.
 Visualization methods using HE plots are discussed in
 Chapter~\ref{sec-vis-mlm}.
 
-The dataset \texttt{heplots::Parenting} come from an exercise (10B) in
-Meyers et al. (\citeproc{ref-Meyers-etal:2006}{2006}) and are probably
-contrived, but are modeled on a real study in which fathers were
-assessed on three subscales of a \emph{Perceived Parenting Competence
-Scale},
+The dataset \texttt{Parenting} \index{Parenting data}
+\index{datasets!Parenting} come from an exercise (10B) in Meyers et al.
+(\citeproc{ref-Meyers-etal:2006}{2006}) and are probably contrived, but
+are modeled on a real study in which fathers were assessed on three
+subscales of a \emph{Perceived Parenting Competence Scale},
 
 \begin{itemize}
 \tightlist
@@ -19136,15 +19349,16 @@ without the need to specify them separately in the model
 \subsection{Example: Adolescent mental
 health}\label{example-adolescent-mental-health}
 
-The dataset \texttt{heplots::AddHealth} contains a large cross-sectional
-sample of participants from grades 7--12 from the National Longitudinal
-Study of Adolescent Health, described by Warne
-(\citeproc{ref-Warne2014}{2014}). It contains responses to two
-Likert-scale (1--5) items, \texttt{anxiety} and \texttt{depression}.
-\texttt{grade} is an \emph{ordered} factor, which means that the default
-contrasts are taken as orthogonal polynomials with linear
-(\texttt{grade.L}), quadratic (\texttt{grade.Q}), up to 5th degree
-(\texttt{grade\^{}5}) trends, which decompose the total effect of grade.
+The dataset \texttt{AddHealth} \index{AddHealth data}
+\index{datasets!AddHealth} contains a large cross-sectional sample of
+participants from grades 7--12 from the National Longitudinal Study of
+Adolescent Health, described by Warne (\citeproc{ref-Warne2014}{2014}).
+It contains responses to two Likert-scale (1--5) items, \texttt{anxiety}
+and \texttt{depression}. \texttt{grade} is an \emph{ordered} factor,
+which means that the default contrasts are taken as orthogonal
+polynomials with linear (\texttt{grade.L}), quadratic
+(\texttt{grade.Q}), up to 5th degree (\texttt{grade\^{}5}) trends, which
+decompose the total effect of grade.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -19483,13 +19697,14 @@ goal is to understand the data.
 
 \subsection{Example: NLSY data}\label{sec-NLSY-mmra}
 
-The dataset \texttt{heplots::NLSY} comes from a small part of the
-National Longitudinal Survey of Youth, a series of annual surveys
-conducted by the U.S. Department of Labor to examine the transition of
-young people into the labor force. This particular subset gives measures
-of 243 children on mathematics and reading achievement and also measures
-of behavioral problems (antisocial, hyperactivity). Also available are
-the yearly income and education of the child's father.
+The dataset \texttt{NLSY} \index{NLSY data} \index{datasets!NLSY} comes
+from a small part of the National Longitudinal Survey of Youth, a series
+of annual surveys conducted by the U.S. Department of Labor to examine
+the transition of young people into the labor force. This particular
+subset gives measures of 243 children on mathematics and reading
+achievement and also measures of behavioral problems (antisocial,
+hyperactivity). Also available are the yearly income and education of
+the child's father.
 
 In this analysis the \texttt{math} and \texttt{read} scores are taken at
 the outcome variables.\footnote{Other choices are possible: we could
@@ -19860,10 +20075,12 @@ variables related to parents and teachers:
   \texttt{teacher}, number of teachers at the given site.
 \end{itemize}
 
-The dataset, given in \texttt{heplots::schooldata} contains observations
-for 70 schools.\footnote{In this, schools 1--49 were PFT sites and the
+The dataset, given in \texttt{schooldata} \index{schooldata data}
+\index{datasets!schooldata} contains observations for 70
+schools.\footnote{In this, schools 1--49 were PFT sites and the
   remaining sites 50--70 were NFT. A separate dataset
-  \texttt{heplots::schoolsites} provides other information on the
+  \texttt{schoolsites} \index{schoolsites data}
+  \index{datasets!schoolsites} provides other information on the
   schools, such as the general education style, region of the U.S., size
   of the city and that of the student population.}
 
@@ -20402,12 +20619,12 @@ each pair. These are called \emph{named} (\texttt{n}), \emph{still}
 (\texttt{na}), and \emph{sentence still} (\texttt{ss}).
 
 Rohwer's data, taken from Timm (\citeproc{ref-Timm:75}{1975}), is given
-in \texttt{heplots::Rohwer}. But there's a MANCOVA wrinkle: Performance
-on the academic tasks is well-known to vary with socioeconomic status of
-the parents or the school they attend. A simple design was to collect
-data from children in two schools, one in a low SES neighborhood
-(\(n=37\)) and the other an upper-class high SES one (\(n=32\)). The
-data look like this:
+in \texttt{Rohwer} \index{Rohwer data} \index{datasets!Rohwer}. But
+there's a MANCOVA wrinkle: Performance on the academic tasks is
+well-known to vary with socioeconomic status of the parents or the
+school they attend. A simple design was to collect data from children in
+two schools, one in a low SES neighborhood (\(n=37\)) and the other an
+upper-class high SES one (\(n=32\)). The data look like this:
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -20729,6 +20946,40 @@ argument to \texttt{lm()}.
 The strength of evidence for the predictors \texttt{na} and \texttt{ns}
 is weaker here than when tested in the full heterogeneous model.
 
+\section{What we've learned}\label{what-weve-learned-1}
+
+\begin{itemize}
+\item
+  The multivariate linear model is an extension of the (univariate)
+  general linear model. Three major forms of the multivariate linear
+  model are the MANOVA, MMRA and MANCOVA, all of which have their
+  equivalents in ANOVA, MRA and ANCOVA.
+\item
+  What the multivariate linear model offers over the univariate linear
+  model is not just more powerful statistical tests, but also
+  examinations of how the associations amongst the response variables
+  varies with the explanatory variables.
+\item
+  Just as with the general linear model, model diagnostics transfer to
+  the multivariate linear model and are important for identifying
+  potential issues in the validity of the estimated statistical model.
+\item
+  Given that the multivariate linear model can do everything that the
+  general linear model does, there is no reason to not consider the
+  multivariate linear model. Confining discussions of multivariate
+  response models to structural equation modeling may pedagogically
+  create a cognitive blind spot that the association amongst response
+  variables even \emph{can} vary with the explanatory variables. Rather
+  than something separate, for the purposes of causal inference, it
+  would be better to use structural equation modeling as a more
+  confirmatory statistical model than the multivariate linear model,
+  which is perfectly well suited for exploratory purposes.
+\item
+  Overall, we also see a glimpse of the importance of data visualization
+  in the analysis of data using the multivariate linear model. The
+  following chapter will explore this issue in more depth.
+\end{itemize}
+
 \textbf{Packages used here}:
 
 13 packages used here: broom, car, carData, dplyr, ggplot2, ggrepel,
@@ -20904,7 +21155,7 @@ ellipse of the fitted values for that term.
 
 Dividing the hypothesis matrix by the error degrees of freedom, giving
 \(\mathbf{H} / \text{df}_e\), puts this on the same scale as the
-\mathbf{E} ellipse. I refer to this as \emph{effect size scaling},
+\(\mathbf{E}\) ellipse. I refer to this as \emph{effect size scaling},
 because it is similar to an effect size index used in univariate models,
 e.g., \(ES = (\bar{y}_1 - \bar{y}_2) / s_e\) in a two-group, univariate
 design.
@@ -20924,7 +21175,7 @@ challenge and opportunity to introduce the method now called
 discriminant analysis---how to find a weighted composite of variables to
 best discriminate among existing groups.
 
-\begin{tcolorbox}[enhanced jigsaw, colframe=quarto-callout-note-color-frame, bottomrule=.15mm, opacityback=0, rightrule=.15mm, colback=white, breakable, bottomtitle=1mm, left=2mm, titlerule=0mm, toptitle=1mm, toprule=.15mm, colbacktitle=quarto-callout-note-color!10!white, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{History corner}, coltitle=black, leftrule=.75mm, arc=.35mm, opacitybacktitle=0.6]
+\begin{tcolorbox}[enhanced jigsaw, bottomtitle=1mm, toptitle=1mm, titlerule=0mm, breakable, toprule=.15mm, colframe=quarto-callout-note-color-frame, opacityback=0, leftrule=.75mm, coltitle=black, rightrule=.15mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{History corner}, arc=.35mm, bottomrule=.15mm, colbacktitle=quarto-callout-note-color!10!white, left=2mm, opacitybacktitle=0.6, colback=white]
 
 I said ``infamous'' above because Fisher published in the \emph{Annals
 of Eugenics}, was an ardent eugenicist himself, and the work of
@@ -21442,7 +21693,7 @@ groups relative to variation within groups.
 Canonical discriminant analysis is typically carried out in conjunction
 with a one-way MANOVA design. The
 \textcolor{brown}{\texttt{\textbf{candisc}}} package
-(\citeproc{ref-R-candisc}{Friendly \& Fox, 2024})
+(\citeproc{ref-R-candisc}{Friendly \& Fox, 2025})
 \index{candisc package} \index{packages!candisc} generalizes this to
 multi-factor designs in the \texttt{candisc()} function. For any given
 term in a \texttt{"mlm"}, the \emph{generalized canonical discriminant
@@ -21525,8 +21776,10 @@ canonical scores.
 Thus, the two weighted sums for the canonical variates, using
 mean-centered standardized scores, can be shown as follows:
 
-Can1 = 0.43 x S.len + 0.52 x S.wid + -0.95 x P.len + -0.58 x P.wid Can2
-= 0.01 x S.len + 0.74 x S.wid + -0.4 x P.len + 0.58 x P.wid
+\begin{eqnarray*}
+\text{Can}_1 & = 0.43 \cdot \text{S.length} + 0.52 \cdot \text{S.wid} - 0.95 \cdot \text{P.length} - 0.58 \cdot \text{P.length} \\
+\text{Can}_2 & = 0.01 \cdot \text{S.length} + 0.74 \cdot \text{S.wid} + 0.4 \cdot \text{P.length} + 0.58 \cdot \text{P.length}
+\end{eqnarray*}
 
 \subsection{Canonical scores plot}\label{canonical-scores-plot}
 
@@ -21540,8 +21793,6 @@ reflects the correlation of the observed response on the canonical
 dimension. For ease of interpretation I flipped the sign of the first
 canonical dimension, so that the positive \texttt{Can1} direction
 corresponds to larger flowers.
-
-\textbf{TODO}: \texttt{var.labels} not a graphical parameter
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -21571,7 +21822,9 @@ corresponds to larger flowers.
 }
 
 \caption{\label{fig-iris-candisc}Plot of canonical scores for the iris
-data.}
+data. Ellipses give 68\% coverage data ellipses for the canonical
+scores. Variable vectors make angles with the Can1 and Can2 axes
+indicating their correlations.}
 
 \end{figure}%
 
@@ -21620,9 +21873,11 @@ interpretation and scaled in length to fill the plot window.
        \AttributeTok{var.labels =}\NormalTok{ vars,}
        \AttributeTok{var.col =} \StringTok{"black"}\NormalTok{,}
        \AttributeTok{var.lwd =} \DecValTok{2}\NormalTok{,}
+       \AttributeTok{var.cex =} \FloatTok{1.25}\NormalTok{,}
        \AttributeTok{fill =} \ConstantTok{TRUE}\NormalTok{, }\AttributeTok{fill.alpha =} \FloatTok{0.2}\NormalTok{,}
        \AttributeTok{rev.axes =} \FunctionTok{c}\NormalTok{(}\ConstantTok{TRUE}\NormalTok{, }\ConstantTok{FALSE}\NormalTok{),}
-       \AttributeTok{xlim =} \FunctionTok{c}\NormalTok{(}\SpecialCharTok{{-}}\DecValTok{10}\NormalTok{, }\DecValTok{10}\NormalTok{))}
+       \AttributeTok{xlim =} \FunctionTok{c}\NormalTok{(}\SpecialCharTok{{-}}\DecValTok{10}\NormalTok{, }\DecValTok{10}\NormalTok{),}
+       \AttributeTok{cex.lab =} \FloatTok{1.5}\NormalTok{)}
 \end{Highlighting}
 \end{Shaded}
 
@@ -22389,7 +22644,7 @@ for the High than the Low group, indicating greater relation with the
 SAT score. As well, the error ellipses show that on these measures,
 error variation is somewhat smaller in the low SES group.
 
-\section{What We Have Learned}\label{what-we-have-learned-5}
+\section{What have we learned?}\label{what-have-we-learned-7}
 
 \begin{itemize}
 \item
@@ -22439,14 +22694,6 @@ error variation is somewhat smaller in the low SES group.
   making it more interpretable, turning the complexity of multivariate
   analysis into a comprehensible visual narrative.
 \end{itemize}
-
-\textbf{Packages}:
-
-\begin{verbatim}
-#> Writing packages to  C:/R/Projects/Vis-MLM-book/bib/pkgs.txt
-#> 9  packages used here:
-#>  broom, candisc, car, carData, dplyr, ggplot2, heplots, knitr, tidyr
-\end{verbatim}
 
 \chapter{Visualizing Equality of Covariance Matrices}\label{sec-eqcov}
 
@@ -22784,10 +23031,10 @@ while the differences in the covariances appear as differences in
 \emph{shape}.
 
 To preview a main example, Figure~\ref{fig-peng-covEllipse0} shows data
-ellipses for the main size variables in the
-\texttt{palmerpenguins::penguins} data. \texttt{heplots::covEllipses()}
-is specialized for viewing the relations among the data ellipsoids
-representing the sample covariance matrices,
+ellipses for the main size variables in the Penguins data
+(\texttt{peng}). \texttt{heplots::covEllipses()} is specialized for
+viewing the relations among the data ellipsoids representing the sample
+covariance matrices,
 \(\mathbf{S}_1 = \mathbf{S}_2 = \cdots = \mathbf{S}_g\). It draws the
 data ellipse for each group, and also for the pooled within-group
 \(\mathbf{S}_p\), as shown in Figure~\ref{fig-peng-covEllipse0} for bill
@@ -23300,10 +23547,12 @@ requires consideration of the \emph{joint influence} structure across
 all responses simultaneously, accounting for the correlation patterns
 among dependent variables and the potential for observations to be
 influential in some linear combinations of responses while appearing
-benign when examined multivariate. This multivariate perspective can
-reveal influence patterns that would otherwise remain hidden, as an
-observation might exert substantial leverage on the overall model fit
-through subtle but systematic effects across multiple responses.
+benign when examined multivariate.
+
+This multivariate perspective can reveal influence patterns that would
+otherwise remain hidden, as an observation might exert substantial
+leverage on the overall model fit through subtle but systematic effects
+across multiple responses.
 
 Detecting outliers and influential observations has now progressed to
 the point where the methods described below can usefully be applied to
@@ -23316,13 +23565,14 @@ In this chapter we use the following packages. Load them now
 
 \begin{Shaded}
 \begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(dplyr)}
+\FunctionTok{library}\NormalTok{(tidyr)}
 \FunctionTok{library}\NormalTok{(car)}
 \FunctionTok{library}\NormalTok{(heplots)}
 \FunctionTok{library}\NormalTok{(candisc)}
 \FunctionTok{library}\NormalTok{(mvinfluence)}
 \FunctionTok{library}\NormalTok{(ggplot2)}
-\FunctionTok{library}\NormalTok{(dplyr)}
-\FunctionTok{library}\NormalTok{(tidyr)}
+\FunctionTok{library}\NormalTok{(patchwork)}
 \end{Highlighting}
 \end{Shaded}
 
@@ -23343,19 +23593,23 @@ full sample to that statistic calculated when case \(i\) is deleted. The
 Barrett-Ling approach generalized this to the case of deleting a set
 \(I\) of \(m \ge 1\) cases. This can be useful because some cases can
 ``mask'' the influence of others in the sense that when one is deleted,
-others become much more influential.
+others become much more influential. However, in most cases the default
+of deleting individual observations (\(m=1\)) is sufficent
 
 The following sections describe the notation and measures used in the
 calculations.
 
 \subsection{Notation}\label{notation}
 
-Let \(\mathbf{X}\) be the model matrix in the multivariate linear model,
+It is useful to define the notation used to designate terms in the model
+calculated from the complete dataset versus those calculated with one or
+more observations excluded. Let \(\mathbf{X}\) be the model matrix in
+the multivariate linear model,
 \(\mathbf{Y}_{n \times p} = \mathbf{X}_{n \times q} \; \mathbf{B}_{q \times p} + \mathbf{E}_{n \times p}\).
 The usual least squares estimate of \(\mathbf{B}\) is given by
 \(\mathbf{B} = (\mathbf{X}^\top \mathbf{X})^{-1}  \mathbf{X}^\top \mathbf{Y}\).
 
-Then let
+Then let:
 
 \begin{itemize}
 \tightlist
@@ -23449,11 +23703,271 @@ a function, \texttt{FUN}, either \texttt{det()} or \texttt{tr()} to
 calculate a measure of ``size'', as in
 
 \begin{verbatim}
-  H <- sapply(x$H, FUN)
-  Q <- sapply(x$Q, FUN)
-  L <- sapply(x$L, FUN)
-  R <- sapply(x$R, FUN)
+H <- sapply(x$H, FUN)
+Q <- sapply(x$Q, FUN)
+L <- sapply(x$L, FUN)
+R <- sapply(x$R, FUN)
 \end{verbatim}
+
+This is the same trick used in the calculation of the various
+multivariate test statistics like Wilks' Lambda and Pillai's trace.
+
+\section{Toy example}\label{toy-example}
+
+To illustrate these ides, this example, from Barrett
+(\citeproc{ref-Barrett:2003}{2003}), considers the simplest case, of one
+predictor (\texttt{x}) and two response variables, \texttt{y1} and
+\texttt{y2}.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{Toy }\OtherTok{\textless{}{-}} \FunctionTok{tibble}\NormalTok{(}
+   \AttributeTok{case =} \DecValTok{1}\SpecialCharTok{:}\DecValTok{9}\NormalTok{,}
+   \AttributeTok{x =}  \FunctionTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{,    }\DecValTok{1}\NormalTok{,    }\DecValTok{2}\NormalTok{,    }\DecValTok{2}\NormalTok{,    }\DecValTok{3}\NormalTok{,    }\DecValTok{3}\NormalTok{,    }\DecValTok{4}\NormalTok{,    }\DecValTok{4}\NormalTok{,    }\DecValTok{10}\NormalTok{),}
+   \AttributeTok{y1 =} \FunctionTok{c}\NormalTok{(}\FloatTok{0.10}\NormalTok{, }\FloatTok{1.90}\NormalTok{, }\FloatTok{1.00}\NormalTok{, }\FloatTok{2.95}\NormalTok{, }\FloatTok{2.10}\NormalTok{, }\FloatTok{4.00}\NormalTok{, }\FloatTok{2.95}\NormalTok{, }\FloatTok{4.95}\NormalTok{, }\FloatTok{10.00}\NormalTok{),}
+   \AttributeTok{y2 =} \FunctionTok{c}\NormalTok{(}\FloatTok{0.10}\NormalTok{, }\FloatTok{1.80}\NormalTok{, }\FloatTok{1.00}\NormalTok{, }\FloatTok{2.93}\NormalTok{, }\FloatTok{2.00}\NormalTok{, }\FloatTok{4.10}\NormalTok{, }\FloatTok{3.05}\NormalTok{, }\FloatTok{4.93}\NormalTok{, }\FloatTok{10.00}\NormalTok{)}
+\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+A quick peek at the data indicates that \texttt{y1} and \texttt{y2} are
+nearly perfectly correlated with each other. Both of these are also
+strongly linear with \texttt{x} and there is one extreme point (case 9).
+The data is pecuiliar, but looking at these pairwise plots doesn't
+suggest that anything is terribly wrong. In the plots of \texttt{y1} and
+\texttt{y2} agains \texttt{x}, case 9 simply looks like a good leverage
+point (Section~\ref{sec-leverage}).
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{scatterplotMatrix}\NormalTok{(}\SpecialCharTok{\textasciitilde{}}\NormalTok{ y1 }\SpecialCharTok{+}\NormalTok{ y2 }\SpecialCharTok{+}\NormalTok{ x, }\AttributeTok{data=}\NormalTok{Toy, }
+  \AttributeTok{cex=}\DecValTok{2}\NormalTok{,}
+  \AttributeTok{col =} \StringTok{"blue"}\NormalTok{, }\AttributeTok{pch =} \DecValTok{16}\NormalTok{,}
+  \AttributeTok{id =} \FunctionTok{list}\NormalTok{(}\AttributeTok{n=}\DecValTok{1}\NormalTok{, }\AttributeTok{cex=}\DecValTok{2}\NormalTok{), }
+  \AttributeTok{regLine =} \FunctionTok{list}\NormalTok{(}\AttributeTok{lwd =} \DecValTok{2}\NormalTok{, }\AttributeTok{col=}\StringTok{"red"}\NormalTok{),}
+  \AttributeTok{smooth =} \ConstantTok{FALSE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{figure}[htb!]
+
+\centering{
+
+\includegraphics[width=1\linewidth,height=\textheight,keepaspectratio]{figs/Ch13/fig-toy-scatmat-1.pdf}
+
+}
+
+\caption{\label{fig-toy-scatmat}Scatterplot matrix for the toy example.}
+
+\end{figure}%
+
+For this example, we fit the univariate models with \texttt{y1} and
+\texttt{y2} separately and then the multivariate model.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{Toy.lm1 }\OtherTok{\textless{}{-}} \FunctionTok{lm}\NormalTok{(y1 }\SpecialCharTok{\textasciitilde{}}\NormalTok{ x, }\AttributeTok{data=}\NormalTok{Toy)}
+\NormalTok{Toy.lm2 }\OtherTok{\textless{}{-}} \FunctionTok{lm}\NormalTok{(y2 }\SpecialCharTok{\textasciitilde{}}\NormalTok{ x, }\AttributeTok{data=}\NormalTok{Toy)}
+\NormalTok{Toy.mlm }\OtherTok{\textless{}{-}} \FunctionTok{lm}\NormalTok{(}\FunctionTok{cbind}\NormalTok{(y1, y2) }\SpecialCharTok{\textasciitilde{}}\NormalTok{ x, }\AttributeTok{data=}\NormalTok{Toy)}
+\end{Highlighting}
+\end{Shaded}
+
+\subsection{Cook's D}\label{cooks-d}
+
+First, let's examine the Cook's D statistics for the models. Note that
+the function \texttt{cooks.distance()} invokes
+\texttt{stats::cooks.distance.lm()} for the univariate response models,
+but invokes \texttt{mvinfluence::cooks.distance.mlm()} for the
+multivariate model.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{df }\OtherTok{\textless{}{-}}\NormalTok{ Toy}
+\NormalTok{df}\SpecialCharTok{$}\NormalTok{D1  }\OtherTok{\textless{}{-}} \FunctionTok{cooks.distance}\NormalTok{(Toy.lm1)}
+\NormalTok{df}\SpecialCharTok{$}\NormalTok{D2  }\OtherTok{\textless{}{-}} \FunctionTok{cooks.distance}\NormalTok{(Toy.lm2)}
+\NormalTok{df}\SpecialCharTok{$}\NormalTok{D12 }\OtherTok{\textless{}{-}} \FunctionTok{cooks.distance}\NormalTok{(Toy.mlm)}
+
+\NormalTok{df}
+\CommentTok{\#\textgreater{} \# A tibble: 9 x 7}
+\CommentTok{\#\textgreater{}    case     x    y1    y2      D1      D2    D12}
+\CommentTok{\#\textgreater{}   \textless{}int\textgreater{} \textless{}dbl\textgreater{} \textless{}dbl\textgreater{} \textless{}dbl\textgreater{}   \textless{}dbl\textgreater{}   \textless{}dbl\textgreater{}  \textless{}dbl\textgreater{}}
+\CommentTok{\#\textgreater{} 1     1     1  0.1   0.1  0.121   0.118   0.125 }
+\CommentTok{\#\textgreater{} 2     2     1  1.9   1.8  0.124   0.103   0.298 }
+\CommentTok{\#\textgreater{} 3     3     2  1     1    0.0901  0.0886  0.0906}
+\CommentTok{\#\textgreater{} 4     4     2  2.95  2.93 0.0829  0.0819  0.0831}
+\CommentTok{\#\textgreater{} 5     5     3  2.1   2    0.0548  0.0673  0.182 }
+\CommentTok{\#\textgreater{} 6     6     3  4     4.1  0.0692  0.0852  0.232 }
+\CommentTok{\#\textgreater{} 7     7     4  2.95  3.05 0.0793  0.0651  0.203 }
+\CommentTok{\#\textgreater{} 8     8     4  4.95  4.93 0.0665  0.0643  0.0690}
+\CommentTok{\#\textgreater{} 9     9    10 10    10    0.00159 0.00830 3.22}
+\end{Highlighting}
+\end{Shaded}
+
+The only thing remarkable here is for case 9: The univariate Cook's Ds,
+\texttt{D1} and \texttt{D2} are very small, yet the multivariate
+statistic, \texttt{D12} is over 10 times the next smallest value.
+
+We can see how case 9 stands out in the influence plots. It has an
+extreme hat value. But, because it's residual is very small, it does not
+have much influence on the fitted models for either \texttt{y1} or
+\texttt{y2}. Neither of these plots suggest that anything is terribly
+wrong with the univariate models---none of the points are in the
+``danger'' zones of the upper- and lower-right corners.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ip1 }\OtherTok{\textless{}{-}}\NormalTok{ car}\SpecialCharTok{::}\FunctionTok{influencePlot}\NormalTok{(Toy.lm1, }
+                          \AttributeTok{id =} \FunctionTok{list}\NormalTok{(}\AttributeTok{cex=}\FloatTok{1.5}\NormalTok{), }\AttributeTok{cex.lab =} \FloatTok{1.5}\NormalTok{)}
+\NormalTok{ip2 }\OtherTok{\textless{}{-}}\NormalTok{ car}\SpecialCharTok{::}\FunctionTok{influencePlot}\NormalTok{(Toy.lm2, }
+                          \AttributeTok{id =} \FunctionTok{list}\NormalTok{(}\AttributeTok{cex=}\FloatTok{1.5}\NormalTok{), }\AttributeTok{cex.lab =} \FloatTok{1.5}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{figure}[htb!]
+
+\centering{
+
+\includegraphics[width=1\linewidth,height=\textheight,keepaspectratio]{figs/Ch13/fig-toy-inflplots-1.pdf}
+
+}
+
+\caption{\label{fig-toy-inflplots}Influence plots for the univariate
+models for \texttt{y1} and \texttt{y2}}
+
+\end{figure}%
+
+Contrast these results with what we get for the model for \texttt{y1}
+and \texttt{y2} jointly. In the multivariate version,
+\texttt{mvinfluence::influencePlot.mlm()} plots the squared studentized
+residual (denoted \texttt{Q} in the output) against the hat value,
+referred to as a `type = ``stres'' plot.\footnote{Similar to the
+  univariate version, hat values greater than 2 or 3 times their
+  average, \(\bar{h} = p/n\) here, are considered large in the
+  multivariate case. Values of the squared studentized residual \(R_i\)
+  are calibrated by the Beta distribution,
+  \(\text{Beta}(\alpha=0.95, q/2, (n-p-q)/2)\).} Case 9 stands in
+Figure~\ref{fig-toy-inflplot-mlm-stres} out as wildly influential on the
+joint regression model.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{influencePlot}\NormalTok{(Toy.mlm, }\AttributeTok{type =} \StringTok{"stres"}\NormalTok{,}
+              \AttributeTok{id.n=}\DecValTok{2}\NormalTok{, }\AttributeTok{id.cex =} \FloatTok{1.3}\NormalTok{,}
+              \AttributeTok{cex.lab =} \FloatTok{1.5}\NormalTok{)}
+\CommentTok{\#\textgreater{}       H     Q CookD     L     R}
+\CommentTok{\#\textgreater{} 1 0.202 0.177 0.125 0.253 0.222}
+\CommentTok{\#\textgreater{} 2 0.202 0.422 0.298 0.253 0.529}
+\CommentTok{\#\textgreater{} 6 0.113 0.587 0.232 0.127 0.662}
+\CommentTok{\#\textgreater{} 9 0.852 1.082 3.225 5.750 7.301}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{figure}[htb!]
+
+\centering{
+
+\includegraphics[width=0.8\linewidth,height=\textheight,keepaspectratio]{figs/Ch13/fig-toy-inflplot-mlm-stres-1.pdf}
+
+}
+
+\caption{\label{fig-toy-inflplot-mlm-stres}Studentized residual
+influence plot for the multivariate model
+\texttt{(y1,\ y2)\ \textasciitilde{}\ x}. Dotted vertical lines mark
+large hat values, \(H > {2, 3} p/n\). The dotted horizontal line marks
+large values of the squared studentized residual.}
+
+\end{figure}%
+
+An alternative form of the multivariate influence plot
+(Figure~\ref{fig-toy-inflplot-mlm-LR}) uses the leverage (\texttt{L})
+and residual (\texttt{R}) components (\texttt{type\ =\ "LR"}). Because
+influence is the product of leverage and residual, a plot of \(\log(L)\)
+versus \(\log(R)\) has the attractive property that contours of constant
+Cook's distance fall on diagonal lines with slope = -1. Adjacent
+reference lines represent constant \emph{multiples} of influence.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{influencePlot}\NormalTok{(Toy.mlm, }\AttributeTok{type=}\StringTok{"LR"}\NormalTok{,}
+              \AttributeTok{id.n=}\DecValTok{2}\NormalTok{, }\AttributeTok{id.cex =} \FloatTok{1.3}\NormalTok{,}
+              \AttributeTok{cex.lab =} \FloatTok{1.5}\NormalTok{) }\OtherTok{{-}\textgreater{}}\NormalTok{ infl}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{figure}[htb!]
+
+\centering{
+
+\includegraphics[width=0.8\linewidth,height=\textheight,keepaspectratio]{figs/Ch13/fig-toy-inflplot-mlm-LR-1.pdf}
+
+}
+
+\caption{\label{fig-toy-inflplot-mlm-LR}LR plot of \(\log(L)\) versus
+\(\log(R)\) for the multivariate model
+\texttt{(y1,\ y2)\ \textasciitilde{}\ x}. Dotted lines show contours of
+constant Cook's distance.}
+
+\end{figure}%
+
+\subsection{DFBETAS}\label{dfbetas}
+
+The DFBETAS statistics give the estimated change in the regression
+coefficients when each case is deleted in turn. We can gain some insight
+as to why case 9 is unremarkable in the univariate regressions by
+plotting these, shown in Figure~\ref{fig-toy-dfbetas}. The values come
+from \texttt{stats::dfbetas()} and return the standardized values.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{db1 }\OtherTok{\textless{}{-}} \FunctionTok{as.data.frame}\NormalTok{(}\FunctionTok{dfbetas}\NormalTok{(Toy.lm1))}
+\NormalTok{gg1 }\OtherTok{\textless{}{-}} \FunctionTok{ggplot}\NormalTok{(}\AttributeTok{data =}\NormalTok{ db1, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x=}\StringTok{\textasciigrave{}}\AttributeTok{(Intercept)}\StringTok{\textasciigrave{}}\NormalTok{, }\AttributeTok{y=}\NormalTok{x, }\AttributeTok{label=}\FunctionTok{rownames}\NormalTok{(db1))) }\SpecialCharTok{+}
+  \FunctionTok{geom\_point}\NormalTok{(}\AttributeTok{size=}\FloatTok{1.5}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{geom\_label}\NormalTok{(}\AttributeTok{size=}\DecValTok{6}\NormalTok{, }\AttributeTok{fill=}\StringTok{"pink"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{xlab}\NormalTok{(}\FunctionTok{expression}\NormalTok{(}\FunctionTok{paste}\NormalTok{(}\StringTok{"Deletion Intercept  "}\NormalTok{, b[}\DecValTok{0}\NormalTok{]))) }\SpecialCharTok{+}
+  \FunctionTok{ylab}\NormalTok{(}\FunctionTok{expression}\NormalTok{(}\FunctionTok{paste}\NormalTok{(}\StringTok{"Deletion Slope  "}\NormalTok{, b[}\DecValTok{1}\NormalTok{]))) }\SpecialCharTok{+}
+  \FunctionTok{ggtitle}\NormalTok{(}\StringTok{"dfbetas for y1"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{theme\_bw}\NormalTok{(}\AttributeTok{base\_size =} \DecValTok{16}\NormalTok{)}
+
+\NormalTok{db2 }\OtherTok{\textless{}{-}} \FunctionTok{as.data.frame}\NormalTok{(}\FunctionTok{dfbetas}\NormalTok{(Toy.lm2))}
+\NormalTok{gg2 }\OtherTok{\textless{}{-}} \FunctionTok{ggplot}\NormalTok{(}\AttributeTok{data =}\NormalTok{ db2, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x=}\StringTok{\textasciigrave{}}\AttributeTok{(Intercept)}\StringTok{\textasciigrave{}}\NormalTok{, }\AttributeTok{y=}\NormalTok{x, }\AttributeTok{label=}\FunctionTok{rownames}\NormalTok{(db2))) }\SpecialCharTok{+}
+  \FunctionTok{geom\_point}\NormalTok{(}\AttributeTok{size=}\FloatTok{1.5}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{geom\_label}\NormalTok{(}\AttributeTok{size=}\DecValTok{6}\NormalTok{, }\AttributeTok{fill=}\StringTok{"pink"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{xlab}\NormalTok{(}\FunctionTok{expression}\NormalTok{(}\FunctionTok{paste}\NormalTok{(}\StringTok{"Deletion Intercept  "}\NormalTok{, b[}\DecValTok{0}\NormalTok{]))) }\SpecialCharTok{+}
+  \FunctionTok{ylab}\NormalTok{(}\FunctionTok{expression}\NormalTok{(}\FunctionTok{paste}\NormalTok{(}\StringTok{"Deletion Slope  "}\NormalTok{, b[}\DecValTok{1}\NormalTok{]))) }\SpecialCharTok{+}
+  \FunctionTok{ggtitle}\NormalTok{(}\StringTok{"dfbetas for y2"}\NormalTok{) }\SpecialCharTok{+}
+  \FunctionTok{theme\_bw}\NormalTok{(}\AttributeTok{base\_size =} \DecValTok{16}\NormalTok{)}
+
+\NormalTok{gg1 }\SpecialCharTok{+}\NormalTok{ gg2}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{figure}[htb!]
+
+\centering{
+
+\includegraphics[width=1\linewidth,height=\textheight,keepaspectratio]{figs/Ch13/fig-toy-dfbetas-1.pdf}
+
+}
+
+\caption{\label{fig-toy-dfbetas}}
+
+\end{figure}%
+
+The values for case 9 are nearly (0, 0) in both plots, indicating that
+deleting this case has negligible effect in both \emph{univariate}
+regressions. Yet, case 9 appeared very influential in the multivariate
+model. Why did this happen?
+
+In this contrived example the problem arose from the very high
+correlation between \texttt{y1} and \texttt{y2}, \(r = 0.9997\) as can
+be seen in the (y1, y2) panel in Figure~\ref{fig-toy-scatmat}. Although
+each of the \texttt{y1} and \texttt{y2} values for the high-leverage
+cases are in-line with the univariate regressions (and thus have small
+univariate Cook's Ds), the ill-conditioning magnifies small
+discrepancies in their positions, making the multivariate Cook's D
+larger.
+
+\section{Example: NLSY data}\label{example-nlsy-data}
 
 \section{Robust Estimation}\label{sec-robust-estimation}
 
@@ -24329,10 +24843,11 @@ Quarto 1.7.29
       Version: 1.7.29
       CodePage: 1252
 [>] Checking tools....................OK
-      TinyTeX: (not installed)
+      TinyTeX: (external install)
       Chromium: (not installed)
 [>] Checking LaTeX....................OK
-      Tex:  (not detected)
+      Using: TinyTex
+      Version: 2025
 [>] Checking Chrome Headless....................OK
       Using: Chrome found on system
       Source: Windows Registry
@@ -24366,10 +24881,10 @@ development versions are indicated as ``local'' in the \texttt{source}
 column.
 
 \begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1584}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.0792}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1089}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.6535}}@{}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1553}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.0777}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1068}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.6602}}@{}}
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
 package
@@ -24386,7 +24901,7 @@ source
 \endlastfoot
 bayestestR & 0.16.1 & 2025-07-01 & CRAN \\
 broom & 1.0.8 & 2025-03-28 & CRAN \\
-candisc & 0.9.0 & 2024-05-06 & CRAN \\
+candisc & 0.9.2 & 2025-07-29 & local \\
 car & 3.1-3 & 2024-09-27 & CRAN \\
 carData & 3.0-5 & 2022-01-06 & CRAN \\
 corpcor & 1.6.10 & 2021-09-16 & CRAN \\
@@ -24407,6 +24922,8 @@ gganimate & 1.0.10 & 2025-06-21 & CRAN \\
 ggbiplot & 0.6.2 & 2024-01-08 & CRAN \\
 ggdensity & 1.0.0 & 2023-02-09 & CRAN \\
 ggeffects & 2.3.0 & 2025-06-13 & CRAN \\
+gggda & 0.1.1 & 2025-07-27 & Github
+(corybrunson/gggda@b1b3b56ce66aa98e4d447c4bfe97f05fd44a3418) \\
 ggpcp & 0.2.0 & 2022-11-28 & CRAN \\
 ggplot2 & 3.5.2 & 2025-04-09 & CRAN \\
 ggpubr & 0.6.1 & 2025-06-27 & CRAN \\
@@ -24607,6 +25124,10 @@ variances. \emph{Journal of the American Statistical Association},
 Brown, P. J., \& Zidek, J. V. (1980). Adaptive multivariate ridge
 regression. \emph{The Annals of Statistics}, \emph{8}(1), 64--74.
 \url{http://www.jstor.org/stable/2240743}
+
+\bibitem[\citeproctext]{ref-R-gggda}
+Brunson, J. C., \& Gracey, J. (2025). \emph{Gggda: A ggplot2 extension
+for geometric data analysis}. \url{https://github.com/corybrunson/gggda}
 
 \bibitem[\citeproctext]{ref-Buja-etal-2005}
 Buja, A., Cook, D., Asimov, D., \& Hurley, C. (2005). Computational
@@ -24967,7 +25488,7 @@ Friendly, M. (2024). \emph{Genridge: Generalized ridge trace plots for
 ridge regression}. \url{https://github.com/friendly/genridge}
 
 \bibitem[\citeproctext]{ref-R-candisc}
-Friendly, M., \& Fox, J. (2024). \emph{Candisc: Visualizing generalized
+Friendly, M., \& Fox, J. (2025). \emph{Candisc: Visualizing generalized
 canonical discriminant and canonical correlation analysis}.
 \url{https://github.com/friendly/candisc/}
 
@@ -25371,11 +25892,6 @@ Marquardt, D. W. (1970). Generalized inverses, ridge regression, biased
 linear estimation, and nonlinear estimation. \emph{Technometrics},
 \emph{12}, 591--612.
 
-\bibitem[\citeproctext]{ref-MarquardtSnee1975}
-Marquardt, D. W., \& Snee, R. D. (1975). Ridge regression in practice.
-\emph{The American Statistician}, \emph{29}(1), 3--20.
-\url{https://doi.org/10.1080/00031305.1975.10479105}
-
 \bibitem[\citeproctext]{ref-MartiLaguna2003}
 Martí, R., \& Laguna, M. (2003). Heuristics and meta-heuristics for
 2-layer straight line crossing minimization. \emph{Discrete Applied
@@ -25501,6 +26017,11 @@ via a coefficient of variation. \emph{American Educational Research
 Journal}, \emph{14}(4), 493--498.
 \url{https://doi.org/10.3102/00028312014004493}
 
+\bibitem[\citeproctext]{ref-Rousseeuw-etal:2012}
+Rousseeuw, P. J., Ruits, I., \& Tukey, J. W. (1999). The bagplot: A
+bivariate boxplot. \emph{The American Statistician}, \emph{53}(4),
+382--387.
+
 \bibitem[\citeproctext]{ref-R-lattice}
 Sarkar, D. (2025). \emph{Lattice: Trellis graphics for r}.
 \url{https://lattice.r-forge.r-project.org/}
@@ -25598,6 +26119,10 @@ education and psychology}. Wadsworth (Brooks/Cole).
 Torgerson, W. S. (1952). Multidimensional scaling: I. Theory and method.
 \emph{Psychometrika}, \emph{17}(4), 401--419.
 \url{https://doi.org/10.1007/bf02288916}
+
+\bibitem[\citeproctext]{ref-Tufte:83}
+Tufte, E. R. (1983). \emph{The visual display of quantitative
+information}. Graphics Press.
 
 \bibitem[\citeproctext]{ref-VanderPlas2023}
 VanderPlas, S., Ge, Y., Unwin, A., \& Hofmann, H. (2023). Penguins go
@@ -25708,6 +26233,8 @@ Statistical Association}, \emph{87}(418), 425--429.
 
 \subsubsection*{Package used}\label{package-used}
 \addcontentsline{toc}{subsubsection}{Package used}
+
+\end{example}
 
 
 
