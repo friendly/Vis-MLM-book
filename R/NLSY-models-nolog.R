@@ -89,4 +89,21 @@ heplot(NLSY.rlm,
        label.pos = c("bottom", "top", "top", "top", "bottom")
 )
 
-influencePlot(NLSY.mod1)
+op <- par(mar = c(5,5,1,1))
+influencePlot(NLSY.mod1,
+              id.n = 3, id.cex = 1.25,
+              cex.lab = 1.5)
+par(op)
+
+influencePlot(NLSY.mod1, type = "LR", 
+              id.n = 3, id.cex = 1.25,
+              cex.lab = 1.5,
+              ylim = c(-8, 3))
+
+
+
+# gives a peculiar plot
+influencePlot(NLSY.rlm,
+              id.cex = 1.25,
+              cex.lab = 1.5)
+
