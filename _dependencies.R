@@ -56,7 +56,7 @@ pak::pak(c(Packages, "fs", "mclust", "flextable"))
 # `fs` appears in `fix-pkg-cites.R`
 # `mclust` appears in `09-hotelling.qmd`
 # 
-# pak::repo_add(RForge = "http://R-Forge.R-project.org")
+pak::repo_add(RForge = "http://R-Forge.R-project.org")
 pak::pak(c(
   'gmonette/spida2',
   'gmonette/spida',
