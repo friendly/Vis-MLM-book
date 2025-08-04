@@ -377,7 +377,8 @@ window.Quarto = {
   </ul>
 </li>
   <li><a href="#example-nlsy-data" id="toc-example-nlsy-data" class="nav-link" data-scroll-target="#example-nlsy-data"><span class="header-section-number">13.3</span> Example: NLSY data</a></li>
-  <li><a href="#sec-robust-estimation" id="toc-sec-robust-estimation" class="nav-link" data-scroll-target="#sec-robust-estimation"><span class="header-section-number">13.4</span> Robust Estimation</a></li>
+  <li><a href="#example-penguin-data" id="toc-example-penguin-data" class="nav-link" data-scroll-target="#example-penguin-data"><span class="header-section-number">13.4</span> Example: Penguin data</a></li>
+  <li><a href="#sec-robust-estimation" id="toc-sec-robust-estimation" class="nav-link" data-scroll-target="#sec-robust-estimation"><span class="header-section-number">13.5</span> Robust Estimation</a></li>
   </ul><div class="toc-actions"><ul><li><a href="https://github.com/friendly/vis-MLM-book/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
@@ -605,7 +606,7 @@ Figure&nbsp;13.4: LR plot of <span class="math inline">\(\log(L)\)</span> versus
 <span></span>
 <span><span class="va">gg1</span> <span class="op">+</span> <span class="va">gg2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details><div class="cell-output-display">
-<div id="fig-toy-dfbetas" class="quarto-float quarto-figure quarto-figure-center anchored" width="100%" data-fig-align="center">
+<div id="fig-toy-dfbetas" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center" width="100%">
 <figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-toy-dfbetas-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <img src="figs/Ch13/fig-toy-dfbetas-1.png" id="fig-toy-dfbetas" class="img-fluid quarto-figure quarto-figure-center anchored figure-img" style="width:100.0%">
 </div>
@@ -619,14 +620,16 @@ Figure&nbsp;13.5
 <p>In this contrived example, the problem arose from the very high correlation between <code>y1</code> and <code>y2</code>, <span class="math inline">\(r = 0.9997\)</span> as can be seen in the (y1, y2) panel in <a href="#fig-toy-scatmat" class="quarto-xref">Figure&nbsp;<span>13.1</span></a>. Although each of the <code>y1</code> and <code>y2</code> values for the high-leverage cases are in-line with the univariate regressions (and thus have small univariate Cook’s Ds), the ill-conditioning magnifies small discrepancies in their positions, making the multivariate Cook’s D larger. And that’s the solution to the Mysterious Case 9.</p>
 </section></section><section id="example-nlsy-data" class="level2" data-number="13.3"><h2 data-number="13.3" class="anchored" data-anchor-id="example-nlsy-data">
 <span class="header-section-number">13.3</span> Example: NLSY data</h2>
-<p>The <code><a href="https://friendly.github.io/heplots/reference/NLSY.html">heplots::NLSY</a></code> data introduced in <a href="10-mlm-review.html#sec-NLSY-mmra" class="quarto-xref"><span>Section 10.5.1</span></a> provides a more realistic example of how the <em>multivariate</em> influence measures and their plots contribute to understanding multivariate data. Some plots were suggested there (<a href="10-mlm-review.html#fig-NLSY-scat1" class="quarto-xref">Figure&nbsp;<span>10.10</span></a>) to identify “noteworthy” points.</p>
+<p>The <code><a href="https://friendly.github.io/heplots/reference/NLSY.html">heplots::NLSY</a></code> data introduced in <a href="10-mlm-review.html#sec-NLSY-mmra" class="quarto-xref"><span>Section 10.5.1</span></a> provides a more realistic example of how the <em>multivariate</em> influence measures and their plots contribute to understanding multivariate data. Some plots were suggested there (<a href="10-mlm-review.html#fig-NLSY-scat1" class="quarto-xref">Figure&nbsp;<span>10.10</span></a>) to identify “noteworthy” points. The model <code>NLSY.mod1</code> fits the child’s reading and math scores using parents’ education:</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb11" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">NLSY</span>, package <span class="op">=</span> <span class="st">"heplots"</span><span class="op">)</span></span>
 <span><span class="va">NLSY.mod1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">read</span>, <span class="va">math</span><span class="op">)</span> <span class="op">~</span> <span class="va">income</span> <span class="op">+</span> <span class="va">educ</span>, </span>
 <span>                data <span class="op">=</span> <span class="va">NLSY</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<p>For influence plots, the <code>id.method = "noteworthy"</code> method for point labeling selects observations with large values for <em>any</em> of the standardized residual, hat value or Cook’s D, so 6 points are labeled in <a href="#fig-NLSY-inflplot1" class="quarto-xref">Figure&nbsp;<span>13.6</span></a>.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb12" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/car/man/influencePlot.html">influencePlot</a></span><span class="op">(</span><span class="va">NLSY.mod1</span>,</span>
+<span>              id.method <span class="op">=</span> <span class="st">"noteworthy"</span>,</span>
 <span>              id.n <span class="op">=</span> <span class="fl">3</span>, id.cex <span class="op">=</span> <span class="fl">1.25</span>,</span>
 <span>              cex.lab <span class="op">=</span> <span class="fl">1.5</span><span class="op">)</span></span>
 <span><span class="co">#&gt;           H        Q   CookD       L        R</span></span>
@@ -651,6 +654,7 @@ Figure&nbsp;13.6: Influence plot for the NLSY data…
 <p>The LR plot is also instructive here.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb13" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/car/man/influencePlot.html">influencePlot</a></span><span class="op">(</span><span class="va">NLSY.mod1</span>, type <span class="op">=</span> <span class="st">"LR"</span>,</span>
+<span>              id.method <span class="op">=</span> <span class="st">"noteworthy"</span>,</span>
 <span>              id.n <span class="op">=</span> <span class="fl">3</span>, id.cex <span class="op">=</span> <span class="fl">1.25</span>,</span>
 <span>              cex.lab <span class="op">=</span> <span class="fl">1.5</span><span class="op">)</span></span>
 <span><span class="co">#&gt;           H        Q   CookD       L        R</span></span>
@@ -672,8 +676,76 @@ Figure&nbsp;13.7: Influence plot for the NLSY data…
 </div>
 </div>
 <p>In <a href="#fig-NLSY-inflplot2" class="quarto-xref">Figure&nbsp;<span>13.7</span></a> the noteworthy points are arrayed within a diagonal band corresponding to contours of equal Cook’s D, and this statistic increases multiplicatively with each step away from the origin. Cases 54 and 142 stand out somewhat here.</p>
-</section><section id="sec-robust-estimation" class="level2" data-number="13.4"><h2 data-number="13.4" class="anchored" data-anchor-id="sec-robust-estimation">
-<span class="header-section-number">13.4</span> Robust Estimation</h2>
+</section><section id="example-penguin-data" class="level2" data-number="13.4"><h2 data-number="13.4" class="anchored" data-anchor-id="example-penguin-data">
+<span class="header-section-number">13.4</span> Example: Penguin data</h2>
+<p>Another example illustrates the appearance of influence plots with factors as predictors. Earlier chapters (<a href="03-multivariate_plots.html#sec-multnorm-penguin" class="quarto-xref"><span>Section 3.6.2</span></a>, <a href="04-pca-biplot.html#sec-dsq-penguin" class="quarto-xref"><span>Section 4.7.1</span></a>) presented a variety of plots (<a href="03-multivariate_plots.html#fig-peng-cqplot" class="quarto-xref">Figure&nbsp;<span>3.25</span></a>, <a href="03-multivariate_plots.html#fig-peng-ggplot-out" class="quarto-xref">Figure&nbsp;<span>3.26</span></a>, <span class="quarto-unresolved-ref">?fig-peng-out-biplot</span>) for the Penguin data in which a few cases were identified as unusual in exploratory analysis. But, are any of them influential in the context of a multivariate model?</p>
+<p>Let’s consider the simple model predicting <code>species</code> from the numeric variables</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb14" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">peng</span>, package<span class="op">=</span><span class="st">"heplots"</span><span class="op">)</span></span>
+<span><span class="va">peng.mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">bill_length</span>, <span class="va">bill_depth</span>, <span class="va">flipper_length</span>, <span class="va">body_mass</span><span class="op">)</span> <span class="op">~</span></span>
+<span>                 <span class="va">species</span>, data<span class="op">=</span><span class="va">peng</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>In the influence plot (<a href="#fig-peng-inflplot1" class="quarto-xref">Figure&nbsp;<span>13.8</span></a>) the predictor <code>species</code> if of course discrete, so there are only three distinct hat-values and the values for each species appear as columns of points in this plot. For ease of interpretation, I use a little <code>dplyr</code> magic to label the species and their sample sizes.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb15" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/car/man/influencePlot.html">influencePlot</a></span><span class="op">(</span><span class="va">peng.mod</span>, id.n<span class="op">=</span><span class="fl">3</span>, type<span class="op">=</span><span class="st">"stres"</span><span class="op">)</span></span>
+<span><span class="va">res</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html">arrange</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/desc.html">desc</a></span><span class="op">(</span><span class="va">CookD</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;           H       Q   CookD       L       R</span></span>
+<span><span class="co">#&gt; 283 0.01471 0.09187 0.14861 0.01493 0.09324</span></span>
+<span><span class="co">#&gt; 286 0.01471 0.03218 0.05205 0.01493 0.03266</span></span>
+<span><span class="co">#&gt; 179 0.00840 0.05124 0.04736 0.00847 0.05167</span></span>
+<span><span class="co">#&gt; 10  0.00685 0.05622 0.04236 0.00690 0.05661</span></span>
+<span><span class="co">#&gt; 268 0.01471 0.00795 0.01286 0.01493 0.00807</span></span>
+<span><span class="co">#&gt; 267 0.01471 0.00374 0.00606 0.01493 0.00380</span></span>
+<span><span class="co">#&gt; 266 0.01471 0.00208 0.00336 0.01493 0.00211</span></span>
+<span></span>
+<span><span class="co"># labels for species</span></span>
+<span><span class="va">loc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/merge.html">merge</a></span><span class="op">(</span><span class="va">peng</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html">add_count</a></span><span class="op">(</span><span class="va">species</span><span class="op">)</span>, </span>
+<span>             <span class="va">res</span>, </span>
+<span>             by <span class="op">=</span> <span class="st">"row.names"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html">add_count</a></span><span class="op">(</span><span class="va">species</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">species</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html">slice</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">ungroup</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">species</span>, <span class="va">H</span>, <span class="va">n</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>label <span class="op">=</span> <span class="fu">glue</span><span class="fu">::</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"{species}\n(n={n})"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/text.html">text</a></span><span class="op">(</span><span class="va">loc</span><span class="op">$</span><span class="va">H</span>, <span class="fl">0.10</span>, <span class="va">loc</span><span class="op">$</span><span class="va">label</span>, xpd<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-peng-inflplot1" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-peng-inflplot1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/Ch13/fig-peng-inflplot1-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-peng-inflplot1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;13.8: Influence plot for the Penguin data…
+</figcaption></figure>
+</div>
+</div>
+</div>
+<p>We know that hat-values are proportional to how unusual the observations are from the means of the predictors, but what is this for a factor, like <code>species</code>? The answer is that <span class="math inline">\(H_j \propto 1 / n_j\)</span>, so Chinstrap with the smallest sample size (<span class="math inline">\(n=68\)</span>) is the most unusual.</p>
+<p>The most influential case (283) here is our Chinstrap friend Cyrano (see <a href="03-multivariate_plots.html#fig-peng-ggplot-out" class="quarto-xref">Figure&nbsp;<span>3.26</span></a>). Among the others, case 10 is the Adelie bird we labeled Hook Nose.</p>
+<p>The “LR” plot:</p>
+<div class="cell" data-layout-align="center">
+<details class="code-fold"><summary>Show the code</summary><div class="sourceCode" id="cb16" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/car/man/influencePlot.html">influencePlot</a></span><span class="op">(</span><span class="va">peng.mod</span>, id.n<span class="op">=</span><span class="fl">3</span>, type<span class="op">=</span><span class="st">"LR"</span><span class="op">)</span></span>
+<span><span class="va">loc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/merge.html">merge</a></span><span class="op">(</span><span class="va">peng</span>, <span class="va">res</span>, </span>
+<span>             by <span class="op">=</span> <span class="st">"row.names"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">species</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html">slice</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">ungroup</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">species</span>, <span class="va">L</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>logL <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span><span class="op">(</span><span class="va">L</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/text.html">text</a></span><span class="op">(</span><span class="va">loc</span><span class="op">$</span><span class="va">logL</span>, <span class="op">-</span><span class="fl">2</span>, <span class="va">loc</span><span class="op">$</span><span class="va">species</span>, xpd<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details><div class="cell-output-display">
+<div id="fig-peng-inflplot2" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-peng-inflplot2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/Ch13/fig-peng-inflplot2-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-peng-inflplot2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;13.9: Influence plot for the Penguin data…
+</figcaption></figure>
+</div>
+</div>
+</div>
+</section><section id="sec-robust-estimation" class="level2" data-number="13.5"><h2 data-number="13.5" class="anchored" data-anchor-id="sec-robust-estimation">
+<span class="header-section-number">13.5</span> Robust Estimation</h2>
 
 
 <div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" data-line-spacing="2" role="list" style="display: none">

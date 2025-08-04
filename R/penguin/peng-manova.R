@@ -78,7 +78,10 @@ plot(bm)
 
 (peng.can1 <- candisc(peng.mod1))
 
+
+
 # influence
+op <- par(mar = c(5,5,2,1))
 res <- influencePlot(peng.mod0, id.n=3, type="stres")
 res |> arrange(desc(CookD))
 
@@ -89,7 +92,26 @@ loc <- merge(peng, res,
   ungroup() |>
   select(species, H)
 text(loc$H, 0.10, loc$species, xpd=TRUE)
+par(op)
 
+# same, but add n= to each label
+op <- par(mar = c(5,5,2,1))
+res <- influencePlot(peng.mod0, id.n=3, type="stres")
+res |> arrange(desc(CookD))
+
+loc <- merge(peng |> add_count(species), 
+             res, 
+             by = "row.names") |>
+  add_count(species) |>
+  group_by(species) |>
+  slice(1) |>
+  ungroup() |>
+  select(species, H, n) |>
+  mutate(label = glue::glue("{species}\n(n={n})"))
+text(loc$H, 0.10, loc$label, xpd=TRUE)
+par(op)
+
+op <- par(mar = c(5,5,2,1))
 res <- influencePlot(peng.mod0, id.n=3, type="LR")
 loc <- merge(peng, res, 
              by = "row.names") |>
@@ -99,6 +121,7 @@ loc <- merge(peng, res,
   select(species, L) |>
   mutate(logL = log(L))
 text(loc$logL, -2, loc$species, xpd=TRUE)
+par(op)
 
 res <- influencePlot(peng.mod0, id.n=3, type="cookd")
 

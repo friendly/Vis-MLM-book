@@ -347,13 +347,17 @@ Mysterious Case 9.
 
 The `r dataset("heplots::NLSY")` data introduced in @sec-NLSY-mmra provides a more realistic example
 of how the _multivariate_ influence measures and their plots contribute to understanding multivariate data.
-Some plots were suggested there (@fig-NLSY-scat1) to identify "noteworthy" points.
+Some plots were suggested there (@fig-NLSY-scat1) to identify "noteworthy" points. The model `NLSY.mod1`
+fits the child's reading and math scores using parents' education:
 
 ```{r}
 data(NLSY, package = "heplots")
 NLSY.mod1 <- lm(cbind(read, math) ~ income + educ, 
                 data = NLSY)
 ```
+
+For influence plots, the `id.method = "noteworthy"` method for point labeling selects observations with
+large values for _any_ of the standardized residual, hat value or Cook's D, so 6 points are labeled in @fig-NLSY-inflplot1.
 
 ```{r echo = -1}
 #| label: fig-NLSY-inflplot1
@@ -363,6 +367,7 @@ NLSY.mod1 <- lm(cbind(read, math) ~ income + educ,
 #| fig-cap: "Influence plot for the NLSY data..."
 op <- par(mar = c(5,5,1,1))
 influencePlot(NLSY.mod1,
+              id.method = "noteworthy",
               id.n = 3, id.cex = 1.25,
               cex.lab = 1.5)
 ```
@@ -384,12 +389,83 @@ The LR plot is also instructive here.
 #| fig-cap: "Influence plot for the NLSY data..."
 op <- par(mar = c(5,5,1,1))
 influencePlot(NLSY.mod1, type = "LR",
+              id.method = "noteworthy",
               id.n = 3, id.cex = 1.25,
               cex.lab = 1.5)
 ```
 
 In @fig-NLSY-inflplot2 the noteworthy points are arrayed within a diagonal band corresponding to contours of equal Cook's D,
 and this statistic increases multiplicatively with each step away from the origin. Cases 54 and 142 stand out somewhat here.
+
+## Example: Penguin data
+
+Another example illustrates the appearance of influence plots with factors as predictors.
+Earlier chapters (@sec-multnorm-penguin, @sec-dsq-penguin) presented a variety of plots (@fig-peng-cqplot, @fig-peng-ggplot-out, @fig-peng-out-biplot) for the Penguin data in which a few cases were identified as unusual in exploratory analysis.
+But, are any of them influential in the context of a multivariate model?
+
+Let's consider the simple model predicting `species` from the numeric variables
+
+```{r}
+data(peng, package="heplots")
+peng.mod <- lm(cbind(bill_length, bill_depth, flipper_length, body_mass) ~
+                 species, data=peng)
+```
+
+In the influence plot (@fig-peng-inflplot1) the predictor `species` if of course discrete, so there are only
+three distinct hat-values and the values for each species appear as columns of points in this plot.
+For ease of interpretation, I use a little `dplyr` magic to label the species and their sample sizes.
+
+```{r echo = -1}
+#| label: fig-peng-inflplot1
+#| out-width: "80%"
+#| fig-width: 6
+#| fig-height: 6
+#| fig-cap: "Influence plot for the Penguin data..."
+op <- par(mar = c(5,5,2,1)+0.1)
+res <- influencePlot(peng.mod, id.n=3, type="stres")
+res |> arrange(desc(CookD))
+
+# labels for species
+loc <- merge(peng |> add_count(species), 
+             res, 
+             by = "row.names") |>
+  add_count(species) |>
+  group_by(species) |>
+  slice(1) |>
+  ungroup() |>
+  select(species, H, n) |>
+  mutate(label = glue::glue("{species}\n(n={n})"))
+text(loc$H, 0.10, loc$label, xpd=TRUE)
+```
+
+We know that hat-values are proportional to how unusual the observations are from the means of the predictors, but what is
+this for a factor, like `species`? The answer is that $H_j \propto 1 / n_j$, so Chinstrap with the smallest sample size ($n=68$)
+is the most unusual.
+
+The most influential case (283) here is our Chinstrap friend Cyrano (see @fig-peng-ggplot-out). Among the others, case 10 is
+the Adelie bird we labeled Hook Nose.
+
+The "LR" plot:
+```{r echo = -1}
+#| label: fig-peng-inflplot2
+#| code-fold: true
+#| code-summary: "Show the code"
+#| out-width: "80%"
+#| fig-width: 6
+#| fig-height: 6
+#| fig-cap: "Influence plot for the Penguin data..."
+op <- par(mar = c(5,5,2,1)+0.1)
+res <- influencePlot(peng.mod, id.n=3, type="LR")
+loc <- merge(peng, res, 
+             by = "row.names") |>
+  group_by(species) |>
+  slice(1) |>
+  ungroup() |>
+  select(species, L) |>
+  mutate(logL = log(L))
+text(loc$logL, -2, loc$species, xpd=TRUE)
+```
+
 
 ## Robust Estimation {#sec-robust-estimation}
 
