@@ -34,3 +34,53 @@ ggplot(peng,
   theme(legend.position = "inside",
         legend.position.inside = c(0.87, 0.15)) 
 
+
+# Try to get row IDs of the 'outliers'
+peng |>
+  select(bill_length, bill_depth) |>
+  peel_hulls(num = Inf) |>
+    as.data.frame() |>
+  merge(
+    transform(peng, i = seq(nrow(peng))),
+    by = "i"
+  ) |> 
+  subset(select = -c(x, y, prop)) |>
+  sort_by(~ hull + i) -> peng_hulls
+
+peng_hulls |>
+  filter(hull == max(hull))
+
+# use ddalpha:: depth to find largest depths
+peng |>
+  select(bill_length, bill_depth) -> peng.sub
+peng.depth  <- 
+  data.frame(
+    ID = seq(nrow(peng)),
+    depth = ddalpha::depth.(x = peng.sub, data=peng.sub)) 
+peng.depth |>
+  arrange(desc(depth)) |> head()
+
+  
+
+
+# From Cory Brunsten, gggda
+# USJudgeRatings %>%
+#   subset(select = c(INTG, DECI)) ->
+#   judge_legit
+# ddalpha::depth.(x = judge_legit, data = judge_legit)
+# 
+#   
+# judge_ratings %>% 
+#   subset(select = c(INTG, DECI)) %>% 
+#   peel_hulls(num = Inf) %>% 
+#   as.data.frame() %>% 
+#   merge(
+#     transform(judge_ratings, i = seq(nrow(judge_ratings))),
+#     by = "i"
+#   ) %>% 
+#   subset(select = -c(i, x, y, prop)) %>% 
+#   sort_by(~ hull + NAME) ->
+#   judge_hulls
+# judge_hulls %>% 
+#   subset(subset = hull %in% range(hull))
+
