@@ -99,7 +99,7 @@ op <- par(mar = c(5,5,2,1))
 res <- influencePlot(peng.mod0, id.n=3, type="stres")
 res |> arrange(desc(CookD))
 
-loc <- merge(peng |> add_count(species), 
+loc <- merge(peng, # |> add_count(species), 
              res, 
              by = "row.names") |>
   add_count(species) |>

@@ -17,7 +17,7 @@ least squares.
 
 Univariate influence diagnostics have
 been well-established since the pioneering work of @Cook:77 and others
-(@Belsley-etal:80;@CookWeisberg:82) and their wide implementation in R packages
+(@Belsley-etal:80; @CookWeisberg:82) and their wide implementation in R packages
 such as `r pkg("stats")` and `r pkg("car")` makes these readily accessible
 in statistical practice. If you seek statistical advice regarding a
 perplexing model, the consultant may well ask:
@@ -37,15 +37,18 @@ This multivariate perspective can reveal influence patterns
 that would otherwise remain hidden, as an observation might exert substantial
 leverage on the overall model fit through subtle but systematic effects across
 multiple responses.
-
 Detecting outliers and influential observations 
-has now progressed to the point where the methods described below can usefully
-be applied to multivariate linear models. But having found some troublesome
-cases, the question arises, what to do about them?
+has now progressed to the point where the methods described below (@sec-multivariate-influence) can usefully
+be applied to multivariate linear models. 
+
+But having found some troublesome cases, the question arises, what to do about them? We are generally
+reluctant to simply ignore them, unless there is evidence of a gross data error (as in the `Davis` data, @sec-davis).
+Instead, a large class of **robust** methods, which reduce the impact of outliers on the analysis,
+have been developed. These are described in @sec-robust-estimation below.
 
 **Packages**
 
-In this chapter we use the following packages. Load them now
+In this chapter we use the following packages. Load them now.
 ```{r pkg-load}
 library(dplyr)
 library(tidyr)
@@ -425,8 +428,8 @@ op <- par(mar = c(5,5,2,1)+0.1)
 res <- influencePlot(peng.mod, id.n=3, type="stres")
 res |> arrange(desc(CookD))
 
-# labels for species
-loc <- merge(peng |> add_count(species), 
+# labels for species, adding sample n
+loc <- merge(peng, 
              res, 
              by = "row.names") |>
   add_count(species) |>
@@ -442,9 +445,10 @@ We know that hat-values are proportional to how unusual the observations are fro
 this for a factor, like `species`? The answer is that $H_j \propto 1 / n_j$, so Chinstrap with the smallest sample size ($n=68$)
 is the most unusual.
 
-The most influential case (283) here is our Chinstrap friend Cyrano (see @fig-peng-ggplot-out). Among the others, case 10 is
-the Adelie bird we labeled Hook Nose.
+The most influential case (283) here is our Chinstrap friend "Cyrano" (see @fig-peng-ggplot-out). Among the others, case 10 is the Adelie bird we labeled "Hook Nose". To better understand _why_ these cases are influential,
+we can make plots of the data in data space or in PCA space as we did earlier.
 
+<!--
 The "LR" plot: **Omit this**, or make it an exercise
 ```{r echo = -1}
 #| label: fig-peng-inflplot2
@@ -465,9 +469,57 @@ loc <- merge(peng, res,
   mutate(logL = log(L))
 text(loc$logL, -2, loc$species, xpd=TRUE)
 ```
-
+-->
 
 ## Robust Estimation {#sec-robust-estimation}
 
+\ixon{robust estimation}
+
+Robust methods for multivariate linear models aim to provide reliable parameter estimates and inference procedures that remain stable in the presence of outlying observations. As noted by @Rousseeuw2004, "_The main advantage of robust regression is that it provides reliable results even when some of the assumptions of classical regression are violated._"
+But this advantage comes at the cost of increased computational complexity.
+
+Robust regression is a compromise between excluding "bad" data points entirely from  analysis vs. including all the data and treating them equally in classical OLS regression. The essential idea of robust regression is to weight the observations differently based on how well behaved these observations are. Roughly speaking, it is a form of _weighted_ 
+least squares regression. But because the weights are derived from the data, this must be done
+iteratively, requiring more computation.
+
+Several general approaches have been developed for robust multivariate regression. These include M-estimators, S-estimators [@Rousseeuw1984], and MM-estimators [@Yohai1987]. Each approach offers different trade-offs between robustness properties, computational efficiency, and statistical efficiency under ideal conditions. See the [CRAN Task View: Robust Statistical Methods](https://cran.r-project.org/web/views/Robust.html) for an extensive list of
+robust methods in R and the [vignette](https://cran.r-project.org/web/packages/rrcov/vignettes/rrcov.pdf) for the [rrcov package](https://cran.r-project.org/package=rrcov) for a general overview of multivariate robust methods.
+\ix{M-estimators}
+
+The method implemented in the `heplots::robmlm()` function belongs to the class of **M-estimators**.
+This generalizes OLS estimation by replacing the least squares criterion with a more robust version.
+The key idea is to relax the least squares criterion of minimizing $Q(\mathbf{e}) = \Sigma e_i^2 = \Sigma (y_i - \hat{y}_i)^2$ by considering more general functions $Q(\mathbf{e}, \rho)$, where the function $\rho (e_i)$ can be chosen to reduce the impact of large outliers. In these terms,
+
+* OLS uses $\rho(e_i) = e_i^2$
+* $L_1$ estimation uses $\rho(e_i) = \vert e_i \vert$, the least absolute values
+* A bit more complicated, the **biweight** function uses a squared measure of error up to some value $c$ and then
+levels off thereafter,
+
+$$
+\rho(e_i) =
+\begin{cases} 
+\left[ 1 - \left( \frac{e_i}{c} \right)^2 \right]^2 & |e_i| \leq c, \\
+1 & |e_i| > c.
+\end{cases}
+$$
+
+These functions are more easily understood in a graph (@fig-weight-fns). The biweight function (ref?) has a property
+like Windsorizing--- the squared error remains constant for residuals $e_i > c$,
+with $c = 4.685$ for `MASS::psi.bisquare()`.
+
+
+```{r echo=FALSE}
+#| label: fig-weight-fns
+#| out-width: "70%"
+#| fig-align: "center"
+#| fig-cap: "Diagram ploting the function $\\rho(e_i)$ of the contributions of the residuals $e_i$ to what is minimized in various fitting methods."
+knitr::include_graphics(here::here("images", "weight-functions.jpg"))
+```
+
+But, there is a problem here, in that weighted least squares is designed for situations where the observation
+weights are _known in advance_, for instance, when data points have unequal variances or when some observations are more reliable than others. The solution, called _iteratively reweighted least squares_ (IRLS),
+is to substitute computation for theory, and iterate between estimating the
+coefficients (with given weights) and determining weights for the observations in the next iteration.
  
+\ixoff{robust estimation}
 

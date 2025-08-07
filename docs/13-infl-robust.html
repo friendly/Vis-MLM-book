@@ -383,15 +383,15 @@ window.Quarto = {
     </div>
 <!-- main -->
 <main class="content quarto-banner-title-block" id="quarto-document-content"><!--- For HTML Only ---><!-- \require{newcommand} --><!-- %\renewcommand*{\det}[1]{\mathrm{det} (#1)} --><!-- %\renewcommand*{\det}[1]{|#1|} --><!-- \providecommand{\sizedmat}[2]{\mathord{\mathop{\mat{#1}}\limits_{(#2)}}} --><!-- \newcommand*{\E}{\mathcal{E}} --><!-- Index generation --><!-- % R packages:  indexed under both package name and packages! --><!-- % data sets:  --><!-- % R stuff --><p>In the analysis of linear models, the identification and treatment of outliers and influential observations represents one of the most critical yet challenging aspects of statistical modeling. As you saw earlier (<a href="06-linear_models-plots.html#sec-leverage" class="quarto-xref"><span>Section 6.6</span></a>), even a single “bad” observation can completely alter the results of a linear model fit by ordinary least squares.</p>
-<p>Univariate influence diagnostics have been well-established since the pioneering work of <span class="citation" data-cites="Cook:77">Cook (<a href="95-references.html#ref-Cook:77" role="doc-biblioref">1977</a>)</span> and others (<span class="citation" data-cites="Belsley-etal:80">Belsley et al. (<a href="95-references.html#ref-Belsley-etal:80" role="doc-biblioref">1980</a>)</span>;<span class="citation" data-cites="CookWeisberg:82">Cook &amp; Weisberg (<a href="95-references.html#ref-CookWeisberg:82" role="doc-biblioref">1982</a>)</span>) and their wide implementation in R packages such as <span style="color: brown;"><strong>stats</strong></span> and <span style="color: brown;"><strong>car</strong></span> makes these readily accessible in statistical practice. If you seek statistical advice regarding a perplexing model, the consultant may well ask:</p>
+<p>Univariate influence diagnostics have been well-established since the pioneering work of <span class="citation" data-cites="Cook:77">Cook (<a href="95-references.html#ref-Cook:77" role="doc-biblioref">1977</a>)</span> and others (<span class="citation" data-cites="Belsley-etal:80">Belsley et al. (<a href="95-references.html#ref-Belsley-etal:80" role="doc-biblioref">1980</a>)</span>; <span class="citation" data-cites="CookWeisberg:82">Cook &amp; Weisberg (<a href="95-references.html#ref-CookWeisberg:82" role="doc-biblioref">1982</a>)</span>) and their wide implementation in R packages such as <span style="color: brown;"><strong>stats</strong></span> and <span style="color: brown;"><strong>car</strong></span> makes these readily accessible in statistical practice. If you seek statistical advice regarding a perplexing model, the consultant may well ask:</p>
 <blockquote class="blockquote">
 <p>Did you make any influence or other diagnostic plots?</p>
 </blockquote>
 <p>However, the extension to multivariate response models introduces additional complexity that goes far beyond simply applying univariate methods to each response variable separately. The multivariate case requires consideration of the <em>joint influence</em> structure across all responses simultaneously, accounting for the correlation patterns among dependent variables and the potential for observations to be influential in some linear combinations of responses while appearing benign when examined multivariate.</p>
-<p>This multivariate perspective can reveal influence patterns that would otherwise remain hidden, as an observation might exert substantial leverage on the overall model fit through subtle but systematic effects across multiple responses.</p>
-<p>Detecting outliers and influential observations has now progressed to the point where the methods described below can usefully be applied to multivariate linear models. But having found some troublesome cases, the question arises, what to do about them?</p>
+<p>This multivariate perspective can reveal influence patterns that would otherwise remain hidden, as an observation might exert substantial leverage on the overall model fit through subtle but systematic effects across multiple responses. Detecting outliers and influential observations has now progressed to the point where the methods described below (<a href="#sec-multivariate-influence" class="quarto-xref"><span>Section 13.1</span></a>) can usefully be applied to multivariate linear models.</p>
+<p>But having found some troublesome cases, the question arises, what to do about them? We are generally reluctant to simply ignore them, unless there is evidence of a gross data error (as in the <code>Davis</code> data, <a href="02-getting_started.html#sec-davis" class="quarto-xref"><span>Section 2.1.2</span></a>). Instead, a large class of <strong>robust</strong> methods, which reduce the impact of outliers on the analysis, have been developed. These are described in <a href="#sec-robust-estimation" class="quarto-xref"><span>Section 13.5</span></a> below.</p>
 <p><strong>Packages</strong></p>
-<p>In this chapter we use the following packages. Load them now</p>
+<p>In this chapter we use the following packages. Load them now.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb1" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org">dplyr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyr.tidyverse.org">tidyr</a></span><span class="op">)</span></span>
@@ -446,7 +446,7 @@ D_i = \left(\frac{n-p}{p} \right) \frac{h_{ii} q_{ii}}{(1 - h_{ii})^2  } \;.
 L_i = \frac{h_{ii}}{1 - h_{ii}} \quad\quad R_i = \frac{q_{ii}}{1 - h_{ii}} \;.
 \]</span></p>
 <p><span class="math inline">\(R_i\)</span> is the studentized residual here, and <span class="math inline">\(D_i \propto L_i \times R_i\)</span>.</p>
-<p>In the general, multivariate case there are analogous matrix expressions for <span class="math inline">\(\mathbf{L}\)</span> and <span class="math inline">\(\mathbf{R}\)</span>. When <code>m &gt; 1</code>, the quantities <span class="math inline">\(\mathbf{H}_I\)</span>, <span class="math inline">\(\mathbf{Q}_I\)</span>, <span class="math inline">\(\mathbf{L}_I\)</span>, and <span class="math inline">\(\mathbf{R}_I\)</span> are <span class="math inline">\(m \times m\)</span> matrices. Where scalar quantities are needed, the <span style="color: brown;"><strong>mvinfluence</strong></span> functions apply a function, <code>FUN</code>, either <code><a href="https://rdrr.io/r/base/det.html">det()</a></code> or <code><a href="https://rdrr.io/pkg/mvinfluence/man/tr.html">tr()</a></code> to calculate a measure of “size”, as in</p>
+<p>In the general, multivariate case there are analogous matrix expressions for <span class="math inline">\(\mathbf{L}\)</span> and <span class="math inline">\(\mathbf{R}\)</span>. When <code>m &gt; 1</code>, the quantities <span class="math inline">\(\mathbf{H}_I\)</span>, <span class="math inline">\(\mathbf{Q}_I\)</span>, <span class="math inline">\(\mathbf{L}_I\)</span>, and <span class="math inline">\(\mathbf{R}_I\)</span> are <span class="math inline">\(m \times m\)</span> matrices. Where scalar quantities are needed, the <span style="color: brown;"><strong>mvinfluence</strong></span> functions apply a function, <code>FUN</code>, either <code><a href="https://rdrr.io/r/base/det.html">det()</a></code> or <code><a href="http://friendly.github.io/mvinfluence/reference/tr.html">tr()</a></code> to calculate a measure of “size”, as in</p>
 <pre data-code-line-numbers=""><code>H &lt;- sapply(x$H, FUN)
 Q &lt;- sapply(x$Q, FUN)
 L &lt;- sapply(x$L, FUN)
@@ -490,7 +490,7 @@ Figure&nbsp;13.1: Scatterplot matrix for the toy example.
 </div>
 <section id="cooks-d" class="level3" data-number="13.2.1"><h3 data-number="13.2.1" class="anchored" data-anchor-id="cooks-d">
 <span class="header-section-number">13.2.1</span> Cook’s D</h3>
-<p>First, let’s examine the Cook’s D statistics for the models. Note that the function <code><a href="https://rdrr.io/r/stats/influence.measures.html">cooks.distance()</a></code> invokes <code><a href="https://rdrr.io/r/stats/influence.measures.html">stats::cooks.distance.lm()</a></code> for the univariate response models, but invokes <code><a href="https://rdrr.io/pkg/mvinfluence/man/cooks.distance.mlm.html">mvinfluence::cooks.distance.mlm()</a></code> for the multivariate model.</p>
+<p>First, let’s examine the Cook’s D statistics for the models. Note that the function <code><a href="https://rdrr.io/r/stats/influence.measures.html">cooks.distance()</a></code> invokes <code><a href="https://rdrr.io/r/stats/influence.measures.html">stats::cooks.distance.lm()</a></code> for the univariate response models, but invokes <code><a href="http://friendly.github.io/mvinfluence/reference/cooks.distance.mlm.html">mvinfluence::cooks.distance.mlm()</a></code> for the multivariate model.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb6" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="va">Toy</span></span>
 <span><span class="va">df</span><span class="op">$</span><span class="va">D1</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/influence.measures.html">cooks.distance</a></span><span class="op">(</span><span class="va">Toy.lm1</span><span class="op">)</span></span>
@@ -530,7 +530,7 @@ Figure&nbsp;13.2: Influence plots for the univariate models for <code>y1</code> 
 </div>
 </div>
 <p><strong>TODO</strong>: Check how these are defined in mvinfluence</p>
-<p>Contrast these results with what we get for the model for <code>y1</code> and <code>y2</code> jointly (<a href="#fig-toy-inflplot-mlm-stres" class="quarto-xref">Figure&nbsp;<span>13.3</span></a>) In the multivariate version, <code><a href="https://rdrr.io/pkg/mvinfluence/man/influencePlot.mlm.html">mvinfluence::influencePlot.mlm()</a></code> plots the squared studentized residual (denoted <code>R</code> in the output) against the hat value; this is referred to as a `type = “stres” plot.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> Case 9 stands in <a href="#fig-toy-inflplot-mlm-stres" class="quarto-xref">Figure&nbsp;<span>13.3</span></a> out as wildly influential on the joint regression model. But there’s more: The cases in <a href="#fig-toy-inflplots" class="quarto-xref">Figure&nbsp;<span>13.2</span></a> with large Cook’s D (bubble size) have only tiny influence in the multivariate model.</p>
+<p>Contrast these results with what we get for the model for <code>y1</code> and <code>y2</code> jointly (<a href="#fig-toy-inflplot-mlm-stres" class="quarto-xref">Figure&nbsp;<span>13.3</span></a>) In the multivariate version, <code><a href="http://friendly.github.io/mvinfluence/reference/influencePlot.mlm.html">mvinfluence::influencePlot.mlm()</a></code> plots the squared studentized residual (denoted <code>R</code> in the output) against the hat value; this is referred to as a `type = “stres” plot.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> Case 9 stands in <a href="#fig-toy-inflplot-mlm-stres" class="quarto-xref">Figure&nbsp;<span>13.3</span></a> out as wildly influential on the joint regression model. But there’s more: The cases in <a href="#fig-toy-inflplots" class="quarto-xref">Figure&nbsp;<span>13.2</span></a> with large Cook’s D (bubble size) have only tiny influence in the multivariate model.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb8" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/car/man/influencePlot.html">influencePlot</a></span><span class="op">(</span><span class="va">Toy.mlm</span>, type <span class="op">=</span> <span class="st">"stres"</span>,</span>
 <span>              id.n<span class="op">=</span><span class="fl">2</span>, id.cex <span class="op">=</span> <span class="fl">1.3</span>,</span>
@@ -678,7 +678,7 @@ Figure&nbsp;13.7: Influence plot for the NLSY data…
 <p>In <a href="#fig-NLSY-inflplot2" class="quarto-xref">Figure&nbsp;<span>13.7</span></a> the noteworthy points are arrayed within a diagonal band corresponding to contours of equal Cook’s D, and this statistic increases multiplicatively with each step away from the origin. Cases 54 and 142 stand out somewhat here.</p>
 </section><section id="example-penguin-data" class="level2" data-number="13.4"><h2 data-number="13.4" class="anchored" data-anchor-id="example-penguin-data">
 <span class="header-section-number">13.4</span> Example: Penguin data</h2>
-<p>Another example illustrates the appearance of influence plots with factors as predictors. Earlier chapters (<a href="03-multivariate_plots.html#sec-multnorm-penguin" class="quarto-xref"><span>Section 3.6.2</span></a>, <a href="04-pca-biplot.html#sec-dsq-penguin" class="quarto-xref"><span>Section 4.7.1</span></a>) presented a variety of plots (<a href="03-multivariate_plots.html#fig-peng-cqplot" class="quarto-xref">Figure&nbsp;<span>3.25</span></a>, <a href="03-multivariate_plots.html#fig-peng-ggplot-out" class="quarto-xref">Figure&nbsp;<span>3.26</span></a>, <span class="quarto-unresolved-ref">?fig-peng-out-biplot</span>) for the Penguin data in which a few cases were identified as unusual in exploratory analysis. But, are any of them influential in the context of a multivariate model?</p>
+<p>Another example illustrates the appearance of influence plots with factors as predictors. Earlier chapters (<a href="03-multivariate_plots.html#sec-multnorm-penguin" class="quarto-xref"><span>Section 3.6.2</span></a>, <a href="04-pca-biplot.html#sec-dsq-penguin" class="quarto-xref"><span>Section 4.7.1</span></a>) presented a variety of plots (<a href="03-multivariate_plots.html#fig-peng-cqplot" class="quarto-xref">Figure&nbsp;<span>3.25</span></a>, <a href="03-multivariate_plots.html#fig-peng-ggplot-out" class="quarto-xref">Figure&nbsp;<span>3.26</span></a>, <a href="04-pca-biplot.html#fig-peng-out-biplot2" class="quarto-xref">Figure&nbsp;<span>4.36</span></a>) for the Penguin data in which a few cases were identified as unusual in exploratory analysis. But, are any of them influential in the context of a multivariate model?</p>
 <p>Let’s consider the simple model predicting <code>species</code> from the numeric variables</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb14" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">peng</span>, package<span class="op">=</span><span class="st">"heplots"</span><span class="op">)</span></span>
@@ -698,8 +698,8 @@ Figure&nbsp;13.7: Influence plot for the NLSY data…
 <span><span class="co">#&gt; 267 0.01471 0.00374 0.00606 0.01493 0.00380</span></span>
 <span><span class="co">#&gt; 266 0.01471 0.00208 0.00336 0.01493 0.00211</span></span>
 <span></span>
-<span><span class="co"># labels for species</span></span>
-<span><span class="va">loc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/merge.html">merge</a></span><span class="op">(</span><span class="va">peng</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html">add_count</a></span><span class="op">(</span><span class="va">species</span><span class="op">)</span>, </span>
+<span><span class="co"># labels for species, adding sample n</span></span>
+<span><span class="va">loc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/merge.html">merge</a></span><span class="op">(</span><span class="va">peng</span>, </span>
 <span>             <span class="va">res</span>, </span>
 <span>             by <span class="op">=</span> <span class="st">"row.names"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html">add_count</a></span><span class="op">(</span><span class="va">species</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -721,31 +721,64 @@ Figure&nbsp;13.8: Influence plot for the Penguin data…
 </div>
 </div>
 <p>We know that hat-values are proportional to how unusual the observations are from the means of the predictors, but what is this for a factor, like <code>species</code>? The answer is that <span class="math inline">\(H_j \propto 1 / n_j\)</span>, so Chinstrap with the smallest sample size (<span class="math inline">\(n=68\)</span>) is the most unusual.</p>
-<p>The most influential case (283) here is our Chinstrap friend Cyrano (see <a href="03-multivariate_plots.html#fig-peng-ggplot-out" class="quarto-xref">Figure&nbsp;<span>3.26</span></a>). Among the others, case 10 is the Adelie bird we labeled Hook Nose.</p>
-<p>The “LR” plot:</p>
+<p>The most influential case (283) here is our Chinstrap friend “Cyrano” (see <a href="03-multivariate_plots.html#fig-peng-ggplot-out" class="quarto-xref">Figure&nbsp;<span>3.26</span></a>). Among the others, case 10 is the Adelie bird we labeled “Hook Nose”. To better understand <em>why</em> these cases are influential, we can make plots of the data in data space or in PCA space as we did earlier.</p>
+<!--
+The "LR" plot: **Omit this**, or make it an exercise
+
+::: {.cell layout-align="center"}
+
+```{.r .cell-code  code-fold="true" code-summary="Show the code"}
+res <- influencePlot(peng.mod, id.n=3, type="LR")
+loc <- merge(peng, res, 
+             by = "row.names") |>
+  group_by(species) |>
+  slice(1) |>
+  ungroup() |>
+  select(species, L) |>
+  mutate(logL = log(L))
+text(loc$logL, -2, loc$species, xpd=TRUE)
+```
+
+::: {.cell-output-display}
+![Influence plot for the Penguin data...](figs/Ch13/fig-peng-inflplot2-1.png){#fig-peng-inflplot2 fig-align='center' width=80%}
+:::
+:::
+
+-->
+</section><section id="sec-robust-estimation" class="level2" data-number="13.5"><h2 data-number="13.5" class="anchored" data-anchor-id="sec-robust-estimation">
+<span class="header-section-number">13.5</span> Robust Estimation</h2>
+<p>Robust methods for multivariate linear models aim to provide reliable parameter estimates and inference procedures that remain stable in the presence of outlying observations. As noted by <span class="citation" data-cites="Rousseeuw2004">Rousseeuw et al. (<a href="95-references.html#ref-Rousseeuw2004" role="doc-biblioref">2004</a>)</span>, “<em>The main advantage of robust regression is that it provides reliable results even when some of the assumptions of classical regression are violated.</em>” But this advantage comes at the cost of increased computational complexity.</p>
+<p>Robust regression is a compromise between excluding “bad” data points entirely from analysis vs.&nbsp;including all the data and treating them equally in classical OLS regression. The essential idea of robust regression is to weight the observations differently based on how well behaved these observations are. Roughly speaking, it is a form of <em>weighted</em> least squares regression. But because the weights are derived from the data, this must be done iteratively, requiring more computation.</p>
+<p>Several general approaches have been developed for robust multivariate regression. These include M-estimators, S-estimators <span class="citation" data-cites="Rousseeuw1984">(<a href="95-references.html#ref-Rousseeuw1984" role="doc-biblioref">Rousseeuw &amp; Yohai, 1984</a>)</span>, and MM-estimators <span class="citation" data-cites="Yohai1987">(<a href="95-references.html#ref-Yohai1987" role="doc-biblioref">Yohai, 1987</a>)</span>. Each approach offers different trade-offs between robustness properties, computational efficiency, and statistical efficiency under ideal conditions. See the <a href="https://cran.r-project.org/web/views/Robust.html">CRAN Task View: Robust Statistical Methods</a> for an extensive list of robust methods in R and the <a href="https://cran.r-project.org/web/packages/rrcov/vignettes/rrcov.pdf">vignette</a> for the <a href="https://cran.r-project.org/package=rrcov">rrcov package</a> for a general overview of multivariate robust methods. </p>
+<p>The method implemented in the <code><a href="https://friendly.github.io/heplots/reference/robmlm.html">heplots::robmlm()</a></code> function belongs to the class of <strong>M-estimators</strong>. This generalizes OLS estimation by replacing the least squares criterion with a more robust version. The key idea is to relax the least squares criterion of minimizing <span class="math inline">\(Q(\mathbf{e}) = \Sigma e_i^2 = \Sigma (y_i - \hat{y}_i)^2\)</span> by considering more general functions <span class="math inline">\(Q(\mathbf{e}, \rho)\)</span>, where the function <span class="math inline">\(\rho (e_i)\)</span> can be chosen to reduce the impact of large outliers. In these terms,</p>
+<ul>
+<li>OLS uses <span class="math inline">\(\rho(e_i) = e_i^2\)</span>
+</li>
+<li>
+<span class="math inline">\(L_1\)</span> estimation uses <span class="math inline">\(\rho(e_i) = \vert e_i \vert\)</span>, the least absolute values</li>
+<li>A bit more complicated, the <strong>biweight</strong> function uses a squared measure of error up to some value <span class="math inline">\(c\)</span> and then levels off thereafter,</li>
+</ul>
+<p><span class="math display">\[
+\rho(e_i) =
+\begin{cases}
+\left[ 1 - \left( \frac{e_i}{c} \right)^2 \right]^2 &amp; |e_i| \leq c, \\
+1 &amp; |e_i| &gt; c.
+\end{cases}
+\]</span></p>
+<p>These functions are more easily understood in a graph (<a href="#fig-weight-fns" class="quarto-xref">Figure&nbsp;<span>13.9</span></a>). The biweight function (ref?) has a property like Windsorizing— the squared error remains constant for residuals <span class="math inline">\(e_i &gt; c\)</span>, with <span class="math inline">\(c = 4.685\)</span> for <code><a href="https://rdrr.io/pkg/MASS/man/rlm.html">MASS::psi.bisquare()</a></code>.</p>
 <div class="cell" data-layout-align="center">
-<details class="code-fold"><summary>Show the code</summary><div class="sourceCode" id="cb16" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/car/man/influencePlot.html">influencePlot</a></span><span class="op">(</span><span class="va">peng.mod</span>, id.n<span class="op">=</span><span class="fl">3</span>, type<span class="op">=</span><span class="st">"LR"</span><span class="op">)</span></span>
-<span><span class="va">loc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/merge.html">merge</a></span><span class="op">(</span><span class="va">peng</span>, <span class="va">res</span>, </span>
-<span>             by <span class="op">=</span> <span class="st">"row.names"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">species</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html">slice</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">ungroup</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">species</span>, <span class="va">L</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>logL <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span><span class="op">(</span><span class="va">L</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/text.html">text</a></span><span class="op">(</span><span class="va">loc</span><span class="op">$</span><span class="va">logL</span>, <span class="op">-</span><span class="fl">2</span>, <span class="va">loc</span><span class="op">$</span><span class="va">species</span>, xpd<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details><div class="cell-output-display">
-<div id="fig-peng-inflplot2" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
-<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-peng-inflplot2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="figs/Ch13/fig-peng-inflplot2-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%">
+<div class="cell-output-display">
+<div id="fig-weight-fns" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-weight-fns-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="images/weight-functions.jpg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%">
 </div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-peng-inflplot2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;13.9: Influence plot for the Penguin data…
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-weight-fns-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;13.9: Diagram ploting the function <span class="math inline">\(\rho(e_i)\)</span> of the contributions of the residuals <span class="math inline">\(e_i\)</span> to what is minimized in various fitting methods.
 </figcaption></figure>
 </div>
 </div>
 </div>
-</section><section id="sec-robust-estimation" class="level2" data-number="13.5"><h2 data-number="13.5" class="anchored" data-anchor-id="sec-robust-estimation">
-<span class="header-section-number">13.5</span> Robust Estimation</h2>
+<p>But, there is a problem here, in that weighted least squares is designed for situations where the observation weights are <em>known in advance</em>, for instance, when data points have unequal variances or when some observations are more reliable than others. The solution, called <em>iteratively reweighted least squares</em> (IRLS), is to substitute computation for theory, and iterate between estimating the coefficients (with given weights) and determining weights for the observations in the next iteration.</p>
 
 
 <div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" data-line-spacing="2" role="list" style="display: none">
@@ -767,8 +800,17 @@ Cook, R. D., &amp; Weisberg, S. (1982). <em>Residuals and influence in regressio
 <div id="ref-R-mvinfluence" class="csl-entry" role="listitem">
 Friendly, M. (2022). <em>Mvinfluence: Influence measures and diagnostic plots for multivariate linear models</em>. <a href="https://github.com/friendly/mvinfluence">https://github.com/friendly/mvinfluence</a>
 </div>
+<div id="ref-Rousseeuw2004" class="csl-entry" role="listitem">
+Rousseeuw, P. J., Van Aelst, S., Van Driessen, K., &amp; Gulló, J. A. (2004). Robust multivariate regression. <em>Technometrics</em>, <em>46</em>(3), 293–305. <a href="https://doi.org/10.1198/004017004000000329">https://doi.org/10.1198/004017004000000329</a>
+</div>
+<div id="ref-Rousseeuw1984" class="csl-entry" role="listitem">
+Rousseeuw, P. J., &amp; Yohai, V. J. (1984). Robust regression by means of <span>S</span>-estimators. In J. Franke, W. Härdle, &amp; D. Martin (Eds.), <em>Robust and nonlinear time series analysis</em> (Vol. 26, pp. 256–272). Springer.
+</div>
 <div id="ref-Tukey:59" class="csl-entry" role="listitem">
 Tukey, J. W. (1959). A quick, compact, two sample test to <span class="nocase">Duckworth’s</span> specifications. <em>Technometrics</em>, <em>1</em>, 31–48. <a href="https://doi.org/10.2307/1266308">https://doi.org/10.2307/1266308</a>
+</div>
+<div id="ref-Yohai1987" class="csl-entry" role="listitem">
+Yohai, V. J. (1987). High breakdown-point and high efficiency robust estimates for regression. <em>The Annals of Statistics</em>, <em>15</em>(2), 642–656.
 </div>
 </div>
 </section><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><hr>
