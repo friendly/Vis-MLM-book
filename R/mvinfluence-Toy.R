@@ -173,5 +173,9 @@ confidenceEllipses(Toy.mlm, fill=TRUE)
 
 mlm.influence(Toy.mlm)
 
+# Does robust model help?
 
+Toy.rlm <- robmlm(cbind(y1, y2) ~ x, data = Toy)
+plot(Toy.rlm)
 
+mlm.influence(Toy.rlm)

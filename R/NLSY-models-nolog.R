@@ -80,8 +80,9 @@ heplot(NLSY.mod2,
        lwd=c(2, 3, 3),
        label.pos = c("bottom", "top", "top", "top", "bottom"))
 
-NLSY.rlm <- robmlm(cbind(read, math) ~ income + educ + antisoc + hyperact , 
+NLSY.rlm <- robmlm(cbind(read, math) ~ income + educ, # + antisoc + hyperact , 
                data = NLSY)
+
 heplot(NLSY.rlm, 
        fill=TRUE, fill.alpha = 0.2, 
        cex = 1.5, cex.lab = 1.5,
@@ -104,8 +105,28 @@ influencePlot(NLSY.mod1, type = "LR",
 
 
 
-# gives a peculiar plot
+# gives a peculiar plot -- weights aren't used
 influencePlot(NLSY.rlm,
-              id.cex = 1.25,
+              id.method = "noteworthy",
+              id.n = 3, id.cex = 1.25,
               cex.lab = 1.5)
+
+plot(NLSY.rlm, 
+     segments = TRUE,
+     id.weight = 0.3)
+
+b.mlm <- coef(NLSY.mod1)
+b.rlm <- coef(NLSY.rlm)
+
+reldiff <- function(x, y, pct=TRUE) {
+  res <- abs(x - y) / x
+  if (pct) res <- 100 * res
+  res
+}
+
+reldiff(b.mlm, b.rlm)
+
+# or use new heplots::rel_diff
+heplots::rel_diff(b.mlm, b.rlm)
+
 
