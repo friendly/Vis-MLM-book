@@ -8,10 +8,13 @@ library(heplots)
 library(candisc)
 library(mvinfluence)
 library(dplyr)
+library(tibble)
 
 data(peng, package="heplots")
 contrasts(peng$species) <- matrix(c(1,-1,0, -1, -1, -2), 3,2)
 contrasts(peng$species)
+
+source(here::here("R", "penguin", "penguin-colors.R"))
 
 
 peng.mod0 <- lm(cbind(bill_length, bill_depth, flipper_length, body_mass) ~
@@ -99,10 +102,10 @@ op <- par(mar = c(5,5,2,1))
 res <- influencePlot(peng.mod0, id.n=3, type="stres")
 res |> arrange(desc(CookD))
 
-loc <- merge(peng, # |> add_count(species), 
+loc <- merge(peng |> add_count(species), 
              res, 
              by = "row.names") |>
-  add_count(species) |>
+#  add_count(species) |>
   group_by(species) |>
   slice(1) |>
   ungroup() |>
@@ -129,6 +132,70 @@ res <- influencePlot(peng.mod0, id.n=3, type="cookd")
 influencePlot(peng.mod1, id.n=4, type="stres")
 influencePlot(peng.mod0, id.n=4, type="stres")
 
+# Robust models
+# -------------
 
+peng.mlm1 <- lm(cbind(bill_length, bill_depth, flipper_length, body_mass) ~
+                  species, data=peng)
+# all main effects
+peng.mlm2 <- lm(cbind(bill_length, bill_depth, flipper_length, body_mass) ~
+                  species + island + sex, data=peng)
 
+peng.rlm1 <- robmlm(cbind(bill_length, bill_depth, flipper_length, body_mass) ~
+                    species, data=peng)
+# all main effects
+peng.rlm2 <- robmlm(cbind(bill_length, bill_depth, flipper_length, body_mass) ~
+                  species + island + sex, data=peng)
+
+col = peng.colors("dark")[peng$species]
+plot(peng.rlm1, 
+     segments = TRUE,
+     id.weight = 0.6,
+     col = col,
+     cex.lab = 1.3)
+
+notables <- tibble(
+  id = c(10, 283),
+  name = c("HookNose", "Cyrano"),
+  wts = peng.rlm1$weights[id]
+)
+text(notables$id, notables$wts, 
+     label = notables$name, pos = 3,
+     xpd = TRUE)
+
+ctr <- split(seq(nrow(peng)), peng$species) |> lapply(mean)
+axis(side = 3, at=ctr, labels = names(ctr), cex.axis=1.2)
+
+# Same for model 2
+
+plot(peng.rlm2, 
+     segments = TRUE,
+     id.weight = 0.6,
+     col = col)
+
+notables <- tibble(
+  id = c(10, 283),
+  name = c("HookNose", "Cyrano"),
+  wts = peng.rlm2$weights[id]
+)
+text(notables$id, notables$wts, 
+     label = notables$name, pos = 3,
+     xpd = TRUE)
+
+ctr <- split(seq(nrow(peng)), peng$species) |> lapply(mean)
+axis(side = 3, at=ctr, labels = names(ctr))
+
+# unusual cases
+
+cases <- c(10, 124, 179, 283)
+peng.rlm1$weights[cases]
+
+peng |> rowid_to_column() |>
+  slice(cases) |>
+  select(-sex, -year)
+
+#compare coeffs
+
+rel_diff(coef(peng.mlm1), coef(peng.rlm1)) |> 
+  print(digits=2)
 
