@@ -65,13 +65,15 @@ NeuroCog |>
 neuro.pca <- NeuroCog |>
   select(Speed:Visual) |> 
   prcomp(scale. = TRUE)
+summary(neuro.pca)
 
-
-ggbiplot(neuro.pca, obs.scale = 1, var.scale = 1,
+ggbiplot(neuro.pca, 
+         obs.scale = 1, var.scale = 1,
          groups = NeuroCog$Dx, 
-         varname.size = 5, 
+         varname.size = 5,
+         var.factor = 1.5,
          ellipse = TRUE) +
-  scale_color_discrete(name = 'Diagnostic group') +
+  scale_color_discrete(name = 'groups') +
   theme_minimal() +
   theme(legend.direction = 'horizontal', legend.position = 'top')
 

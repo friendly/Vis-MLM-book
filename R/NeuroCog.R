@@ -14,6 +14,9 @@ NC.mlm <- lm(cbind( Speed, Attention, Memory, Verbal, Visual, ProbSolv) ~ Dx,
                data=NeuroCog)
 Anova(NC.mlm)
 
+uniStats(NC.mlm)
+
+
 # test contrasts
 contrasts(NeuroCog$Dx)
 print(linearHypothesis(NC.mlm, "Dx1"), SSP=FALSE)
