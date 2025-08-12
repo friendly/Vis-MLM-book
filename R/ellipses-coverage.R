@@ -22,9 +22,9 @@ c <- qchisq(levels, df = 2) |> round(2)
 #   bquote(paste("c =", chi^2, "(", .(levels[3]), ") =", .(c[3])))
 # )
 
-lab1 <- bquote(paste("c =", chi^2, "(", .(levels[1]), ") =", .(c[1])))
-lab2 <- bquote(paste("c =", chi^2, "(", .(levels[2]), ") =", .(c[2])))
-lab3 <- bquote(paste("c =", chi^2, "(", .(levels[3]), ") =", .(c[3])))
+lab1 <- bquote(paste("c =", chi[2]^2, "(", .(levels[1]), ") =", .(c[1])))
+lab2 <- bquote(paste("c =", chi[2]^2, "(", .(levels[2]), ") =", .(c[2])))
+lab3 <- bquote(paste("c =", chi[2]^2, "(", .(levels[3]), ") =", .(c[3])))
 
 
 e1 <- ellipse(m1, A1, radius=qchisq(levels[1], 2), 
