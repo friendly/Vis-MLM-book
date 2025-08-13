@@ -101,13 +101,13 @@ SSP_E <- dogfood.aov$SSPE |> print()
 cov2cor(SSP_H)
 cov2cor(SSP_E)
 
-
+op <- par(mar= c(5, 5, 1, 1) +.1)
 heplot(dogfood.mod, fill = TRUE, 
        fill.alpha = 0.1, 
        cex.lab = 1.5,
        cex = 1.5,
-       xlim = c(-1,5),
+       xlim = c(-1, 4.5),
        ylim = c(70, 100))
-
+par(op)
 
 
