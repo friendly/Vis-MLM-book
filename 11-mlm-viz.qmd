@@ -47,6 +47,12 @@ graphical methods for visualizing hypothesis tests and for visualizing what thes
 linear combinations reflect in terms of the observed variables.
 The HE plot framework described below provides powerful graphic methods available in easy used software.
 
+This chapter describes this framework and illustrates some concrete examples, first for
+MANOVA designs which are conceptually and visually simpler, and then for MMRA
+designs with quantitative predictors and finally for MANCOVA models.
+Many more worked examples are available in vignettes for the `r package(heplots)`.[^heplots-vignettes]
+
+[^heplots-vignettes]: See [HE plot MANOVA Examples](http://friendly.github.io/heplots/articles/HE_manova.html) amd [HE plot MMRA Examples](http://friendly.github.io/heplots/articles/HE_mmra.html).
 
 **Packages**
 
@@ -128,15 +134,17 @@ knitr::include_graphics("images/arcmanov.png")
 -->
 
 
-For more complex models such as MANOVA with multiple factors or multivariate multivariate regression,
+For more complex models such as MANOVA with multiple factors or multivariate multivariate regression with several predictors,
 there is one sum of squares and products matrix (SSP), and therefore one
-$\mathbf{H}$ ellipse for each term in the model. For example, in a two-way MANOVA design with the model
-formula `(y1, y2) ~ A + B + A*B` and equal sample sizes in the groups, the total sum of squares accounted for by the model is
+$\mathbf{H}$ ellipse for _each term_ in the model. For example, in a two-way MANOVA design with the model
+formula `(y1, y2) ~ A + B + A*B` and equal sample sizes in the groups, the total sum of squares accounted for by the model is the sum of their separate effects,
 \begin{align*}
 \mathbf{SSP}_{\text{Model}} & = \mathbf{SSP}_{A} + \mathbf{SSP}_{B} + \mathbf{SSP}_{AB} \\
                             & = \mathbf{H}_A + \mathbf{H}_B + \mathbf{H}_{AB} \period
-\end{align*}
+\end{align*}{#eq-HE-model}
 
+
+All of these hypotheses can be overlaid in a single HE plot showing their effects together in a comprehensive view.
 
 ## HE plot construction
 
@@ -435,7 +443,7 @@ knitr::include_graphics("images/iris-HE1.png")
 -->
 
 
-## Significance scaling {sec-signif-scaling}
+## Significance scaling {#sec-signif-scaling}
 
 The geometry of ellipsoids and multivariate tests allow us to go further with another re-scaling of the $\mathbf{H}$ ellipsoid
 that gives a _visual test of significance_ for any term in a MLM.
@@ -793,6 +801,79 @@ data and increased visual understanding of
 pooled, within-group variance of the $\mathbf{E}$ matrix for the canonical variables, which are always uncorrelated.
 The variation among the group means is reflected in the size and shape of the ellipse for the $\mathbf{E}$ matrix.
 
+## Factorial MANOVA
+
+When there are two or more factors, the overall model
+is comprised of main effects and possible interactions as shown in @eq-models.
+A significant advantage of HE plots is that the main effects and interactions
+can be overlaid in the same plot showing how each term contributes to
+assessment of differences among the groups. 
+
+I illustrate this below for a simple
+$2 \times 2$ factorial design with three response variables. 
+
+::: {#exm-plastic}
+**Plastic film data**
+
+An industrial experiment was conducted to determine the optimum conditions for extruding plastic film. Of interest were three responses: resistance to `tear`, film `gloss` and the `opacity` of the film. Two factors were manipulated:
+`rate` of extrusion and amount of some `additive`,
+both of these being set to two values, `High` and `Low`. The dataset `heplots::Plastic`  comes from
+@JohnsonWichern:92.
+
+```{r plastic-str}
+data(Plastic, package="heplots")
+str(Plastic)
+```
+
+The MANOVA model `plastic.mod` fits  the main effects of `rate` and `additive`
+and the interaction `rate:additive`. The `Anova()` summary shows a strong
+effect for `rate` of extrusions for the three responses jointly, a lesser,
+but still significant effect of `additive` and a non-significant interaction.
+
+```{r, plastic-mod}
+plastic.mod <- lm(cbind(tear, gloss, opacity) ~ rate*additive, data=Plastic)
+Anova(plastic.mod)
+```
+
+As a reminder, if you want to see the results of univariate tests for the
+responses separately, `heplots::uniStats()`  (or `heplots::glance.mlm()`) gives some answers, including $R^2$ and univariate $F$ tests.
+
+```{r}
+uniStats(plastic.mod)
+```
+
+**HE plots**
+We can visualize _all_ these
+effects for pairs of variables in an HE plot, showing the "size" and
+orientation of hypothesis variation ($\mathbf{H}$) for each model term,
+in relation to error
+variation ($\mathbf{E}$), as ellipsoids.
+When, as here, the model terms have 1 degree of freedom, the
+$\mathbf{H}$ ellipsoids for `rate`, `additive` and `rate:additive` each degenerate to a line.
+
+@fig-plastic-HE1 shows the HE plot for the responses `tear` and `gloss`, the strongest
+by univariate tests. This plot takes advantage of another feature of
+`heplot()`, to overlay the plots for significance and effect size scaling in
+a single plot (using `add = TRUE`).
+
+```{r echo = -1}
+#| label: fig-plastic-HE1
+#| fig-width: 6
+#| fig-height: 6
+#| out-width: "70%"
+#| fig-cap: "HE plot for effects on `tear` and `gloss` according to the factors `rate`, `additive` and their interaction, `rate:additive`. The thicker lines show effect size scaling; the thinner lines show significance scaling."
+par(mar = c(4,4,1,1)+.1)
+colors = c("red", "darkblue", "darkgreen", "brown")
+heplot(plastic.mod, size="significance", 
+       col=colors, cex=1.25,
+       fill=TRUE, fill.alpha=0.1)
+heplot(plastic.mod, size="effect", 
+       add=TRUE, lwd=5, term.labels=FALSE, col=colors)
+
+```
+
+
+:::
 
 ## Quantitative predictors: MMRA 
 
