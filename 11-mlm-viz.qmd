@@ -27,18 +27,30 @@ As nice as these mathematical and statistical ideas might be, the fact that the 
 variables _collectively_, means that it may be harder to interpret and explain what this means about the separate
 responses. Here's where multivariate model visualization comes to the rescue!
 
-* The tests of multivariate models, including multivariate analysis of variance (MANOVA) for group differences and multivariate multiple regression (MMRA) can be easily visualized by plots of a hypothesis ("H") data ellipse for the fitted values, relative to the corresponding plot of the error ellipse ("E") of the residuals, which I call the HE plot framework.
+* **HE plots**: The tests of multivariate models, including multivariate analysis of variance (MANOVA) for group differences and multivariate multiple regression (MMRA) can be easily visualized by plots of a hypothesis ("H") data ellipse for the fitted values, relative to the corresponding plot of the error ellipse ("E") of the residuals, which I call the HE plot framework.
 
-* For more than a few response variables, these result can be projected onto a lower-dimensional "canonical" space providing an even simpler description. Vectors for the response variables in this space show how these relate to the canonical dimension, facilitating interpretation. This answers the objection of @Huang2019 and others that multivariate models are difficult to understand because they are framed in terms of linear combinations of the the responses. The difficulty in understanding, I believe, can be cured by methods for visualizing what these
-linear combinations reflect in terms of the observed variables.
+* **contrasts**: For factors in MANOVA, contrasts and linear hypotheses (@sec-contrasts2) provide a way to decompose
+an overall multivariate test into portions directed at meaningful _specific_ research questions
+regarding **how** the groups differ.
+
+* **CDA**: For more than a few response variables, these result can be projected onto a lower-dimensional "canonical" space providing an even simpler description, accounting for most of the "juice". Vectors for the response variables in this space show how these relate to the canonical dimension, facilitating interpretation. 
 
 <!-- 
 - refer to Huang: "_given the challenges and assumptions involved in appropriately performing and interpreting MANOVA results, researchers are better off using other less error-prone procedures._" 
 -->
 
+@Huang2019 and others have criticized these methods as (a) difficult to understand because they are framed in terms of linear combinations of the the responses;
+(b) more complicated and limited in interpreting MANOVA effects and (c) unwieldy post hoc strategies often employed for interpretation.
+
+These difficulties in understanding can, I believe, be cured by accessible
+graphical methods for visualizing hypothesis tests and for visualizing what these
+linear combinations reflect in terms of the observed variables.
+The HE plot framework described below provides powerful graphic methods available in easy used software.
+
+
 **Packages**
 
-In this chapter we use the following packages. I load them now.
+In this chapter I use the following packages. Load them now.
 ```{r}
 library(car)
 library(heplots)
@@ -179,19 +191,19 @@ reproduced here as @fig-dogfood-HE.
 #| fig-width: 6
 #| fig-height: 6
 #| out-width: "60%"
-#| fig-cap: "HE plot for the `dogfood` data, showing the means of the four groups, which generates the $\\mathbf{H}$ ellipse for the effect of `formula`. The $\\mathbf{H}$ ellipse labeled 'Error' shows the within-group variances and covariance."
+#| fig-cap: "HE plot for the `dogfood` data, showing the means of the four groups, which generates the $\\mathbf{H}$ ellipse for the effect of `formula`. The $\\mathbf{E}$ ellipse labeled 'Error' shows the within-group variances and covariance."
 op <- par(mar= c(5, 5, 1, 1) +.1)
 data(dogfood, package="heplots")
 dogfood.mod <- lm(cbind(start, amount) ~ formula, data=dogfood)
 
-heplot(dogfood.mod, fill = TRUE, 
-       fill.alpha = 0.1, 
+heplot(dogfood.mod,  
+       fill = TRUE, fill.alpha = 0.1, 
        cex.lab = 1.5, cex = 1.5,
        xlim = c(-1, 4.5),
        ylim = c(70, 100))
 ```
 
-From the analysis in @sec-sums-of-squares, we found the $\mathbf{H}$ matrix in the `dogfood.mod` to be
+From the analysis in @sec-sums-of-squares, we found the $\mathbf{H}$ matrix for the `formula` effect in the `dogfood.mod` model to be
 as shown below. The negative covariance, -70.94, reflects a correlation of -0.94 between the means of
 start time and amount eaten.
 
@@ -217,19 +229,19 @@ discriminant analysis---how to find a weighted composite of variables to best di
 <!-- depending on use, make some of this a text box -->
 ::: {.callout-note title="History corner"}
 
-I said "infamous" above because Fisher published in the _Annals of Eugenics_, was an ardent eugenicist himself, 
+I said "infamous" above because Fisher published in the _Annals of Eugenics_. He was an ardent eugenicist himself, 
 and the work of eugenicists was often pervaded by prejudice against racial, ethnic and disabled groups.
 Through guilt by association, the Iris data, having mistakenly been called "Fisher's Iris Data",
 has become deprecated, even called "racist data".[^stop-iris] The voices of the _Setosa_, _Versicolor_ and _Virginica_ of
-Gaspé protest: we don't have a racist bone in out body and nor prejudice against any
-other species.
+Gaspé protest: we don't have a racist bone in our body and nor prejudice against any
+other species, to no avail.
 
 @Bodmer-etal-2021 present a careful account of Fisher's views on eugenics within the context
 of his time and his contributions to modern statistical theory and practice.
 Fisher's views on race were largely formed by Darwin and Galton,
 but "nearly all of Fisher’s statements were about populations,
 groups of populations, or the human species as a whole". Regardless, the `iris` data were
-Anderson's and should not be blamed. After all, if Anderson had lent his car to Fisher,
+Anderson's and should not be blamed. After all, if Anderson had gave his car to Fisher,
 would the car be tainted by Fisher's eugenicist leanings?
 
 [^stop-iris]: For example, Megan Stodel in a blog post [Stop using iris](https://www.meganstodel.com/posts/no-to-iris/) says, "_It is clear to me that knowingly using work that was itself used in pursuit of racist ideals is totally unacceptable._" A Reddit discussion on this topic, [Is it socially acceptable to use the Iris dataset?](https://www.reddit.com/r/MachineLearning/comments/ii9urh/d_is_it_socially_acceptable_to_use_the_iris/) has some interesting replies. 
@@ -256,7 +268,7 @@ Anderson recorded measurements of the  length and width (in cm.) of the sepals a
 knitr::include_graphics(here::here("images/iris-diagram.jpg"))
 ```
 
-So that we understand what the measurements represent, @fig-iris-diagram superposes labels on a typical iris flower.
+So that we understand what the measurements represent, @fig-iris-diagram superposes labels on a typical iris flower, having three sepals which alternate with three petals.
 Sepals are like ostentatious petals, with attractive decorations in the central section. Length is the distance from the center
 to the tip and width is the transverse dimension.
 
@@ -520,7 +532,7 @@ In the case of a 1-df multivariate test, the $\mathbf{H}$ ellipses plot as a deg
 #| fig-width: 6
 #| fig-height: 6
 #| out-width: "60%"
-#| fig-cap: "HE plot for sepal length and width in the `iris` data showing the tests of the two contrasts"
+#| fig-cap: "HE plot for sepal length and width in the `iris` data showing the tests of the two contrasts, using significance scaling."
 hyp <- list("S:Vv" = "Species1", "V:v" = "Species2")
 heplot(iris.mod, hypotheses=hyp,
        cex = 1.5, cex.lab = 1.5,
@@ -569,7 +581,8 @@ and so the $\mathbf{H}$ ellipses show a negative correlation in the second row a
 
 The HE plot framework so far provides views of all the effects in a MLM in 
 _variable_ space. We can view this in 2D for selected pairs 
-of response variables, or for all pairwise views in scatterplot matrix format.
+of response variables, or for all pairwise views in scatterplot matrix format, as in @fig-iris-pairs.
+
 There is also an `heplot3d()` function giving plots for three response variables together.
 The 3D plots are interactive, in that they can be rotated and zoomed
 by mouse control, and dynamic, in that they can be made to spin and saved as movies.
@@ -580,14 +593,15 @@ to visualize how the groups vary on _all_ responses together, and how the
 different variables contribute to discrimination among groups.
 In this situation, **canonical discriminant analysis** (CDA) is often used, to provide
 a low-D visualization of between-group variation.
+
 When the predictors are also continuous, the analogous term is **canonical correlation analysis** (CCA).
-The advantage here is that we can also show the relations of the response variables to these dimensions,
+The advantage in both cases is that we can also show the relations of the response variables to these dimensions,
 similar to a biplot (@sec-biplot) for a PCA of purely quantitative variables. 
 
-The key to this is the eigenvalue decomposition, $\mathbf{H}\mathbf{E}^{-1} \lambda_i = \lambda_i \vec{v}_i$
+The key to this is the eigenvalue decomposition, $\mathbf{H}\mathbf{E}^{-1} \lambda_i = \lambda_i \mathbf{v}_i$
 (@eq-he-eigen)
 of $\mathbf{H}$ relative to $\mathbf{E}$. The eigenvalues, $\lambda_i$, give the "size" of each $s$ 
-orthogonal dimensions on which the multivariate tests are based. But the corresponding
+orthogonal dimensions on which the multivariate tests are based (@sec-H-vs-E). But the corresponding
 eigenvectors, $\mathbf{v}_i$, give the _weights_ for the response variables
 in $s$ linear combinations that maximally discriminate among the groups or equivalently maximize the
 (canonical) $R^2$ of a linear combination of the predictor $\mathbf{X}$s with a linear combination of the
@@ -595,12 +609,12 @@ response $\mathbf{Y}$s.
 
 Thus, CDA amounts to a transformation of the $p$ responses,
 $\mat{Y}_{n \times p}$
-into the canonical space,
+into scores $\mathbf{Z}$ in the canonical space,
 $$
 \mat{Z}_{n \times s} = \mat{Y} \; \mathbf{E}^{-1/2} \; \mat{V} \;,
 $$
 where $\mat{V}$ contains the eigenvectors of $\mathbf{H}\mathbf{E}^{-1}$
-and $s=\min ( p, df_h )$.
+and $s=\min ( p, df_h )$ dimensions, the degrees of freedom for the hypothesis.
 It is well-known (e.g., @Gittins:85)
 that \emph{canonical discriminant plots} of the first two (or three, in 3D)
 columns of $\mat{Z}$ corresponding to the largest canonical correlations
@@ -611,12 +625,15 @@ Canonical discriminant analysis is typically carried out in conjunction with a o
 The `r package("candisc", cite=TRUE)` generalizes this to multi-factor designs in the `candisc()` function.
 For any given term in a `"mlm"`, the _generalized canonical discriminant analysis_ amounts to a standard discriminant analysis based on the $\mathbf{H}$ matrix for _that_ term in relation to the full-model $\mathbf{E}$ matrix.[^candiscList]
 
-[^candiscList]: `candiscList()` performs a generalized canonical discriminant analysis for _all_ terms in a multivariate linear model, returning a list of the results for each factor.
+[^candiscList]: The related `candiscList()` function performs a generalized canonical discriminant analysis for _all_ terms in a multivariate linear model, returning a list of the results for each factor.
 
 Tests based on the eigenvalues $\lambda_i$,
 initially stated by @Bartlett1938, use  Wilks' $\Lambda$ likelihood ratio tests of these.
 This allow you to determine the number of significant canonical dimensions, or the number of different
 aspects to consider for the relations between the responses and predictors.
+This is a big win over univariate analyses for each dependent variable separately as
+follow-ups for a significant MANOVA result.
+
 These take the form of _sequential_ global tests of the hypothesis that the canonical correlation in
 the current row and all that follow are zero. Thus, if you find 
 The canonical $R^2$, `CanRsq`, gives the R-squared value of fitting the $i$th response canonical variate to the corresponding $i$th canonical variate for the predictors.
@@ -635,9 +652,11 @@ Interestingly, the second dimension is also highly significant, even though it a
 
 The `coef()` method for "candisc" objects returns a matrix of weights for the response variables
 in the canonical dimensions. By default, these are given for the response variables _standardized_
-to $\bar{y}=0$ and $s^2_y = 1$. The `type` argument also allows for raw score weights (`type = "raw"`)
-used to compute the observation scores on `Can1`, `Can2`, ... .
-`type = "structure"` gives the canonical structure coefficients, which are the correlations between each response and the
+to $\bar{y}=0$ and $s^2_y = 1$. 
+
+The `type` argument also allows for _raw score_ weights (`type = "raw"`)
+used to compute scores for the observations  on the canonical variables `Can1`, `Can2`, ... .
+Using `type = "structure"` gives the canonical structure coefficients, which are the correlations between each response and the
 canonical scores.
 
 ```{r iris-can-coef}
@@ -645,6 +664,15 @@ coef(iris.can, type = "std")
 coef(iris.can, type = "structure")
 ```
 
+The standardized (or raw score) weights are interpreted in terms of their signs and magnitudes,
+just as in coefficient weights in a multiple regression. From the numbers, `Can1` seems to be a contrast between the sepal and petal variables. For `Can2`, sepal length doesn't matter and the result
+contrasts the two width variables against petal length.
+
+I find it easier to interpret the correlations between the observed and canonical variables, given as
+the canonical structure coefficients. These are easily visualized as vectors in canonical space
+(similar to biplots for a PCA), as shown below (@fit-iris-candisc).
+
+<!--
 Thus, the two weighted sums for the canonical variates, using mean-centered standardized scores, can be shown as follows:
 
 ```{r can-vars}
@@ -662,10 +690,11 @@ can2 <- paste("Can2 = ", paste0(round(C[,2], 2), " x ", names, collapse = " + ")
 
 
 \begin{eqnarray*}
-\text{Can}_1 & = 0.43 \cdot \text{S.length} + 0.52 \cdot \text{S.wid} - 0.95 \cdot \text{P.length} - 0.58 \cdot \text{P.length} \\
-\text{Can}_2 & = 0.01 \cdot \text{S.length} + 0.74 \cdot \text{S.wid} + 0.4 \cdot \text{P.length} + 0.58 \cdot \text{P.length}
+\text{Can}_1 & = 0.43 \cdot \text{S.len} + 0.52 \cdot \text{S.wid} - 0.95 \cdot \text{P.len} - 0.58 \cdot \text{P.length} \\
+\text{Can}_2 & = 0.01 \cdot \text{S.len} + 0.74 \cdot \text{S.wid} + 0.4 \cdot \text{P.len} + 0.58 \cdot \text{P.length}
 \end{eqnarray*}
 
+-->
 
 ### Canonical scores plot
 
@@ -674,7 +703,7 @@ The `plot()` method for `"candisc"` objects gives a plot of these observation sc
 The response variables are shown as
 vectors, using the structure coefficients, as in a biplot. Thus, the relative size of the projection of these
 vectors on the canonical axes reflects the correlation of the observed response on the canonical dimension.
-For ease of interpretation I flipped the sign of the first canonical dimension, so that the positive `Can1` direction
+For ease of interpretation I flipped the sign of the first canonical dimension (`rev.axes`), so that the positive `Can1` direction
 corresponds to larger flowers.
 
 <!-- **TODO**: `var.labels` not a graphical parameter -->
@@ -705,7 +734,9 @@ plot(iris.can,
 The interpretation of
 this plot is simple: in canonical space, variation of the means for the iris species is
 essentially one-dimensional (99.1% of the effect of `Species`), and this dimension corresponds
-to overall size of the iris flowers.  All variables except for `Sepal.Width` are positively aligned with
+to overall size of the iris flowers: The Setosas have smaller flowers.  
+
+All variables except for `Sepal.Width` are positively aligned with
 this axis, but the two petal variables show the greatest discrimination.
 The negative direction for `Sepal.Width` reflects the pattern seen in @fig-iris-pairs, where _setosa_
 have wider sepals.
@@ -729,7 +760,7 @@ scaling, making the axes comparable to those in @fig-iris-candisc.[^can-signif-s
 [^can-signif-scaling]:  If significance scaling was used the interpretation of the canonical HE plot plot would the same as before: if the hypothesis ellipse extends beyond the error ellipse, then that dimension is significant.  
 
 The vectors for each predictor are the same structure coefficients as in the ordinary canonical plot.
-They can again be reflected for interpretation and scaled in length to fill the plot window.
+They can again be reflected for easier interpretation and scaled in length to fill the plot window.
 
 <!-- now depends on candisc 0.9.1 -->
 
@@ -738,7 +769,7 @@ They can again be reflected for interpretation and scaled in length to fill the 
 #| fig-width: 8
 #| fig-height: 8
 #| out-width: "80%"
-#| fig-cap: "Canonical HE plot for the iris data."
+#| fig-cap: "Canonical HE plot for the iris data. Compared with @fig-iris-candisc, it substutes canonical $\\mathbf{H}$ and \\mathbf{E}$ ellipses for the canonical scores shown there."
 op <- par(mar = c(4, 4, 4, 1) + .5)
 heplot(iris.can,
        size = "effect",
@@ -754,7 +785,7 @@ heplot(iris.can,
 ```
 
 The collection of plots shown for the iris data here can be seen as progressive visual summaries of the 
-data:
+data and increased visual understanding of 
 
 * The scatterplot matrix in @fig-iris-spm shows the iris flowers in the data space of the sepal and petal variables.
 * Canonical analysis substitutes for these the two linear combinations reflected in `Can1` and `Can2`. The plot in @fig-iris-candisc portrays _exactly_ the same relations among the species, but in the reduced canonical space of only two dimensions.
@@ -786,9 +817,8 @@ predictors together.
 
 ### Example: NLSY data {#sec-NLSY-HE}
 
-<!-- **TODO**: The HE plots are nicer w/o using log(income) -->
 
-Here I'll continue the analysis of the NLSY data from @sec-NLSY-mmra. In the model `NLSY.mod1` I used
+Here I'll continue the analysis of the NLSY data from @sec-NLSY-mmra. In the model `NLSY.mod1`, I used
 only father's income  and education to predict scores in reading and math, and both 
 of these demographic variables were highly significant.
 
@@ -813,7 +843,7 @@ Fathers income and education are positively correlated in their effects on the o
 From the angles in the plot, income is most related to the math score, while education is related
 to both, but slightly more to the reading score.
 
-The overall joint test for both predictors can then visualized as the test of the linear hypothesis
+The overall joint test for both predictors can then be visualized as the test of the linear hypothesis
 $\mathcal{H}_0 : \mathbf{B} = [\boldsymbol{\beta}_\text{income}, \boldsymbol{\beta}_\text{educ}] = \mathbf{0}$.
 For `heplot()`, we specify the names of the coefficients to be tested with the `hypotheses` argument.
 
