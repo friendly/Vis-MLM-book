@@ -64,6 +64,8 @@ library(candisc)
 library(ggplot2)
 library(dplyr)
 library(tidyr)
+library(ggpubr)
+library(patchwork)
 ```
 
 ## HE plot framework {#sec-he-framework}
@@ -678,7 +680,7 @@ contrasts the two width variables against petal length.
 
 I find it easier to interpret the correlations between the observed and canonical variables, given as
 the canonical structure coefficients. These are easily visualized as vectors in canonical space
-(similar to biplots for a PCA), as shown below (@fit-iris-candisc).
+(similar to biplots for a PCA), as shown below (@fig-iris-candisc).
 
 <!--
 Thus, the two weighted sums for the canonical variates, using mean-centered standardized scores, can be shown as follows:
@@ -815,15 +817,19 @@ $2 \times 2$ factorial design with three response variables.
 ::: {#exm-plastic}
 **Plastic film data**
 
-An industrial experiment was conducted to determine the optimum conditions for extruding plastic film. Of interest were three responses: resistance to `tear`, film `gloss` and the `opacity` of the film. Two factors were manipulated:
-`rate` of extrusion and amount of some `additive`,
-both of these being set to two values, `High` and `Low`. The dataset `heplots::Plastic`  comes from
-@JohnsonWichern:92.
+An industrial experiment was conducted to determine the optimal conditions for extruding plastic film. Of interest were three responses: resistance to `tear`, film `gloss` and the `opacity` of the film. Two factors were manipulated, both at
+two levels, labeled `High` and `Low`:
+change in `rate` of extrusion (-10%, +10%) and amount of some `additive` (1%, 1.5%),
+with $n=5$ runs at each combination of the factor levels.
+The dataset `heplots::Plastic`  comes from
+@JohnsonWichern1998, Example 6.12.
 
 ```{r plastic-str}
 data(Plastic, package="heplots")
 str(Plastic)
 ```
+
+**Multivariate tests**
 
 The MANOVA model `plastic.mod` fits  the main effects of `rate` and `additive`
 and the interaction `rate:additive`. The `Anova()` summary shows a strong
@@ -843,6 +849,7 @@ uniStats(plastic.mod)
 ```
 
 **HE plots**
+
 We can visualize _all_ these
 effects for pairs of variables in an HE plot, showing the "size" and
 orientation of hypothesis variation ($\mathbf{H}$) for each model term,
@@ -853,22 +860,99 @@ $\mathbf{H}$ ellipsoids for `rate`, `additive` and `rate:additive` each degenera
 
 @fig-plastic-HE1 shows the HE plot for the responses `tear` and `gloss`, the strongest
 by univariate tests. This plot takes advantage of another feature of
-`heplot()`, to overlay the plots for significance and effect size scaling in
-a single plot (using `add = TRUE`).
+`heplot()`: You can overlay plots using `add = TRUE`, as is done here to show both significance and effect size scaling in
+a single plot.
 
 ```{r echo = -1}
 #| label: fig-plastic-HE1
 #| fig-width: 6
 #| fig-height: 6
 #| out-width: "70%"
-#| fig-cap: "HE plot for effects on `tear` and `gloss` according to the factors `rate`, `additive` and their interaction, `rate:additive`. The thicker lines show effect size scaling; the thinner lines show significance scaling."
+#| fig-cap: "HE plot for effects on `tear` and `gloss` according to the factors `rate`, `additive` and their interaction, `rate:additive`. The thicker lines show effect size scaling; thinner lines show significance scaling."
 par(mar = c(4,4,1,1)+.1)
-colors = c("red", "darkblue", "darkgreen", "brown")
+colors = c("red", "darkblue", "darkgreen", "brown4")
 heplot(plastic.mod, size="significance", 
-       col=colors, cex=1.25,
+       col=colors, cex=1.5,  cex.lab = 1.5,
        fill=TRUE, fill.alpha=0.1)
 heplot(plastic.mod, size="effect", 
-       add=TRUE, lwd=5, term.labels=FALSE, col=colors)
+       col=colors, lwd=6,
+       add=TRUE, term.labels=FALSE)
+```
+
+In this view, the effect of extrusion `rate` is highly significant, with the high level giving larger tear resistance and lower gloss on average. High level of `additive` produces greater tear resistance and higher gloss.  The interaction
+effect, `rate:additive`, while non-significant, points nearly entirely in the direction of `gloss`.
+
+**Understanding interactions**
+
+To understand an interaction effect, the simplest thing is to plot the cell means and error bars in a traditional line plot
+with one factor on the horizontal axis and the other as separate lines within the panel. Here (@fig-plastic-ggline)
+I use `ggpubr::ggline()`,
+which simplifies such plots, though at the expense of a bit of control for `ggplot2`.[^control]
+
+[^control]: Line plots like this are nearly always more understandable with labels directly on the lines, rather than
+in a legend. Wrappers for `ggplot2` simplify some things but can't accommodate this kind of customization.
+
+```{r}
+#| label: fig-plastic-ggline
+#| fig-width: 12
+#| fig-height: 6
+#| out-width: "100%"
+#| fig-cap: Line plots of means and their standard errors for the response `tear` (left) and `gloss` (right)"
+p1 <- ggline(Plastic, 
+  x = "rate", y = "tear",
+  color = "additive", shape = "additive",
+  add = c("mean_se"),
+  position = "dodge",
+  point.size = 5, linewidth = 1.5,
+  ggtheme = theme_pubr(base_size = 16)
+  )
+
+p2 <- ggline(Plastic, 
+  x = "rate", y = "gloss",
+  color = "additive", shape = "additive",
+  add = c("mean_se"),
+  position = "dodge",
+  point.size = 5, linewidth = 1.5,
+  ggtheme = theme_pubr(base_size = 16)
+  )
+
+p1 + p2 
+```
+
+For resistance to `tear`, the lines are parallel, so there is no interaction, which is why the `rate:additive` effect had
+no horizontal component in @fig-plastic-HE1. In the panel for `gloss`, the means for `additive` don't differ at high `rate`,
+but do substantially at the low extrusion rate.
+
+But what if you really wanted to show the means for the combinations of rate and additive in an HE plot?
+By design, means for the levels of interaction terms are not shown in the HE plot,
+because doing so in general can lead to messy displays.
+
+We can add them here for the term `rate:additive` as shown in @fig-plastic-HE2. This uses `heplots::termMeans()`
+to find the cell means for the combinations of the two factors and then `lines()` to connect the pairs of points
+for the low and high ;levels of `additive`.
+
+```{r}
+#| label: fig-plastic-HE2
+#| fig-width: 6
+#| fig-height: 6
+#| out-width: "70%"
+#| fig-cap: "HE plot for effects on `tear` and `gloss` using significance scaling. To this is added points showing the means for the combinations of rate and additive."
+par(mar = c(4,4,1,1)+.1)
+heplot(plastic.mod, size="evidence", 
+       col=colors, cex=1.5, cex.lab = 1.5, 
+       lwd = c(1, 5),
+       fill=TRUE, fill.alpha=0.05)
+
+## add interaction means
+intMeans <- termMeans(plastic.mod, 'rate:additive', 
+                      abbrev.levels=3)
+points(intMeans[,1], intMeans[,2], pch=18, cex=1.2, col="brown4")
+text(intMeans[,1], intMeans[,2], rownames(intMeans), 
+     adj=c(0.5, 1), col="brown4")
+lines(intMeans[c(1,3),1], intMeans[c(1,3),2], 
+      col="brown4", lwd = 3)
+lines(intMeans[c(2,4),1], intMeans[c(2,4),2], 
+      col="brown4", lwd = 3)
 
 ```
 
@@ -890,14 +974,16 @@ Moreover, it is easy to show visual overall tests of _joint_ linear hypotheses f
 predictors together.
 
 
-**TODO**: Use these examples below
+**TODO**: Use these examples below ?
 
 * `heplots::NLSY`: National Longitudinal Survey of Youth Data
 * `heplots::schooldata`: School Data -> `R/schooldata-ex.R`
 * `heplots::Hernior`: Recovery from Elective Herniorrhaphy -> HE_mmra vignette
 
-### Example: NLSY data {#sec-NLSY-HE}
+<!-- ### Example: NLSY data {#sec-NLSY-HE} -->
 
+::: {#exm-NLSY-HE}
+**NLSY data**
 
 Here I'll continue the analysis of the NLSY data from @sec-NLSY-mmra. In the model `NLSY.mod1`, I used
 only father's income  and education to predict scores in reading and math, and both 
@@ -941,6 +1027,89 @@ heplot(NLSY.mod1,
        lwd=c(2, 3, 3, 2),
        label.pos = c("bottom", "top"))
 ```
+
+:::
+
+<!-- ### Example: School data {#sec-schooldata-HE} -->
+
+::: {#exm-schooldata-HE}
+**School data**
+
+The `schooldata` dataset analyzed in @sec-schooldata-mmra can also be illuminated by the methods of this
+chapter. There I fit the multivariate regression model predicting students scores on
+reading, mathematics and a measure of self-esteem using as predictors measures of parents' education, occupation,
+school visits, counseling help with school assignments and number of teachers per school.
+
+But I also found two highly influential observations (cases 44, 59; see @fig-schoolmod-infl) whose effect on the
+coefficients is rather large; so, I remove them from the analysis here.[^removed-cases]
+
+[^removed-cases]: An alternative to fitting the model removing specific cases deemed troublesome is to use
+a **robust** method, such as `heplots::roblm()`. This uses re-weighted least squares to down-weight observations
+with large residuals or other problems. These methods are illustrated in @sec-robust-estimation.
+
+```{r}
+data(schooldata, package = "heplots")
+
+bad <- c(44, 59)
+OK <- (1:nrow(schooldata)) |> setdiff(bad)
+school.mod2 <- lm(cbind(reading, mathematics, selfesteem) ~ ., 
+                  data=schooldata[OK, ])
+```
+
+In this model, parent's education and occupation
+and their visits to the schools were highly predictive of student's outcomes but
+their counseling efforts and the number of teachers in the schools did not contribute much.
+However, the nature of these relationships was largely uninterpreted in that analysis.
+
+Here is where HE plots can help. You can think of this as a way to visualize what is entailed
+in the coefficients for this model by showing the _magnitude_ of the predictor effects by their size
+and their relations to the outcome variable by their _direction_. The table of raw score coefficients
+isn't very helpful in this regard.
+
+```{r}
+coef(school.mod2)
+```
+
+
+@fig-school-heplot1 shows the HE plot for reading and mathematics scores in this model, using the default
+significance scaling.
+```{r echo = -1}
+#| label: fig-school-heplot1
+#| out-width: "80%"
+#| fig-cap: "HE plot for reading and mathematics scores in the multivariate regression model..."
+op <- par(mar = c(4, 4, 1, 2) + .1)
+heplot(school.mod2, 
+       fill=TRUE, fill.alpha=0.1,
+       cex = 1.5,
+       cex.lab = 1.5,
+       label.pos = c(rep("top", 4), "bottom", "bottom"))
+```
+
+Parent's occupation and education are both significant in this view, but what is more important is their
+orientation. Both are positively associated with reading and math scores, but education is somewhat more
+related to reading than to mathematics. Number of teachers and degree of parental counseling have a
+similar orientation, with teachers having a greater relation to mathematics scores.
+Visits to school and number of teachers are not significant in
+this plot, but both are positively correlated with reading and math and are coincident in the plot. The parent time counseling measure, while also insignificant,
+tilts in the opposite direction, having different signs for reading and math.
+
+In the `pairs()` plot for all three responses (@fig-school-heplot2), we see something different in the relations for self-esteem. While occupation has a large positive relation in all the plots in the third row and column,
+education, counseling and teachers have negative relations in these plots, particularly with mathematics scores.
+
+```{r}
+#| label: fig-school-heplot2
+#| fig-width: 9
+#| fig-height: 9
+#| out-width: "100%"
+#| fig-cap: "Pairwise HE plots for the three outcome variables in the multivariate regression model ..."
+pairs(school.mod2, 
+      fill=TRUE, fill.alpha=0.1,
+      var.cex = 2.5,
+      cex = 1.3)
+```
+
+:::
+
 
 ## Canonical correlation analysis {#sec-cancor}
 
@@ -1034,82 +1203,6 @@ $$
 Both equations have the same form and have the same eigenvalues. And, given the eigenvectors for one of these equations, we can find the eigenvectors for the other.
 
 **TODO**: Fill in details of canonical correlations
-
-### Example: School data {#sec-schooldata-HE}
-
-<!-- **TODO**: This should be redone, omitting the influential cases, 44, 59 -->
-
-The `schooldata` dataset analyzed in @sec-schooldata-mmra can also be illuminated by the methods of this
-chapter. There I fit the multivariate regression model predicting students scores on
-reading, mathematics and a measure of self-esteem using as predictors measures of parents' education, occupation,
-school visits, counseling help with school assignments and number of teachers per school.
-But I also found two highly influential observations (cases 44, 59; see @fig-schoolmod-infl) whose effect on the
-coefficients is rather large; so, I remove them from the analysis here.[^removed-cases]
-
-[^removed-cases]: An alternative to fitting the model removing specific cases deemed troublesome is to use
-a **robust** method, such as `heplots::roblm()` which uses re-weighted least squares to down-weight observations
-with large residuals or other problems.
-
-```{r}
-data(schooldata, package = "heplots")
-
-bad <- c(44, 59)
-OK <- (1:nrow(schooldata)) |> setdiff(bad)
-school.mod2 <- lm(cbind(reading, mathematics, selfesteem) ~ ., 
-                  data=schooldata[OK, ])
-```
-
-In this model, parent's education and occupation
-and their visits to the schools were highly predictive of student's outcomes but
-their counseling efforts and the number of teachers in the schools did not contribute much.
-However, the nature of these relationships was largely uninterpreted in that analysis.
-
-Here is where HE plots can help. You can think of this as a way to visualize what is entailed
-in the coefficients for this model by showing the _magnitude_ of the predictor effects by their size
-and their relations to the outcome variable by their _direction_. The table of raw score coefficients
-isn't very helpful in this regard.
-
-```{r}
-coef(school.mod2)
-```
-
-
-@fig-school-heplot1 shows the HE plot for reading and mathematics scores in this model, using the default
-significance scaling.
-```{r echo = -1}
-#| label: fig-school-heplot1
-#| out-width: "80%"
-#| fig-cap: "HE plot for reading and mathematics scores in the multivariate regression model..."
-op <- par(mar = c(4, 4, 1, 2) + .1)
-heplot(school.mod2, 
-       fill=TRUE, fill.alpha=0.1,
-       cex = 1.5,
-       cex.lab = 1.5,
-       label.pos = c(rep("top", 4), "bottom", "bottom"))
-```
-
-Parent's occupation and education are both significant in this view, but what is more important is their
-orientation. Both are positively associated with reading and math scores, but education is somewhat more
-related to reading than to mathematics. Number of teachers and degree of parental counseling have a
-similar orientation, with teachers having a greater relation to mathematics scores.
-Visits to school and number of teachers are not significant in
-this plot, but both are positively correlated with reading and math and are coincident in the plot. The parent time counseling measure, while also insignificant,
-tilts in the opposite direction, having different signs for reading and math.
-
-In the `pairs()` plot for all three responses (@fig-school-heplot2), we see something different in the relations for self-esteem. While occupation has a large positive relation in all the plots in the third row and column,
-education, counseling and teachers have negative relations in these plots, particularly with mathematics scores.
-
-```{r}
-#| label: fig-school-heplot2
-#| fig-width: 9
-#| fig-height: 9
-#| out-width: "100%"
-#| fig-cap: "Pairwise HE plots for the three outcome variables in the multivariate regression model ..."
-pairs(school.mod2, 
-      fill=TRUE, fill.alpha=0.1,
-      var.cex = 2.5,
-      cex = 1.3)
-```
 
 
 ### Canonical analysis
