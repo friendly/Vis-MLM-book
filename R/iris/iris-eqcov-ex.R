@@ -62,13 +62,15 @@ covEllipses(iris[,1:4], iris$Species,
 iris.pca <- prcomp(iris[,1:4], scale = TRUE)
 summary(iris.pca)
 
+source(here::here("R/util/text.usr.R"))
+
 op <- par(mfcol=c(1,2), mar=c(5,4,1,1)+.1)
 covEllipses(iris.pca$x, iris$Species, 
   col = c(iris.colors, "black"),
 	fill=TRUE, fill.alpha=.1,
   cex.lab = 1.5,
 	label.pos = c(1, 3, 3, 0), asp=1)
-text(-1.5, 4, "(a) Uncentered")
+text.usr(0.05, 0.95, "(a) Uncentered", pos = 4)
 
 covEllipses(iris.pca$x, iris$Species,
   center=TRUE,        
@@ -76,7 +78,7 @@ covEllipses(iris.pca$x, iris$Species,
   fill=TRUE, fill.alpha=.1,
   cex.lab = 1.5,
   label.pos = c(1, 3, 3, 0), asp=1)
-text(0.6, 1.4, "(b) Centered")
+text.usr(0.95, 0.95, "(b) Centered", pos = 2)
 par(op)
 
 # all variables
