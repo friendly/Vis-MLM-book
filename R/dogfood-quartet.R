@@ -22,7 +22,7 @@ dogfood.mod <- lm(cbind(start, amount) ~ formula, data=dogfood)
 Anova(dogfood.mod)
 
 col <- c("red", "blue", "darkgreen", "brown", "black", "darkgray")
-options(neplot.colors = col)
+options(heplot.colors = col)
 
 # dataEllipse(amount ~ start | formula, data=dogfood,
 #             pch = 15:19, 
@@ -38,7 +38,7 @@ plot(amount ~ start, data=dogfood,
      pch = (15:19)[dogfood$formula], 
      col = col[dogfood$formula],
      cex=2, cex.lab = 1.5,
-     xlim = c(0,5),
+     xlim = c(-1, 5),
      ylim = c(70, 110))
 text.usr(0.02, 0.95, "(a) Data", pos = 4, cex = 1.3)
 
@@ -49,9 +49,9 @@ covEllipses(cbind(start, amount) ~ formula, data=dogfood,
             fill = TRUE, fill.alpha = 0.05,
             cex.lab = 1.5,
             cex = 1.5,
-            xlim = c(0,5),
+            xlim = c(-1,5),
             ylim = c(70, 110))
-points(amount ~ start, data=dogfood, 
+oints(amount ~ start, data=dogfood, 
        pch = (15:19)[dogfood$formula], 
        col = col[dogfood$formula],
        cex=1.5)
@@ -62,7 +62,7 @@ heplot(dogfood.mod, fill = TRUE,
        fill.alpha = 0.1, 
        cex.lab = 1.5,
        cex = 1.5,
-       xlim = c(0,5),
+       xlim = c(-1, 5),
        ylim = c(70, 110))
 text.usr(0.02, 0.95, "(c) HE plot", pos = 4, cex = 1.3)
 
@@ -86,6 +86,28 @@ heplot(dogfood.can,
        cex.lab = 1.5)
 text.usr(0.02, 0.95, "(d) CD-HE plot", pos = 4, cex = 1.3)
 
+par(op)
+
+# just the HE plot
+
+# H & E matrices for 
+
+dogfood.aov <- Anova(dogfood.mod) 
+SSP_H <- dogfood.aov$SSP[[1]] |> print()
+
+
+SSP_E <- dogfood.aov$SSPE |> print()
+
+cov2cor(SSP_H)
+cov2cor(SSP_E)
+
+op <- par(mar= c(5, 5, 1, 1) +.1)
+heplot(dogfood.mod, fill = TRUE, 
+       fill.alpha = 0.1, 
+       cex.lab = 1.5,
+       cex = 1.5,
+       xlim = c(-1, 4.5),
+       ylim = c(70, 100))
 par(op)
 
 
