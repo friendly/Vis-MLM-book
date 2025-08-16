@@ -59,7 +59,7 @@ covEllipses(iris[,1:4], iris$Species,
 #' ## view in PCA space   
 #' NB: scale.=FALSE by default
 
-iris.pca <- prcomp(iris[,1:4])
+iris.pca <- prcomp(iris[,1:4], scale = TRUE)
 summary(iris.pca)
 
 op <- par(mfcol=c(1,2), mar=c(5,4,1,1)+.1)
@@ -68,6 +68,7 @@ covEllipses(iris.pca$x, iris$Species,
 	fill=TRUE, fill.alpha=.1,
   cex.lab = 1.5,
 	label.pos = c(1, 3, 3, 0), asp=1)
+text(-1.5, 4, "(a) Uncentered")
 
 covEllipses(iris.pca$x, iris$Species,
   center=TRUE,        
@@ -75,6 +76,7 @@ covEllipses(iris.pca$x, iris$Species,
   fill=TRUE, fill.alpha=.1,
   cex.lab = 1.5,
   label.pos = c(1, 3, 3, 0), asp=1)
+text(0.6, 1.4, "(b) Centered")
 par(op)
 
 # all variables
@@ -113,6 +115,15 @@ covEllipses(iris.pca$x, iris$Species,
             label.pos = c(1, 3, 3, 0), asp=1)
 par(op)
 
+covEllipses(iris.pca$x, iris$Species,
+  variables = 3:4,
+  center=TRUE,        
+  col = c(iris.colors, "black"),
+  fill=TRUE, fill.alpha=.1,
+  cex.lab = 1.5,
+  label.pos = c(1, 3, 3, 4), asp=1)
+
+
 
 #' ## compare classical and robust covariance estimates
 covEllipses(iris[,1:4], iris$Species)
@@ -136,6 +147,10 @@ plot(iris.boxm, which="precision", gplabel="Species")
 plot(iris.boxm, which="max", gplabel="Species")
 par(op)
 
+op <- par(mfrow=c(1,2), mar=c(5,4,1,1))
+plot(iris.boxm, which="sum", gplabel="Species")
+plot(iris.boxm, which="precision", gplabel="Species")
+par(op)
 
 
 #' covEllipses has a method for `"boxm"` objects

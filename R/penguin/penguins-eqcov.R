@@ -211,3 +211,19 @@ covEllipses(peng.pca$x, peng$species,
             fill=c(rep(FALSE,3), TRUE), 
             label.pos=c(1:3,0), fill.alpha=.1, asp=1)
 par(op)
+
+#' ## multivariate Levene test
+
+pengdev <- abs( colDevs(peng[,3:6], peng$species, median) )
+pengdev.mod <- lm( pengdev ~ peng$species)
+Anova(pengdev.mod)
+
+pairs(pengdev.mod, variables=1:4, fill=TRUE, fill.alpha=.1)
+
+#' Canonical views for Levene's test
+library(candisc)
+pengdev.can <- candisc(pengdev.mod)
+pengdev.can
+
+plot(pengdev.can, which=1)
+plot(pengdev.can, ellipse=TRUE)
