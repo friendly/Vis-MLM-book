@@ -192,10 +192,12 @@ irisdev <- abs( colDevs(iris[,1:4], iris$Species, median) )
 irisdev.mod <- lm( irisdev ~ iris$Species)
 Anova(irisdev.mod)
 
-#
-irisdev <- colDevs(iris[,1:4], iris$Species, median, group.var = "Species") |>
+# do it to avoid seeing iris$Species
+irisdev <- colDevs(iris[,1:4], iris$Species, median, 
+                   group.var = "Species") |>
   mutate(across(where(is.numeric), abs))
-irisdev.mod <- lm(cbind(Sepal.Length, Sepal.Width, Petal.Length, Petal.Width) ~ Species, data=irisdev)
+irisdev.mod <- lm(cbind(Sepal.Length, Sepal.Width, Petal.Length, Petal.Width) ~ 
+                    Species, data=irisdev)
 
 
 #' ## robust MLM

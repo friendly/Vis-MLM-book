@@ -871,17 +871,21 @@ Figure&nbsp;12.9: Plot of eigenvalue statistics of the covariance matrices for t
 <span class="header-section-number">12.9</span> Multivariate analog of Levine’s test</h2>
 <p>The fact that Levine’s test is just a simple ANOVA of the absolute deviations from the group means or medians suggests an easy multivariate generalization (which has not been well-studied) —Simply do a MANOVA of the absolute differences, <span class="math inline">\(\vert \mathbf{Y} - \overline{\mathbf{Y}}_j \vert\)</span>, centering on the means or medians.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a> For the <code>iris</code> data, this gives:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb18" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">irisdev</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">abs</a></span><span class="op">(</span> <span class="fu"><a href="https://friendly.github.io/heplots/reference/colDevs.html">colDevs</a></span><span class="op">(</span><span class="va">iris</span><span class="op">[</span>,<span class="fl">1</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span>, <span class="va">iris</span><span class="op">$</span><span class="va">Species</span>, <span class="va">median</span><span class="op">)</span> <span class="op">)</span></span>
-<span><span class="va">irisdev.mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span> <span class="va">irisdev</span> <span class="op">~</span> <span class="va">iris</span><span class="op">$</span><span class="va">Species</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb18" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">irisdev</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://friendly.github.io/heplots/reference/colDevs.html">colDevs</a></span><span class="op">(</span><span class="va">iris</span><span class="op">[</span>,<span class="fl">1</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span>, <span class="va">iris</span><span class="op">$</span><span class="va">Species</span>, <span class="va">median</span>, </span>
+<span>                   group.var <span class="op">=</span> <span class="st">"Species"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/across.html">across</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/where.html">where</a></span><span class="op">(</span><span class="va">is.numeric</span><span class="op">)</span>, <span class="va">abs</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">irisdev.mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">Sepal.Length</span>, <span class="va">Sepal.Width</span>, <span class="va">Petal.Length</span>, <span class="va">Petal.Width</span><span class="op">)</span> <span class="op">~</span> </span>
+<span>                    <span class="va">Species</span>, data<span class="op">=</span><span class="va">irisdev</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova</a></span><span class="op">(</span><span class="va">irisdev.mod</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Type II MANOVA Tests: Pillai test statistic</span></span>
-<span><span class="co">#&gt;              Df test stat approx F num Df den Df  Pr(&gt;F)    </span></span>
-<span><span class="co">#&gt; iris$Species  2     0.394     8.89      8    290 6.7e-11 ***</span></span>
+<span><span class="co">#&gt;         Df test stat approx F num Df den Df  Pr(&gt;F)    </span></span>
+<span><span class="co">#&gt; Species  2     0.394     8.89      8    290 6.7e-11 ***</span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>The <code>irisdev.mod</code> model is just another MANOVA, so we can visualize it in an HE plot (<a href="#fig-iris-dev-pairs" class="quarto-xref">Figure&nbsp;<span>12.10</span></a>). But you must remember that this is showing differences among groups in multivariate dispersion rather than in means.</p>
+<p>The <code>irisdev.mod</code> model is just another MANOVA, so we can visualize it in an HE plot (<a href="#fig-iris-dev-pairs" class="quarto-xref">Figure&nbsp;<span>12.10</span></a>). But remember that this is showing differences among groups in multivariate dispersion rather than in means.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb19" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/pairs.html">pairs</a></span><span class="op">(</span><span class="va">irisdev.mod</span>, variables<span class="op">=</span><span class="fl">1</span><span class="op">:</span><span class="fl">4</span>, fill<span class="op">=</span><span class="cn">TRUE</span>, fill.alpha<span class="op">=</span><span class="fl">.1</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
@@ -895,16 +899,17 @@ Figure&nbsp;12.10: HE plots for the multivariate generalization of Levine’s te
 </div>
 </div>
 </div>
-<p>In this plot, the <span class="math inline">\(\mathbf{H}\)</span> ellipses for the groups show the variation in the overall size of absolute differences from the group medians. These are very highly correlated across groups in most of the subplots, particularly so for those involving sepal width.</p>
+<p>In this plot, the <span class="math inline">\(\mathbf{H}\)</span> ellipses for the groups show the variation in the overall <em>dispersion</em>—the size of absolute differences from the group medians. These are very highly correlated across groups in most of the subplots, particularly so for those involving sepal width.</p>
 <section id="canonical-discriminant-analysis" class="level3" data-number="12.9.1"><h3 data-number="12.9.1" class="anchored" data-anchor-id="canonical-discriminant-analysis">
 <span class="header-section-number">12.9.1</span> Canonical discriminant analysis</h3>
-<p>But we can go further. Just as canonical discriminant analysis provides a low-dimensional view of differences in means, the same method can be used to visualize heterogeneity of dispersion expressed by the the Levene-type MANOVA in 1D or 2D. For the model <code>irisdev.mod</code>, this shows that 98% of groups differences shown in the HE plots (<a href="#fig-iris-dev-pairs" class="quarto-xref">Figure&nbsp;<span>12.10</span></a>) can be found in a single canonical dimension.</p>
+<p>But we can go further. Just as canonical discriminant analysis provides a low-dimensional view of differences in means, the same method can be used to visualize heterogeneity of dispersion expressed by the the Levene-type MANOVA in 1D or 2D.</p>
+<p>For the model <code>irisdev.mod</code>, this shows that 98% of groups differences shown in the HE plots (<a href="#fig-iris-dev-pairs" class="quarto-xref">Figure&nbsp;<span>12.10</span></a>) can be found in a single canonical dimension. The 4D information can be reduced to 1D.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb20" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/friendly/candisc/">candisc</a></span><span class="op">)</span></span>
 <span><span class="va">irisdev.can</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://friendly.github.io/candisc/reference/candisc.html">candisc</a></span><span class="op">(</span><span class="va">irisdev.mod</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Canonical Discriminant Analysis for iris$Species:</span></span>
+<span><span class="co">#&gt; Canonical Discriminant Analysis for Species:</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;   CanRsq Eigenvalue Difference Percent Cumulative</span></span>
 <span><span class="co">#&gt; 1  0.381     0.6154      0.602    97.9       97.9</span></span>
@@ -919,7 +924,7 @@ Figure&nbsp;12.10: HE plots for the multivariate generalization of Levine’s te
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Plotting the first canonical dimension gives boxplots for the scores and vectors for the weights of the iris variables. Overall, the covariance matrices are smallest for setosa and largest for virginica. The structure coefficents for the variables reflect the pattern shown in the HE plots (<a href="#fig-iris-dev-pairs" class="quarto-xref">Figure&nbsp;<span>12.10</span></a>), where the direction of the <span class="math inline">\(\mathbf{H}\)</span> ellipses is negative for sepal width but positive for the others.</p>
+<p>Plotting the first canonical dimension gives boxplots for the scores and vectors for the weights of the iris variables.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb21" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">irisdev.can</span>, which<span class="op">=</span><span class="fl">1</span>,</span>
 <span>     fill.alpha <span class="op">=</span> <span class="fl">.3</span>,</span>
@@ -937,6 +942,7 @@ Figure&nbsp;12.11: Canonical discriminant plot for the multivariate generalizati
 </div>
 </div>
 </div>
+<p>Overall, the covariance matrices are smallest for setosa and largest for virginica. The structure coefficents for the variables reflect the pattern shown in the HE plots (<a href="#fig-iris-dev-pairs" class="quarto-xref">Figure&nbsp;<span>12.10</span></a>), where the direction of the <span class="math inline">\(\mathbf{H}\)</span> ellipses is negative for sepal width but positive for the others.</p>
 </section></section><section id="what-have-we-learned" class="level2" data-number="12.10"><h2 data-number="12.10" class="anchored" data-anchor-id="what-have-we-learned">
 <span class="header-section-number">12.10</span> What Have We Learned?</h2>
 <p>The quest to understand equality of covariance matrices in multivariate models has taken us on a journey from Box’s famous row boat metaphor to some novel visualization techniques. Here are the essential insights that will transform how you think about and explore heterogeneity in your multivariate data:</p>

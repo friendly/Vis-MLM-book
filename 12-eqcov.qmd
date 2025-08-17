@@ -681,13 +681,17 @@ permutation test method (PERMDIST) which randomly permutes the group assignments
 
 
 ```{r iris-dev}
-irisdev <- abs( colDevs(iris[,1:4], iris$Species, median) )
-irisdev.mod <- lm( irisdev ~ iris$Species)
+irisdev <- colDevs(iris[,1:4], iris$Species, median, 
+                   group.var = "Species") |>
+  mutate(across(where(is.numeric), abs))
+
+irisdev.mod <- lm(cbind(Sepal.Length, Sepal.Width, Petal.Length, Petal.Width) ~ 
+                    Species, data=irisdev)
 Anova(irisdev.mod)
 ```
 
 The `irisdev.mod` model is just another MANOVA, so we can visualize it in an HE plot (@fig-iris-dev-pairs).
-But you must remember that this is showing differences among groups in multivariate dispersion rather
+But remember that this is showing differences among groups in multivariate dispersion rather
 than in means.
 
 ```{r}
@@ -698,7 +702,7 @@ than in means.
 pairs(irisdev.mod, variables=1:4, fill=TRUE, fill.alpha=.1)
 ```
 
-In this plot, the $\mathbf{H}$ ellipses for the groups show the variation in the overall size of absolute differences
+In this plot, the $\mathbf{H}$ ellipses for the groups show the variation in the overall _dispersion_---the size of absolute differences
 from the group medians. These are very highly correlated across groups in most of the subplots, particularly so
 for those involving sepal width.
 
@@ -706,8 +710,11 @@ for those involving sepal width.
 
 But we can go further. Just as canonical discriminant analysis provides a low-dimensional view of differences
 in means, the same method can be used to visualize heterogeneity of dispersion expressed by
-the the Levene-type MANOVA in 1D or 2D. For the model `irisdev.mod`, this shows that 98% of groups differences
-shown in the HE plots (@fig-iris-dev-pairs) can be found in a single canonical dimension.
+the the Levene-type MANOVA in 1D or 2D. 
+
+For the model `irisdev.mod`, this shows that 98% of groups differences
+shown in the HE plots (@fig-iris-dev-pairs) can be found in a single canonical dimension. The 4D information
+can be reduced to 1D.
 
 ```{r}
 library(candisc)
@@ -716,14 +723,12 @@ irisdev.can <- candisc(irisdev.mod) |>
 ```
 
 Plotting the first canonical dimension gives boxplots for the scores and vectors for the weights of the
-iris variables. Overall, the covariance matrices are smallest for setosa and largest for virginica.
-The structure coefficents for the variables reflect the pattern shown in the HE plots (@fig-iris-dev-pairs),
-where the direction of the $\mathbf{H}$ ellipses is negative for sepal width but positive for the others.
+iris variables. 
 
 ```{r echo=-1}
 #| label: fig-iris-dev-can
 #| fig-width: 10
-#| fig.height: 5
+#| fig.height: 6
 #| out-width: "100%"
 #| fig-cap: "Canonical discriminant plot for the multivariate generalization of Levine's test based on MANOVA of absolute deviations from group medians."
 op <- par(mar = c(5, 5, 2, 1) + .1)
@@ -733,6 +738,10 @@ plot(irisdev.can, which=1,
      var.cex = 1.2,
      cex.lab = 1.5, cex.axis = 1.1)
 ```
+
+Overall, the covariance matrices are smallest for setosa and largest for virginica.
+The structure coefficents for the variables reflect the pattern shown in the HE plots (@fig-iris-dev-pairs),
+where the direction of the $\mathbf{H}$ ellipses is negative for sepal width but positive for the others.
 
 
 ```{r child = "summary/Ch12-summary.qmd"}
