@@ -29,7 +29,7 @@ to decide whether linear (LDA) or quadratic discriminant analysis (QDA) should b
 given problem. In such cases, the data at hand should inform the choice of statistical analysis to utilize.
 
 
-We provide some answers to the following questions:
+I provide some answers to the following questions:
 
 - **Visualization**: How can we visualize differences among group variances and covariance matrices,
   perhaps in a way that is analogous to what is done to visualize differences among group means?
@@ -39,7 +39,8 @@ We provide some answers to the following questions:
   views can show the most interesting properties related to the equality of covariance matrices?
   Projecting the data into the space of the principal components serves well again here (@sec-eqcov-low-rank-views). Surprisingly, we will see that the _small dimensions_ contain useful information about differences among the group covariance matrices, similar to what we find for outlier detection.
   
-- **Other statistics**: Box's $M$-test is most widely used. Are there other worthwhile test statistics? We will see that graphics methods suggest alternatives in @sec-other-measures.
+- **Other statistics**: Box's $\mathcal{M}$-test is most widely used. Are there other worthwhile test statistics? You will see that graphical methods suggest alternatives in @sec-other-measures. Similarly, the univariate
+Levene's test has a simple multivariate generalization which can be visualized using HE plots (@sec-multivar-levene).
 
 The following sections provide a capsule summary of the issues in this topic.
 Most of the discussion is couched in terms of a one-way design for simplicity,
@@ -49,7 +50,7 @@ variables.
 
 When there are also numeric covariates, this topic can also be extended
 to the multivariate analysis of covariance (MANCOVA) setting. This is
-accomplished simply by applying these techniques to the residuals from predictions by 
+accomplished simply by applying these techniques to the _residuals_ from predictions by 
 the covariates alone.
 
 **Packages**
@@ -64,7 +65,7 @@ library(dplyr)
 library(tidyr)
 ```
 
-The main methods described here are implemented in the `r package("heplots")`.
+The main methods described here are implemented in the `r pkg("heplots")` package.
 
 ## Homogeneity of Variance in Univariate ANOVA {#sec-homogeneity-ANOVA}
 
@@ -664,15 +665,20 @@ In principle, it is possible to add such confidence intervals for all these meas
 For this data set, the pattern of points in the plot for Box's $\mathcal{M}$ is also more or less the same 
 as that for the precision measure. The plots for the sum of and maximum eigenvalue are also similar to each other, but differ from those of the two measures in the left column of @fig-peng-boxm-plots. The main point is that these are not _all the same_, so different functions reflect different patterns of the eigenvalues, and could be used to define new statistical tests, perhaps with greater power or sensitivity to outliers.
 
-## Multivariate analog of Levine's test
+## Multivariate analog of Levine's test {#sec-multivar-levene}
 
 The fact that Levine's test is just a simple ANOVA of the absolute deviations
 from the group means or medians suggests an easy multivariate generalization
-(which has not been well-studied)[^Anderson] ---Simply do a MANOVA of the absolute differences,
-$\vert \mathbf{Y} - \overline{\mathbf{Y}}_j \vert$, centering on the means or medians.
+(which has not been well-studied) ---Simply do a MANOVA of the absolute differences,
+$\vert \mathbf{Y} - \overline{\mathbf{Y}}_j \vert$, centering on the means or medians.[^Anderson]
 For the `iris` data, this gives:
 
-[^Anderson]: @Anderson2006 PERMDISP method
+[^Anderson]: @Anderson2006 describes other procedures based on Euclidean _distances_ 
+$D_{ij} = [\Sigma (y_{ij} - \bar{y}_j)^2]^{1/2}$
+of the observations from their
+group centroids (means or spatial medians). Rather than fit a parametric MANOVA model, he suggests a
+permutation test method (PERMDIST) which randomly permutes the group assignments and yields non-parametric tests.
+
 
 ```{r iris-dev}
 irisdev <- abs( colDevs(iris[,1:4], iris$Species, median) )
@@ -680,16 +686,57 @@ irisdev.mod <- lm( irisdev ~ iris$Species)
 Anova(irisdev.mod)
 ```
 
-The `irisdev.mod` model is just another MANOVA, so we can visualize it in an HE plot:
+The `irisdev.mod` model is just another MANOVA, so we can visualize it in an HE plot (@fig-iris-dev-pairs).
+But you must remember that this is showing differences among groups in multivariate dispersion rather
+than in means.
 
 ```{r}
 #| label: fig-iris-dev-pairs
 #| fig-width: 8
 #| fig.height: 8
-#| fig-cap: "HE plots of the MLM for the multivariate generalization of Levine's test."
+#| fig-cap: "HE plots for the multivariate generalization of Levine's test based on MANOVA of absolute deviations from group medians."
 pairs(irisdev.mod, variables=1:4, fill=TRUE, fill.alpha=.1)
 ```
 
+In this plot, the $\mathbf{H}$ ellipses for the groups show the variation in the overall size of absolute differences
+from the group medians. These are very highly correlated across groups in most of the subplots, particularly so
+for those involving sepal width.
+
+### Canonical discriminant analysis
+
+But we can go further. Just as canonical discriminant analysis provides a low-dimensional view of differences
+in means, the same method can be used to visualize heterogeneity of dispersion expressed by
+the the Levene-type MANOVA in 1D or 2D. For the model `irisdev.mod`, this shows that 98% of groups differences
+shown in the HE plots (@fig-iris-dev-pairs) can be found in a single canonical dimension.
+
+```{r}
+library(candisc)
+irisdev.can <- candisc(irisdev.mod) |>
+  print()
+```
+
+Plotting the first canonical dimension gives boxplots for the scores and vectors for the weights of the
+iris variables. Overall, the covariance matrices are smallest for setosa and largest for virginica.
+The structure coefficents for the variables reflect the pattern shown in the HE plots (@fig-iris-dev-pairs),
+where the direction of the $\mathbf{H}$ ellipses is negative for sepal width but positive for the others.
+
+```{r echo=-1}
+#| label: fig-iris-dev-can
+#| fig-width: 10
+#| fig.height: 5
+#| out-width: "100%"
+#| fig-cap: "Canonical discriminant plot for the multivariate generalization of Levine's test based on MANOVA of absolute deviations from group medians."
+op <- par(mar = c(5, 5, 2, 1) + .1)
+plot(irisdev.can, which=1,
+     fill.alpha = .3,
+     col = iris.colors, lwd = 2,
+     var.cex = 1.2,
+     cex.lab = 1.5, cex.axis = 1.1)
+```
+
+
+```{r child = "summary/Ch12-summary.qmd"}
+```
 
 **Packages used here**
 

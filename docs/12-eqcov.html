@@ -371,7 +371,13 @@ window.Quarto = {
   </ul>
 </li>
   <li><a href="#sec-other-measures" id="toc-sec-other-measures" class="nav-link" data-scroll-target="#sec-other-measures"><span class="header-section-number">12.8</span> Other measures of heterogeneity</a></li>
-  <li><a href="#multivariate-analog-of-levines-test" id="toc-multivariate-analog-of-levines-test" class="nav-link" data-scroll-target="#multivariate-analog-of-levines-test"><span class="header-section-number">12.9</span> Multivariate analog of Levine’s test</a></li>
+  <li>
+<a href="#sec-multivar-levene" id="toc-sec-multivar-levene" class="nav-link" data-scroll-target="#sec-multivar-levene"><span class="header-section-number">12.9</span> Multivariate analog of Levine’s test</a>
+  <ul class="collapse">
+<li><a href="#canonical-discriminant-analysis" id="toc-canonical-discriminant-analysis" class="nav-link" data-scroll-target="#canonical-discriminant-analysis"><span class="header-section-number">12.9.1</span> Canonical discriminant analysis</a></li>
+  </ul>
+</li>
+  <li><a href="#what-have-we-learned" id="toc-what-have-we-learned" class="nav-link" data-scroll-target="#what-have-we-learned"><span class="header-section-number">12.10</span> What Have We Learned?</a></li>
   </ul><div class="toc-actions"><ul><li><a href="https://github.com/friendly/vis-MLM-book/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
@@ -381,14 +387,14 @@ window.Quarto = {
 <p>This chapter concerns the extension of tests of homogeneity of variance from the classical univariate ANOVA setting to the analogous multivariate (MANOVA) setting. Such tests are a routine but important aspect of data analysis, as particular violations can drastically impact model estimates and appropriate conclusions that can be drawn <span class="citation" data-cites="Lix:1996">(<a href="95-references.html#ref-Lix:1996" role="doc-biblioref">Lix &amp; Keselman, 1996</a>)</span>.</p>
 <p>Beyond issues of model assumptions, the question of equality of covariance matrices is often of general interest itself. For instance, variability is often an important issue in studies of strict equivalence in laboratories comparing across multiple patient measurements and in other applied contexts <span class="citation" data-cites="Gastwirth-etal:2009">(see <a href="95-references.html#ref-Gastwirth-etal:2009" role="doc-biblioref">Gastwirth et al., 2009</a> for other exemplars)</span>.</p>
 <p>Moreover the outcome of such tests often have important consequences for the details of a main method of analysis. Just as the Welsh <span class="math inline">\(t\)</span>-test <span class="citation" data-cites="Welch:1947">(<a href="95-references.html#ref-Welch:1947" role="doc-biblioref">Welch, 1947</a>)</span> is now commonly used and reported for a two-group test of differences in means under <em>unequal</em> variances, a preliminary test of equality of covariance matrices is often used in discriminant analysis to decide whether linear (LDA) or quadratic discriminant analysis (QDA) should be applied in a given problem. In such cases, the data at hand should inform the choice of statistical analysis to utilize.</p>
-<p>We provide some answers to the following questions:</p>
+<p>I provide some answers to the following questions:</p>
 <ul>
 <li><p><strong>Visualization</strong>: How can we visualize differences among group variances and covariance matrices, perhaps in a way that is analogous to what is done to visualize differences among group means? As will be illustrated (<a href="#sec-viz-boxM" class="quarto-xref"><span>Section 12.6</span></a>), differences among covariance matrices can be comprised of spread in overall size (“scatter”) and shape (“orientation”). These can be seen in data space with data ellipses, particularly if the data is centered by shifting all groups to the grand mean.</p></li>
 <li><p><strong>Low-D views</strong>: When there are more than a few response variables, what low-dimensional views can show the most interesting properties related to the equality of covariance matrices? Projecting the data into the space of the principal components serves well again here (<a href="#sec-eqcov-low-rank-views" class="quarto-xref"><span>Section 12.7</span></a>). Surprisingly, we will see that the <em>small dimensions</em> contain useful information about differences among the group covariance matrices, similar to what we find for outlier detection.</p></li>
-<li><p><strong>Other statistics</strong>: Box’s <span class="math inline">\(M\)</span>-test is most widely used. Are there other worthwhile test statistics? We will see that graphics methods suggest alternatives in <a href="#sec-other-measures" class="quarto-xref"><span>Section 12.8</span></a>.</p></li>
+<li><p><strong>Other statistics</strong>: Box’s <span class="math inline">\(\mathcal{M}\)</span>-test is most widely used. Are there other worthwhile test statistics? You will see that graphical methods suggest alternatives in <a href="#sec-other-measures" class="quarto-xref"><span>Section 12.8</span></a>. Similarly, the univariate Levene’s test has a simple multivariate generalization which can be visualized using HE plots (<a href="#sec-multivar-levene" class="quarto-xref"><span>Section 12.9</span></a>).</p></li>
 </ul>
 <p>The following sections provide a capsule summary of the issues in this topic. Most of the discussion is couched in terms of a one-way design for simplicity, but the same ideas can apply to two-way (and higher) designs, where a “group” factor is defined as the product combination (interaction) of two or more factor variables.</p>
-<p>When there are also numeric covariates, this topic can also be extended to the multivariate analysis of covariance (MANCOVA) setting. This is accomplished simply by applying these techniques to the residuals from predictions by the covariates alone.</p>
+<p>When there are also numeric covariates, this topic can also be extended to the multivariate analysis of covariance (MANCOVA) setting. This is accomplished simply by applying these techniques to the <em>residuals</em> from predictions by the covariates alone.</p>
 <p><strong>Packages</strong></p>
 <p>In this chapter I use the following packages. Load them now</p>
 <div class="cell" data-layout-align="center">
@@ -399,7 +405,7 @@ window.Quarto = {
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org">dplyr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyr.tidyverse.org">tidyr</a></span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>The main methods described here are implemented in the <span style="color: brown;"><strong>heplots</strong></span>.</p>
+<p>The main methods described here are implemented in the <span style="color: brown;"><strong>heplots</strong></span> package.</p>
 <section id="sec-homogeneity-ANOVA" class="level2" data-number="12.1"><h2 data-number="12.1" class="anchored" data-anchor-id="sec-homogeneity-ANOVA">
 <span class="header-section-number">12.1</span> Homogeneity of Variance in Univariate ANOVA</h2>
 <p>In classical (Gaussian) univariate ANOVA models, the main interest is typically on tests of mean differences in a response <span class="math inline">\(y\)</span> according to one or more factors. The validity of the typical <span class="math inline">\(F\)</span> test, however, relies on the assumption of <em>homogeneity of variance</em>: all groups have the same (or similar) variance, <span class="math display">\[
@@ -861,9 +867,9 @@ Figure&nbsp;12.9: Plot of eigenvalue statistics of the covariance matrices for t
 </div>
 <p>Except for the absence of error bars, the plot for log product in the upper left panel of <a href="#fig-peng-boxm-plots" class="quarto-xref">Figure&nbsp;<span>12.9</span></a> is the same as that in <a href="#fig-peng-iris-boxm-plots" class="quarto-xref">Figure&nbsp;<span>12.6</span></a>, but with the sign reversed. In principle, it is possible to add such confidence intervals for all these measures through the use of bootstrapping, but this has not yet been implemented in the <span style="color: brown;"><strong>heplots</strong></span></p>
 <p>For this data set, the pattern of points in the plot for Box’s <span class="math inline">\(\mathcal{M}\)</span> is also more or less the same as that for the precision measure. The plots for the sum of and maximum eigenvalue are also similar to each other, but differ from those of the two measures in the left column of <a href="#fig-peng-boxm-plots" class="quarto-xref">Figure&nbsp;<span>12.9</span></a>. The main point is that these are not <em>all the same</em>, so different functions reflect different patterns of the eigenvalues, and could be used to define new statistical tests, perhaps with greater power or sensitivity to outliers.</p>
-</section><section id="multivariate-analog-of-levines-test" class="level2" data-number="12.9"><h2 data-number="12.9" class="anchored" data-anchor-id="multivariate-analog-of-levines-test">
+</section><section id="sec-multivar-levene" class="level2" data-number="12.9"><h2 data-number="12.9" class="anchored" data-anchor-id="sec-multivar-levene">
 <span class="header-section-number">12.9</span> Multivariate analog of Levine’s test</h2>
-<p>The fact that Levine’s test is just a simple ANOVA of the absolute deviations from the group means or medians suggests an easy multivariate generalization (which has not been well-studied)<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a> —Simply do a MANOVA of the absolute differences, <span class="math inline">\(\vert \mathbf{Y} - \overline{\mathbf{Y}}_j \vert\)</span>, centering on the means or medians. For the <code>iris</code> data, this gives:</p>
+<p>The fact that Levine’s test is just a simple ANOVA of the absolute deviations from the group means or medians suggests an easy multivariate generalization (which has not been well-studied) —Simply do a MANOVA of the absolute differences, <span class="math inline">\(\vert \mathbf{Y} - \overline{\mathbf{Y}}_j \vert\)</span>, centering on the means or medians.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a> For the <code>iris</code> data, this gives:</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb18" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">irisdev</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">abs</a></span><span class="op">(</span> <span class="fu"><a href="https://friendly.github.io/heplots/reference/colDevs.html">colDevs</a></span><span class="op">(</span><span class="va">iris</span><span class="op">[</span>,<span class="fl">1</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span>, <span class="va">iris</span><span class="op">$</span><span class="va">Species</span>, <span class="va">median</span><span class="op">)</span> <span class="op">)</span></span>
 <span><span class="va">irisdev.mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span> <span class="va">irisdev</span> <span class="op">~</span> <span class="va">iris</span><span class="op">$</span><span class="va">Species</span><span class="op">)</span></span>
@@ -875,7 +881,7 @@ Figure&nbsp;12.9: Plot of eigenvalue statistics of the covariance matrices for t
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>The <code>irisdev.mod</code> model is just another MANOVA, so we can visualize it in an HE plot:</p>
+<p>The <code>irisdev.mod</code> model is just another MANOVA, so we can visualize it in an HE plot (<a href="#fig-iris-dev-pairs" class="quarto-xref">Figure&nbsp;<span>12.10</span></a>). But you must remember that this is showing differences among groups in multivariate dispersion rather than in means.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb19" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/pairs.html">pairs</a></span><span class="op">(</span><span class="va">irisdev.mod</span>, variables<span class="op">=</span><span class="fl">1</span><span class="op">:</span><span class="fl">4</span>, fill<span class="op">=</span><span class="cn">TRUE</span>, fill.alpha<span class="op">=</span><span class="fl">.1</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
@@ -884,11 +890,72 @@ Figure&nbsp;12.9: Plot of eigenvalue statistics of the covariance matrices for t
 <img src="figs/ch12/fig-iris-dev-pairs-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="2400">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-iris-dev-pairs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;12.10: HE plots of the MLM for the multivariate generalization of Levine’s test.
+Figure&nbsp;12.10: HE plots for the multivariate generalization of Levine’s test based on MANOVA of absolute deviations from group medians.
 </figcaption></figure>
 </div>
 </div>
 </div>
+<p>In this plot, the <span class="math inline">\(\mathbf{H}\)</span> ellipses for the groups show the variation in the overall size of absolute differences from the group medians. These are very highly correlated across groups in most of the subplots, particularly so for those involving sepal width.</p>
+<section id="canonical-discriminant-analysis" class="level3" data-number="12.9.1"><h3 data-number="12.9.1" class="anchored" data-anchor-id="canonical-discriminant-analysis">
+<span class="header-section-number">12.9.1</span> Canonical discriminant analysis</h3>
+<p>But we can go further. Just as canonical discriminant analysis provides a low-dimensional view of differences in means, the same method can be used to visualize heterogeneity of dispersion expressed by the the Levene-type MANOVA in 1D or 2D. For the model <code>irisdev.mod</code>, this shows that 98% of groups differences shown in the HE plots (<a href="#fig-iris-dev-pairs" class="quarto-xref">Figure&nbsp;<span>12.10</span></a>) can be found in a single canonical dimension.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb20" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/friendly/candisc/">candisc</a></span><span class="op">)</span></span>
+<span><span class="va">irisdev.can</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://friendly.github.io/candisc/reference/candisc.html">candisc</a></span><span class="op">(</span><span class="va">irisdev.mod</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Canonical Discriminant Analysis for iris$Species:</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;   CanRsq Eigenvalue Difference Percent Cumulative</span></span>
+<span><span class="co">#&gt; 1  0.381     0.6154      0.602    97.9       97.9</span></span>
+<span><span class="co">#&gt; 2  0.013     0.0132      0.602     2.1      100.0</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Test of H0: The canonical correlations in the </span></span>
+<span><span class="co">#&gt; current row and all that follow are zero</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;   LR test stat approx F numDF denDF Pr(&gt; F)    </span></span>
+<span><span class="co">#&gt; 1        0.611    10.06     8   288 2.3e-12 ***</span></span>
+<span><span class="co">#&gt; 2        0.987     0.64     3   145    0.59    </span></span>
+<span><span class="co">#&gt; ---</span></span>
+<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Plotting the first canonical dimension gives boxplots for the scores and vectors for the weights of the iris variables. Overall, the covariance matrices are smallest for setosa and largest for virginica. The structure coefficents for the variables reflect the pattern shown in the HE plots (<a href="#fig-iris-dev-pairs" class="quarto-xref">Figure&nbsp;<span>12.10</span></a>), where the direction of the <span class="math inline">\(\mathbf{H}\)</span> ellipses is negative for sepal width but positive for the others.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb21" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">irisdev.can</span>, which<span class="op">=</span><span class="fl">1</span>,</span>
+<span>     fill.alpha <span class="op">=</span> <span class="fl">.3</span>,</span>
+<span>     col <span class="op">=</span> <span class="va">iris.colors</span>, lwd <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>     var.cex <span class="op">=</span> <span class="fl">1.2</span>,</span>
+<span>     cex.lab <span class="op">=</span> <span class="fl">1.5</span>, cex.axis <span class="op">=</span> <span class="fl">1.1</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-iris-dev-can" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-iris-dev-can-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/ch12/fig-iris-dev-can-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-iris-dev-can-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;12.11: Canonical discriminant plot for the multivariate generalization of Levine’s test based on MANOVA of absolute deviations from group medians.
+</figcaption></figure>
+</div>
+</div>
+</div>
+</section></section><section id="what-have-we-learned" class="level2" data-number="12.10"><h2 data-number="12.10" class="anchored" data-anchor-id="what-have-we-learned">
+<span class="header-section-number">12.10</span> What Have We Learned?</h2>
+<p>The quest to understand equality of covariance matrices in multivariate models has taken us on a journey from Box’s famous row boat metaphor to some novel visualization techniques. Here are the essential insights that will transform how you think about and explore heterogeneity in your multivariate data:</p>
+<ul>
+<li><p><strong>Visualization beats test statistics alone</strong> - While Box’s <span class="math inline">\(\mathcal{M}\)</span>-test gives you a single <span class="math inline">\(p\)</span>-value, covariance ellipses reveal the <em>why</em> behind heterogeneity. You can literally see differences in size (scatter) and shape (orientation) of group covariances, making the abstract concrete and interpretable.</p></li>
+<li><p><strong>Centering makes differences more apparent</strong> - Shifting all group ellipses to a common center (the grand mean) is like removing visual noise to see the signal. This simple transformation makes differences in covariance structure apparent, turning subtle variations into obvious visual patterns.</p></li>
+<li><p><strong>Small dimensions often hold big secrets</strong> - Don’t ignore those “unimportant” principal components! The smallest PC dimensions frequently contain the most discriminating information about covariance differences. It’s often where the action is hiding, away from the obvious patterns in major dimensions.</p></li>
+<li><p><strong>Multiple measures tell richer stories</strong> - Box’s <span class="math inline">\(\mathcal{M}\)</span>-test uses log determinants, but why stop there? Exploring different eigenvalue functions (sum, precision, maximum) can reveal distinct patterns of heterogeneity, like having multiple lenses to examine the same phenomenon.</p></li>
+<li><p><strong>Levene meets MANOVA in beautiful harmony</strong> - The multivariate extension of Levene’s test (MANOVA on absolute deviations) creates a natural bridge between univariate and multivariate thinking, complete with interpretable HE plots that make variance differences as visual as mean differences.</p></li>
+</ul>
+<!--
+* **Real data teaches better than theory** - The penguin and iris datasets show how theory comes alive: penguins with subtle but meaningful differences versus iris with dramatic covariance heterogeneity. Both teach us that the eye often sees what statistics miss.
+
+* **Context drives interpretation** - Whether covariance equality matters depends entirely on your research goals. Sometimes "significant" heterogeneity is practically irrelevant; other times, subtle differences are scientifically crucial.
+--><ul>
+<li>
+<strong>Graphics simplify complex concepts</strong> - These visualization tools transform an intimidating mathematical concept (equality of <span class="math inline">\(p \times p\)</span> matrices) into something any researcher can explore, understand, and communicate to others.</li>
+</ul>
+<p>The chapter’s strength lies in showing that covariance matrices aren’t just mathematical abstractions—they’re visual stories waiting to be told, patterns waiting to be discovered, and insights illustrating the power of multivariate thinking.</p>
 <p><strong>Packages used here</strong></p>
 <div class="cell" data-layout-align="center">
 <pre data-code-line-numbers=""><code>#&gt; Writing packages to  C:/R/Projects/Vis-MLM-book/bib/pkgs.txt
@@ -971,7 +1038,7 @@ Zhang, J., &amp; Boos, D. D. (1992). Bootstrap critical values for testing homog
 <li id="fn1"><p>If group sizes are greatly unequal <strong>and</strong> homogeneity of variance is violated, then the <span class="math inline">\(F\)</span> statistic is too liberal (actual rejection rate greater than the nominal <span class="math inline">\(\alpha\)</span>) when large sample variances are associated with small group sizes. Conversely, the <span class="math inline">\(F\)</span> statistic is too conservative (actual <span class="math inline">\(&lt; \alpha\)</span>) if large variances are associated with large group sizes.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn2"><p>For example, <span class="citation" data-cites="TikuBalakrishnan:1984">Tiku &amp; Balakrishnan (<a href="95-references.html#ref-TikuBalakrishnan:1984" role="doc-biblioref">1984</a>)</span> concluded from simulation studies that the normal-theory LRT provides poor control of Type I error under even modest departures from normality. <span class="citation" data-cites="OBrien:1992">O’Brien (<a href="95-references.html#ref-OBrien:1992" role="doc-biblioref">1992</a>)</span> proposed some robust alternatives, and showed that Box’s normal theory approximation suffered both in controlling the null size of the test and in power. <span class="citation" data-cites="ZhangBoos:1992:BCV">Zhang &amp; Boos (<a href="95-references.html#ref-ZhangBoos:1992:BCV" role="doc-biblioref">1992</a>)</span> also carried out simulation studies with similar conclusions and used bootstrap methods to obtain corrected critical values.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn3"><p>More general theory and statistical applications of the geometry of ellispoids is given by <span class="citation" data-cites="Friendly-etal:ellipses:2013">Friendly et al. (<a href="95-references.html#ref-Friendly-etal:ellipses:2013" role="doc-biblioref">2013</a>)</span>.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn4"><p><span class="citation" data-cites="Anderson2006">Anderson (<a href="95-references.html#ref-Anderson2006" role="doc-biblioref">2006</a>)</span> PERMDISP method<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p><span class="citation" data-cites="Anderson2006">Anderson (<a href="95-references.html#ref-Anderson2006" role="doc-biblioref">2006</a>)</span> describes other procedures based on Euclidean <em>distances</em> <span class="math inline">\(D_{ij} = [\Sigma (y_{ij} - \bar{y}_j)^2]^{1/2}\)</span> of the observations from their group centroids (means or spatial medians). Rather than fit a parametric MANOVA model, he suggests a permutation test method (PERMDIST) which randomly permutes the group assignments and yields non-parametric tests.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol></section></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
     const icon = "";

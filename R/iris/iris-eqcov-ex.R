@@ -15,6 +15,7 @@ knitr::opts_chunk$set(warning=FALSE, message=FALSE, R.options=list(digits=4))
 #' ## Load packages and the data
 library(heplots)
 library(car)    # actually, loaded by heplots
+library(dplyr)
 data(iris)
 
 iris.colors <- c("red", "darkgreen", "blue")
@@ -191,6 +192,12 @@ irisdev <- abs( colDevs(iris[,1:4], iris$Species, median) )
 irisdev.mod <- lm( irisdev ~ iris$Species)
 Anova(irisdev.mod)
 
+#
+irisdev <- colDevs(iris[,1:4], iris$Species, median, group.var = "Species") |>
+  mutate(across(where(is.numeric), abs))
+irisdev.mod <- lm(cbind(Sepal.Length, Sepal.Width, Petal.Length, Petal.Width) ~ Species, data=irisdev)
+
+
 #' ## robust MLM
 irisdev.rmod <- robmlm( irisdev ~ iris$Species)
 Anova(irisdev.rmod)
@@ -209,5 +216,13 @@ library(candisc)
 irisdev.can <- candisc(irisdev.mod)
 irisdev.can
 
-plot(irisdev.can, which=1)
+op <- par(mar = c(5, 5, 2, 1) + .1)
+plot(irisdev.can, which=1,
+     fill.alpha = .3,
+     col = iris.colors, lwd = 2,
+     var.cex = 1.2,
+     cex.lab = 1.5, cex.axis = 1.1)
+par(op)
+
+
 plot(irisdev.can, ellipse=TRUE)
