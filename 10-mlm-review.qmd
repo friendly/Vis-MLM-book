@@ -20,7 +20,7 @@ Yet the combination of these ideas--- non-gaussian multivariate models---
 remains elusive. The `r package("VGAM")` (@Yee2015, @R-VGAM) handles the bivariate cases of logistic (and probit) regression, but not much more. See @FriendlyMeyer:2016:DDAR, Sec. 10.4 for an example and graphs of odds ratios in these models.
 There is a lot more to do on this topic.
 
-This can be understood as a simple extension of the univariate linear model, with the main difference being that there are multiple response variables considered **together**, instead of just one, analysed alone.
+This can be understood as a simple extension of the univariate linear model, with the main difference being that there are multiple response variables considered **together**, instead of just one, analysed alone. (Or, from my perspective, the univariate version is a restricted form of the MLM.)
 These outcomes might reflect several different _ways_ or scales for measuring an underlying theoretical construct,
 or they might represent different _aspects_ of some phenomenon that we hope to better understand when they are studied jointly. 
 
@@ -1593,7 +1593,7 @@ data(schooldata, package = "heplots")
 res <- cqplot(schooldata, id.n = 5) |> print()
 
 # save the case ID numbers
-outliers <- rownames(res) |> as.numeric()
+outliers <- rownames(res) |> as.numeric() |> print()
 ```
 
 Rather than a complete $8 \times 8$ scatterplot matrix, it is useful here to examine the scatterplots _only_ for each $y$ variable against each of the
@@ -1701,7 +1701,7 @@ starting the process again.
 <!-- Among the MLM assumptions, the question of homogeneity of covariance matrices is deferred until -->
 <!-- @sec-eqcov.  -->
 
-For multivariate regression models, I consider the assumed multivariate normality of residuals and multivariate influence here.
+For multivariate regression models, I consider the assumed multivariate normality of residuals and multivariate influence here. For MANOVA models question of homogeneity of covariance matrices is deferred until  @sec-eqcov. 
 
 ### Multivariate normality of residuals
 
@@ -1742,7 +1742,35 @@ summary(school.mvn, select = "univariate")
 `mvn()` also provides a variety of tests for univariate normality for each of the
 response variables. These are all OK.
 
+### Distance plot
 
+Another useful screening plot (suggested by @Rousseeuw2004) is a plot of Mahalanobis distances
+of the predictors against the Mahalanobis distances of the corresponding residuals for a fitted model. This diagnostic plot combines the information on leverage points and regression outliers.
+This is much more useful than plotting them individually as in a $\chi^2$ QQ plot. 
+Moreover, plotting them against each other is visually informative, because it places the
+leverage points (unusual in $\mathbf{X}$}) and the outliers (unusual in $\mathbf{Y}$})
+in different regions of the plot.
+To judge notably "large" values, they suggest using cutoffs of
+$\sqrt{\chi^2_{p}(0.975)}$ for the predictor distances and $\sqrt{\chi^2_{q}(0.975)}$ for the
+residuals.
+
+Such plots are produced by `heplots::distPlot()`. Running this on the `school.mod` model
+gives @fig-school-distplot. Points beyond the horizontal and vertical cutoff values are
+labeled with their case numbers.
+
+```{r echo = -1}
+#| label: fig-school-distplot
+#| fig-width: 8
+#| fig-height: 6
+#| out-width: "80%"
+#| fig-cap: "Plot of Mahalanobis distances of the least squares residuals vs. Mahalanobis distances of the predictors in the model"
+op <- par(mar = c(5, 5, 1, 1) + .1)
+distancePlot(school.mod, cex.lab = 1.2)
+```
+
+Most of the points identified in the $\chi^2$ QQ plot @fig-schooldata-cqplot are labeled here.
+Cases 44 and 59 are high leverage points with large $\mathbf{X}$ distances. Case 35 is the only
+one beyond the cutoff for residuals. Interestingly, case 66 appeared near 35 in @fig-schooldata-cqplot, but is unusual for a different reason as we can see in @fig-school-distplot.
 
 ### Multivariate influence 
 
