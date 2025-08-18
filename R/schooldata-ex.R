@@ -20,6 +20,9 @@ car::Anova(school.mod)
 res <- cqplot(school.mod, id.n = 5)
 res
 
+# Distance plot
+distancePlot(school.mod, cex = 1.5, cex.lab = 1.2)
+
 library(MVN)
 residuals <- residuals(school.mod)
 
