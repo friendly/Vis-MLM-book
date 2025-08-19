@@ -4,7 +4,10 @@ This book is about graphical methods for multivariate data, and their uses in un
 particularly when there are several aspects to be considered together in multiple response models
 such as multivariate analysis of variance and multivariate multiple regression.
 
-It brings together a collection of novel techniques I, and others, have developed over the past 15 years and implemented in mature R packages. Some key substantive features of the book are:
+It brings together a collection of novel techniques I, and others, have developed over the past 15 years and implemented in mature R packages. The principal packages highlighted here are 
+
+
+Some key substantive features of the book are:
 
 * Statistical data visualization is cast in a general framework by goal (see the data, visualize a model, diagnose problems), rather than a categorization by graphic types. It is best informed by principles and goals
 of communication, for example making graphic comparison easy and ordering factors and variables according to what should be seen (_effect ordering_).
