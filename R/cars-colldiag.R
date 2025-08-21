@@ -4,6 +4,7 @@
 library(VisCollin)
 library(car)         # for vif
 library(dplyr)
+library(performance)
 
 data(cars, package = "VisCollin")
 
@@ -28,6 +29,13 @@ vif(cars.mod)
 cars.mod2 <- lm (mpg ~ cylinder + engine + horse + weight + accel + year + origin,
                 data=cars)
 vif(cars.mod2)
+
+# try performance package
+
+cars.collin <- check_collinearity(cars.mod) |> print()
+
+plot(cars.collin)
+
 
 
 # SAS: / collin option

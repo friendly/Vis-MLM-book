@@ -111,11 +111,19 @@ ggplot(means, aes(x = Day, y = Rank)) +
   geom_text(data=months, aes(x=mid, y=100, label=month), nudge_x = 5) +
   ylim(100, 250) +
   labs(x = "Average day of the year",
-       y = "Average lottery rank")
+       y = "Average lottery rank") -> plt 
 
 with(means, cor(Day, Rank))
 
 lm(Rank ~ Day, data=means) |> coef()
+
+# try adding scale break
+
+install.packages("ggbreak")
+library(ggbreak)
+
+# it can't handle the extra annotation of month labels
+plt + scale_y_cut(breaks = 100)
 
 # using sample
 
