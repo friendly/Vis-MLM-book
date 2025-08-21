@@ -97,4 +97,8 @@ plot(davis.mod,
      id.n = 2, cex.id = 1.2, lwd = 2)
 par(op)
 
+library(performance)
+check_model(davis.mod, 
+            check=c("linearity", "qq", 
+                    "homogeneity", "outliers"))
 
