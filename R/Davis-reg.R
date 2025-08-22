@@ -89,6 +89,16 @@ davis.mod <- lm(repwt ~ weight * sex, data=Davis)
 
 influencePlot(davis.mod)
 
-Davis[12,]
+Davis[c(12, 115),]
 
+op <- par(mfrow = c(2,2), mar = c(5, 5, 3, 1) + .1)
+plot(davis.mod, 
+     cex.lab = 1.2, cex = 1.1, 
+     id.n = 2, cex.id = 1.2, lwd = 2)
+par(op)
+
+library(performance)
+check_model(davis.mod, 
+            check=c("linearity", "qq", 
+                    "homogeneity", "outliers"))
 

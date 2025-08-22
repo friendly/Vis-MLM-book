@@ -238,7 +238,7 @@ package <- function(package, cite=FALSE) {
   }
   
   ref <- pkgname
-  if (!is.null(pkgname_color)) ref <- colorize(pkgname, pkgname_color)
+  if (!is.null(pkgname_color)) ref <- paste(colorize(pkgname, pkgname_color), "package")
   if (cite) ref <- paste0(ref, " package [@R-", package, "]")
   if (knitr::is_latex_output()) {
     ref <- paste0(ref, "\n\\index{", package, " package}",
