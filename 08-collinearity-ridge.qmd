@@ -23,9 +23,11 @@ ellipsoids.
 It describes diagnostic measures to asses these effects, 
 and presents some novel visual tools for these purposes using the  `r pkg("VisCollin")` package.
 
-One class of solutions for collinearity involves _regularization methods_ such as ridge regression. 
+One class of solutions for collinearity involves _regularization methods_ such as ridge regression (@sec-ridge). 
 Another collection of graphical methods, generalized ridge trace plots, implemented 
 in the `r pkg("genridge")` package, sheds further light on what is accomplished by this technique.
+In @ridge-low-rank we see that, once again, PCA-related techniques like the biplot can be insightful---here, to 
+understand the nature of collinearity and ridge regression.
 More generally, the methods of this chapter are further examples of how data and confidence
 ellipsoids can be used to visualize bias **and** precision of regression estimates.
 
@@ -41,6 +43,7 @@ library(dplyr)
 library(factoextra)
 library(ggrepel)
 library(patchwork)
+library(easystats)
 ```
 
 ## What is collinearity?
@@ -442,7 +445,31 @@ This inverse connection is analogous to the dual relationship (@sec-data-beta-sp
 
 :::
 
+::: {#exm-vif-displays}
+**VIF displays**
 
+Beyond `car::vif()`, the `r pkg("easystats")` suite of packages has some useful functions for displaying VIFs in
+helpful tables and plots. `performance::check_collinearity()` calculates VIFs and their standard errors
+and returns a `"check_collinearity"` data frame.  The plot method for this plots these, using a log scale
+because it is multiples that matter here. It uses intervals of 1-5, 5-10, 10+ to highlight low, medium and
+high variance inflation with colored bands.
+
+```{r}
+#| label: fig-cars-check-collin
+#| out-width: "80%"
+#| fig-cap: "Variance inflation plot"
+cars.collin <- check_collinearity(cars.mod)
+
+plot(cars.collin, 
+     linewidth = 1.1,
+     size_point = 5, size_title = 16, base_size = 14)
+```
+
+The graphic properties here help to make the problematic variables more apparent than in a table of numbers,
+though the underlying message is the same. Number of cylinders, engine displacement and weight are the 
+bad boys. They help to pin Waldo down a bit, but to find him, we need a few more diagnostics and better
+graphical methods.
+:::
 
 ### Collinearity diagnostics {#sec-colldiag}
 
@@ -742,6 +769,10 @@ a small amount of bias, . See the [genridge](https://CRAN.R-project.org/package=
 
 **Example**: Centering
 
+::: {#exm-centering}
+**Centering**
+
+
 To illustrate the effect of centering a predictor in a polynomial model, we generate a perfect
 quadratic relationship, $y = x^2$ and consider the correlations of $y$ with $x$ and with
 $(x - \bar{x})^2$. The correlation of $y$ with $x$ is 0.97, while the correlation of
@@ -785,7 +816,12 @@ gg2 <-
 gg1 + gg2         # show plots side-by-side
 ```
 
-**Example**: Interactions
+:::
+
+<!-- **Example**: Interactions -->
+
+::: {#exm-interactions}
+**Interactions**
 
 manufacturing process to produce acetylene in relation to reactor temperature (`temp`), the
 `ratio` of two components and the contact `time` in the reactor. A naive response surface model
@@ -839,6 +875,7 @@ acetyl.mod2 <- lm(yield ~ temp + ratio + poly(time, 2) +
 vif(acetyl.mod2, type = "term")
 ```
 
+:::
 
 ## Ridge regression {#sec-ridge}
 
@@ -1221,7 +1258,7 @@ text(fit[,2:1], c("HKB", "LW"),
      pos=3, cex=1.5, col=gray(.50))
 ```
 
-## Low-rank views
+## Low-rank views {#ridge-low-rank}
 
 Just as principal components analysis gives low-dimensional views of a data set, PCA can
 be useful to understand ridge regression, just as it did for the problem of collinearity.

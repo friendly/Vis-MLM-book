@@ -34,7 +34,9 @@ vif(cars.mod2)
 
 cars.collin <- check_collinearity(cars.mod) |> print()
 
-plot(cars.collin)
+plot(cars.collin, 
+     linewidth = 1.1,
+     size_point = 5, size_title = 16, base_size = 14)
 
 
 
