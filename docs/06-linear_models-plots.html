@@ -409,16 +409,16 @@ window.Quarto = {
 <li><p>tables of model coefficients, standard errors and test statistics can often be usefully supplemented or even replaced by suitable <em>coeficient plots</em> providing essentially the same information.</p></li>
 <li><p>when there are two or more predictors, standard plots of <span class="math inline">\(y\)</span> vs.&nbsp;each <span class="math inline">\(x\)</span> can be misleading because they ignore the other predictors in the model. <em>Added-variable plots</em> (also called <em>partial regression plots</em>) allow you to visualize <em>partial</em> relations between the response and a predictor by adjusting (controlling for) all other predictors. <em>Component + residual</em> plots help to diagnose nonlinearity.</p></li>
 <li><p>in this same situation, you can more easily understand their separate impact on the response by plotting the marginal <em>predicted effects</em> of one or more focal variables, averaging over other variables not shown in a given plot.</p></li>
-<li><p>when there are highly correlated predictors, some specialized plots are useful to understand the nature of <em>multicolinearity</em>.</p></li>
+<li><p>when there are highly correlated predictors, some specialized plots are useful to understand the nature of <em>colinearity</em>. The problems of collinearity and visual solutions are discussed in <a href="08-collinearity-ridge.html" class="quarto-xref"><span>Chapter 8</span></a>. </p></li>
 </ul>
-<p>The classic reference on regression diagnostics is <span class="citation" data-cites="Belsley-etal:80">Belsley et al. (<a href="95-references.html#ref-Belsley-etal:80" role="doc-biblioref">1980</a>)</span>. My favorite modern texts are the brief <span class="citation" data-cites="Fox2020">Fox (<a href="95-references.html#ref-Fox2020" role="doc-biblioref">2020</a>)</span> and the more complete <span class="citation" data-cites="FoxWeisberg:2018">Fox &amp; Weisberg (<a href="95-references.html#ref-FoxWeisberg:2018" role="doc-biblioref">2018a</a>)</span>, both of which are supported by the <span style="color: brown;"><strong>car</strong></span> package <span class="citation" data-cites="R-car">(<a href="95-references.html#ref-R-car" role="doc-biblioref">Fox et al., 2023</a>)</span>. Some of the examples in this chapter are inspired by <span class="citation" data-cites="FoxWeisberg:2018">Fox &amp; Weisberg (<a href="95-references.html#ref-FoxWeisberg:2018" role="doc-biblioref">2018a</a>)</span>.</p>
+<p>The classic reference on regression diagnostics is <span class="citation" data-cites="Belsley-etal:80">Belsley et al. (<a href="95-references.html#ref-Belsley-etal:80" role="doc-biblioref">1980</a>)</span>. My favorite modern texts are the brief <span class="citation" data-cites="Fox2020">Fox (<a href="95-references.html#ref-Fox2020" role="doc-biblioref">2020</a>)</span> and the more complete <span class="citation" data-cites="FoxWeisberg:2018">Fox &amp; Weisberg (<a href="95-references.html#ref-FoxWeisberg:2018" role="doc-biblioref">2018a</a>)</span>, both of which are supported by the <span style="color: brown;"><strong>car</strong></span> package package <span class="citation" data-cites="R-car">(<a href="95-references.html#ref-R-car" role="doc-biblioref">Fox et al., 2023</a>)</span>. Some of the examples in this chapter are inspired by <span class="citation" data-cites="FoxWeisberg:2018">Fox &amp; Weisberg (<a href="95-references.html#ref-FoxWeisberg:2018" role="doc-biblioref">2018a</a>)</span>.</p>
 <p><strong>Packages</strong></p>
 <p>In this chapter I use the following packages. Load them now:</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb1" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://r-forge.r-project.org/projects/car/">car</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org">dplyr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://easystats.github.io/easystats/">easystats</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://www.r-project.org">effects</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://cran.r-project.org/package=effects">effects</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://strengejacke.github.io/ggeffects/">ggeffects</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org">ggplot2</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://larmarange.github.io/ggstats/">ggstats</a></span><span class="op">)</span></span>
@@ -601,7 +601,8 @@ Figure&nbsp;6.1: Joint 95% confidence ellipse for <span class="math inline">\((\
 <span class="header-section-number">6.1.2</span> Diagnostic plots</h3>
 <p>But, should Duncan be <strong>so</strong> happy? It is unlikely that he ran any model diagnostics or plotted his model; we do so now. Here is the regression quartet (<a href="#fig-duncan-plot-model" class="quarto-xref">Figure&nbsp;<span>6.2</span></a>) for this model. Each plot shows some trend lines, and importantly, labels some observations that stand out and might deserve attention. </p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb8" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">duncan.mod</span>, lwd<span class="op">=</span><span class="fl">2</span>, pch<span class="op">=</span><span class="fl">16</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb8" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">duncan.mod</span>, lwd<span class="op">=</span><span class="fl">2</span>, pch<span class="op">=</span><span class="fl">16</span>,</span>
+<span>     cex.lab <span class="op">=</span> <span class="fl">1.2</span>, cex <span class="op">=</span> <span class="fl">1.1</span>, cex.id <span class="op">=</span> <span class="fl">1.2</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div id="fig-duncan-plot-model" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-duncan-plot-model-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -618,7 +619,7 @@ Figure&nbsp;6.2: Regression quartet of diagnostic plots for the <code>Duncan</co
 <li>A few observations (minister, reporter, conductor, contractor) are flagged in multiple panels. It turns out (<a href="#sec-duncan-influence" class="quarto-xref"><span>Section 6.6.3</span></a>) that the observations for minister and reporter noted in the residuals vs.&nbsp;leverage plot are highly influential and largely responsible for Duncan’s finding that the slopes for income and education could be considered equal.</li>
 <li>The <span style="color: red;">red</span> trend line in the scale-location plot indicates that residual variance is not constant, but rather increases from both ends. This is a consequence of the fact that <code>prestige</code> is measured as a percentage, bounded at [0, 100], and the standard deviation of a percentage <span class="math inline">\(p\)</span> is proportional to <span class="math inline">\(\sqrt{p \times (1-p)}\)</span> which is maximal at <span class="math inline">\(p = 0.5\)</span>.</li>
 </ul>
-<p>Similar, but nicer-looking diagnostic plots are provided by <code><a href="https://easystats.github.io/performance/reference/check_model.html">performance::check_model()</a></code> which uses <code>ggplot2</code> for graphics. These include helpful captions indicating what should be observed for each for a good-fitting model. However, they don’t have as good facilities for labeling unusual observations as the base R <code>plot.lm()</code> method or functions in the <span style="color: brown;"><strong>car</strong></span>.</p>
+<p>Similar, but nicer-looking diagnostic plots are provided by <code><a href="https://easystats.github.io/performance/reference/check_model.html">performance::check_model()</a></code> which uses <code>ggplot2</code> for graphics. These include helpful captions indicating what should be observed for each for a good-fitting model. However, they don’t have as good facilities for labeling unusual observations as the base R <code>plot.lm()</code> method or functions in the <span style="color: brown;"><strong>car</strong></span> package.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb9" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://easystats.github.io/performance/reference/check_model.html">check_model</a></span><span class="op">(</span><span class="va">duncan.mod</span>, </span>
 <span>            check<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"linearity"</span>, <span class="st">"qq"</span>, </span>
@@ -730,7 +731,7 @@ Figure&nbsp;6.4: Regression quartet of diagnostic plots for the <code>Prestige</
 <span><span class="co">#&gt; 3 income       0.00131  0.000278     4.73  7.58e- 6</span></span>
 <span><span class="co">#&gt; 4 women       -0.00891  0.0304      -0.293 7.70e- 1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>The <span style="color: brown;"><strong>modelsummary</strong></span> package <span class="citation" data-cites="R-modelsummary">(<a href="95-references.html#ref-R-modelsummary" role="doc-biblioref">Arel-Bundock, 2025b</a>)</span> is an easy to use, very general package to summarize data and statistical models in R. The main function <code><a href="https://modelsummary.com/man/modelsummary.html">modelsummary()</a></code> can produce highly customizable tables of coefficients in a wide variety of output formats, including HTML, PDF, LaTeX, Markdown, and MS Word. You can select the statistics displayed for any model term with the <code>estimate</code> and <code>statistic</code> arguments.</p>
+<p>The <span style="color: brown;"><strong>modelsummary</strong></span> package package <span class="citation" data-cites="R-modelsummary">(<a href="95-references.html#ref-R-modelsummary" role="doc-biblioref">Arel-Bundock, 2025b</a>)</span> is an easy to use, very general package to summarize data and statistical models in R. The main function <code><a href="https://modelsummary.com/man/modelsummary.html">modelsummary()</a></code> can produce highly customizable tables of coefficients in a wide variety of output formats, including HTML, PDF, LaTeX, Markdown, and MS Word. You can select the statistics displayed for any model term with the <code>estimate</code> and <code>statistic</code> arguments.</p>
 <!-- make modelsummary avoid siunits for PDF -->
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb15" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://modelsummary.com/man/modelsummary.html">modelsummary</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="st">"Model1"</span> <span class="op">=</span> <span class="va">mod1</span><span class="op">)</span>,</span>
@@ -758,19 +759,6 @@ Table&nbsp;6.1: Table of coefficients for the main effects model.
           } else {
               console.warn(`Cell at (${i}, ${j}) not found.`);
           }
-      }
-      function insertSpanRow(i, colspan, content) {
-        var table = document.getElementById('tinytable_bj8ysfr4r1hnh4kzzhqc');
-        // Find the row with data-row attribute matching i
-        var targetRow = table.querySelector(`tr [data-row="${i}"]`).closest('tr');
-        var newRow = table.insertRow(targetRow.rowIndex);
-        var newCell = newRow.insertCell(0);
-        newCell.setAttribute("colspan", colspan);
-        newCell.setAttribute("data-col", "0");
-        newCell.setAttribute("data-row", i - 1);
-        // newCell.innerText = content;
-        // this may be unsafe, but innerText does not interpret <br>
-        newCell.innerHTML = content;
       }
       function spanCell_bj8ysfr4r1hnh4kzzhqc(i, j, rowspan, colspan) {
         var table = document.getElementById("tinytable_bj8ysfr4r1hnh4kzzhqc");
@@ -932,19 +920,6 @@ Table&nbsp;6.2: Table of coefficients for three models.
           } else {
               console.warn(`Cell at (${i}, ${j}) not found.`);
           }
-      }
-      function insertSpanRow(i, colspan, content) {
-        var table = document.getElementById('tinytable_4d09bl0324jxmzj8q2uh');
-        // Find the row with data-row attribute matching i
-        var targetRow = table.querySelector(`tr [data-row="${i}"]`).closest('tr');
-        var newRow = table.insertRow(targetRow.rowIndex);
-        var newCell = newRow.insertCell(0);
-        newCell.setAttribute("colspan", colspan);
-        newCell.setAttribute("data-col", "0");
-        newCell.setAttribute("data-row", i - 1);
-        // newCell.innerText = content;
-        // this may be unsafe, but innerText does not interpret <br>
-        newCell.innerHTML = content;
       }
       function spanCell_4d09bl0324jxmzj8q2uh(i, j, rowspan, colspan) {
         var table = document.getElementById("tinytable_4d09bl0324jxmzj8q2uh");
@@ -1225,7 +1200,7 @@ Figure&nbsp;6.7: Plot of standardized coefficients and their confidence interval
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"inside"</span>,</span>
 <span>        legend.position.inside <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.85</span>, <span class="fl">0.2</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>The <span style="color: brown;"><strong>ggstats</strong></span> package <span class="citation" data-cites="R-ggstats">(<a href="95-references.html#ref-R-ggstats" role="doc-biblioref">Larmarange, 2025</a>)</span> provides even nicer versions of coefficient plots that handle factors in a more reasonable way, as levels within the factor. <code><a href="https://larmarange.github.io/ggstats/reference/ggcoef_model.html">ggcoef_model()</a></code> plots a single model and <code><a href="https://larmarange.github.io/ggstats/reference/ggcoef_model.html">ggcoef_compare()</a></code> plots a list of models using sensible defaults. A small but nice feature is that it explicitly shows the 0 value for the reference level of a factor (<code>type = "bc"</code> here) and uses better labels for factors and their interactions.</p>
+<p>The <span style="color: brown;"><strong>ggstats</strong></span> package package <span class="citation" data-cites="R-ggstats">(<a href="95-references.html#ref-R-ggstats" role="doc-biblioref">Larmarange, 2025</a>)</span> provides even nicer versions of coefficient plots that handle factors in a more reasonable way, as levels within the factor. <code><a href="https://larmarange.github.io/ggstats/reference/ggcoef_model.html">ggcoef_model()</a></code> plots a single model and <code><a href="https://larmarange.github.io/ggstats/reference/ggcoef_model.html">ggcoef_compare()</a></code> plots a list of models using sensible defaults. A small but nice feature is that it explicitly shows the 0 value for the reference level of a factor (<code>type = "bc"</code> here) and uses better labels for factors and their interactions.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb23" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">models</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span></span>
 <span>  <span class="st">"Base model"</span>      <span class="op">=</span> <span class="va">mod1_std</span>,</span>

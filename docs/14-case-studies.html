@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.29">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>14&nbsp; Case studies – Visualizing Multivariate Data and Models in R</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./91-colophon.html" rel="next">
+<link href="./13-infl-robust.html" rel="prev">
+<link href="./images/favicon/favicon.ico" rel="icon">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-0815c480559380816a4d1ea211a47e91.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-ed13c5b1c0999dedaaad31a5d0a6831f.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/quarto-contrib/line-highlight-1.0.0/line-highlight.css" rel="stylesheet"><script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script><script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script><script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script><script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+</head>
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top quarto-banner"><nav class="quarto-secondary-nav"><div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./09-hotelling.html">Multivariate Linear Models</a></li><li class="breadcrumb-item"><a href="./14-case-studies.html"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Case studies</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav></header><!-- content --><header id="title-block-header" class="quarto-title-block default page-columns page-full"><div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./09-hotelling.html">Multivariate Linear Models</a></li><li class="breadcrumb-item"><a href="./14-case-studies.html"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Case studies</span></a></li></ol></nav>
+      <h1 class="title">
+<span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Case studies</span>
+</h1>
+                      </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto"><div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Visualizing Multivariate Data and Models in R</a> 
+        <div class="sidebar-tools-main">
+    <a href="https://github.com/friendly/vis-MLM-book" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Orienting Ideas</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./01-intro.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-getting_started.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Getting Started</span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Exploratory Methods</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./03-multivariate_plots.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Plots of Multivariate Data</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./04-pca-biplot.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Dimension Reduction</span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Univariate Linear Models</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./05-linear_models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Overview of Linear models</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06-linear_models-plots.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Plots for univariate response models</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07-lin-mod-topics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Topics in Linear Models</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./08-collinearity-ridge.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Collinearity &amp; Ridge Regression</span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Multivariate Linear Models</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./09-hotelling.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Hotelling’s <span class="math inline">\(T^2\)</span></span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./10-mlm-review.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Multivariate Linear Models</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./11-mlm-viz.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Visualizing Multivariate Models</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./12-eqcov.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Visualizing Equality of Covariance Matrices</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./13-infl-robust.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Multiviate Influence and Robust Estimation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./14-case-studies.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Case studies</span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">End matter</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./91-colophon.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Colophon</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./95-references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">References</span></a>
+  </div>
+</li>
+      </ul>
+</li>
+    </ul>
+</div>
+</nav><div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active"><h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+<li>
+<a href="#fitting-the-mlm" id="toc-fitting-the-mlm" class="nav-link active" data-scroll-target="#fitting-the-mlm"><span class="header-section-number">14.1</span> Fitting the MLM</a>
+  <ul class="collapse">
+<li><a href="#he-plot" id="toc-he-plot" class="nav-link" data-scroll-target="#he-plot"><span class="header-section-number">14.1.1</span> HE plot</a></li>
+  <li><a href="#canonical-space" id="toc-canonical-space" class="nav-link" data-scroll-target="#canonical-space"><span class="header-section-number">14.1.2</span> Canonical space</a></li>
+  </ul>
+</li>
+  <li>
+<a href="#social-cognitive-measures" id="toc-social-cognitive-measures" class="nav-link" data-scroll-target="#social-cognitive-measures"><span class="header-section-number">14.2</span> Social cognitive measures</a>
+  <ul class="collapse">
+<li><a href="#model-checking" id="toc-model-checking" class="nav-link" data-scroll-target="#model-checking"><span class="header-section-number">14.2.1</span> Model checking</a></li>
+  <li><a href="#canonical-he-plot" id="toc-canonical-he-plot" class="nav-link" data-scroll-target="#canonical-he-plot"><span class="header-section-number">14.2.2</span> Canonical HE plot</a></li>
+  </ul>
+</li>
+  </ul><div class="toc-actions"><ul><li><a href="https://github.com/friendly/vis-MLM-book/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content"><!--- For HTML Only ---><!-- \require{newcommand} --><!-- %\renewcommand*{\det}[1]{\mathrm{det} (#1)} --><!-- %\renewcommand*{\det}[1]{|#1|} --><!-- \providecommand{\sizedmat}[2]{\mathord{\mathop{\mat{#1}}\limits_{(#2)}}} --><!-- \newcommand*{\E}{\mathcal{E}} --><!-- Index generation --><!-- % R packages:  indexed under both package name and packages! --><!-- % data sets:  --><!-- % R stuff --><p>This chapter presents some complete analyses of datasets that will be prominent in the book. Some of this material may later be moved to earlier chapters.</p>
+<p><strong>Packages</strong></p>
+<p>In this chapter I use the following packages. Load them now.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb1" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://r-forge.r-project.org/projects/car/">car</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://friendly.github.io/heplots/">heplots</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/friendly/candisc/">candisc</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org">ggplot2</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org">dplyr</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyr.tidyverse.org">tidyr</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://kwstat.github.io/corrgram/">corrgram</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/friendly/ggbiplot">ggbiplot</a></span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<!-- was: {r child="child/neuro.qmd"} ->
+
+## Neuro- and Social-cognitive measures in psychiatric groups
+
+A Ph.D. dissertation by Laura Hartman [-@Hartman:2016] at York University was designed to evaluate whether and
+how clinical patients diagnosed (on the DSM-IV) as schizophrenic or with schizoaffective disorder could be
+distinguished from each other and from a normal, control sample on collections of standardized
+tests in the following domains:
+
+* **Neuro-cognitive**: processing speed, attention, verbal learning, visual learning and problem solving;
+
+* **Social-cognitive**: managing emotions, theory of mind, externalizing, personalizing bias.
+
+The study is an important contribution to clinical research because the two diagnostic categories
+are subtly different and their symptoms often overlap. Yet, they’re very different and often require different treatments. A key difference between schizoaffective disorder and schizophrenia is the prominence of mood disorder involving bipolar, manic and depressive moods.
+With schizoaffective disorder, mood disorders are front and center. With schizophrenia, that is not a dominant part of the disorder, but psychotic ideation (hearing voices, seeing imaginary people) is.
+
+### Research questions
+
+This example is concerned with the following substantitive questions:
+
+* To what extent can patients diagnosed as schizophrenic or with schizoaffective disorder  be distinguished from each other and from a normal control sample using a well-validated, comprehensive neurocognitive battery specifically designed for individuals with psychosis  [@Heinrichs-etal:2015]?
+
+* If the groups differ, do any of the cognitive domains show particularly larger or smaller differences among these groups? 
+
+* Do the neurocognitive measures discriminate among the in the same or different ways?
+If different, how many separate aspects or dimensions are distinguished?
+
+Apart from the research interest, it could aid diagnosis and treatment if these similar mental disorders could be distinguished by tests in the cognitive domain.
+
+
+### Data
+
+The clinical sample comprised 116 male and female patients who met the following criteria: 1) a diagnosis of schizophrenia ($n$ = 70) or schizoaffective disorder ($n$ = 46) confirmed by the Structured Clinical Interview for DSM-IV-TR Axis I Disorders; 2) were outpatients; 3) a history free of developmental or learning disability; 4) age 18-65; 5) a history free of neurological or endocrine disorder; and 6) no concurrent diagnosis of substance use disorder.
+Non-psychiatric control participants ($n$ = 146) were screened for medical and psychiatric illness and history of substance abuse and were recruited from three outpatient clinics.
+
+
+::: {.cell layout-align="center"}
+
+```{.r .cell-code}
+data(NeuroCog, package="heplots")
+glimpse(NeuroCog)
+#> Rows: 242
+#> Columns: 10
+#> $ Dx        <fct> Schizophrenia, Schizophrenia, Schizophrenia, Sch…
+#> $ Speed     <int> 19, 8, 14, 7, 21, 31, -1, 17, 7, 37, 30, 26, 32,…
+#> $ Attention <int> 9, 25, 23, 18, 9, 10, 8, 20, 30, 15, 27, 20, 23,…
+#> $ Memory    <int> 19, 15, 15, 14, 35, 26, 3, 27, 26, 17, 28, 22, 2…
+#> $ Verbal    <int> 33, 28, 20, 34, 28, 29, 20, 30, 26, 33, 34, 33, …
+#> $ Visual    <int> 24, 24, 13, 16, 29, 21, 12, 32, 27, 21, 19, 18, …
+#> $ ProbSolv  <int> 39, 40, 32, 31, 45, 33, 29, 29, 30, 33, 30, 39, …
+#> $ SocialCog <int> 28, 37, 24, 36, 28, 28, 28, 44, 39, 24, 32, 36, …
+#> $ Age       <int> 44, 26, 55, 53, 51, 21, 53, 56, 48, 46, 48, 31, …
+#> $ Sex       <fct> Female, Male, Female, Male, Male, Male, Male, Fe…
+```
+:::
+
+
+The diagnostic classification variable is called `Dx` in the dataset. To facilitate answering questions regarding group differences, the following contrasts were applied:
+the first column compares the control group to the average of the diagnosed groups, the second
+compares the schizophrenia group against the schizoaffective group.
+
+
+::: {.cell layout-align="center"}
+
+```{.r .cell-code}
+contrasts(NeuroCog$Dx)
+#>                 [,1] [,2]
+#> Schizophrenia   -0.5    1
+#> Schizoaffective -0.5   -1
+#> Control          1.0    0
+```
+:::
+
+
+
+In this analysis, we ignore the `SocialCog` variable. The primary focus is on
+the cognitive and perceptual variables `Attention : ProbSolv`.
+
+### A first look
+
+As always, plot the data first! We want an overview of the distributions of the variables to see
+the centers, spread,  shape and possible outliers for each group on each variable.
+
+The plot below combines the use of boxplots and violin plots to give an informative display.
+As we saw earlier (e.g., @sec-NLSY-mmra), doing this with `ggplot2` requires reshaping the data to
+long format.
+
+
+::: {.cell layout-align="center"}
+
+```{.r .cell-code}
+# Reshape from wide to long
+NC_long <- NeuroCog |>
+  dplyr::select(-SocialCog, -Age, -Sex) |>
+  tidyr::gather(key = response, value = "value", Speed:ProbSolv)
+# view 3 observations per group and measure
+NC_long |>
+  group_by(Dx) |>
+  sample_n(3) |> ungroup()
+#> # A tibble: 9 × 3
+#>   Dx              response  value
+#>   <fct>           <chr>     <int>
+#> 1 Schizophrenia   Speed        39
+#> 2 Schizophrenia   Visual       21
+#> 3 Schizophrenia   Memory       40
+#> 4 Schizoaffective ProbSolv     40
+#> 5 Schizoaffective Speed        25
+#> 6 Schizoaffective Verbal       48
+#> 7 Control         Speed        33
+#> 8 Control         ProbSolv     43
+#> 9 Control         Attention    37
+```
+:::
+
+
+In the plot, we take care to adjust the transparency (`alpha`) values for the points,
+violin plots and boxplots so that all can be seen. Options for `geom_boxplot()`
+are used to give these greater visual prominence.
+
+
+::: {.cell layout-align="center"}
+
+```{.r .cell-code  code-fold="show"}
+ggplot(NC_long, aes(x=Dx, y=value, fill=Dx)) +
+  geom_jitter(shape=16, alpha=0.8, size=1, width=0.2) +
+  geom_violin(alpha = 0.1) +
+  geom_boxplot(width=0.5, alpha=0.4, 
+               outlier.alpha=1, 
+               outlier.size = 3, outlier.color = "red") +
+  scale_x_discrete(labels = c("Schizo", "SchizAff", "Control")) +
+  facet_wrap(~response, scales = "free_y", as.table = FALSE) +
+  theme_bw() +
+  theme(legend.position="bottom",
+        axis.title = element_text(size = rel(1.2)),
+        axis.text  = element_text(face = "bold"),
+        strip.text = element_text(size = rel(1.2)))
+```
+
+::: {.cell-output-display}
+![Boxplots combined with violin plots of the `NeuroCog` data.](figs/case-studies/fig-NC-boxplot-1.png){#fig-NC-boxplot fig-align='center' width=120%}
+:::
+:::
+
+
+We can see that the control participants score higher on all measures, but there is no consistent
+pattern of medians for the two patient groups. But these univariate summaries do not inform
+about the relations among variables.
+
+### Bivariate views
+
+#### Corrgram {.unnumbered}
+
+A corrgram [@Friendly:02:corrgram] provides a useful reconnaisance plot of the bivariate correlations in the dataset. It suppresses details, and allows focus on the overall pattern.
+The `corrgram::corrgram()` function has the ability to enhance perception by
+permuting the variables in the order of their variable vectors in a biplot, so more highly correlated variables are adjacent in the plot, and example of _effect ordering_ for
+data displays [@FriendlyKwan:03:effect].
+
+The plot below includes all variables except for `Dx` group.
+There are a number of `panel.*` functions for choosing how the correlation for each pair is
+rendered.
+
+
+::: {.cell layout-align="center"}
+
+```{.r .cell-code}
+NeuroCog |>
+  select(-Dx) |>
+  corrgram(order = TRUE,
+           diag.panel = panel.density,
+           upper.panel = panel.pie)
+```
+
+::: {.cell-output-display}
+![corrgram of the `NeuroCog` data. The upper and lower triangles use two different ways of encoding the value of the correlation for each pair of variables.](figs/case-studies/fig-NC-corrgram-1.png){#fig-NC-corrgram fig-align='center' width=90%}
+:::
+:::
+
+
+In this plot you can see that adjacent variables are more highly correlated than those
+more widely separated.  The diagonal panels show that most variables are reasonably
+symmetric in their distributions. `Age`, not included in this analysis is negatively
+correlated with the others: older participants tend to do less well on these tests.
+
+#### Scatterplot matrix {.unnumbered}
+
+A scatterplot matrix gives a more detailed overview of all pairwise relations.
+The plot below suppresses the data points and summarizes the relation using
+data ellipses and regression lines.
+The model syntax, `~ Speed + ... |Dx`, treats `Dx` as a conditioning variable
+(similar to the use of the `color` aestheic in `ggplot2`)
+giving a separate data ellipse and regression line for each group.
+(The legend is suppressed here. The groups are 
+<span style='color: red;'>Schizophrenic</span>,
+<span style='color: green;'>SchizoAffective</span>,
+<span style='color: blue;'>Normal</span>.)
+
+<!-- #| fig-cap: "Scatterplot matrix of the `NeuroCog` data. Points are suppressed here, focusing on the data ellipses and regression lines. Colors for the groups: <span style='color: red;'>Schizophrenic</span> (red),  <span style='color: green;'>SchizoAffective</span> (green), <span style='color: blue;'>Control</span> (blue)." 
+-->
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb2" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/car/man/scatterplotMatrix.html">scatterplotMatrix</a></span><span class="op">(</span><span class="op">~</span> <span class="va">Speed</span> <span class="op">+</span> <span class="va">Attention</span> <span class="op">+</span> <span class="va">Memory</span> <span class="op">+</span> <span class="va">Verbal</span> <span class="op">+</span> <span class="va">Visual</span> <span class="op">+</span> <span class="va">ProbSolv</span> <span class="op">|</span> <span class="va">Dx</span>,</span>
+<span>  data<span class="op">=</span><span class="va">NeuroCog</span>,</span>
+<span>  plot.points <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  smooth <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  legend <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  col <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/pal_hue.html">hue_pal</a></span><span class="op">(</span><span class="op">)</span><span class="op">(</span><span class="fl">3</span><span class="op">)</span>,</span>
+<span>  ellipse<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>levels<span class="op">=</span><span class="fl">0.68</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-NC-scatmat" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-NC-scatmat-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/case-studies/fig-NC-scatmat-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-NC-scatmat-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;14.1: Scatterplot matrix of the <code>NeuroCog</code> data. Points are suppressed here, focusing on the data ellipses and regression lines. Colors for the groups: Schizophrenic (red), SchizoAffective (green), Control (blue).
+</figcaption></figure>
+</div>
+</div>
+</div>
+<p>In this figure, we can see that the regression lines have similar slopes and similar data ellipses for the groups, though with a few exceptions. You can also see that the <span style="color: blue;">Normal</span> group has higher means on all the variables and that the <span style="color: red;">Schizophrenic</span> and <span style="color: green;">SchizoAffective</span> don’t seem to differ very much.</p>
+<section id="biplot" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="biplot">Biplot</h4>
+<p>While still in exploratory mode, we can gain greater insight with our trusty multivariate juicer, the biplot (<a href="04-pca-biplot.html#sec-biplot" class="quarto-xref"><span>Section 4.3</span></a>). A PCA of the cognitive variables shows that nearly 80% of the total variance is accounted for by two dimensions, of which the first dimension accounts for 69%.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb3" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">neuro.pca</span> <span class="op">&lt;-</span> <span class="va">NeuroCog</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">Speed</span><span class="op">:</span><span class="va">Visual</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/prcomp.html">prcomp</a></span><span class="op">(</span>scale. <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">neuro.pca</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Importance of components:</span></span>
+<span><span class="co">#&gt;                          PC1   PC2   PC3    PC4    PC5</span></span>
+<span><span class="co">#&gt; Standard deviation     1.856 0.720 0.629 0.5761 0.5570</span></span>
+<span><span class="co">#&gt; Proportion of Variance 0.689 0.104 0.079 0.0664 0.0621</span></span>
+<span><span class="co">#&gt; Cumulative Proportion  0.689 0.793 0.872 0.9379 1.0000</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The biplot for this analysis (<a href="#fig-neuro-biplot" class="quarto-xref">Figure&nbsp;<span>14.2</span></a>) provides a nice summary of what was seen in the scatterplot matrix (<a href="#fig-NC-scatmat" class="quarto-xref">Figure&nbsp;<span>14.1</span></a>): A large difference between the <span style="color: blue;">Control</span> group and the others, which don’t differ much from each other.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb4" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="http://friendly.github.io/ggbiplot/reference/ggbiplot.html">ggbiplot</a></span><span class="op">(</span><span class="va">neuro.pca</span>, </span>
+<span>         obs.scale <span class="op">=</span> <span class="fl">1</span>, var.scale <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>         groups <span class="op">=</span> <span class="va">NeuroCog</span><span class="op">$</span><span class="va">Dx</span>, </span>
+<span>         varname.size <span class="op">=</span> <span class="fl">5</span>,</span>
+<span>         var.factor <span class="op">=</span> <span class="fl">1.5</span>,</span>
+<span>         ellipse <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_colour_discrete.html">scale_color_discrete</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'groups'</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_minimal</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>legend.direction <span class="op">=</span> <span class="st">'horizontal'</span>, </span>
+<span>        legend.position <span class="op">=</span> <span class="st">'top'</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-neuro-biplot" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-neuro-biplot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/case-studies/fig-neuro-biplot-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-neuro-biplot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;14.2: Biplot of the NeuroCog data. …
+</figcaption></figure>
+</div>
+</div>
+</div>
+<p>The variable vectors in <a href="#fig-neuro-biplot" class="quarto-xref">Figure&nbsp;<span>14.2</span></a> reflect the correlations of the response variables with each other and with the principal components, <code>PC1</code> and <code>PC2</code>. All of the variables are positively correlated in this 2D view, <code>Memory</code> and <code>Speed</code> most highly so.</p>
+</section><section id="fitting-the-mlm" class="level2" data-number="14.1"><h2 data-number="14.1" class="anchored" data-anchor-id="fitting-the-mlm">
+<span class="header-section-number">14.1</span> Fitting the MLM</h2>
+<p>We proceed to fit the one-way MANOVA model to answer the main research question of how well these variables distinguish among the groups.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb5" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">NC.mlm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">Speed</span>, <span class="va">Attention</span>, <span class="va">Memory</span>, <span class="va">Verbal</span>, <span class="va">Visual</span>, <span class="va">ProbSolv</span><span class="op">)</span> <span class="op">~</span> <span class="va">Dx</span>,</span>
+<span>             data<span class="op">=</span><span class="va">NeuroCog</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova</a></span><span class="op">(</span><span class="va">NC.mlm</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Type II MANOVA Tests: Pillai test statistic</span></span>
+<span><span class="co">#&gt;    Df test stat approx F num Df den Df  Pr(&gt;F)    </span></span>
+<span><span class="co">#&gt; Dx  2     0.299     6.89     12    470 1.6e-11 ***</span></span>
+<span><span class="co">#&gt; ---</span></span>
+<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The first research question is captured by the contrasts for the <code>Dx</code> factor shown above. We can test these with <code><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">car::linearHypothesis()</a></code>. The contrast <code>Dx1</code> for control vs.&nbsp;the diagnosed groups is highly significant,</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb6" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># control vs. patients</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">linearHypothesis</a></span><span class="op">(</span><span class="va">NC.mlm</span>, <span class="st">"Dx1"</span><span class="op">)</span>, SSP<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Multivariate Tests: </span></span>
+<span><span class="co">#&gt;                  Df test stat approx F num Df den Df  Pr(&gt;F)    </span></span>
+<span><span class="co">#&gt; Pillai            1     0.289     15.9      6    234 2.8e-15 ***</span></span>
+<span><span class="co">#&gt; Wilks             1     0.711     15.9      6    234 2.8e-15 ***</span></span>
+<span><span class="co">#&gt; Hotelling-Lawley  1     0.407     15.9      6    234 2.8e-15 ***</span></span>
+<span><span class="co">#&gt; Roy               1     0.407     15.9      6    234 2.8e-15 ***</span></span>
+<span><span class="co">#&gt; ---</span></span>
+<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>but the second contrast, <code>Dx2</code>, comparing the schizophrenic and schizoaffective group, is not.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb7" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># Schizo vs SchizAff</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">linearHypothesis</a></span><span class="op">(</span><span class="va">NC.mlm</span>, <span class="st">"Dx2"</span><span class="op">)</span>, SSP<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Multivariate Tests: </span></span>
+<span><span class="co">#&gt;                  Df test stat approx F num Df den Df Pr(&gt;F)</span></span>
+<span><span class="co">#&gt; Pillai            1     0.006    0.249      6    234   0.96</span></span>
+<span><span class="co">#&gt; Wilks             1     0.994    0.249      6    234   0.96</span></span>
+<span><span class="co">#&gt; Hotelling-Lawley  1     0.006    0.249      6    234   0.96</span></span>
+<span><span class="co">#&gt; Roy               1     0.006    0.249      6    234   0.96</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>As a quick check on the model, a <span class="math inline">\(\chi^2\)</span> QQ plot (<a href="#fig-NC-cqplot" class="quarto-xref">Figure&nbsp;<span>14.3</span></a>) reveals no problems with multivariate normality of residuals nor potentially harmful residuals.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb8" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://friendly.github.io/heplots/reference/cqplot.html">cqplot</a></span><span class="op">(</span><span class="va">NC.mlm</span>, id.n <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-NC-cqplot" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-NC-cqplot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/case-studies/fig-NC-cqplot-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-NC-cqplot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;14.3: Chisquare QQ plot of the MANOVA model
+</figcaption></figure>
+</div>
+</div>
+</div>
+<section id="he-plot" class="level3" data-number="14.1.1"><h3 data-number="14.1.1" class="anchored" data-anchor-id="he-plot">
+<span class="header-section-number">14.1.1</span> HE plot</h3>
+<p>So the question becomes: how to understand these results.<br><code><a href="https://friendly.github.io/heplots/reference/heplot.html">heplot()</a></code> shows the visualization of the multivariate model in the space of two response variables (the first two by default). The result (<a href="#fig-NC-HEplot" class="quarto-xref">Figure&nbsp;<span>14.4</span></a>) tells a very simple story: The control group performs higher on higher measures than the diagnosed groups, which do not differ between themselves.</p>
+<p>(For technical reasons, to abbreviate the group labels in the plot, we need to <code><a href="https://rdrr.io/r/stats/update.html">update()</a></code> the MLM model after the labels are reassigned.)</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb9" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># abbreviate levels for plots</span></span>
+<span><span class="va">NeuroCog</span><span class="op">$</span><span class="va">Dx</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">NeuroCog</span><span class="op">$</span><span class="va">Dx</span>, </span>
+<span>                      labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Schiz"</span>, <span class="st">"SchAff"</span>, <span class="st">"Contr"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">NC.mlm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/update.html">update</a></span><span class="op">(</span><span class="va">NC.mlm</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Then, feed the model to <code><a href="https://friendly.github.io/heplots/reference/heplot.html">heplot()</a></code> for a plot of the first two response variables, <code>Speed</code> and <code>Attention</code>.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb10" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://friendly.github.io/heplots/reference/heplot.html">heplot</a></span><span class="op">(</span><span class="va">NC.mlm</span>, </span>
+<span>       fill<span class="op">=</span><span class="cn">TRUE</span>, fill.alpha<span class="op">=</span><span class="fl">0.1</span>,</span>
+<span>       cex.lab<span class="op">=</span><span class="fl">1.3</span>, cex<span class="op">=</span><span class="fl">1.25</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html">par</a></span><span class="op">(</span><span class="va">op</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-NC-HEplot" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-NC-HEplot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/case-studies/fig-NC-HEplot-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-NC-HEplot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;14.4: HE plot of Speed and Attention in the MLM for the <code>NeuroCog</code> data. The labeled points show the means of the groups on the two variables. The blue H ellipse for groups indicates the strong positive correlation of the group means.
+</figcaption></figure>
+</div>
+</div>
+</div>
+<p>This pattern, of the control group higher than the others, is consistent across all of the response variables, as we see from a plot of <code>pairs(NC.mlm)</code>:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb11" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/pairs.html">pairs</a></span><span class="op">(</span><span class="va">NC.mlm</span>, </span>
+<span>      fill<span class="op">=</span><span class="cn">TRUE</span>, fill.alpha<span class="op">=</span><span class="fl">0.1</span>,</span>
+<span>      var.cex<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-NC-HE-pairs" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-NC-HE-pairs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/case-studies/fig-NC-HE-pairs-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-NC-HE-pairs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;14.5: HE plot matrix of the MLM for <code>NeuroCog</code> data.
+</figcaption></figure>
+</div>
+</div>
+</div>
+<p>It signals that we are likely to see a simpler representation of the data in canonical space.</p>
+</section><section id="canonical-space" class="level3" data-number="14.1.2"><h3 data-number="14.1.2" class="anchored" data-anchor-id="canonical-space">
+<span class="header-section-number">14.1.2</span> Canonical space</h3>
+<p>We can gain further insight, and a simplified plot showing all the response variables by projecting the MANOVA into the canonical space, which is entirely 2-dimensional (because <span class="math inline">\(df_h=2\)</span>). However, the output from <code><a href="https://friendly.github.io/candisc/reference/candisc.html">candisc()</a></code> shows that 98.5% of the mean differences among groups can be accounted for in just one canonical dimension.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb12" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">NC.can</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://friendly.github.io/candisc/reference/candisc.html">candisc</a></span><span class="op">(</span><span class="va">NC.mlm</span><span class="op">)</span></span>
+<span><span class="va">NC.can</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Canonical Discriminant Analysis for Dx:</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;    CanRsq Eigenvalue Difference Percent Cumulative</span></span>
+<span><span class="co">#&gt; 1 0.29295    0.41433      0.408    98.5       98.5</span></span>
+<span><span class="co">#&gt; 2 0.00625    0.00629      0.408     1.5      100.0</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Test of H0: The canonical correlations in the </span></span>
+<span><span class="co">#&gt; current row and all that follow are zero</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;   LR test stat approx F numDF denDF Pr(&gt; F)    </span></span>
+<span><span class="co">#&gt; 1        0.703     7.53    12   468   9e-13 ***</span></span>
+<span><span class="co">#&gt; 2        0.994     0.30     5   235    0.91    </span></span>
+<span><span class="co">#&gt; ---</span></span>
+<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><a href="#fig-NC-candisc" class="quarto-xref">Figure&nbsp;<span>14.6</span></a> is the result of the <code><a href="https://rdrr.io/r/graphics/plot.default.html">plot()</a></code> method for class <code>"candisc"</code> objects, that is, the result of calling <code>plot(NC.can, ...)</code>. It plots the two canonical scores, <span class="math inline">\(\mathbf{Z}_{n \times 2}\)</span> for the subjects, together with data ellipses for each of the three groups.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb13" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">pos</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">1</span>, <span class="fl">4</span>, <span class="fl">4</span>, <span class="fl">1</span>, <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="va">col</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"red"</span>, <span class="st">"darkgreen"</span>, <span class="st">"blue"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">NC.can</span>, </span>
+<span>     ellipse<span class="op">=</span><span class="cn">TRUE</span>, </span>
+<span>     rev.axes<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="cn">TRUE</span>,<span class="cn">FALSE</span><span class="op">)</span>, </span>
+<span>     pch<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">7</span>,<span class="fl">9</span>,<span class="fl">10</span><span class="op">)</span>,</span>
+<span>     var.cex<span class="op">=</span><span class="fl">1.2</span>, cex.lab<span class="op">=</span><span class="fl">1.5</span>, var.lwd<span class="op">=</span><span class="fl">2</span>,  scale<span class="op">=</span><span class="fl">4.5</span>, </span>
+<span>     col<span class="op">=</span><span class="va">col</span>,</span>
+<span>     var.col<span class="op">=</span><span class="st">"black"</span>, var.pos<span class="op">=</span><span class="va">pos</span>,</span>
+<span>     prefix<span class="op">=</span><span class="st">"Canonical dimension "</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-NC-candisc" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-NC-candisc-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/case-studies/fig-NC-candisc-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-NC-candisc-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;14.6: Canonical discriminant plot for the <code>NeuroCog</code> data MANOVA. Scores on the two canonical dimensions are plotted, together with 68% data ellipses for each group.
+</figcaption></figure>
+</div>
+</div>
+</div>
+<p>The interpretation of <a href="#fig-NC-candisc" class="quarto-xref">Figure&nbsp;<span>14.6</span></a> is again fairly straightforward. As noted earlier (<a href="11-mlm-viz.html#sec-candisc" class="quarto-xref"><span>Section 11.7</span></a>), the projections of the variable vectors in this plot on the coordinate axes are proportional to the correlations of the responses with the canonical scores. From this, we see that the normal group differs from the two patient groups, having higher scores on all the neurocognitive variables, most of which are highyl correlated. The problem solving measure is slightly different, and this, compared to the cluster of memory, verbal and attention, is what distinguishes the schizophrenic group from the schizoaffectives.</p>
+<p>The separation of the groups is essentially one-dimensional, with the control group higher on all measures. Moreover, the variables processing speed and visual memory are the purest measures of this dimension, but all variables contribute positively. The second canonical dimension accounts for only 1.5% of group mean differences and is non-significant (by a likelihood ratio test). Yet, if we were to interpret it, we would note that the schizophrenia group is slightly higher on this dimension, scoring better in problem solving and slightly worse on working memory, attention, and verbal learning tasks.</p>
+<p><strong>Summary</strong></p>
+<p>This analysis gives a very simple description of the data, in relation to the research questions posed earlier:</p>
+<ul>
+<li><p>On the basis of these neurocognitive tests, the schizophrenic and schizoaffective groups do not differ significantly overall, but these groups differ greatly from the normal controls.</p></li>
+<li><p>All cognitive domains distinguish the groups in the same direction, with the greatest differences shown for the variables most closely aligned with the horizontal axis in <a href="#fig-NC-candisc" class="quarto-xref">Figure&nbsp;<span>14.6</span></a>.</p></li>
+</ul></section></section><section id="social-cognitive-measures" class="level2" data-number="14.2"><h2 data-number="14.2" class="anchored" data-anchor-id="social-cognitive-measures">
+<span class="header-section-number">14.2</span> Social cognitive measures</h2>
+<p>The social cognitive measures were designed to tap various aspects of the perception and cognitive processing of emotions of others. Emotion perception was assessed using a Managing Emotions score from the MCCB. A “theory of mind” (<code>ToM</code>) score assessed ability to read the emotions of others from photographs of the eye region of male and female faces. Two other measures, externalizing bias (<code>ExtBias</code>) and personalizing bias (<code>PersBias</code>) were calculated from a scale measuring the degree to which individuals attribute internal, personal or situational causal attributions to positive and negative social events.</p>
+<p>The analysis of the <code>SocialCog</code> data proceeds in a similar way: first we fit the MANOVA model, then test the overall differences among groups using <code><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova()</a></code>. We find that the overall multivariate test is again significant,</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb14" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">SocialCog</span>, package<span class="op">=</span><span class="st">"heplots"</span><span class="op">)</span></span>
+<span><span class="va">SC.mlm</span> <span class="op">&lt;-</span>  <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">MgeEmotions</span>,<span class="va">ToM</span>, <span class="va">ExtBias</span>, <span class="va">PersBias</span><span class="op">)</span> <span class="op">~</span> <span class="va">Dx</span>,</span>
+<span>               data<span class="op">=</span><span class="va">SocialCog</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova</a></span><span class="op">(</span><span class="va">SC.mlm</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Type II MANOVA Tests: Pillai test statistic</span></span>
+<span><span class="co">#&gt;    Df test stat approx F num Df den Df  Pr(&gt;F)    </span></span>
+<span><span class="co">#&gt; Dx  2     0.212     3.97      8    268 0.00018 ***</span></span>
+<span><span class="co">#&gt; ---</span></span>
+<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Testing the same two contrasts using <code><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">linearHypothesis()</a></code> (results not shown), w e find that the overall multivariate test is again significant, but now <em>both</em> contrasts are significant (Dx1: <span class="math inline">\(F(4, 133)=5.21, p &lt; 0.001\)</span>; Dx2: <span class="math inline">\(F(4, 133)=2.49, p = 0.0461\)</span>), the test for <code>Dx2</code> just barely.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb15" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># control vs. patients</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">linearHypothesis</a></span><span class="op">(</span><span class="va">SC.mlm</span>, <span class="st">"Dx1"</span><span class="op">)</span>, SSP<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="co"># Schizo vs. SchizAff</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">linearHypothesis</a></span><span class="op">(</span><span class="va">SC.mlm</span>, <span class="st">"Dx2"</span><span class="op">)</span>, SSP<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>These results are important, because, if they are reliable and make sense substantively, they imply that patients with schizophrenia and schizoaffective diagnoses <em>can</em> be distinguished by their performance on tasks assessing social perception and cognition. This was potentially a new finding in the literature on schizophrenia.</p>
+<p>As we did above, it is useful to visualize the nature of these differences among groups with HE plots for the <code>SC.mlm</code> model. Each contrast has a corresponding <span class="math inline">\(\mathbf{H}\)</span> ellipse, which we can show in the plot using the <code>hypotheses</code> argument. With a single degree of freedom, these degenerate ellipses plot as lines.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb16" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://friendly.github.io/heplots/reference/heplot.html">heplot</a></span><span class="op">(</span><span class="va">SC.mlm</span>, </span>
+<span>       hypotheses<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="st">"Dx1"</span><span class="op">=</span><span class="st">"Dx1"</span>, <span class="st">"Dx2"</span><span class="op">=</span><span class="st">"Dx2"</span><span class="op">)</span>,</span>
+<span>       fill<span class="op">=</span><span class="cn">TRUE</span>, fill.alpha<span class="op">=</span><span class="fl">.1</span>,</span>
+<span>       cex.lab<span class="op">=</span><span class="fl">1.5</span>, cex<span class="op">=</span><span class="fl">1.2</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-SC-HEplot" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-SC-HEplot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/case-studies/fig-SC-HEplot-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-SC-HEplot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;14.7: HE plot of Speed and Attention in the MLM for the <code>SocialCog</code> data. The labeled points show the means of the groups on the two variables. The lines for Dx1 and Dx2 show the tests of the contrasts among groups.
+</figcaption></figure>
+</div>
+</div>
+</div>
+<p>It can be seen that the three group means are approximately equally spaced on the <code>ToM</code> measure, whereas for <code>MgeEmotions</code>, the control and schizoaffective groups are quite similar, and both are higher than the schizophrenic group. This ordering of the three groups was somewhat similar for the other responses, as we could see in a <code>pairs(SC.mlm)</code> plot.</p>
+<section id="model-checking" class="level3" data-number="14.2.1"><h3 data-number="14.2.1" class="anchored" data-anchor-id="model-checking">
+<span class="header-section-number">14.2.1</span> Model checking</h3>
+<p>Normally, we would continue this analysis, and consider other HE and canonical discriminant plots to further interpret the results, in particular the relations of the cognitive measures to group differences, or perhaps an analysis of the relationships between the neuro- and social-cognitive measures. We don’t pursue this here for reasons of length, but this example actually has a more important lesson to demonstrate.</p>
+<p>Before beginning the MANOVA analyses, extensive data screening was done by the client using SPSS, in which all the response <em>and</em> predictor variables were checked for univariate normality and multivariate normality (MVN) for both sets. This traditional approach yielded a huge amount of tabular output and no graphs, and did not indicate any major violation of assumptions.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+<p>A simple visual test of MVN and the possible presence of multivariate outliers is related to the theory of the data ellipse: Under MVN, the squared Mahalanobis distances <span class="math inline">\(D^2_M (\mathbf{y}) = (\mathbf{y} - \bar{\mathbf{y}})' \, \mathbf{S}^{-1} \, (\mathbf{y} - \bar{\mathbf{y}})\)</span> should follow a <span class="math inline">\(\chi^2_p\)</span> distribution. Thus, a quantile-quantile plot of the ordered <span class="math inline">\(D^2_M\)</span> values vs.&nbsp;corresponding quantiles of the <span class="math inline">\(\chi^2\)</span> distribution should approximate a straight line <span class="citation" data-cites="Cox:1968 Healy:1968:MNP">(<a href="95-references.html#ref-Cox:1968" role="doc-biblioref">Cox, 1968</a>; <a href="95-references.html#ref-Healy:1968:MNP" role="doc-biblioref">Healy, 1968</a>)</span>. Note that this should be applied to the <em>residuals</em> from the model – <code>residuals(SC.mlm)</code> – and not to the response variables directly.</p>
+<p><code><a href="https://friendly.github.io/heplots/reference/cqplot.html">heplots::cqplot()</a></code> implements this for <code>"mlm"</code> objects Calling this function for the model <code>SC.mlm</code> produces <a href="#fig-SC-cqplot" class="quarto-xref">Figure&nbsp;<span>14.8</span></a>. It is immediately apparent that there is one extreme multivariate outlier; three other points are identified, but the remaining observations are nearly within the 95% confidence envelope (using a robust MVE estimate of <span class="math inline">\(\mathbf{S}\)</span>).</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb17" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://friendly.github.io/heplots/reference/cqplot.html">cqplot</a></span><span class="op">(</span><span class="va">SC.mlm</span>, method<span class="op">=</span><span class="st">"mve"</span>, </span>
+<span>       id.n<span class="op">=</span><span class="fl">4</span>, </span>
+<span>       main<span class="op">=</span><span class="st">""</span>, </span>
+<span>       cex.lab<span class="op">=</span><span class="fl">1.25</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-SC-cqplot" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-SC-cqplot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/case-studies/fig-SC-cqplot-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-SC-cqplot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;14.8: Chi-square quantile-quantile plot for residuals from the model <code>SC.mlm</code>. The confidence band gives a point-wise 95% envelope, providing information about uncertainty. One extreme multivariate outlier is highlighted.
+</figcaption></figure>
+</div>
+</div>
+</div>
+<p>Further checking revealed that this was a data entry error where one case (15) in the schizophrenia group had a score of -33 recorded on the <code>ExtBias</code> measure, whose valid range was (-10, +10). In R, it is very easy to re-fit a model to a subset of observations (rather than modifying the dataset itself) using <code><a href="https://rdrr.io/r/stats/update.html">update()</a></code>. The result of the overall Anova and the test of <code>Dx1</code> were unchanged; however, the multivariate test for the most interesting contrast <code>Dx2</code> comparing the schizophrenia and schizoaffective groups became non-significant at the <span class="math inline">\(\alpha=0.05\)</span> level (<span class="math inline">\(F(4, 133)=2.18, p = 0.0742\)</span>).</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb18" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">SC.mlm1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/update.html">update</a></span><span class="op">(</span><span class="va">SC.mlm</span>, </span>
+<span>                  subset<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="va">SocialCog</span><span class="op">)</span><span class="op">!=</span><span class="st">"15"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova</a></span><span class="op">(</span><span class="va">SC.mlm1</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">linearHypothesis</a></span><span class="op">(</span><span class="va">SC.mlm1</span>, <span class="st">"Dx1"</span><span class="op">)</span>, SSP<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">linearHypothesis</a></span><span class="op">(</span><span class="va">SC.mlm1</span>, <span class="st">"Dx2"</span><span class="op">)</span>, SSP<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section><section id="canonical-he-plot" class="level3" data-number="14.2.2"><h3 data-number="14.2.2" class="anchored" data-anchor-id="canonical-he-plot">
+<span class="header-section-number">14.2.2</span> Canonical HE plot</h3>
+<p>This outcome creates a bit of a quandry for further analysis (do univariate follow-up tests? try a robust model?) and reporting (what to claim about the <code>Dx2</code> contrast?) that we don’t explore here. Rather, we proceed to attempt to interpret the MLM with the aid of canonical analysis and a canonical HE plot. The canonical analysis of the model <code>SC.mlm1</code> now shows that both canonical dimensions are significant, and account for 83.9% and 16.1% of between group mean differences respectively.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb19" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">SC.can1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://friendly.github.io/candisc/reference/candisc.html">candisc</a></span><span class="op">(</span><span class="va">SC.mlm1</span><span class="op">)</span></span>
+<span><span class="va">SC.can1</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Canonical Discriminant Analysis for Dx:</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;   CanRsq Eigenvalue Difference Percent Cumulative</span></span>
+<span><span class="co">#&gt; 1 0.1645     0.1969      0.159    83.9       83.9</span></span>
+<span><span class="co">#&gt; 2 0.0364     0.0378      0.159    16.1      100.0</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Test of H0: The canonical correlations in the </span></span>
+<span><span class="co">#&gt; current row and all that follow are zero</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;   LR test stat approx F numDF denDF Pr(&gt; F)    </span></span>
+<span><span class="co">#&gt; 1        0.805     3.78     8   264 0.00032 ***</span></span>
+<span><span class="co">#&gt; 2        0.964     1.68     3   133 0.17537    </span></span>
+<span><span class="co">#&gt; ---</span></span>
+<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb20" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">op</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/par.html">par</a></span><span class="op">(</span>mar<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">5</span>,<span class="fl">4</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span><span class="op">+</span><span class="fl">.1</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://friendly.github.io/heplots/reference/heplot.html">heplot</a></span><span class="op">(</span><span class="va">SC.can1</span>, </span>
+<span>  fill<span class="op">=</span><span class="cn">TRUE</span>, fill.alpha<span class="op">=</span><span class="fl">.1</span>,</span>
+<span>  hypotheses<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="st">"Dx1"</span><span class="op">=</span><span class="st">"Dx1"</span>, <span class="st">"Dx2"</span><span class="op">=</span><span class="st">"Dx2"</span><span class="op">)</span>,</span>
+<span>  lwd <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3</span>, <span class="fl">3</span><span class="op">)</span>,</span>
+<span>  col<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"red"</span>, <span class="st">"blue"</span>, <span class="st">"darkgreen"</span>, <span class="st">"darkgreen"</span><span class="op">)</span>,</span>
+<span>  var.lwd<span class="op">=</span><span class="fl">2</span>, </span>
+<span>  var.col<span class="op">=</span><span class="st">"black"</span>, </span>
+<span>  label.pos<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">3</span>,<span class="fl">1</span><span class="op">)</span>, </span>
+<span>  var.cex<span class="op">=</span><span class="fl">1.2</span>, </span>
+<span>  cex<span class="op">=</span><span class="fl">1.25</span>, cex.lab<span class="op">=</span><span class="fl">1.2</span>, </span>
+<span>  scale<span class="op">=</span><span class="fl">2.8</span>,</span>
+<span>  prefix<span class="op">=</span><span class="st">"Canonical dimension "</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html">par</a></span><span class="op">(</span><span class="va">op</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-SC1-hecan" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-SC1-hecan-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/case-studies/fig-SC1-hecan-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-SC1-hecan-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;14.9: Canonical HE plot for the corrected <code>SocialCog</code> MANOVA. The variable vectors show the correlations of the responses with the canonical variables. The embedded green lines show the projections of the <strong>H</strong> ellipses for the contrasts <code>Dx1</code> and <code>Dx2</code> in canonical space.
+</figcaption></figure>
+</div>
+</div>
+</div>
+<p>The HE plot version of this canonical plot is shown in <a href="#fig-SC1-hecan" class="quarto-xref">Figure&nbsp;<span>14.9</span></a>. Because the <code><a href="https://friendly.github.io/heplots/reference/heplot.html">heplot()</a></code> method for a <code>"candisc"</code> object refits the original model to the <span class="math inline">\(\mathbf{Z}\)</span> canonical scores, it is easy to also project other linear hypotheses into this space. Note that in this view, both the <code>Dx1</code> and <code>Dx2</code> contrasts project outside <span class="math inline">\(\mathbf{E}\)</span> ellipse.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>.</p>
+<p>This canonical HE plot has a very simple description:</p>
+<ul>
+<li>Dimension 1 orders the groups from control to schizoaffective to schizophrenia, while dimension 2 separates the schizoaffective group from the others;</li>
+<li>Externalizing bias and theory of mind contributes most to the first dimension, while personal bias and managing emotions are more aligned with the second; and,</li>
+<li>The relations of the two contrasts to group differences and to the response variables can be easily read from this plot.</li>
+</ul>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb21" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co">#cat("Packages used here:\n")</span></span>
+<span><span class="fu">write_pkgs</span><span class="op">(</span>file <span class="op">=</span> <span class="va">.pkg_file</span><span class="op">)</span></span>
+<span><span class="co">#&gt; 11  packages used here:</span></span>
+<span><span class="co">#&gt;  broom, candisc, car, carData, corrgram, dplyr, ggbiplot, ggplot2, heplots, knitr, tidyr</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<!-- ## References {.unnumbered} -->
+
+
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" data-line-spacing="2" role="list" style="display: none">
+<div id="ref-Cox:1968" class="csl-entry" role="listitem">
+Cox, D. R. (1968). Notes on some aspects of regression analysis. <em>Journal of the Royal Statistical Society Series A</em>, <em>131</em>, 265–279.
+</div>
+<div id="ref-Healy:1968:MNP" class="csl-entry" role="listitem">
+Healy, M. J. R. (1968). Multivariate normal plotting. <em>Journal of the Royal Statistical Society Series C</em>, <em>17</em>(2), 157–161.
+</div>
+<div id="ref-Mardia:1970:MMS" class="csl-entry" role="listitem">
+Mardia, K. V. (1970). Measures of multivariate skewness and kurtosis with applications. <em>Biometrika</em>, <em>57</em>(3), 519–530. https://doi.org/<a href="http://dx.doi.org/10.2307/2334770">http://dx.doi.org/10.2307/2334770</a>
+</div>
+<div id="ref-Mardia:1974" class="csl-entry" role="listitem">
+Mardia, K. V. (1974). Applications of some measures of multivariate skewness and kurtosis in testing normality and robustness studies. <em>Sankhya: The Indian Journal of Statistics, Series B</em>, <em>36</em>(2), 115–128. <a href="http://www.jstor.org/stable/25051892">http://www.jstor.org/stable/25051892</a>
+</div>
+</div>
+</section></section><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><hr>
+<ol>
+<li id="fn1"><p>Actually, multivariate normality of the predictors in <span class="math inline">\(\mathbf{X}\)</span> is not required in the MLM. This assumption applies only to the conditional values <span class="math inline">\(\mathbf{Y} \;|\; \mathbf{X}\)</span>, i.e., that the errors <span class="math inline">\(\mathbf{\epsilon}_{i}' \sim \mathcal{N}_{p}(\mathbf{0},\boldsymbol{\Sigma})\)</span> with constant covariance matrix. Moreover, the widely used MVN test statistics, such as Mardia’s <span class="citation" data-cites="Mardia:1970:MMS">(<a href="95-references.html#ref-Mardia:1970:MMS" role="doc-biblioref">1970</a>)</span> test based on multivariate skewness and kurtosis are known to be quite sensitive to mild departures in kurtosis <span class="citation" data-cites="Mardia:1974">(<a href="95-references.html#ref-Mardia:1974" role="doc-biblioref">Mardia, 1974</a>)</span> which do not threaten the validity of the multivariate tests.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>The direct application of significance tests to canonical scores probably requires some adjustment because these are computed to have the optimal between-group discrimination.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol></section></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/friendly\.github\.io\/Vis-MLM-book");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script><nav class="page-navigation"><div class="nav-page nav-page-previous">
+      <a href="./13-infl-robust.html" class="pagination-link" aria-label="Multiviate Influence and Robust Estimation">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Multiviate Influence and Robust Estimation</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./91-colophon.html" class="pagination-link" aria-label="Colophon">
+        <span class="nav-page-text">Colophon</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/friendly/vis-MLM-book/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></div></div></footer><script src="site_libs/quarto-contrib/line-highlight-1.0.0/line-highlight.js" defer="true"></script>
+</body></html>
