@@ -11,20 +11,22 @@ knitr::opts_chunk$set(fig.path = "figs/ch08/")
 
 
 In univariate multiple regression models, we usually hope to have high correlations between the outcome $y$ and each of the
-predictors, $\mathbf{X} = [\mathbf{x}_1, \mathbf{x_2}, \dots]$, but high correlations _among_ the predictors can cause problems
+predictors, $\mathbf{X} = [\mathbf{x}_1, \mathbf{x_2}, \dots]$. But high correlations _among_ the predictors can cause problems
 in estimating and testing their effects. Exactly the same problems can exist in multivariate response models,
-because they involve only the relations among the predictor variables.
+because they involve only the relations among the predictor variables, so the problems and solutions discussed here
+apply equally to MLMs.
 
 The problem of high correlations among the predictors in a model is called **collinearity**
 (or multicollinearity), referring to the situation when two or more predictors
 are very nearly linearly related to each other (collinear).
 This chapter illustrates the nature of collinearity geometrically, using data and confidence
-ellipsoids.
-It describes diagnostic measures to asses these effects, 
-and presents some novel visual tools for these purposes using the  `r pkg("VisCollin")` package.
+ellipsoids (@sec-what-is-collin)
+It describes diagnostic measures to asses these effects (@sec-measure-collin) 
+and presents some novel visual tools for these purposes using the  `r pkg("VisCollin")` package. These include
+_tableplots_ (@sec-tableplot) and collinearity biplots (@sec-collin-biplots).
 
 One class of solutions for collinearity involves _regularization methods_ such as ridge regression (@sec-ridge). 
-Another collection of graphical methods, generalized ridge trace plots, implemented 
+Another collection of graphical methods, _generalized ridge trace plots_, implemented 
 in the `r pkg("genridge")` package, sheds further light on what is accomplished by this technique.
 In @sec-ridge-low-rank we see that, once again, PCA-related techniques like the biplot can be insightful---here, to 
 understand the nature of collinearity and ridge regression.
@@ -46,7 +48,7 @@ library(patchwork)
 library(easystats)
 ```
 
-## What is collinearity?
+## What is collinearity? {#sec-what-is-collin}
 
 Researchers who have studies standard treatments of linear models
 (e.g, @Graybill1961; @Hocking2013)
@@ -159,7 +161,7 @@ change $\Delta y$ in $y$ when $x$ changes by one unit $\Delta x$, but holding **
 constant**. Then, the model may be trying to estimate something that does not occur in the data.
 (For example: predicting strength from the highly correlated height and weight)
 
-### Visualizing collinearity
+### Visualizing collinearity {#sec-vis-collin}
 
 Collinearity can be illustrated in data space for two predictors in terms of the stability of the
 regression plane for a linear model `Y = X1 + X2`.  @fig-collin-demo (adapted from @Fox:2016:ARA, Fig. 13.2)
@@ -196,6 +198,7 @@ knitr::include_graphics("images/collin-demo.png")
 ```
 
 ### Data space and $\beta$ space {#sec-data-beta-space}
+
 It is also useful to visualize collinearity by comparing the representation in **data space** with the
 analogous view of the confidence ellipses for coefficients in **beta space**. To do so in this example, I generate
 data from a known model $y = 3 x_1 + 3 x_2 + \epsilon$ with $\epsilon \sim \mathcal{N} (0, 100)$
@@ -445,13 +448,12 @@ This inverse connection is analogous to the dual relationship (@sec-data-beta-sp
 
 :::
 
-::: {#exm-vif-displays}
-**VIF displays**
+### VIF displays
 
 Beyond `car::vif()`, the `r pkg("easystats")` suite of packages has some useful functions for displaying VIFs in
 helpful tables and plots. `performance::check_collinearity()` calculates VIFs and their standard errors
 and returns a `"check_collinearity"` data frame.  The plot method for this plots these, using a log scale
-because it is multiples that matter here. It uses intervals of 1-5, 5-10, 10+ to highlight low, medium and
+because it is multiples of variance that matter here. It uses intervals of 1-5, 5-10, 10+ to highlight low, medium and
 high variance inflation with colored bands.
 
 ```{r}
@@ -466,10 +468,10 @@ plot(cars.collin,
 ```
 
 The graphic properties here help to make the problematic variables more apparent than in a table of numbers,
-though the underlying message is the same. Number of cylinders, engine displacement and weight are the 
-bad boys. They help to pin Waldo down a bit, but to find him, we need a few more diagnostics and better
+though the underlying message is the same. Number of cylinders, engine displacement and weight are the collinearity
+bad boys. Knowing this helps to pin Waldo down a bit, but to really find him, we need a few more diagnostics and better
 graphical methods.
-:::
+
 
 ### Collinearity diagnostics {#sec-colldiag}
 
@@ -604,7 +606,7 @@ tableplot(cd, title = "Tableplot of cars data",
 
 \ixoff{tableplots}
 
-## Collinearity biplots
+## Collinearity biplots {#sec-collin-biplots}
 
 \ixon{collinearity biplots}
 \ixon{biplots!collinearity}
@@ -1066,10 +1068,11 @@ In addition, the `pca()` method for `"ridge"` objects transforms the coefficient
 
 ## Univariate ridge trace plots {#sec-ridge-univar}
 
-A classic example for ridge regression is Longley’s (1967) data, consisting of 7 economic variables, observed yearly from 1947 to 1962 (n=16), in the dataset `r dataset("longley")`. 
+A classic example for ridge regression is Longley’s [-@Longley:1967] data, consisting of 7 economic variables, observed yearly from 1947 to 1962 (n=16), in the dataset `r dataset("longley")`. 
 The goal is to predict Employed from `GNP`, `Unemployed`, `Armed.Forces`, `Population`, `Year`, and `GNP.deflator`.
 
 <!-- fig.code: taken from genridge  README.Rmd -->
+<!-- fig.code: R/genridge-longley-figs1.R -->
 
 ```{r longley}
 data(longley, package="datasets")
@@ -1089,7 +1092,8 @@ longley.lm <- lm(Employed ~ GNP + Unemployed + Armed.Forces +
 vif(longley.lm)
 ```
 
-Shrinkage values can be specified using $k$ (where $k = 0$ corresponds to OLS) or the equivalent degrees of freedom $ \text{df}_k$ (@eq-dfk). (The function uses the notation $\lambda \equiv k$, so the argument is `lambda`.)
+Shrinkage values can be specified using $k$ (where $k = 0$ corresponds to OLS) or the equivalent degrees of freedom 
+$\text{df}_k$ (@eq-dfk). (The function uses argument `lambda`, $\lambda \equiv k$ for the shrinkage constant.)
 Among other quantities, `ridge()` returns a matrix containing the coefficients for each predictor for each shrinkage value
 and other quantities.
 
@@ -1131,7 +1135,18 @@ lridge$criteria
 The shrinkage constant $k$ doesn't have much intrinsic meaning, so
 it is often easier to interpret the plot when coefficients are plotted against the equivalent degrees of freedom, $\text{df}_k$.
 OLS corresponds to $\text{df}_k = 6$ degrees of freedom in the space of six parameters,
-and the effect of shrinkage is to decrease the degrees of freedom, as if estimating fewer parameters. This more natural scale also makes the changes in coefficient with shrinkage more nearly linear.
+and the effect of shrinkage is to decrease the degrees of freedom, as if estimating fewer parameters.[^lasso]
+This more natural scale also makes the changes in coefficient with shrinkage more nearly linear.
+
+[^lasso]: A related shrinkage method, LASSO (Least Absolute Shrinkage and Selection Operator)
+[@Tibshriani:regr:1996] uses a penalty term of the sum of _absolute values_ of the coefficients, $\Sigma \lvert \beta_i \rvert \le t(k)$
+rather than the sum of squares in @eq-ridgeRSS. The effect of this change is to shrink some coefficients exactly to
+zero, effectively eliminating them from the model. This makes LASSO a _model selection method_, similar in aim to
+other best subset regression methods. --> Extensions of LASSO in ML where interpretation less important than prediction.
+\ix{LASSO}
+\ix{model selection}
+\ix{best subset regression}
+
 
 ```{r echo=-1}
 #| label: fig-longley-traceplot2
@@ -1142,7 +1157,8 @@ traceplot(lridge,
           xlim = c(4, 6.2), cex.lab=1.25)
 ```
 
-But a bigger problem is that these univariate plots are the **wrong kind** of plot! They show the trends in increased bias (toward smaller $\mid \beta \mid$) associated with larger $k$, but they do not show the accompanying increase in _precision_ (decrease in variance) achieved by allowing a bit of bias.
+### What's not to like?
+A bigger problem is that these univariate plots are the **wrong kind** of plot! They show the trends in increased bias (toward smaller $\mid \beta \mid$) associated with larger $k$, but they do not show the accompanying increase in _precision_ (decrease in variance) achieved by allowing a bit of bias.
 
 For that, we need to consider the variances and covariances of the estimated coefficients. The univariate trace plot is the wrong graphic form for what is essentially a multivariate problem, where we would like to visualize how _both_ coefficients and their variances change with $k$.
 
@@ -1153,7 +1169,9 @@ Their centers, $(\widehat{\beta}_i, \widehat{\beta}_j)$ compared to the OLS valu
 show the bias induced for each coefficient, and also how the change in the ridge estimate for one parameter is related to changes for other parameters.
 
 The size and shapes of the covariance ellipses show directly the effect on precision of the estimates as a function of the ridge tuning constant.
-and their size and shape indicate sampling variance, $\widehat{\text{Var}} (\mathbf{\widehat{\beta}}_{ij})$. Here, I plot those for GNP against four of the other predictors. The `plot()` method for `"ridge"` objects plots these ellipses for a pair of variables.
+and their size and shape indicate sampling variance, $\widehat{\text{Var}} (\mathbf{\widehat{\beta}}_{ij})$. 
+
+Here (@fig-longley-plot-ridge), I plot those for GNP against four of the other predictors. The `plot()` method for `"ridge"` objects plots these ellipses for a pair of variables.
 
 ```{r echo=-1}
 #| out-width: "100%"
