@@ -81,7 +81,7 @@ avPlots(duncan.mod2,
 
 
 #' ## show the leverage of the unusual points
-
+#' Figure 6.27
 # delete minister, conductor
 duncan.mod2 <- update(duncan.mod, 
                       subset = - whichNames(c("minister", "conductor"), Duncan))
@@ -92,7 +92,7 @@ par(mar = c(4, 5, 4, 1)+.1,
     mfrow = c(1,2))
 res <- avPlot(duncan.mod, "income",
               ellipse = list(levels = 0.68),
-              id = list(method = "mahal", n=3),
+              id = list(method = "mahal", n=3, cex = 1.2),
               pch = 16,
               cex.lab = 1.5) |>
   as.data.frame()
@@ -106,7 +106,7 @@ info <- cbind(res, fitted = fitted(fit),
 big <- which(info$cookd > .20)
 with(info, {
   arrows(income[big], fitted[big], income[big], prestige[big], 
-         angle = 12, length = .18, lwd = 2, col = "darkgreen")
+         angle = 12, length = .18, lwd = 3, col = "darkgreen")
   })
 
 # line w/o the unusual points
@@ -117,7 +117,7 @@ abline(a=0, b=bs, col = "red", lwd=2)
 # same for education
 res <- avPlot(duncan.mod, "education",
               ellipse = list(levels = 0.68),
-              id = list(method = "mahal", n=3),
+              id = list(method = "mahal", n=3, cex = 1.2),
               pch = 16,
               cex.lab = 1.5) |>
   as.data.frame()
@@ -130,7 +130,7 @@ info <- cbind(res, fitted = fitted(fit),
 big <- which(info$cookd > .2)
 with(info, {
   arrows(education[big], fitted[big], education[big], prestige[big], 
-         angle = 12, length = .18, lwd = 2, col = "darkgreen")
+         angle = 12, length = .18, lwd = 3, col = "darkgreen")
 })
 
 # line w/o the unusual points

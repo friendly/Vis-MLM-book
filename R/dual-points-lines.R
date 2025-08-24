@@ -44,7 +44,7 @@ x <- c(-2, .5, 1)
 y <- c( 1, -1, 0)
 
 # plot lines in data space
-op <- par(mar = c(5, 5, 1, 1) + .1,
+op <- par(mar = c(5, 5, 2, 1) + .1,
           mfrow = c(1, 2))
 plot(0,0, type ="n",
      xlab = "x",
@@ -60,7 +60,9 @@ for (i in seq_along(x)) {
 # cheating
 pts <- matrix(c(1.25, 3, -.5,
                 -.75, 1,   1), 3, 2)
-points(pts, pch = 16)
+points(pts, pch = 16, cex = 1.5)
+ptlab <- paste0("(", pts[,1], ",", pts[,2], ")")
+text(pts[,1], pts[,2], ptlab, pos = c(3,1,1))
 
 # simplify equations
 eqn <- c("y = x - 2", 
@@ -80,7 +82,7 @@ for (i in 1:3) {
 }
 
 # plot points in beta space
-op <- par(mar = c(5, 5, 1, 1) + .1)
+#op <- par(mar = c(5, 5, 1, 1) + .1)
 col <- c("red", "blue", "darkgreen")
 pch <- 16
 a <- x
@@ -94,8 +96,10 @@ plot(a, b, col = col,
      main = "Beta space")
 abline(h = 0, v = 0, col = "gray")
 lines(rep(a, length.out =4), rep(b, length.out =4), col = "black")
-text(a, b, label = paste0("(", a, ",", b, ")"), col = col, pos = 1, offset = .75)
-text(a, b, label = eqn, col = col, pos = 3, offset = .75)
+text(a, b, label = paste0("(", a, ",", b, ")"), 
+     col = col, pos = 1, offset = .75)
+text(a, b, label = eqn, 
+     col = col, pos = 3, offset = .75, cex = 1.25)
 par(op)
 
 #-------------------------------------------
