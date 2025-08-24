@@ -127,3 +127,22 @@ with(unusual, {
 influenceIndexPlot(once.mod, 
                    var = c("Cook", "Studentized"),
                    pch = 16)
+
+
+op <- par(mar = c(4,5,3,1) + .1)
+once <- both[c(1:16, 62, 63, 64),]      # unique observations
+once.mod <- lm(y ~ x, data=once)
+inf <- influencePlot(once.mod, 
+                     id = list(cex = 0.01),
+                     fill.alpha = 0.5,
+                     cex.lab = 1.5)
+# custom labels
+unusual <- bind_cols(once[17:19,], inf) |> 
+  print(digits=3)
+with(unusual, {
+  casetype <- gsub("\\d ", "", case)
+  text(Hat, StudRes, label = casetype,
+       pos = c(4, 2, 3), cex=1.5)
+})
+par(op)
+
