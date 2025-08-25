@@ -459,7 +459,7 @@ high variance inflation with colored bands.
 ```{r}
 #| label: fig-cars-check-collin
 #| out-width: "80%"
-#| fig-cap: !expr paste("Variance inflation plot. VIF is plotted on a log scale. Colored bands show regions of", colorize("low", "green"), colorize("medium", "blue"), "and", colorize("high", "red"), "variance inflation.")
+#| fig-cap: !expr paste0("Variance inflation plot. VIF is plotted on a log scale. Colored bands show regions of ", colorize("low", "green"), ", ", colorize("medium", "blue"), "and ", colorize("high", "red"), " variance inflation.")
 cars.collin <- check_collinearity(cars.mod)
 
 plot(cars.collin, 
@@ -507,8 +507,8 @@ $$
 \text{VIF}_j = \sum_{k=1}^p \frac{V^2_{jk}}{\lambda_k} \; ,
 $$
 
-which shows that only the _small_ eigenvalues contribute to variance inflation,
-but only for those predictors that have large eigenvector coefficients on those small components.
+which shows that (a) only the _small_ eigenvalues contribute to variance inflation,
+but (b) only for those predictors that have large eigenvector coefficients on those small components.
 These facts lead to the following diagnostic statistics for collinearity:
 
 * **Condition indices**: 
@@ -523,12 +523,13 @@ have common interpretations regardless of the number of predictors.
 
   + For completely uncorrelated predictors, all $\kappa_j = 1$.
   + $\kappa_j \rightarrow \infty$ as any $\lambda_k \rightarrow 0$.
+  + As a rule of thumb, @Belsley:91a suggests that $\kappa_j > 30$ indicates severe collinearity, while values $\kappa_j > 10$ reflect a moderate problem.
 
 * **Variance decomposition proportions**:
 Large VIFs indicate variables that are involved in _some_ nearly collinear
 relations, but they don't indicate _which_ other variable(s) each is involved with.
 For this purpose, @Belsley-etal:80 and @Belsley:91a  proposed calculation of
-the proportions of variance of each variable associated with each principal component
+the _proportions of variance_ of each variable associated with each principal component
 as a decomposition of the coefficient variance for each dimension.
 
 These measures can be calculated using `VisCollin::colldiag()`.
@@ -541,17 +542,18 @@ what numbers to pay attention to.
 @Belsley:91a recommends that the sources of collinearity be diagnosed 
 (a) only for those components with large $\kappa_j$, and
 (b) for those components for which the variance proportion is large (say, $\ge 0.5$) on _two_ or more predictors.
-The print method for `"colldiag"` objects has a `fuzz` argument controlling this.
+The print method for `"colldiag"` objects has a `fuzz` argument controlling this. The `descending = TRUE` argument
+puts the rows with the largest condition indices at the top.
 
 ```{r colldiag2}
-print(cd, fuzz = 0.5)
+print(cd, fuzz = 0.5, descending = TRUE)
 ```
 
 The mystery is solved, if you can read that table with these recommendations in mind. There are two nearly collinear relations among the predictors, corresponding to the two
-smallest dimensions. 
+smallest dimensions with largest condition indices.
 
-* Dimension 5 reflects the high correlation between horsepower and weight,
 * Dimension 6 reflects the high correlation between number of cylinders and engine displacement.
+* Dimension 5 reflects the high correlation between horsepower and weight,
 
 Note that the high variance proportion for `year` (0.787) on the second component creates no problem and
 should be ignored because (a) the condition index is low and (b) it shares nothing with other predictors.
@@ -562,7 +564,8 @@ should be ignored because (a) the condition index is low and (b) it shares nothi
 
 The default tabular display of condition indices and variance proportions from `colldiag()` is what triggered
 the comparison to "Where's Waldo". It suffers from the fact that the important information ---
-(a) how many Waldos? (b) where are they hiding --- is disguised by being embedded in a sea of mostly irrelevant numbers. The simple option of using a principled `fuzz` factor helps considerably, but not entirely.
+(a) how many Waldos? (b) where are they hiding --- is disguised by being embedded in a sea of mostly irrelevant numbers,
+just as Waldo is hiding in @fig-wheres-waldo in a field of stripy things. The simple option of using a principled `fuzz` factor helps considerably, but not entirely.
 
 The simplified tabular display above can be improved to make the patterns of collinearity more 
 visually apparent and to signify warnings directly to the eyes.
@@ -597,7 +600,7 @@ R file: `R/cars-colldiag.R`
 #| label: fig-cars-tableplot
 #| fig-keep: "last"
 #| out-width: 80%
-#| fig.cap: "Tableplot of condition indices and variance proportions for the `cars` data. In column 1, the square symbols are scaled relative to a maximum condition index of 30. 
+#| fig.cap: "**Tableplot** of condition indices and variance proportions for the `cars` data. In column 1, the square symbols are scaled relative to a maximum condition index of 30. 
 #|     In the remaining columns, variance proportions (times 100) are shown as circles
 #|     scaled relative to a maximum of 100."
 tableplot(cd, title = "Tableplot of cars data", 
@@ -649,12 +652,12 @@ scores for the cars.
 ```{r}
 #| label: fig-cars-collin-biplot
 #| out-width: 100%
-#| fig.cap: "Collinearity biplot of the Cars data, showing the last two dimensions.
+#| fig.cap: "**Collinearity biplot** of the Cars data, showing the last two dimensions.
 #|  The projections of the variable vectors on the coordinate axes are proportional to
 #|  their variance proportions. To reduce graphic clutter, only the most outlying observations in predictor
 #|  space are identified by case labels.
 #|  An extreme outlier (case 20) appears in the lower right corner."
-cars.pca$rotation <- -2.5 * cars.pca$rotation    # reflect & scale the variable vectors
+cars.pca$rotation <- -2.5 * cars.pca$rotation    # reflect & scale variable vectors
 
 ggp <- fviz_pca_biplot(
   cars.pca,
@@ -702,8 +705,8 @@ and `horse`.
 
 Moreover, there is one observation, #20, that stands out as
 an outlier in predictor space, far from the centroid.
-It turns out that this vehicle, a Buick Estate wagon, is an early-year (1970) American behemoth,
-with an 8-cylinder, 455 cu. in, 225 horse-power engine, and able to go from 0 to 60 mph
+It turns out that this vehicle, a Buick Estate wagon, is an early-year (1970) American behemoth.
+It had an 8-cylinder, 455 cu. in, 225 horse-power engine, and able to go from 0 to 60 mph
 in 10 sec.
 (Its MPG is only slightly under-predicted from the regression model, however.)
 \ix{outliers}
@@ -769,7 +772,7 @@ a small amount of bias, . See the [genridge](https://CRAN.R-project.org/package=
 
   + use Bayesian regression; if multicollinearity prevents a regression coefficient from being estimated precisely, then a prior on that coefficient will help to reduce its posterior variance.
 
-**Example**: Centering
+<!-- **Example**: Centering -->
 
 ::: {#exm-centering}
 **Centering**
@@ -884,6 +887,7 @@ vif(acetyl.mod2, type = "term")
 Ridge regression is an instance of a class of techniques designed to obtain more favorable predictions at the expense of some increase in bias, compared to ordinary least squares (OLS) estimation. 
 These methods began as a way of solving collinearity problems in OLS regression with highly correlated predictors
 [@HoerlKennard:1970a].
+
 More recently ridge regression developed to a larger class of model selection methods, of which the
 LASSO method of @Tibshriani:regr:1996 and LAR method of @Efron-etal:leas:2004
 are well-known instances.  See, for example, the reviews in
@@ -902,7 +906,7 @@ of the tuning parameter, for example using generalized cross validation, bootstr
 A common means to visualize the effects of shrinkage in these problems is to make
 what are called _univariate ridge trace plots_ (@sec-ridge-univar) showing how the estimated coefficients
 $\widehat{\boldsymbol{\beta}}_k$ change as the shrinkage criterion $k$ increases.
-(An example is shown in Fig XX below.)
+(An example is shown in @fig-longley-traceplot1 below.)
 But this only provides a view of bias. It is the wrong graphic form for a multivariate
 problem where we want to visualize bias in the coefficients $\widehat{\boldsymbol{\beta}}_k$
 vs. their precision, as reflected in their estimated variances, 
@@ -1142,7 +1146,7 @@ This more natural scale also makes the changes in coefficient with shrinkage mor
 [@Tibshriani:regr:1996] uses a penalty term of the sum of _absolute values_ of the coefficients, $\Sigma \lvert \beta_i \rvert \le t(k)$
 rather than the sum of squares in @eq-ridgeRSS. The effect of this change is to shrink some coefficients exactly to
 zero, effectively eliminating them from the model. This makes LASSO a _model selection method_, similar in aim to
-other best subset regression methods. --> Extensions of LASSO in ML where interpretation less important than prediction.
+other best subset regression methods. This is widely used in machine learning methods, where interpretation less important than prediction accuracy.
 \ix{LASSO}
 \ix{model selection}
 \ix{best subset regression}
@@ -1179,7 +1183,7 @@ Here (@fig-longley-plot-ridge), I plot those for GNP against four of the other p
 #| fig-show: "hold"
 #| fig-width: 9
 #| fig-height: 8
-#| fig-cap: "Bivariate ridge trace plots for the coefficients of four predictors against the coefficient for GNP in Longley’s data, with k = 0, 0.002, 0.005, 0.01, 0.02, 0.04, 0.08. In most cases, the coefficients are driven toward zero, but the bivariate plot also makes clear the reduction in variance, as well as the bivariate path of shrinkage."
+#| fig-cap: "**Bivariate ridge trace** plots for the coefficients of four predictors against the coefficient for GNP in Longley’s data, with k = 0, 0.002, 0.005, 0.01, 0.02, 0.04, 0.08. In most cases, the coefficients are driven toward zero, but the bivariate plot also makes clear the reduction in variance, as well as the bivariate path of shrinkage."
 op <- par(mfrow=c(2,2), mar=c(4, 4, 1, 1)+ 0.1)
 clr <-  c("black", "red", "brown", "darkgreen","blue", "cyan4", "magenta")
 pch <- c(15:18, 7, 9, 12)
@@ -1190,12 +1194,13 @@ for (i in 2:5) {
 	     radius=0.5, cex.lab=1.5, col=clr, 
 	     labels=NULL, fill=TRUE, fill.alpha=0.2)
 	text(lridge$coef[1,1], lridge$coef[1,i], 
-	     expression(~widehat(beta)^OLS), cex=1.5, pos=4, offset=.1)
+	     expression(~widehat(beta)^OLS), 
+	     cex=1.5, pos=4, offset=.1)
 	text(lridge$coef[-1,c(1,i)], lambdaf[-1], pos=3, cex=1.3)
 }
 ```
 
-As can be seen, the coefficients for each pair of predictors trace a path generally in toward the origin (0,0), and the covariance ellipses get smaller, indicating increased precision. Sometimes, these paths are rather direct, but it takes a peculiar curvilinear route in the case of population and GNP.
+As can be seen, the coefficients for each pair of predictors trace a graceful path generally toward the origin (0,0), and the covariance ellipses get smaller, indicating increased precision. Most often these paths are rather direct, but it takes a peculiar curvilinear route in the case of population and GNP here.
 
 The `pairs()` method for `"ridge"` objects shows all pairwise views in scatterplot matrix form. `radius` sets the base size of the ellipse-generating circle for the covariance ellipses.
 
@@ -1204,10 +1209,13 @@ The `pairs()` method for `"ridge"` objects shows all pairwise views in scatterpl
 #| fig-width: 10
 #| fig-height: 10
 #| out-width: "90%"
-#| fig-cap: "Scatterplot matrix of bivariate ridge trace plots. Each panel shows the effect of shrinkage on the covariance ellipse for a pair of predictors."
+#| fig-cap: "Scatterplot matrix of bivariate ridge trace plots. Each panel shows the effect of shrinkage on the covariance ellipse for a given pair of predictors."
 pairs(lridge, radius=0.5, diag.cex = 2, 
       fill = TRUE, fill.alpha = 0.1)
 ```
+
+Most of the shrinkage paths in @fig-longley-pairs are regular, but those involving population are curvilinear, reflecting
+more complex behavior in the ridge method. 
 
 ### Visualizing the bias-variance tradeoff
 
@@ -1235,10 +1243,13 @@ Here, the first three terms described below are (inverse) measures of precision;
 $\lVert \mathbf{\beta}_{\text{OLS}} - \mathbf{\beta}_k \rVert$. 
 This measure is inversely related to `norm.beta`.
 
-Plotting shrinkage against a measure of variance gives a direct view of the tradeoff
-between bias and precision. Here I plot `norm.beta` against `det`, and join the
-points with a curve. You can see that in this example the HKB criterion prefers a smaller degree of shrinkage, but achieves only a modest decrease in variance. But variance
-decreases more sharply thereafter and the LW choice achieves greater precision.
+Plotting shrinkage against a measure of variance gives a _direct_ view of the tradeoff
+between bias and precision. In @fig-longley-precision-plot I plot `norm.beta` against `det`, and join the
+points with a curve. (`r pkg("genridge")` contains a plot method for `"precision"` objects which produce similar plots.)
+
+**TODO**: Redo this fig using `plot.precsion()` method
+
+<!-- fig-code: R/genridge-longley-fig2.R -->
 
 ```{r echo=-1}
 #| label: fig-longley-precision-plot
@@ -1247,7 +1258,7 @@ decreases more sharply thereafter and the LW choice achieves greater precision.
 #| fig-width: 8
 #| fig-height: 7
 #| out-width: "80%"
-#| fig-cap: "The tradeoff between bias and precision. Bias increases as we move away from the OLS solution, but precision increases."
+#| fig-cap: "**Precision plot** showing the tradeoff between bias and precision. Bias increases as we move away from the OLS solution, but precision increases."
 op <- par(mar=c(4, 4, 1, 1) + 0.2)
 library(splines)
 with(pdat, {
@@ -1271,10 +1282,13 @@ x <- data.frame(lambda=c(lridge$kHKB,
                          lridge$kLW))
 fit <- predict(mod, x)
 points(fit[,2:1], pch=15, 
-       col=gray(.50), cex=1.6)
+       col=gray(.82), cex=1.6)
 text(fit[,2:1], c("HKB", "LW"), 
-     pos=3, cex=1.5, col=gray(.50))
+     pos=3, cex=1.5, col=gray(.20))
 ```
+
+You can see that in this example the HKB criterion prefers a smaller degree of shrinkage, but achieves only a modest decrease in variance. But variance
+decreases more sharply thereafter and the LW choice achieves greater precision.
 
 ## Low-rank views {#sec-ridge-low-rank}
 
@@ -1310,19 +1324,21 @@ But those also are the directions that contribute most to collinearity as we saw
 
 <!-- **pairs()** -- Should I include this ? -->
 
-A `pairs()` plot gives a dramatic representation bivariate effects of shrinkage in PCA space: the principal components of X are uncorrelated, so the ellipses are all aligned with the coordinate axes and the ellipses largely coincide for dimensions 1 to 4.
-You can see them shrink in one direction in the last two columns and rows.
+A `pairs()` plot gives a dramatic representation bivariate effects of shrinkage in PCA space: the principal components of X are uncorrelated, so the ellipses are all aligned with the coordinate axes. The ellipses largely coincide for dimensions 1 to 4
+where there is little effect of shrinkage.
+You can see them shrink in one direction in the last two columns and rows, and in both for the combination of
+(`dim5`, `dim6`).
 
 ```{r}
 #| label: fig-longley-pca-pairs
 #| fig-width: 10
 #| fig-height: 10
 #| out-width: "100%"
-#| fig-cap: "All pairwise bivariate ridge plots shown in PCA space."
+#| fig-cap: "**pairs method**: All pairwise bivariate ridge plots shown in PCA space."
 pairs(plridge)
 ```
 
-If we focus on the plot of dimensions `5:6`, we can see where all the shrinkage action
+If we focus on the plot of dimensions `dim5:dim6`, we can see where all the shrinkage action
 is in this representation. Generally, the predictors that are related to the smallest
 dimension (6) are shrunk quickly at first.
 
@@ -1330,7 +1346,7 @@ dimension (6) are shrunk quickly at first.
 #| label: fig-longley-pca-dim56
 #| fig-height: 7
 #| fig-width: 7
-#| fig-cap: "Bivariate ridge trace plot for the smallest two dimensions ... "
+#| fig-cap: "Bivariate ridge trace plot for the smallest two dimensions. The coefficients for these two dimensions head smoothly toward zero and their variance also shrinks. "
 par(mar=c(4, 4, 1, 1)+ 0.1)
 plot(plridge, variables=5:6, 
      fill = TRUE, fill.alpha=0.15, cex.lab = 1.5)
@@ -1342,7 +1358,8 @@ text(plridge$coef[, 5:6],
 ### Biplot view
 
 The question arises how to relate this view of shrinkage in PCA space to the original
-predictors. The biplot is again your friend. 
+predictors. The biplot is again your friend. In effect, it adds vectors showing the contributions of the predictors
+to a plot like @fig-longley-pca-dim56.
 You can project variable vectors for the
 predictor variables into the PCA space of the smallest dimensions, where the shrinkage action mostly occurs to see how the predictor variables relate to these dimensions.
 
@@ -1370,9 +1387,13 @@ The biplot view in @fig-longley-pca-biplot showing the two smallest dimensions i
 
 ## What have we learned?
 
+**TODO**: Consider replacing this with bullet point take-aways.
+
 This chapter has considered the problems in regression models which stem from high correlations among the predictors. We saw that collinearity results in unstable
 estimates of coefficients with larger uncertainty, often dramatically more so than would be
-the case if the predictors were uncorrelated. Collinearity can be seen
+the case if the predictors were uncorrelated. 
+
+Collinearity can be seen
 as merely a "data problem" which can safely be ignored if we are only interested
 in prediction. When we want to understand a model, ridge regression can tame the
 collinearity beast by shrinking the coefficients slightly to gain greater precision in the estimates. 
