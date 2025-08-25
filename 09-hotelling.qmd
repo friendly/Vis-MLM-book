@@ -10,11 +10,11 @@ knitr::opts_chunk$set(fig.path = "figs/ch09/")
 # Hotelling's $T^2$ {#sec-Hotelling}
 
 Just as the one- and two- sample univariate $t$-test is the gateway drug for understanding
-analysis of variance, so too Hotelling's $T^2$ test provides an entry point to multivariate analysis of variance. This simple case provides an entry point to understanding the collection of methods
+analysis of variance, so too Hotelling's $T^2$ test provides an entry point to multivariate analysis of variance. This simple case provides a simple springboard to understanding the collection of methods
 I call the **HE plot framework** for visualizing effects in multivariate linear models, which
 are a main focus of this book.
 
-The essential idea is that Hotelling's $T^2$ provides a test of the difference in
+The essential idea (@sec-T2) is that Hotelling's $T^2$ provides a test of the difference in
 means between two groups on a _collection_ of variables, $\mathbf{x} = x_1, x_2, \dots x_p$
 _simultaneously_, rather than one by one. This has the advantages that it:
 
@@ -22,12 +22,12 @@ _simultaneously_, rather than one by one. This has the advantages that it:
 * combines the evidence from the multiple response variables, and _pools strength_,
 accumulating support across measures;
 * clarifies how the multiple response are _jointly_ related to the group effect along a single dimension, the _discriminant axis_;
-* in so doing, it reduces the problem of testing differences for two (and potentially more)
-response variables to testing the difference on a single variable that best captures
+* In so doing, it reduces the problem of testing differences for two (and potentially more)
+response variables to testing the difference on a _single variable_ that best captures
 the multivariable relations.
 
 After describing it's features, I use an example of a two-group $T^2$ test to illustrate
-the basic ideas behind multivariate tests and hypothesis error plots.
+the basic ideas behind multivariate tests and hypothesis error plots in @sec-t2-heplot.
 Then, we'll dip our toes into the visual ideas for representing the statistical quantities
 involved in such tests.
 
@@ -46,10 +46,11 @@ library(broom)
 ```
 
 
-## $T^2$ as a generalized $t$-test
+## $T^2$ as a generalized $t$-test {#sec-T2}
 
 Hotelling's $T^2$ [@Hotelling:1931] is an analog of the square of a univariate $t$ statistic,
 extended to the case of two or more response variables tested together.
+
 Consider the basic one-sample $t$-test, where we wish to test the hypothesis that the
 mean $\bar{x}$ of a set of $N$ measures on a test of basic math, with standard deviation $s$
 does not differ from an assumed mean $\mu_0 = 150$ for
@@ -57,10 +58,10 @@ a population. The $t$ statistic for testing $\mathcal{H}_0 : \mu = \mu_0$ agains
 two-sided alternative, $\mathcal{H}_0 : \mu \ne \mu_0$ is
 
 $$
-t = \frac{(\bar{x} - \mu_0)}{s / \sqrt{N}} = \frac{(\bar{x} - \mu_0)\sqrt{N}}{s}
+t = \frac{(\bar{x} - \mu_0)}{s / \sqrt{N}} = \frac{(\bar{x} - \mu_0)\sqrt{N}}{s} \; .
 $$
 
-Squaring this gives
+Squaring this gives:
 
 $$
 t^2 = \frac{N (\bar{x} - \mu_0)^2}{s^2} = N (\bar{x} - \mu_0)(s^2)^{-1} (\bar{x} - \mu_0)
@@ -83,7 +84,6 @@ $$
   \end{pmatrix}
 $$
 
-<!-- ![](equations/eqn-mathscore1.png){width=50% fig-align="center"} -->
 
 Hotelling's $T^2$ is then the analog of $t^2$, with the variance-covariance matrix $\mathbf{S}$ of the scores
 on (BM, WP) replacing the variance of a single score.  This is nothing more than the 
@@ -101,14 +101,14 @@ T^2 &= N (\bar{\mathbf{x}} - \mathbf{\mu}_0)^\mathsf{T} \; \mathbf{S}^{-1} \; (\
 #| label: fig-T2-diagram
 #| echo: false
 #| fig-align: center
-#| out-width: "50%"
+#| out-width: "70%"
 #| fig-cap: "Hotelling's T^2 statistic as the squared distance between the sample means and hypothesized means relative to the variance-covariance matrix. _Source_: Author"
 knitr::include_graphics("images/T2-diagram.png")
 ```
 
 ## $T^2$ properties {#sec-t2-properties}
 
-Aside from it's elegant geometric interpretation Hotelling's $T^2$ has simple properties that aid in understanding the extension to more complex multivariate tests.
+Aside from it's elegant geometric interpretation, Hotelling's $T^2$ has simple properties that aid in understanding the extension to more complex multivariate tests.
 
 * **Maximum $t^2$** : 
 Consider constructing a new variable $w$ as a linear combination of the scores in a matrix 
@@ -119,14 +119,15 @@ w = a_1 \mathbf{x_1} + a_2 \mathbf{x_2} + \dots + a_p \mathbf{x_p} = \mathbf{X} 
 $$
 
 Hotelling's $T^2$ is then the maximum value of a univariate $t^2 (\mathbf{a})$ over all possible choices of the weights in $\mathbf{a}$. In this way, Hotellings test reduces a multivariate problem to a univariate one.
+The weights in $\mathbf{a}$ show how the variables contribute to significance.
 
 * **Eigenvalue** : Hotelling showed that $T^2$ is the one non-zero eigenvalue (latent root)
 $\lambda$
 of the matrix $\mathbf{Q}_H = N (\bar{\mathbf{x}} - \mathbf{\mu}_0)^\mathsf{T}  (\bar{\mathbf{x}} - \mathbf{\mu}_0)$ relative to $\mathbf{Q}_E = \mathbf{S}$
-that solves the equation
+that solves the equation,
 
 $$
-(\mathbf{Q}_H - \lambda \mathbf{Q}_E) \mathbf{a} = 0
+(\mathbf{Q}_H - \lambda \mathbf{Q}_E) \; \mathbf{a} \; = \; 0 \period
 $$ {#eq-eigen}
 
 In more complex MANOVA problems, there are more than one non-zero latent
@@ -165,14 +166,14 @@ The same is true for all MANOVA tests.
 $\mathcal{H}_0 : \mathbf{\mu}_1 = \mathbf{\mu}_2$.
 
 $$
-T^2 = N (\bar{\mathbf{x}}_1 - \bar{\mathbf{x}}_2)^\mathsf{T} \; \mathbf{S}_p^{-1} \; (\bar{\mathbf{x}}_1 - \bar{\mathbf{x}}_2)
+T^2 = N (\bar{\mathbf{x}}_1 - \bar{\mathbf{x}}_2)^\mathsf{T} \; \mathbf{S}_p^{-1} \; (\bar{\mathbf{x}}_1 - \bar{\mathbf{x}}_2) \; ,
 $$
 
 where $\mathbf{S}_p$ is the pooled within-sample variance covariance matrix.
 
-### Example: Mathscore data {.unnumbered}
+### Example: Mathscore data {#sec-mathscore-example}
 
-The data set `r dataset("mathscore")` gives (fictitious) scores on a test of basic math skills (BM) and solving word problems (WP) for two groups of $N=6$ students in an algebra course, each taught by different instructors. The null hypothesis is that the means are equal
+As a running example, the data set `r dataset("mathscore")` gives (fictitious) scores on a test of basic math skills (BM) and solving word problems (WP) for two groups of $N=6$ students in an algebra course, each taught by different instructors. The null hypothesis is that the means are equal
 for both variables, $\mathcal{H}_0: \mu_{\text{BM}} = \mu_{\text{WP}}$. 
 
 ```{r mathscore}
