@@ -166,10 +166,10 @@ math.lda$scaling
 
 as.matrix(mathscore[, 2:3]) %*% math.lda$scaling
 
+
+LD1_scores <- as.matrix(mathscore[, 2:3]) %*% math.lda$scaling
 scores <- cbind(group = mathscore$group,
-                as.matrix(mathscore[, 2:3]) %*% math.lda$scaling)
-scores <- cbind(group = mathscore$group,
-                as.matrix(mathscore[, 2:3]) %*% math.lda$scaling) |>
+                LD1 = LD1_scores) |>
   as.data.frame()
 
 scores |>

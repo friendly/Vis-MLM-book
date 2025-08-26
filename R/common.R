@@ -334,6 +334,7 @@ dataset <- function(name, package=NULL) {
   "adegraphics")
 
 # write list of packages used at end of every chapter
+# NB: use results: "none" to hide the output
 .pkg_file <- here::here("bib", "pkgs.txt")
 base_pkgs <- c("stats", "graphics", "grDevices", "utils", "datasets",  "methods", "base")
 write_pkgs <- function(file="", quiet = FALSE) {

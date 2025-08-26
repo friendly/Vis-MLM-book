@@ -22,14 +22,15 @@ _simultaneously_, rather than one by one. This has the advantages that it:
 * combines the evidence from the multiple response variables, and _pools strength_,
 accumulating support across measures;
 * clarifies how the multiple response are _jointly_ related to the group effect along a single dimension, the _discriminant axis_;
-* In so doing, it reduces the problem of testing differences for two (and potentially more)
+* In so doing, it reduces the problem of testing differences for two or more
 response variables to testing the difference on a _single variable_ that best captures
 the multivariable relations.
 
 After describing it's features, I use an example of a two-group $T^2$ test to illustrate
 the basic ideas behind multivariate tests and hypothesis error plots in @sec-t2-heplot.
-Then, we'll dip our toes into the visual ideas for representing the statistical quantities
-involved in such tests.
+Then, we'll dip our toes into the visual ideas behind discriminant analysis (@sec-t2-discrim)
+and how this compares with biplots based on PCA (@sec-t2-biplot).
+
 
 **Packages**
 
@@ -65,7 +66,7 @@ Squaring this gives:
 
 $$
 t^2 = \frac{N (\bar{x} - \mu_0)^2}{s^2} = N (\bar{x} - \mu_0)(s^2)^{-1} (\bar{x} - \mu_0)
-$$
+$$ {#eq-t2}
 
 Now consider we also have measures on a test of solving word problems for the same sample.
 Then, a hypothesis test for the means on basic math (BM) and word problems (WP)
@@ -82,19 +83,21 @@ $$
   \begin{pmatrix}
     150 \\ 100
   \end{pmatrix}
-$$
+$$ 
 
 
 Hotelling's $T^2$ is then the analog of $t^2$, with the variance-covariance matrix $\mathbf{S}$ of the scores
-on (BM, WP) replacing the variance of a single score.  This is nothing more than the 
-squared Mahalanobis $D^2_M$ distance between the sample mean vector $(\bar{x}_\text{BM}, \bar{x}_\text{WP})^\mathsf{T}$
-and the hypothesized means $\mathbf{\mu}_0$, in the metric of $\mathbf{S}$, as shown in @fig-T2-diagram.
-
+on (BM, WP) replacing the variance of a single score.  
 
 \begin{align*}
 T^2 &= N (\bar{\mathbf{x}} - \mathbf{\mu}_0)^\mathsf{T} \; \mathbf{S}^{-1} \; (\bar{\mathbf{x}} - \mathbf{\mu}_0) \\
     &= N D^2_M (\bar{\mathbf{x}}, \mathbf{\mu}_0)
-\end{align*}
+\end{align*} {#eq-T2}
+
+This is nothing more than the 
+squared Mahalanobis $D^2_M$ distance between the sample mean vector $(\bar{x}_\text{BM}, \bar{x}_\text{WP})^\mathsf{T}$
+and the hypothesized means $\mathbf{\mu}_0$, in the metric of $\mathbf{S}$, as shown in @fig-T2-diagram.
+
 
 
 ```{r}
@@ -123,16 +126,15 @@ The weights in $\mathbf{a}$ show how the variables contribute to significance.
 
 * **Eigenvalue** : Hotelling showed that $T^2$ is the one non-zero eigenvalue (latent root)
 $\lambda$
-of the matrix $\mathbf{Q}_H = N (\bar{\mathbf{x}} - \mathbf{\mu}_0)^\mathsf{T}  (\bar{\mathbf{x}} - \mathbf{\mu}_0)$ relative to $\mathbf{Q}_E = \mathbf{S}$
-that solves the equation,
+of the matrix $\mathbf{Q}_H = N (\bar{\mathbf{x}} - \mathbf{\mu}_0)^\mathsf{T}  (\bar{\mathbf{x}} - \mathbf{\mu}_0)$ relative to $\mathbf{Q}_E = \mathbf{S}$. The "relative to" means that the eigenvalue problem is expressed as
+finding $\lambda$ and $\mathbf{a}$ that solve the equation,
 
 $$
 (\mathbf{Q}_H - \lambda \mathbf{Q}_E) \; \mathbf{a} \; = \; 0 \period
 $$ {#eq-eigen}
 
-In more complex MANOVA problems, there are more than one non-zero latent
-roots, $\lambda_1, \lambda_2, \dots \lambda_s$, and test statistics (Wilks' $\Lambda$, Pillai and Hotelling-Lawley trace criteria, Roy's maximum root test)
-are functions of these.
+    In more complex MANOVA problems, there are more than one non-zero latent roots, $\lambda_1, \lambda_2, \dots \lambda_s$, and test statistics (Wilks' $\Lambda$, Pillai and Hotelling-Lawley trace criteria, Roy's maximum root test)
+are functions of these as shown in @sec-multivar-tests.
 
 
 * **Eigenvector** : The corresponding eigenvector is 
@@ -151,30 +153,32 @@ $$ {#eq-Fstat}
  
 
 * **Invariance under linear transformation** : Just as a univariate $t$-test is unchanged if
-we apply a linear transformation to the variable, $x \rightarrow a x + b$, $T^2$ is invariant
-under all linear (_affine_) transformations,
+we apply a linear transformation to the variable, $x \rightarrow a x + b$, so too $T^2$ is invariant
+under all linear (_affine_) transformations, multiplying $\mathbf{x}$ by a matrix $\mathbf{A}$
+and adding a vector $\mathbf{b}$,
 
 $$
-\mathbf{x}_{p \times 1} \rightarrow \mathbf{C}_{p \times p} \mathbf{x} + \mathbf{b}
+\mathbf{x}_{p \times 1} \rightarrow \mathbf{A}_{p \times p} \; \mathbf{x} + \mathbf{b}_{p \times 1} \period
 $$
 
-So, you get the same results if you convert penguins flipper lengths from
-millimeters to centimeters or inches.
-The same is true for all MANOVA tests.
+    So, with the Penguins data, you would get the same results if you convert flipper lengths, bill length and depth, from millimeters to centimeters or inches.  The same is true for all MANOVA tests.
 
 * **Two-sample tests** : With minor variations in notation, everything above applies to the more usual test of equality of multivariate means in a two sample test of
 $\mathcal{H}_0 : \mathbf{\mu}_1 = \mathbf{\mu}_2$.
 
 $$
 T^2 = N (\bar{\mathbf{x}}_1 - \bar{\mathbf{x}}_2)^\mathsf{T} \; \mathbf{S}_p^{-1} \; (\bar{\mathbf{x}}_1 - \bar{\mathbf{x}}_2) \; ,
-$$
+$$ {#eq-T2-two-sample}
 
-where $\mathbf{S}_p$ is the pooled within-sample variance covariance matrix.
+    where $\mathbf{S}_p$ is the pooled within-sample variance covariance matrix.
 
 ### Example: Mathscore data {#sec-mathscore-example}
 
-As a running example, the data set `r dataset("mathscore")` gives (fictitious) scores on a test of basic math skills (BM) and solving word problems (WP) for two groups of $N=6$ students in an algebra course, each taught by different instructors. The null hypothesis is that the means are equal
-for both variables, $\mathcal{H}_0: \mu_{\text{BM}} = \mu_{\text{WP}}$. 
+As a running example, I'll use the data set `r dataset("heplots::mathscore")`, which gives (fictitious) scores on a test of basic math skills (BM) and solving word problems (WP) for two groups of $N=6$ students in an algebra course. Each group was taught by a different instructors, and the questions are: (a) Do the groups differ on both variables, considered jointly? (b) If so, how do they differ?
+
+The null hypothesis is that the means are equal
+for both variables, $\mathcal{H}_0: \mu_{\text{BM}} = \mu_{\text{WP}}$, or, equivalently, that the difference
+between means (a contrast!) is zero: $\mathcal{H}_0: \mu_{\text{BM}} - \mu_{\text{WP}} = \mathbf{0}$.
 
 ```{r mathscore}
 data(mathscore, package = "heplots")
@@ -182,7 +186,8 @@ str(mathscore)
 ```
 
 You can carry out the test that the means for both variables are jointly equal across groups using either
-`Hotelling::hotelling.test()` [@R-Hotelling] or `car::Anova()`, but the latter is more generally useful
+`Hotelling::hotelling.test()` [@R-Hotelling] or `car::Anova()`, but the latter is more generally useful because
+it applies to _any_ multivariate linear model.
 
 ```{r mathscore1}
 hotelling.test(cbind(BM, WP) ~ group, data=mathscore) |> print()
@@ -191,16 +196,19 @@ math.mod <- lm(cbind(BM, WP) ~ group, data=mathscore)
 Anova(math.mod)
 ```
 
-What's wrong with just doing the two $t$-tests (or equivalent $F$-test with `lm()`)?
+What's wrong with just doing the two $t$-tests (or equivalent $F$-test with `lm()`)? Let's see.
 
 ```{r mathscore2}
 Anova(mod1 <- lm(BM ~ group, data=mathscore))
+
 Anova(mod2 <- lm(WP ~ group, data=mathscore))
 ```
 
 From this, we might conclude that the two groups do _not_ differ significantly on Basic Math
-but strongly differ on Word problems. But the two univariate tests do not take the correlation
-among the mean differences into account.
+but strongly differ on Word problems. But this interpretation would be wrong!
+The two univariate tests do not take the correlation among the mean differences into account. 
+In this case, the means are negatively related across the groups, which heightens the significance
+test, as we will shortly see (@fig-mathscore-HE).
 
 If you want to just extract the $t$-tests, here's a handy trick using `broom::tidy.mlm()`,
 which summarizes the test statistics for each response and each term in a MLM. The mean difference shown below is that for group 2 - group 1.
@@ -226,7 +234,7 @@ the ellipse for the pooled covariance matrix $\mathbf{S}_p$.)
 #| label: fig-mathscore-cov1
 #| fig-align: center
 #| out-width: "70%"
-#| fig-cap: "Data ellipses for the `mathscore` data, enclosing approximately 68% of the observations in each group"
+#| fig-cap: "Data ellipses for the `mathscore` data, enclosing approximately 68% of the observations in each group."
 colors <- c("darkgreen", "blue")
 covEllipses(mathscore[,c("BM", "WP")], mathscore$group,
             pooled = FALSE, 
@@ -242,7 +250,7 @@ col <- ifelse(mathscore$group==1, colors[1], colors[2])
 points(mathscore[,2:3], pch=pch, col=col, cex=1.25)
 ```
 
-We can see that: 
+In @fig-mathscore-cov1 you can see that: 
 
 * Group 1 > Group 2 on Basic Math, but worse on Word Problems
 * Group 2 > Group 1 on Word Problems, but worse on Basic Math
@@ -329,15 +337,15 @@ crossprod(resids)
 (E <- math.aov$SSPE)
 ```
 
-### `heplot()`
+### The `heplot()` function
 
-`heplots::heplot()` takes the model object, extracts the $\mathbf{H}$ and $\mathbf{E}$
-matrices (from `summary(Anova(math.mod))`) and plots them. There are many options to control the details.
+The function `heplots::heplot()` takes the model object, extracts the $\mathbf{H}$ and $\mathbf{E}$
+matrices (from `summary(Anova(math.mod))`) and plots them as their data ellipses. There are many options to control the details. See `help(heplot)`.
 ```{r}
 #| label: fig-mathscore-HE
 #| fig-align: center
 #| out-width: "70%"
-#| fig-cap: "Hypothesis error plot of the `mathscore` data. The line through the group means is the H ellipse, which plots as a line here. The red ellipse labeled 'Error' represents the pooled within-group covariance matrix."
+#| fig-cap: !expr paste("Hypothesis error plot of the `mathscore` data. The line through the group means is the H ellipse, which plots as a line here. The", colorize('red'), "ellipse labeled 'Error' represents the pooled within-group covariance matrix.")
 heplot(math.mod, 
        fill=TRUE, lwd = 3,
        asp = 1,
@@ -354,8 +362,10 @@ This is also the _discriminant axis_, the direction in the space of the variable
 discriminates between the groups. That is, if we project the data points onto this line, we get the
 linear combination $w$ which has the maximum possible univariate $t^2$.
 
+### HE plot, data ellipses and discriminant axis
+
 You can see how the HE plot relates to the plots of the separate data ellipses by overlaying them
-in a single figure. We also plot the scores on the discriminant axis, by using this small function
+in a single figure. In @fig-mathscore-HE-overlay below I also plot the scores on the discriminant axis, by using this small function `project_on()`
 to find the orthogonal projection of a point $\mathbf{a}$ on the line joining two points, 
 $\mathbf{p}_1$ and $\mathbf{p}_2$, which in math is
 $\mathbf{p}_1 + \frac{\mathbf{d}^\mathsf{T} (\mathbf{a} - \mathbf{p}_1)} {\mathbf{d}^\mathsf{T} \mathbf{d}}$, 
@@ -373,14 +383,14 @@ project_on <- function(a, p1, p2) {
 }
 ```
 
-Then, we run the same code as before to plot the data ellipses, and follow this with a call
+Then, I run the same code as before (for @fig-mathscore-fig2) to plot the data ellipses, and follow this with a call
 to `heplot()` using the option `add=TRUE` which adds to an existing plot. Following this,
 we find the group means and draw lines projecting the points on the line between them.
 ```{r}
 #| label: fig-mathscore-HE-overlay
 #| fig-align: center
 #| out-width: "70%"
-#| fig-cap: "HE plot overlaid on top of the within-group data ellipses, with lines showing the projection of each point on the discriminant axis."
+#| fig-cap: "HE plot overlaid on top of the within-group data ellipses, with lines showing the projection of each point on the line joining the means, which is the discriminant axis."
 covEllipses(mathscore[,c("BM", "WP")], mathscore$group,
             pooled=FALSE, 
             col = colors,
@@ -418,7 +428,12 @@ Discriminant analysis for two-group designs or for one-way MANOVA
 essentially turns the problem around: Instead of asking whether the mean
 vectors for two or more groups are equal, discriminant analysis tries to find
 the linear combination $w$ of the response variables that has the greatest
-separation among the groups, allowing cases to be best classified.
+separation among the groups, allowing cases to be best classified.[^priors]
+
+[^priors]: One important difference between MANOVA and linear discriminant analysis (LDA) is the role of
+_prior probabilities_ of the groups in the latter.
+LDA treats this as a decision problem, so prior weights for the groups
+effectively shift the decision boundary or classification threshold. If one group is more common, its prior probability will be higher, making it "easier" for a new observation to be classified into that group.
 
 <!--
 It was developed by @Fisher:1936 as a solution to the biological taxonomy problem
@@ -426,7 +441,7 @@ of developing a rule to classify instances of flowers---in his famous case, Iris
 (length and width of their sepals and petals).
 -->
 
-For the mathscore data, you can perform the discriminant analysis as follows, using the `r pkg("MASS")`
+For the `mathscore` data, you can perform the discriminant analysis as follows, using the `r pkg("MASS")`
 function `lda()`:
 
 ```{r lda}
@@ -436,14 +451,15 @@ function `lda()`:
 The coefficients give $w = -0.084 \;\text{BM} + 0.075 \;\text{WP}$.  This is exactly the direction given by the line for the $\mathbf{H}$ ellipse in @fig-mathscore-HE-overlay.
 
 To round this out, we can calculate the discriminant scores by multiplying the matrix $\mathbf{X}$
-by the vector $\mathbf{a} = \mathbf{S}^{-1} (\bar{\mathbf{x}}_1 - \bar{\mathbf{x}}_2)$ of the discriminant weights. These were shown in @fig-mathscore-HE-overlay as the projections
+by the vector $\mathbf{a} = \mathbf{S}^{-1} (\bar{\mathbf{x}}_1 - \bar{\mathbf{x}}_2)$ of the discriminant weights, given by the `scaling` component of the result of `lda()`. These were shown in @fig-mathscore-HE-overlay as the projections
 of the data points on the line joining the group means, 
 
 ```{r}
 math.lda$scaling
 
+LD1_scores <- as.matrix(mathscore[, 2:3]) %*% math.lda$scaling
 scores <- cbind(group = mathscore$group,
-                as.matrix(mathscore[, 2:3]) %*% math.lda$scaling) |>
+                LD1 = LD1_scores) |>
   as.data.frame()
 scores |>
   group_by(group) |>
@@ -483,7 +499,7 @@ scores |>
 ```
 
 You can readily see how well the groups are separated on the discriminant axes,
-relative to the two individual variables.
+relative to the two individual variables---the groups are much further apart in on the discriminant axis.
 
 ## More variables {#sec-t2-more-variables}
 
@@ -532,13 +548,13 @@ means on most of the measures, with the counterfeit ones slightly larger on Left
 But univariate plots don't give an overall sense of how these variables are related to one another.
 
 ::: {.callout-note title="**Graph craft**: Layers and transparency"}
-@fig-banknote-violin is somewhat complex, so it is useful to understand the steps needed to make this figure show what I wanted. The plot in each panel contains three layers:
+@fig-banknote-violin is somewhat complex, so it is useful to understand the steps needed to make this figure show what I wanted. The plot in each panel contains three layers noted by comments in the code:
 
 (1) the violin plot based on a density estimate, showing the shape of each distribution;
 (2) the data points, but they are jittered horizontally using `geom_jiter()` because otherwise they would all overlap on the X axis;
 (3) the boxplot, showing the center (median) and spread (IQR) of each distribution.
 
-In composing graphs with layers, order matters, and also does the `alpha` transparency, because each layer
+In composing graphs with layers, plotting _order matters_, and also does the `alpha` transparency, because each layer
 adds data ink on top of earlier ones. I plotted these in the order shown because I wanted the violin plot to
 provide the background, and the boxplot to show a simple univariate summary, not obscured by the other layers.
 The `alpha` values allow the data ink to be blended for each layer, and in this case, `alpha = 0.5` for the
@@ -546,8 +562,10 @@ boxplot let the earlier layers show through.
 :::
 
 
-### Biplots
-Multivariate relations among these six variables could be explored in data space using scatterplots or other methods, but I turn to my trusty multivariate juicer, a biplot, to give a 2D summary.
+### Biplots {#sec-t2-biplot}
+Multivariate relations among these six variables could be explored in data space using scatterplots or other methods, but I turn to my trusty multivariate juicer, a PCA and biplot, to give a 2D summary. This differs from the analysis
+above in that it does not take the `Status` grouping into account.
+
 Two dimensions account for 70% of the total variance of all the banknotes, while three would give 85%.
 ```{r banknote-pca}
 banknote.pca <- prcomp(banknote[, -1], scale = TRUE)
@@ -589,25 +607,28 @@ banknote.mlm <- lm(cbind(Length, Left, Right, Bottom, Top, Diagonal) ~ Status,
 Anova(banknote.mlm)
 ```
 
-You can see all the multivariate test statistics with the `summary()` method for `"Anova.mlm"` objects.
+You can see _all_ the multivariate test statistics with the `summary()` method for `"Anova.mlm"` objects.
 With two groups, and hence a 1 df test, these all translate into identical $F$-statistics.
 
 ```{r summary-Anova}
-summary(Anova(banknote.mlm)) |> print(SSP = FALSE)
+summary(Anova(banknote.mlm)) |> 
+  print(SSP = FALSE)
 ```
 
 If you wish, you can extract the univariate $t$-tests or equivalent $F = t^2$ statistics
-from the `"mlm"` object using `broom::tidy.mlm()`.
+from the `"mlm"` object using `broom::tidy.mlm()`.[^unistats]
 What is given as the `estimate` is the difference in the mean for the genuine banknotes relative
 to the counterfeit ones.
+
+[^unistats]: The function `heplots::uniStats()` does this more compactly and displays the $R^2$ and $F$ statistics for
+each response variable. 
 ```{r banknote-tests}
 broom::tidy(banknote.mlm) |> 
   filter(term != "(Intercept)") |>
-  dplyr::select(-term) |>
+  select(-term) |>
   rename(t = statistic) |>
   mutate(F = t^2) |>
   relocate(F, .after = t)
-
 ```
 
 The individual $F_{(1, 198)}$ statistics can be compared to the $F_{(6, 193)} = 392$
@@ -615,10 +636,10 @@ value for the overall multivariate test. While all of the individual tests are h
 the average of the univariate $F$s is only 236. The multivariate test gains power by taking the
 correlations of the size measures into account.
 
-## Variance accounted for: Eta square ($\eta^2$)
+## Variance accounted for: $\eta^2$
 
-In a univariate multiple regression model, the coefficient of determination $R^2 = \text{SS}_H / \text{SS}_\text{Total}$ gives the proportion of variance accounted for by hypothesized terms in $H$ relative to the total variance. An analog
-for ANOVA-type models with categorical, group factors as predictors is  $\eta^2$ [@Pearson-1903], defined as 
+In a univariate multiple regression model, the _coefficient of determination_ $R^2 = \text{SS}_H / \text{SS}_\text{Total}$ gives the proportion of variance accounted for by hypothesized terms in $H$ relative to the total variance. An analog
+for ANOVA-type models with categorical, group factors as predictors is  $\eta^2$ [@Pearson-1903], defined as:
 
 $$
 \eta^2 = \frac{\text{SS}_\text{Between groups}}{\text{SS}_\text{Total}} \period
@@ -635,20 +656,23 @@ heplots::etasq(banknote.mlm)
 
 This can be compared to the principal components analysis and the biplot in @fig-banknote-biplot,
 where two components (less favorably) accounted for 70% of total variance and it took four PCA dimensions to account for over 90%.
+
 The goals of PCA and MANOVA are different, of course, but they are both concerned with accounting for variance
 of multivariate data. We will meet another multivariate juicer, **canonical discriminant analysis** in @sec-vis-mlm.
 
 <!-- ## Canonical analysis -->
 
-## What we've learned
+## The Grand Scheme
 
-**TODO**: Combine with `summary/Ch09-summary.qmd
+**TODO**: ~~Combine with `summary/Ch09-summary.qmd ~~
 
+<!--
 This chapter was designed to illustrate the main ideas for visualizing differences between
 means on multiple response variables in a two-group design.
 Hotelling's $T^2$ is the generalization of a simple univariate $t$-test and
 works by combining the responses into a weighted sum that has the maximum possible
 univariate $t$ for all choices of weights.
+-->
 
 @fig-HE-framework summarizes what was shown in @sec-t2-heplot and @sec-t2-discrim.
 The data ellipses for the two groups in the `mathscore` data summarize the information
@@ -656,6 +680,7 @@ about means and within-group variances. In the HE plot, the difference between t
 itself summarized by the line through them, which represents the $\mathbf{H} =\mathbf{Q}_H$ matrix
 and within-group variation is represented by the "Error" ellipse which is the
 $\mathbf{E} = \mathbf{S}_p = \mathbf{Q}_E$ matrix. 
+
 
 ```{r}
 #| label: fig-HE-framework
@@ -669,9 +694,16 @@ knitr::include_graphics("images/HE-framework.png")
 
 As we will see later (@sec-vis-mlm), the $\mathbf{H}$ ellipse is scaled so that it provides a visual
 test of significance: it projects somewhere outside the $\mathbf{E}$ ellipse if and only if the
-means differ significantly. The direction of the line between the means is also the discriminant
+means differ significantly. 
+
+The direction of the line between the means is also the discriminant
 axis and scores on this axis are weighted sum of the responses that have the greatest possible
-mean difference.
+mean difference. A plot of these scores using boxplots, together with vectors for the variable weights
+is what I refer to as "Canonical space" in @fig-HE-framework.
+
+```{r child = "summary/Ch09-summary.qmd"}
+```
+
 
 ## Exercises
 
@@ -683,7 +715,7 @@ the equivalent $F$ statistic found by `Anova()` is 28.9. Verify that @eq-Fstat g
 
 ```{r}
 #| echo: false
-#| results: asis
+#| results: hide
 cat("**Packages used here**:\n\n")
 write_pkgs(file = .pkg_file)
 ```
