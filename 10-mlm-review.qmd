@@ -198,7 +198,9 @@ in the model.
 
 * **Error-free $\mathbf{X}$**: The predictors, $\mathbf{X}$, are fixed and measured without error.  The discussion in @sec-meas-error illustrates how measurement error biases (toward 0) the estimated effects of predictors. A weaker form, called **exogeneity** merely asserts that the predictors are independent of (uncorrelated with) the errors, $\Epsilon$. [^errors-in-variables]
 
-[^errors-in-variables]: Among the extensions of the classical OLS framework, _errors in variables_ models ...
+[^errors-in-variables]: Among the extensions of the classical OLS framework, _errors in variables_ models attempt to
+correct for the downward bias of measurement error
+by adjusting for the known or estimated error variances in the independent variables, providing more accurate and consistent estimations.
 
 These statements are simply the
 multivariate analogs of the assumptions of normality, constant variance and independence
@@ -211,7 +213,9 @@ Implicit in the above is perhaps the most important assumption---that the model 
 
 * **Completeness**: No relevant predictors have been omitted from the model. For example in the coffee, stress example (@sec-coffee-stress), omitting stress from the model biases the effect of coffee on heart disease.
 
-* **Additive effects**:  The combined effect of different _terms_ in the model is the sum of their individual effects.
+* **Additive effects**:  The combined effect of different _terms_ in the model is the sum of their individual effects,
+so the impact of one predictor on the outcome variable is the same regardless of the values of other predictors in the model.
+When this is not the case, you can add an _interaction_ term like $x_1 \times x_2$ to account for this.
 
 ## Fitting the model
 
@@ -227,7 +231,7 @@ $$
 $$
 
 
-This is precisely the same as fitting the separate responses $\mathbf{y}_1 , \mathbf{y}_2 , \dots , \mathbf{y}_p$,
+The coefficients are precisely the same as fitting the separate responses $\mathbf{y}_1 , \mathbf{y}_2 , \dots , \mathbf{y}_p$,
 and placing the estimated coefficients $\widehat{\mathbf{b}}_i$ as columns in $\widehat{\mathbf{B}}$
 
 $$
@@ -494,7 +498,7 @@ eig$values / sum(eig$values)
 ```
 
 The factor `formula` has four levels and therefore $\text{df}_h = 3$ degrees of freedom.
-But there are only $p = 2$ responses, so there are $s=\min(p, \text{df}_h) = 2$
+But there are only $p = 2$ responses, so there are $s=\min(p, \text{df}_h) = 2$ non-zero
 eigenvalues (and corresponding eigenvectors). The eigenvalues tell us that 98.5% of
 the hypothesis variance due to `formula` can be accounted for by a single dimension.
 
@@ -541,7 +545,8 @@ This is not the case in the MLM.
 
 The reason is that when there are $p > 1$ response variables, and we are testing
 a hypothesis comprising $\text{df}_h >1$ coefficients or degrees of freedom, there are $s > 1$
-possible dimensions in which $\H$ can be large relative to $\E$, each measured by the
+possible dimensions in which $\H$ can be large relative to $\E$. The size of each 
+dimension is measured by the its'
 eigenvalue $\lambda_i$. There are several test
 statistics that combine these into a single measure, shown in @tbl-mstats.
 
@@ -566,14 +571,14 @@ statistics that combine these into a single measure, shown in @tbl-mstats.
   Criterion & Formula &  Partial $\eta^2$   \\
   \hline
   Wilks's $\Lambda$ & $\Lambda = \prod^s_i \frac{1}{1+\lambda_i}$ &  $\eta^2 = 1-\Lambda^{1/s}$   \\
-  Pillai trace & $V = \sum^s_i \frac{\lambda_i}{1+\lambda_i}$ &  $\eta^2 = \frac{V}{s} $   \\
+  Pillai trace &      $V = \sum^s_i \frac{\lambda_i}{1+\lambda_i}$ &  $\eta^2 = \frac{V}{s} $   \\
   Hotelling-Lawley trace & $H = \sum^s_i \lambda_i$ & $\eta^2 = \frac{H}{H+s}$   \\
-  Roy maximum root & $R = \lambda_1$  &  $ \eta^2 = \frac{\lambda_1}{1+\lambda_1}$  \\
+  Roy maximum root &  $R = \lambda_1$  &  $ \eta^2 = \frac{\lambda_1}{1+\lambda_1}$  \\
   \hline
 \end{tabular}
 \end{center}
 ```
-Test statistics for multivariate tests combine the size of dimensions of $\mathbf{H}\mathbf{E}^{-1}$ into a single measure.
+How test statistics for multivariate tests combine the size of dimensions of $\mathbf{H}\mathbf{E}^{-1}$ into a single measure.
 :::
 
 
@@ -583,11 +588,30 @@ and supremum (Roy). See @Friendly-etal:ellipses:2013 for the geometry behind the
 
 Each of these statistics have different sampling distributions under the null hypothesis. 
 But conveniently they
-can all be converted to $F$ statistics. These conversions are exact when the hypothesis has
+can all be converted to $F$ statistics. These conversions are _exact_ when the hypothesis has
 $s \le 2$ degrees of freedom, and approximations otherwise.
 
-As well, each has an analog of the $R^2$-like partial $\eta^2$ measure, giving the partial association accounted for by each term in the MLM. These reflect the proportion of total variation attributable to a given model term, partialling out (excluding)  other factors from the total non-error variation. They can be used as a measure of effect size in a MLM
+::: {.callout-tip title='Which multivariate test statistic is "best"?'}
+The answer is that it depends on the structure of the size of dimensions of an effect reflected in the eigenvalues $\lambda_i$ and what possible violation of assumptions you want to protect against.
+
+* @Schatzoff1966 compared the power and sensitivity of the four multivariate statistics and showed that
+Roy's largest-latent root statistic was most sensitive when population centroids in MANOVA differed in a single dimension, but less sensitive when the group differences were more diffuse.
+
+* In addition to power to detect differences, @Olson:1974 also examined the robustness of these tests against nonnormality and heterogeneity of covariance matrices. He found that Pillai's trace was most robust. Under diffuse differences,
+Pillai's trace had the greatest power, while Roy's test was worse. Not surprisingly, when differences were largely
+one-dimensional, this ordering was reversed.
+
+These differences among the test statistics disappear as your sample size grows large, because these tests become
+asymptotically equivalent. The default choice in `car::Anova()` of `test.statistic = "Pillai"` reflects
+the view that Pillai's test is preferred over a wider range of circumstances. 
+The `summary()` method for `"Anova.mlm"` objects permits the specification of more than one multivariate test statistic, and the default is to report all four.
+:::
+
+As well, each test statistic has an analog of the $R^2$-like partial $\eta^2$ measure, giving the _partial association_ accounted for by each term in the MLM. These reflect the proportion of total variation attributable to a given model term, partialling out (excluding)  other factors from the total non-error variation. They can be used as a measure of **effect size** in a MLM
 and are calculated using `heplots::etasq()`.
+\ix{eta squared, $\eta^2$}
+\ix{effect size}
+
 
 ### Testing contrasts and linear hypotheses {#sec-contrasts2}
 
@@ -685,8 +709,9 @@ When contrasts are placed as columns of a matrix $\mathbf{C}$, they are all _mut
 if each pair is orthogonal, which means
 $\mathbf{C}^\top \mathbf{C}$ is a diagonal matrix.
 Orthogonal contrasts correspond to statistically independent tests.
-This is nice because they reflect separate, non-overlapping research questions.
-When these questions are posed _apriori_, in advance of analysis there is no need to correct
+
+This is nice because orthogonal contrasts reflect separate, non-overlapping research questions.
+When these questions are posed _apriori_, in advance of analysis, there is no need to correct
 for multiple testing, on the grounds that you shouldn't be penalized for having more ideas!
 
 <!-- For example, with $g=4$ groups representing the combinations of two drugs, A and B -->
@@ -741,6 +766,7 @@ within each of these sets. Nested dicontomy contrasts are always _orthogonal_, a
 correspond to statistically independent tests. We are effectively taking a three
 degree-of-freedom question, "do the means differ?" and breaking it down into three separate
 1 df tests that answer specific parts of that overall question.
+\ix{nested dichotomies}
 
 In R, contrasts for a factor are specified as columns of matrix, each of which sums to zero.
 For this example, we can set this up by creating each as a vector and joining them
@@ -762,18 +788,17 @@ t(C) %*% C
 For the `dogfood` data, with `formula` as the group factor,
 you can set up the analyses to use these
 contrasts by assigning the matrix `C` to `contrasts()` for that factor in the dataset itself.
-When the contrasts are changed,
-it is necessary to refit the model. The estimated coefficients then become the estimated
+The estimated coefficients then become the estimated
 mean differences for the contrasts.
-
+When the contrasts are changed, it is necessary to refit the model. 
 ```{r dogfood-contrasts}
 contrasts(dogfood$formula) <- C
 dogfood.mod <- lm(cbind(start, amount) ~ formula, 
                   data=dogfood)
 coef(dogfood.mod)
 ```
-For example, Ours vs. Theirs estimated by `formulac1` takes 0.69 less time to start eating
-and eats 5.44 more on average.
+For example, the contrast "Ours vs. Theirs" estimated by `formulac1` takes 1.375 less time to start eating
+and eats 10.88 more on average.
 
 For multivariate tests, when all contrasts are pairwise orthogonal,
 the overall test of a factor with
@@ -792,14 +817,15 @@ You can test such contrasts or any other hypotheses involving linear combination
 yield the same $F$ values.
 
 ```{r dogfood-H1}
-hyp <- rownames(coef(dogfood.mod))[-1] |> print()
+hyp <- rownames(coef(dogfood.mod))[-1] |> 
+  print()
 H1 <- linearHypothesis(dogfood.mod, hyp[1], 
                        title="Ours vs. Theirs") |> 
   print()
 ```
 
 Similarly we can test the other two contrasts within these each of these two subsets, but I don't print the
-results
+results.
 
 ```{r dogfood-H2}
 H2 <- linearHypothesis(dogfood.mod, hyp[2], 
@@ -868,7 +894,7 @@ but group 3 has done nothing beyond the normal curriculum.
 #| label: fig-manova-diagram
 #| echo: false
 #| out-width: "75%"
-#| fig-cap: "Data from simple MANOVA design involving three groups and two response measures, $Y_1$ and $Y_2$, summarized by their data ellipses."
+#| fig-cap: "Diagram of data from simple MANOVA design involving three groups and two response measures, $Y_1$ and $Y_2$, summarized by their data ellipses."
 knitr::include_graphics(here::here("images", "manova-diagram-anno.png"))
 ```
 
@@ -884,7 +910,7 @@ is wide separation among the groups in the two tests considered _jointly_.
 a multivariate analysis over separate ANOVAS: that of determining the _number of dimensions_ or aspects
 along which groups differ. In the panel on the left, the means of the three groups increase nearly
 linearly on the combination of $Y_1$ and $Y_2$, so their differences can be ascribed to a single
-dimension, which simplifies the interpretation: _both_ memory and attention scores decrease together with
+dimension, which simplifies the interpretation: _both_ memory and attention scores decrease together with increasing
 degree of schizophrenia.
 
 For example, the groups here might be patients diagnosed as normal, mild schizophrenia
@@ -932,8 +958,11 @@ The design is thus a three-group MANOVA, with three response variables.
 The main questions concern whether the group means differ on these scales, and the nature of these differences. That is, do the means differ significantly on all three measures?
 Is there a consistent order of groups across these three aspects of parenting?
 
-More specific questions are: (a) Do the fathers of typical children differ from the other two groups
-on average? (b) Do the physical and mental groups differ? These questions can be tested using contrasts,
+More specific questions are: 
+(a) Do the fathers of typical children differ from the other two groups on average? 
+(b) Do the physical and mental groups differ on these measures?
+
+These questions can be tested using contrasts,
 and are specified by assigning a matrix to `contrasts(Parenting$group)`; each column is
 a contrast whose values sum to zero. They are given labels `"group1"` (normal vs. other)
 and `"group2"` (physical vs. mental) in some output.
@@ -1007,9 +1036,9 @@ but that is not the  case in @fig-parenting-covEllipses. The normal group shows 
 overall and the correlations among the measures differ somewhat from group to group. 
 We'll assess later whether this makes a difference in the conclusions that can be drawn (@sec-eqcov).
 The group centroids also differ, but the pattern is not particularly clear.
-We'll see an easier to understand view in HE plots and their canonical discriminant cousins.
+We'll see an easier to understand view in HE plots (@sec-he-plots) and their canonical discriminant cousins (@sec-candisc).
 
-#### Testing the model {.nunumbered}
+#### Testing the model {.unnumbered}
 
 Let's proceed to fit the multivariate model predicting all three scales from the `group` factor.
 `lm()` for a multivariate response returns an object of class `"mlm"`, for which there are many
@@ -1114,14 +1143,15 @@ linearHypothesis(parenting.mlm, c("group1", "group2")) |>
 ### Ordered factors
 
 When groups are defined by an ordered factor, such as level of physical fitness (rated 1--5) or 
-grade in school, it is tempting to treat that as a numeric variable and use a 
+grade in school, it is tempting to treat that as a _numeric_ variable and use a 
 multivariate regression model.
 This would assume that the effect of that factor is linear and if not, we might consider adding
 polynomial terms.
+
 A different strategy, often preferable, is to make the group variable an _ordered factor_,
 for which R assigns _polynomial contrasts_. This gives separate tests of the linear,
 quadratic, cubic, ... trends of the response, without the need to specify them separately
-in the model
+in the model.
 
 ### Example: Adolescent mental health 
 
@@ -1296,14 +1326,19 @@ linearHypothesis(AH.mlm, coefs[3:5],
 
 
 
-### Factorial MANOVA
+## Factorial MANOVA
 
 When there are two or more categorical
 factors, the general linear model provides a way to investigate
 the effects (differences in means) of each simultaneously.
 More importantly, this allows you to determine if factors _interact_,
-so the effect of one factor varies with the levels of another factor ...
+so the effect of one factor varies depending on the levels of another factor. For instance, the effect of
+a weight loss drug treatment may vary with the patient's ethnicity or age group.
+In such situations, when an interaction is significant it is unwise to interpret the overall main effects
+of treatment and the other factor.
+Instead, you would look at the "simple effects"-- how the treatment works at levels of the other factor separately.
 
+<!--
 #### Example: Penguins data {.unnumbered}
 
 In @sec-multivariate_plots we examined the Palmer penguins data graphically,
@@ -1312,7 +1347,62 @@ factors, `species`, `island` and `sex` and then `ggpairs()` scatterplot
 matrix (@fig-peng-ggpairs1).
 
 **TODO**: Complete this
+-->
 
+**TODO**: Consider moving initial part of the Plastic film 2x2 example, @#exm-plastic here. 
+
+::: {#exm-MockJury1}
+**Does defendant physical attractiveness affect jury decisions?**
+
+In a social psychology study of influences on jury decisions by @Plaster:89,
+male participants (prison inmates) were shown a picture of one of three young women.  
+Pilot  work
+had indicated  that one woman's photo was "beautiful",  another of  "average" physical
+attractiveness, and the third  "unattractive".  Participants rated the  woman they
+saw on each  of twelve attributes on scales of 1--9.  These measures were used to check on the
+manipulation of "attractiveness" by the photo.
+
+In the main part of the study, other participants were told that the person in the photo had committed a non-violent
+crime, either burglary or swindling. They were asked to rate the _seriousness_ of the crime and recommend a
+_prison sentence_, in Years.  
+
+The data are contained in the data frame `r dataset("heplots::MockJury")`. Only the first four are analyzed here:
+`Attr`, `Crime`, `Year` and `Serious`.
+The remaining twelve, `exciting` ... `ownPA` relate to tests of whether the `Attr` classification of the photo
+captures the essence of the attribute ratings.
+
+```{r, MJdata}
+data(MockJury, package = "heplots")
+str(MockJury)
+```
+
+Sample sizes were roughly balanced  for the independent variables
+in the three conditions of the attractiveness of the photo,
+and the two combinations of this with `Crime`, which was burglary or swindling, giving a $3 \times 2$ factorial design.
+```{r, MJdata1}
+table(MockJury$Attr)
+table(MockJury$Attr, MockJury$Crime)
+```
+
+The main questions of interest were:
+
+* Does attractiveness of the "defendant" influence the sentence or perceived seriousness of the crime?  
+* Does attractiveness interact with the nature of the crime? That is, ...
+
+So, I carry out a two-way MANOVA of the responses `Years` and `Serious` in relation to the independent variables
+`Attr` and `Crime`.
+
+```{r, jury-mod2}
+# influence of Attr of photo and nature of crime on Serious and Years
+jury.mod <- lm( cbind(Serious, Years) ~ Attr * Crime, data=MockJury)
+Anova(jury.mod, test = "Roy")
+```
+
+We see that there is a nearly significant  interaction between `Attr` and `Crime`
+and a strong effect of `Attr`.
+
+
+:::
 
 ## MRA $\rightarrow$ MMRA
 
