@@ -19,35 +19,36 @@ Anova(jury.mod, test = "Roy")
 Anova(jury.mod) |> 
   summary() |> print(SSP = FALSE)
 
+uniStats(jury.mod)
+
+legend_inside <- function(pos) {
+  theme(legend.position = "inside",
+        legend.position.inside = pos)
+}
+
 p1 <- ggline(MockJury, 
   x = "Attr", y = "Years",
-  color = "Crime", shape = "Crime",
-  add = c("mean_se"),
-  position = "dodge",
-  point.size = 5, 
-  linewidth = 1.5,
+  color = "Crime", shape = "Crime", linetype = "Crime",
+  add = c("mean_se"), position = position_dodge(width = .1),
+  point.size = 5, linewidth = 1.5,
+  palette = c("blue", "darkorange2"),
   ggtheme = theme_pubr(base_size = 16)
   ) +
   xlab("Physical attractiveness of photo") +
   ylab("Recommended years of sentence") +
-  theme(legend.position = "inside",
-        legend.position.inside = c(.2, .8))
-p1
+  legend_inside(c(.25, .9))
 
 p2 <- ggline(MockJury, 
   x = "Attr", y = "Serious",
-  color = "Crime", shape = "Crime",
-  add = c("mean_se"),
-  position = "dodge",
-  point.size = 5, 
-  linewidth = 1.5,
+  color = "Crime", shape = "Crime", linetype = "Crime",
+  add = c("mean_se"), position = position_dodge(width = .1),
+  point.size = 5,  linewidth = 1.5,
+  palette = c("blue", "darkorange2"),
   ggtheme = theme_pubr(base_size = 16) 
   ) +
   xlab("Physical attractiveness of photo") +
-  ylab("Recommended years of sentence") +
-  theme(legend.position = "inside",
-        legend.position.inside = c(.2, .2))
-p2
+  ylab("Seriousness of crime") +
+  legend_inside(c(.75, .9))
 
 p1 + p2
 
