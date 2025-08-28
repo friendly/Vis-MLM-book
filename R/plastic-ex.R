@@ -27,9 +27,9 @@ heplot(plastic.mod, size="effect",
 
 # plot the means & SEs
 
-legend_inside <- function(pos) {
+legend_inside <- function(position) {          # simplify legend placement
   theme(legend.position = "inside",
-        legend.position.inside = pos)
+        legend.position.inside = position)
 }
 
 p1 <- ggline(Plastic, 
