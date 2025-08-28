@@ -11,3 +11,7 @@ data visualization ideas and techniques reflected here. Agnieska Kopinska, Gigi 
 were TAs and RAs who contributed to my teaching and research. Most recently, Udi Alter and Michael Truong
 helped me in numerous ways with work on this book.
 
+Writing this book using [Quarto](https://quarto.org/) within the RStudio (now [Posit](https://posit.co/)) development environment
+has presented technical challenges I had not encountered in previous books. I am grateful to Mickaël Canouil,
+Christophe Dervieux and other Posit staff who graciously helped me solve many issues.
+The book also relies heavily on the graphic ideas and software of ...
