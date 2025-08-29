@@ -87,13 +87,16 @@ jury.can1 <- candisc(jury.mod1, term = "Attr") |>
   print()
 
 op <- par(mar = c(4, 4, 1, 1)+0.5)
+col <- c("blue", "darkgreen", "red")
 plot(jury.can1, rev.axes = c(TRUE, TRUE),
+     col = col,
+     ellipse = TRUE, ellipse.prob = 0.5,
      lwd = 3,
      var.lwd = 2,
      var.cex = 1.4,
      var.col = "black",
      pch = 15:17,
-     cex = 1.2,
+     cex = 1.4,
      cex.lab = 1.5)
 par(op)
 
