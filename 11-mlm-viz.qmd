@@ -822,49 +822,17 @@ in their effects. Moreover, the main effects and interactions
 can be overlaid in the same plot showing how each term contributes to
 assessment of differences among the groups. 
 
-I illustrate these points below for the Plastic film data analyzed earlier in @exm-plastic1.
 
 ::: {#exm-plastic2}
 **Plastic film data**
+I illustrate these points below for the Plastic film data analyzed earlier in @exm-plastic1.
+The model contemplated there examined how the three response variables, resistance to `tear`, film `gloss` and the `opacity` of the film varied with the two experimental factors, `rate` of extrusion and amount of some `additive`, both at two levels, labeled `High` and `Low`. Both main effects and the interaction of rate and additive were fit in the model `plastic.mod`: 
 
-The model contemplated earlier examined how the three response variables, resistance to `tear`, film `gloss` and the `opacity` of the film varied with the two experimental factors, `rate` of extrusion and amount of some `additive`, both at two levels, labeled `High` and `Low`. 
-
-
-
-<!--
-An industrial experiment was conducted to determine the optimal conditions for extruding plastic film. Of interest were three responses: resistance to `tear`, film `gloss` and the `opacity` of the film. Two factors were manipulated, both at
-two levels, labeled `High` and `Low`:
-change in `rate` of extrusion (-10%, +10%) and amount of some `additive` (1%, 1.5%),
-with $n=5$ runs at each combination of the factor levels.
-The dataset `heplots::Plastic`  comes from
-@JohnsonWichern1998, Example 6.12.
-
-```{r plastic-str}
-data(Plastic, package="heplots")
-str(Plastic)
+```{r plastic-mod}
+plastic.mod <- lm(cbind(tear, gloss, opacity) ~ rate * additive, 
+                  data=Plastic)
 ```
 
-**Multivariate tests**
-
-The MANOVA model `plastic.mod` fits  the main effects of `rate` and `additive`
-and the interaction `rate:additive`. The `Anova()` summary shows a strong
-effect for `rate` of extrusions for the three responses jointly, a lesser,
-but still significant effect of `additive` and a non-significant interaction.
-
-```{r, plastic-mod}
-plastic.mod <- lm(cbind(tear, gloss, opacity) ~ rate*additive, data=Plastic)
-Anova(plastic.mod)
-```
-
-As a reminder, if you want to see the results of univariate tests for the
-responses separately, `heplots::uniStats()`  (or `heplots::glance.mlm()`) gives some answers, including $R^2$ and univariate $F$ tests.
-
-```{r}
-uniStats(plastic.mod)
-```
-**HE plots**
-
---> 
 
 We can visualize _all_ these
 effects for pairs of variables in an HE plot, showing the "size" and
@@ -895,64 +863,17 @@ heplot(plastic.mod, size="effect",
        add=TRUE, term.labels=FALSE)
 ```
 
-In this view, the effect of extrusion `rate` is highly significant, with the high level giving larger tear resistance and lower gloss on average. High level of `additive` produces greater tear resistance and higher gloss.  The interaction
+In this view, the main effect of extrusion `rate` is highly significant, with the high level giving larger tear resistance and lower gloss on average. High level of `additive` produces greater tear resistance and higher gloss.  The interaction
 effect, `rate:additive`, while non-significant, points nearly entirely in the direction of `gloss`.
+You can see this more directly in @fig-plastic-ggline, where the lines for `gloss` diverge.
 
-<!--
-**Understanding interactions**
-
-To understand an interaction effect, the simplest thing is to plot the cell means and error bars in a traditional line plot
-with one factor on the horizontal axis and the other as separate lines within the panel. Here (@fig-plastic-ggline)
-I use `ggpubr::ggline()`,
-which simplifies such plots, though at the expense of a bit of control for `ggplot2`.[^control]
-
-[^control]: Line plots like this are nearly always more understandable with labels directly on the lines, rather than
-in a legend. Wrappers for `ggplot2` simplify some things but can't accommodate this kind of customization.
-
-```{r}
-#| label: fig-plastic-ggline
-#| fig-width: 12
-#| fig-height: 6
-#| out-width: "100%"
-#| fig-cap: Line plots of means and their standard errors for the response `tear` (left) and `gloss` (right)"
-p1 <- ggline(Plastic, 
-  x = "rate", y = "tear",
-  color = "additive", shape = "additive",
-  add = c("mean_se"),
-  position = "dodge",
-  point.size = 5, linewidth = 1.5,
-  ggtheme = theme_pubr(base_size = 16)
-  ) +
-  xlab("Rate of extrusion") +
-  ylab("Tear resistance")
-
-p2 <- ggline(Plastic, 
-  x = "rate", y = "gloss",
-  color = "additive", shape = "additive",
-  add = c("mean_se"),
-  position = "dodge",
-  point.size = 5, linewidth = 1.5,
-  ggtheme = theme_pubr(base_size = 16)
-  ) +
-  xlab("Rate of extrusion") +
-  ylab("Film gloss")
-
-p1 + p2 
-```
-
-For resistance to `tear`, the lines are parallel, so there is no interaction, which is why the `rate:additive` effect had
-no horizontal component in @fig-plastic-HE1. In the panel for `gloss`, the means for `additive` don't differ at high `rate`,
-but do substantially at the low extrusion rate.
-
--->
-
-But what if you really wanted to show the means for the combinations of rate and additive in an HE plot?
+But what if you also wanted to show the means for the _combinations_ of rate and additive in an HE plot?
 By design, means for the levels of interaction terms are not shown in the HE plot,
 because doing so in general can lead to messy displays.
 
 We can add them here for the term `rate:additive` as shown in @fig-plastic-HE2. This uses `heplots::termMeans()`
 to find the cell means for the combinations of the two factors and then `lines()` to connect the pairs of points
-for the low and high ;levels of `additive`.
+for the low and high levels of `additive`.
 
 ```{r}
 #| label: fig-plastic-HE2
@@ -979,6 +900,125 @@ lines(intMeans[c(2,4),1], intMeans[c(2,4),2],
 
 ```
 
+@fig-plastic-HE2 is somewhat more complicated to interpret than the simple line plots in @fig-plastic-ggline,
+but has the advantage that it shows effects on the two response variables jointly.
+:::
+
+::: {#exm-MockJury2}
+**MockJury: Manipulation check**
+
+In @exm-MockJury1, I examined the effects of the attractiveness of photos of hypothetical women defendants
+and the nature of a crime on the judgments made by members of a mock jury, on the rated seriousness of
+the crime and the length of a prison sentence participants would give to a guilty defendant. This analysis
+used the following model, fitting `Serious` and `Years` of sentence to the combinations of
+`Attr` and `Crime`:
+
+```{r jury-mod}
+data(MockJury, package = "heplots")
+jury.mod <- lm(cbind(Serious, Years) ~ Attr * Crime, 
+                data=MockJury)
+```
+
+
+The photos were classified as "beautiful", of "average" beauty or "unattractive", and as a validity check
+on this experimental manipulation, 1--9 ratings on twelve attributes were also collected. Of these,
+the direct rating of physical attractiveness, `physattr`, was most important, but it was also of interest
+to see how other ratings differentiated the photos. The rating scales are the following:
+
+```{r jury-names}
+names(MockJury)[-(1:4)] 
+```
+
+To keep the graphs below simple, I consider only a subset of the ratings here, and fit the full $3 \times 2$ MANOVA model
+for `Attr` and `Crime` and their interaction. The main interest is in the attractiveness of the photo,
+but the other terms are included in the model to control for them.[^control]
+
+[^control]: As in univariate linear models, any factors or covariates ignored in the model formula have their effects
+pooled with the error term, reducing the sensitivity of their tests.
+
+```{r jury-mod1}
+jury.mod1 <- lm(cbind(phyattr, exciting, sociable, happy, independent) ~ Attr * Crime, 
+                  data=MockJury)
+uniStats(jury.mod1)
+```
+
+The `pairs.mlm()` plot for this model would be a $5 \times 5$ display showing all pairwise HE plots for this model.
+@fig-jury-HE selects two of these showing `phyattr` against `exciting` and `independent`.
+Although the model includes the full factorial of `Attr` and `Crime`, I only want to show the effect of
+`Attr` here, so I do this using the `terms` and `factor.means` arguments. Because the ratings are on the same 1--9 scale,
+I also use `asp = 1` to make response variables visually comparable.
+
+```{r echo = -1}
+#| label: fig-jury-HE
+#| fig-width: 12
+#| fig-height: 6
+#| out-width: "100%"
+#| fig-cap: "Two pairwise HE plots showing the effect of the classified attractivenes of the photo and ratings of those photos. Left: `exciting` vs. `phyattr` ratings; right: `independent` vs. `phyattr` ratings"
+op <- par(mar = c(4, 4, 1, 1)+0.5, mfrow = c(1, 2))
+heplot(jury.mod1, 
+       terms = "Attr", factor.means = "Attr",
+       fill = TRUE, fill.alpha = 0.2,
+       cex.lab = 1.6, asp = 1)
+
+heplot(jury.mod1,
+       variables = c(1,5),
+       terms = "Attr", factor.means = "Attr",
+       fill = TRUE, fill.alpha = 0.2,
+       cex.lab = 1.6, asp = 1)
+```
+
+These plots show that the means of the ratings of `phyattr` of the photos are in the expected order 
+(Beautiful > Average > Unattractive), though the largest difference is between Beautiful and the others in both panels.[^contrast]
+
+In the left panel of @fig-jury-HE, the means for `exciting` are nearly perfectly correlated with those for `phyattr`,
+and there is little difference between the Beautiful photos and the others.
+The means for `independent` are slightly positively correlated with those for `phyattr`, but there is a wider
+separation between Average and Unattractive photos.The right panel shows 
+
+[^contrast]: You could test this comparison with a more focused 1 df linear hypothesis using the contrast
+$(1, -\frac12, -\frac12)$ for the levels of `Attr`.
+
+**Canonical analysis**
+
+As before, a canonical analysis compresses the information about a collection of responses into fewer dimensions.
+With 2 degrees of freedom for `Attr`, the space for all the ratings is 2D. `candisc()` for this term[^candisc-terms] shows that
+91% of the variation between photo groups is accounted for in one dimension, but there is still some significant variation
+associated with the 2$^\text{nd}$ dimension.
+
+[^candisc-terms]: For MANOVA designs there is a separate analysis for each term in the model. ...
+
+```{r jury-can}
+jury.can1 <- candisc(jury.mod1, term = "Attr") |>
+  print()
+```
+
+The 2D plot of canonical scores in @fig-jury-can gives a very simple description for this model.
+Dimension `Can1` widely separates the photo groups, and this dimension is nearly perfectly aligned
+with the `phyattr` ratings. Ratings for `exciting` are also strongly associated with this.
+This finding is sufficient to claim the validity of the classification 
+used in the experiment.
+
+```{r echo=-1}
+#| label: fig-jury-can
+#| fig-width: 10
+#| fig-height: 7
+#| out-width: "80%"
+#| fig-cap: "Canonical discriminant plot for the factor `Attr` ..."
+op <- par(mar = c(4, 4, 1, 1)+0.5)
+plot(jury.can1, rev.axes = c(TRUE, TRUE),
+     lwd = 3,
+     var.lwd = 2,
+     var.cex = 1.4,
+     var.col = "black",
+     pch = 15:17,
+     cex = 1.2,
+     cex.lab = 1.5)
+```
+
+The second canonical dimension, `Can2` is also of some interest. The photo means differ here mainly between
+those considered of Average beauty and those classified as Unattractive. The ratings for independent and happy
+are most strongly associated with this. Ratings on `sociable` are related to both dimensions, but more so with
+`Can2`.
 
 :::
 
@@ -997,12 +1037,7 @@ Moreover, it is easy to show visual overall tests of _joint_ linear hypotheses f
 predictors together.
 
 
-**TODO**: Use these examples below ?
-<!--
-* `heplots::NLSY`: National Longitudinal Survey of Youth Data
-* `heplots::schooldata`: School Data -> `R/schooldata-ex.R`
--->
-* `heplots::Hernior`: Recovery from Elective Herniorrhaphy -> HE_mmra vignette -- Use for exercise
+**TODO**: Use for an exercise `heplots::Hernior`: Recovery from Elective Herniorrhaphy -> HE_mmra vignette 
 
 <!-- ### Example: NLSY data {#sec-NLSY-HE} -->
 

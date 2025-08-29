@@ -406,7 +406,7 @@ window.Quarto = {
 <p>In this chapter I use the following packages. Load them now.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb1" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://r-forge.r-project.org/projects/car/">car</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://friendly.github.io/heplots/">heplots</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="http://friendly.github.io/heplots">heplots</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/friendly/candisc/">candisc</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org">ggplot2</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org">dplyr</a></span><span class="op">)</span></span>
@@ -959,85 +959,16 @@ Figure&nbsp;11.10: Canonical HE plot for the iris data. Compared with <a href="#
 </ul></section></section><section id="sec-HE-factorial" class="level2" data-number="11.8"><h2 data-number="11.8" class="anchored" data-anchor-id="sec-HE-factorial">
 <span class="header-section-number">11.8</span> Factorial MANOVA</h2>
 <p>When there are two or more factors, the overall model is comprised of main effects and possible interactions as shown in <a href="#eq-HE-model" class="quarto-xref">Equation&nbsp;<span>11.1</span></a>. A significant advantage of HE plots is that they show how the response variables are related in their effects. Moreover, the main effects and interactions can be overlaid in the same plot showing how each term contributes to assessment of differences among the groups.</p>
-<p>I illustrate these points below for the Plastic film data analyzed earlier in <a href="10-mlm-review.html#exm-plastic1" class="quarto-xref">Example&nbsp;<span>10.1</span></a>.</p>
 <div id="exm-plastic2" class="theorem example">
-<p><span class="theorem-title"><strong>Example 11.2</strong></span> <strong>Plastic film data</strong></p>
-<p>The model contemplated earlier examined how the three response variables, resistance to <code>tear</code>, film <code>gloss</code> and the <code>opacity</code> of the film varied with the two experimental factors, <code>rate</code> of extrusion and amount of some <code>additive</code>, both at two levels, labeled <code>High</code> and <code>Low</code>.</p>
-<!--
-An industrial experiment was conducted to determine the optimal conditions for extruding plastic film. Of interest were three responses: resistance to `tear`, film `gloss` and the `opacity` of the film. Two factors were manipulated, both at
-two levels, labeled `High` and `Low`:
-change in `rate` of extrusion (-10%, +10%) and amount of some `additive` (1%, 1.5%),
-with $n=5$ runs at each combination of the factor levels.
-The dataset `heplots::Plastic`  comes from
-@JohnsonWichern1998, Example 6.12.
-
-
-::: {.cell layout-align="center"}
-
-```{.r .cell-code}
-data(Plastic, package="heplots")
-str(Plastic)
-#> 'data.frame':  20 obs. of  5 variables:
-#>  $ tear    : num  6.5 6.2 5.8 6.5 6.5 6.9 7.2 6.9 6.1 6.3 ...
-#>  $ gloss   : num  9.5 9.9 9.6 9.6 9.2 9.1 10 9.9 9.5 9.4 ...
-#>  $ opacity : num  4.4 6.4 3 4.1 0.8 5.7 2 3.9 1.9 5.7 ...
-#>  $ rate    : Factor w/ 2 levels "Low","High": 1 1 1 1 1 1 1 1 1 1 ...
-#>  $ additive: Factor w/ 2 levels "Low","High": 1 1 1 1 1 2 2 2 2 2 ...
-```
-:::
-
-
-**Multivariate tests**
-
-The MANOVA model `plastic.mod` fits  the main effects of `rate` and `additive`
-and the interaction `rate:additive`. The `Anova()` summary shows a strong
-effect for `rate` of extrusions for the three responses jointly, a lesser,
-but still significant effect of `additive` and a non-significant interaction.
-
-
-::: {.cell layout-align="center"}
-
-```{.r .cell-code}
-plastic.mod <- lm(cbind(tear, gloss, opacity) ~ rate*additive, data=Plastic)
-Anova(plastic.mod)
-#> 
-#> Type II MANOVA Tests: Pillai test statistic
-#>               Df test stat approx F num Df den Df Pr(>F)   
-#> rate           1     0.618     7.55      3     14  0.003 **
-#> additive       1     0.477     4.26      3     14  0.025 * 
-#> rate:additive  1     0.223     1.34      3     14  0.302   
-#> ---
-#> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-```
-:::
-
-
-As a reminder, if you want to see the results of univariate tests for the
-responses separately, `heplots::uniStats()`  (or `heplots::glance.mlm()`) gives some answers, including $R^2$ and univariate $F$ tests.
-
-
-::: {.cell layout-align="center"}
-
-```{.r .cell-code}
-uniStats(plastic.mod)
-#> Univariate tests for responses in the multivariate linear model plastic.mod 
-#> 
-#>           R^2    F df1 df2 Pr(>F)   
-#> tear    0.586 7.56   3  16 0.0023 **
-#> gloss   0.483 4.99   3  16 0.0125 * 
-#> opacity 0.125 0.76   3  16 0.5315   
-#> ---
-#> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-```
-:::
-
-**HE plots**
-
--->
+<p><span class="theorem-title"><strong>Example 11.2</strong></span> <strong>Plastic film data</strong> I illustrate these points below for the Plastic film data analyzed earlier in <a href="10-mlm-review.html#exm-plastic1" class="quarto-xref">Example&nbsp;<span>10.1</span></a>. The model contemplated there examined how the three response variables, resistance to <code>tear</code>, film <code>gloss</code> and the <code>opacity</code> of the film varied with the two experimental factors, <code>rate</code> of extrusion and amount of some <code>additive</code>, both at two levels, labeled <code>High</code> and <code>Low</code>. Both main effects and the interaction of rate and additive were fit in the model <code>plastic.mod</code>:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb19" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">plastic.mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">tear</span>, <span class="va">gloss</span>, <span class="va">opacity</span><span class="op">)</span> <span class="op">~</span> <span class="va">rate</span> <span class="op">*</span> <span class="va">additive</span>, </span>
+<span>                  data<span class="op">=</span><span class="va">Plastic</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 <p>We can visualize <em>all</em> these effects for pairs of variables in an HE plot, showing the “size” and orientation of hypothesis variation (<span class="math inline">\(\mathbf{H}\)</span>) for each model term, in relation to error variation (<span class="math inline">\(\mathbf{E}\)</span>), as ellipsoids. When, as here, the model terms have 1 degree of freedom, the <span class="math inline">\(\mathbf{H}\)</span> ellipsoids for <code>rate</code>, <code>additive</code> and <code>rate:additive</code> each degenerate to a line.</p>
 <p><a href="#fig-plastic-HE1" class="quarto-xref">Figure&nbsp;<span>11.11</span></a> shows the HE plot for the responses <code>tear</code> and <code>gloss</code>, the strongest by univariate tests. This plot takes advantage of another feature of <code><a href="https://friendly.github.io/heplots/reference/heplot.html">heplot()</a></code>: You can overlay plots using <code>add = TRUE</code>, as is done here to show both significance and effect size scaling in a single plot.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb19" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">colors</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"red"</span>, <span class="st">"darkblue"</span>, <span class="st">"darkgreen"</span>, <span class="st">"brown4"</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb20" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">colors</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"red"</span>, <span class="st">"darkblue"</span>, <span class="st">"darkgreen"</span>, <span class="st">"brown4"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://friendly.github.io/heplots/reference/heplot.html">heplot</a></span><span class="op">(</span><span class="va">plastic.mod</span>, size<span class="op">=</span><span class="st">"significance"</span>, </span>
 <span>       col<span class="op">=</span><span class="va">colors</span>, cex<span class="op">=</span><span class="fl">1.5</span>,  cex.lab <span class="op">=</span> <span class="fl">1.5</span>,</span>
 <span>       fill<span class="op">=</span><span class="cn">TRUE</span>, fill.alpha<span class="op">=</span><span class="fl">0.1</span><span class="op">)</span></span>
@@ -1055,62 +986,11 @@ Figure&nbsp;11.11: HE plot for effects on <code>tear</code> and <code>gloss</cod
 </div>
 </div>
 </div>
-<p>In this view, the effect of extrusion <code>rate</code> is highly significant, with the high level giving larger tear resistance and lower gloss on average. High level of <code>additive</code> produces greater tear resistance and higher gloss. The interaction effect, <code>rate:additive</code>, while non-significant, points nearly entirely in the direction of <code>gloss</code>.</p>
-<!--
-**Understanding interactions**
-
-To understand an interaction effect, the simplest thing is to plot the cell means and error bars in a traditional line plot
-with one factor on the horizontal axis and the other as separate lines within the panel. Here (@fig-plastic-ggline)
-I use `ggpubr::ggline()`,
-which simplifies such plots, though at the expense of a bit of control for `ggplot2`.[^control]
-
-[^control]: Line plots like this are nearly always more understandable with labels directly on the lines, rather than
-in a legend. Wrappers for `ggplot2` simplify some things but can't accommodate this kind of customization.
-
-
-::: {.cell layout-align="center"}
-
-```{.r .cell-code}
-p1 <- ggline(Plastic, 
-  x = "rate", y = "tear",
-  color = "additive", shape = "additive",
-  add = c("mean_se"),
-  position = "dodge",
-  point.size = 5, linewidth = 1.5,
-  ggtheme = theme_pubr(base_size = 16)
-  ) +
-  xlab("Rate of extrusion") +
-  ylab("Tear resistance")
-
-p2 <- ggline(Plastic, 
-  x = "rate", y = "gloss",
-  color = "additive", shape = "additive",
-  add = c("mean_se"),
-  position = "dodge",
-  point.size = 5, linewidth = 1.5,
-  ggtheme = theme_pubr(base_size = 16)
-  ) +
-  xlab("Rate of extrusion") +
-  ylab("Film gloss")
-
-p1 + p2 
-```
-
-::: {.cell-output-display}
-![Line plots of means and their standard errors for the response `tear` (left) and `gloss` (right)"](figs/ch11/fig-plastic-ggline-1.png){#fig-plastic-ggline fig-align='center' width=100%}
-:::
-:::
-
-
-For resistance to `tear`, the lines are parallel, so there is no interaction, which is why the `rate:additive` effect had
-no horizontal component in @fig-plastic-HE1. In the panel for `gloss`, the means for `additive` don't differ at high `rate`,
-but do substantially at the low extrusion rate.
-
--->
-<p>But what if you really wanted to show the means for the combinations of rate and additive in an HE plot? By design, means for the levels of interaction terms are not shown in the HE plot, because doing so in general can lead to messy displays.</p>
-<p>We can add them here for the term <code>rate:additive</code> as shown in <a href="#fig-plastic-HE2" class="quarto-xref">Figure&nbsp;<span>11.12</span></a>. This uses <code><a href="https://friendly.github.io/heplots/reference/termMeans.html">heplots::termMeans()</a></code> to find the cell means for the combinations of the two factors and then <code><a href="https://rdrr.io/r/graphics/lines.html">lines()</a></code> to connect the pairs of points for the low and high ;levels of <code>additive</code>.</p>
+<p>In this view, the main effect of extrusion <code>rate</code> is highly significant, with the high level giving larger tear resistance and lower gloss on average. High level of <code>additive</code> produces greater tear resistance and higher gloss. The interaction effect, <code>rate:additive</code>, while non-significant, points nearly entirely in the direction of <code>gloss</code>. You can see this more directly in <a href="10-mlm-review.html#fig-plastic-ggline" class="quarto-xref">Figure&nbsp;<span>10.9</span></a>, where the lines for <code>gloss</code> diverge.</p>
+<p>But what if you also wanted to show the means for the <em>combinations</em> of rate and additive in an HE plot? By design, means for the levels of interaction terms are not shown in the HE plot, because doing so in general can lead to messy displays.</p>
+<p>We can add them here for the term <code>rate:additive</code> as shown in <a href="#fig-plastic-HE2" class="quarto-xref">Figure&nbsp;<span>11.12</span></a>. This uses <code><a href="https://friendly.github.io/heplots/reference/termMeans.html">heplots::termMeans()</a></code> to find the cell means for the combinations of the two factors and then <code><a href="https://rdrr.io/r/graphics/lines.html">lines()</a></code> to connect the pairs of points for the low and high levels of <code>additive</code>.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb20" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html">par</a></span><span class="op">(</span>mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">4</span>,<span class="fl">4</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span><span class="op">+</span><span class="fl">.1</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb21" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html">par</a></span><span class="op">(</span>mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">4</span>,<span class="fl">4</span>,<span class="fl">1</span>,<span class="fl">1</span><span class="op">)</span><span class="op">+</span><span class="fl">.1</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://friendly.github.io/heplots/reference/heplot.html">heplot</a></span><span class="op">(</span><span class="va">plastic.mod</span>, size<span class="op">=</span><span class="st">"evidence"</span>, </span>
 <span>       col<span class="op">=</span><span class="va">colors</span>, cex<span class="op">=</span><span class="fl">1.5</span>, cex.lab <span class="op">=</span> <span class="fl">1.5</span>, </span>
 <span>       lwd <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">5</span><span class="op">)</span>,</span>
@@ -1137,6 +1017,108 @@ Figure&nbsp;11.12: HE plot for effects on <code>tear</code> and <code>gloss</cod
 </div>
 </div>
 </div>
+<p><a href="#fig-plastic-HE2" class="quarto-xref">Figure&nbsp;<span>11.12</span></a> is somewhat more complicated to interpret than the simple line plots in <a href="10-mlm-review.html#fig-plastic-ggline" class="quarto-xref">Figure&nbsp;<span>10.9</span></a>, but has the advantage that it shows effects on the two response variables jointly.</p>
+</div>
+<div id="exm-MockJury2" class="theorem example">
+<p><span class="theorem-title"><strong>Example 11.3</strong></span> <strong>MockJury: Manipulation check</strong></p>
+<p>In <a href="10-mlm-review.html#exm-MockJury1" class="quarto-xref">Example&nbsp;<span>10.2</span></a>, I examined the effects of the attractiveness of photos of hypothetical women defendants and the nature of a crime on the judgments made by members of a mock jury, on the rated seriousness of the crime and the length of a prison sentence participants would give to a guilty defendant. This analysis used the following model, fitting <code>Serious</code> and <code>Years</code> of sentence to the combinations of <code>Attr</code> and <code>Crime</code>:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb22" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">MockJury</span>, package <span class="op">=</span> <span class="st">"heplots"</span><span class="op">)</span></span>
+<span><span class="va">jury.mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">Serious</span>, <span class="va">Years</span><span class="op">)</span> <span class="op">~</span> <span class="va">Attr</span> <span class="op">*</span> <span class="va">Crime</span>, </span>
+<span>                data<span class="op">=</span><span class="va">MockJury</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The photos were classified as “beautiful”, of “average” beauty or “unattractive”, and as a validity check on this experimental manipulation, 1–9 ratings on twelve attributes were also collected. Of these, the direct rating of physical attractiveness, <code>physattr</code>, was most important, but it was also of interest to see how other ratings differentiated the photos. The rating scales are the following:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb23" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">MockJury</span><span class="op">)</span><span class="op">[</span><span class="op">-</span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">4</span><span class="op">)</span><span class="op">]</span> </span>
+<span><span class="co">#&gt;  [1] "exciting"      "calm"          "independent"   "sincere"      </span></span>
+<span><span class="co">#&gt;  [5] "warm"          "phyattr"       "sociable"      "kind"         </span></span>
+<span><span class="co">#&gt;  [9] "intelligent"   "strong"        "sophisticated" "happy"        </span></span>
+<span><span class="co">#&gt; [13] "ownPA"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>To keep the graphs below simple, I consider only a subset of the ratings here, and fit the full <span class="math inline">\(3 \times 2\)</span> MANOVA model for <code>Attr</code> and <code>Crime</code> and their interaction. The main interest is in the attractiveness of the photo, but the other terms are included in the model to control for them.<a href="#fn8" class="footnote-ref" id="fnref8" role="doc-noteref"><sup>8</sup></a></p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb24" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">jury.mod1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">phyattr</span>, <span class="va">exciting</span>, <span class="va">sociable</span>, <span class="va">happy</span>, <span class="va">independent</span><span class="op">)</span> <span class="op">~</span> <span class="va">Attr</span> <span class="op">*</span> <span class="va">Crime</span>, </span>
+<span>                  data<span class="op">=</span><span class="va">MockJury</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://friendly.github.io/heplots/reference/uniStats.html">uniStats</a></span><span class="op">(</span><span class="va">jury.mod1</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Univariate tests for responses in the multivariate linear model jury.mod1 </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;               R^2     F df1 df2 Pr(&gt;F)    </span></span>
+<span><span class="co">#&gt; phyattr     0.639 38.24   5 108 &lt;2e-16 ***</span></span>
+<span><span class="co">#&gt; exciting    0.139  3.49   5 108 0.0058 ** </span></span>
+<span><span class="co">#&gt; sociable    0.134  3.33   5 108 0.0078 ** </span></span>
+<span><span class="co">#&gt; happy       0.112  2.73   5 108 0.0233 *  </span></span>
+<span><span class="co">#&gt; independent 0.120  2.94   5 108 0.0159 *  </span></span>
+<span><span class="co">#&gt; ---</span></span>
+<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The <code>pairs.mlm()</code> plot for this model would be a <span class="math inline">\(5 \times 5\)</span> display showing all pairwise HE plots for this model. <a href="#fig-jury-HE" class="quarto-xref">Figure&nbsp;<span>11.13</span></a> selects two of these showing <code>phyattr</code> against <code>exciting</code> and <code>independent</code>. Although the model includes the full factorial of <code>Attr</code> and <code>Crime</code>, I only want to show the effect of <code>Attr</code> here, so I do this using the <code>terms</code> and <code>factor.means</code> arguments. Because the ratings are on the same 1–9 scale, I also use <code>asp = 1</code> to make response variables visually comparable.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb25" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://friendly.github.io/heplots/reference/heplot.html">heplot</a></span><span class="op">(</span><span class="va">jury.mod1</span>, </span>
+<span>       terms <span class="op">=</span> <span class="st">"Attr"</span>, factor.means <span class="op">=</span> <span class="st">"Attr"</span>,</span>
+<span>       fill <span class="op">=</span> <span class="cn">TRUE</span>, fill.alpha <span class="op">=</span> <span class="fl">0.2</span>,</span>
+<span>       cex.lab <span class="op">=</span> <span class="fl">1.6</span>, asp <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://friendly.github.io/heplots/reference/heplot.html">heplot</a></span><span class="op">(</span><span class="va">jury.mod1</span>,</span>
+<span>       variables <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">5</span><span class="op">)</span>,</span>
+<span>       terms <span class="op">=</span> <span class="st">"Attr"</span>, factor.means <span class="op">=</span> <span class="st">"Attr"</span>,</span>
+<span>       fill <span class="op">=</span> <span class="cn">TRUE</span>, fill.alpha <span class="op">=</span> <span class="fl">0.2</span>,</span>
+<span>       cex.lab <span class="op">=</span> <span class="fl">1.6</span>, asp <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-jury-HE" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-jury-HE-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/ch11/fig-jury-HE-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-jury-HE-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;11.13: Two pairwise HE plots showing the effect of the classified attractivenes of the photo and ratings of those photos. Left: <code>exciting</code> vs.&nbsp;<code>phyattr</code> ratings; right: <code>independent</code> vs.&nbsp;<code>phyattr</code> ratings
+</figcaption></figure>
+</div>
+</div>
+</div>
+<p>These plots show that the means of the ratings of <code>phyattr</code> of the photos are in the expected order (Beautiful &gt; Average &gt; Unattractive), though the largest difference is between Beautiful and the others in both panels.<a href="#fn9" class="footnote-ref" id="fnref9" role="doc-noteref"><sup>9</sup></a></p>
+<p>In the left panel of <a href="#fig-jury-HE" class="quarto-xref">Figure&nbsp;<span>11.13</span></a>, the means for <code>exciting</code> are nearly perfectly correlated with those for <code>phyattr</code>, and there is little difference between the Beautiful photos and the others. The means for <code>independent</code> are slightly positively correlated with those for <code>phyattr</code>, but there is a wider separation between Average and Unattractive photos.The right panel shows</p>
+<p><strong>Canonical analysis</strong></p>
+<p>As before, a canonical analysis compresses the information about a collection of responses into fewer dimensions. With 2 degrees of freedom for <code>Attr</code>, the space for all the ratings is 2D. <code><a href="https://friendly.github.io/candisc/reference/candisc.html">candisc()</a></code> for this term<a href="#fn10" class="footnote-ref" id="fnref10" role="doc-noteref"><sup>10</sup></a> shows that 91% of the variation between photo groups is accounted for in one dimension, but there is still some significant variation associated with the 2<span class="math inline">\(^\text{nd}\)</span> dimension.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb26" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">jury.can1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://friendly.github.io/candisc/reference/candisc.html">candisc</a></span><span class="op">(</span><span class="va">jury.mod1</span>, term <span class="op">=</span> <span class="st">"Attr"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Canonical Discriminant Analysis for Attr:</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;   CanRsq Eigenvalue Difference Percent Cumulative</span></span>
+<span><span class="co">#&gt; 1  0.642       1.79       1.61   90.87       90.9</span></span>
+<span><span class="co">#&gt; 2  0.153       0.18       1.61    9.13      100.0</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Test of H0: The canonical correlations in the </span></span>
+<span><span class="co">#&gt; current row and all that follow are zero</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;   LR test stat approx F numDF denDF Pr(&gt; F)    </span></span>
+<span><span class="co">#&gt; 1        0.303    17.46    10   214  &lt;2e-16 ***</span></span>
+<span><span class="co">#&gt; 2        0.847     4.87     4   108  0.0012 ** </span></span>
+<span><span class="co">#&gt; ---</span></span>
+<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The 2D plot of canonical scores in <a href="#fig-jury-can" class="quarto-xref">Figure&nbsp;<span>11.14</span></a> gives a very simple description for this model. Dimension <code>Can1</code> widely separates the photo groups, and this dimension is nearly perfectly aligned with the <code>phyattr</code> ratings. Ratings for <code>exciting</code> are also strongly associated with this. This finding is sufficient to claim the validity of the classification used in the experiment.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb27" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">jury.can1</span>, rev.axes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="cn">TRUE</span>, <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>     lwd <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>     var.lwd <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>     var.cex <span class="op">=</span> <span class="fl">1.4</span>,</span>
+<span>     var.col <span class="op">=</span> <span class="st">"black"</span>,</span>
+<span>     pch <span class="op">=</span> <span class="fl">15</span><span class="op">:</span><span class="fl">17</span>,</span>
+<span>     cex <span class="op">=</span> <span class="fl">1.2</span>,</span>
+<span>     cex.lab <span class="op">=</span> <span class="fl">1.5</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-jury-can" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-jury-can-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/ch11/fig-jury-can-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-jury-can-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;11.14: Canonical discriminant plot for the factor <code>Attr</code> …
+</figcaption></figure>
+</div>
+</div>
+</div>
+<p>The second canonical dimension, <code>Can2</code> is also of some interest. The photo means differ here mainly between those considered of Average beauty and those classified as Unattractive. The ratings for independent and happy are most strongly associated with this. Ratings on <code>sociable</code> are related to both dimensions, but more so with <code>Can2</code>.</p>
 </div>
 </section><section id="quantitative-predictors-mmra" class="level2" data-number="11.9"><h2 data-number="11.9" class="anchored" data-anchor-id="quantitative-predictors-mmra">
 <span class="header-section-number">11.9</span> Quantitative predictors: MMRA</h2>
@@ -1145,16 +1127,13 @@ and multivariate analysis of covariance (MANCOVA). In MMRA designs, the $\mathbf
 
 In the MANCOVA case, there is often a subtle difference in emphasis: true MANCOVA analyses focus on the differences among groups defined by the factors, adjusting for (or controlling for) the quantitative covariates. Analyses concerned with homogeneity of regression focus on quantitative predictors and attempt to test whether the regression relations are the same for all groups defined by the factors.
 --> A purely visual feature of HE plots in these cases is that the <span class="math inline">\(\mathbf{H}\)</span> ellipse for a quantitative predictor with 1 df appears as a degenerate line. But consequently, the angles between these for different predictors has a simple interpretation as as the correlation between their predicted effects. Moreover, it is easy to show visual overall tests of <em>joint</em> linear hypotheses for two or more predictors together.</p>
-<p><strong>TODO</strong>: Use these examples below ? <!--
-* `heplots::NLSY`: National Longitudinal Survey of Youth Data
-* `heplots::schooldata`: School Data -> `R/schooldata-ex.R`
---> * <code><a href="https://friendly.github.io/heplots/reference/Hernior.html">heplots::Hernior</a></code>: Recovery from Elective Herniorrhaphy -&gt; HE_mmra vignette – Use for exercise</p>
+<p><strong>TODO</strong>: Use for an exercise <code><a href="https://friendly.github.io/heplots/reference/Hernior.html">heplots::Hernior</a></code>: Recovery from Elective Herniorrhaphy -&gt; HE_mmra vignette</p>
 <!-- ### Example: NLSY data {#sec-NLSY-HE} -->
 <div id="exm-NLSY-HE" class="theorem example">
-<p><span class="theorem-title"><strong>Example 11.3</strong></span> <strong>NLSY data</strong></p>
-<p>Here I’ll continue the analysis of the NLSY data from <a href="10-mlm-review.html#sec-NLSY-mmra" class="quarto-xref"><span>Section 10.6.1</span></a>. In the model <code>NLSY.mod1</code>, I used only father’s income and education to predict scores in reading and math, and both of these demographic variables were highly significant. <a href="#fig-NLSY-heplot1" class="quarto-xref">Figure&nbsp;<span>11.13</span></a> shows what this looks like in an HE plot.</p>
+<p><span class="theorem-title"><strong>Example 11.4</strong></span> <strong>NLSY data</strong></p>
+<p>Here I’ll continue the analysis of the NLSY data from <a href="10-mlm-review.html#sec-NLSY-mmra" class="quarto-xref"><span>Section 10.6.1</span></a>. In the model <code>NLSY.mod1</code>, I used only father’s income and education to predict scores in reading and math, and both of these demographic variables were highly significant. <a href="#fig-NLSY-heplot1" class="quarto-xref">Figure&nbsp;<span>11.15</span></a> shows what this looks like in an HE plot.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb21" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">NLSY</span>, package <span class="op">=</span> <span class="st">"heplots"</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb28" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">NLSY</span>, package <span class="op">=</span> <span class="st">"heplots"</span><span class="op">)</span></span>
 <span><span class="va">NLSY.mod1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">read</span>, <span class="va">math</span><span class="op">)</span> <span class="op">~</span> <span class="va">income</span> <span class="op">+</span> <span class="va">educ</span>, </span>
 <span>                data <span class="op">=</span> <span class="va">NLSY</span><span class="op">)</span></span>
 <span></span>
@@ -1170,7 +1149,7 @@ In the MANCOVA case, there is often a subtle difference in emphasis: true MANCOV
 <img src="figs/ch11/fig-NLSY-heplot1-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-NLSY-heplot1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;11.13: HE plot for the simple model for the NLSY data fitting reading and math scores from income and education.
+Figure&nbsp;11.15: HE plot for the simple model for the NLSY data fitting reading and math scores from income and education.
 </figcaption></figure>
 </div>
 </div>
@@ -1178,7 +1157,7 @@ Figure&nbsp;11.13: HE plot for the simple model for the NLSY data fitting readin
 <p>Fathers income and education are positively correlated in their effects on the outcome scores. From the angles in the plot, income is most related to the math score, while education is related to both, but slightly more to the reading score.</p>
 <p>The overall joint test for both predictors can then be visualized as the test of the linear hypothesis <span class="math inline">\(\mathcal{H}_0 : \mathbf{B} = [\boldsymbol{\beta}_\text{income}, \boldsymbol{\beta}_\text{educ}] = \mathbf{0}\)</span>. For <code><a href="https://friendly.github.io/heplots/reference/heplot.html">heplot()</a></code>, we specify the names of the coefficients to be tested with the <code>hypotheses</code> argument.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb22" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">coefs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">NLSY.mod1</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span><span class="op">]</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb29" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">coefs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">NLSY.mod1</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span><span class="op">]</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "income" "educ"</span></span>
 <span></span>
 <span><span class="fu"><a href="https://friendly.github.io/heplots/reference/heplot.html">heplot</a></span><span class="op">(</span><span class="va">NLSY.mod1</span>, </span>
@@ -1193,20 +1172,20 @@ Figure&nbsp;11.13: HE plot for the simple model for the NLSY data fitting readin
 <img src="figs/ch11/fig-NLSY-heplot2-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-NLSY-heplot2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;11.14: HE plot adding the <span class="math inline">\(\mathbf{H}\)</span> ellipse for the overall test that both predictors have no effect on the outcome scores.
+Figure&nbsp;11.16: HE plot adding the <span class="math inline">\(\mathbf{H}\)</span> ellipse for the overall test that both predictors have no effect on the outcome scores.
 </figcaption></figure>
 </div>
 </div>
 </div>
-<p>The geometric relations of the <span class="math inline">\(\mathbf{H}\)</span> ellipses for the overall test and the individual predictors in <a href="#fig-NLSY-heplot2" class="quarto-xref">Figure&nbsp;<span>11.14</span></a> are worth noting here. Those for the separate coefficients always lie within the overall ellipse. The contribution for <code>income</code> makes the overall ellipse larger in the direction of the <code>math</code> score, while the contribution of education makes it larger in both directions.</p>
+<p>The geometric relations of the <span class="math inline">\(\mathbf{H}\)</span> ellipses for the overall test and the individual predictors in <a href="#fig-NLSY-heplot2" class="quarto-xref">Figure&nbsp;<span>11.16</span></a> are worth noting here. Those for the separate coefficients always lie within the overall ellipse. The contribution for <code>income</code> makes the overall ellipse larger in the direction of the <code>math</code> score, while the contribution of education makes it larger in both directions.</p>
 </div>
 <!-- ### Example: School data {#sec-schooldata-HE} -->
 <div id="exm-schooldata-HE" class="theorem example">
-<p><span class="theorem-title"><strong>Example 11.4</strong></span> <strong>School data: HE plots</strong></p>
+<p><span class="theorem-title"><strong>Example 11.5</strong></span> <strong>School data: HE plots</strong></p>
 <p>The <code>schooldata</code> dataset analyzed in <a href="10-mlm-review.html#sec-schooldata-mmra" class="quarto-xref"><span>Section 10.6.2</span></a> can also be illuminated by the methods of this chapter. There I fit the multivariate regression model predicting students scores on reading, mathematics and a measure of self-esteem using as predictors measures of parents’ education, occupation, school visits, counseling help with school assignments and number of teachers per school.</p>
-<p>But I also found two highly influential observations (cases 44, 59; see <a href="10-mlm-review.html#fig-schoolmod-infl" class="quarto-xref">Figure&nbsp;<span>10.19</span></a>) whose effect on the coefficients is rather large; so, I remove them from the analysis here.<a href="#fn8" class="footnote-ref" id="fnref8" role="doc-noteref"><sup>8</sup></a></p>
+<p>But I also found two highly influential observations (cases 44, 59; see <a href="10-mlm-review.html#fig-schoolmod-infl" class="quarto-xref">Figure&nbsp;<span>10.19</span></a>) whose effect on the coefficients is rather large; so, I remove them from the analysis here.<a href="#fn11" class="footnote-ref" id="fnref11" role="doc-noteref"><sup>11</sup></a></p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb23" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">schooldata</span>, package <span class="op">=</span> <span class="st">"heplots"</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb30" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">schooldata</span>, package <span class="op">=</span> <span class="st">"heplots"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">bad</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">44</span>, <span class="fl">59</span><span class="op">)</span></span>
 <span><span class="va">OK</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">schooldata</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://generics.r-lib.org/reference/setops.html">setdiff</a></span><span class="op">(</span><span class="va">bad</span><span class="op">)</span></span>
@@ -1216,7 +1195,7 @@ Figure&nbsp;11.14: HE plot adding the <span class="math inline">\(\mathbf{H}\)</
 <p>In this model, parent’s education and occupation and their visits to the schools were highly predictive of student’s outcomes but their counseling efforts and the number of teachers in the schools did not contribute much. However, the nature of these relationships was largely uninterpreted in that analysis.</p>
 <p>Here is where HE plots can help. You can think of this as a way to visualize what is entailed in the coefficients for this model by showing the <em>magnitude</em> of the predictor effects by their size and their relations to the outcome variable by their <em>direction</em>. The table of raw score coefficients isn’t very helpful in this regard.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb24" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">school.mod2</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb31" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">school.mod2</span><span class="op">)</span></span>
 <span><span class="co">#&gt;             reading mathematics selfesteem</span></span>
 <span><span class="co">#&gt; (Intercept)  2.7096       3.561    0.39751</span></span>
 <span><span class="co">#&gt; education    0.2233       0.132   -0.01088</span></span>
@@ -1225,9 +1204,9 @@ Figure&nbsp;11.14: HE plot adding the <span class="math inline">\(\mathbf{H}\)</
 <span><span class="co">#&gt; counseling  -0.3953      -0.293    0.00868</span></span>
 <span><span class="co">#&gt; teacher     -0.1945      -0.360    0.01129</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p><a href="#fig-school-heplot1" class="quarto-xref">Figure&nbsp;<span>11.15</span></a> shows the HE plot for reading and mathematics scores in this model, using the default significance scaling.</p>
+<p><a href="#fig-school-heplot1" class="quarto-xref">Figure&nbsp;<span>11.17</span></a> shows the HE plot for reading and mathematics scores in this model, using the default significance scaling.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb25" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://friendly.github.io/heplots/reference/heplot.html">heplot</a></span><span class="op">(</span><span class="va">school.mod2</span>, </span>
+<div class="sourceCode" id="cb32" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://friendly.github.io/heplots/reference/heplot.html">heplot</a></span><span class="op">(</span><span class="va">school.mod2</span>, </span>
 <span>       fill<span class="op">=</span><span class="cn">TRUE</span>, fill.alpha<span class="op">=</span><span class="fl">0.1</span>,</span>
 <span>       cex <span class="op">=</span> <span class="fl">1.5</span>,</span>
 <span>       cex.lab <span class="op">=</span> <span class="fl">1.5</span>,</span>
@@ -1238,15 +1217,15 @@ Figure&nbsp;11.14: HE plot adding the <span class="math inline">\(\mathbf{H}\)</
 <img src="figs/ch11/fig-school-heplot1-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-school-heplot1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;11.15: HE plot for reading and mathematics scores in the multivariate regression model…
+Figure&nbsp;11.17: HE plot for reading and mathematics scores in the multivariate regression model…
 </figcaption></figure>
 </div>
 </div>
 </div>
 <p>Parent’s occupation and education are both significant in this view, but what is more important is their orientation. Both are positively associated with reading and math scores, but education is somewhat more related to reading than to mathematics. Number of teachers and degree of parental counseling have a similar orientation, with teachers having a greater relation to mathematics scores. Visits to school and number of teachers are not significant in this plot, but both are positively correlated with reading and math and are coincident in the plot. The parent time counseling measure, while also insignificant, tilts in the opposite direction, having different signs for reading and math.</p>
-<p>In the <code><a href="https://rdrr.io/r/graphics/pairs.html">pairs()</a></code> plot for all three responses (<a href="#fig-school-heplot2" class="quarto-xref">Figure&nbsp;<span>11.16</span></a>), we see something different in the relations for self-esteem. While occupation has a large positive relation in all the plots in the third row and column, education, counseling and teachers have negative relations in these plots, particularly with mathematics scores.</p>
+<p>In the <code><a href="https://rdrr.io/r/graphics/pairs.html">pairs()</a></code> plot for all three responses (<a href="#fig-school-heplot2" class="quarto-xref">Figure&nbsp;<span>11.18</span></a>), we see something different in the relations for self-esteem. While occupation has a large positive relation in all the plots in the third row and column, education, counseling and teachers have negative relations in these plots, particularly with mathematics scores.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb26" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/pairs.html">pairs</a></span><span class="op">(</span><span class="va">school.mod2</span>, </span>
+<div class="sourceCode" id="cb33" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/pairs.html">pairs</a></span><span class="op">(</span><span class="va">school.mod2</span>, </span>
 <span>      fill<span class="op">=</span><span class="cn">TRUE</span>, fill.alpha<span class="op">=</span><span class="fl">0.1</span>,</span>
 <span>      var.cex <span class="op">=</span> <span class="fl">2.5</span>,</span>
 <span>      cex <span class="op">=</span> <span class="fl">1.3</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -1256,18 +1235,18 @@ Figure&nbsp;11.15: HE plot for reading and mathematics scores in the multivariat
 <img src="figs/ch11/fig-school-heplot2-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-school-heplot2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;11.16: Pairwise HE plots for the three outcome variables in the multivariate regression model …
+Figure&nbsp;11.18: Pairwise HE plots for the three outcome variables in the multivariate regression model …
 </figcaption></figure>
 </div>
 </div>
 </div>
-<p>The analysis of this data is continued below in <a href="#exm-schooldata-cancor" class="quarto-xref">Example&nbsp;<span>11.5</span></a>.</p>
+<p>The analysis of this data is continued below in <a href="#exm-schooldata-cancor" class="quarto-xref">Example&nbsp;<span>11.6</span></a>.</p>
 </div>
 </section><section id="sec-cancor" class="level2" data-number="11.10"><h2 data-number="11.10" class="anchored" data-anchor-id="sec-cancor">
 <span class="header-section-number">11.10</span> Canonical correlation analysis</h2>
 <p>Just as we saw for MANOVA designs, a canonical analysis for multivariate regression involves finding a low-D view of the relations between predictors and outcomes that maximally explains their relations in terms of linear combinations of each. That is, the goal is to find weights for one set of variables, say <span class="math inline">\(\mathbf{X}\)</span> <em>not</em> to predict each of the other set <span class="math inline">\(\mathbf{Y} =[\mathbf{y}_1, \mathbf{y}_2, \dots]\)</span> <em>individually</em>, but rather to also find weights for the <span class="math inline">\(\mathbf{y}\)</span>s which is most highly correlated with the linear combination of the <span class="math inline">\(\mathbf{x}\)</span>s.</p>
 <p>In this sense, canonical correlation analysis (CCA) is <em>symmetric</em> in the <span class="math inline">\(x\)</span> and <span class="math inline">\(y\)</span> variables: the <span class="math inline">\(y\)</span> set is not considered responses. Rather the goal is simply to explain the correlations between the two sets. For a thorough treatment of this topic, see <span class="citation" data-cites="Gittins:85">Gittins (<a href="95-references.html#ref-Gittins:85" role="doc-biblioref">1985</a>)</span>.</p>
-<p>Geometrically, these linear combinations are vectors representing projections in the observation space of the <span class="math inline">\(x\)</span> and <span class="math inline">\(y\)</span> variables, and CCA can also be thought of as minimizing the angle between these vectors or maximizing the cosine of this angle. This is illustrated in <a href="#fig-cancor-diagram" class="quarto-xref">Figure&nbsp;<span>11.17</span></a>.</p>
+<p>Geometrically, these linear combinations are vectors representing projections in the observation space of the <span class="math inline">\(x\)</span> and <span class="math inline">\(y\)</span> variables, and CCA can also be thought of as minimizing the angle between these vectors or maximizing the cosine of this angle. This is illustrated in <a href="#fig-cancor-diagram" class="quarto-xref">Figure&nbsp;<span>11.19</span></a>.</p>
 <div class="cell" data-layout-align="center">
 <div class="cell-output-display">
 <div id="fig-cancor-diagram" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
@@ -1275,7 +1254,7 @@ Figure&nbsp;11.16: Pairwise HE plots for the three outcome variables in the mult
 <img src="images/cancor-diagram-udi.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-cancor-diagram-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;11.17: Diagram illustrating canonical correlation. For two <span class="math inline">\(y\)</span> variables, all linear combinations are vectors in their plane, and similarly for the <span class="math inline">\(x\)</span> variables. Maximizing the correlation between linear combinations of each is equivalent to making the angle <span class="math inline">\(\phi\)</span> between them as small as possible, or maximizing <span class="math inline">\(\cos({\theta})\)</span>, shown in the diagram at the right. The thick grey arrow indignates that the two planes should be overlaid at a common origin. <em>Source</em>: Re-drawn by Udi Alter following a Cross-Validated discussion by user ‘ttnphns’, https://bit.ly/4dgq2cp
+Figure&nbsp;11.19: Diagram illustrating canonical correlation. For two <span class="math inline">\(y\)</span> variables, all linear combinations are vectors in their plane, and similarly for the <span class="math inline">\(x\)</span> variables. Maximizing the correlation between linear combinations of each is equivalent to making the angle <span class="math inline">\(\phi\)</span> between them as small as possible, or maximizing <span class="math inline">\(\cos({\theta})\)</span>, shown in the diagram at the right. The thick grey arrow indignates that the two planes should be overlaid at a common origin. <em>Source</em>: Re-drawn by Udi Alter following a Cross-Validated discussion by user ‘ttnphns’, https://bit.ly/4dgq2cp
 </figcaption></figure>
 </div>
 </div>
@@ -1318,11 +1297,11 @@ Figure&nbsp;11.17: Diagram illustrating canonical correlation. For two <span cla
 <p><strong>TODO</strong>: Fill in details of canonical correlations</p>
 <!-- ### Canonical analysis -->
 <div id="exm-schooldata-cancor" class="theorem example">
-<p><span class="theorem-title"><strong>Example 11.5</strong></span> <strong>School data: Canonical analysis</strong></p>
+<p><span class="theorem-title"><strong>Example 11.6</strong></span> <strong>School data: Canonical analysis</strong></p>
 <p>With <span class="math inline">\(p = 3\)</span> responses and <span class="math inline">\(q = 5\)</span> predictors there are three possible sets of canonical variables which together account for 100% of the total linear relations between them. <code>heplots::cancor()</code> gives the percentage associated with each of the eigenvalues and the canonical correlations.</p>
 <p>For this dataset, the first canonical variates, with Can <span class="math inline">\(R = 0.995\)</span>, accounts for 98.6%, so you might think that that is sufficient. Yet the likelihood ratio tests show that the second set, with Can <span class="math inline">\(R = 0.774\)</span>, is also significant, even though it only accounts for 1.3%.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb27" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># bad &lt;- c(44, 59)</span></span>
+<div class="sourceCode" id="cb34" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># bad &lt;- c(44, 59)</span></span>
 <span><span class="co"># OK &lt;- (1:nrow(schooldata)) |&gt; setdiff(bad)</span></span>
 <span><span class="va">school.can2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://friendly.github.io/candisc/reference/cancor.html">cancor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">reading</span>, <span class="va">mathematics</span>, <span class="va">selfesteem</span><span class="op">)</span> <span class="op">~</span></span>
 <span>                        <span class="va">education</span> <span class="op">+</span> <span class="va">occupation</span> <span class="op">+</span> <span class="va">visit</span> <span class="op">+</span> <span class="va">counseling</span> <span class="op">+</span> <span class="va">teacher</span>,</span>
@@ -1355,14 +1334,14 @@ Figure&nbsp;11.17: Diagram illustrating canonical correlation. For two <span cla
 <p>The virtue of CCA is that <em>all</em> correlations between the X and Y variables are completely captured in the correlations between the <em>pairs</em> of canonical scores: The <span class="math inline">\(p \times q\)</span> correlations between the sets are entirely represented by the <span class="math inline">\(s = \min(p, q)\)</span> canonical ones. Whether the second dimension is useful here depends on whether it adds some interpretable increment to what is going on in these relations. One could be justifiably happy with an explanation based on the first dimension that accounts for nearly all the total association between the sets.</p>
 <p>The class <code>"cancor"</code> object returned by <code><a href="https://friendly.github.io/candisc/reference/cancor.html">cancor()</a></code> contains the canonical coefficients, for which there is a <code><a href="https://rdrr.io/r/stats/coef.html">coef()</a></code> method as in <code><a href="https://friendly.github.io/candisc/reference/candisc.html">candisc()</a></code>, and also a <code><a href="https://friendly.github.io/candisc/reference/cancor.html">scores()</a></code> method to return the scores on the canonical variables, called <code>Xcan1</code>, <code>Xcan2</code>, … and <code>Ycan1</code>, <code>Ycan2</code>.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb28" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">school.can2</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb35" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">school.can2</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  [1] "cancor"    "names"     "ndim"      "dim"       "coef"     </span></span>
 <span><span class="co">#&gt;  [6] "scores"    "X"         "Y"         "weights"   "structure"</span></span>
 <span><span class="co">#&gt; [11] "call"      "terms"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>You can use the <code><a href="https://rdrr.io/r/graphics/plot.default.html">plot()</a></code> method or <code><a href="https://friendly.github.io/heplots/reference/heplot.html">heplot()</a></code> method to visualize and help interpret the results. The <code><a href="https://rdrr.io/r/graphics/plot.default.html">plot()</a></code> method plots the canonical <code>scores$X</code> against the <code>scores$Y</code> for a given dimension (selected by the <code>which</code> argument). The <code>id.n</code> argument gives a way to flag noteworthy observations.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb29" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">school.can2</span>, </span>
+<div class="sourceCode" id="cb36" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">school.can2</span>, </span>
 <span>     pch<span class="op">=</span><span class="fl">16</span>, id.n <span class="op">=</span> <span class="fl">3</span>,</span>
 <span>     cex.lab <span class="op">=</span> <span class="fl">1.5</span>, id.cex <span class="op">=</span> <span class="fl">1.5</span>,</span>
 <span>     ellipse.args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="cn">TRUE</span>, fill.alpha <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span><span class="op">)</span></span>
@@ -1382,14 +1361,14 @@ Figure&nbsp;11.17: Diagram illustrating canonical correlation. For two <span cla
 <img src="figs/ch11/fig-school-can-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-school-can-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;11.18: Plots of canonical scores for the first two canonical dimensions of the <code>schooldata</code> dataset, omitting the two highly influential cases.
+Figure&nbsp;11.20: Plots of canonical scores for the first two canonical dimensions of the <code>schooldata</code> dataset, omitting the two highly influential cases.
 </figcaption></figure>
 </div>
 </div>
 </div>
-<p>It is worthwhile to look at an analogous plot of canonical scores for the original dataset including the two highly influential cases. As you can see in <a href="#fig-school-can0" class="quarto-xref">Figure&nbsp;<span>11.19</span></a>, cases 44 and 59 are way outside the range of the rest of the data. Their influence increases the canonical correlation to a near perfect <span class="math inline">\(\rho = 0.997\)</span>.</p>
+<p>It is worthwhile to look at an analogous plot of canonical scores for the original dataset including the two highly influential cases. As you can see in <a href="#fig-school-can0" class="quarto-xref">Figure&nbsp;<span>11.21</span></a>, cases 44 and 59 are way outside the range of the rest of the data. Their influence increases the canonical correlation to a near perfect <span class="math inline">\(\rho = 0.997\)</span>.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb30" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">school.can</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://friendly.github.io/candisc/reference/cancor.html">cancor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">reading</span>, <span class="va">mathematics</span>, <span class="va">selfesteem</span><span class="op">)</span> <span class="op">~</span></span>
+<div class="sourceCode" id="cb37" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">school.can</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://friendly.github.io/candisc/reference/cancor.html">cancor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">reading</span>, <span class="va">mathematics</span>, <span class="va">selfesteem</span><span class="op">)</span> <span class="op">~</span></span>
 <span>                       <span class="va">education</span> <span class="op">+</span> <span class="va">occupation</span> <span class="op">+</span> <span class="va">visit</span> <span class="op">+</span> <span class="va">counseling</span> <span class="op">+</span> <span class="va">teacher</span>,</span>
 <span>                     data<span class="op">=</span><span class="va">schooldata</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">school.can</span>, </span>
@@ -1404,7 +1383,7 @@ Figure&nbsp;11.18: Plots of canonical scores for the first two canonical dimensi
 <img src="figs/ch11/fig-school-can0-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-school-can0-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;11.19: Plots of canonical scores on the first canonical dimension for the <code>schooldata</code>, including the influential cases, which stand out as so far frome the rest of the observations.
+Figure&nbsp;11.21: Plots of canonical scores on the first canonical dimension for the <code>schooldata</code>, including the influential cases, which stand out as so far frome the rest of the observations.
 </figcaption></figure>
 </div>
 </div>
@@ -1412,7 +1391,7 @@ Figure&nbsp;11.19: Plots of canonical scores on the first canonical dimension fo
 <p>Plots of canonical scores tell us of the strength of the canonical dimensions, but do not help interpreting the analysis in relation to the original variables. The HE plot version for canonical correlation analysis re-fits a multivariate regression model for the Y variables against the Xs, but substitutes the canonical scores for each, essentially projecting the data into canonical space.</p>
 <p><strong>TODO</strong>: Check out signs of structure coefs from <code><a href="https://friendly.github.io/candisc/reference/cancor.html">cancor()</a></code>. Would be better to reflect the vectors for <code>Ycan1</code>.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb31" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://friendly.github.io/heplots/reference/heplot.html">heplot</a></span><span class="op">(</span><span class="va">school.can2</span>,</span>
+<div class="sourceCode" id="cb38" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://friendly.github.io/heplots/reference/heplot.html">heplot</a></span><span class="op">(</span><span class="va">school.can2</span>,</span>
 <span>       fill <span class="op">=</span> <span class="cn">TRUE</span>, fill.alpha <span class="op">=</span> <span class="fl">0.2</span>,</span>
 <span>       var.col <span class="op">=</span> <span class="st">"red"</span>, </span>
 <span>       asp <span class="op">=</span> <span class="cn">NA</span>, scale <span class="op">=</span> <span class="fl">0.25</span>,</span>
@@ -1424,12 +1403,12 @@ Figure&nbsp;11.19: Plots of canonical scores on the first canonical dimension fo
 <img src="figs/ch11/fig-school-hecan-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-school-hecan-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;11.20: HE plot for the canonical correlation analysis of the schooldata. Vectors for the variables indicate their correlations with the canonical dimensions.
+Figure&nbsp;11.22: HE plot for the canonical correlation analysis of the schooldata. Vectors for the variables indicate their correlations with the canonical dimensions.
 </figcaption></figure>
 </div>
 </div>
 </div>
-<p>The <span style="color: red;">red</span> variable vectors shown in these plots are intended only to show the correlations of Y variables with the canonical dimensions. The fact that they are so closely aligned reflects the fact that the first dimension accounts for nearly all of their associations with the predictors. The orientation of the <span class="math inline">\(\mathbf{H}\)</span> ellipses/lines reflects the projection of those from <a href="#fig-school-heplot2" class="quarto-xref">Figure&nbsp;<span>11.16</span></a> into canonical space</p>
+<p>The <span style="color: red;">red</span> variable vectors shown in these plots are intended only to show the correlations of Y variables with the canonical dimensions. The fact that they are so closely aligned reflects the fact that the first dimension accounts for nearly all of their associations with the predictors. The orientation of the <span class="math inline">\(\mathbf{H}\)</span> ellipses/lines reflects the projection of those from <a href="#fig-school-heplot2" class="quarto-xref">Figure&nbsp;<span>11.18</span></a> into canonical space</p>
 <p>Only their <em>relative lengths</em> and angles with respect to the Y canonical dimensions have meaning in these plots. Relative lengths correspond to proportions of variance accounted for in the Y canonical dimensions plotted; angles between the variable vectors and the canonical axes correspond to the structure correlations. The absolute lengths of these vectors are arbitrary and are typically manipulated by the <code>scale</code> argument to provide better visual resolution and labeling for the variables.</p>
 </div>
 </section><section id="mancova-models" class="level2" data-number="11.11"><h2 data-number="11.11" class="anchored" data-anchor-id="mancova-models">
@@ -1439,15 +1418,15 @@ Figure&nbsp;11.20: HE plot for the canonical correlation analysis of the schoold
 <p>An alternative is to fit separate models for the groups and display these as HE plots. As noted earlier (<a href="10-mlm-review.html#sec-PA-tasks" class="quarto-xref"><span>Section 10.8.1</span></a>), this is not ideal for testing hypotheses, but provides a useful and informative display of the relations between the predictors and responses and the groups effect. I illustrate these approaches for the Rohwer data, encountered in <a href="10-mlm-review.html#sec-PA-tasks" class="quarto-xref"><span>Section 10.8.1</span></a>, below.</p>
 <!-- ### Example: Rohwer data -->
 <div id="exm-rowher-mancova" class="theorem example">
-<p><span class="theorem-title"><strong>Example 11.6</strong></span> <strong>Rowher data</strong></p>
+<p><span class="theorem-title"><strong>Example 11.7</strong></span> <strong>Rowher data</strong></p>
 <p>In <a href="10-mlm-review.html#sec-PA-tasks" class="quarto-xref"><span>Section 10.8.1</span></a> I fit several models for Rohwer’s data on the relations between paired-associate tasks and scholastic performance. The first model was the MANCOVA model testing the difference between the high and low SES groups, controlling for, or taking into account differences on the paired-associate task.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb32" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">Rohwer.mod1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">SAT</span>, <span class="va">PPVT</span>, <span class="va">Raven</span><span class="op">)</span> <span class="op">~</span> <span class="va">SES</span> <span class="op">+</span> <span class="va">n</span> <span class="op">+</span> <span class="va">s</span> <span class="op">+</span> <span class="va">ns</span> <span class="op">+</span> <span class="va">na</span> <span class="op">+</span> <span class="va">ss</span>, </span>
+<div class="sourceCode" id="cb39" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">Rohwer.mod1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">SAT</span>, <span class="va">PPVT</span>, <span class="va">Raven</span><span class="op">)</span> <span class="op">~</span> <span class="va">SES</span> <span class="op">+</span> <span class="va">n</span> <span class="op">+</span> <span class="va">s</span> <span class="op">+</span> <span class="va">ns</span> <span class="op">+</span> <span class="va">na</span> <span class="op">+</span> <span class="va">ss</span>, </span>
 <span>                 data<span class="op">=</span><span class="va">Rohwer</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>HE plots for this model for the pairs (SAT, PPVT) and (SAT, Raven) is shown in <a href="#fig-rohwer-HE-mod1-pairs" class="quarto-xref">Figure&nbsp;<span>11.21</span></a>. The result of an overall test for <em>all</em> predictors, <span class="math inline">\(\mathcal{H}_0 : \mathbf{B} = \mathbf{0}\)</span>, is added to the basic plot using the <code>hypotheses</code> argument.</p>
+<p>HE plots for this model for the pairs (SAT, PPVT) and (SAT, Raven) is shown in <a href="#fig-rohwer-HE-mod1-pairs" class="quarto-xref">Figure&nbsp;<span>11.23</span></a>. The result of an overall test for <em>all</em> predictors, <span class="math inline">\(\mathcal{H}_0 : \mathbf{B} = \mathbf{0}\)</span>, is added to the basic plot using the <code>hypotheses</code> argument.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb33" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">colors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"red"</span>, <span class="st">"blue"</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"black"</span>,<span class="fl">5</span><span class="op">)</span>, <span class="st">"#969696"</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb40" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">colors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"red"</span>, <span class="st">"blue"</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"black"</span>,<span class="fl">5</span><span class="op">)</span>, <span class="st">"#969696"</span><span class="op">)</span></span>
 <span><span class="va">covariates</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">Rohwer.mod1</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="op">-</span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/pairs.html">pairs</a></span><span class="op">(</span><span class="va">Rohwer.mod1</span>, </span>
 <span>       col<span class="op">=</span><span class="va">colors</span>,</span>
@@ -1461,7 +1440,7 @@ Figure&nbsp;11.20: HE plot for the canonical correlation analysis of the schoold
 <img src="figs/ch11/fig-rohwer-HE-mod1-pairs-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-rohwer-HE-mod1-pairs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;11.21: All-pairs HE plot for SAT, PPVT and Raven using the MANCOVA model. The ellipses labeled ‘Regr’ show the test of the overall effect of the quantitative predictors.
+Figure&nbsp;11.23: All-pairs HE plot for SAT, PPVT and Raven using the MANCOVA model. The ellipses labeled ‘Regr’ show the test of the overall effect of the quantitative predictors.
 </figcaption></figure>
 </div>
 </div>
@@ -1470,13 +1449,13 @@ Figure&nbsp;11.21: All-pairs HE plot for SAT, PPVT and Raven using the MANCOVA m
 <section id="homogeneity-of-regression" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="homogeneity-of-regression">Homogeneity of regression</h4>
 <p>A second model tested the assumption of homogeneity of regression by adding interactions of SES with the PA tasks, allowing separate slopes for the two groups on each of the other predictors.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb34" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">Rohwer.mod2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">SAT</span>, <span class="va">PPVT</span>, <span class="va">Raven</span><span class="op">)</span> <span class="op">~</span> <span class="va">SES</span> <span class="op">*</span> <span class="op">(</span><span class="va">n</span> <span class="op">+</span> <span class="va">s</span> <span class="op">+</span> <span class="va">ns</span> <span class="op">+</span> <span class="va">na</span> <span class="op">+</span> <span class="va">ss</span><span class="op">)</span>,</span>
+<div class="sourceCode" id="cb41" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">Rohwer.mod2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">SAT</span>, <span class="va">PPVT</span>, <span class="va">Raven</span><span class="op">)</span> <span class="op">~</span> <span class="va">SES</span> <span class="op">*</span> <span class="op">(</span><span class="va">n</span> <span class="op">+</span> <span class="va">s</span> <span class="op">+</span> <span class="va">ns</span> <span class="op">+</span> <span class="va">na</span> <span class="op">+</span> <span class="va">ss</span><span class="op">)</span>,</span>
 <span>                  data<span class="op">=</span><span class="va">Rohwer</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>This model has 11 terms, excluding the intercept: <code>SES</code>, plus 5 main effects (<span class="math inline">\(x\)</span>s) for the predictors and 5 interactions (slope differences), too many for an understandable display. To visualize this in an HE plot (<a href="#fig-rohwer-HE-mod2" class="quarto-xref">Figure&nbsp;<span>11.22</span></a>), I simplify, by showing the interaction terms <em>collectively</em> by a single ellipse, representing their joint effect, and specified as a linear hypothesis called <code>slopes</code> that picks out the interaction effects.</p>
+<p>This model has 11 terms, excluding the intercept: <code>SES</code>, plus 5 main effects (<span class="math inline">\(x\)</span>s) for the predictors and 5 interactions (slope differences), too many for an understandable display. To visualize this in an HE plot (<a href="#fig-rohwer-HE-mod2" class="quarto-xref">Figure&nbsp;<span>11.24</span></a>), I simplify, by showing the interaction terms <em>collectively</em> by a single ellipse, representing their joint effect, and specified as a linear hypothesis called <code>slopes</code> that picks out the interaction effects.</p>
 <p>The argument <code>terms</code> limits the <span class="math inline">\(\mathbf{H}\)</span> ellipses for the right-hand-side of the model which are shown to just those terms specified. The combined effect of the interaction terms is specified as an hypothesis (<code>slopes</code>) testing the interaction terms (which have a “:” in their name). Because SES is “treatment-coded” in this model, the interaction terms reflect the difference in slopes for the high SES group compared to the low.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb35" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="op">(</span><span class="va">coefs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">Rohwer.mod2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb42" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="op">(</span><span class="va">coefs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">Rohwer.mod2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  [1] "(Intercept)" "SESLo"       "n"           "s"          </span></span>
 <span><span class="co">#&gt;  [5] "ns"          "na"          "ss"          "SESLo:n"    </span></span>
 <span><span class="co">#&gt;  [9] "SESLo:s"     "SESLo:ns"    "SESLo:na"    "SESLo:ss"</span></span>
@@ -1493,7 +1472,7 @@ Figure&nbsp;11.21: All-pairs HE plot for SAT, PPVT and Raven using the MANCOVA m
 <img src="figs/ch11/fig-rohwer-HE-mod2-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-rohwer-HE-mod2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;11.22: HE plot for SAT and PPVT using the heterogeneous regression model. The ellipse labeled ‘Regr’ shows the test of the covariates combined, and the ellipse labeled ‘slopes’ shows the combined difference in slopes between the two groups.
+Figure&nbsp;11.24: HE plot for SAT and PPVT using the heterogeneous regression model. The ellipse labeled ‘Regr’ shows the test of the covariates combined, and the ellipse labeled ‘slopes’ shows the combined difference in slopes between the two groups.
 </figcaption></figure>
 </div>
 </div>
@@ -1501,14 +1480,14 @@ Figure&nbsp;11.22: HE plot for SAT and PPVT using the heterogeneous regression m
 </section><section id="separate-models" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="separate-models">Separate models</h4>
 <p>When there is heterogeneity of regressions, using submodels for each of the groups has the advantage that you can easily visualize the slopes for the predictors in each of the groups, particularly if you overlay the individual HE plots. In this example, I’m using the models <code>Rohwer.sesLo</code> and <code>Rohwer.sesLo</code> fit to each of the groups.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb36" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">Rohwer.sesLo</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">SAT</span>, <span class="va">PPVT</span>, <span class="va">Raven</span><span class="op">)</span> <span class="op">~</span> <span class="va">n</span> <span class="op">+</span> <span class="va">s</span> <span class="op">+</span> <span class="va">ns</span> <span class="op">+</span> <span class="va">na</span> <span class="op">+</span> <span class="va">ss</span>, </span>
+<div class="sourceCode" id="cb43" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">Rohwer.sesLo</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">SAT</span>, <span class="va">PPVT</span>, <span class="va">Raven</span><span class="op">)</span> <span class="op">~</span> <span class="va">n</span> <span class="op">+</span> <span class="va">s</span> <span class="op">+</span> <span class="va">ns</span> <span class="op">+</span> <span class="va">na</span> <span class="op">+</span> <span class="va">ss</span>, </span>
 <span>                   data<span class="op">=</span><span class="va">Rohwer</span>, subset <span class="op">=</span> <span class="va">SES</span><span class="op">==</span><span class="st">"Lo"</span><span class="op">)</span></span>
 <span><span class="va">Rohwer.sesHi</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">SAT</span>, <span class="va">PPVT</span>, <span class="va">Raven</span><span class="op">)</span> <span class="op">~</span> <span class="va">n</span> <span class="op">+</span> <span class="va">s</span> <span class="op">+</span> <span class="va">ns</span> <span class="op">+</span> <span class="va">na</span> <span class="op">+</span> <span class="va">ss</span>, </span>
 <span>                   data<span class="op">=</span><span class="va">Rohwer</span>, subset <span class="op">=</span> <span class="va">SES</span><span class="op">==</span><span class="st">"Hi"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Here I make use of the fact that several HE plots can be overlaid using the option <code>add=TRUE</code> as shown in <a href="#fig-rohwer-HE-lohi" class="quarto-xref">Figure&nbsp;<span>11.23</span></a>. The axis limits may need adjustment in the first plot so that the second one will fit.</p>
+<p>Here I make use of the fact that several HE plots can be overlaid using the option <code>add=TRUE</code> as shown in <a href="#fig-rohwer-HE-lohi" class="quarto-xref">Figure&nbsp;<span>11.25</span></a>. The axis limits may need adjustment in the first plot so that the second one will fit.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb37" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://friendly.github.io/heplots/reference/heplot.html">heplot</a></span><span class="op">(</span><span class="va">Rohwer.sesLo</span>, </span>
+<div class="sourceCode" id="cb44" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://friendly.github.io/heplots/reference/heplot.html">heplot</a></span><span class="op">(</span><span class="va">Rohwer.sesLo</span>, </span>
 <span>       xlim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">100</span><span class="op">)</span>,               <span class="co"># adjust axis limits</span></span>
 <span>       ylim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">40</span>,<span class="fl">110</span><span class="op">)</span>, </span>
 <span>       col<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"red"</span>, <span class="st">"black"</span><span class="op">)</span>, </span>
@@ -1527,7 +1506,7 @@ Figure&nbsp;11.22: HE plot for SAT and PPVT using the heterogeneous regression m
 <img src="figs/ch11/fig-rohwer-HE-lohi-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-rohwer-HE-lohi-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;11.23: Overlaid HE plots for SAT and PPVT, for the low and high SES groups, when each group is fit separately.
+Figure&nbsp;11.25: Overlaid HE plots for SAT and PPVT, for the low and high SES groups, when each group is fit separately.
 </figcaption></figure>
 </div>
 </div>
@@ -1559,7 +1538,7 @@ Figure&nbsp;11.23: Overlaid HE plots for SAT and PPVT, for the low and high SES 
 ::: {.cell layout-align="center"}
 
 ```
-#> Writing packages to  C:/R/Projects/Vis-MLM-book/bib/pkgs.txt
+#> Writing packages to  C:/R/projects/Vis-MLM-book/bib/pkgs.txt
 #> 11  packages used here:
 #>  broom, candisc, car, carData, dplyr, ggplot2, ggpubr, heplots, knitr, patchwork, tidyr
 ```
@@ -1608,7 +1587,10 @@ Huang, F. L. (2019). <span>MANOVA</span>: A procedure whose time has passed? <em
 <li id="fn5"><p>That the <span class="math inline">\(\mathbf{H}\)</span> ellipses for the contrasts subtend that for the overall test of <code>Species</code> is no accident. In fact, this is true in <span class="math inline">\(p\)</span>-dimensional space for <em>any</em> linear hypothesis, and orthogonal contrasts have the additional geometric property that they form <em>conjugate axes</em> for the overall <span class="math inline">\(\mathbf{H}\)</span> ellipsoid relative to the <span class="math inline">\(\mathbf{E}\)</span> ellipsoid <span class="citation" data-cites="Friendly-etal:ellipses:2013">(<a href="95-references.html#ref-Friendly-etal:ellipses:2013" role="doc-biblioref">Friendly et al., 2013</a>)</span>.<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn6"><p>The related <code><a href="https://friendly.github.io/candisc/reference/candiscList.html">candiscList()</a></code> function performs a generalized canonical discriminant analysis for <em>all</em> terms in a multivariate linear model, returning a list of the results for each factor.<a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn7"><p>If significance scaling was used the interpretation of the canonical HE plot plot would the same as before: if the hypothesis ellipse extends beyond the error ellipse, then that dimension is significant.<a href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn8"><p>An alternative to fitting the model removing specific cases deemed troublesome is to use a <strong>robust</strong> method, such as <code>heplots::roblm()</code>. This uses re-weighted least squares to down-weight observations with large residuals or other problems. These methods are illustrated in <a href="13-infl-robust.html#sec-robust-estimation" class="quarto-xref"><span>Section 13.5</span></a>.<a href="#fnref8" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn8"><p>As in univariate linear models, any factors or covariates ignored in the model formula have their effects pooled with the error term, reducing the sensitivity of their tests.<a href="#fnref8" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn9"><p>You could test this comparison with a more focused 1 df linear hypothesis using the contrast <span class="math inline">\((1, -\frac12, -\frac12)\)</span> for the levels of <code>Attr</code>.<a href="#fnref9" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn10"><p>For MANOVA designs there is a separate analysis for each term in the model. …<a href="#fnref10" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn11"><p>An alternative to fitting the model removing specific cases deemed troublesome is to use a <strong>robust</strong> method, such as <code>heplots::roblm()</code>. This uses re-weighted least squares to down-weight observations with large residuals or other problems. These methods are illustrated in <a href="13-infl-robust.html#sec-robust-estimation" class="quarto-xref"><span>Section 13.5</span></a>.<a href="#fnref11" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol></section></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
     const icon = "";
