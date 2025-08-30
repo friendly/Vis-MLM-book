@@ -32,6 +32,7 @@ responses. Here's where multivariate model visualization comes to the rescue!
 * **contrasts**: For factors in MANOVA, contrasts and linear hypotheses (@sec-contrasts2) provide a way to decompose
 an overall multivariate test into portions directed at meaningful _specific_ research questions
 regarding **how** the groups differ.
+\ix{contrasts}
 
 * **CDA**: For more than a few response variables, these result can be projected onto a lower-dimensional "canonical" space providing an even simpler description, accounting for most of the "juice". Vectors for the response variables in this space show how these relate to the canonical dimension, facilitating interpretation. 
 
@@ -39,13 +40,23 @@ regarding **how** the groups differ.
 - refer to Huang: "_given the challenges and assumptions involved in appropriately performing and interpreting MANOVA results, researchers are better off using other less error-prone procedures._" 
 -->
 
-@Huang2019 and others have criticized these methods as (a) difficult to understand because they are framed in terms of linear combinations of the the responses;
-(b) more complicated and limited in interpreting MANOVA effects and (c) unwieldy post hoc strategies often employed for interpretation.
+@Huang2019, in an article titled, "MANOVA: A Procedure Whose Time Has Passed?"
+(and others) criticized these methods as (a) difficult to understand because they are framed in terms of linear combinations of the the responses;
+(b) more complicated and limited in interpreting MANOVA effects and (c) unwieldy post hoc strategies often employed for interpretation. 
 
-These difficulties in understanding can, I believe, be cured by accessible
+But that's just you should expect to happen if you rely on tables of coefficients or ANOVA summary tables, even with significance stars (`*` ... `***`) to help interpret what is important.
+(You should be looking at effect sizes and practical significance, right?)
+
+These difficulties in understanding multivariate models can, I believe, be cured by accessible
 graphical methods for visualizing hypothesis tests and for visualizing what these
 linear combinations reflect in terms of the observed variables.
-The HE plot framework described below provides powerful graphic methods available in easy used software.
+The HE plot framework described below provides powerful graphic methods available in easily used software,
+the `r pkg("heplots")` and `r pkg("candisc")` packages.
+
+<!-- footnote?
+I should warn you that these plots are somewhat novel and take some time to understand ....
+-->
+
 
 This chapter describes this framework and illustrates some concrete examples, first for
 MANOVA designs which are conceptually and visually simpler, and then for MMRA
@@ -170,7 +181,8 @@ where $c = \chi^2_2 (0.68)$ for 2D plots and $c = \chi^2_3 (0.68)$ for 3D plots 
 Ellipses of various coverage were shown in @fig-ellipses-coverage.
 
 [^small-n]: In smallish samples ($n < 30$) we use the better approximations,
-$c = \sqrt{2 F_{2, n-2}^{0.68}}$ for 2D plots and $c = \sqrt{3 F_{3, n-3}^{0.68}}$ for 3D.
+$c = \sqrt{2 F_{2, n-2}^{0.68}}$ for 2D plots and $c = \sqrt{3 F_{3, n-3}^{0.68}}$ for 3D. the difference is
+usually invisible in plots.
 
 
 
@@ -614,13 +626,19 @@ different variables contribute to discrimination among groups.
 In this situation, **canonical discriminant analysis** (CDA) is often used, to provide
 a low-D visualization of between-group variation.
 
-When the predictors are also continuous, the analogous term is **canonical correlation analysis** (CCA).
+When the predictors are also continuous, the analogous term is **canonical correlation analysis** (CCA),
+described in @sec-cancor.
 The advantage in both cases is that we can also show the relations of the response variables to these dimensions,
 similar to a biplot (@sec-biplot) for a PCA of purely quantitative variables. 
 
-The key to this is the eigenvalue decomposition, $\mathbf{H}\mathbf{E}^{-1} \lambda_i = \lambda_i \mathbf{v}_i$
+But, to be clear: dimensions and variance accounted for in canonical space describe the relationships
+_between_ response variables and factors or quantitative predictors, whereas PCA is only striving to
+account for the total variation in the space of all variables.
+
+The key to CDA is the eigenvalue decomposition of the $\mathbf{H}$ relative to $\mathbf{E}$
+$\mathbf{H}\mathbf{E}^{-1} \lambda_i = \lambda_i \mathbf{v}_i$
 (@eq-he-eigen)
-of $\mathbf{H}$ relative to $\mathbf{E}$. The eigenvalues, $\lambda_i$, give the "size" of each $s$ 
+. The eigenvalues, $\lambda_i$, give the "size" of each $s$ 
 orthogonal dimensions on which the multivariate tests are based (@sec-H-vs-E). But the corresponding
 eigenvectors, $\mathbf{v}_i$, give the _weights_ for the response variables
 in $s$ linear combinations that maximally discriminate among the groups or equivalently maximize the
@@ -630,9 +648,11 @@ response $\mathbf{Y}$s.
 Thus, CDA amounts to a transformation of the $p$ responses,
 $\mat{Y}_{n \times p}$
 into scores $\mathbf{Z}$ in the canonical space,
+
 $$
 \mat{Z}_{n \times s} = \mat{Y} \; \mathbf{E}^{-1/2} \; \mat{V} \;,
-$$
+$$ {#eq-canZ}
+
 where $\mat{V}$ contains the eigenvectors of $\mathbf{H}\mathbf{E}^{-1}$
 and $s=\min ( p, df_h )$ dimensions, the degrees of freedom for the hypothesis.
 It is well-known (e.g., @Gittins:85)
@@ -655,13 +675,15 @@ This is a big win over univariate analyses for each dependent variable separatel
 follow-ups for a significant MANOVA result.
 
 These take the form of _sequential_ global tests of the hypothesis that the canonical correlation in
-the current row and all that follow are zero. Thus, if you find 
+the current row and _all that follow_ are zero. Thus, if you find that the second dimension is
+insignificant, there is no need to look at any further down the list.
 The canonical $R^2$, `CanRsq`, gives the R-squared value of fitting the $i$th response canonical variate to the corresponding $i$th canonical variate for the predictors.
 
 For the iris data, we get the following printed summary:
 
 ```{r iris-can}
-iris.can <- candisc(iris.mod) |> print()
+iris.can <- candisc(iris.mod) |> 
+  print()
 ```
 
 This analysis shows a very simple result: The differences among the iris species can
@@ -718,10 +740,12 @@ can2 <- paste("Can2 = ", paste0(round(C[,2], 2), " x ", names, collapse = " + ")
 
 ### Canonical scores plot
 
-The `plot()` method for `"candisc"` objects gives a plot of these observation scores. 
-`ellipse=TRUE` overlays this with their standard data ellipses for each species, as shown in @fig-iris-candisc. 
-The response variables are shown as
-vectors, using the structure coefficients, as in a biplot. Thus, the relative size of the projection of these
+The `plot()` method for `"candisc"` objects gives a plot of these observation scores in any two dimensions.
+The argument `ellipse=TRUE` overlays this with their standard data ellipses for each species, as shown in @fig-iris-candisc. 
+
+Analogous to the biplot (@sec-biplot),
+the response variables are shown as
+vectors, using the structure coefficients. Thus, the relative size of the projection of these
 vectors on the canonical axes reflects the correlation of the observed response on the canonical dimension.
 For ease of interpretation I flipped the sign of the first canonical dimension (`rev.axes`), so that the positive `Can1` direction
 corresponds to larger flowers.
@@ -769,7 +793,7 @@ All are positive, but this is dominated by `Sepal.Width`. We could call this a f
 ### Canonical HE plot
 For a one-way design, the _canonical HE plot_
 is simply the HE plot of the canonical scores in the analogous MLM model that substitutes $\mat{Z}$ for $\mat{Y}$. 
-In effect, it is a more compact visual summary of the plot shown in @fig-iris-candisc.
+In effect, it is a more compact visual summary of the plot shown of canonical scores in @fig-iris-candisc.
 
 This is shown in @fig-iris-HEcan for the `iris` data.
 In canonical space, the residuals are always uncorrelated, so the $\mathbf{E}$ ellipse plots as a circle.
@@ -794,10 +818,8 @@ op <- par(mar = c(4, 4, 4, 1) + .5)
 heplot(iris.can,
        size = "effect",
        scale = 8,
-       var.labels = vars,
-       var.col = "black",
-       var.lwd = 2,
-       var.cex = 1.25,
+       var.labels = vars, var.col = "black",
+       var.lwd = 2, var.cex = 1.25,
        fill = TRUE, fill.alpha = 0.2,
        rev.axes = c(TRUE, FALSE),
        xlim = c(-10, 10),
@@ -805,7 +827,7 @@ heplot(iris.can,
 ```
 
 The collection of plots shown for the iris data here can be seen as progressive visual summaries of the 
-data and increased visual understanding of 
+data and increased visual understanding of the morphology of Anderson's _Iris_ flowers:
 
 * The scatterplot matrix in @fig-iris-spm shows the iris flowers in the data space of the sepal and petal variables.
 * Canonical analysis substitutes for these the two linear combinations reflected in `Can1` and `Can2`. The plot in @fig-iris-candisc portrays _exactly_ the same relations among the species, but in the reduced canonical space of only two dimensions.
@@ -825,6 +847,7 @@ assessment of differences among the groups.
 
 ::: {#exm-plastic2}
 **Plastic film data**
+
 I illustrate these points below for the Plastic film data analyzed earlier in @exm-plastic1.
 The model contemplated there examined how the three response variables, resistance to `tear`, film `gloss` and the `opacity` of the film varied with the two experimental factors, `rate` of extrusion and amount of some `additive`, both at two levels, labeled `High` and `Low`. Both main effects and the interaction of rate and additive were fit in the model `plastic.mod`: 
 
@@ -950,21 +973,21 @@ I also use `asp = 1` to make response variables visually comparable.
 
 ```{r echo = -1}
 #| label: fig-jury-HE
-#| fig-width: 12
-#| fig-height: 6
+#| fig-width: 10
+#| fig-height: 5
 #| out-width: "100%"
 #| fig-cap: "Two pairwise HE plots showing the effect of the classified attractivenes of the photo and ratings of those photos. Left: `exciting` vs. `phyattr` ratings; right: `independent` vs. `phyattr` ratings."
 op <- par(mar = c(4, 4, 1, 1)+0.5, mfrow = c(1, 2))
 heplot(jury.mod1, 
        terms = "Attr", factor.means = "Attr",
        fill = TRUE, fill.alpha = 0.2,
-       cex.lab = 1.6, asp = 1)
+       cex = 1.2, cex.lab = 1.6, asp = 1)
 
 heplot(jury.mod1,
        variables = c(1,5),
        terms = "Attr", factor.means = "Attr",
        fill = TRUE, fill.alpha = 0.2,
-       cex.lab = 1.6, asp = 1)
+       cex = 1.2, cex.lab = 1.6, asp = 1)
 ```
 
 These plots show that the means of the ratings of `phyattr` of the photos are in the expected order 
@@ -973,19 +996,21 @@ These plots show that the means of the ratings of `phyattr` of the photos are in
 In the left panel of @fig-jury-HE, the means for `exciting` are nearly perfectly correlated with those for `phyattr`,
 and there is little difference between the Beautiful photos and the others.
 The means for `independent` are slightly positively correlated with those for `phyattr`, but there is a wider
-separation between Average and Unattractive photos.The right panel shows 
+separation between Average and Unattractive photos. The right panel shows the same order of the means
+for `phyattr`, but the photos of Average attractiveness are rated as highest on independence.
 
 [^contrast]: You could test this comparison with a more focused 1 df linear hypothesis using the contrast
 $(1, -\frac12, -\frac12)$ for the levels of `Attr`.
 
 **Canonical analysis**
 
-As before, a canonical analysis compresses the information about a collection of responses into fewer dimensions.
+As before, a canonical analysis squeezes the juice in a collection of responses into fewer dimensions,
+allowing you to see relationships not not apparent in all pairwise views.
 With 2 degrees of freedom for `Attr`, the space for all the ratings is 2D. `candisc()` for this term[^candisc-terms] shows that
 91% of the variation between photo groups is accounted for in one dimension, but there is still some significant variation
 associated with the 2$^\text{nd}$ dimension.
 
-[^candisc-terms]: For MANOVA designs there is a separate analysis for each term in the model because the error
+[^candisc-terms]: For MANOVA designs there is a separate analysis for each term in the model because there are different weights for the response variables.
 
 ```{r jury-can}
 jury.can1 <- candisc(jury.mod1, term = "Attr") |>
@@ -1003,7 +1028,7 @@ used in the experiment.
 #| fig-width: 10
 #| fig-height: 7
 #| out-width: "80%"
-#| fig-cap: !expr paste("Canonical discriminant plot for the factor `Attr` in the model `jury.mod1` for the ratings of the photos classified as", colorize("Beautiful", "blue"), ",", colorize("Average", "darkgreen"), "or", colorize("Unattractive", "red"), ".  Ellipses have 50% coverage for the canonical scores.  Variable vectors reflect the correlations of the rating scales with the canonical dimensions.")
+#| fig-cap: !expr paste0("Canonical discriminant plot for the factor `Attr` in the model `jury.mod1` for the ratings of the photos classified as ", colorize("Beautiful", "blue"), ", ", colorize("Average", "darkgreen"), " or", colorize("Unattractive", "red"), ".  Ellipses have 50% coverage for the canonical scores.  Variable vectors reflect the correlations of the rating scales with the canonical dimensions.")
 op <- par(mar = c(4, 4, 1, 1)+0.5)
 col <- c("blue", "darkgreen", "red")
 plot(jury.can1, rev.axes = c(TRUE, TRUE),
@@ -1144,7 +1169,7 @@ significance scaling.
 ```{r echo = -1}
 #| label: fig-school-heplot1
 #| out-width: "80%"
-#| fig-cap: "HE plot for reading and mathematics scores in the multivariate regression model..."
+#| fig-cap: "HE plot for reading and mathematics scores in the multivariate regression model for the school dataset. Predictor effects appear as lines whose lenght indicates the magnitude of the relationship and whose orientation reflects their correlations with the outcome variables shown in the plot."
 op <- par(mar = c(4, 4, 1, 2) + .1)
 heplot(school.mod2, 
        fill=TRUE, fill.alpha=0.1,
@@ -1153,12 +1178,19 @@ heplot(school.mod2,
        label.pos = c(rep("top", 4), "bottom", "bottom"))
 ```
 
-Parent's occupation and education are both significant in this view, but what is more important is their
+In @fig-school-heplot1, you can readily see:
+
+* Parent's occupation and education are both significant in this view, but what is more important is their
 orientation. Both are positively associated with reading and math scores, but education is somewhat more
-related to reading than to mathematics. Number of teachers and degree of parental counseling have a
+related to reading than to mathematics. 
+
+* Number of teachers and degree of parental counseling have a
 similar orientation, with teachers having a greater relation to mathematics scores.
-Visits to school and number of teachers are not significant in
-this plot, but both are positively correlated with reading and math and are coincident in the plot. The parent time counseling measure, while also insignificant,
+
+* Visits to school and number of teachers are not significant in
+this plot, but both are positively correlated with reading and math and are coincident in the plot. 
+
+* The parent time counseling measure, while also insignificant,
 tilts in the opposite direction, having different signs for reading and math.
 
 In the `pairs()` plot for all three responses (@fig-school-heplot2), we see something different in the relations for self-esteem. While occupation has a large positive relation in all the plots in the third row and column,
@@ -1169,7 +1201,7 @@ education, counseling and teachers have negative relations in these plots, parti
 #| fig-width: 9
 #| fig-height: 9
 #| out-width: "100%"
-#| fig-cap: "Pairwise HE plots for the three outcome variables in the multivariate regression model ..."
+#| fig-cap: "Pairwise HE plots for the three outcome variables in the multivariate regression model for the school dataset."
 pairs(school.mod2, 
       fill=TRUE, fill.alpha=0.1,
       var.cex = 2.5,
@@ -1271,7 +1303,7 @@ $$
 $$
 Both equations have the same form and have the same eigenvalues. And, given the eigenvectors for one of these equations, we can find the eigenvectors for the other.
 
-**TODO**: Fill in details of canonical correlations
+<!-- **TODO**: Fill in details of canonical correlations -->
 
 
 <!-- ### Canonical analysis -->
@@ -1280,8 +1312,7 @@ Both equations have the same form and have the same eigenvalues. And, given the 
 **School data: Canonical analysis**
 
 
-With $p = 3$ responses and $q = 5$ predictors there are three possible sets of canonical variables
-which together account for 100% of the total linear relations between them. `heplots::cancor()`
+For the school data, with $p = 3$ responses and $q = 5$ predictors there are three possible sets of canonical variables. Together these account for 100% of the total linear relations between them. `heplots::cancor()`
 gives the percentage associated with each of the eigenvalues and the canonical correlations.
 
 For this dataset, the first canonical variates, with Can $R = 0.995$, 
@@ -1290,11 +1321,10 @@ sufficient. Yet the likelihood ratio tests show that the second set, with Can $R
 is also significant, even though it only accounts for 1.3%.
 
 ```{r school-can}
-# bad <- c(44, 59)
-# OK <- (1:nrow(schooldata)) |> setdiff(bad)
-school.can2 <- cancor(cbind(reading, mathematics, selfesteem) ~
-                        education + occupation + visit + counseling + teacher,
-                     data=schooldata[OK, ])
+school.can2 <- cancor(
+  cbind(reading, mathematics, selfesteem) ~
+        education + occupation + visit + counseling + teacher,
+  data=schooldata[OK, ])
 school.can2
 ```
 
