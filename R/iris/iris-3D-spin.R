@@ -30,10 +30,16 @@ dput(userMatrix)
 zoom
 #[1] 0.952381
 
-userMatrix
+userMatrix <- 
+structure(c(0.444798916578293, 0.112694330513477, -0.888512134552002, 
+            0, -0.891067445278168, 0.155696094036102, -0.426330387592316, 
+            0, 0.0902928337454796, 0.981355786323547, 0.169671669602394, 
+            0, 0, 0, 0, 1), dim = c(4L, 4L))
 
 windowRect
 #[1] 138  31 897 823
+#
+snapshot3d(filename = "iris-3D")
 
 # We can indicate the axis and the rotation velocity
 play3d( spin3d( axis = c(0, 0, 1), rpm = 20), duration = 10 )

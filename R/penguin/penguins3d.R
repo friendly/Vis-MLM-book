@@ -90,10 +90,15 @@ show2d({
 userMatrix <- par3d()$userMatrix
 
 uM <- dput(userMatrix)
+
+par3d(userMatrix =
 structure(c(0.906833529472351, -0.0781354010105133, 0.41418331861496, 
             0, 0.421430557966232, 0.151753112673759, -0.89407342672348, 0, 
             0.00700519979000092, 0.985325217247009, 0.170543491840363, 0, 
             0, 0, 0, 1), dim = c(4L, 4L))
+)
+
+snapshot3d("images/peng3d.png")
 
 #(zoom <- par3d()$zoom)
 #(windowRect <- par3d()$windowRect)

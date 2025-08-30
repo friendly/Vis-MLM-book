@@ -69,13 +69,13 @@ op <- par(mar = c(4, 4, 1, 1)+0.5, mfrow = c(1, 2))
 heplot(jury.mod1, 
        terms = "Attr", factor.means = "Attr",
        fill = TRUE, fill.alpha = 0.2,
-       cex.lab = 1.6, asp = 1)
+       cex = 1.2, cex.lab = 1.6, asp = 1)
 
 heplot(jury.mod1,
        variables = c(1,5),
        terms = "Attr", factor.means = "Attr",
        fill = TRUE, fill.alpha = 0.2,
-       cex.lab = 1.6, asp = 1)
+       cex = 1.2, cex.lab = 1.6, asp = 1)
 par(op)
 
 
