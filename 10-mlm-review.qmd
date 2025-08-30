@@ -59,8 +59,10 @@ library(matlib)
 library(ggrepel)
 library(mvinfluence)
 library(MVN)
+library(ggpubr)
+
 # set ggplot theme
-#ggplot2::theme_set(theme_bw(base_size = 14))
+ggplot2::theme_set(theme_bw(base_size = 14))
 ```
 
 ## Structure of the MLM
@@ -1334,9 +1336,10 @@ the effects (differences in means) of each simultaneously.
 More importantly, this allows you to determine if factors _interact_,
 so the effect of one factor varies depending on the levels of another factor. For instance, the effect of
 a weight loss drug treatment may vary with the patient's ethnicity or age group.
+
 In such situations, when an interaction is significant it is unwise to interpret the overall main effects
 of treatment and the other factor.
-Instead, you would look at the "simple effects"-- how the treatment works at levels of the other factor separately.
+Instead, you would look at the "simple effects"-- how the treatment works at specific levels of the other factor separately.
 
 <!--
 #### Example: Penguins data {.unnumbered}
@@ -1349,13 +1352,123 @@ matrix (@fig-peng-ggpairs1).
 **TODO**: Complete this
 -->
 
-**TODO**: Consider moving initial part of the Plastic film 2x2 example, @#exm-plastic here. 
+<!-- **TODO**: Moving initial part of the Plastic film 2x2 example, @exm-plastic2 here.  -->
+
+::: {#exm-plastic1}
+**Plastic film data**
+
+An industrial experiment was conducted to determine the optimal conditions for extruding plastic film. Of interest were three responses: resistance to `tear`, film `gloss` and the `opacity` of the film. Two factors were manipulated, both at
+two levels, labeled `High` and `Low`:
+change in `rate` of extrusion (-10%, +10%) and amount of some `additive` (1%, 1.5%),
+with $n=5$ runs at each combination of the factor levels.
+The dataset `heplots::Plastic`  comes from
+@JohnsonWichern1998, Example 6.12.
+
+```{r plastic-str}
+data(Plastic, package="heplots")
+str(Plastic)
+```
+
+**Multivariate tests**
+
+The MANOVA model `plastic.mod` fits  the main effects of `rate` and `additive`
+and the interaction `rate:additive`. The `Anova()` summary shows a strong
+effect for `rate` of extrusions for the three responses jointly, a lesser,
+but still significant effect of `additive` and a non-significant interaction.
+
+```{r, plastic-mod}
+plastic.mod <- lm(cbind(tear, gloss, opacity) ~ rate*additive, 
+                  data=Plastic)
+Anova(plastic.mod)
+```
+
+As a reminder, if you want to see the results of univariate tests for the
+responses separately, `heplots::uniStats()`  (or `heplots::glance.mlm()`) gives some answers, including $R^2$ and univariate $F$ tests.
+
+```{r}
+uniStats(plastic.mod)
+```
+
+Note that these two summaries are complementary. `Anova()` collapses over the responses to give overall multivariate
+tests for each model term. `uniStats()` shows only the overall statistics for each response variable, combining
+the effects of all terms, and testing against the null model that none of them contribute to that response.
+
+**Plotting main effects and interactions**
+
+To understand main effects and interactions in a simple two-way MANOVA design, the simplest thing to do is
+to plot the cell means and error bars in a traditional line plot
+with one factor on the horizontal axis and the other as separate lines within the panel and with one panel
+for each response variable. 
+
+This is slightly awkward using  `r pkg("ggplot2")` directly: you have to plot the points and lines, but to plot
+error bars with `geom_errorbar()` you must calculate the standard errors and work out the upper and lower limits.
+In @fig-plastic-ggline
+I use `ggpubr::ggline()`,
+which simplifies such plots, though at the expense of a bit of control for `ggplot2`.[^control]
+The argument `add = c("mean_se")` draws error bars[^error-bars] showing $\pm 1$ standard error around the mean.
+
+[^control]: Line plots like this are nearly always more understandable with labels directly on the lines, rather than
+in a legend. Wrappers for `ggplot2` simplify some things but can't easily accommodate this kind of customization.
+
+[^error-bars]: Plotting the means plus and minus one standard error of the mean is often the simplest approach to visualizing
+the uncertainty associated with each estimate. ... **TODO**: mention problems of interpretation and alternatives
+
+```{r}
+#| label: fig-plastic-ggline
+#| fig-width: 12
+#| fig-height: 6
+#| out-width: "100%"
+#| fig-cap: "Line plots of means and their standard errors for the response `tear` (left) and `gloss` (right) in the plastic film data."
+legend_inside <- function(position) {     # simplify legend placement
+  theme(legend.position = "inside",
+        legend.position.inside = position)
+}
+
+p1 <- ggline(Plastic, 
+  x = "rate", y = "tear",
+  color = "additive", shape = "additive", linetype = "additive",
+  add = c("mean_se"), position = position_dodge(width = .1),
+  point.size = 5, linewidth = 1.5,
+  palette = c("red", "blue"),
+  ggtheme = theme_pubr(base_size = 16)
+  ) +
+  xlab("Rate of extrusion") +
+  ylab("Tear resistance") +
+  legend_inside(c(.25, .8)) 
+
+p2 <- ggline(Plastic, 
+  x = "rate", y = "gloss",
+  color = "additive", shape = "additive", linetype = "additive",
+  add = c("mean_se"), position = position_dodge(width = .1),
+  palette = c("red", "blue"),
+  point.size = 5, linewidth = 1.5,
+  ggtheme = theme_pubr(base_size = 16)
+  ) +
+  xlab("Rate of extrusion") +
+  ylab("Film gloss") +
+  theme(legend.position = "none")
+
+p1 + p2 
+```
+
+Resistance to `tear` is greater with the high rate of extrusion and high level of the additive.
+The lines are parallel, so there is no interaction.
+In the panel for `gloss`, the means for `additive` don't differ at the high `rate`,
+but do so substantially at the low extrusion rate, giving rise to the interaction for this outcome.
+
+Such univariate plots are certainly useful for this simple $2 \times 2$ design with two response variables,
+but you can imagine that they get more complicated, both to construct and to understand with larger designs
+and more response variables. As well, plotting the responses separately give no information on how 
+the outcomes vary jointly. I return to this data in @exm-plastic2, where I show how HE plots
+can give greater insight in this situation.
+
+:::
 
 ::: {#exm-MockJury1}
 **Does defendant physical attractiveness affect jury decisions?**
 
 In a social psychology study of influences on jury decisions by @Plaster:89,
-male participants (prison inmates) were shown a picture of one of three young women.  
+male participants (prison inmates) were shown a picture of one of three young women.
 Pilot  work
 had indicated  that one woman's photo was "beautiful",  another of  "average" physical
 attractiveness, and the third  "unattractive".  Participants rated the  woman they
@@ -1368,12 +1481,12 @@ _prison sentence_, in Years.
 
 The data are contained in the data frame `r dataset("heplots::MockJury")`. Only the first four are analyzed here:
 `Attr`, `Crime`, `Year` and `Serious`.
-The remaining twelve, `exciting` ... `ownPA` relate to tests of whether the `Attr` classification of the photo
+The remaining twelve, `exciting` ... `ownPA` relate to validity tests of whether the attractiveness classification `Attr` of the photo
 captures the essence of the attribute ratings.
 
 ```{r, MJdata}
 data(MockJury, package = "heplots")
-str(MockJury)
+names(MockJury)
 ```
 
 Sample sizes were roughly balanced  for the independent variables
@@ -1387,19 +1500,58 @@ table(MockJury$Attr, MockJury$Crime)
 The main questions of interest were:
 
 * Does attractiveness of the "defendant" influence the sentence or perceived seriousness of the crime?  
-* Does attractiveness interact with the nature of the crime? That is, ...
+* Does attractiveness interact with the nature of the crime? That is, does attractiveness have the same
+pattern of means for both crimes?
 
 So, I carry out a two-way MANOVA of the responses `Years` and `Serious` in relation to the independent variables
 `Attr` and `Crime`.
 
-```{r, jury-mod2}
+```{r, jury-mod}
 # influence of Attr of photo and nature of crime on Serious and Years
 jury.mod <- lm( cbind(Serious, Years) ~ Attr * Crime, data=MockJury)
 Anova(jury.mod, test = "Roy")
 ```
 
-We see that there is a nearly significant  interaction between `Attr` and `Crime`
-and a strong effect of `Attr`.
+We see that there is a strong main effect of `Attr`, no overall effect of `Crime`, and  a nearly significant  interaction between `Attr` and `Crime`. To probe these multivariate tests, you can also examine the univariate results for each
+response.
+
+```{r jury-uniStats}
+uniStats(jury.mod)
+```
+
+Again, you can interpret these results more easily from line plots of the means and standard error bars. In @fig-jury-ggline, I assign attractiveness to the horizontal axis and plot separate lines for the types of crime.
+```{r}
+#| label: fig-jury-ggline
+#| fig-width: 12
+#| fig-height: 6
+#| out-width: "100%"
+#| fig-cap: "Line plots of means and their standard errors for the response `Years` (left) and `Serious` (right) in the Mock Jury data."
+p1 <- ggline(MockJury, 
+  x = "Attr", y = "Years",
+  color = "Crime", shape = "Crime", linetype = "Crime",
+  add = c("mean_se"), position = position_dodge(width = .1),
+  point.size = 5, linewidth = 1.5,
+  palette = c("blue", "darkorange2"),
+  ggtheme = theme_pubr(base_size = 16)
+  ) +
+  xlab("Physical attractiveness of photo") +
+  ylab("Recommended years of sentence") +
+  legend_inside(c(.25, .9))
+
+p2 <- ggline(MockJury, 
+  x = "Attr", y = "Serious",
+  color = "Crime", shape = "Crime", linetype = "Crime",
+  add = c("mean_se"), position = position_dodge(width = .1),
+  point.size = 5,  linewidth = 1.5,
+  palette = c("blue", "darkorange2"),
+  ggtheme = theme_pubr(base_size = 16) 
+  ) +
+  xlab("Physical attractiveness of photo") +
+  ylab("Seriousness of crime") +
+  legend_inside(c(.75, .9))
+
+p1 + p2
+```
 
 
 :::
@@ -1805,7 +1957,7 @@ starting the process again.
 <!-- Among the MLM assumptions, the question of homogeneity of covariance matrices is deferred until -->
 <!-- @sec-eqcov.  -->
 
-For multivariate regression models, I consider the assumed multivariate normality of residuals and multivariate influence here. For MANOVA models question of homogeneity of covariance matrices is deferred until  @sec-eqcov. 
+For multivariate regression models, I consider the assumed multivariate normality of residuals and multivariate influence here. For MANOVA models, the question of homogeneity of covariance matrices is deferred until  @sec-eqcov. 
 
 ### Multivariate normality of residuals
 

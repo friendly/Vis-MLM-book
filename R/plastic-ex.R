@@ -27,29 +27,50 @@ heplot(plastic.mod, size="effect",
 
 # plot the means & SEs
 
+legend_inside <- function(position) {          # simplify legend placement
+  theme(legend.position = "inside",
+        legend.position.inside = position)
+}
+
 p1 <- ggline(Plastic, 
   x = "rate", y = "tear",
-  color = "additive", shape = "additive",
-  add = c("mean_se"),
-  position = "dodge",
+  color = "additive", shape = "additive", linetype = "additive",
+  add = c("mean_se"), position = position_dodge(width = .1),
   point.size = 5, linewidth = 1.5,
+  palette = c("red", "blue"),
   ggtheme = theme_pubr(base_size = 16)
   ) +
   xlab("Rate of extrusion") +
-  ylab("Tear resistance")
+  ylab("Tear resistance") +
+  legend_inside(c(.25, .8)) 
 
 p2 <- ggline(Plastic, 
   x = "rate", y = "gloss",
-  color = "additive", shape = "additive",
-  add = c("mean_se"),
-  position = "dodge",
+  color = "additive", shape = "additive", linetype = "additive",
+  add = c("mean_se"), position = position_dodge(width = .1),
+  palette = c("red", "blue"),
   point.size = 5, linewidth = 1.5,
   ggtheme = theme_pubr(base_size = 16)
   ) +
   xlab("Rate of extrusion") +
-  ylab("Film gloss")
+  ylab("Film gloss") +
+  theme(legend.position = "none")
 
 p1 + p2 
+
+# try facet.by=c("variable"))
+#  -- need data in the long format
+ggline(Plastic, 
+  x = "rate", y = "tear",
+  color = "additive", shape = "additive", linetype = "additive",
+  add = c("mean_se"), position = position_dodge(width = .1),
+  point.size = 5, linewidth = 1.5,
+  palette = c("red", "blue"),
+#  facet.by = "variable",
+  ggtheme = theme_pubr(base_size = 16)
+  ) 
+
+
 
 # show interaction means
 intMeans <- termMeans(plastic.mod, 'rate:additive', 

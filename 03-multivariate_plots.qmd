@@ -69,14 +69,17 @@ library(ggpcp)
 library(tourr)
 library(heplots)
 library(gggda)
-```
 
-
-```{r include=FALSE}
-# set basic theme
-library(ggplot2) 
+# set basic ggplot theme
 ggplot2::theme_set(theme_bw(base_size = 14))
 ```
+
+<!--
+```{r include=FALSE}
+# set basic ggplot theme
+ggplot2::theme_set(theme_bw(base_size = 14))
+```
+-->
 
 ## Bivariate summaries {#sec-bivariate_summaries}
 
@@ -1135,14 +1138,21 @@ scale_color_penguins <- scale_colour_penguins
 ```
 
 This is used to define a `theme_penguins()` function that I use to simply change the color and fill scales
-for plots below.
+for plots below. I also define a convenience function `legend_inside()` to make it less verbose to position a legend _inside_ a plot window,
+because outside legends reduce resolution within the plot.
 
 ```{r}
-theme_penguins <- function(shade=c("medium", "light", "dark"), ...) {
+theme_penguins <- function(shade=c("medium", "light", "dark"), 
+                           ...) {
   shade = match.arg(shade)
   list(scale_color_penguins(shade=shade),
        scale_fill_penguins(shade=shade)
       )
+}
+
+legend_inside <- function(position) {          # simplify legend placement
+  theme(legend.position = "inside",
+        legend.position.inside = position)
 }
 ```
 
@@ -1165,8 +1175,7 @@ ggplot(peng,
               linewidth = 1.5, se = FALSE, alpha=0.1) +
   stat_ellipse(geom = "polygon", level = 0.95, alpha = 0.2) +
   theme_penguins("dark") +
-  theme(legend.position = "inside",
-        legend.position.inside = c(0.85, 0.15))
+  legend_inside(c(0.85, 0.15))
 ```
 
 ### Visual thinning {#sec-visual-thinning}
@@ -1196,17 +1205,67 @@ ggplot(peng,
   stat_ellipse(geom = "polygon", level = 0.68, alpha = 0.2) +
   stat_ellipse(geom = "polygon", level = 0.40, alpha = 0.2) +
   theme_penguins("dark") +
-  theme(legend.position = "inside",
-        legend.position.inside = c(0.85, 0.15))
+  legend_inside(c(0.85, 0.15))
 ```
 
 \ixoff{data ellipse}
 \ixoff{visual thinning}
 
-<!-- **TODO**: Add bagplot here -->
+<!-- r child="child/03-bagplot.qmd" -->
 
-```{r child="child/03-bagplot.qmd"}
+## Bagplots
+
+\ixon{bagplot}
+
+If you are concerned about the assumption of bivariate normality entailed by the data ellipse, a very nice
+non-parametric and robust alternative  is a 2D generalization of a boxplot called
+a **bagplot**, introduced by @Rousseeuw-etal:2012. 
+The idea is very simple. The bagplot consists of three nested polygons, called the "bag", the "fence", and the "loop":
+
+* **bag**: The central 50% box of the boxplot is replaced by a polygon called the "bag", constructed on the basis of _depth_ of points from the bivariate depth median point. Depth generalizes the univariate concept of rank, but counted from the medians point outward in any direction.
+The bag contains at most 50% of the most central data points.
+\ix{depth}
+
+* **fence**: The univariate fences are replaced by a "fence" polygon,  by expanding the bag outward by a factor (`coef`), usually 3, from the depth median.
+
+* **loop**: Points beyond the fence (the "loop") are potential outliers, sometimes plotted as a convex hull surrounding _all_ of the observations, but better rendered simply as a scatterplot of just those points.
+
+In this way, the bagplot visualizes the bivariate location (median), spread, correlation, skewness, and tails of the data.
+Compared with a standard data ellipse, it serves as a visual test of normality and provides a simple way to identify outliers.
+
+Bagplots are implemented in `r pkg("gggda", cite=TRUE)` in the `ggplot2` framework as `geom_bagplot()` with computations done
+via `stat_bagplot()`.
+For the Penguin data, the bagplot version of @fig-peng-ggplot2 is shown in @fig-peng-bagplot.
+
+```{r}
+#| label: fig-peng-bagplot
+#| out-width: "80%"
+#| code-fold: show
+#| fig-cap: "**Bagplot**: For each Penguin species the darker inner (bag) polygon reflects the innermost 50% of the data points. The outer (fence) polygon corresponds to points enclosed by a multiple of the bag. Points outside the fence for each species are ploted individually."
+ggplot(peng, 
+       aes(x = bill_length, y = bill_depth,
+           color = species, shape = species, fill=species)) +
+  geom_smooth(method = "lm", formula = y ~ x,
+              se=FALSE, linewidth=2) +
+  geom_bagplot(bag.alpha = 0.5,
+               outlier.size = 5,
+               fraction = 0.5,    # bag fraction
+               coef = 2.5,        # fence factor
+               show.legend = FALSE) +
+  theme_penguins("dark") +
+  legend_inside(c(0.87, 0.15)) 
 ```
+
+Compared with the data ellipses shown in @fig-peng-ggplot2, the bag polygons have shapes very close to ellipses,
+giving credence to the assumption of (approximate) normality. Using the factor `coef = 2.5` causes five points to be flagged as potential
+outliers. Bivariate skewness is indicated when the bag and fence is not symmetric around the central median in some direction,
+as is slightly true for all three species.
+
+I discuss other visual tests of multivariate normality in @sec-multivar-normality and consider outlier identification
+for the Penguin data in @sec-multnorm-penguin below.
+\ix{outliers}
+
+\ixoff{bagplot}
 
 
 ## Non-parametric bivariate density plots
@@ -1258,8 +1317,7 @@ p1 <- ggplot(peng,
   geom_density_2d(linewidth = 1.1, bins = 8) +
   ggtitle("geom_density_2d") +
   theme_penguins() +
-  theme(legend.position = "inside",
-        legend.position.inside = c(0.85, 0.15))
+  legend_inside(c(0.85, 0.15))
 
 p2 <- ggplot(peng, 
        aes(x = bill_length, y = bill_depth,
@@ -1335,7 +1393,7 @@ important in @sec-eqcov when we want to test the assumption of equality of
 error covariances in multivariate models.
 
 The `ggplot2` code for the panels in this figure are shown below. Note that for components that will be the same across panels, you can define elements
-(e.g., `labels`, `theme_penguins()`, `legend_position`) once, and then re-use
+(e.g., `labels`, `theme_penguins()`) once, and then re-use
 these across several graphs.
 
 **TODO** This panel tabset looks fine in HTML but is awkward in PDF
@@ -1372,10 +1430,6 @@ plt1
 
 ```{r}
 #| eval: false
-legend_position <-
-  theme(legend.position = "inside",
-        legend.position.inside = c(0.83, 0.16))
-
 plt2 <- ggplot(data = peng,
                aes(x = bill_length,
                    y = bill_depth,
@@ -1390,7 +1444,7 @@ plt2 <- ggplot(data = peng,
   ggtitle("By species") +
   labels +
   theme_penguins("dark") +
-  legend_position 
+  legend_inside(c(0.83, 0.16)) 
 
 plt2
 ```
@@ -1420,7 +1474,7 @@ plt3 <- ggplot(data = peng.centered,
   labels +
   ggtitle("Within species") +
   theme_penguins("dark") +
-  legend_position 
+  legend_inside(c(0.83, 0.16)) 
 
 plt3
 ```
@@ -1642,8 +1696,7 @@ ggplot(peng_plot,
   stat_ellipse(geom = "polygon", level = 0.95, alpha = 0.1) +
   theme_penguins() +
 #  theme_bw(base_size = 14) +
-  theme(legend.position = "inside",
-        legend.position.inside=c(0.85, 0.15))
+  legend_inside(c(0.85, 0.15)) 
 ```
 
 Two cases (10, 283) appear to be very unusual in this plot, in relation to other members of their species. But only case 283 is a true multivariate outlier, as shown in the cqplot
