@@ -19,7 +19,7 @@ ANOVA setting to the analogous multivariate (MANOVA) setting. Such tests are a r
 
 Beyond issues of model assumptions, 
 the question of equality of covariance matrices is often of general interest itself. For instance,
-variability is often an important issue in studies of strict equivalence in laboratories comparing across  multiple patient measurements and in other applied contexts [see @Gastwirth-etal:2009 for other exemplars].
+variability is often an important issue in studies of strict equivalence in laboratories comparing results across  multiple patient measurements and in other applied contexts [see @Gastwirth-etal:2009 for other exemplars].
 
 Moreover the outcome of such tests often have important consequences
 for the details of a main method of analysis.  Just as the Welsh $t$-test [@Welch:1947] is now commonly
@@ -33,16 +33,16 @@ I provide some answers to the following questions:
 
 - **Visualization**: How can we visualize differences among group variances and covariance matrices,
   perhaps in a way that is analogous to what is done to visualize differences among group means?
-  As will be illustrated (@sec-viz-boxM), differences among covariance matrices can be comprised of spread in overall size ("scatter") and shape ("orientation"). These can be seen in data space with data ellipses, particularly if the data is centered by shifting all groups to the grand mean.
+  As will be illustrated (@sec-viz-boxM), differences among covariance matrices are comprised of spread in overall _size_ ("scatter") and _shape_ ("orientation"). These can be easily seen in data space with data ellipses, particularly if the data is centered by shifting all groups to the grand mean so they can be directly compared.
   
 - **Low-D views**:  When there are more than a few response variables, what low-dimensional
   views can show the most interesting properties related to the equality of covariance matrices?
   Projecting the data into the space of the principal components serves well again here (@sec-eqcov-low-rank-views). Surprisingly, we will see that the _small dimensions_ contain useful information about differences among the group covariance matrices, similar to what we find for outlier detection.
   
-- **Other statistics**: Box's $\mathcal{M}$-test is most widely used. Are there other worthwhile test statistics? You will see that graphical methods suggest alternatives in @sec-other-measures. Similarly, the univariate
+- **Other statistics**: Box's $\mathcal{M}$-test [@Box:1949] is most widely used. Are there other worthwhile test statistics? You will see that graphical methods suggest alternatives in @sec-other-measures. Similarly, the univariate
 Levene's test has a simple multivariate generalization which can be visualized using HE plots (@sec-multivar-levene).
 
-The following sections provide a capsule summary of the issues in this topic.
+The following sections provide a capsule summary of the issues in this topic following @FriendlySigal:2018:eqcov.
 Most of the discussion is couched in terms of a one-way design for simplicity,
 but the same ideas can apply to two-way (and higher) designs, where a "group" factor
 is defined as the product combination (interaction) of two or more factor
@@ -336,16 +336,17 @@ covEllipses(peng[,3:6], peng$species,
 ```
 
 The covariance ellipses in @fig-peng-covEllipse-pairs look pretty similar in size, shape and orientation.
-But what does Box's $\mathcal{M}$ test (described below) say? As you can see,
-it concludes strongly against the null hypothesis, because the test is highly
-sensitive to small differences among the covariance matrices.
+But what does Box's $\mathcal{M}$ test (described below) say? 
 
 ```{r boxm}
 peng.boxm <- boxM(cbind(bill_length, bill_depth, flipper_length, body_mass) 
-           ~ species, 
-     data=peng) |>
+                  ~ species,  data=peng) |>
   print()
 ```
+
+As you can see,
+it concludes strongly against the null hypothesis, because the test is highly
+sensitive to small differences among the covariance matrices.
 
 \ixoff{peng data}
 \ixoff{datasets|peng}
@@ -378,7 +379,8 @@ covEllipses(iris[,1:4], iris$Species,
 	label.pos=c(1:3,0))
 ```
 
-```{r echo=FALSE}
+`boxM()` gives the following results:
+```{r iris-boxm}
 iris.boxm <- boxM(cbind(Sepal.Length, Sepal.Width, Petal.Length, Petal.Width) 
                   ~ Species, 
                   data=iris) |>
@@ -394,15 +396,16 @@ putting numbers to the visual conslusion from @fig-iris-covEllipse-pairs.
 Take a moment and think, "How could we generalize a test of equality of variances, 
 $s_1^2 = s_2^2 = \cdots = s_g^2$, to the multivariate case, where we have $(p \times p)$ matrices,
 $\mathbf{S}_1 = \mathbf{S}_2 = \cdots = \mathbf{S}_g$ for each of $g$ groups?".
+
 Multivariate thinking suggests that that we calculate some measure of "size" of each $\mathbf{S}_i$,
 in a similar way to what is done in multivariate tests comparing $\mathbf{H}$ and $\mathbf{E}$ matrices.
 
 @Box:1949 proposed the following likelihood-ratio test (LRT) statistic $\mathcal{M}$ for testing the
-hypothesis of equal covariance matrices, using the log of the determinant $\vert \mathbf{S}_i \vert$
+hypothesis of equal covariance matrices. It uses the log of the determinant $\vert \mathbf{S}_i \vert$
 as the measure of size.
 
 $$
-\mathcal{M} = (N -g) \ln \;|\; \mathbf{S}_p \;|\; - \sum_{i=1}^g (n_i -1) \ln \;|\; \mathbf{S}_i \;|\; \; ,
+\mathcal{M} = (N -g) \; \ln \vert \mathbf{S}_p \vert - \sum_{i=1}^g (n_i -1) \; \ln \vert \mathbf{S}_i \vert \; ,
 $$ {#eq-boxm}
 
 where $N = \sum n_i$ is the total sample size and
@@ -425,9 +428,10 @@ Asymptotically, $-2 \ln (\mathcal{M})$ has a $\chi^2$ distribution. The $\chi^2$
 due to Box [-@Box:1949; -@Box:1950] is that
 
 $$
-X^2 = -2 (1-c_1) \ln (\mathcal{M}) \quad \sim \quad \chi^2_{df}
+X^2 = -2 (1-c_1) \; \ln (\mathcal{M}) \quad \sim \quad \chi^2_\text{df}
 $$
-with $df = (g-1) p (p+1)/2$ degrees of freedom, and a bias correction constant:
+with $\text{df} = (g-1) p (p+1)/2$ degrees of freedom. A bias correction constant $c_1$ improves accuracy of the
+approximation:
 
 $$
 c_1 = \left( 
@@ -445,7 +449,8 @@ which response variables show heterogeneity of variance.
 Yet, like its univariate counterparts, Box's test is well-known to be highly sensitive to violation
 of (multivariate) normality and the presence of outliers[^boxm-problems], as @Box:1953 suggested
 in the opening chapter quote.
-Yet, it provides a nice framework for thinking about this problem more generally. ...
+Yet, it provides a nice framework for thinking about this problem more generally and gives rise
+to interesting graphic methods.
 
 [^boxm-problems]: For example, @TikuBalakrishnan:1984
 concluded from simulation studies that the normal-theory LRT provides poor control of Type I
@@ -466,13 +471,16 @@ direct visualization of the information in the $\mathbf{S}_i$ and $\mathbf{S}_p$
 In what follows, I propose three additional visualization-based approaches to questions of heterogeneity of covariance in MANOVA
 designs:
 
-(a) a simple dotplot of the components of Box's $\mathcal{M}$ test: the log determinants of the 
+* a simple **dotplot** (@sec-viz-boxM) of the components of Box's $\mathcal{M}$ test: the log determinants of the 
 $\mathbf{S}_i$ together with that of the pooled $\mathbf{S}_p$. Extensions of these simple plots raise the question of whether measures of heterogeneity other than that captured in Box's test might also be useful; and,
 
-(b) PCA low-rank views to highlight features more easily seen there than in the full data space.
+* PCA **low-rank views** (@sec-eqcov-low-rank-views) to highlight features more easily seen there than in the full data space.
 
-(c) the connection between Levene-type tests and an ANOVA (of centered absolute differences) suggests a parallel with a multivariate extension of Levene-type tests and a MANOVA.  We explore this with a version of
-Hypothesis-Error (HE) plots we have found useful for visualizing mean differences in MANOVA designs.
+* The analogy with the four types of multivariate test statistics (@sec-multivar-tests) suggests other measures
+that could be used to compare the $\mathbf{S}_i$ with $\mathbf{S}_p$ (@sec-other-measures).
+
+* the connection between Levene-type tests and an ANOVA (of centered absolute differences) suggests a parallel with a multivariate extension of Levene-type tests and a MANOVA (@sec-multivar-levene).  We explore this with a version of
+Hypothesis-Error (HE) plots that we found useful for visualizing mean differences in MANOVA designs.
 
 These methods are described and illustrated in @FriendlySigal:2018:eqcov.
 
@@ -506,7 +514,7 @@ From @fig-iris-covEllipse-pairs,
 it is clear that _setosa_ shows the smallest within-group variability.
 The numeric scale values on the horizontal axis give a sense that the range across groups is
 considerably greater for the iris data than for the Penguins.
-Some other generalizations of Box's test using other measures are illustrated
+Some generalizations of Box's test using other measures are illustrated
 in @sec-other-measures.
 
 <!--
@@ -552,7 +560,7 @@ summary(iris.pca)
 @fig-iris-pca-covellipses shows the plots of the covariance ellipsoids for the first two principal component scores,
 uncentered (left panel) and centered (right panel). The dominant PC1 (73\% of total variance)
 essentially orders the species by a measure of overall size of their sepals and petals.
-In the centered view, it can again be seen how _Setosa_ differs in
+In the centered view at the right, it can again be seen how _Setosa_ differs in
 covariance from the other two species, and that while _Virginca_ and _Versicolor_ both have similar
 shapes to the pooled covariance matrix, _Versicolor_ has somewhat greater variance on PC1.
 
@@ -561,16 +569,16 @@ shapes to the pooled covariance matrix, _Versicolor_ has somewhat greater varian
 #| fig-height: 6
 #| fig-width: 12
 #| out-width: "100%"
-#| fig-cap: "Covariance ellipsoids for the first two principal components of the iris data. Left (a): uncentered, showing group means on the principal components; right (b): centered at the origin."
+#| fig-cap: "Covariance ellipsoids for the first two principal components of the iris data. Left (a): uncentered, showing group means on the principal components; right (b): centered at the origin, making size and shape comparison easier."
 op <- par(mfcol=c(1,2), mar=c(5,4,1,1)+.1)
-source(here::here("R/util/text.usr.R"))
+source(here::here("R/util/text.usr.R"))    # text in user coords
 
 covEllipses(iris.pca$x, iris$Species, 
   col = c(iris.colors, "black"),                # uncentered
 	fill=TRUE, fill.alpha=.1,
   cex.lab = 1.5,
 	label.pos = c(1, 3, 3, 0), asp=1)
-text.usr(0.05, 0.95, "(a) Uncentered", pos = 4)
+text.usr(0.05, 0.95, "(a) Uncentered", pos = 4, cex = 1.5)
 
 covEllipses(iris.pca$x, iris$Species,
   center=TRUE,                                  # centered
@@ -578,7 +586,7 @@ covEllipses(iris.pca$x, iris$Species,
   fill=TRUE, fill.alpha=.1,
   cex.lab = 1.5,
   label.pos = c(1, 3, 3, 0), asp=1)
-text.usr(0.95, 0.95, "(b) Centered", pos = 2)
+text.usr(0.95, 0.95, "(b) Centered", pos = 2, cex = 1.5)
 ```
 
 ### Small dimensions can matter
@@ -615,7 +623,7 @@ other two groups.
 
 ## Other measures of heterogeneity {#sec-other-measures}
 
-As we saw above @sec-homogeneity-MANOVA, the question of equality of covariance matrices
+As we saw above (@sec-homogeneity-MANOVA), the question of equality of covariance matrices
 can be expressed in terms of the similarity in size and shape of the data ellipses
 for the individual group $\mathbf{S}_i$ relative to that of $\mathbf{S}_p$.
 Box's $\mathcal{M}$ test uses just one possible function to describe this size: the logs of their determinants.
@@ -626,7 +634,7 @@ the properties shown in @tbl-eigval-ellipse represent methods of describing the 
 Just as is the case for tests of the MLM itself
 where different functions of these give
 test statistics (Wilks' $\Lambda$, Pillai trace, etc.), one could construct
-other test statistics for homogeneity of covariance matrices.
+other test statistics for homogeneity of covariance matrices as shown in @tbl-eigval-ellipse.
 
 [^geom-ellipsoids]: More general theory and statistical applications of the geometry of ellispoids is given by
 @Friendly-etal:ellipses:2013.
@@ -649,8 +657,8 @@ Statistical and geometrical properties of "size" of an ellipsoid
 Hence, for a sample covariance matrix $\mathbf{S}$, $\vert \mathbf{S} \vert$ is a measure of generalized variance and
 $\ln \vert \mathbf{S} \vert$ is a measure of average variance across the $p$ dimensions.
 
-The `"boxM"` plot methods in `r `\pkg{"heplots"}` can compute and plot all of the functions of the eigenvalues 
-in @tbl-eigval-ellipse.  The results are shown in @fig-peng-boxm-plots.
+The  plot methods in for `"boxM"` objects in `r pkg("heplots")` can compute and plot all of the functions of the eigenvalues 
+in @tbl-eigval-ellipse.  The results for the Penguin data are shown in @fig-peng-boxm-plots.
 
 ```{r echo=-1}
 #| label: fig-peng-boxm-plots
@@ -658,7 +666,7 @@ in @tbl-eigval-ellipse.  The results are shown in @fig-peng-boxm-plots.
 #| fig-height: 5
 #| fig-width: 6
 #| out-width: "100%"
-#| fig-cap: "Plot of eigenvalue statistics of the covariance matrices for the Penguin data"
+#| fig-cap: "Plot of eigenvalue statistics of the covariance matrices for the Penguin data."
 op <- par(mfrow=c(2,2), mar=c(5,4,1,1), cex.lab = 1.5)
 plot(peng.boxm, which="product",   gplabel="species")
 plot(peng.boxm, which="sum",       gplabel="species")
@@ -668,10 +676,12 @@ plot(peng.boxm, which="max",       gplabel="species")
 
 Except for the absence of error bars, the plot for log product in the upper left panel of
 @fig-peng-boxm-plots is the same as that in @fig-peng-iris-boxm-plots, but with the sign reversed.
-In principle, it is possible to add such confidence intervals for all these measures through the use of bootstrapping, but this has not yet been implemented in the `r package("heplots")`
+In principle, it is possible to add such confidence intervals for all these measures through the use of bootstrapping, but this has not yet been implemented in the `r package("heplots")`.
 
 For this data set, the pattern of points in the plot for Box's $\mathcal{M}$ is also more or less the same 
-as that for the precision measure. The plots for the sum of and maximum eigenvalue are also similar to each other, but differ from those of the two measures in the left column of @fig-peng-boxm-plots. The main point is that these are not _all the same_, so different functions reflect different patterns of the eigenvalues, and could be used to define new statistical tests, perhaps with greater power or sensitivity to outliers.
+as that for the precision measure. The plots for the sum of and maximum eigenvalue are also similar to each other, but differ from those of the two measures in the left column of @fig-peng-boxm-plots. 
+
+The main point is that these are not _all the same_, so different functions reflect different patterns of the eigenvalues, and could be used to define new statistical tests, perhaps with greater power or sensitivity to outliers.
 
 ## Multivariate analog of Levine's test {#sec-multivar-levene}
 
@@ -730,8 +740,8 @@ irisdev.can <- candisc(irisdev.mod) |>
   print()
 ```
 
-Plotting the first canonical dimension gives boxplots for the scores and vectors for the weights of the
-iris variables. 
+Plotting the first canonical dimension in @fig-iris-dev-can gives a 1D summary, using
+boxplots for the scores and vectors for the weights of the iris variables. 
 
 ```{r echo=-1}
 #| label: fig-iris-dev-can
