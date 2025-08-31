@@ -6,6 +6,7 @@ library(ggplot2)
 library(car)
 library(mvinfluence)
 library(patchwork)
+library(heplots)
 
 Toy <- tibble(
    case = 1:9,
@@ -179,3 +180,8 @@ Toy.rlm <- robmlm(cbind(y1, y2) ~ x, data = Toy)
 plot(Toy.rlm)
 
 mlm.influence(Toy.rlm)
+
+# try distPlot
+
+distancePlot(Toy.mlm)
+

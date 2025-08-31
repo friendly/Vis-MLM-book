@@ -15,19 +15,33 @@ This chapter may be moved from the printed PDF copy to an online Appendix.
 
 
 In the analysis of linear models, the identification and treatment of outliers and
-influential observations represents one of the most critical yet challenging
+influential observations represents one of the most critical, yet challenging,
 aspects of statistical modeling. As you saw earlier (@sec-leverage), even a single "bad"
 observation can completely alter the results of a linear model fit by ordinary
-least squares.
+least squares. In the analysis of the dataset `heplots::schooldata` (@sec-multivar-infl),
+we found a collection of cases that exerted undue influence on the fitted model
+and its' interpretation. In this chapter, I extend the earlier discussion of multivariate
+influence and introduce some methods of robust estimation to deal with unruly observations.
+
 
 Univariate influence diagnostics have
 been well-established since the pioneering work of @Cook:77 and others
-(@Belsley-etal:80; @CookWeisberg:82) and their wide implementation in R packages
-such as `r pkg("stats")` and `r pkg("car")` makes these readily accessible
-in statistical practice. If you seek statistical advice regarding a
-perplexing model, the consultant may well ask:
+(@Belsley-etal:80; @CookWeisberg:82). Their wide implementation in R packages
+such as `r pkg("stats")` and `r pkg("car")`[^other-infl-pkgs] makes these readily accessible
+in statistical practice. 
+
+Thus, if you seek statistical advice regarding a
+perplexing model, one that defies interpretation or has inconsistencies,
+your consultant may very well ask you:
 
 > Did you make any influence or other diagnostic plots?
+
+[^other-infl-pkgs]: Among other packages providing influence diagnostic plots for univariate response models,
+`r pkg("olsrr", cite=TRUE)` provides a wide variety of measures. However, the graphic methods for these
+are mostly limited to simple index plots of the measure against case number.
+For _hierarchical_ linear models, where observations are not independent, but are clustered within larger
+groups,
+the `r pkg("HLMdiag", cite=TRUE)` provides functions like `hlm_influence()` and `hlm_augment()` to generate influence diagnostics and combine them with residuals.
 
 However, the
 extension to multivariate response models introduces additional complexity that
@@ -46,10 +60,12 @@ Detecting outliers and influential observations
 has now progressed to the point where the methods described below (@sec-multivariate-influence) can usefully
 be applied to multivariate linear models. 
 
-But having found some troublesome cases, the question arises, what to do about them? We are generally
+Having found some troublesome cases, the question arises: what should you do about them? We are generally
 reluctant to simply ignore them, unless there is evidence of a gross data error (as in the `Davis` data, @sec-davis).
 Instead, a large class of **robust** methods, which reduce the impact of outliers on the analysis,
-have been developed. These are described in @sec-robust-estimation below.
+have been developed. These are described for multivariate models in @sec-robust-estimation below.
+The [CRAN Task View on Robust Estimation](https://CRAN.R-project.org/view=Robust) provides a comprehensive
+overview of R packages for robust estimation.
 
 **Packages**
 
@@ -68,12 +84,12 @@ library(patchwork)
 ## Multivariate influence {#sec-multivariate-influence}
 
 An elegant extension of the ideas behind leverage, studentized residuals and measures of
-influence to the case of multivariate response data is due to @BarrettLing:92
-(see also: @Barrett:2003). These methods have been implemented in the `r package("mvinfluence", cite=TRUE)`
+influence to the case of multivariate response data is due to @BarrettLing:92, and illustrated
+in @Barrett:2003. These methods have been implemented in the `r package("mvinfluence", cite=TRUE)`
 which makes available several forms of influence plots to visualize the results.
 
-As in the univariate case, the measures of multivariate influence stem from case-deletion idea
-of comparing some statistic calculated from the full sample to that statistic calculated when
+As in the univariate case, the measures of multivariate influence stem from the _case-deletion_ idea:
+comparing some statistic calculated from the _full sample_ to that statistic calculated when
 case $i$ is deleted. The Barrett-Ling approach generalized this to the case of deleting a set $I$ of
 $m \ge 1$ cases. This can be useful because some cases can "mask" the influence of others
 in the sense that when one is deleted, others become much more influential. However, in most
@@ -81,7 +97,8 @@ cases the default of deleting individual observations ($m=1$) is sufficient.
 
 ### Notation
 
-It is useful to define some notation used to designate terms in the model calculated from the _complete_ dataset
+To explain the extension of influence diagnostics to the multivariate case,
+it is useful to define some notation used to designate terms in the model calculated from the _complete_ dataset
 versus those calculated with one or more observations _excluded_.
 As before, let $\mathbf{X}$ be the model matrix in the multivariate linear model, 
 $\mathbf{Y}_{n \times p} = \mathbf{X}_{n \times q} \; \mathbf{B}_{q \times p} + \mathbf{E}_{n \times p}$.
@@ -117,7 +134,9 @@ defined as follows:
       $\mathbf{Q} = \mathbf{E} (\mathbf{E}^\top \mathbf{E})^{-1} \mathbf{E}^\top$, with corresponding submatrix
       $\mathbf{Q}_I = \mathbf{E} \, (\mathbf{E}_I^\top \mathbf{E}_I)^{-1} \, \mathbf{E}^\top$,
 
-   
+Based on these quantitites,  Barrett and Ling [-@BarrettLing:92] defined multivariate analogs of
+nearly all univariate measures suggested in the literature. I only consider their Cook's D measure here.
+
 ### Cook's distance
  
 Multivariate analogs of all the usual influence diagnostics (Cook's D, CovRatio, ...) can be defined in terms of
@@ -133,11 +152,11 @@ $\mathbf{b}_{(-I)}$
 obtained when the cases in $I$ are deleted.  
 
 In the multivariate case, Cook's distance is obtained
-by replacing the vector of coefficients $\mathbf{b}$ by $\mathrm{vec} (\mathbf{B})$, the result of stringing out
+by replacing the vector of coefficients $\mathbf{b}$ by $\mathrm{vec} (\mathbf{B})$, which is the result of stringing out
 the coefficients for all responses in a single $(n \times p)$-length vector.
 
 $$
-D_I = \frac{1}{p} [\mathrm{vec} (\mathbf{B} - \mathbf{B}_{(-I)})]^T (S^{-1} \otimes \mathbf{X}^T \mathbf{X}) \mathrm{vec} (\mathbf{B} - \mathbf{B}_{(-I)})  \; ,
+D_I = \frac{1}{p} \; [\mathrm{vec} (\mathbf{B} - \mathbf{B}_{(-I)})]^T \; (S^{-1} \otimes \mathbf{X}^T \mathbf{X}) \; \mathrm{vec} (\mathbf{B} - \mathbf{B}_{(-I)})  \; ,
 $$
 where $\otimes$ is the Kronecker (direct) product and
 $\mathbf{S} = \mathbf{E}^T \mathbf{E} / (n-p)$ is the covariance matrix of the residuals.
@@ -146,22 +165,23 @@ $\mathbf{S} = \mathbf{E}^T \mathbf{E} / (n-p)$ is the covariance matrix of the r
 ### Leverage and residual components
 
 We gain further insight by considering how far we can generalize from the case for a
-univariate response. When $m = 1$, Cook's distance can be re-written as a product of leverage and residual components as
+univariate response. For single-case deletions ($m = 1$), Cook's distance can be re-written as a product of leverage and residual components as:
 
 $$
 D_i = \left(\frac{n-p}{p} \right) \frac{h_{ii} q_{ii}}{(1 - h_{ii})^2  } \;.
 $$
 
-This suggests that we define a _leverage component_ $L_i$ and _residual component_ $R_i$ as
+This suggests that we can factor that to define a _leverage component_ $L_i$ and _residual component_ $R_i$ as the product of two terms,
 
 $$
 L_i = \frac{h_{ii}}{1 - h_{ii}} \quad\quad R_i = \frac{q_{ii}}{1 - h_{ii}} \;.
 $$
 
-$R_i$ is the studentized residual here, and $D_i \propto L_i \times R_i$.
+$R_i$ is the studentized residual here. Thus $D_i \propto L_i \times R_i$. This idea is used to 
+define a new version of influence plot, as illustrated in the following (@#sec-cookd-multivar).
 
 In the general, multivariate case there are analogous matrix expressions for $\mathbf{L}$ and $\mathbf{R}$.
-When `m > 1`, the quantities $\mathbf{H}_I$, $\mathbf{Q}_I$, $\mathbf{L}_I$, and
+When $m > 1$, the quantities $\mathbf{H}_I$, $\mathbf{Q}_I$, $\mathbf{L}_I$, and
 $\mathbf{R}_I$ are $m \times m$ matrices.  Where scalar quantities are needed, the `r pkg("mvinfluence")`
 functions apply
 a function, `FUN`, either `det()` or `tr()` to calculate a measure of "size". This is done as:
@@ -179,7 +199,7 @@ can be calculated.
 
 ## The Misterious Case 9
 
-To illustrate these ides, this example, from @Barrett:2003, considers the simplest case, of one predictor (`x`) and
+To illustrate these ideas, this toy example, from @Barrett:2003, considers the simplest case, of one predictor (`x`) and
 two response variables, `y1` and `y2`.
 
 ```{r toy-data}
@@ -194,7 +214,9 @@ Toy <- tibble(
 A quick peek (@fig-toy-scatmat) at the data indicates that `y1` and `y2` are nearly perfectly correlated with each other.
 Both of these are also strongly linear with `x` and there is one extreme point (case 9). The data is pecuiliar,
 but looking at these pairwise plots doesn't suggest that anything is terribly wrong. 
-In the plots of `y1` and `y2` agains `x`, case 9 simply looks like a good leverage point (@sec-leverage).
+In the plots of `y1` and `y2` against `x`, case 9 simply looks like a good leverage point (@sec-leverage).
+
+<!-- fig-code: R/mvinfluence-Toy.R -->
 
 ```{r}
 #| label: fig-toy-scatmat
@@ -218,7 +240,7 @@ Toy.lm2 <- lm(y2 ~ x, data=Toy)
 Toy.mlm <- lm(cbind(y1, y2) ~ x, data=Toy)
 ```
 
-### Cook's D
+### Cook's D {#sec-cookd-multivar}
 
 First, let's examine the Cook's D statistics for the models. Note that the function `cooks.distance()`
 invokes `stats::cooks.distance.lm()` for the univariate response models, but
@@ -233,7 +255,7 @@ df$D12 <- cooks.distance(Toy.mlm)
 df
 ```
 
-The only thing remarkable here is for case 9:  The univariate Cook's Ds, `D1` and `D2` are very small,
+The only thing remarkable here is for case 9:  The univariate Cook's $D$s, `D1` and `D2`, are very small,
 yet the multivariate statistic, `D12=3.22` is over 10 times the next largest value.
 
 
@@ -291,11 +313,12 @@ If only this was easy, but sometimes, all three roles appear within a given pers
 :::
 
 The general formulation of @Barrett:2003 suggests
-an alternative form of the multivariate influence plot (@fig-toy-inflplot-mlm-LR) that uses the leverage (`L`) and residual (`R`) components (`type = "LR"`) directly.
+an alternative form of the multivariate influence plot (@fig-toy-inflplot-mlm-LR) that uses the leverage (`L`) and residual (`R`) components directly, specified as `type = "LR"`. 
 
 Because influence is the product of leverage and residual, a plot of $\log(L)$ versus $\log(R)$ has the attractive property
 that contours of constant Cook's distance fall on diagonal lines with slope = -1. 
-Adjacent reference lines represent constant _multiples_ of influence.
+Adjacent reference lines represent constant _multiples_ of influence. Further from the origin implies greater influence,
+as opposed to other forms, where conventional cutoffs are used to show regions of high influence.
 
 ```{r echo=-1}
 #| label: fig-toy-inflplot-mlm-LR

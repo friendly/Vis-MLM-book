@@ -331,7 +331,9 @@ dataset <- function(name, package=NULL) {
   "vegan",
   "glmnet",
   "penalized",
-  "adegraphics")
+  "adegraphics",
+  "olsrr",
+  "HLMdiag")
 
 # write list of packages used at end of every chapter
 # NB: use results: "none" to hide the output
