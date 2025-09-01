@@ -8,5 +8,16 @@ library(bullseye)
 
 #The pairwise structure has multiple association scores when each (x,y) pair appears multiple times in the pairwise structure.
 
-scores <- pairwise_scores(peng, by="species")
+scores <- pairwise_scores(peng, 
+                          pair_control(nn = "pair_cor"),
+                          by="species")
 plot(scores) 
+
+# doesn't work
+pdata <- peng |>
+  dplyr::select(-island, -year)
+scores <- pairwise_scores(pdata, 
+                          pair_control(nn = "pair_cor"),
+                          by="species")
+plot(scores) 
+

@@ -79,3 +79,5 @@ plot(NC.rlm,
      segments = TRUE,
      id.weight = 0.5)
 
+ctr <- split(seq(nrow(NeuroCog)), NeuroCog$Dx) |> lapply(mean)
+axis(side = 3, at=ctr, labels = names(ctr), cex.axis=1.2)

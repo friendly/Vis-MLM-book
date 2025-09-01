@@ -14,6 +14,11 @@ This chapter presents some complete analyses of datasets that will be prominent 
 Some of this material may later be moved to earlier chapters.
 -->
 
+::: {.callout-note}
+This chapter may be moved from the printed PDF copy to an online Appendix.
+:::
+
+
 For ease of exposition, the chapters in Part IV of this book used small examples to illustrate
 the statistical and visualization aspects of the techniques as they were described.
 Here I present more complete analyses of a few datasets to illustrate ...
@@ -82,9 +87,8 @@ contrasts(NeuroCog$Dx)
 ```
 
 
-In this analysis, I ignore the `SocialCog` variable because aspects of social cognition provide other
-analyses discussed below (@sec-social-cog).
-The primary focus is on the
+In this analysis, I ignore the `SocialCog` variable because aspects of social cognition were measured more extensively in a separate dataset discussed below (@sec-social-cog).
+The primary focus here is on the
 the cognitive and perceptual variables `Attention : ProbSolv`.
 
 ### A first look
@@ -136,9 +140,9 @@ We can see that the control participants score higher on all measures, but there
 pattern of medians for the two patient groups. But these univariate summaries do not inform
 about the relations among variables.
 
-### Bivariate views
+## Bivariate views
 
-#### Corrgram {.unnumbered}
+### Corrgram {.unnumbered}
 
 <!--
 A corrgram [@Friendly:02:corrgram] provides a useful reconnaissance plot of the bivariate correlations in the dataset. It suppresses details, and allows focus on the overall pattern.
@@ -176,7 +180,7 @@ more widely separated.  The diagonal panels show that most variables are reasona
 symmetric in their distributions. `Age`, not included in this analysis is negatively
 correlated with the others: older participants tend to do less well on these tests.
 
-#### Scatterplot matrix {.unnumbered}
+### Scatterplot matrix {.unnumbered}
 
 A scatterplot matrix gives a more detailed overview of all pairwise relations.
 The plot below suppresses the data points and summarizes the relation using
@@ -191,6 +195,9 @@ giving a separate data ellipse and regression line for each group.
 
 <!-- #| fig-cap: !expr paste("Scatterplot matrix of the `NeuroCog` data. Points are suppressed here, focusing on the data ellipses and regression lines. Colors for the groups:", colorize("Schizophrenic", "red"), colorize("SchizoAffective", "green"), colorize("Control", "blue"))
 #| fig-cap: "Scatterplot matrix of the `NeuroCog` data. Points are suppressed here, focusing on the data ellipses and regression lines. Colors for the groups: Schizophrenic (red),  SchizoAffective (green), Control (blue)."
+
+#| fig-cap: !expr paste0("Scatterplot matrix of the `NeuroCog` data. Points are suppressed here, focusing on the data ellipses and regression lines. Colors for the groups: ", colorize("Schizophrenic", "red"), ", ", colorize("SchizoAffective", "green"), ", ", colorize("Control", "blue"))
+
 -->
 
 ```{r}
@@ -209,12 +216,13 @@ scatterplotMatrix(~ Speed + Attention + Memory + Verbal + Visual + ProbSolv | Dx
                   ellipse=list(levels=0.68))
 ```
 
-In @fig-NC-scatmat, we can see that the regression lines have similar slopes and similar data ellipses
+In @fig-NC-scatmat, you can see that the regression lines have similar slopes and similar data ellipses
 for the groups, though with a few exceptions. You can also see that the `r colorize("Normal", "blue")` 
 group has higher means on all the variables and that the `r colorize("Schizophrenic", "red")` and 
 `r colorize("SchizoAffective", "green")`  don't seem to differ very much.
 
-#### Biplot {.unnumbered}
+### Biplot {.unnumbered}
+
 While still in exploratory mode, we can gain greater insight with our trusty multivariate juicer,
 the biplot (@sec-biplot). A PCA of the cognitive variables shows that nearly 80% of the total
 variance is accounted for by two dimensions, of which the first dimension accounts for
@@ -272,8 +280,8 @@ The contrast `Dx1` for control vs. the diagnosed groups is highly significant,
 print(linearHypothesis(NC.mlm, "Dx1"), SSP=FALSE)
 ```
 
-but the second
-contrast, `Dx2`, comparing the schizophrenic and schizoaffective group, is not.
+However, the second
+contrast, `Dx2`, comparing the schizophrenic and schizoaffective group, shows no difference in the collection of response means.
 
 ```{r NC-linhyp2}
 # Schizo vs SchizAff
@@ -300,7 +308,7 @@ The result (@fig-NC-HEplot) tells a very simple story:
 The control group performs higher on higher measures than the diagnosed groups, which do
 not differ between themselves. 
 
-(For technical reasons, to abbreviate the group labels in the plot, we need to `update()` the MLM model after the labels are reassigned.)
+(Because `heplot()` gets the levels of factors from the model object, in order to abbreviate the group labels in the plot, you need to `update()` the MLM model after the labels are reassigned.)
 
 ```{r}
 # abbreviate levels for plots
@@ -312,19 +320,20 @@ NC.mlm <- update(NC.mlm)
 Then, feed the model to `heplot()` for a plot of the first two response variables, `Speed` and `Attention`.
 ```{r echo = -1}
 #| label: fig-NC-HEplot
+#| fig-width: 6
+#| fig-height: 6
 #| fig-align: center
 #| out-width: "70%"
-#| fig-cap: "HE plot of Speed and Attention in the MLM for the `NeuroCog` data. The labeled points show the means of the groups on the two variables. The blue H ellipse for groups indicates the strong positive correlation of the group means."
+#| fig-cap: "HE plot of Speed and Attention in the MLM for the `NeuroCog` data. The labeled points show the means of the groups on the two variables. The blue $\\mathbf{H}$ ellipse for groups indicates the strong positive correlation of the group means."
 #| fig-show: hold
 op <- par(mar=c(5,4,1,1)+.1)
 heplot(NC.mlm, 
        fill=TRUE, fill.alpha=0.1,
-       cex.lab=1.3, cex=1.25)
-par(op)
+       cex.lab=1.5, cex=1.35)
 ```
 
 This pattern, of the control group higher than the others, is consistent across all of the response variables,
-as we see from a plot of `pairs(NC.mlm)`:
+as we see from a plot of `pairs(NC.mlm)` in @fig-NC-HE-pairs.
 
 ```{r}
 #| label: fig-NC-HE-pairs
@@ -339,7 +348,10 @@ pairs(NC.mlm,
       var.cex=2)
 ```
 
-It signals that we are likely to see a simpler representation of the data in canonical space.
+The group means are nearly perfectly correlated in all panels.
+This signals that we are likely to see a very simple representation of the data in canonical space.
+Note that this differs from the biplot view (@fig-neuro-biplot) in that biplot ignores the
+`Dx` factor in the PCA, even though we represent it in the plot.
 
 
 ### Canonical space
@@ -390,11 +402,13 @@ This analysis gives a very simple description of the data, in relation to the re
 
 * On the basis of these neurocognitive tests, the schizophrenic and schizoaffective groups do not differ significantly overall, but these groups differ greatly from the normal controls.
 
-* All cognitive domains distinguish the groups in the same direction, with the greatest differences shown for the variables most closely aligned with the horizontal axis in @fig-NC-candisc.
+* All cognitive domains distinguish the groups in the same direction, with the greatest differences shown for the variables most closely aligned with the horizontal axis in @fig-NC-candisc. This means that these neuro-psychological
+measures can be considered to tap a single dimension of differences among the three diagnostic groups.
 
 ## Social cognitive measures {#sec-social-cog}
 
-The social cognitive measures were designed to tap various aspects of the perception and cognitive
+The social cognitive measures in the @Hartman:2016 study
+were designed to tap various aspects of the perception and cognitive
 processing of emotions of others.  Emotion perception was assessed using a Managing Emotions
 score from the MCCB.  A "theory of mind" (`ToM`) score assessed ability to read the emotions of
 others from photographs of the eye region of male and female faces. Two other measures,

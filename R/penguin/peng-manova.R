@@ -149,6 +149,8 @@ peng.rlm2 <- robmlm(cbind(bill_length, bill_depth, flipper_length, body_mass) ~
 
 col = peng.colors("dark")[peng$species]
 plot(peng.rlm1, 
+     groups = peng$species,
+     group.axis = TRUE,
      segments = TRUE,
      id.weight = 0.6,
      col = col,
