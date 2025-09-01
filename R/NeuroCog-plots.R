@@ -42,12 +42,13 @@ ggplot(NC_long, aes(x=Dx, y=value, fill=Dx)) +
 
 
 #' scatmat
+col <- c("red", "darkgreen", "blue")
 scatterplotMatrix(~ Speed + Attention + Memory + Verbal + Visual + ProbSolv | Dx,
                   data=NeuroCog,
                   plot.points = FALSE,
                   smooth = FALSE,
                   legend = FALSE,
-                  col = scales::hue_pal()(3),
+                  col = col,
                   ellipse=list(levels=0.68))
 
 

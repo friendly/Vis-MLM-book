@@ -9,8 +9,14 @@ knitr::opts_chunk$set(fig.path = "figs/case-studies/")
 
 # Case Studies
 
+<!--
 This chapter presents some complete analyses of datasets that will be prominent in the book.
 Some of this material may later be moved to earlier chapters.
+-->
+
+For ease of exposition, the chapters in Part IV of this book used small examples to illustrate
+the statistical and visualization aspects of the techniques as they were described.
+Here I present more complete analyses of a few datasets to illustrate ...
 
 **Packages**
 
@@ -26,7 +32,7 @@ library(corrgram)
 library(ggbiplot)
 ```
 
-<!-- was: {r child="child/neuro.qmd"} ->
+<!-- was: {r child="child/neuro.qmd"} -->
 
 ## Neuro- and Social-cognitive measures in psychiatric groups
 
@@ -60,11 +66,11 @@ Apart from the research interest, it could aid diagnosis and treatment if these 
 ### Data
 
 The clinical sample comprised 116 male and female patients who met the following criteria: 1) a diagnosis of schizophrenia ($n$ = 70) or schizoaffective disorder ($n$ = 46) confirmed by the Structured Clinical Interview for DSM-IV-TR Axis I Disorders; 2) were outpatients; 3) a history free of developmental or learning disability; 4) age 18-65; 5) a history free of neurological or endocrine disorder; and 6) no concurrent diagnosis of substance use disorder.
-Non-psychiatric control participants ($n$ = 146) were screened for medical and psychiatric illness and history of substance abuse and were recruited from three outpatient clinics.
+Non-psychiatric control participants ($n$ = 146) were screened for medical and psychiatric illness and history of substance abuse and were recruited from three outpatient clinics. The dataset is `heplots::NeuroCog`.
 
 ```{r NC-data}
 data(NeuroCog, package="heplots")
-glimpse(NeuroCog)
+str(NeuroCog)
 ```
 
 The diagnostic classification variable is called `Dx` in the dataset. To facilitate answering questions regarding group differences, the following contrasts were applied:
@@ -76,7 +82,9 @@ contrasts(NeuroCog$Dx)
 ```
 
 
-In this analysis, we ignore the `SocialCog` variable. The primary focus is on
+In this analysis, I ignore the `SocialCog` variable because aspects of social cognition provide other
+analyses discussed below (@sec-social-cog).
+The primary focus is on the
 the cognitive and perceptual variables `Attention : ProbSolv`.
 
 ### A first look
@@ -132,7 +140,8 @@ about the relations among variables.
 
 #### Corrgram {.unnumbered}
 
-A corrgram [@Friendly:02:corrgram] provides a useful reconnaisance plot of the bivariate correlations in the dataset. It suppresses details, and allows focus on the overall pattern.
+<!--
+A corrgram [@Friendly:02:corrgram] provides a useful reconnaissance plot of the bivariate correlations in the dataset. It suppresses details, and allows focus on the overall pattern.
 The `corrgram::corrgram()` function has the ability to enhance perception by
 permuting the variables in the order of their variable vectors in a biplot, so more highly correlated variables are adjacent in the plot, and example of _effect ordering_ for
 data displays [@FriendlyKwan:03:effect].
@@ -140,15 +149,23 @@ data displays [@FriendlyKwan:03:effect].
 The plot below includes all variables except for `Dx` group.
 There are a number of `panel.*` functions for choosing how the correlation for each pair is
 rendered.
+-->
+
+With this many variables, it is useful to view the correlations among them in a corrgram (@sec-corrgram),
+giving a high-level reconnaissance.
+As noted earlier, the `corrgram::corrgram()` function can enhance perception by
+permuting the variables in the order of their variable vectors in a biplot, so more highly correlated variables are adjacent in the plot, an example of _effect ordering_ for
+data displays [@FriendlyKwan:03:effect].
+
 
 ```{r}
 #| label: fig-NC-corrgram
 #| fig-align: center
 #| fig-asp: 1
 #| out-width: "90%"
-#| fig-cap: "corrgram of the `NeuroCog` data. The upper and lower triangles use two different ways of encoding the value of the correlation for each pair of variables."
+#| fig-cap: "Corrgram of the `NeuroCog` data. The upper and lower triangles use two different ways of encoding the value of the correlation for each pair of variables."
 NeuroCog |>
-  select(-Dx) |>
+  select(-Dx, -SocialCog) |>
   corrgram(order = TRUE,
            diag.panel = panel.density,
            upper.panel = panel.pie)
@@ -167,12 +184,13 @@ data ellipses and regression lines.
 The model syntax, `~ Speed + ... |Dx`, treats `Dx` as a conditioning variable
 (similar to the use of the `color` aestheic in `ggplot2`)
 giving a separate data ellipse and regression line for each group.
-(The legend is suppressed here. The groups are 
+(The legend is suppressed here. The groups are: 
 `r colorize("Schizophrenic", "red")`,
 `r colorize("SchizoAffective", "green")`,
 `r colorize("Normal", "blue")`.)
 
-<!-- #| fig-cap: "Scatterplot matrix of the `NeuroCog` data. Points are suppressed here, focusing on the data ellipses and regression lines. Colors for the groups: `r colorize("Schizophrenic", "red")` (red),  `r colorize("SchizoAffective", "green")` (green), `r colorize("Control", "blue")` (blue)." 
+<!-- #| fig-cap: !expr paste("Scatterplot matrix of the `NeuroCog` data. Points are suppressed here, focusing on the data ellipses and regression lines. Colors for the groups:", colorize("Schizophrenic", "red"), colorize("SchizoAffective", "green"), colorize("Control", "blue"))
+#| fig-cap: "Scatterplot matrix of the `NeuroCog` data. Points are suppressed here, focusing on the data ellipses and regression lines. Colors for the groups: Schizophrenic (red),  SchizoAffective (green), Control (blue)."
 -->
 
 ```{r}
@@ -180,17 +198,18 @@ giving a separate data ellipse and regression line for each group.
 #| fig-align: center
 #| fig-asp: 1
 #| out-width: "100%"
-#| fig-cap: "Scatterplot matrix of the `NeuroCog` data. Points are suppressed here, focusing on the data ellipses and regression lines. Colors for the groups: Schizophrenic (red),  SchizoAffective (green), Control (blue)."
+#| fig-cap: !expr paste("Scatterplot matrix of the `NeuroCog` data. Points are suppressed here, focusing on the data ellipses and regression lines. Colors for the groups:", colorize("Schizophrenic", "red"), colorize("SchizoAffective", "green"), colorize("Control", "blue"))
+col <- c("red", "darkgreen", "blue")
 scatterplotMatrix(~ Speed + Attention + Memory + Verbal + Visual + ProbSolv | Dx,
-  data=NeuroCog,
-  plot.points = FALSE,
-  smooth = FALSE,
-  legend = FALSE,
-  col = scales::hue_pal()(3),
-  ellipse=list(levels=0.68))
+                  data=NeuroCog,
+                  plot.points = FALSE,
+                  smooth = FALSE,
+                  legend = FALSE,
+                  col = col,
+                  ellipse=list(levels=0.68))
 ```
 
-In this figure, we can see that the regression lines have similar slopes and similar data ellipses
+In @fig-NC-scatmat, we can see that the regression lines have similar slopes and similar data ellipses
 for the groups, though with a few exceptions. You can also see that the `r colorize("Normal", "blue")` 
 group has higher means on all the variables and that the `r colorize("Schizophrenic", "red")` and 
 `r colorize("SchizoAffective", "green")`  don't seem to differ very much.
@@ -216,7 +235,7 @@ other.
 ```{r}
 #| label: fig-neuro-biplot
 #| out-width: "80%"
-#| fig-cap: "Biplot of the NeuroCog data. ..."
+#| fig-cap: "Biplot of the NeuroCog data. The three groups differ are ordered along the first PCA dimension. Variable vectors show the correlations of the response variables with the two components."
 ggbiplot(neuro.pca, 
          obs.scale = 1, var.scale = 1,
          groups = NeuroCog$Dx, 
@@ -373,7 +392,7 @@ This analysis gives a very simple description of the data, in relation to the re
 
 * All cognitive domains distinguish the groups in the same direction, with the greatest differences shown for the variables most closely aligned with the horizontal axis in @fig-NC-candisc.
 
-## Social cognitive measures
+## Social cognitive measures {#sec-social-cog}
 
 The social cognitive measures were designed to tap various aspects of the perception and cognitive
 processing of emotions of others.  Emotion perception was assessed using a Managing Emotions

@@ -110,6 +110,8 @@ NC_long |>
 
 res <- cqplot(NC.mlm, id.n = 3)
 
+distancePlot(NC.mlm, xpd = TRUE)
+
 library(mvinfluence)
 influencePlot(NC.mlm, type = "LR")
 

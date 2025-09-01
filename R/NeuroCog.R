@@ -70,5 +70,12 @@ dev.copy2pdf(file="NC-hecan.pdf")
 NC.rlm <- robmlm(cbind( Speed, Attention, Memory, Verbal, Visual, ProbSolv) ~ Dx,
                data=NeuroCog)
 Anova(NC.rlm)
-plot(NC.rlm)
+#uniStats(NC.rlm)
+
+col <- c("red", "darkgreen", "blue") 
+plot(NC.rlm, 
+     col = col[as.integer(NeuroCog$Dx)],
+     pch = (15:17)[NeuroCog$Dx],
+     segments = TRUE,
+     id.weight = 0.5)
 
