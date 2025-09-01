@@ -333,7 +333,8 @@ dataset <- function(name, package=NULL) {
   "penalized",
   "adegraphics",
   "olsrr",
-  "HLMdiag")
+  "HLMdiag",
+  "ggdist")
 
 # write list of packages used at end of every chapter
 # NB: use results: "none" to hide the output
