@@ -212,7 +212,7 @@ pkg <- function(package, cite=FALSE) {
   if (cite) ref <- paste0(ref, " [@R-", package, "]")
   if (knitr::is_latex_output()) {
     ref <- paste0(ref, "\n\\index{", package, " package}",
-                        "\n\\index{packages!", package, "}")
+                        "\n\\index{packages!", package, "}\n")
   }
   ref
 }
@@ -242,7 +242,7 @@ package <- function(package, cite=FALSE) {
   if (cite) ref <- paste0(ref, " package [@R-", package, "]")
   if (knitr::is_latex_output()) {
     ref <- paste0(ref, "\n\\index{", package, " package}",
-                  "\n\\index{packages!", package, "}")
+                  "\n\\index{packages!", package, "}\n")
   }
   ref
 }
