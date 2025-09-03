@@ -178,7 +178,116 @@ Many of the section headers in this chapter state the kind of plot they discuss.
 
 - My personal opinion is that the multivariate linear model is particularly well suited as an exploratory method, so there isn't a need to separate the section on Exploratory Methods from everything else. Something like probabilistic graphical models, (Bayesian networks), and SEM is more well-suited for a confirmatory analysis.
 
+> More generally, statistical tours are a type of dynamic projections onto orthogonal axes (called a _basis_)
+that embed data in a
+$p$−dimensional space into a $d$−dimensional viewing subspace.
+
+- Perhaps emphasize that $d$ is a lower-dimensional subspace, so that the purpose comes across even more clearly?
+
+> In $\mathbf{P}_1$, the projected variable $\mathbf{y}_1$ is related only to $\mathbf{x}_1$, while $\mathbf{y}_2$ is related only to $\mathbf{x}_2$
+$\mathbf{x}_3$ makes no contribution, and appears at the origin.
+
+- Perhaps a period after $\mathbf{x}_2$ to separate the sentences?
+
 ## Chapter 4: Dimension Reduction
+
+I appreciate the references to Flatland and Spaceland. At the same time, I feel like the repeated references to the opening material and the metaphorical style of writing could be making the abstract mathematical topic even more abstract.  
+
+> 3. The columns $\mathbf{v}_i$ are the weights applied to the variables to produce the scores on
+the principal components. For example, the first principal component is the weighted sum:
+
+- Perhaps it'd be helpful to re-emphasize that $\mathbf{v}_i$ is a column $i$ of $\mathbf{V}$? 
+
+
+$$
+\text{PC}_1 = v_{11} \mathbf{x}_1 + v_{12} \mathbf{x}_2 + \cdots + v_{1p} \mathbf{x}_p
+$$
+
+- I understand what you mean, but perhaps it'd be helpful to first re-define what a principal component is, in this context before discussing how you can compute it?
+
+> to extract principal componends whose eigenvalues exceed 1.0,
+
+- components
+
+The following seems odd
+
+```{r, eval=FALSE}
+crime.pca |>
+  broom::augment(crime) |> # add original dataset back in
+  ggplot(aes(.fittedPC1, .fittedPC2, color = region)) + 
+  geom_hline(yintercept = 0) +
+  geom_vline(xintercept = 0) +
+  geom_point(size = 1.5) +
+  geom_text(aes(label = st), nudge_x = 0.2) +
+  stat_ellipse(color = "grey") +
+  coord_fixed() +
+  labs(x = "PC Dimension 1", y = "PC Dimnension 2") +
+  theme_minimal(base_size = 14) +
+  theme(legend.position = "top") 
+```
+
+Perhaps `coord_fixed` needs to be adjusted? Also, the I fixed the y-axis dimension labelling
+
+```{r, eval = FALSE}
+crime.pca |>
+  broom::augment(crime) |> # add original dataset back in
+  ggplot(aes(.fittedPC1, .fittedPC2, color = region)) + 
+  geom_hline(yintercept = 0) +
+  geom_vline(xintercept = 0) +
+  geom_point(size = 1.5) +
+  geom_text(aes(label = st), nudge_x = 0.2) +
+  stat_ellipse(color = "grey") +
+  coord_fixed(ylim = c(-5,5), ratio = 1) +
+  labs(x = "PC Dimension 1", y = "PC Dimension 2") +
+  theme_minimal(base_size = 14) +
+  theme(legend.position = "top") 
+```
+
+> that is shown in this space. This means that: 
+  * two variable vectors that point in the same direction are highly correlated; $r = 1$ if they are completely aligned.
+  * Variable vectors at right angles are approximately uncorrelated, while those
+pointing in opposite directions are negatively correlated; $r = -1$ if they are at 180$^o$.
+
+- This isn't rendering properly in the HTML version. Perhaps a new line is necessary?
+
+> these are also the eigenvectors of $\mathbf{X} \mathbf{X}'$,
+
+- Perhaps it'd be good to clarify the special significance of what $\mathbf{X} \mathbf{X}'$ is?
+
+```{r, eval = FALSE}
+ggbiplot(crime.pca,
+   obs.scale = 1, var.scale = 1,
+   labels = crime$st ,
+   circle = TRUE,
+   varname.size = 4,
+   varname.color = "brown") +
+  theme_minimal(base_size = 14) 
+```
+
+- Something seems off about the scales here, I suspect that adjusting the `ylim` is necessary
+
+> to help interpret what
+what is shown in the biplot
+
+- Double what
+
+
+This doesn't seem very idiomatic to me...
+
+```{r, eval = FALSE}
+cor(reg.data[, 1:4], reg.data[, 5:7]) |>
+  print() -> R
+```
+
+Perhaps the following would be more idiomatic?
+
+```{r, eval = FALSE}
+(R <- cor(reg.data[, 1:4], reg.data[, 5:7])) |>
+  print()
+```
+
+
+On one hand, it would have been nice if the mathematics behind Multidimensional Scaling could be explained to the same depth as PCA, but on the other, there are page limit concerns.
 
 # Part III: Univariate Linear Models
 
