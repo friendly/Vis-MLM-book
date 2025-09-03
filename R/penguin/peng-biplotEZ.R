@@ -16,6 +16,7 @@ peng |>
       dim.biplot = 3
       ) |>
   axes(col="black") |> 
+#  samples(col=col, pch=15:17, label.col="black") |>
   ellipses(kappa = 3,opacity = 0.5, col = col) |> 
   plot()
 
