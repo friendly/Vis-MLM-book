@@ -1,0 +1,77 @@
+---
+title: "another experiment"
+author: "Evangeline Reynolds"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: TRUE
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(tidyverse.quiet = TRUE)
+```
+
+
+
+
+## Intro Thoughts
+
+
+## Status Quo
+
+```{r}
+library(tidyverse)
+
+
+ggmultivar <- function(data, multi_vars){
+  
+  prepped <- data %>% 
+    pivot_longer(cols = {{multi_vars}})
+
+  ggplot(data = prepped) +
+     facet_wrap(~ name, scales = "free")
+  
+}
+
+
+ggmultivar(palmerpenguins::penguins, 
+           multi_vars = c(bill_length_mm, bill_depth_mm,
+                          flipper_length_mm, body_mass_g)) 
+
+last_plot() +   
+  aes(x = value) + 
+  geom_histogram(position = "identity") + 
+  geom_rug(aes(color = species)) + 
+  aes(fill = species) +
+  aes(alpha = species == "Chinstrap") + 
+  scale_alpha_discrete(range = c(.3, .95)) 
+  
+last_plot() +
+  facet_grid(sex ~ name, scales = "free")
+
+ggmultivar(palmerpenguins::penguins %>% remove_missing(), 
+           multi_vars = c(bill_length_mm, bill_depth_mm,
+                          flipper_length_mm, body_mass_g)) +
+  aes(y = value, x = sex) + 
+  geom_boxplot()
+
+last_plot() + 
+  aes(color = species)
+```
+
+
+```{r}
+palmerpenguins::penguins |>
+  select(c(1, 3:6)) %>% 
+  pivot_longer(cols = 2:5) %>% 
+  ggplot() + 
+  aes(x = value) + 
+  geom_histogram(alpha = .8) + 
+  facet_wrap(~name, scales = "free_x") + 
+  aes(fill = species)
+
+```
+
+
+## Closing remarks, Other Relevant Work, Caveats
