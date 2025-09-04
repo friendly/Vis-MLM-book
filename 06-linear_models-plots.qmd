@@ -345,14 +345,14 @@ Prestige$type <- factor(Prestige$type,
 str(Prestige)
 ```
 
-We fit a main-effects model using all predictors (ignoring `census`, the Canadian Census occupational code):
+We fit a main-effects model using all predictors (ignoring `census`):
 
 ```{r prestige-mod}
 prestige.mod <- lm(prestige ~ education + income + women + type,
                    data=Prestige)
 ```
 
-`plot(model)` produces four separate plots. For a quick look, I like to arrange them in a single 2x2 figure.
+`plot(model)` produces four separate plots by default, prompting you to see the next plot. For a quick look, I like to arrange them in a single 2 x 2 figure, using `par(mfrow = c(2,2))`
 
 ```{r}
 #| label: fig-plot-prestige-mod
@@ -702,12 +702,12 @@ When stress is omitted, the coefficient for coffee is biased because it "picks u
 the relation with the omitted variable.
 
 A solution to this problem is
-the _added-variable_ plot ("AV plot", also called _partial regression_ plot, MostellerTukey-1977).
+the _added-variable_ plot ("AV plot", also called _partial regression_ plot, @MostellerTukey-1977).
 This is a multivariate analog of a
-a simple marginal scatterplot, designed to visualize directly the partial relation between $y$ and the predictors
+simple marginal scatterplot, designed to visualize directly the partial relation between $y$ and the predictors
 $x_1, x_2, \dots$ in a multiple regression model. 
 
-You can think of this as a magic window that hides
+You can think of this as a _magic window_ that hides
 the relations of all other variables with each of the $y$ and $x_i$ shown in a given added-variable plot.
 This gives an unobstructed view of the net relation between $y$ and $x_i$ with the effect of
 all other variables removed. In effect, it reduces the problem of viewing the complete model
@@ -747,9 +747,11 @@ resids <- residuals(fit)
 return(resids)
 ```
 
-Note that `y` here contains both the current predictor, $\mathbf{x}_i$ and the response $\mathbf{y}$, so the
+Note that `y` in the code here contains both the current predictor, $\mathbf{x}_i$ and the response $\mathbf{y}$, so the
 residuals `resids` have two columns, one for $x_i \,\vert\, \text{others}$
 and one for $y \,\vert\, \text{others}$.
+
+**`avPlot()`**
 
 Added-variable plots are produced using `car::avPlot()` for one predictor or
 `avPlots()` for any number of model terms. The `id` argument controls
@@ -781,19 +783,19 @@ a simple regression.
 ### Properties of AV plots
 AV plots are particularly interesting and useful for the following noteworthy properties:
 
-* The slope of the simple regression in the AV plot for variable $x_i$ is identical to the slope
+* The **slope** of the simple regression in the AV plot for variable $x_i$ is identical to the slope
 $b_i$ for that variable in the full multiple regression model.
 
-* The residuals in this plot are the same as the residuals using all predictors. This means you can
+* The **residuals** in this plot are the same as the residuals using all predictors. This means you can
 see the degree of fit for observations directly in relation to the various predictors, which is not
 the case for marginal scatterplots.
 
-* Consequentially, the standard deviation of the (vertical) residuals in the AV plot is the same as $s = \sqrt(MSE)$ in the full model and the standard error of a coefficient is $\text{SE}(b_i) = s / \sqrt{\Sigma (\mathbf{x}_i^\star)^2}$. This is shown by the size of the shadow of the data ellipses on
+* Consequentially, the **standard deviation** of the (vertical) residuals in the AV plot is the same as $s = \sqrt(MSE)$ in the full model and the standard error of a coefficient is $\text{SE}(b_i) = s / \sqrt{\Sigma (\mathbf{x}_i^\star)^2}$. This is shown by the size of the shadow of the data ellipses on
 the vertical axis in @fig-coffee-avPlots.
 
-* The horizontal positions, $\mathbf{x}_i^\star$, of points adjust for all other predictors, and so we can see points at the extreme left and right as unusual in relation to the others. If these points are also badly fitted (large residuals), we can see their influence on the fitted relation in the full model. AV plots thus provide visual displays of (partial) _leverage_ and _influence_ on each of the regression coefficients.
+* The **horizontal positions**, $\mathbf{x}_i^\star$, of points adjust for all other predictors, and so we can see points at the extreme left and right as unusual in relation to the others. If these points are also badly fitted (large residuals), we can see their influence on the fitted relation in the full model. AV plots thus provide visual displays of (partial) _leverage_ and _influence_ on each of the regression coefficients.
 
-* The correlation of $\mathbf{x}_i^\star$ and $\mathbf{y}^\star$ shown by the shape of the data ellipses is the _partial correlation_ between $\mathbf{x}_i$ and $\mathbf{y}_i$
+* The **correlation** of $\mathbf{x}_i^\star$ and $\mathbf{y}^\star$ shown by the shape of the data ellipses is the _partial correlation_ between $\mathbf{x}_i$ and $\mathbf{y}_i$
 with other predictors partialled out.
 
 ### Marginal - conditional plots {#sec-marginal-conditional}
@@ -889,7 +891,7 @@ The influential points for physicians and general managers could just be unusual
 suggest that the relation of income to prestige is nonlinear. A rough test of this
 is to fit a smoothed curve through the points in the AV plot as shown in @fig-prestige-av-income.
 
-```{r}
+```{r echo = -1}
 #| label: fig-prestige-av-income
 #| fig-width: 7
 #| fig-height: 6
@@ -1122,6 +1124,7 @@ gives an expected increase of 2.96 in prestige.
 The other coefficients are more difficult to understand.
 For example, the effect of women is represented by
 two coefficients for the linear and quadratic components of `poly(women, 2)`.
+
 The interpretation of coefficients of terms involving `type` 
 depend on the contrasts used. Here, with the default treatment contrasts,
 they represent comparisons with `type = "bc"` as the reference level.
@@ -1418,7 +1421,7 @@ so called because it puts the hat $\mathbf{\widehat{(\bullet)}}$ on $\mathbf{y}$
 be expressed as
 
 \begin{align*}
-\mathbf{\hat{y}} 
+\mathbf{\widehat{y}} 
    &= \underbrace{\mathbf{X}(\mathbf{X}^{\top}\mathbf{X})^{-1}\mathbf{X}^{\top}}_\mathbf{H}\mathbf{y} \\[2ex]
    &= \mathbf{H\:y} \period
 \end{align*}
@@ -1457,10 +1460,15 @@ data ellipses or ellipsoids of the predictors in $\mathbf{x}$, whose boundaries,
 
 [^proof]: See this [Stats StackExchange discussion](https://bit.ly/45x2T0Q) for a proof.
 
-**Example**:
+<!-- **Example**: -->
+
+::: {#exm-leverage}
+**Illustrating leverage**
+
+<!-- fig-code: R/hatvalues-demo.R -->
 
 To illustrate @eq-hat-multivar, I generate $N = 100$ points from a bivariate normal distribution with means
-$\mu = (30, 30)$, variances = 10, and a correlation $\rho = 0.7$ and add two noteworthy points
+$\mu = (30, 30)$, variances = 10, and a correlation $\rho = 0.7$. Then I  add two noteworthy points
 that show an apparently paradoxical result.
 
 ```{r hatval1}
@@ -1492,7 +1500,8 @@ X <- X |>
 
 ```
 
-Plotting `x1` and `x2` with data ellipses shows the relation of leverage to squared distance from the mean.
+Plotting `x1` and `x2` with data ellipses shows the relation of leverage to squared distance from the mean in
+@fig-hatvalues-demo1.
 The `r colorize("blue", "blue")` point looks to be farther from the `r colorize("mean", "green")`, but 
 the `r colorize("red", "red")` point is actually very much further by Mahalanobis squared distance, which takes the correlation into account; it thus has much greater leverage.
 
@@ -1518,13 +1527,18 @@ I highlight the two noteworthy points in their colors from @fig-hatvalues-demo1 
 how much greater leverage the `r colorize("red", "red")` point has compared to the `r colorize("blue", "blue")`
 point.
 
-```{r}
+```{r echo=-1}
 #| label: fig-hatvalues-demo2
+#| fig-width: 7
+#| fig-height: 6
+#| out-width: "70%"
 #| fig-cap: "Hat values are proportional to squared Mahalanobis distances from the mean."
+op <- par(mar = c(4, 4, 1, 1) + .1)
 plot(hat ~ Dsq, data = X,
-     cex = c(rep(1, N), rep(2, 2)), 
+     cex = c(rep(1, N), rep(3, 3)), 
      col = c(rep("black", N), "red", "blue"),
      pch = 16,
+     cex.lab = 1.5,
      ylab = "Hatvalue",
      xlab = "Mahalanobis Dsq")
 ```
@@ -1536,6 +1550,8 @@ $D^2$ and leverage are about five times as great!
 ```{r hatval3}
 X |> slice_tail(n=2)
 ```
+
+:::
 
 #### Outliers: Measuring residuals
 
@@ -1553,7 +1569,7 @@ $$
 The (externally) _studentized residual_ is then obtained by dividing $e_{(-i)}$ by it's estimated standard error, giving
 $$
 e^\star_{(-i)} = \frac{e_{(-i)}}{\text{sd}(e_{(-i)})} = \frac{e_i}{\sqrt{\text{MSE}_{(-i)}\; (1 - h_i)}} \; .
-$$
+$$ {#eq-studentized-residual}
 
 This is just the ordinary residual $e_i$ divided by a factor that increases with the residual variance
 but decreases with leverage.  It can be shown that these studentized residuals follow a $t$ distribution
@@ -1580,7 +1596,7 @@ when that observation is excluded.
 \begin{align*}
 \text{DFFITS}_i & = & \frac{\hat{y}_i - \hat{y}_{(-i)}}{\sqrt{\text{MSE}_{(-i)}\; h_i}} \\
    & = & e^\star_{(-i)} \times \sqrt{\frac{h_i}{1-h_i}} \;\; .
-\end{align*}
+\end{align*} {#eq-DFFITS}
 
 The first equation gives the signed difference in fitted values in units of the standard deviation of that difference weighted by leverage;
 the second version [@Belsley-etal:80] represents that as a product of residual and leverage.

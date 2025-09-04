@@ -37,12 +37,17 @@ dataEllipse(X$x1, X$x2,
 X |> slice_tail(n = 2) |> points(pch = 16, col=c("red", "blue"), cex = 2)
 
 # demonstrate hat ~ D^2
-plot(Dsq ~ hat, data = X,
-     cex = c(rep(1, N), rep(2, 2)), 
+# fig 6.24
+
+op <- par(mar = c(4, 4, 1, 1) + .1)
+plot(hat ~ Dsq, data = X,
+     cex = c(rep(1, N), rep(3, 3)), 
      col = c(rep("black", N), "red", "blue"),
      pch = 16,
-     xlab = "Hatvalue",
-     ylab = "Mahalanobis Dsq")
+     cex.lab = 1.5,
+     ylab = "Hatvalue",
+     xlab = "Mahalanobis Dsq")
+par(op)
 
 # look at Dsq and hat values for these observation
 
