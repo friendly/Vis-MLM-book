@@ -9,8 +9,8 @@ source("R/common.R")
 # Introduction {#sec-introduction}
 
 
-A major goal of this book is to introduce you to multivariate thinking in research design and data analysis,
-along with a collection of powerful graphical methods designed to make it easier to understand and
+A major goal of this book is to introduce you to multivariate thinking in research design and data analysis.
+This is accomplished with a collection of powerful graphical methods designed to make it easier to understand and
 communicate results when there are multiple response variables to be considered together.
 However, these methods are somewhat more complex than the standard univariate ones, so it is worth
 considering these questions: Why should you to go to this trouble? What's in it for me?
@@ -48,7 +48,7 @@ on these outcomes.  In a comprehensive study, the following questions are of int
 
 -   Do predictors (parental encouragement, ...) affect *all* of these outcomes? Or do some of these have weak or null effects?
 
--   Do they affect them in the *same* or *different* ways?
+-   Do they affect them in the *same* or *different* ways? That is, do their effects tend to go in the same directions?
 
 -   How many different _aspects_ of academic achievement can be distinguished in the predictors? Equivalently, is academic achievement *unidimensional* or *multidimensional* in relation to the predictors?
 
@@ -60,9 +60,10 @@ Similarly, if psychiatric patients in various diagnostic categories are measured
 
 -   Further, how are the *relationships* between the outcomes affected by the predictors?
 
-Such questions obviously concern more than just the separate univariate relations of each response to the predictors. Equally, or perhaps more importantly, are questions of how the response variables are predicted *jointly*.
+Such questions obviously concern more than just the separate univariate relations of each response to the predictors. Equally, perhaps more importantly, are questions of how the response variables are predicted *jointly* considering
+their correlations that a multivariate approach can reveal.
 
-::: {.callout-note title="SEM"}
+::: {.callout-note title="What about SEM?"}
 Structural equation modeling (SEM) offers another route to explore and analyze the relationships among multiple predictors and multiple responses. They have the advantage of being able to test potentially complex systems of linear equations in very flexible ways. However, these methods are often far removed from data analysis *per se* because they typically _start_ with data summaries such as means and covariance matrices. The raw data is nicely bundled up in these summaries,
 but consequently there is little room to learn from features such as non-linear relations, interesting clusters, or
 anomalous observations that might threaten the validity of a proposed model. But see @Prokofieva2023
@@ -71,7 +72,7 @@ for an approach combining SEM and decision trees to allow data-driven refinement
 
 Moreover, except for path diagrams, they usually offer little in the way of visualization methods to aid in understanding and communicating the results. The graphical methods we describe here can also be useful in a SEM context.
 For example, multivariate multiple regression models (@sec-MRA-to-MMRA) and canonical correlation (@sec-cancor)
-can be used to explore relationships among the observed variables used in a SEM, in a data-centric way.
+can be used to explore relationships among the observed variables used in a SEM, but in a data-centric way.
 \ix{Structural equation model}
 :::
 
@@ -84,19 +85,20 @@ A second important point is that a multivariate modeling approach can offer stat
 * We gain deeper insights into how outcome variables vary together.
 * With more than a few outcome variables _dimension reduction_ methods offer views of the data and model in 2D plots that capture their essence.
 
-<!-- and gaining deeper insights into how variables interact, which is crucial for predicting outcomes and making informed decisions in various fields -->
-
 ### Multivariate vs. multivariable methods
 
 > multivariate $\ne$ multivariable
 
-In this era of multivitamins, multitools, multifactor authentication and even the multiverse, it is well to understand the distinction between _multivariate_ and _multivariable_ methods as these terms are generally used and as I use them here in relation to statistical methods and data visualization. The distinction is simple:
+"Multi-" terminology is important. In this era of multivitamins, multitools, multifactor authentication and even the multiverse, it is well to understand the distinction between _multivariate_ and _multivariable_ methods as these terms are generally used and as I use them here in relation to statistical methods and data visualization. The distinction is simple:
 
-* **Multivariate methods** for linear models such as multivariate regression
-have more than one dependent, response or outcome variable. Other multivariate methods such as principal components
-analysis or factor analysis treat all variables on an equal footing.
+* **Multi_variable_ methods**  have a single dependent variable and more than one independent variables or covariates, such as in multiple regression. Multiple regression is the prime example.
 
-* **Multivariable methods**  have a single dependent variable and more than one independent variables or covariates, such as in multiple regression.
+* **Multi_variate_ methods** for linear models, such as multivariate multiple regression or multivariate analysis of variance,
+have more than one dependent, response or outcome variable. Canonical correlation analysis considers the
+relation between two sets of variables, but treats them symmetrically.
+Other multivariate methods such as principal components
+analysis or factor analysis don't distinguish between independent and dependent, but treat all variables on an equal footing in a single set. 
+
 
 <!-- ```{r child="child/qbiquity.qmd} -->
 <!-- ``` -->
@@ -104,43 +106,52 @@ analysis or factor analysis treat all variables on an equal footing.
 
 ## Linear models: Univariate to multivariate
 
-For classical linear models for ANOVA and regression, the step from a univariate model for a single response, $y$, to a multivariate one for a collection of $p$ responses, $\mathbf{y}$ is conceptually very easy. That's because the univariate model,
+The path to multivariate thinking in this book is eased by the simplicity of extending univariate models to
+multivariate ones in notation and computation.
+For classical linear models for ANOVA and regression, the step from a univariate model for a single response, $y$, to a multivariate one for a collection of $p$ responses, $\mathbf{y}$ is conceptually very easy. That's because the univariate model with $q$ predictors,
 
-$$y_i = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \dots + \beta_q x_q + \epsilon_i , $$
+$$y_i = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \dots + \beta_q x_q + \epsilon_i \;, $$
 
-or, in matrix terms,
+when cast in matrix terms,
 
-$$\mathbf{y} = \mathbf{X} \; \mathbf{\beta} + \mathbf{\epsilon}, \quad\mbox{   with   }\quad \mathbf{u} \sim \mathcal{N} (0, \sigma^2 \mathbf{I}) ,$$
+$$
+\mathbf{y} = \mathbf{X} \; \mathbf{\beta} + \mathbf{\epsilon}\;, \quad\mbox{   with   }\quad \mathbf{\epsilon} \sim \mathcal{N} (0, \sigma^2 \mathbf{I}) \;,
+$$
 
 generalizes directly to an analogous multivariate linear model (MLM),
 
-$$\mathbf{Y} = [\mathbf{y_1}, \mathbf{y_2}, \dots, \mathbf{y_p}] = \mathbf{X} \; \mathbf{B} + \Epsilon \quad\mbox{   with   }\quad \Epsilon \sim \mathcal{N} (\mathbf{0}, \mathbf{\Sigma})$$
+$$
+\mathbf{Y} = [\mathbf{y_1}, \mathbf{y_2}, \dots, \mathbf{y_p}] = \mathbf{X} \; \mathbf{B} + \Epsilon \quad\mbox{   with   }\quad \Epsilon \sim \mathcal{N} (\mathbf{0}, \mathbf{\Sigma}) \; ,
+$$
 
-for multiple responses (as will be discussed in detail). The design matrix, $\mathbf{X}$ remains the same, and the vector $\beta$ of coefficients becomes a matrix $\mathbf{B}$, with one column for each of the $p$ outcome variables.
+for multiple responses (as will be discussed in detail in @sec-mlm-review). The design matrix, $\mathbf{X}$ remains the same, and the vector $\beta$ of coefficients simply becomes a matrix $\mathbf{B}$, with one column for each of the $p$ outcome variables.
 
-Happily as well, hypothesis tests for the MLM are also straight-forward generalizations of the familiar $F$ and $t$-tests for univariate response models. Moreover, there is a rich geometry underlying these generalizations <!-- [@Friendly-etal:ellipses:2013]  --> which we can exploit for understanding and visualization.
+Happily as well, hypothesis tests for the MLM are also straight-forward generalizations of the familiar $F$ and $t$-tests for univariate response models. Moreover, there is a rich geometry underlying these generalizations  [@Friendly-etal:ellipses:2013] which we can exploit for understanding and visualization in @sec-vis-mlm.
 
 ## Visualization is harder
 
-However, with two or more response variables, visualizations for multivariate models are not as simple as they are for their univariate counterparts for understanding the effects of predictors, model parameters, or model diagnostics. Consequently, the results of such studies are often explored and discussed solely in terms of coefficients and significance, and visualizations of the relationships are only provided for one response variable at a time, if at all. This tradition can mask important nuances, and lead researchers to draw erroneous conclusions.
+However, with two or more response variables, visualizations for multivariate models are not as simple as they are for their univariate counterparts. These include plots for understanding the effects of predictors, model parameters, or model diagnostics. Consequently, the results of such studies are often explored and discussed solely in terms of coefficients and significance, and visualizations of the relationships are only provided for one response variable at a time, if at all. This tradition can mask important nuances, and lead researchers to draw erroneous conclusions.
 
-The aim of this book is to describe and illustrate some central methods that we have developed over the last ten years that aid in the understanding and communication of the results of multivariate linear models [@Friendly-07-manova; 
+The aim of this book is to describe and illustrate some central methods that we have developed over the last thirty years that aid in the understanding and communication of the results of multivariate models [Friendly:94a; Friendly:02:corrgram; @Friendly-07-manova; 
 <!-- @Friendly-etal:ellipses:2013;  --> 
-@FriendlyMeyer:2016:DDAR]. These methods rely on *data ellipsoids* as simple, minimally sufficient visualizations of variance that can be shown in 2D and 3D plots. As will be demonstrated, the *Hypothesis-Error (HE) plot* framework applies this idea to the results of multivariate tests of linear hypotheses.
+@FriendlyMeyer:2016:DDAR]. These methods for quantitative data rely on *data ellipsoids* as simple, minimally sufficient visualizations of variance that can be shown in 2D and 3D plots. As will be demonstrated, the *Hypothesis-Error (HE) plot* framework (@sec-he-framework) applies this idea to the results of multivariate tests of linear hypotheses.
 \ix{data ellipse}
 \ix{HE plot}
 
-Further, in the case where there are more than just a few outcome variables, the important nectar of their relationships to predictors can often be distilled in a multivariate juicer--- a **projection** of the multivariate relationships to the predictors in the low-D space that captures most of the flavor. This idea can be applied using *canonical correlation plots* and with *canonical discriminant HE plots*.
+Further, in the case where there are more than just a few outcome variables, the important nectar of their relationships to predictors can often be distilled in a _multivariate juicer_--- a **projection** of the multivariate relationships to the predictors in the low-D space that captures most of the flavor. This idea can be applied using *canonical correlation plots* and with *canonical discriminant HE plots* (@sec-candisc).
 \ix{canonical correlation}
 \ix{projection}
 
-![**Projection**: The cover image from Hofstadter's *Gödel, Bach and Escher* illustrates projection of 3D solids onto each 2D plane.](images/Cover-GBE.png)
+**TODO**: explain relevance of this fig.
+
+![**Projection**: The cover image from Douglas Hofstadter's _Gödel, Bach and Escher_ [-@Hofstadter1979] illustrates projection of 3D solids onto each 2D plane. Each 2D view captures some salient aspect of the complete figure.](images/Cover-GBE.png)
 
 ## Problems in understanding and communicating MLM results {#sec-problems}
 
-In my consulting practice within the Statistical Consulting Service at York University, I see hundreds of clients each year ranging from advanced undergraduate thesis students, to graduate students and faculty from a variety of fields. Over the last two decades, and across each of these groups, I have noticed an increasing desire to utilize multivariate methods. As researchers are exposed to the utility and power of multivariate tests, they see them as an appealing alternative to running many univariate ANOVAs or multiple regressions for each response variable separately.
+In my consulting practice within the Statistical Consulting Service at York University, I see hundreds of clients each year ranging from advanced undergraduate thesis students, to graduate students and faculty from a variety of fields. Initially, most clients used SAS or SPSS, but now most use R or Stata for their analyses.
+Over the last three decades, and across each of these groups, I have noticed an increasing desire to utilize multivariate methods. As researchers are exposed to the utility and power of multivariate tests, they see them as an appealing alternative to running many univariate ANOVAs or multiple regressions for each response variable separately.
 
-However, multivariate analyses are more complicated than such approaches, especially when it comes to understanding and communicating results. Output is typically voluminous, and researchers will often get lost in the numbers. While software (SPSS, SAS and R) make tabular summary displays easy, these often obscure the findings that researchers are most interested in. The most common analytic oversights that we have observed are:
+However, multivariate analyses are more complicated than such approaches, especially when it comes to understanding and communicating results. Output is typically voluminous, and researchers will often get lost in the numbers. While software in SAS, SPSS and R make tabular summary displays easy, these often obscure the findings that researchers are most interested in. The most common analytic oversights that I have observed are:
 
 -   **Atomistic data screening**: Researchers have mostly learned the assumptions (the Holy Trinity of normality, constant variance and independence) of univariate linear models, but then apply *univariate* tests (e.g., Shapiro-Wilk) and diagnostic plots (normal QQ plots) to every predictor and every response.
 
@@ -148,7 +159,8 @@ However, multivariate analyses are more complicated than such approaches, especi
 
 -   **Reverting to univariate visualizations**: To display results, SPSS and SAS make some visualization methods available through menu choices or syntax, but usually these are the wrong (or at least unhelpful) choices, in that they generate separate univariate graphs for the individual responses.
 
-This book discusses a few essential procedures for multivariate linear models, how their interpretation can be aided through the use of well-crafted (though novel) visualizations, and provides replicable sample code in R to showcase their use in applied behaviorial research. A later section \[ref?\] provides some practical guidelines for analyzing, visualizing and reporting such models to help avoid these and other problems.
+This book discusses a few essential procedures for multivariate linear models, how their interpretation can be aided through the use of well-crafted (though novel) visualizations, and provides replicable sample code in R to showcase their use in applied behavioral research.
+<!-- A later section \[ref?\] provides some practical guidelines for analyzing, visualizing and reporting such models to help avoid these and other problems. -->
 
 
 <!-- **Package summary**: -->
