@@ -214,14 +214,12 @@ toward the highest values of experience where the data are thinner.
 \ix{precision}
 
 [^pointwise]: 
-Confidence bands allow us to visualize the uncertainty around a fitted regression curve,
-which can be of two types: _pointwise intervals_ or _simultaneous intervals_.
+Confidence bands allow us to visualize the uncertainty around a fitted regression curve.
+These can be of two types: _pointwise intervals_ or _simultaneous intervals_.
 The default setting in ``ggplot2::geom_smooth()` calculates pointwise intervals 
 (using `stats::predict.lm(..., interval="confidence")` at a confidence level $1-\alpha$ for the predicted response at _each value_ $x_i$ of a predictor, and have the frequentist interpretation that over repeated sampling only $100\;\alpha$ of the predictions at $x_i$ will be outside that interval. 
-In contrast, simultaneous intervals are calculated so that $1 - \alpha$ is the probability that _all of them_ cover their corresponding true values simultaneously. These are necessarily wider than pointwise intervals.
-Commonly used methods for constructing simultaneous confidence bands in regression are the Bonferroni and Scheffé methods, which control the family-wise error rate over all values of $x_i$.
-See [](https://en.wikipedia.org/wiki/Confidence_and_prediction_bands) for precise definitions of these terms.
-These are different from a _prediction band_, which is used to represent the uncertainty about the value of a **new** data-point on the curve, but subject to the additional variance reflected in one observation.
+    In contrast, simultaneous intervals are calculated so that $1 - \alpha$ is the probability that _all of them_ cover their corresponding true values simultaneously. These are necessarily wider than pointwise intervals. Commonly used methods for constructing simultaneous confidence bands in regression are the Bonferroni and Scheffé methods, which control the family-wise error rate over all values of $x_i$. See [](https://en.wikipedia.org/wiki/Confidence_and_prediction_bands) for precise definitions of these terms.
+    These are different from a _prediction band_, which is used to represent the uncertainty about the value of a **new** data-point on the curve, but subject to the additional variance reflected in one observation.
 
 
 #### Non-parametric smoothers {.unnumbered}
@@ -299,20 +297,20 @@ I call these *stratifiers*, recognizing that we should consider breaking
 down the overall relation to see whether and how it changes over such
 "other" variables. Such variables are most often factors, but we can cut
 a continuous variable into ranges (*shingles*) and do the same
-graphically. There are two general stratifying graphical techniques:
+graphically. There are two general graphical techniques for stratifying:
 
 -   **Grouping**: Identify subgroups in the data by assigning different
     visual attributes, such as color, shape, line style, etc. within a
-    single plot. This is quite natural for factors; quantitative
+    single plot, as shown in @fig-Salaries-rank below. This is quite natural for factors; quantitative
     predictors can be accommodated by cutting their range into ordered
     intervals. Grouping has the
     advantage that the levels of a grouping variable can be shown within
     the same plot, facilitating direct comparison.
 
--   **Conditioning**: Showing subgroups in different plot panels. This
+-   **Conditioning**: Showing subgroups in different plot panels, as in @fig-Salaries-faceted. This
     has the advantages that relations for the individual groups more
     easily discerned and one can easily stratify by two (or more) other
-    variables jointly, but visual comparison is more difficult because
+    variables jointly. But visual comparison is more difficult because
     the eye must scan from one panel to another.
 
 ::: {.callout-note title="History Corner"}
@@ -347,7 +345,8 @@ its functions. `r pkg("ggplot2")` does not; it uses aesthetics (`aes()`), which
 map variables in the data to visual characteristics in displays.
 :::
 
-The most obvious variable that affects academic salary is `rank`,
+**Using grouping**
+For the `Salaries` data, the most obvious variable that affects academic salary is `rank`,
 because faculty typically get an increase in salary with a promotion
 that carries through in their future salary. What can we see if we group
 by `rank` and fit a separate smoothed curve for each?
@@ -550,7 +549,7 @@ into account.
 #| echo: false
 #| fig-align: center
 #| out-width: "60%"
-#| fig-cap: "2D data with curves of constant distance from the centroid. The blue solid ellipse shows a contour of constant Mahalanobis distance, taking the correlation into account; the dashed red circle is a contour of equal Euclidean distance. Given the data points,  Which of the points **A** and **B** is further from the mean (X)? _Source_: Re-drawn from [Ou Zhang](https://ouzhang.rbind.io/2020/11/16/outliers-part4/)"
+#| fig-cap: "2D data with curves of constant distance from the centroid. The blue solid ellipse shows a contour of constant Mahalanobis distance, taking the correlation into account; the dashed red circle is a contour of equal Euclidean distance. Given the data points,  which of the points **A** and **B** is further from the mean (X)? _Source_: Re-drawn from [Ou Zhang](https://ouzhang.rbind.io/2020/11/16/outliers-part4/)"
 knitr::include_graphics("images/mahalanobis.png")
 ```
 
@@ -566,7 +565,7 @@ ignores the apparent negative correlation, so point "A" is further.
 The `r colorize("blue")` ellipse for Mahalanobis distance 
 takes the correlation into account, so point "B" has a greater distance from the mean.
 
-Mathematically, Euclidean (squared) distance for $p$ variables, $j = 1, 2, \dots , p$,
+Mathematically, Euclidean (squared) distance ($D_E^2(y)$) for $p$ variables, $j = 1, 2, \dots , p$,
 is just a generalization of
 the square of a univariate standardized ($z$) score, $z^2 = [(y - \bar{y}) / s]^2$,
 
@@ -595,41 +594,48 @@ to $c^2$,
 $$
 \mathcal{E}_c (\bar{\mathbf{y}}, \mathbf{S}) := \{ D_M^2 (\mathbf{y}) \le c^2 \} \; .
 $$
+**Drawing data ellipses**
 
-A computational definition recognizes that the boundary of the ellipsoid can be found by transforming
-a unit sphere $\mathcal{P}$
-centered at the origin, $\mathcal{P} := \{ \mathbf{x}^\textsf{T} \mathbf{x}= 1\}$, by $\mathbf{S}^{1/2}$
-and then shifting that to centroid of the data,
+A computational definition of the data ellipsoid recognizes that the boundary of an ellipsoid can be found by (a)
+starting with a unit a unit sphere $\mathcal{P}$
+centered at the origin, (b) transforming that by a "square root" of the covariance matrix, denoted $\mathbf{S}^{1/2}$,
+and then (c) shifting that to centroid of the data. The unit sphere is defined as the contour of Euclidean distance 1 from the origin,
+$\mathcal{P} := \{ \mathbf{x}^\textsf{T} \mathbf{x}= 1\}$.
+Using the notation $\oplus$ to represent translation to a new centroid at the variable means, $\bar{\mathbf{y}}$,
+the data ellipsoid becomes,
 
 $$
-\mathcal{E}_c (\bar{\mathbf{y}}, \mathbf{S}) = \bar{\mathbf{y}} \; \oplus \; \mathbf{S}^{1/2} \, \mathcal{P} \comma
+\mathcal{E}_c (\bar{\mathbf{y}}, \mathbf{S}) = \bar{\mathbf{y}} \; \oplus \; \mathbf{S}^{1/2} \, \mathcal{P} \period
 $$
+The matrix $\mathbf{S}^{1/2}$ represents a rotation and scaling of the sphere
+and is commonly computed as the Cholesky factor of $\mathbf{S}$ given in R by `chol(S)`. You
+can imagine this in 2D by thinking of how the dashed `r red` circle in @fig-mahalanobis could be transformed
+into the `r blue` ellipse.
 
-where $\mathbf{S}^{1/2}$ represents a rotation and scaling and the notation $\oplus$ represents translation to a new centroid, $\bar{\mathbf{y}}$ here. The matrix $\mathbf{S}^{1/2}$ is commonly computed
-as the Cholesky factor of $\mathbf{S}$. Slightly abusing notation and taking the unit sphere $\mathcal{P}$
-as given (like an identity matrix $\mathbf{I}$),
+Slightly abusing notation and taking the unit sphere $\mathcal{P}$
+like an identity matrix $\mathbf{I}$ that vanishes in multiplication,
 we can write the data ellipsoid as simply:
 
 $$
 \mathcal{E}_c (\bar{\mathbf{y}}, \mathbf{S}) = \bar{\mathbf{y}} \; \oplus \; c\, \sqrt{\mathbf{S}} \period
 $$ {#eq-ellE}
 
+**Contour levels ($c$)**
 When $\mathbf{y}$ is (at least approximately) bivariate normal,
 $D_M^2(\mathbf{y})$ has a large-sample $\chi^2_2$ distribution
 ($\chi^2$ with 2 df),
-so 
+so ellipses of various conventional sizes can be calculated using `qchisq()`:
 
 * $c^2 = \chi^2_2 (0.5) = 1.39$ gives a data ellipse covering 50% of the data points, a bivariate analog of the central box of a boxplot.
-* $c^2 = \chi^2_2 (0.68) = 2.28$ gives a "1 standard deviation
-bivariate ellipse,"
+* $c^2 = \chi^2_2 (0.68) = 2.28$ gives a "1 standard deviation bivariate ellipse,"
 an analog of the standard interval $\bar{y} \pm 1 s$,
-* $c^2 = \chi^2_2 (0.95) = 5.99 \approx 6$ gives a data ellipse of
-95\% coverage.
+* $c^2 = \chi^2_2 (0.95) = 5.99 \approx 6$ gives a data ellipse of 95\% coverage.
 
-In not-large samples, the radius $c$ of the ellipsoid is better approximated by a multiple of a $F_{p, n-p}$ distribution, becoming $c =\sqrt{ 2 F_{2, n-2}^{1-\alpha} }$
+In not-large samples, the radius $c$ of the ellipsoid is better approximated by a multiple of a $F_{p, n-p}$ distribution, with $p$ variables and $n-p$ degrees of freedom for $\mathbf{S}$.
+This gives a radius $c =\sqrt{ 2 F_{2, n-2}^{1-\alpha} }$
 in the bivariate case ($p=2$) for coverage $1-\alpha$.
 
-These are illustrated in @fig-ellipses-coverage with ellipses of 50%, 68% and 95% coverage for a the matrix $\mathbf{S}$
+These three conventional cases are illustrated in @fig-ellipses-coverage with ellipses of 50%, 68% and 95% coverage for a the matrix $\mathbf{S}$
 defined below and $\bar{\mathbf{y}} = \mathbf{0}$. Here, the variance of $\mathbf{y}_1$ is twice that of $\mathbf{y}_2$ 
 and the correlation works out to $r(y_1, y_2) = 0.35$.
 
@@ -876,7 +882,7 @@ the linear regression line, loess smooth and the 68% data ellipse.
 ```{r}
 #| label: fig-Prestige-scatterplot-income1
 #| out-width: "80%"
-#| fig-cap: !expr glue::glue("Scatterplot of prestige vs. income, showing the linear regression line ({red}), the loess smooth with a confidence envelope ({darkgreen}) and a 68% data ellipse. Points with the 4 largest $D^2$ values are labeled.")
+#| fig-cap: !expr glue::glue("Scatterplot of prestige vs. income, showing the linear regression line ({red}), the loess smooth with a confidence envelope ({darkgreen}) and a 68% data ellipse. Points with the 4 largest Mahalanobis $D^2$ values are labeled.")
 scatterplot(prestige ~ income, data=Prestige,
   pch = 16, cex.lab = 1.25,
   regLine = list(col = "red", lwd=3),
