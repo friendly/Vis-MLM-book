@@ -27,10 +27,10 @@ all pairwise variable axes, a statistical tour is like the view of an eye moving
 space, capturing what it sees from a given location onto the 2-d plane of the computer screen.
 
 More generally, statistical tours are a type of dynamic projections onto orthogonal axes (called a _basis_)
-that embed data in a
-$p$−dimensional space into a $d$−dimensional viewing subspace. Typically, $d=2$, and 
-the result is displayed as scatterplots, together with vectors representing the projections of the data variables in this space.
-But the projected data can be rendered in 1-d as densities or histograms, or in other number of dimensions as glyphs,
+that embed data in a _smaller_
+$p$-dimensional space into a $d$-dimensional viewing subspace with $d < p$. Typically, $d=2$, where
+the result can displayed as scatterplots, together with vectors representing the projections of the data variables in this space.
+But the projected data can be rendered in 1D as densities or histograms, or in more dimensions ($d > 2$) as glyphs,
 or even as parallel coordinate plots.
 The essential idea is that we can define, and animate, a _tour path_ as a smooth sequence of such projections
 over small changes to the projection basis, which gives the orientation of the data in the viewing space.
@@ -39,10 +39,11 @@ over small changes to the projection basis, which gives the orientation of the d
 
 The idea of a projection is fundamental to touring methods and other visualizations of high-D data, so it is useful to understand
 what a projection is. Quite simply, you can think of a projection as the shadow of an object or cloud of points. 
+
 This is nicely illustrated by the cover image (@fig-cover-GBE) used for Douglas Hofstadter's [-@Hofstadter1979] _Gödel, Bach and Escher_
-which shows 3D solid shapes illuminated by light sources so their shadows form the letters G, B and E projected onto the planes
+which shows two 3D solid shapes illuminated by light sources so their shadows form the letters G, B and E projected onto the planes
 formed by pairs of the three coordinate axes. The set of three 2D views is essentially the same that we see in a scatterplot matrix,
-where a 3D dataset is portrayed by the set of shadows of the points on planes formed by pairs of coordinate axes.
+where a 3D dataset is portrayed by the set of _shadows_ of the points on planes formed by pairs of coordinate axes.
 
 ```{r}
 #| label: fig-cover-GBE
@@ -156,6 +157,7 @@ P2 <- matrix(c(0.71, 0.71, 0, -0.42, .42, 0.84), ncol=2)
 Y2 <- X %*% P2
 ```
 
+<!-- fig.code: R/projections.R -->
 
 In this example, the matrix $\mathbf{X}$ consists of 8 points at the vertices of a cube of size 10, as shown in @fig-proj-combined (a).
 The projections $\mathbf{Y}_1 = \mathbf{P}_1 \mathbf{X}$ and $\mathbf{Y}_2 = \mathbf{P}_2 \mathbf{X}$ are shown in panels (b) and (c).
@@ -163,10 +165,10 @@ To make it easier to relate the points in different views, shapes and colors are
 of these attributes.[^pch]
 
 [^pch]: Plot shapes given by `pch = 15:18` correspond to: 
-filled square (15),
-filled circle (16),
-filled triangle point-up (17),
-filled diamond (18).
+■ &#25F9; filled square (15),
+● &#25CF; filled circle (16), 
+▶ &#25B2; filled triangle point-up (17),
+◆ &#25C8; filled diamond (18).
 
 ```{r pch-col}
 pch <- rep(15:18, times = 2)
@@ -189,24 +191,20 @@ of $\mathbf{X}$. The answer is provided simply by plotting the rows of $\mathbf{
 In these plots, each row of $\mathbf{P}_1$ and $\mathbf{P}_2$ appears as a vector from the origin. It's direction shows the contribution each of 
 $\mathbf{x}_1, \mathbf{x}_2, \mathbf{x}_3$ make to the new coordinates $\mathbf{y}_1$ and $\mathbf{y}_2$.
 
-In $\mathbf{P}_1$, the projected variable $\mathbf{y}_1$ is related only to $\mathbf{x}_1$, while $\mathbf{y}_2$ is related only to $\mathbf{x}_2$
-$\mathbf{x}_3$ makes no contribution, and appears at the origin. However in the projection given by $\mathbf{P}_2$, $\mathbf{x}_1$ and $\mathbf{x}_2$ make the same contribution
-to $\mathbf{y}_1$, while $\mathbf{x}_3$ has no contribution to that horizontal axis.
-The vertical axis, $\mathbf{y}_2$ here is completely aligned with $\mathbf{x}_3$; $\mathbf{x}_1$ and $\mathbf{x}_2$ have vertical components
-that are half of that for $\mathbf{x}_3$ in absolute value. 
-
-```{r}
+``{r echo=-1}
 #| label: proj-vectors
 #| code-fold: true
+#| code-summary: "Show the code"
 #| eval: false
 #| fig-show: hide
 #| layout-ncol: 2
-library(matlib)
 op <- par(mar=c(4, 5, 1, 1)+.1)
+library(matlib)     # circle(), vectors()
 xlim <- ylim <- c(-1.1, 1.1)
 axes.x <- c(-1, 1, NA, 0, 0)
 axes.y <- c(0, 0, NA, -1, 1)
 labs <- c(expression(x[1]), expression(x[2]), expression(x[3]))
+
 plot(xlim, ylim, type = "n", asp=1,
      xlab = expression(y[1]), ylab = expression(y[2]),
      cex.lab = 1.8)
@@ -220,7 +218,6 @@ plot(xlim, ylim, type = "n", asp=1,
 circle(0, 0, 1, col = adjustcolor("skyblue", alpha = 0.2))
 lines(axes.x, axes.y, col = "grey")
 vectors(P2, labels = labs, cex.lab = 1.8, lwd = 3)
-par(op)
 ```
 
 ```{r}
@@ -228,9 +225,16 @@ par(op)
 #| echo: false
 #| out-width: "100%"
 #| fig-cap: "**Variable vectors**: Data variables viewed as vectors in the space of their projections. The angles of the **x** vectors with respect to the **y** coordinate axes show their relative contributions to each. The lengths of the **x** vectors show the relative degree to which they are represented in the space of **y**s. Left: the **P1** projection; right: the **P2** projection."
-knitr::include_graphics("images/proj-vectors.png")
+knitr::include_graphics("images/proj-vectors-labels.png")
 ```
 
+In $\mathbf{P}_1$, the projected variable $\mathbf{y}_1$ is related only to $\mathbf{x}_1$, while $\mathbf{y}_2$ is related only to $\mathbf{x}_2$.
+$\mathbf{x}_3$ makes no contribution, and appears at the origin. However in the projection given by $\mathbf{P}_2$, $\mathbf{x}_1$ and $\mathbf{x}_2$ make the same contribution
+to $\mathbf{y}_1$, while $\mathbf{x}_3$ has no contribution to that horizontal axis.
+The vertical axis, $\mathbf{y}_2$ here is completely aligned with $\mathbf{x}_3$; $\mathbf{x}_1$ and $\mathbf{x}_2$ have vertical components
+that are half of that for $\mathbf{x}_3$ in absolute value. 
+
+`
 #### Vector lengths
 In @fig-proj-vectors, the **lengths** of the $\mathbf{x}$ vectors reflect the relative degree to which each variable is represented in the space of the projection, and this is important for interpretation.
 For the $\mathbf{P}_1$ projection, $\mathbf{x}_3$ is of length 0, while $\mathbf{x}_1$ and $\mathbf{x}_2$ fill the unit circle. In the projection given by $\mathbf{P}_2$, all three $\mathbf{x}$ are approximately

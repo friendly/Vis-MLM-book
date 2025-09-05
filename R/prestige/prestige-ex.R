@@ -79,13 +79,15 @@ scatterplot(prestige ~ income, data=Prestige,
 #' 
 #' The formula notation `~ income | type` says to do plot annotations conditional on occupation type.
 #' Oh, now that has a very different interpretation!
+par(mar = c(4,4,1,1)+.1)
 scatterplot(prestige ~ income | type, data=Prestige,
             col = c("blue", "red", "darkgreen"),
             pch = 15:17,
             legend = list(coords="bottomright"),
             smooth=list(smoother=loessLine, 
-                        var=FALSE, span=1, lwd=4))
-
+                        var=FALSE, span=1, lwd=4),
+            cex.lab = 1.4)
+par(op)
 
 
 #' ## Fit the basic all-main-effects model

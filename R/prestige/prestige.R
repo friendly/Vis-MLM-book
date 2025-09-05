@@ -23,7 +23,7 @@ head(Prestige)
 
 
 scatterplot(prestige ~ income, data=Prestige,
-  pch = 16, cex.lab = 1.25,
+  pch = 16, cex.lab = 1.3,
   regLine = list(col = "red", lwd=3),
   smooth = list(smoother=loessLine, 
                 lty.smooth = 1, lwd.smooth=3,
@@ -35,7 +35,7 @@ scatterplot(prestige ~ income, data=Prestige,
 # what would log(income) look like
 scatterplot(prestige ~ income, data=Prestige, 
   log = "x",
-  pch = 16,  cex.lab = 1.25,
+  pch = 16,  cex.lab = 1.3,
   regLine = list(col = "red", lwd=3),
   smooth = list(smoother=loessLine,
                 lty.smooth = 1, lwd.smooth=3,
@@ -54,14 +54,16 @@ exp(10*coef(lm(prestige ~ log(income), data=Prestige))[2])
 
 
 # stratify by type
+par(mar = c(4,4,1,1)+.1)
 scatterplot(prestige ~ income | type, data=Prestige,
   col = c("blue", "red", "darkgreen"),
-  pch = 15:17,
+  pch = 15:17, cex.lab = 1.3,
   grid = FALSE,
   legend = list(coords="bottomright"),
-  regLine = list(lwd=3),
+  regLine = list(lwd=3, lty = "longdash"),
   smooth=list(smoother=loessLine, 
               var=FALSE, lwd.smooth=2, lty.smooth=1))
+par(op)
 
 # education
 scatterplot(prestige ~ education, data=Prestige,

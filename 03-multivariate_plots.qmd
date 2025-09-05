@@ -555,6 +555,9 @@ knitr::include_graphics("images/mahalanobis.png")
 
 <!--
 This doesn't work
+
+#| fig-cap: !expr glue::glue("2D data with curves of constant distance from the centroid. The {blue} solid ellipse shows a contour of constant Mahalanobis distance, taking the correlation into account; the dashed {red} circle is a contour of equal Euclidean distance. Given the data points,  which of the points **A** and **B** is further from the mean (X)? _Source_: Re-drawn from [Ou Zhang](https://ouzhang.rbind.io/2020/11/16/outliers-part4/)")
+
 #| fig-cap: !expr paste("2D data with curves of constant distance from the centroid. The", colorize('blue'), "solid ellipse shows a contour of constant Mahalanobis distance, taking the correlation into account; the dashed", colorize('blue'), "circle is a contour of equal Euclidean distance. Given the data points,  Which of the points **A** and **B** is further from the mean (X)? _Source_: Re-drawn from [Ou Zhang](https://ouzhang.rbind.io/2020/11/16/outliers-part4/)")
 -->
 
@@ -599,7 +602,9 @@ $$
 A computational definition of the data ellipsoid recognizes that the boundary of an ellipsoid can be found by (a)
 starting with a unit a unit sphere $\mathcal{P}$
 centered at the origin, (b) transforming that by a "square root" of the covariance matrix, denoted $\mathbf{S}^{1/2}$,
-and then (c) shifting that to centroid of the data. The unit sphere is defined as the contour of Euclidean distance 1 from the origin,
+and then (c) shifting that to centroid of the data. 
+
+The unit sphere is defined as the contour of Euclidean distance 1 from the origin,
 $\mathcal{P} := \{ \mathbf{x}^\textsf{T} \mathbf{x}= 1\}$.
 Using the notation $\oplus$ to represent translation to a new centroid at the variable means, $\bar{\mathbf{y}}$,
 the data ellipsoid becomes,
@@ -621,6 +626,7 @@ $$
 $$ {#eq-ellE}
 
 **Contour levels ($c$)**
+
 When $\mathbf{y}$ is (at least approximately) bivariate normal,
 $D_M^2(\mathbf{y})$ has a large-sample $\chi^2_2$ distribution
 ($\chi^2$ with 2 df),
@@ -831,7 +837,7 @@ with(Galton,
 
 Finally, as Galton noted in his diagram, the principal major and minor axes of the ellipse have important statistical properties. @Pearson:1901 would later show that
 their directions are determined by the eigenvectors $\mathbf{v}_1, \mathbf{v}_2, \dots$ of the covariance matrix $\mathbf{S}$ and their radii by the
-square roots, $\sqrt{\mathbf{v}_1}, \sqrt{\mathbf{v}_1}, \dots$ of the corresponding
+square roots, $\sqrt{\lambda_1}, \sqrt{\lambda_2}, \dots$ of the corresponding
 eigenvalues.
 
 
@@ -841,9 +847,9 @@ eigenvalues.
 A number of packages provide functions for drawing data ellipses in a scatterplot, with various features.
 
 * `car::scatterplot()`: uses base R graphics to draw 2D scatterplots, with a wide variety of plot enhancements including linear and non-parametric smoothers (loess, gam), a formula method, e.g., `y ~ x | group`, and marking points and lines using symbol shape,
-color, etc. Importantly, the `r pkg("car")` package generally allows automatic identification of "noteworthy" points by their labels in the plot using a variety of methods. For example, `method = "mahal"` labels cases with the most extreme Mahalanobis distances;
-`method = "r"` selects points according to their value of `abs(y)`, which is
-appropriate in residual plots.
+color, etc. 
+    Importantly, the `r pkg("car")` package generally allows automatic identification of "noteworthy" points by their labels in the plot using a variety of methods. For example, `method = "mahal"` labels cases with the most extreme Mahalanobis distances;
+`method = "r"` selects points according to their value of `abs(y)`, which is appropriate in residual plots.
 * `car::dataEllipse()`: plots  classical or robust data ellipses for one or more groups, with the same facilities for point identification. The robust version (`robust=TRUE`) uses the multivariate $t$ distribution (using `MASS::cov/trob()`) rather than the Gaussian,
 * `heplots::covEllipses()`: draws classical or robust data ellipses for one or more groups in a one-way design and optionally for the pooled total sample, where the focus is on homogeneity of within-group covariance matrices.
 * `ggplot2::stat_ellipse()`: uses the calculation methods of `car::dataEllipse()` to add unfilled (`geom = "path"`) or filled (`geom = polygon"`) data ellipses in a `ggplot` scatterplot, using inherited aesthetics.
@@ -879,10 +885,13 @@ using `car::scatterplot()`
 with many of its bells and whistles, including marginal boxplots for the variables,
 the linear regression line, loess smooth and the 68% data ellipse.
 
-```{r}
+<!-- fig.code: R/prestige.R -->
+
+```{r echo=-1}
 #| label: fig-Prestige-scatterplot-income1
 #| out-width: "80%"
 #| fig-cap: !expr glue::glue("Scatterplot of prestige vs. income, showing the linear regression line ({red}), the loess smooth with a confidence envelope ({darkgreen}) and a 68% data ellipse. Points with the 4 largest Mahalanobis $D^2$ values are labeled.")
+par(mar = c(4,4,1,1)+.1, cex.lab = 1.2)
 scatterplot(prestige ~ income, data=Prestige,
   pch = 16, cex.lab = 1.25,
   regLine = list(col = "red", lwd=3),
@@ -898,7 +907,8 @@ There is a lot that can be seen here:
 
 * `income` is positively skewed, as is often the case.
 * The loess smooth, on the scale of income, shows `prestige` increasing up to $15,000 (these are 1971 incomes), and then leveling off.
-* The data ellipse, centered at the means encloses approximately 68% of the data points. It adds visual information about the correlation and precision of the linear regression; but here, the non-linear trend for higher incomes strongly suggests a different approach.
+* The bivariate 1 standard deviation
+data ellipse, centered at the means encloses approximately 68% of the data points. It adds visual information about the correlation and precision of the linear regression; but here, the non-linear trend for higher incomes strongly suggests a different approach.
 * The four points identified by their labels are those with the largest Mahalanobis distances. `scatterplot()` prints their labels to the console.
 
 @fig-Prestige-scatterplot-educ1 shows a similar plot for education, which
@@ -914,7 +924,7 @@ on average
 #| fig-cap: !expr glue::glue("Scatterplot of prestige vs. education, showing the linear regression line ({red}), the loess smooth with a confidence envelope ({darkgreen}) and a 68% data ellipse.")
 par(mar = c(4,4,1,1)+.1)
 scatterplot(prestige ~ education, data=Prestige,
-  pch = 16, cex.lab = 1.25,
+  pch = 16, cex.lab = 1.3,
   regLine = list(col = "red", lwd=3),
   smooth = list(smoother=loessLine, 
                 lty.smooth = 1, lwd.smooth=3,
@@ -942,20 +952,21 @@ in the linear model `m`, you can use `method = which(abs(rstandard(m)) > 2)`.
 par(mar = c(4,4,1,1)+.1)
 m <- lm(prestige ~ education, data=Prestige)
 scatterplot(prestige ~ education, data=Prestige,
-            pch = 16, cex.lab = 1.25,
-            boxplots = FALSE,
-            regLine = list(col = "red", lwd=3),
-            smooth = list(smoother=loessLine,
-                          lty.smooth = 1, lwd.smooth=3,
-                          col.smooth = "black", 
-                          col.var = "darkgreen"),
-            ellipse = list(levels = 0.68),
-            id = list(n=4, method = which(abs(rstandard(m))>2), 
-                      col="black", cex=1.2)) |> invisible()
+    pch = 16, cex.lab = 1.3,
+    boxplots = FALSE,
+    regLine = list(col = "red", lwd=3),
+    smooth = list(smoother=loessLine,
+                  lty.smooth = 1, lwd.smooth=3,
+                  col.smooth = "black", 
+                  col.var = "darkgreen"),
+    ellipse = list(levels = 0.68),
+    id = list(n=4, method = which(abs(rstandard(m))>2), 
+              col="black", cex=1.2)) |> 
+  invisible()
 ```
 
 
-#### Plotting on a log scale {#sec-log-scale}
+### Handling nonlinearity: Plotting on a log scale {#sec-log-scale}
 
 A typical remedy for the non-linear relationship of income to prestige is to plot income on a log scale. This usually makes sense, and expresses a belief that a **multiple** of
 or **percentage increase** in income has a constant impact on prestige, as opposed to
@@ -973,7 +984,6 @@ $\log_e()$ scale. The slope, `coef(lm(prestige ~ log(income), data=Prestige))["l
 increase in salary is associated with an average change of 21.55 / 100 
 in prestige.
 
-<!-- removed: #| source-line-numbers: "2" -->
 
 ```{r echo = -1}
 #| label: fig-Prestige-scatterplot2
@@ -982,7 +992,7 @@ in prestige.
 par(mar = c(4,4,1,1)+.1)
 scatterplot(prestige ~ income, data=Prestige,
   log = "x",
-  pch = 16, cex.lab = 1.25,
+  pch = 16, cex.lab = 1.3,
   regLine = list(col = "red", lwd=3),
   smooth = list(smoother=loessLine,
                 lty.smooth = 1, lwd.smooth=3,
@@ -994,7 +1004,7 @@ scatterplot(prestige ~ income, data=Prestige,
 The smoothed curve in @fig-Prestige-scatterplot2
 exhibits a slight tendency to bend upwards, but a linear relation is a reasonable approximation.
 
-#### Stratifying {#sec-stratifying}
+### Stratifying {#sec-stratifying}
 
 Before going further, it is instructive to ask what we could see in the relationship
 between income and prestige if we stratified by type of occupation, fitting
@@ -1006,16 +1016,17 @@ is a natural way to specify grouping by `type`; separate linear regressions
 and smooths are calculated for each group, applying the
 color and point shapes specified by the `col` and `pch` arguments.
 
-```{r}
+```{r echo=-1}
 #| label: fig-Prestige-scatterplot3
 #| out-width: "80%"
-#| fig-cap: "Scatterplot of prestige vs. income, stratified by occupational type. This implies a different interpretation, where occupation type is a moderator variable."
+#| fig-cap: "Scatterplot of prestige vs. income, stratified by occupational type. This implies a different interpretation, where occupation type is a moderator variable, so different regressions apply to each type. The linear regression line is dashed, while the loess smooth is solid."
+par(mar = c(4,4,1,1)+.1)
 scatterplot(prestige ~ income | type, data=Prestige,
   col = c("blue", "red", "darkgreen"),
-  pch = 15:17,
+  pch = 15:17, cex.lab = 1.3,
   grid = FALSE,
   legend = list(coords="bottomright"),
-  regLine = list(lwd=3),
+  regLine = list(lwd=3, lty = "longdash"),
   smooth=list(smoother=loessLine, 
               var=FALSE, lwd.smooth=2, lty.smooth=1))
 ```
@@ -1031,11 +1042,11 @@ lm(prestige ~ income * type, data = Prestige)
 ```
 
 These models signify that there are different slopes (and intercepts) for the three
-occupational types. In this interpretation, `type` is a moderator variable, with a different story.
+occupational types. In this interpretation, `type` is a **moderator** variable, with a different story.
 The slopes of the fitted lines suggest that among blue collar workers, prestige
 increases sharply with their income. For white collar and professional workers, there is still
 an increasing relation of prestige with income, but the effect of income (slope) diminishes with
-higher occupational category. A different plot entails a different story.
+higher occupational category. A different fitted relationship entails a different story.
 
 
 ### Example: Penguins data {#sec-penguins}
@@ -1080,7 +1091,7 @@ peng <- penguins |>
          sex = as.factor(substr(sex,1,1))) |>
   tidyr::drop_na()
 
-str(peng)
+glimpse(peng)
 ```
 
 There are quite a few variables to choose for illustrating data ellipses in scatterplots. Here I focus on
@@ -1531,7 +1542,7 @@ $$
 $$
 
 This fact can be used to assess whether sample data in $\mathbf{y}$ does indeed follow a
-MVN distribution by plotting the _quantiles_[^quantile] of the _sorted_ sample $D^2$ values
+MVN distribution by plotting the _quantiles_[^quantile] of the _sorted_ sample Mahalanobis $D^2$ values
 (denoted $D^2_{(i)}$) calculated from @eq-Dsq
 against the corresponding $\chi^2_p$ quantiles found from `qchisq(df = p)`. This is called
 a $\chi^2$ QQ plot.
@@ -1549,7 +1560,7 @@ The topics of assessing multivariate normality and detecting multivariate outlie
 larger than I consider here.
 These topics are also intertwined, because outliers inflate the variance ($\mathbf{S}$) of
 the data, making extreme observations appear less extreme.
-A variety of _robust_ methods described later (**sec ??**) work by down-weighting outliers,
+A variety of _robust_ methods described later (@sec-robust-estimation) work by down-weighting outliers,
 which is particularly important in assessing whether the residuals from a multivariate linear
 model are multivariate normal.
 
@@ -2183,7 +2194,7 @@ are unshaded when $| d_{ij} | < 2$.
 #| fig-width: 9
 #| fig-height: 9
 #| out-width: "100%"
-#| fig-cap: "Mosaic pairs plot for the combinations of species, sex and island. Diagnonal plots show the marginal frequency of each variable by the width of each rectangle. Off-diagonal mosaic plots subdivide by the conditional frequency of the second variable, shown numerically in the tiles. "
+#| fig-cap: "Mosaic pairs plot for the combinations of species, sex and island. Diagnonal plots show the marginal frequency of each variable by the width of each rectangle. Off-diagonal mosaic plots subdivide by the conditional frequency of the second variable, shown numerically in the tiles. The tiles are shaded according to the departures from independence."
 library(vcd)
 pairs(peng.table, shade = TRUE,
       lower_panel_args = list(labeling = labeling_values()),
@@ -2427,7 +2438,7 @@ in a point in projective space. What this does is to map $n$-dimensional
 relations into 2D patterns we can see in a parallel coordinates plot.
 
 ::: {.callout-note title="History Corner"}
-> Those who don't know history are doomed to plagarize it ---The author
+> Those who don't know history are doomed to plagiarize it ---The author
 
 The theory of projective geometry originated with the French
 mathematician Maurice d'Ocagne [-@Ocagne:1885] who sought a way to
@@ -2535,7 +2546,7 @@ make a difference in what we can see in such plots. For a simple example
 islands to make it clearer which species occur on each island.
 
 ```{r}
-#| label: fig-peng-ggpcp2
+#| label: code-peng-ggpcp2
 #| code-fold: show
 #| eval: false
 #| fig-width: 9
@@ -2565,14 +2576,18 @@ peng1 |>
 
 <!-- cHEATING HERE because ggcpc plots take so long -->
 ```{r}
-#| label: inc-fig-peng-ggpcp2
+#| label: fig-peng-ggpcp2
+#| out-width: "100%"
 #| echo: false
+#| fig-cap: "Parallel coordinates plot of penguin size variables, with the levels of species and island reordered."
 knitr::include_graphics("figs/fig-peng-ggpcp2-1.png")
 ```
 
 The order of variables in this plot emphasizes the relation between penguin species and the island
 where they were observed and then shows the values of the quantitative
-body size measurements. More generally, quantitative variables can, and probably should,
+body size measurements. 
+
+More generally, quantitative variables can, and probably should,
 be ordered to place the most highly correlated variables adjacently to minimize 
 the degree of crossing lines from one variable to the next [@MartiLaguna2003].
 When variables are highly _negatively_ correlated (such as `bill_depth` and `flipper_length` here),
