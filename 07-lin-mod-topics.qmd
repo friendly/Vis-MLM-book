@@ -40,18 +40,24 @@ library(gganimate)
 
 ## Ellipsoids in data space and $\mathbf{\beta}$ space {#sec-betaspace}
 
-It is most common to look at data and fitted models in "data space," where axes correspond to
-variables, points represent observations, and fitted models are plotted as lines (or planes) in this space.
+It is most common to look at data and fitted models in our familiar "data space". Here, axes correspond to
+variables, points represent observations, and fitted models can be plotted as lines (or planes) in this space.
 As we've suggested, data ellipsoids provide informative summaries of relationships in data space.
+
 For linear models, particularly regression models with quantitative predictors, there is another space---"$\mathbf{\beta}$ space"---that provides deeper views of models and the relationships among them. This discussion extends @Friendly-etal:ellipses:2013, Sec. 4.6.
 
 In $\mathbf{\beta}$ space, the axes pertain to coefficients, for example $(\beta_0, \beta_1)$
-in a simple linear regression. Points in this space are models (true, hypothesized, fitted) whose coordinates represent values of these parameters. For example, one point 
-$\widehat{\mathbf{\beta}}_{\text{OLS}} = (\hat{\beta}_0, \hat{\beta}_1)$ represents the least squares estimate; other points, $\widehat{\mathbf{\beta}}_{\text{WLS}}$ and $\widehat{\mathbf{\beta}}_{\text{ML}}$
-would give weighted least squares and maximum likelihood estimates, and the line
-$\beta_1 = 0$ represents the null hypothesis that the slope is zero. 
+in a simple linear regression. Points in this space are models (true, hypothesized, fitted) whose coordinates represent values of these parameters. For example, in simple regression, one point plotted with the coefficients
+$\widehat{\mathbf{\beta}}_{\text{OLS}} = (\hat{\beta}_0, \hat{\beta}_1)$ represents the least squares estimate. 
 
-In the sense described below, data space and $\boldsymbol{\beta}$ space are each _dual_ to the other.
+Other points, representing different fitting methods can be shown in the same plot. For instance, $\widehat{\mathbf{\beta}}_{\text{WLS}}$ and $\widehat{\mathbf{\beta}}_{\text{ML}}$
+would give weighted least squares and maximum likelihood estimates. The line
+$\beta_1 = 0$ represents the null hypothesis that the slope is zero and the point $(0, 0)$
+corresponds to the _joint_ hypothesis $\mathcal{H}_0: \beta_0 = 0, \beta_1 = 0$.
+
+### Dual and inverse spaces
+
+In the sense described below, the data space of $\mathbf{X}$ and that of $\boldsymbol{\beta}$ space are each _dual_  and _inverse_ to the other.
 In simple linear regression, for example:  
 
 * each line, like $\mathbf{y} = \beta_0 + \beta_1 \mathbf{x}$
@@ -65,31 +71,41 @@ the proposition that "every two lines intersect in a point in the other space".
 
 <!-- fig.code: R/dual-points-lines.R -->
 
-```{r}
-#| label: fig-dual-points-lines
-#| echo: false
-#| out-width: "100%"
-#| fig-cap: "Duality of $(x, y)$ lines in data space (left) and points in $\\beta$-space (right). Each line in data space corresponds to a point, whose intercept and slope are shown in $\\beta$-space."
-knitr::include_graphics("images/dual-points-lines.png")
-```
+::: {#exm-dual-points-lines}
+**Dual points and lines**
 
-This is illustrated in @fig-dual-points-lines. The left panel shows three lines in data space,
+This duality of points and lines is illustrated in @fig-dual-points-lines. The left panel shows three lines in data space,
 which can be expressed as linear equations in $\mathbf{z} = (x, y)$ of the form 
-$\mathbf{A} \mathbf{z} = \mathbf{d}$. `matlib::showEqn(A, d)` prints these as equations in $x$ and $y$.
+$\mathbf{A} \mathbf{z} = \mathbf{d}$. The function `matlib::showEqn(A, d)` prints these as equations in 
+the data coordinates $x$ and $y$.
 
 ```{r}
 A <- matrix(c( 1, 1, 0,
-              -1, 1, 1), 3, 2) 
+              -1, 1, 1), nrow = 3, ncol = 2) 
 d <- c(2, 1/2, 1)
 showEqn(A, d, vars = c("x", "y"), simplify = TRUE)
 ```
 
+```{r}
+#| label: fig-dual-points-lines
+#| echo: false
+#| out-width: "100%"
+#| fig-cap: "Duality of $(x, y)$ lines in data space (left) and points in $\\beta$-space (right). Each line in data space corresponds to a point, whose intercept and slope are shown in $\\beta$-space. Labels in both plots identify the points and lines."
+knitr::include_graphics("images/dual-points-lines.png")
+```
+
+
+
 The first equation, $x - y = 2$ can be expressed
-as the line $y = x - 2$ and corresponds to the point $(\beta_0, \beta_1) = (-2, 1)$
-in $\beta$ space, and similarly for the other two equations.
+as the `r red` line $y = x - 2$ labeled in the left panel of @fig-dual-points-lines. 
+This corresponds to the `r red` point $(\beta_0, \beta_1) = (-2, 1)$
+in $\beta$ space, and similarly for the other two equations shown in `r blue` and `r green`.
+
 The second equation, $x + y = \frac{1}{2}$, or $y = 0.5 - x$ intersects the first at
-the point $(x, y) = (1.25, 0.75)$; this corresponds to the line connecting $(-2, 1)$ and
-$(0.5, -1)$ in $\beta$ space.
+the point $(x, y) = (1.25, 0.75)$. This corresponds to the line connecting $(-2, 1)$ and
+$(0.5, -1)$ in $\beta$ space. All solutions to this pair of equations lie along this line.
+
+:::
 
 This lovely duality is an example of an important principle of [duality](https://en.wikipedia.org/wiki/Duality_(mathematics)) in modern mathematics
 which translates concepts and structures from one perspective to another
@@ -148,7 +164,7 @@ I illustrate these ideas in the example below.
 ### Data ellipse and confidence ellipse {#sec-data-beta}
 
 In @sec-avplots I used the data (`heplots::coffee`) on coffee consumption, stress and heart disease
-to illustrate _added variable plots_ and explain the perplexing result that increased coffee
+to illustrate _added variable plots_. These explained the perplexing result that increased coffee
 seemed strongly positively related to heart damage when considered alone (see @fig-coffee-spm), but
 had a negative coefficient ($\beta_{\text{Coffee}} = -0.41$) in the model (`fit.both`) that
 also included the effect of stress on heart damage. The AV plots (@fig-coffee-avPlots) clarified this
@@ -224,7 +240,7 @@ each other and to hypothesis tests.
 -->
 
 The left panel in @fig-coffee-data-beta-both 
-is the same as that in the (3,2) cell of @fig-coffee-scatmat for the relation `Stress ~ Coffee` but with data ellipses of 40% and 68% coverage.
+is the same as that in the (3,2) cell of @fig-coffee-spm for the relation `Stress ~ Coffee` but with data ellipses of 40% and 68% coverage.
 The shadows of the 40% ellipse on any axis give univariate intervals of the mean 
 $\bar{x} \pm 1 s_x$ (standard deviation) shown by the thick red lines;
 the shadow of the 68% ellipse corresponds to an interval
@@ -362,7 +378,7 @@ error in the measurement in  $y$
 increases the MSE and thus standard errors of the regression coefficients but does not introduce
 bias in the coefficients.
 
-#### Example
+#### Example: Measurement Error Quartet
 An illuminating example can be constructed by starting with the simple linear regression
 
 $$
