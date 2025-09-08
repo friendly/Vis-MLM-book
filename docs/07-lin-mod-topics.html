@@ -265,7 +265,7 @@ window.Quarto = {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./06-linear_models-plots.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Plots for univariate response models</span></span></a>
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Plots for Univariate Response Models</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -363,7 +363,7 @@ window.Quarto = {
 <li>
 <a href="#sec-betaspace" id="toc-sec-betaspace" class="nav-link active" data-scroll-target="#sec-betaspace"><span class="header-section-number">7.1</span> Ellipsoids in data space and <span class="math inline">\(\mathbf{\beta}\)</span> space</a>
   <ul class="collapse">
-<li><a href="#sec-coffee-stress" id="toc-sec-coffee-stress" class="nav-link" data-scroll-target="#sec-coffee-stress"><span class="header-section-number">7.1.1</span> Coffee, stress and heart disease</a></li>
+<li><a href="#sec-data-beta" id="toc-sec-data-beta" class="nav-link" data-scroll-target="#sec-data-beta"><span class="header-section-number">7.1.1</span> Data ellipse and confidence ellipse</a></li>
   </ul>
 </li>
   <li>
@@ -446,58 +446,11 @@ Figure&nbsp;7.2: Geometric properties of an ellipse <span class="math inline">\(
 </div>
 <p>As long as <span class="math inline">\(\mathbf{S}\)</span> is of full rank, the eigenvectors of <span class="math inline">\(\mathbf{S}^{-1}\)</span> are identical, while the eigenvalues are <span class="math inline">\(1 / \lambda_i\)</span>, so the radii are the reciprocals <span class="math inline">\(1 / \sqrt{\lambda_i}\)</span>. The analogous ellipse for <span class="math inline">\((2 \mathbf{S}^{-1})\)</span> is smaller by a factor of <span class="math inline">\(\sqrt{2}\)</span>.</p>
 <p>Thus, in two dimensions, the ellipse for <span class="math inline">\(\mathbf{S}^{-1}\)</span> is a <span class="math inline">\(90^o\)</span> rotation of that for <span class="math inline">\(\mathbf{S}\)</span>. It is small in directions where the ellipse for <span class="math inline">\(\mathbf{S}\)</span> is large, and vice-versa. In our statistical applications, this translates as: parameter estimates in <span class="math inline">\(\beta\)</span> space are more precise (have less variance) in the directions where the data are more widely dispersed, having more information about the relationship.</p>
-<p>We illustrate these ideas in the example below.</p>
-<section id="sec-coffee-stress" class="level3" data-number="7.1.1"><h3 data-number="7.1.1" class="anchored" data-anchor-id="sec-coffee-stress">
-<span class="header-section-number">7.1.1</span> Coffee, stress and heart disease</h3>
-<p>Consider the dataset <code>coffee</code>, giving measures of <code>Heart</code> (<span class="math inline">\(y\)</span>), an index of cardiac damage, <code>Coffee</code> (<span class="math inline">\(x_1\)</span>), a measure of daily coffee consumption, and <code>Stress</code> (<span class="math inline">\(x_2\)</span>), a measure of occupational stress, in a contrived sample of <span class="math inline">\(n=20\)</span> university people.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> For the sake of the example we assume that the main goal is to determine whether or not coffee is good or bad for your heart, and stress represents one potential confounding variable among others (age, smoking, etc.) that might be useful to control statistically.</p>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb3" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">1234</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">coffee</span>, package<span class="op">=</span><span class="st">"matlib"</span><span class="op">)</span></span>
-<span><span class="va">coffee</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/sample_n.html">sample_n</a></span><span class="op">(</span><span class="fl">6</span><span class="op">)</span></span>
-<span><span class="co">#&gt;          Group Coffee Stress Heart</span></span>
-<span><span class="co">#&gt; 1 Grad_Student    104    117    92</span></span>
-<span><span class="co">#&gt; 2      Student     52     86    63</span></span>
-<span><span class="co">#&gt; 3 Grad_Student     76     92    58</span></span>
-<span><span class="co">#&gt; 4      Student    100    123    92</span></span>
-<span><span class="co">#&gt; 5      Student     64     74    63</span></span>
-<span><span class="co">#&gt; 6    Professor    141    175   145</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p><a href="#fig-coffee-scatmat" class="quarto-xref">Figure&nbsp;<span>7.3</span></a> shows the scatterplot matrix, giving the marginal relations between all pairs of variables. The marginal message seems to be that coffee is bad for your heart, stress is bad for your heart and coffee consumption is also related to occupational stress.</p>
-<div class="cell" data-layout-align="center">
-<details class="code-fold"><summary>Show the code</summary><div class="sourceCode" id="cb4" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/car/man/scatterplotMatrix.html">scatterplotMatrix</a></span><span class="op">(</span><span class="op">~</span> <span class="va">Heart</span> <span class="op">+</span> <span class="va">Coffee</span> <span class="op">+</span> <span class="va">Stress</span>, data<span class="op">=</span><span class="va">coffee</span>,</span>
-<span>    smooth <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>    pch <span class="op">=</span> <span class="fl">16</span>, col <span class="op">=</span> <span class="st">"brown"</span>,</span>
-<span>    cex.axis <span class="op">=</span> <span class="fl">1.3</span>, cex.labels <span class="op">=</span> <span class="fl">3</span>,</span>
-<span>    ellipse <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>levels <span class="op">=</span> <span class="fl">0.68</span>, fill.alpha <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details><div class="cell-output-display">
-<div id="fig-coffee-scatmat" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
-<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-coffee-scatmat-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="figs/ch07/fig-coffee-scatmat-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-coffee-scatmat-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;7.3: Scatterplot matrix for the <code>coffee</code> data showing the pairwise relationships among Heart damage (<span class="math inline">\(y\)</span>), Coffee consumption (<span class="math inline">\(x_1\)</span>), and Stress (<span class="math inline">\(x_2\)</span>), with linear regression lines and 68% data ellipses.
-</figcaption></figure>
-</div>
-</div>
-</div>
-<p>Yet, when we fit both variables together, we obtain the following results, suggesting that coffee is good for you—the coefficient for coffee is now negative, though non-significant. How can this be?</p>
-<div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb5" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">coffee.mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">Heart</span> <span class="op">~</span> <span class="va">Coffee</span> <span class="op">+</span> <span class="va">Stress</span>, data<span class="op">=</span><span class="va">coffee</span><span class="op">)</span></span>
-<span><span class="fu">broom</span><span class="fu">::</span><span class="fu"><a href="https://generics.r-lib.org/reference/tidy.html">tidy</a></span><span class="op">(</span><span class="va">coffee.mod</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # A tibble: 3 × 5</span></span>
-<span><span class="co">#&gt;   term        estimate std.error statistic   p.value</span></span>
-<span><span class="co">#&gt;   &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;</span></span>
-<span><span class="co">#&gt; 1 (Intercept)   -7.79      5.79      -1.35 0.196    </span></span>
-<span><span class="co">#&gt; 2 Coffee        -0.409     0.292     -1.40 0.179    </span></span>
-<span><span class="co">#&gt; 3 Stress         1.20      0.224      5.34 0.0000536</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>The answer is that the marginal plots of <code>Heart</code> vs.&nbsp;<code>Coffee</code> and <code>Stress</code> in the first row of <a href="#fig-coffee-scatmat" class="quarto-xref">Figure&nbsp;<span>7.3</span></a> each ignore the the other predictor. In contrast, the coefficients for coffee and stress in the multiple regression model <code>coffee.mod</code> are <em>partial</em> coefficients, giving the estimated change in heart damage for a unit change in each predictor, but <strong>adjusting for</strong> (controlling for, or holding constant) the other predictor.</p>
-<p>We can see these effects directly in <strong>added variable plots</strong> (<a href="06-linear_models-plots.html#sec-avplots" class="quarto-xref"><span>Section 6.4</span></a>), but here I consider the relationship of coffee and stress in data space and beta space and how their ellipses relate to each other and to hypothesis tests.</p>
-<p>The left panel in <a href="#fig-coffee-data-beta-both" class="quarto-xref">Figure&nbsp;<span>7.4</span></a> is the same as that in the (3,2) cell of <a href="#fig-coffee-scatmat" class="quarto-xref">Figure&nbsp;<span>7.3</span></a> for the relation <code>Stress ~ Coffee</code> but with data ellipses of 40% and 60% coverage. The shadows of the 40% ellipse on any axis give univariate intervals of the mean <span class="math inline">\(\bar{x} \pm 1 s_x\)</span> (standard deviation) shown by the thick red lines; the shadow of the 68% ellipse corresponds to an interval <span class="math inline">\(\bar{x} \pm 1.5 s_x\)</span>.</p>
-<p>The right panel shows the joint 95% confidence region for the coefficients <span class="math inline">\((\beta_{\text{Coffee}}, \beta_{\text{Stress}})\)</span> and individual confidence intervals in <span class="math inline">\(\mathbf{\beta}\)</span> space. These are determined as</p>
-<p><span class="math display">\[
-\widehat{\mathbf{\beta}} \oplus \sqrt{d F^{.95}_{d, \nu}} \times s_e \times \mathbf{S}_X^{-1/2} \:\: .
-\]</span> where <span class="math inline">\(d\)</span> is the number of dimensions for which we want coverage, <span class="math inline">\(\nu\)</span> is the residual degrees of freedom for <span class="math inline">\(s_e\)</span>, and <span class="math inline">\(\mathbf{S}_X\)</span> is the covariance matrix of the predictors.</p>
+<p>I illustrate these ideas in the example below.</p>
+<section id="sec-data-beta" class="level3" data-number="7.1.1"><h3 data-number="7.1.1" class="anchored" data-anchor-id="sec-data-beta">
+<span class="header-section-number">7.1.1</span> Data ellipse and confidence ellipse</h3>
+<p>In <a href="06-linear_models-plots.html#sec-avplots" class="quarto-xref"><span>Section 6.4</span></a> I used the data (<code>heplots::coffee</code>) on coffee consumption, stress and heart disease to illustrate <em>added variable plots</em> and explain the perplexing result that increased coffee seemed strongly positively related to heart damage when considered alone (see <a href="06-linear_models-plots.html#fig-coffee-spm" class="quarto-xref">Figure&nbsp;<span>6.10</span></a>), but had a negative coefficient (<span class="math inline">\(\beta_{\text{Coffee}} = -0.41\)</span>) in the model (<code>fit.both</code>) that also included the effect of stress on heart damage. The AV plots (<a href="06-linear_models-plots.html#fig-coffee-avPlots" class="quarto-xref">Figure&nbsp;<span>6.11</span></a>) clarified this by showing the conditional relations of each predictor, when the other was controlled or adjusted for.</p>
+<p>Here, I use this dataset to illustrate the inverse relation between a data ellipse based on the covariance matrix <span class="math inline">\(\mathbf{S}_X\)</span> and the corresponding confidence ellipse for the coefficients based on <span class="math inline">\(\mathbf{S}_X^{-1}\)</span>. This is shown in <a href="#fig-coffee-data-beta-both" class="quarto-xref">Figure&nbsp;<span>7.3</span></a>.</p>
 <div class="cell" data-layout-align="center">
 <div class="cell-output-display">
 <div id="fig-coffee-data-beta-both" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
@@ -505,23 +458,107 @@ Figure&nbsp;7.3: Scatterplot matrix for the <code>coffee</code> data showing the
 <img src="images/coffee-data-beta-both.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-coffee-data-beta-both-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;7.4: Data space and <span class="math inline">\(\mathbf{\beta}\)</span> space representations of Coffee and Stress. Left: 40% and 68% data ellipses. Right: Joint 95% confidence ellipse (blue) for (<span class="math inline">\(\beta_{\text{Coffee}}, \beta_{\text{Stress}}\)</span>), confidence interval generating ellipse (red) with 95% univariate shadows. <span class="math inline">\(H_0\)</span> marks the joint hypothesis that both coefficients equal zero.
+Figure&nbsp;7.3: Data space and <span class="math inline">\(\mathbf{\beta}\)</span> space representations of Coffee and Stress. Left: 40% and 68% data ellipses. Right: Joint 95% confidence ellipse (blue) for (<span class="math inline">\(\beta_{\text{Coffee}}, \beta_{\text{Stress}}\)</span>), confidence interval generating ellipse (red) with 95% univariate shadows. <span class="math inline">\(H_0\)</span> marks the joint hypothesis that both coefficients equal zero.
 </figcaption></figure>
 </div>
 </div>
 </div>
-<p>Thus, the <span style="color: blue;">blue</span> ellipse in <a href="#fig-coffee-data-beta-both" class="quarto-xref">Figure&nbsp;<span>7.4</span></a> (right) is the ellipse of <strong>joint</strong> 95% coverage, using the factor <span class="math inline">\(\sqrt{2 F^{.95}_{2, \nu}}\)</span>, which covers the true values of (<span class="math inline">\(\beta_{\mathrm{Stress}}, \beta_{\mathrm{Coffee}}\)</span>) in 95% of samples. Moreover:</p>
+<!--
+Consider the dataset `coffee`, giving measures of `Heart` ($y$), an index of cardiac damage, 
+`Coffee` ($x_1$), a measure of daily coffee consumption, and 
+`Stress` ($x_2$), a measure of occupational stress, in a contrived sample of $n=20$ university people.[^coffee]
+For the sake of the example we assume that the main goal is
+to determine whether or not coffee is good or bad for your heart, and stress
+represents one potential confounding variable among others (age, smoking, etc.)
+that might be useful to control statistically.
+
+[^coffee]: This example was developed by Georges Monette.
+
+
+::: {.cell layout-align="center"}
+
+```{.r .cell-code}
+set.seed(1234)
+data(coffee, package="matlib")
+coffee |> dplyr::sample_n(6)
+#>          Group Coffee Stress Heart
+#> 1 Grad_Student    104    117    92
+#> 2      Student     52     86    63
+#> 3 Grad_Student     76     92    58
+#> 4      Student    100    123    92
+#> 5      Student     64     74    63
+#> 6    Professor    141    175   145
+```
+:::
+
+
+@fig-coffee-scatmat shows the scatterplot matrix, giving the marginal relations between all pairs 
+of variables. The marginal message seems to be that coffee is
+bad for your heart, stress is bad for your heart and coffee consumption is
+also related to occupational stress.
+
+::: {.cell layout-align="center"}
+
+```{.r .cell-code  code-fold="true" code-summary="Show the code"}
+scatterplotMatrix(~ Heart + Coffee + Stress, data=coffee,
+    smooth = FALSE,
+    pch = 16, col = "brown",
+    cex.axis = 1.3, cex.labels = 3,
+    ellipse = list(levels = 0.68, fill.alpha = 0.1))
+```
+
+::: {.cell-output-display}
+![Scatterplot matrix for the `coffee` data showing the pairwise relationships among Heart damage ($y$), Coffee consumption ($x_1$), and Stress ($x_2$), with linear regression lines and 68% data ellipses.](figs/ch07/fig-coffee-scatmat-1.png){#fig-coffee-scatmat fig-align='center' width=100%}
+:::
+:::
+
+
+Yet, when we fit both variables together, we obtain the following results,
+suggesting that coffee is good for you---the coefficient for coffee is now
+negative, though non-significant.  How can this be?
+
+
+::: {.cell layout-align="center"}
+
+```{.r .cell-code}
+coffee.mod <- lm(Heart ~ Coffee + Stress, data=coffee)
+broom::tidy(coffee.mod)
+#> # A tibble: 3 × 5
+#>   term        estimate std.error statistic   p.value
+#>   <chr>          <dbl>     <dbl>     <dbl>     <dbl>
+#> 1 (Intercept)   -7.79      5.79      -1.35 0.196    
+#> 2 Coffee        -0.409     0.292     -1.40 0.179    
+#> 3 Stress         1.20      0.224      5.34 0.0000536
+```
+:::
+
+
+The answer is that the marginal plots of `Heart` vs. `Coffee` and `Stress` in the first row of @fig-coffee-scatmat each ignore
+the the other predictor. In contrast, the 
+coefficients for coffee and stress in the multiple regression model `coffee.mod` are _partial_ coefficients, giving the 
+estimated change in heart damage for a unit change in each predictor, but **adjusting for** (controlling for, or holding constant)
+the other predictor.
+
+We can see these effects directly in **added variable plots** (@sec-avplots), but here I consider the relationship
+of coffee and stress in data space and beta space and how their ellipses relate to
+each other and to hypothesis tests.
+-->
+<p>The left panel in <a href="#fig-coffee-data-beta-both" class="quarto-xref">Figure&nbsp;<span>7.3</span></a> is the same as that in the (3,2) cell of <span class="quarto-unresolved-ref">?fig-coffee-scatmat</span> for the relation <code>Stress ~ Coffee</code> but with data ellipses of 40% and 68% coverage. The shadows of the 40% ellipse on any axis give univariate intervals of the mean <span class="math inline">\(\bar{x} \pm 1 s_x\)</span> (standard deviation) shown by the thick red lines; the shadow of the 68% ellipse corresponds to an interval <span class="math inline">\(\bar{x} \pm 1.5 s_x\)</span>.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+<p><span class="math display">\[
+\widehat{\mathbf{\beta}} \oplus \sqrt{d F^{.95}_{d, \nu}} \times s_e \times \mathbf{S}_X^{-1/2} \:\: .
+\]</span> where <span class="math inline">\(d\)</span> is the number of dimensions for which we want coverage, <span class="math inline">\(\nu\)</span> is the residual degrees of freedom for <span class="math inline">\(s_e\)</span>, and <span class="math inline">\(\mathbf{S}_X\)</span> is the covariance matrix of the predictors.</p>
+<p>Thus, the <span style="color: blue;">blue</span> ellipse in <a href="#fig-coffee-data-beta-both" class="quarto-xref">Figure&nbsp;<span>7.3</span></a> (right) is the ellipse of <strong>joint</strong> 95% coverage, using the factor <span class="math inline">\(\sqrt{2 F^{.95}_{2, \nu}}\)</span>, which covers the true values of (<span class="math inline">\(\beta_{\mathrm{Stress}}, \beta_{\mathrm{Coffee}}\)</span>) in 95% of samples. Moreover:</p>
 <ul>
 <li>Any <em>joint</em> hypothesis (e.g., <span class="math inline">\(\mathcal{H}_0:\beta_{\mathrm{Stress}}=0, \beta_{\mathrm{Coffee}}=0\)</span>) can be tested visually, simply by observing whether the hypothesized point, <span class="math inline">\((0, 0)\)</span> here, lies inside or outside the joint confidence ellipse. That hypothesis is rejected</li>
 <li>The shadows of this ellipse on the horizontal and vertical axes give Scheff'e joint 95% confidence intervals for the parameters, with protection for simultaneous inference (“fishing”) in a 2-dimensional space.</li>
 <li>Similarly, using the factor <span class="math inline">\(\sqrt{F^{1-\alpha/d}_{1, \nu}} = t^{1-\alpha/2d}_\nu\)</span> would give an ellipse whose 1D shadows are <span class="math inline">\(1-\alpha\)</span> Bonferroni confidence intervals for <span class="math inline">\(d\)</span> posterior hypotheses.</li>
 </ul>
-<p>Visual hypothesis tests and <span class="math inline">\(d=1\)</span> confidence intervals for the parameters <em>separately</em> are obtained from the <span style="color: red;">red</span> ellipse in <a href="#fig-coffee-data-beta-both" class="quarto-xref">Figure&nbsp;<span>7.4</span></a>, which is scaled by <span class="math inline">\(\sqrt{F^{.95}_{1, \nu}} = t^{.975}_\nu\)</span>. We call this the <em>confidence-interval generating ellipse</em> (or, more compactly, the “confidence-interval ellipse”). The shadows of the confidence-interval ellipse on the axes (thick red lines) give the corresponding individual 95% confidence intervals, which are equivalent to the (partial, Type III) <span class="math inline">\(t\)</span>-tests for each coefficient given in the standard multiple regression output shown above.</p>
+<p>Visual hypothesis tests and <span class="math inline">\(d=1\)</span> confidence intervals for the parameters <em>separately</em> are obtained from the <span style="color: red;">red</span> ellipse in <a href="#fig-coffee-data-beta-both" class="quarto-xref">Figure&nbsp;<span>7.3</span></a>, which is scaled by <span class="math inline">\(\sqrt{F^{.95}_{1, \nu}} = t^{.975}_\nu\)</span>. We call this the <em>confidence-interval generating ellipse</em> (or, more compactly, the “confidence-interval ellipse”). The shadows of the confidence-interval ellipse on the axes (thick red lines) give the corresponding individual 95% confidence intervals, which are equivalent to the (partial, Type III) <span class="math inline">\(t\)</span>-tests for each coefficient given in the standard multiple regression output shown above.</p>
 <p>Thus, controlling for Stress, the confidence interval for the slope for Coffee includes 0, so we cannot reject the hypothesis that <span class="math inline">\(\beta_{\mathrm{Coffee}}=0\)</span> in the multiple regression model, as we saw above in the numerical output. On the other hand, the interval for the slope for Stress excludes the origin, so we reject the null hypothesis that <span class="math inline">\(\beta_{\mathrm{Stress}}=0\)</span>, controlling for Coffee consumption.</p>
 <p>Finally, consider the relationship between the data ellipse and the confidence ellipse. These have exactly the same shape, but (with equal coordinate scaling of the axes), the confidence ellipse is exactly a <span class="math inline">\(90^o\)</span> rotation and rescaling of the data ellipse. In directions in data space where the slice of the data ellipse is wide—where we have more information about the relationship between Coffee and Stress—the projection of the confidence ellipse is narrow, reflecting greater precision of the estimates of coefficients. Conversely, where slice of the the data ellipse is narrow (less information), the projection of the confidence ellipse is wide (less precision).</p>
 <p>Confidence ellipses are drawn using <code><a href="https://rdrr.io/pkg/car/man/Ellipses.html">car::confidenceEllipse()</a></code>. Click the button to show the code.</p>
 <div class="cell" data-layout-align="center">
-<details class="code-fold"><summary>Code for confidence ellipses</summary><div class="sourceCode" id="cb6" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/car/man/Ellipses.html">confidenceEllipse</a></span><span class="op">(</span><span class="va">coffee.mod</span>, </span>
+<details class="code-fold"><summary>Code for confidence ellipses</summary><div class="sourceCode" id="cb3" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/car/man/Ellipses.html">confidenceEllipse</a></span><span class="op">(</span><span class="va">coffee.mod</span>, </span>
 <span>    grid <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>    xlim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span>, ylim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">0.5</span>, <span class="fl">2.5</span><span class="op">)</span>,</span>
 <span>    xlab <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/expression.html">expression</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="st">"Coffee coefficient,  "</span>, <span class="va">beta</span><span class="op">[</span><span class="st">"Coffee"</span><span class="op">]</span><span class="op">)</span><span class="op">)</span>,</span>
@@ -577,7 +614,7 @@ y^\star_i = y_i + \nu_i
 <p>Let’s simulate an example where the true relation is <span class="math inline">\(y = 0.2 + 0.3 x\)</span> with error standard deviation <span class="math inline">\(\sigma = 0.5\)</span>. I’ll take <span class="math inline">\(x\)</span> to be uniformly distributed in [0, 10] and calculate <span class="math inline">\(y\)</span> as normally distributed around that linear relation.</p>
 <!-- fig.code: R/measerr-demo.R -->
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb7" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb4" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span>
 <span><span class="va">n</span> <span class="op">&lt;-</span> <span class="fl">300</span></span>
 <span></span>
 <span><span class="va">a</span> <span class="op">&lt;-</span> <span class="fl">0.2</span>    <span class="co"># true intercept</span></span>
@@ -590,7 +627,7 @@ y^\star_i = y_i + \nu_i
 </div>
 <p>Then, generate alternative values <span class="math inline">\(x^\star\)</span> and <span class="math inline">\(y^\star\)</span> with additional error standard deviations around <span class="math inline">\(x\)</span> given by <span class="math inline">\(\sigma_\eta = 4\)</span> and around <span class="math inline">\(y\)</span> given by <span class="math inline">\(\sigma_\nu = 1\)</span>.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb8" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">err_y</span> <span class="op">&lt;-</span> <span class="fl">1</span>   <span class="co"># additional error stdev for y</span></span>
+<div class="sourceCode" id="cb5" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">err_y</span> <span class="op">&lt;-</span> <span class="fl">1</span>   <span class="co"># additional error stdev for y</span></span>
 <span><span class="va">err_x</span> <span class="op">&lt;-</span> <span class="fl">4</span>   <span class="co"># additional error stdev for x</span></span>
 <span><span class="va">demo</span>  <span class="op">&lt;-</span> <span class="va">demo</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>y_star <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="va">n</span>, <span class="va">y</span>, <span class="va">err_y</span><span class="op">)</span>,</span>
@@ -598,14 +635,14 @@ y^\star_i = y_i + \nu_i
 </div>
 <p>There are four possible models we could fit and compare, using the combinations of <span class="math inline">\((x, x^\star)\)</span> and <span class="math inline">\((y, y^\star)\)</span></p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb9" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">fit_1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">x</span>,           data <span class="op">=</span> <span class="va">demo</span><span class="op">)</span>   <span class="co"># no additional error</span></span>
+<div class="sourceCode" id="cb6" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">fit_1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">x</span>,           data <span class="op">=</span> <span class="va">demo</span><span class="op">)</span>   <span class="co"># no additional error</span></span>
 <span><span class="va">fit_2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">y_star</span> <span class="op">~</span> <span class="va">x</span>,      data <span class="op">=</span> <span class="va">demo</span><span class="op">)</span>   <span class="co"># error in y</span></span>
 <span><span class="va">fit_3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">x_star</span>,      data <span class="op">=</span> <span class="va">demo</span><span class="op">)</span>   <span class="co"># error in x</span></span>
 <span><span class="va">fit_4</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">y_star</span> <span class="op">~</span> <span class="va">x_star</span>, data <span class="op">=</span> <span class="va">demo</span><span class="op">)</span>   <span class="co"># error in x and y</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>However, to show the differences visually, we can simply plot the data for each pair and show the regression lines (with confidence bands) and the data ellipses. To do this efficiently with <code>ggplot2</code>, it is necessary to transform the <code>demo</code> data to long format with columns <code>x</code> and <code>y</code>, distinguished by <code>name</code> for the four combinations.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb10" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># make the demo dataset long, with names for the four conditions</span></span>
+<div class="sourceCode" id="cb7" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># make the demo dataset long, with names for the four conditions</span></span>
 <span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html">bind_rows</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">demo</span><span class="op">$</span><span class="va">x</span>,      y<span class="op">=</span><span class="va">demo</span><span class="op">$</span><span class="va">y</span>,      name<span class="op">=</span><span class="st">"No measurement error"</span><span class="op">)</span>,</span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">demo</span><span class="op">$</span><span class="va">x</span>,      y<span class="op">=</span><span class="va">demo</span><span class="op">$</span><span class="va">y_star</span>, name<span class="op">=</span><span class="st">"Measurement error on y"</span><span class="op">)</span>,</span>
@@ -616,7 +653,7 @@ y^\star_i = y_i + \nu_i
 <p>Then, we can plot the data in <code>df</code> with points, regression lines and a data ellipse, faceting by <code>name</code> to give the <strong>measurement error quartet</strong>. </p>
 <!-- fig.code: R/measerr-demo.R -->
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb11" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">df</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<div class="sourceCode" id="cb8" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">df</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span>alpha <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/stat_ellipse.html">stat_ellipse</a></span><span class="op">(</span>geom <span class="op">=</span> <span class="st">"polygon"</span>, </span>
 <span>               color <span class="op">=</span> <span class="st">"blue"</span>,fill<span class="op">=</span> <span class="st">"blue"</span>, </span>
@@ -630,7 +667,7 @@ y^\star_i = y_i + \nu_i
 <img src="figs/ch07/fig-measerr-demo-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-measerr-demo-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;7.5: <strong>The measurement error quartet</strong>: Each plot shows the linear regression of <em>y</em> on <em>x</em>, but where additional error variance has been added to <em>y</em> or <em>x</em> or both. The widths of the confidence bands and the vertical extent of the data ellipses show the effect on precision.
+Figure&nbsp;7.4: <strong>The measurement error quartet</strong>: Each plot shows the linear regression of <em>y</em> on <em>x</em>, but where additional error variance has been added to <em>y</em> or <em>x</em> or both. The widths of the confidence bands and the vertical extent of the data ellipses show the effect on precision.
 </figcaption></figure>
 </div>
 </div>
@@ -639,9 +676,9 @@ Figure&nbsp;7.5: <strong>The measurement error quartet</strong>: Each plot shows
 <p>The effect of error in <span class="math inline">\(x\)</span> is less kind. Comparing the first row of plots with the second row, you can see that the estimated slope decreases when errors are added to <span class="math inline">\(x\)</span>. This is called <em>attenuation bias</em>, and it can be shown that <span class="math display">\[
 \widehat{\beta}_{x^\star} \longrightarrow \frac{\beta}{1+\sigma^2_\eta /\sigma^2_x} \; ,
 \]</span> where <span class="math inline">\(\beta\)</span> here refers to the regression slope and <span class="math inline">\(\longrightarrow\)</span> means “converges to”, as the sample size gets large. Thus, as <span class="math inline">\(\sigma^2_\eta\)</span> increases, <span class="math inline">\(\widehat{\beta}_{x^\star}\)</span> becomes less than <span class="math inline">\(\beta\)</span>.</p>
-<p>Beyond plots like <a href="#fig-measerr-demo" class="quarto-xref">Figure&nbsp;<span>7.5</span></a>, we can see the effects of error in <span class="math inline">\(x\)</span> or <span class="math inline">\(y\)</span> on the model summary statistics such as the correlation <span class="math inline">\(r_{xy}\)</span> or MSE by extracting these from the fitted models. This is easily done using <code>dplyr::nest_by(name)</code> and fitting the regression model to each subset, from which we can obtain the model statistics using <code><a href="https://rdrr.io/r/stats/sigma.html">sigma()</a></code>, <code><a href="https://rdrr.io/r/stats/coef.html">coef()</a></code> and so forth. A bit of <code><a href="https://dplyr.tidyverse.org/reference/mutate.html">dplyr::mutate()</a></code> magic is used to construct indicators <code>errX</code> and <code>errY</code> giving whether or not error was added to <span class="math inline">\(x\)</span> and/or <span class="math inline">\(y\)</span>.</p>
+<p>Beyond plots like <a href="#fig-measerr-demo" class="quarto-xref">Figure&nbsp;<span>7.4</span></a>, we can see the effects of error in <span class="math inline">\(x\)</span> or <span class="math inline">\(y\)</span> on the model summary statistics such as the correlation <span class="math inline">\(r_{xy}\)</span> or MSE by extracting these from the fitted models. This is easily done using <code>dplyr::nest_by(name)</code> and fitting the regression model to each subset, from which we can obtain the model statistics using <code><a href="https://rdrr.io/r/stats/sigma.html">sigma()</a></code>, <code><a href="https://rdrr.io/r/stats/coef.html">coef()</a></code> and so forth. A bit of <code><a href="https://dplyr.tidyverse.org/reference/mutate.html">dplyr::mutate()</a></code> magic is used to construct indicators <code>errX</code> and <code>errY</code> giving whether or not error was added to <span class="math inline">\(x\)</span> and/or <span class="math inline">\(y\)</span>.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb12" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">model_stats</span> <span class="op">&lt;-</span> <span class="va">df</span> <span class="op">|&gt;</span></span>
+<div class="sourceCode" id="cb9" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">model_stats</span> <span class="op">&lt;-</span> <span class="va">df</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/nest_by.html">nest_by</a></span><span class="op">(</span><span class="va">name</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">x</span>, data <span class="op">=</span> <span class="va">data</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>         sigma <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/sigma.html">sigma</a></span><span class="op">(</span><span class="va">model</span><span class="op">)</span>,</span>
@@ -664,10 +701,10 @@ Figure&nbsp;7.5: <strong>The measurement error quartet</strong>: Each plot shows
 <span><span class="co">#&gt; 3 Measurement error … TRUE  FALSE 0.481 &lt;lm&gt;  0.844    1.22   0.0946</span></span>
 <span><span class="co">#&gt; 4 Measurement error … TRUE  TRUE  0.401 &lt;lm&gt;  1.31     1.12   0.117</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>We plot the model <span class="math inline">\(R = r_{xy}\)</span> and the estimated residual standard error in <a href="#fig-measerr-stats" class="quarto-xref">Figure&nbsp;<span>7.6</span></a> below. The lines connecting the points are approximately parallel, indicating that errors of measurement in <span class="math inline">\(x\)</span> and <span class="math inline">\(y\)</span> have nearly additive effects on model summaries.</p>
+<p>We plot the model <span class="math inline">\(R = r_{xy}\)</span> and the estimated residual standard error in <a href="#fig-measerr-stats" class="quarto-xref">Figure&nbsp;<span>7.5</span></a> below. The lines connecting the points are approximately parallel, indicating that errors of measurement in <span class="math inline">\(x\)</span> and <span class="math inline">\(y\)</span> have nearly additive effects on model summaries.</p>
 <!-- fig.code: R/measerr-demo.R -->
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb13" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">model_stats</span>, </span>
+<div class="sourceCode" id="cb10" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">model_stats</span>, </span>
 <span>             <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">errX</span>, y <span class="op">=</span> <span class="va">r</span>, </span>
 <span>                 group <span class="op">=</span> <span class="va">errY</span>, color <span class="op">=</span> <span class="va">errY</span>, </span>
 <span>                 shape <span class="op">=</span> <span class="va">errY</span>, linetype <span class="op">=</span> <span class="va">errY</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
@@ -700,7 +737,7 @@ Figure&nbsp;7.5: <strong>The measurement error quartet</strong>: Each plot shows
 <img src="figs/ch07/fig-measerr-stats-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-measerr-stats-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;7.6: Model statistics for the combinations of additional error variance in x or y or both. Left: model R; right: Residual standard error.
+Figure&nbsp;7.5: Model statistics for the combinations of additional error variance in x or y or both. Left: model R; right: Residual standard error.
 </figcaption></figure>
 </div>
 </div>
@@ -708,7 +745,7 @@ Figure&nbsp;7.6: Model statistics for the combinations of additional error varia
 </section></section><section id="coffee-data-beta-space" class="level3" data-number="7.2.3"><h3 data-number="7.2.3" class="anchored" data-anchor-id="coffee-data-beta-space">
 <span class="header-section-number">7.2.3</span> Coffee data: <span class="math inline">\(\beta\)</span> space</h3>
 <p>In multiple regression the effects of measurement error in a predictor become more complex, because error variance in one predictor, <span class="math inline">\(x_1\)</span>, say, can affect the coefficients of other terms in the model.</p>
-<p>Consider the marginal relation between Heart disease and Stress in the <code>coffee</code> data. <a href="#fig-coffee-measerr-data-beta" class="quarto-xref">Figure&nbsp;<span>7.7</span></a> shows this with data ellipses in data space and the corresponding confidence ellipses in <span class="math inline">\(\beta\)</span> space. Each panel starts with the observed data (the darkest ellipse, marked <span class="math inline">\(0\)</span>), then adds random normal error, <span class="math inline">\(\mathcal{N}(0, \delta \times \mathrm{SD}_{Stress})\)</span>, with <span class="math inline">\(\delta = \{0.75, 1.0, 1.5\}\)</span>, to the value of Stress, while keeping the mean of Stress the same. All of the data ellipses have the same vertical shadows (<span class="math inline">\(\text{SD}_{\textrm{Heart}}\)</span>), while the horizontal shadows increase with <span class="math inline">\(\delta\)</span>, driving the slope for Stress toward 0.</p>
+<p>Consider the marginal relation between Heart disease and Stress in the <code>coffee</code> data. <a href="#fig-coffee-measerr-data-beta" class="quarto-xref">Figure&nbsp;<span>7.6</span></a> shows this with data ellipses in data space and the corresponding confidence ellipses in <span class="math inline">\(\beta\)</span> space. Each panel starts with the observed data (the darkest ellipse, marked <span class="math inline">\(0\)</span>), then adds random normal error, <span class="math inline">\(\mathcal{N}(0, \delta \times \mathrm{SD}_{Stress})\)</span>, with <span class="math inline">\(\delta = \{0.75, 1.0, 1.5\}\)</span>, to the value of Stress, while keeping the mean of Stress the same. All of the data ellipses have the same vertical shadows (<span class="math inline">\(\text{SD}_{\textrm{Heart}}\)</span>), while the horizontal shadows increase with <span class="math inline">\(\delta\)</span>, driving the slope for Stress toward 0.</p>
 <p>In <span class="math inline">\(\beta\)</span> space, it can be seen that the estimated coefficients, <span class="math inline">\((\beta_0, \beta_{\textrm{Stress}})\)</span> vary along a line and approach <span class="math inline">\(\beta_{\textrm{Stress}}=0\)</span> as <span class="math inline">\(\delta\)</span> gets sufficiently large. The shadows of ellipses for <span class="math inline">\((\beta_0, \beta_{\textrm{Stress}})\)</span> along the <span class="math inline">\(\beta_{\textrm{Stress}}\)</span> axis also demonstrate the effects of measurement error on the standard error of <span class="math inline">\(\beta_{\textrm{Stress}}\)</span>.</p>
 <div class="cell" data-layout-align="center">
 <div class="cell-output-display">
@@ -717,12 +754,12 @@ Figure&nbsp;7.6: Model statistics for the combinations of additional error varia
 <img src="images/coffee-measerr-data-beta.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-coffee-measerr-data-beta-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;7.7: Effects of measurement error in Stress on the marginal relationship between Heart disease and Stress. Each panel starts with the observed data (<span class="math inline">\(\delta = 0\)</span>), then adds random normal error, <span class="math inline">\(\mathcal{N}(0, \delta \times \text{SD}_\text{Stress})\)</span> with standard deviations multiplied by <span class="math inline">\(\delta\)</span> = 0.75, 1.0, 1.5, to the value of Stress. Increasing measurement error biases the slope for Stress toward 0. Left: 50% data ellipses; right: 50% confidence ellipses.
+Figure&nbsp;7.6: Effects of measurement error in Stress on the marginal relationship between Heart disease and Stress. Each panel starts with the observed data (<span class="math inline">\(\delta = 0\)</span>), then adds random normal error, <span class="math inline">\(\mathcal{N}(0, \delta \times \text{SD}_\text{Stress})\)</span> with standard deviations multiplied by <span class="math inline">\(\delta\)</span> = 0.75, 1.0, 1.5, to the value of Stress. Increasing measurement error biases the slope for Stress toward 0. Left: 50% data ellipses; right: 50% confidence ellipses.
 </figcaption></figure>
 </div>
 </div>
 </div>
-<p>Perhaps less well-known, but both more surprising and interesting, is the effect that measurement error in one variable, <span class="math inline">\(x_1\)</span>, has on the estimate of the coefficient for an <em>other</em> variable, <span class="math inline">\(x_2\)</span>, in a multiple regression model. <a href="#fig-coffee-measerr" class="quarto-xref">Figure&nbsp;<span>7.8</span></a> shows the confidence ellipses for <span class="math inline">\((\beta_{\textrm{Coffee}}, \beta_{\textrm{Stress}})\)</span> in the multiple regression predicting Heart disease, adding random normal error <span class="math inline">\(\mathcal{N}(0, \delta \times \mathrm{SD}_{Stress})\)</span>, with <span class="math inline">\(\delta = \{0, 0.2, 0.4, 0.8\}\)</span>, to the value of Stress alone.<br>
+<p>Perhaps less well-known, but both more surprising and interesting, is the effect that measurement error in one variable, <span class="math inline">\(x_1\)</span>, has on the estimate of the coefficient for an <em>other</em> variable, <span class="math inline">\(x_2\)</span>, in a multiple regression model. <a href="#fig-coffee-measerr" class="quarto-xref">Figure&nbsp;<span>7.7</span></a> shows the confidence ellipses for <span class="math inline">\((\beta_{\textrm{Coffee}}, \beta_{\textrm{Stress}})\)</span> in the multiple regression predicting Heart disease, adding random normal error <span class="math inline">\(\mathcal{N}(0, \delta \times \mathrm{SD}_{Stress})\)</span>, with <span class="math inline">\(\delta = \{0, 0.2, 0.4, 0.8\}\)</span>, to the value of Stress alone.<br>
 As can be plainly seen, while this measurement error in Stress attenuates its coefficient, it also has the effect of biasing the coefficient for Coffee toward that in the <em>marginal</em> regression of Heart disease on Coffee alone.</p>
 <div class="cell" data-layout-align="center">
 <div class="cell-output-display">
@@ -731,7 +768,7 @@ As can be plainly seen, while this measurement error in Stress attenuates its co
 <img src="images/coffee-measerr.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:50.0%">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-coffee-measerr-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;7.8: Biasing effect of measurement error in one variable (Stress) on on the coefficient of another variable (Coffee) in a multiple regression. The coefficient for Coffee is driven towards its value in the marginal model using Coffee alone, as measurement error in Stress makes it less informative in the joint model.
+Figure&nbsp;7.7: Biasing effect of measurement error in one variable (Stress) on on the coefficient of another variable (Coffee) in a multiple regression. The coefficient for Coffee is driven towards its value in the marginal model using Coffee alone, as measurement error in Stress makes it less informative in the joint model.
 </figcaption></figure>
 </div>
 </div>
@@ -763,7 +800,7 @@ Fuller, W. (2006). <em>Measurement error models</em> (2nd ed.). John Wiley &amp;
 </div>
 </section><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><hr>
 <ol>
-<li id="fn1"><p>This example was developed by Georges Monette.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn1"><p>The right panel shows the joint 95% confidence region for the coefficients <span class="math inline">\((\beta_{\text{Coffee}}, \beta_{\text{Stress}})\)</span> and individual confidence intervals in <span class="math inline">\(\mathbf{\beta}\)</span> space. These are determined as<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol></section></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
     const icon = "";
@@ -1163,8 +1200,8 @@ Fuller, W. (2006). <em>Measurement error models</em> (2nd ed.). John Wiley &amp;
     }
   });
   </script><nav class="page-navigation"><div class="nav-page nav-page-previous">
-      <a href="./06-linear_models-plots.html" class="pagination-link" aria-label="Plots for univariate response models">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Plots for univariate response models</span></span>
+      <a href="./06-linear_models-plots.html" class="pagination-link" aria-label="Plots for Univariate Response Models">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Plots for Univariate Response Models</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">

@@ -6,12 +6,23 @@ source("R/penguin/penguin-colors.R")
 
 library(bullseye)
 
+# iris
+
+irisc <- pairwise_scores(iris, by = "Species") 
+irisc
+plot(irisc)
+
 #The pairwise structure has multiple association scores when each (x,y) pair appears multiple times in the pairwise structure.
 
-scores <- pairwise_scores(peng, 
-                          pair_control(nn = "pair_cor"),
+pdata <- peng |>
+  dplyr::select(-island, -year, -sex)
+scores <- pairwise_scores(pdata, 
+#                          pair_control(nn = "pair_cor"),
                           by="species")
+scores
+
 plot(scores) 
+
 
 # doesn't work
 pdata <- peng |>
