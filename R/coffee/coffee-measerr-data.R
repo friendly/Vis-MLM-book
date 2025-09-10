@@ -4,14 +4,10 @@
 
 # demonstrate effect of measurement error via data ellipses with an attempt at annimation
 
-# remotes::install_github('gmonette/spida2')
-#library("spida2")    # for coffee data 
 library(car)		     # for dataEllipse, confidenceEllipse
 library(colorspace)
 library(RColorBrewer)
 
-# data(coffee, package="spida2")
-# coffee <- coffee[, -5]  # get old Stress2 example variable out of the way
 data(coffee, package="matlib")
 
 

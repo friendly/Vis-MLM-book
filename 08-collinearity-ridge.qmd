@@ -320,6 +320,8 @@ designed to help interpret these. Then I describe some novel graphical methods t
 effects more readily understandable, to answer the "Where's Waldo" question posed at the outset.
 
 ### Variance inflation factors {#sec-vif}
+\ixon{variance inflation factor}
+\ixon{VIF}
 
 How can we measure the effect of collinearity? The essential idea is to compare, for each predictor the variance
 $s^2 (\widehat{b_j})$ that the coefficient that $x_j$ would have if it was totally unrelated to the other
@@ -350,7 +352,10 @@ $$
 In practice, it is often easier to think in terms of the square root, $\sqrt{\text{VIF}_j}$ as the
 multiplier of the standard errors. The denominator, $1-R^2_{j | \text{others}}$ is sometimes called
 **tolerance**, a term I don't find particularly useful, but it is just the proportion of the 
-variance of $x_j$ that is _not_ explainable from the others.
+variance of $x_j$ that is _not_ explainable from the others.[^vif-av-plot]
+
+[^vif-av-plot]: Recall that in an added-variable plot (@sec-av-plots), the horizontal axis for predictor $x_j$ is
+$x^\star_j = x_j  \,|\, \text{others}$ ... **TODO** complete this thought
 
 For the cases shown in @fig-collin-data-beta the VIFs and their square roots are:
 
@@ -362,10 +367,11 @@ vifs
 sqrt(vifs)
 ```
 
+**Generalized VIF**
 
 Note that when there are terms in the model with more than one degree of freedom, such as education with four levels
 (and hence 3 df) or a polynomial term specified as `poly(age, 3)`, that variable, education or age
-is represented by three separate $x$s in the model matrix, and the standard VIF calculation
+is represented by _three separate_ $x$s in the model matrix, and the standard VIF calculation
 gives results that vary with how those terms are coded in the model. 
 
 To allow for these cases, @FoxMonette:92 define
@@ -424,6 +430,9 @@ cars.mod2 <- lm (mpg ~ cylinder + engine + horse +
 vif(cars.mod2)
 ```
 :::
+
+\ixoff{variance inflation factor}
+\ixoff{VIF}
 
 ::: {.callout-tip title="Connection with inverse of correlation matrix"}
 
@@ -700,7 +709,7 @@ for these two near-singular dimensions.
 
 Thus, we see again that Dimension 6
 is largely determined by `engine` size, with a substantial (negative) relation
-to `cylinder`.  Dimension 5 has its' strongest relations to `weight`
+to `cylinder`.  Dimension 5 has its strongest relations to `weight`
 and `horse`. 
 
 Moreover, there is one observation, #20, that stands out as
@@ -757,7 +766,7 @@ correlated predictors of resting pulse rate and pulse rate while running. Transf
 average pulse rate and their difference gives new variables which are interpretable and less correlated.
 
 * **Statistical remedies**:
-  + Transform the predictors $\mathbf{X}$ to uncorrelated principal component scores 
+  + Transform the predictors $\mathbf{X}$ to _uncorrelated_ principal component scores 
   $\mathbf{Z} = \mathbf{X} \mathbf{V}$,
   and regress $\mathbf{y}$ on $\mathbf{Z}$. These will have the identical overall model
   fit without loss of information. A related technique is _incomplete_ principal components regression, where
@@ -768,7 +777,7 @@ average pulse rate and their difference gives new variables which are interpreta
   
   + Use **regularization methods** such as ridge regression and lasso, which correct for collinearity by 
   introducing shrinking coefficients towards 0, introducing
-a small amount of bias, . See the [genridge](https://CRAN.R-project.org/package=genridge) package and its [`pkgdown` documentation](https://friendly.github.io/genridge/) for visualization methods.
+a small amount of bias, . See the [genridge](https://friendly.github.io/genridge/) package for visualization methods.
 
   + use Bayesian regression; if multicollinearity prevents a regression coefficient from being estimated precisely, then a prior on that coefficient will help to reduce its posterior variance.
 
@@ -777,8 +786,9 @@ a small amount of bias, . See the [genridge](https://CRAN.R-project.org/package=
 ::: {#exm-centering}
 **Centering**
 
+<!-- fig-code: R/collin-centering.R -->
 
-To illustrate the effect of centering a predictor in a polynomial model, we generate a perfect
+To illustrate the effect of centering a predictor in a polynomial model, I generate data with a perfect
 quadratic relationship, $y = x^2$ and consider the correlations of $y$ with $x$ and with
 $(x - \bar{x})^2$. The correlation of $y$ with $x$ is 0.97, while the correlation of
 $y$ with $(x - \bar{x})^2$ is zero.
@@ -791,19 +801,22 @@ XY <- data.frame(x, y1, y2)
 (R <- cor(XY))
 ```
 
-The effect of centering here is remove the linear association in what is a purely quadratic relationship,
-as can be seen by plotting `y1` and `y2` against `x`.
+The effect of centering here is remove the linear association in what is a purely quadratic relationship.
+This can be seen in @fig-collin-centering by plotting `y1` and `y2` against `x`.
 ```{r}
 #| label: fig-collin-centering
+#| fig-width: 10
+#| fig-height: 5
 #| out-width: "100%"
-#| fig.cap: "Centering a predictor removes the nessessary correlation in a quadratic regression"
+#| fig.cap: "Centering a predictor removes the nessessary correlation in a quadratic regression. Left: linear relatioship fitting $y$ to the uncentered $x$. Right: fitting to the centered $(x - \\bar{x}$."
 r1 <- R[1, 2]
 r2 <- R[1, 3]
 
 gg1 <-
 ggplot(XY, aes(x = x, y = y1)) +
   geom_point(size = 3) +
-  geom_smooth(method = "lm", formula = y~x, linewidth = 2, se = FALSE) +
+  geom_smooth(method = "lm", formula = y~x, 
+              linewidth = 2, se = FALSE) +
   labs(x = "X", y = "Y") +
   theme_bw(base_size = 16) +
   annotate("text", x = 5, y = 350, size = 6,
@@ -812,7 +825,8 @@ ggplot(XY, aes(x = x, y = y1)) +
 gg2 <-
   ggplot(XY, aes(x = x, y = y2)) +
   geom_point(size = 3) +
-  geom_smooth(method = "lm", formula = y~x, linewidth = 2, se = FALSE) +
+  geom_smooth(method = "lm", formula = y~x, 
+              linewidth = 2, se = FALSE) +
   labs(x = "X", y = "Y") +
   theme_bw(base_size = 16) +
   annotate("text", x = 5, y = 80, size = 6,
@@ -821,16 +835,39 @@ gg2 <-
 gg1 + gg2         # show plots side-by-side
 ```
 
+Centering of predictors has an added benefit: the fitted coefficients are **easier to interpret*, particularly the intercept in this example.
+In the left panel of @fig-collin-centering, the fitted `r blue` line has an intercept of -77
+and slope of 21. But `x = 0` is outside the range of the data and it is hard to understand what -77 means.[^-77]
+
+[^-77]: Well, -77 is just a bit beyond left-most point on the fitted line in this panel of @fig-collin-centering.
+
+```{r centering-coef1}
+lm(y1 ~ x, data = XY) |> coef()
+```
+
+Contrast this with the coefficients for the model using the centered `x` and shown by the `r blue` line in the right panel.
+The slope of the line is clearly zero and the intercept 33.25 is the average value of y.
+
+```{r}
+lm(y2 ~ x, data = XY) |> coef() |> zapsmall()
+```
+
 :::
 
 <!-- **Example**: Interactions -->
 
 ::: {#exm-interactions}
-**Interactions**
+**Interactions and response surface models**
 
-manufacturing process to produce acetylene in relation to reactor temperature (`temp`), the
+Centering of numeric predictors becomes even more important in polynomial models that also include interaction effects,
+such as $y = \beta_0 + \beta_{11} \: x_1 + \beta_{12} \: x_1^2 + \beta_{21} \: x_2 + \beta_{22} \: x_2^2 + \beta_{1 \times 2} \;x_1 \times x_2 + \epsilon$, because the product terms are necessarily correlated with each of the predictors involved. 
+This gives more opportunities for collinearity and more places for Waldo to hide.
+
+To illustrate, I use the the `r dataset("genridge::Acetylene")` dataset, which gives results from a
+manufacturing experiment to study the `yield` of acetylene in relation to reactor temperature (`temp`), the
 `ratio` of two components and the contact `time` in the reactor. A naive response surface model
 might suggest that yield is quadratic in time and there are potential interactions among all pairs of predictors.
+Without centering `time` the quadratic effect is fit as a term `I(time^)`, which simply squares the value of time.
 
 <!-- fig.code: R/acetlyne-colldiag.R -->
 
@@ -854,7 +891,9 @@ Acetylene.centered <-
          time = time - mean(time),
          ratio = ratio - mean(ratio))
 
-acetyl.mod1 <- update(acetyl.mod0, data=Acetylene.centered)
+acetyl.mod1 <- update(acetyl.mod0, 
+                      data=Acetylene.centered)
+
 (acetyl.vif1 <- vif(acetyl.mod1))
 ```
 
@@ -867,7 +906,7 @@ of centering on the standard errors.
 sqrt(acetyl.vif0 / acetyl.vif1)
 ```
 
-Finally, we use `poly(time, 2)` in the model for the centered data. Because there are multiple
+Finally, I use `poly(time, 2)` in the model for the centered data. Because there are multiple
 degree of freedom terms in the model, `car::vif()` calculates GVIFs here.
 The final column gives $\sqrt{\text{GVIF}^{1/2 \text{df}}}$, the remaining effect of
 collinearity on the standard errors of terms in this model.

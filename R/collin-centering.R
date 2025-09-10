@@ -18,7 +18,8 @@ r2 <- R[1, 3]
 gg1 <-
 ggplot(XY, aes(x = x, y = y1)) +
   geom_point(size = 4) +
-  geom_smooth(method = "lm", formula = y~x, linewidth = 2, se = FALSE) +
+  geom_smooth(method = "lm", formula = y~x, 
+              linewidth = 2, se = FALSE) +
   labs(x = "X", y = "Y") +
   theme_bw(base_size = 16) +
   annotate("text", x = 5, y = 350, size = 7,
@@ -27,7 +28,8 @@ ggplot(XY, aes(x = x, y = y1)) +
 gg2 <-
   ggplot(XY, aes(x = x, y = y2)) +
   geom_point(size = 4) +
-  geom_smooth(method = "lm", formula = y~x, linewidth = 2, se = FALSE) +
+  geom_smooth(method = "lm", formula = y~x, 
+              linewidth = 2, se = FALSE) +
   labs(x = "X", y = "Y") +
   theme_bw(base_size = 16) +
   annotate("text", x = 5, y = 80, size = 7,
@@ -35,4 +37,18 @@ gg2 <-
 
 gg1 + gg2
 
+# coefficients more interpretable with centering
+# 
+
+m1 <- lm(y1 ~ x, data = XY)
+coef(m1)
+
+# or
+lm(y1 ~ x, data = XY) |> coef()
+
+m2 <- lm(y2 ~ x, data = XY)
+coef(m2) |> zapsmall()
+
+# or
+lm(y2 ~ x, data = XY) |> coef() |> zapsmall()
 
