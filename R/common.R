@@ -26,7 +26,8 @@ grDevices::pdf.options(colormodel = "cmyk")
 # --------------
 
 knitr::opts_chunk$set(
-  comment = "#>",
+  comment = "#",              # what about using " " instead?
+  highlight = TRUE,
   collapse = TRUE,
   dpi = 300,
   width = 68,
@@ -39,7 +40,6 @@ knitr::opts_chunk$set(
   fig.height = 5
   # fig.retina = 0.8, # figures are either vectors or 300 dpi diagrams
   # out.width = "70%",
-  # fig.width = 6,
   # fig.asp = 0.618,  # 1 / phi
   # fig.show = "hold"
   # cache = TRUE
