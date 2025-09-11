@@ -35,8 +35,6 @@ can amplify what we can understand from another.
 
 The book brings together a collection of novel techniques I and others have developed over the past 15 years and implemented in mature R packages. The principal multivariate analysis packages highlighted here are:
 
-
-
 * Hyphothesis-Error plots: [`heplots`](http://friendly.github.io/heplots/),
 * Canonical discriminant analysis: [`candisc`](http://friendly.github.io/candisc/),
 * Multivariate influence: [`mvinfluence`](http://friendly.github.io/mvinfluence/)
@@ -44,3 +42,4 @@ The book brings together a collection of novel techniques I and others have deve
 * Generalized ridge trace plots for ridge regression: [`genridge`](http://friendly.github.io/genridge/),
 * Matrix linear algebra: [`matlib`](http://friendly.github.io/matlib/).
 
+See my [GiHub packages page](https://github.com/friendly/friendly/blob/main/packages.md) for more details and other packages.
