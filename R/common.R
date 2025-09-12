@@ -331,7 +331,8 @@ func <- function(name, package=NULL) {
   else {
     funcname <- paste0("`", name, "`")
   }
-  
+
+  # index entries  
   ref <- funcname
   if (knitr::is_latex_output()) {
     ref <- paste0(ref, "\n\\index{", fname, " data}",
@@ -344,11 +345,14 @@ func <- function(name, package=NULL) {
                   "\n\\index{packages!", fpkg, "}")
       
     }
-  }
+    if (knitr::is_latex_output()) {
+      ref <- paste0(ref, "\n\\index{", name, " function}",
+                    "\n\\index{functions!", name, "}")
+    }
   ref
   
+  }
 }
-
 
 # -------------------------
 # packages to be cited here. Code at the end automatically updates `packages.bib`
@@ -381,7 +385,8 @@ func <- function(name, package=NULL) {
   "adegraphics",
   "olsrr",
   "HLMdiag",
-  "ggdist")
+  "ggdist",
+  "quartets")
 
 # write list of packages used at end of every chapter
 # NB: use results: "none" to hide the output
