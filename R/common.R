@@ -26,7 +26,8 @@ grDevices::pdf.options(colormodel = "cmyk")
 # --------------
 
 knitr::opts_chunk$set(
-  comment = "#>",
+  comment = "#",              # what about using " " instead?
+  highlight = TRUE,
   collapse = TRUE,
   dpi = 300,
   width = 68,
@@ -39,7 +40,6 @@ knitr::opts_chunk$set(
   fig.height = 5
   # fig.retina = 0.8, # figures are either vectors or 300 dpi diagrams
   # out.width = "70%",
-  # fig.width = 6,
   # fig.asp = 0.618,  # 1 / phi
   # fig.show = "hold"
   # cache = TRUE
@@ -248,6 +248,7 @@ package <- function(package, cite=FALSE) {
 }
 
 ## Datasets -- format the dataset name and produce index entries
+## 
 # Use inline as:
 #   `r dataset("prestige")`
 #   `r dataset("prestige", "carData")`
@@ -264,6 +265,7 @@ package <- function(package, cite=FALSE) {
 dataset <- function(name, package=NULL) {
   # handle pkg::name
   dname <- name
+  dpkg <- package
   if (stringr::str_detect(name, "::")) {
     wds <- name |> stringr::str_split("::", 2) |> unlist()
     dname <- wds[2]
@@ -298,10 +300,55 @@ dataset <- function(name, package=NULL) {
                   "\n\\index{datasets!", dname, "}")
     # ref <- paste0(ref, "\n\\index{", dname, " data@\\texttt{", dname, "}}",
     #               "\n\\index{datasets!", dname, "@\\texttt{", dname, "}}")
+    # Also index under package name
+    if (!is.null(dpkg)) {
+    ref <- paste0(ref, "\n\\index{", dpkg, " package}",
+                  "\n\\index{packages!", dpkg, "}")
+      
+    }
   }
   ref
   
 }
+
+## R functions -- format the function name and produce index entries
+## 
+## Use as:
+##   `r func()`
+##   
+func <- function(name, package=NULL) {
+  # handle pkg::name
+  fname <- name
+  fpkg <- package
+  if (stringr::str_detect(name, "::")) {
+    wds <- name |> stringr::str_split("::", 2) |> unlist()
+    fname <- wds[2]
+    fpkg  <- wds[1]
+  }
+  if (knitr::is_latex_output()) {
+    funcname <- paste0("\\texttt{", name, "}")
+  }
+  else {
+    funcname <- paste0("`", name, "`")
+  }
+  
+  ref <- funcname
+  if (knitr::is_latex_output()) {
+    ref <- paste0(ref, "\n\\index{", fname, " data}",
+                  "\n\\index{datasets!", fname, "}")
+    # ref <- paste0(ref, "\n\\index{", fname, " data@\\texttt{", fname, "}}",
+    #               "\n\\index{datasets!", fname, "@\\texttt{", fname, "}}")
+    # Also index under package name
+    if (!is.null(fpkg)) {
+    ref <- paste0(ref, "\n\\index{", fpkg, " package}",
+                  "\n\\index{packages!", fpkg, "}")
+      
+    }
+  }
+  ref
+  
+}
+
 
 # -------------------------
 # packages to be cited here. Code at the end automatically updates `packages.bib`

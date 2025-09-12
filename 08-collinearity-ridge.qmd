@@ -320,6 +320,8 @@ designed to help interpret these. Then I describe some novel graphical methods t
 effects more readily understandable, to answer the "Where's Waldo" question posed at the outset.
 
 ### Variance inflation factors {#sec-vif}
+\ixon{variance inflation factor}
+\ixon{VIF}
 
 How can we measure the effect of collinearity? The essential idea is to compare, for each predictor the variance
 $s^2 (\widehat{b_j})$ that the coefficient that $x_j$ would have if it was totally unrelated to the other
@@ -350,7 +352,10 @@ $$
 In practice, it is often easier to think in terms of the square root, $\sqrt{\text{VIF}_j}$ as the
 multiplier of the standard errors. The denominator, $1-R^2_{j | \text{others}}$ is sometimes called
 **tolerance**, a term I don't find particularly useful, but it is just the proportion of the 
-variance of $x_j$ that is _not_ explainable from the others.
+variance of $x_j$ that is _not_ explainable from the others.[^vif-av-plot]
+
+[^vif-av-plot]: Recall that in an added-variable plot (@sec-av-plots), the horizontal axis for predictor $x_j$ is
+$x^\star_j = x_j  \,|\, \text{others}$ ... **TODO** complete this thought
 
 For the cases shown in @fig-collin-data-beta the VIFs and their square roots are:
 
@@ -362,10 +367,11 @@ vifs
 sqrt(vifs)
 ```
 
+#### Generalized VIF {.unnumbered}
 
 Note that when there are terms in the model with more than one degree of freedom, such as education with four levels
 (and hence 3 df) or a polynomial term specified as `poly(age, 3)`, that variable, education or age
-is represented by three separate $x$s in the model matrix, and the standard VIF calculation
+is represented by _three separate_ $x$s in the model matrix, and the standard VIF calculation
 gives results that vary with how those terms are coded in the model. 
 
 To allow for these cases, @FoxMonette:92 define
@@ -381,8 +387,8 @@ errors. This is what `car::vif()` calculates for a factor or other term with mor
 
 <!-- **TODO**: Use `performance::check_collinearity` and `plot()` method here -->
 
-This example uses the `cars` dataset in the `VisCollin` package
-containing various measures of size and performance on 406 models of automobiles from 1982. Interest is focused on predicting gas mileage, `mpg`.
+This example uses the `cars` dataset in the `VisCollin` package which
+contains various measures of size and performance on 406 models of automobiles from 1982. Interest is focused on predicting gas mileage, `mpg`.
 ```{r cars}
 data(cars, package = "VisCollin")
 str(cars)
@@ -425,6 +431,9 @@ vif(cars.mod2)
 ```
 :::
 
+\ixoff{variance inflation factor}
+\ixoff{VIF}
+
 ::: {.callout-tip title="Connection with inverse of correlation matrix"}
 
 In the linear regression model with standardized predictors,
@@ -450,16 +459,18 @@ This inverse connection is analogous to the dual relationship (@sec-data-beta-sp
 
 ### VIF displays
 
-Beyond `car::vif()`, the `r pkg("easystats")` suite of packages has some useful functions for displaying VIFs in
+Beyond the console output from  `car::vif()`, the `r pkg("easystats")` suite of packages has some useful functions for displaying VIFs in
 helpful tables and plots. `performance::check_collinearity()` calculates VIFs and their standard errors
-and returns a `"check_collinearity"` data frame.  The plot method for this plots these, using a log scale
-because it is multiples of variance that matter here. It uses intervals of 1-5, 5-10, 10+ to highlight low, medium and
-high variance inflation with colored bands.
+and returns a `"check_collinearity"` data frame.  The plot method for this uses a log scale for VIF
+because it is _multiples_ of variance that matter here. It uses intervals of 
+`r colorize("1-5", "darkgreen")`, `r colorize("5-10", "blue")`, `r colorize("10+", "red")` to 
+highlight `r colorize("low", "darkgreen")`, `r colorize("medium", "blue")` and
+`r colorize("high", "red")` variance inflation with colored backgrounds.
 
 ```{r}
 #| label: fig-cars-check-collin
 #| out-width: "80%"
-#| fig-cap: !expr paste0("Variance inflation plot. VIF is plotted on a log scale. Colored bands show regions of ", colorize("low", "green"), ", ", colorize("medium", "blue"), "and ", colorize("high", "red"), " variance inflation.")
+#| fig-cap: !expr paste0("Variance inflation plot. VIF is plotted on a log scale. Colored bands show regions of ", colorize("low", "darkgreen"), ", ", colorize("medium", "blue"), " and ", colorize("high", "red"), " variance inflation.")
 cars.collin <- check_collinearity(cars.mod)
 
 plot(cars.collin, 
@@ -469,7 +480,9 @@ plot(cars.collin,
 
 The graphic properties here help to make the problematic variables more apparent than in a table of numbers,
 though the underlying message is the same. Number of cylinders, engine displacement and weight are the collinearity
-bad boys. Knowing this helps to pin Waldo down a bit, but to really find him, we need a few more diagnostics and better
+bad boys. 
+
+Knowing this helps to pin Waldo down a bit, but to really find him, we need a few more diagnostics and better
 graphical methods.
 
 
@@ -490,7 +503,7 @@ for the intercept), and the corresponding eigenvectors in the columns of $\mathb
 the the eigen decomposition
 
 $$
-\mathbf{R}_{X} = \mathbf{V} \mathbf{\Lambda} \mathbf{V}^\mathsf{T}
+\mathbf{R}_{X} = \mathbf{V} \mathbf{\Lambda} \mathbf{V}^\mathsf{T} \; .
 $$
 
 By elementary matrix algebra, the eigen decomposition of $\mathbf{R}_{XX}^{-1}$ is then 
@@ -504,33 +517,37 @@ of $\mathbf{R}_{X}^{-1}$ are just $\lambda_i^{-1}$.
 Using @eq-rxinv-eigen, the variance inflation factors may be expressed as
 
 $$
-\text{VIF}_j = \sum_{k=1}^p \frac{V^2_{jk}}{\lambda_k} \; ,
-$$
+\text{VIF}_j = \sum_{k=1}^p \frac{V^2_{jk}}{\lambda_k} \; .
+$$ {#eq-VIF-sum}
 
-which shows that (a) only the _small_ eigenvalues contribute to variance inflation,
-but (b) only for those predictors that have large eigenvector coefficients on those small components.
+This shows that (a) only the _small_ eigenvalues contribute to variance inflation, but 
+(b) only for those predictors that have large eigenvector coefficients $V_{jk}$ on those small components.
+
 These facts lead to the following diagnostic statistics for collinearity:
 
-* **Condition indices**: 
+* **Condition indices** ($\kappa$): 
 \ix{condition indices}
 The smallest of the eigenvalues, those for which $\lambda_j \approx 0$,
 indicate collinearity and the number of small values indicates the number of near collinear relations.
 Because the sum of the eigenvalues, $\Sigma \lambda_i = p$ increases with the number
 of predictors $p$, it is useful to scale them
-all in relation to the largest.  This leads to _condition indices_, defined as
+all inversely in relation to the largest so that larger numbers are worse. 
+This leads to _condition indices_, defined as
 $\kappa_j = \sqrt{ \lambda_1 / \lambda_j}$. These have the property that the resulting numbers
 have common interpretations regardless of the number of predictors.
 
   + For completely uncorrelated predictors, all $\kappa_j = 1$.
-  + $\kappa_j \rightarrow \infty$ as any $\lambda_k \rightarrow 0$.
-  + As a rule of thumb, @Belsley:91a suggests that $\kappa_j > 30$ indicates severe collinearity, while values $\kappa_j > 10$ reflect a moderate problem.
+  + As any $\lambda_k \rightarrow 0$ the corresponding $\kappa_j \rightarrow \infty$.
+  + As a rule of thumb, @Belsley:91a suggests that values $\kappa_j > 10$ reflect a moderate problem, while
+  $\kappa_j > 30$ indicates severe collinearity. Even worse values use bounds of 100, 300, ... as collinearity becomes more extreme.
 
 * **Variance decomposition proportions**:
 Large VIFs indicate variables that are involved in _some_ nearly collinear
 relations, but they don't indicate _which_ other variable(s) each is involved with.
 For this purpose, @Belsley-etal:80 and @Belsley:91a  proposed calculation of
 the _proportions of variance_ of each variable associated with each principal component
-as a decomposition of the coefficient variance for each dimension.
+as a decomposition of the coefficient variance for each dimension. These are simply the 
+the terms in @eq-VIF-sum divided by their sum.
 
 These measures can be calculated using `VisCollin::colldiag()`.
 For the current model, the usual display contains both the condition indices and
@@ -549,7 +566,7 @@ puts the rows with the largest condition indices at the top.
 print(cd, fuzz = 0.5, descending = TRUE)
 ```
 
-The mystery is solved, if you can read that table with these recommendations in mind. There are two nearly collinear relations among the predictors, corresponding to the two
+The Waldo mystery is nearly solved, if you can read that table with these recommendations in mind. There are two nearly collinear relations among the predictors, corresponding to the two
 smallest dimensions with largest condition indices.
 
 * Dimension 6 reflects the high correlation between number of cylinders and engine displacement.
@@ -590,9 +607,9 @@ The tableplot below (@fig-cars-tableplot) encodes all the information from the v
 The visual message is that one should attend to collinearities with large condition indices **and**
 large variance proportions implicating two or more predictors.
 
-::: {.column-margin}
-R file: `R/cars-colldiag.R`
-:::
+<!-- ::: {.column-margin} -->
+<!-- R file: `R/cars-colldiag.R` -->
+<!-- ::: -->
 
 <!-- fig.code: R/cars-colldiag.R -->
 
@@ -607,6 +624,7 @@ tableplot(cd, title = "Tableplot of cars data",
           cond.max = 30 )
 ```
 
+The information in @fig-cars-tableplot is essentially the same as the fuzzed version of the printed output from `colldiag()` shown above; however the graphic encoding of the tableplot makes the pattern of the numbers and their 
 \ixoff{tableplots}
 
 ## Collinearity biplots {#sec-collin-biplots}
@@ -614,24 +632,22 @@ tableplot(cd, title = "Tableplot of cars data",
 \ixon{collinearity biplots}
 \ixon{biplots!collinearity}
 
-As we have seen, the collinearity diagnostics are all functions of the eigenvalues
+As we have just seen, the collinearity diagnostics are all functions of the eigenvalues
 and eigenvectors of the correlation matrix of the predictors in the regression model,
 or alternatively, the SVD of the $\mathbf{X}$ matrix in the linear model (excluding the
-constant).
-The standard biplot [@Gabriel:71; @GowerHand:96] (see: @sec-biplot)
-can be regarded as
-a multivariate analog of a scatterplot,
-obtained by projecting a
-multivariate sample into a low-dimensional space
-(typically of 2 or 3 dimensions)
-accounting for the greatest variance in the data.
+constant). We can use our trusty multivariate juicer the biplot (@sec-biplot)
+to see where the problems lie in a space that relates to observations and variables together.
 
-However the standard biplot is less useful for visualizing the relations among the
+A standard biplot [@Gabriel:71; @GowerHand:96] showing the 2 (or 3) largest dimensions in the
+data is what we usually want to use. By projecting multivariate data into a low-D space,
+we can see the main variation in the data an how this related to the variables.
+
+However the standard biplot of the largest dimensions is less useful for visualizing the relations among the
 predictors that lead to nearly collinear relations.  Instead, biplots of
 the **smallest dimensions** show these relations directly, and can show other
 features of the data as well, such as outliers and leverage points.
-We use `prcomp(X, scale.=TRUE)` to obtain the PCA of the correlation matrix
-of the predictors:
+I use `prcomp(X, scale.=TRUE)` to obtain the PCA of the correlation matrix
+of the predictors in the `cars` dataset:
 
 ```{r cars-pca}
 cars.X <- cars |>
@@ -643,11 +659,15 @@ cars.pca
 ```
 
 The standard deviations above are the square roots $\sqrt{\lambda_j}$ of the eigenvalues of the
-correlation matrix, and are returned in the `sdev` component of the `"prcomp"` object.
-The eigenvectors are returned in the `rotation` component, whose directions are arbitrary.
-Because we are interested in seeing the relative magnitude of variable vectors,
-we are free to multiply them by any constant to make them more visible in relation to the
+correlation matrix; these are returned in the `sdev` component of the `"prcomp"` object.
+The eigenvectors are returned in the `rotation` component. Their orientations are arbitrary
+and can be reversed for ease of interpretation.
+Because we are interested in seeing the _relative magnitude_ of variable vectors,
+we are also free to multiply them all by any constant to make them to zoom in or out, making them more visible in relation to the
 scores for the cars.
+
+I use `factoextra::fviz_pca_biplot()` for the biplot in @fig-cars-collin-biplot because I want to illustrate identification of
+noteworthy points with `geom_text_repel()`.
 
 ```{r}
 #| label: fig-cars-collin-biplot
@@ -657,7 +677,7 @@ scores for the cars.
 #|  their variance proportions. To reduce graphic clutter, only the most outlying observations in predictor
 #|  space are identified by case labels.
 #|  An extreme outlier (case 20) appears in the lower right corner."
-cars.pca$rotation <- -2.5 * cars.pca$rotation    # reflect & scale variable vectors
+cars.pca$rotation <- -2.5 * cars.pca$rotation    # reflect & scale var vectors
 
 ggp <- fviz_pca_biplot(
   cars.pca,
@@ -700,7 +720,7 @@ for these two near-singular dimensions.
 
 Thus, we see again that Dimension 6
 is largely determined by `engine` size, with a substantial (negative) relation
-to `cylinder`.  Dimension 5 has its' strongest relations to `weight`
+to `cylinder`.  Dimension 5 has its strongest relations to `weight`
 and `horse`. 
 
 Moreover, there is one observation, #20, that stands out as
@@ -757,7 +777,7 @@ correlated predictors of resting pulse rate and pulse rate while running. Transf
 average pulse rate and their difference gives new variables which are interpretable and less correlated.
 
 * **Statistical remedies**:
-  + Transform the predictors $\mathbf{X}$ to uncorrelated principal component scores 
+  + Transform the predictors $\mathbf{X}$ to _uncorrelated_ principal component scores 
   $\mathbf{Z} = \mathbf{X} \mathbf{V}$,
   and regress $\mathbf{y}$ on $\mathbf{Z}$. These will have the identical overall model
   fit without loss of information. A related technique is _incomplete_ principal components regression, where
@@ -767,18 +787,22 @@ average pulse rate and their difference gives new variables which are interpreta
   components.
   
   + Use **regularization methods** such as ridge regression and lasso, which correct for collinearity by 
-  introducing shrinking coefficients towards 0, introducing
-a small amount of bias, . See the [genridge](https://CRAN.R-project.org/package=genridge) package and its [`pkgdown` documentation](https://friendly.github.io/genridge/) for visualization methods.
+  introducing shrinking coefficients towards 0, but inducing
+a small amount of bias. I illustrate ridge regression below (@sec-ridge) using the `r package("genridge")`
+for visualization methods.
 
-  + use Bayesian regression; if multicollinearity prevents a regression coefficient from being estimated precisely, then a prior on that coefficient will help to reduce its posterior variance.
+  + Use **Bayesian regression**. If multicollinearity prevents a regression coefficient from being estimated precisely, 
+  Bayesian regression (e.g., @Pesaran2019) can reduce collinearity by imposing shrinkage priors; these incorporate prior information to regularize the model, making it less sensitive to correlated predictors and reducing its _posterior varioance_.
 
 <!-- **Example**: Centering -->
 
 ::: {#exm-centering}
 **Centering**
+\ixon{centering!effect on collinearity}
 
+<!-- fig-code: R/collin-centering.R -->
 
-To illustrate the effect of centering a predictor in a polynomial model, we generate a perfect
+To illustrate the effect of centering a predictor in a polynomial model, I generate data with a perfect
 quadratic relationship, $y = x^2$ and consider the correlations of $y$ with $x$ and with
 $(x - \bar{x})^2$. The correlation of $y$ with $x$ is 0.97, while the correlation of
 $y$ with $(x - \bar{x})^2$ is zero.
@@ -791,19 +815,22 @@ XY <- data.frame(x, y1, y2)
 (R <- cor(XY))
 ```
 
-The effect of centering here is remove the linear association in what is a purely quadratic relationship,
-as can be seen by plotting `y1` and `y2` against `x`.
+The effect of centering here is remove the linear association in what is a purely quadratic relationship.
+This can be seen in @fig-collin-centering by plotting `y1` and `y2` against `x`.
 ```{r}
 #| label: fig-collin-centering
+#| fig-width: 10
+#| fig-height: 5
 #| out-width: "100%"
-#| fig.cap: "Centering a predictor removes the nessessary correlation in a quadratic regression"
+#| fig.cap: "Centering a predictor removes the nessessary correlation in a quadratic regression. Left: linear relatioship fitting $y$ to the uncentered $x$. Right: fitting to the centered $(x - \\bar{x}$."
 r1 <- R[1, 2]
 r2 <- R[1, 3]
 
 gg1 <-
 ggplot(XY, aes(x = x, y = y1)) +
   geom_point(size = 3) +
-  geom_smooth(method = "lm", formula = y~x, linewidth = 2, se = FALSE) +
+  geom_smooth(method = "lm", formula = y~x, 
+              linewidth = 2, se = FALSE) +
   labs(x = "X", y = "Y") +
   theme_bw(base_size = 16) +
   annotate("text", x = 5, y = 350, size = 6,
@@ -812,7 +839,8 @@ ggplot(XY, aes(x = x, y = y1)) +
 gg2 <-
   ggplot(XY, aes(x = x, y = y2)) +
   geom_point(size = 3) +
-  geom_smooth(method = "lm", formula = y~x, linewidth = 2, se = FALSE) +
+  geom_smooth(method = "lm", formula = y~x, 
+              linewidth = 2, se = FALSE) +
   labs(x = "X", y = "Y") +
   theme_bw(base_size = 16) +
   annotate("text", x = 5, y = 80, size = 6,
@@ -821,16 +849,65 @@ gg2 <-
 gg1 + gg2         # show plots side-by-side
 ```
 
+**Interpretation**
+
+Centering of predictors has an added benefit: the fitted coefficients are **easier to interpret***, particularly the intercept in this example.
+In the left panel of @fig-collin-centering, the fitted `r blue` line has an intercept of -77
+and slope of 21. But `x = 0` is outside the range of the data and it is hard to understand what -77 means.[^-77]
+
+[^-77]: Well, -77 is just a bit beyond left-most point on the fitted line in this panel of @fig-collin-centering.
+
+```{r centering-coef1}
+lm(y1 ~ x, data = XY) |> coef()
+```
+
+Contrast this with the coefficients for the model using the centered `x` and shown by the `r blue` line in the right panel.
+The slope of the line is clearly zero and the intercept 33.25 is the average value of y.
+
+```{r}
+lm(y2 ~ x, data = XY) |> coef() |> zapsmall()
+```
+
+This ease of interpretation is more pronounced in polynomial models. For example, in the quadratic model
+$y = \beta_0 + \beta_1 x + \beta_2 x^2$ with $x$ uncentered, the slope coefficient $\beta_1$ gives the 
+slope of the curve at the value $x = 0$, which may be well-outside the range of data. 
+With a centered predictor $x^\star = x - \bar{x}$, the analogous coefficient $\beta_1^\star$
+in the model $y = \beta_0^\star + \beta_1^\star x^\star + \beta_2^\star (x^\star)^2$
+is gives the slope at the mean value of $x$.
+
+\ixoff{centering!effect on collinearity}
+
 :::
 
 <!-- **Example**: Interactions -->
 
 ::: {#exm-interactions}
-**Interactions**
+**Interactions and response surface models**
 
-manufacturing process to produce acetylene in relation to reactor temperature (`temp`), the
+Centering of numeric predictors becomes even more important in polynomial models that also include interaction effects,
+such as response surface models this include all quadratic terms of the predictors and all possible pairwise interactions.
+The simple notation in an R formula[^rsm] is `y ~ (x1 + x2 + ...)^2`. Spelled out for two predictors with uncentered `x1` and `x2`,
+this would be:
+
+[^rsm]: The `r package("rsm")` provides convenient shortcuts for specifying response surface models. For instance,
+the `SO()` shortcut, `y ~ SO(x1, x2)` automatically generates all linear, interaction, and quadratic terms for the specified variables `x1` and `x2`.
+
+
+```r
+y ~ x1 + x2 + I(x1^2) + I(x2^2)+ x1:x2
+```
+
+Here, the product term is necessarily correlated with each of the predictors involved. 
+This gives more opportunities for collinearity and more places for Waldo to hide.
+
+To illustrate, I use the the `r dataset("genridge::Acetylene")` dataset, which gives results from a
+manufacturing experiment to study the `yield` of acetylene in relation to reactor temperature (`temp`), the
 `ratio` of two components and the contact `time` in the reactor. A naive response surface model
 might suggest that yield is quadratic in time and there are potential interactions among all pairs of predictors.
+Without centering `time` the quadratic effect is fit as a term `I(time^2)`, which simply squares the value of time.[^I]
+
+[^I]: The `I()` here is the identity function. It is needed because `time^2` has a different interpretation in
+a model formula than in algebra.
 
 <!-- fig.code: R/acetlyne-colldiag.R -->
 
@@ -854,7 +931,9 @@ Acetylene.centered <-
          time = time - mean(time),
          ratio = ratio - mean(ratio))
 
-acetyl.mod1 <- update(acetyl.mod0, data=Acetylene.centered)
+acetyl.mod1 <- update(acetyl.mod0, 
+                      data=Acetylene.centered)
+
 (acetyl.vif1 <- vif(acetyl.mod1))
 ```
 
@@ -867,8 +946,8 @@ of centering on the standard errors.
 sqrt(acetyl.vif0 / acetyl.vif1)
 ```
 
-Finally, we use `poly(time, 2)` in the model for the centered data. Because there are multiple
-degree of freedom terms in the model, `car::vif()` calculates GVIFs here.
+Finally, I use `poly(time, 2)` in the model for the centered data. Because this polynomial term has 2
+degree of freedom, `car::vif()` calculates GVIFs here.
 The final column gives $\sqrt{\text{GVIF}^{1/2 \text{df}}}$, the remaining effect of
 collinearity on the standard errors of terms in this model.
 
@@ -884,17 +963,23 @@ vif(acetyl.mod2, type = "term")
 
 ## Ridge regression {#sec-ridge}
 
-Ridge regression is an instance of a class of techniques designed to obtain more favorable predictions at the expense of some increase in bias, compared to ordinary least squares (OLS) estimation. 
+When the goals of your analysis are thwarted by the constraints of the assumptions and goals of a model, some trade-offs may
+help you stay closer to your goals.
+Ridge regression is a simple instance of a class of techniques designed to obtain more favorable _predictions_ at the expense of some increase in _bias_ in the coefficients, compared to ordinary least squares (OLS) estimation. 
 These methods began as a way of solving collinearity problems in OLS regression with highly correlated predictors
 [@HoerlKennard:1970a].
+\ix{bias!ridge regression}
 
-More recently ridge regression developed to a larger class of model selection methods, of which the
+More recently, the ideas of ridge regression spawned a larger class of _model selection_ methods, of which the
 LASSO method of @Tibshriani:regr:1996 and LAR method of @Efron-etal:leas:2004
 are well-known instances.  See, for example, the reviews in
 @Vinod:1978 and @McDonald:2009 for details and context omitted here.
-The case of ridge regression has also been extended to the case of
-two or more response variables [@Brown-Zidek-1980; @Haitovsky1987].
+\ix{model selection}
 
+The case of ridge regression has also been extended to the multivariate case of
+two or more response variables [@Brown-Zidek-1980; @Haitovsky1987], but there no implementations of these methods in R.
+\ix{LASSO}
+\ix{LAR regression}
 
 An essential idea behind these methods is that the OLS estimates are constrained in some way, shrinking them, on average, toward zero, to achieve increased predictive accuracy
 at the expense of some increase in bias.
@@ -902,6 +987,8 @@ Another common characteristic is that they involve some tuning parameter ($k$)
 or criterion to quantify the tradeoff between bias and variance.  In many cases, 
 analytical or computationally intensive methods have been developed to choose an optimal value 
 of the tuning parameter, for example using generalized cross validation, bootstrap methods.
+
+**Visualization**
 
 A common means to visualize the effects of shrinkage in these problems is to make
 what are called _univariate ridge trace plots_ (@sec-ridge-univar) showing how the estimated coefficients
@@ -914,6 +1001,7 @@ $\widehat{\textsf{Var}} (\widehat{\boldsymbol{\beta}}_k)$.
 A more useful graphic plots the confidence ellipses for the coefficients,
 showing both bias and precision (@sec-ridge-bivar).
 Some of the material below borrows from @Friendly-2011-gentalk and @Friendly:genridge:2013.
+\ix{ridge trace plots!univariate}
 
 ### Properties of ridge regression
 
@@ -935,13 +1023,13 @@ variance covariance matrix take the (hopefully now) familiar form
     \widehat{\sigma}_{\epsilon}^2 (\mathbf{X}\trans \mathbf{X})^{-1}.
 \end{align*} {#eq-OLS-beta-var}
 
-As we saw ealier, one signal of the problem of collinearity is that the determinant
+As we saw earlier, one signal of the problem of collinearity is that the determinant
 $\det{\mathbf{X}\trans \mathbf{X}}$ approaches zero as the predictors become more
-collinear. The inverse $(\mathbf{X}\trans \mathbf{X})^{-1}$ becomes numerically unstable,
-or does not exist if the determinant becomes zero in the case of exact dependency
-of one variable on the others.
+collinear. The inverse $(\mathbf{X}\trans \mathbf{X})^{-1}$ then becomes numerically unstable,
+or worse---does not exist, if the determinant becomes zero as in the case of exact dependency
+of one variable on the others. You just can't divide by zero!
 
-Ridge regression uses a trick to avoid this. It adds a constant, $k$ to the diagonal elements,
+Ridge regression uses a cool matrix trick to avoid this. It simply adds a constant, $k$ to the diagonal elements, thus
 replacing $\mathbf{X}\trans \mathbf{X}$ with $\mathbf{X}\trans \mathbf{X} + k \mathbf{I}$
 in @eq-OLS-beta-var. This drives the determinant away from zero as $k$ increases.
 The ridge regression estimates then become,
@@ -966,6 +1054,7 @@ $$
 $$ {#eq-ridgeRSS}
 where the penalty restrict the coefficients to some squared length $\boldsymbol{\beta}\trans \boldsymbol{\beta} = \Sigma \beta_i \le t(k)$.
 
+**Geometry**
 The geometry of ridge regession is illustrated in @fig-ridge-demo for two coefficients
 $\boldsymbol{\beta} = (\beta_1, \beta_2)$. The `r colorize("blue circles", "blue")`
 at the origin, having radii $\sqrt{t_k}$, show the constraint 
@@ -978,6 +1067,9 @@ the path illustrated toward $\boldsymbol{\beta} = \mathbf{0}$
 This path is called the _locus of osculation_, the path along which
 circles or ellipses first kiss as they expand, like the pattern of ripples from
 rocks dropped into a pond [@Friendly-etal:ellipses:2013].
+\ix{locus of osculation}
+\ix{ellipses!locus of osculation}
+
 
 ```{r}
 #| label: fig-ridge-demo
@@ -991,8 +1083,11 @@ knitr::include_graphics("images/ridge-demo.png")
 -->
 
 @eq-ridge-beta-var is computationally expensive, potentially numerically unstable for small $k$, and it is conceptually opaque,
-in that it sheds little light on the underlying geometry of the data in the column space of $\mathbf{X}$.  An alternative
-formulation can be given in terms of the singular value decomposition (SVD) of $\mathbf{X}$,
+in that it sheds little light on the underlying geometry of the data in the column space of $\mathbf{X}$.  
+
+Once again,
+an alternative formulation, highlighting the role of shrinkage here,
+can be given in terms of the singular value decomposition (SVD) of $\mathbf{X}$ (@sec-biplot-svd),
 
 $$
 \mathbf{X} = \mathbf{U} \mathbf{D} \mathbf{V}\trans
@@ -1072,6 +1167,11 @@ In addition, the `pca()` method for `"ridge"` objects transforms the coefficient
 
 ## Univariate ridge trace plots {#sec-ridge-univar}
 
+The usual idea to visualize the effects of shrinkage of the coefficients in ridge regression is a simple set of line plots
+showing how the coefficient of each predictor decreases as the ridge constant increases, as shown below in
+@fig-longley-traceplot1 and @fig-longley-traceplot2.
+
+::: {#exm-longley}
 A classic example for ridge regression is Longley’s [-@Longley:1967] data, consisting of 7 economic variables, observed yearly from 1947 to 1962 (n=16), in the dataset `r dataset("longley")`. 
 The goal is to predict Employed from `GNP`, `Unemployed`, `Armed.Forces`, `Population`, `Year`, and `GNP.deflator`.
 
@@ -1160,11 +1260,12 @@ traceplot(lridge,
           X = "df",
           xlim = c(4, 6.2), cex.lab=1.25)
 ```
+:::
 
 ### What's not to like?
-A bigger problem is that these univariate plots are the **wrong kind** of plot! They show the trends in increased bias (toward smaller $\mid \beta \mid$) associated with larger $k$, but they do not show the accompanying increase in _precision_ (decrease in variance) achieved by allowing a bit of bias.
+The bigger problem is that these univariate plots are the **wrong kind** of plot! They show the trends in increased bias (toward smaller $\mid \beta \mid$) associated with larger $k$, but they **do not show** the accompanying increase in _precision_ (decrease in variance) achieved by allowing a bit of bias.
 
-For that, we need to consider the variances and covariances of the estimated coefficients. The univariate trace plot is the wrong graphic form for what is essentially a multivariate problem, where we would like to visualize how _both_ coefficients and their variances change with $k$.
+For that, we need to consider the variances and _covariances_ of the estimated coefficients. The univariate trace plot is simply the wrong graphic form for what is essentially a multivariate problem, where we would like to visualize how _both_ coefficients and their variances change with $k$.
 
 ## Bivariate ridge trace plots {#sec-ridge-bivar}
 
@@ -1172,8 +1273,8 @@ The bivariate analog of the trace plot suggested by @Friendly:genridge:2013 plot
 Their centers, $(\widehat{\beta}_i, \widehat{\beta}_j)$ compared to the OLS values
 show the bias induced for each coefficient, and also how the change in the ridge estimate for one parameter is related to changes for other parameters.
 
-The size and shapes of the covariance ellipses show directly the effect on precision of the estimates as a function of the ridge tuning constant.
-and their size and shape indicate sampling variance, $\widehat{\text{Var}} (\mathbf{\widehat{\beta}}_{ij})$. 
+The size and shapes of the covariance ellipses show directly the effect on _precision_ of the estimates as a function of the ridge tuning constant;
+their size and shape indicate sampling variance and covariance, given by $\widehat{\text{Var}} (\mathbf{\widehat{\beta}}_{ij})$. 
 
 Here (@fig-longley-plot-ridge), I plot those for GNP against four of the other predictors. The `plot()` method for `"ridge"` objects plots these ellipses for a pair of variables.
 
@@ -1295,17 +1396,20 @@ decreases more sharply thereafter and the LW choice achieves greater precision.
 Just as principal components analysis gives low-dimensional views of a data set, PCA can
 be useful to understand ridge regression, just as it did for the problem of collinearity.
 
-The  `pca` method transforms a `"ridge"` object
+The  `visCollin::pca()` method transforms a `"ridge"` object
 from parameter space, where the estimated coefficients are
 $\beta_k$ with covariance matrices $\boldsymbol{\mathcal{V}}_k$, to the
 principal component space defined by the right singular vectors, $\mathbf{V}$,
 of the singular value decomposition  $\mathbf{U} \mathbf{D} \mathbf{V}\trans$ of the scaled predictor matrix, $\mathbf{X}$.
+
 In PCA space the total variance of the predictors remains the same, but it is distributed among the linear combinations that account for successively greatest variance.
 
 ```{r pca-ridge}
-plridge <- pca(lridge)
-plridge
+plridge <- pca(lridge) |>
+  print()
 ```
+
+**Traceplot**
 
 Then, a `traceplot()` of the resulting `"pcaridge"`  object shows how the dimensions
 are affected by shrinkage, shown on the scale of degrees of freedom in @fig-longley-pca-traceplot.
@@ -1323,6 +1427,8 @@ Rather, the effect of shrinkage is seen only on the _last two dimensions_.
 But those also are the directions that contribute most to collinearity as we saw earlier.
 
 <!-- **pairs()** -- Should I include this ? -->
+
+**pairs() plot**
 
 A `pairs()` plot gives a dramatic representation bivariate effects of shrinkage in PCA space: the principal components of X are uncorrelated, so the ellipses are all aligned with the coordinate axes. The ellipses largely coincide for dimensions 1 to 4
 where there is little effect of shrinkage.
@@ -1408,7 +1514,7 @@ and biplots help again to understand these dimensions.
 ```{r}
 #| echo: false
 #| results: asis
-cat("**Packages used here**:\n\n")
+# cat("**Packages used here**:\n\n")
 write_pkgs(file = .pkg_file, quiet = TRUE)
 ```
 

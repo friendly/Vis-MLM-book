@@ -54,8 +54,9 @@ crime.pca |>
   geom_point(size = 1.5) +
   geom_text(aes(label = st), nudge_x = 0.2) +
   stat_ellipse(color = "grey") +
-  coord_fixed() +
-  labs(x = "PC Dimension 1", y = "PC Dimnension 2") +
+  coord_fixed(ylim = c(-3,3), ratio = 1) +
+  scale_color_brewer(palette = "Dark2") +
+  labs(x = "PC Dimension 1", y = "PC Dimension 2") +
   theme_minimal(base_size = 14) +
   theme(legend.position = "top") 
   

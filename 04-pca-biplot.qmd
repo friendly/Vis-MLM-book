@@ -279,11 +279,11 @@ In this equation,
 1. The last line follows because $\mathbf{\Lambda}$ is a diagonal matrix, so $\mathbf{S}$ is expressed as a sum of outer products of each $\mathbf{v}_i$ with itself, times the eigenvalue $\lambda_i$. 
 
 2. The columns of $\mathbf{V}$ are the eigenvectors of $\mathbf{S}$. They are orthogonal
-and of unit length, so $\mathbf{V}^\mathsf{T} \mathbf{V} = \mathbf{I}$ and thus
+and of unit length, so $\mathbf{V}^\mathsf{T} \mathbf{V} = \mathbf{I}$. Thus
 they represent orthogonal (uncorrelated) directions in data space. 
 
-3. The columns $\mathbf{v}_i$ are the weights applied to the variables to produce the scores on
-the principal components. For example, the first principal component is the weighted sum:
+3. The column $\mathbf{v}_i$ gives the weights applied to the variables to produce the scores on
+the $i$-th principal component \text{PC}_i$. For example, the first principal component is the weighted sum:
 
 $$
 \text{PC}_1 = v_{11} \mathbf{x}_1 + v_{12} \mathbf{x}_2 + \cdots + v_{1p} \mathbf{x}_p \period
@@ -295,11 +295,11 @@ $$
 $\mathbf{v}_i^\mathsf{T} \;\mathbf{S} \; \mathbf{v}_i = \lambda_i$.
 
 6. It is usually the case that the variables $\mathbf{x}_1, \mathbf{x}_2, \dots, \mathbf{x}_p$ are linearly
-independent, which means that none of these is an exact linear combination of the others. In this case,
+independent, which means that none of these is an _exact_ linear combination of the others. In this case,
 all eigenvalues $\lambda_i$ are positive and the covariance matrix $\mathbf{S}$ is said to have **rank** $p$.
 (Rank is the number of non-zero eigenvalues.)
 
-7. Here is a key fact: If, as usual, the eigenvalues are arranged in order, so that $\lambda_1 > \lambda_2 > \dots > \lambda_p$, then the first $d$ components give a $d$-dimensional approximation to $\mathbf{S}$, which accounts for $\Sigma_i^d \lambda_i$ of the $\Sigma_i^p \lambda_i$ total variance, usually interpreted as the proportion,
+7. Here is a key fact: If, as usual, the eigenvalues are arranged in order, so that $\lambda_1 > \lambda_2 > \dots > \lambda_p$, then the first $d$ components give a $d$-dimensional approximation to $\mathbf{S}$. This approximation accounts for $\Sigma_i^d \lambda_i$ of the $\Sigma_i^p \lambda_i$ total variance, and is usually interpreted as the proportion,
 $(\Sigma_i^d \lambda_i) / (\Sigma_i^p \lambda_i)$.
 
 For the case of two variables, $\mathbf{x}_1$ and $\mathbf{x}_2$ @fig-pca-rotation shows the
@@ -315,9 +315,12 @@ of the eigenvalues.
 #| fig-cap: "Geometry of PCA as a rotation from data space to principal component space, defined by the eigenvectors v1 and v2 of a covariance matrix"
  knitr::include_graphics("images/pca-rotation.png")
 ```
-<!-- UDI: I like this figure, but I would change the blue curved arrow. What do you think? I can put together a few drafts using Inkscape. Let me know if you agree and if you have any suggestions. -->
 
-#### Example: Workers' experience and income {#sec-workers-data-pca}
+<!-- #### Example: Workers' experience and income {#sec-workers-data-pca} -->
+
+::: {#exm-workers-pca}
+**Workers' experience and income**
+
 
 For a small example, consider the relation between years of experience and income in a small (contrived) sample 
 ($n = 10$) of workers in a factory. The dataset `r dataset("workers")` contains these and other variables.
@@ -379,7 +382,7 @@ sum(Lambda)
 ```
 
 Using these, you can express the eigenvalue decomposition of $\mathbf{S}$ in @eq-S-eigen with
-`latexMatrix()` and `Eqn` from the `r package("matlib", cite=TRUE)` as:
+`latexMatrix()` and `Eqn()` from the `r package("matlib", cite=TRUE)` as:
 
 <!-- This works in HTML, but not in PDF
 ERROR: 
@@ -457,6 +460,7 @@ and scaled to have the same "radius" as the data ellipse.
 
 ```{r echo=-1}
 #| label: fig-workers-pca
+#| code-fold: show
 #| out-width: 90%
 #| fig-cap: "Geometry of the PCA for the `workers` data, showing the data ellipse, the
 #|    eigenvectors of $\\mathbf{S}$, whose half-lengths are the square roots $\\sqrt{\\lambda_i}$ of the eigenvalues,
@@ -502,9 +506,11 @@ eigenvalues. The eigenvectors are labeled `"Rotation"` because $\mathbf{V}$ is t
 data matrix to produce the component scores.
 
 ```{r workers-prcomp}
-workers.pca <- prcomp(workers[, vars]) |> print()
+workers.pca <- prcomp(workers[, vars]) |> 
+  print()
 ```
 
+:::
 
 ### Finding principal components
 
@@ -528,12 +534,12 @@ The important options for analysis include:
 * whether or not the data variables are **centered**, to a mean of $\bar{x}_j =0$
 * whether or not the data variables are **scaled**, to a variance of $\text{Var}(x_j) =1$.
 
-It nearly always makes sense to center the variables. The choice of
+It nearly always makes sense to center and scale the variables. This choice of
 scaling determines whether the correlation matrix is analyzed, so that
-each variable contributes _equally_ to the total variance that is to be accounted for
-versus analysis of the covariance matrix, where each variable contributes its
+each variable contributes _equally_ to the total variance that is to be accounted for.
+The unscaled choice analyzes the covariance matrix, where each variable contributes its
 _own variance_ to the total. Analysis of the covariance matrix makes little sense
-when the variables are measured on different scales[^pca-scales], unless you want to
+when the variables are measured in different units[^pca-scales], unless you want to
 interpret total variance on the scales of the different variables.
 
 [^pca-scales]: For example, if two variables in the analysis are height and weight, changing the unit of height from inches to centimeters would multiply its variance by $2.54^2$; changing weight from pounds to kilograms would divide its variance by $2.2^2$.
@@ -543,7 +549,7 @@ You don't need to scale your data in advance, but be aware of the options:
 so in most cases you should specify `scale. = TRUE`.
 I mostly use this.
 The older `princomp()` has only the option `cor = FALSE` which centers the data and uses the covariance matrix, so
-in most cases the default is OK. 
+in most cases you should set `cor = TRUE`. 
 
 [^prcomp-scale]: The unfortunate default `scale. = FALSE` was for consistency with S, the precursor to R 
 but in general scaling is usually advisable.
@@ -565,7 +571,7 @@ workers[, vars] |> scale() |> prcomp() |> invisible()
 In this form, each of Experience and Income have variance = 1, and the `"Standard deviations"` reported
 are the square roots ($\sqrt{\lambda}_i$) of the eigenvalues $\lambda_i$ of the correlation matrix $\mathbf{R}$.
 The eigenvalues of a correlation matrix always sum to $p$, the number of variables.
-This fact prompted the rough _rule of thumb_ to extract principal componends whose eigenvalues exceed 1.0,
+This fact prompted the rough _rule of thumb_ to extract principal components whose eigenvalues exceed 1.0,
 which is their average value, $\bar{\lambda} = (\Sigma^p \lambda_i) / p = p / p$.
 
 
@@ -685,6 +691,7 @@ I do this directly here, using tidy processing to explain what is going on in PC
 and in these graphical displays.
 
 #### Scores {.unnumbered}
+
 The (uncorrelated) principal component scores can be extracted as `crime.pca$x` or using `purrr::pluck("x")`. As noted above, these are uncorrelated and have variances
 equal to the eigenvalues of the correlation matrix.
 
@@ -723,8 +730,9 @@ crime.pca |>
   geom_point(size = 1.5) +
   geom_text(aes(label = st), nudge_x = 0.2) +
   stat_ellipse(color = "grey") +
-  coord_fixed() +
-  labs(x = "PC Dimension 1", y = "PC Dimnension 2") +
+  coord_fixed(ylim = c(-3,3), ratio = 1) +
+  scale_color_brewer(palette = "Dark2") +
+  labs(x = "PC Dimension 1", y = "PC Dimension 2") +
   theme_minimal(base_size = 14) +
   theme(legend.position = "top") 
 ```
@@ -759,8 +767,10 @@ To reflect the PCA loadings (multiplying PC1 and PC2 by -1) and get them into a 
 <!-- **TODO**: Should this be a callout-warning or a footnote?? -->
 
 ::: {.callout-warning title="`rownames` in R"}
-R software evolved over many years, particularly in conventions for labeling cases in printed output and graphics.  In base-R, the convention was that the `row.names()` of a matrix or data.frame served as observation labels in all printed output and plots, with a default to use numbers `1:n` if there were no rownames. In `ggplot2` and the `tidyverse` framework, the decision was made that observation labels had to be an **explicit** variable in a "tidy" dataset, so it could be used as a variable in constructs like 
-`geom_text(aes(label = label))` as in this example. This change often requires extra steps in software that uses the rownames convention.
+R software evolved over many years, particularly in conventions for labeling cases in printed output and graphics.  In base-R, the convention was that the `row.names()` of a matrix or data.frame served as observation labels in all printed output and plots, with a default to use numbers `1:n` if there were no rownames. 
+
+In `ggplot2` and the `tidyverse` framework, the decision was made that observation labels had to be an **explicit** variable in a "tidy" dataset, so it could be used as a variable in constructs like 
+`geom_text(aes(label = label))` as in this example. This change often requires extra steps in pre-tidy software that uses the rownames convention.
 :::
 
 ```{r vectors}
@@ -815,8 +825,8 @@ The variable vectors (arrows) shown in @fig-crime-vectors have the following int
 the value, $v_{ij}$, of the vector for variable $\mathbf{x}_i$ on component $j$ reflects
 the correlation of that variable with the $j$th principal component. Thus,
 
-* A variable that is perfectly correlated with a component is parallel to it.
-* A variable this is uncorrelated with an component is perpendicular to it.
+  * A variable that is perfectly correlated with a component is parallel to it.
+  * A variable uncorrelated with an component is perpendicular to it.
 
 (3) The angle between vectors shows the strength and direction of the correlation between those variables:
 the cosine of the angle $\theta$ between two variable vectors, $\mathbf{v}_i$ and $\mathbf{v}_j$, which is
@@ -1119,7 +1129,7 @@ we saw above (@fig-crime-biplot3), these crimes are implicated in the third dime
 
 An important feature of biplot methodology is that once you have a reduced-rank display of the
 relations among a set of variables, you can use other available data to help interpret what
-what is shown in the biplot. In a sense, this is what I did above in @fig-crime-biplot2 and @fig-crime-biplot3
+is shown in the biplot. In a sense, this is what I did above in @fig-crime-biplot2 and @fig-crime-biplot3
 using `region` as a grouping variable and summarizing the variability in the scores for states with their data ellipses by region. 
 
 When we have other quantitative variables on the same observations, these can be represented as supplementary variables in the same space. Geometrically, this amounts to projecting
@@ -1203,8 +1213,7 @@ general way to relate dimensions found in other methods to the original data var
 as in biplot techniques.
 
 ```{r}
-cor(reg.data[, 1:4], reg.data[, 5:7]) |>
-  print() -> R
+(R <- cor(reg.data[, 1:4], reg.data[, 5:7]))
 
 R / coefs
 ```

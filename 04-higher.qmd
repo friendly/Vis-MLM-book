@@ -1,0 +1,226 @@
+
+```{r include=FALSE}
+source("R/common.R")
+knitr::opts_chunk$set(fig.path = "figs/ch04/")
+```
+
+::: {.content-visible unless-format="pdf"}
+{{< include latex/latex-commands.qmd >}}
+:::
+
+# Take Me Higher-D {#sec-higher-d}
+
+@sec-multivariate_plots covered a lot of ground. We started with simple scatterplots and how to enhance them
+with graphical summaries and annotations ...
+
+## The two curses
+
+Multivariate data is often said to suffer from the **curse of dimensionality** [@Bellman1957],
+meaning that that as the dimensionality of data increases, the volume of the space increases so fast that the available data become sparse.
+The amount of data needed to find a reliable signal in this space often typically grows exponentially with the dimensionality.
+Our statistical algorithms struggle to generalize, leading to decreased performance in tasks like classification, regression, and cluster
+analysis.
+
+But, there is another curse here, the **curse of TWO-dimensional graphics**,
+meaning that as the dimensionality of data increases, what we can display in, and understand from,
+a 2D image decreases rapidly with the number of variables, observations and groups represented in a graphic.
+As described earlier, we can go a bit further than just two variables using facets, 
+visual thinning, scatterplot matrices, and corrgrams and generalized pairs plots.
+
+But in these methods, all the variables are forced to share one 2D space.
+It is challenging to represent high-D data, as there simply isn't enough "space" for all the dimensions.
+Like our friend The Square from _Flatland_ it takes some imagination to 
+
+## Parallel coordinate plots {#sec-parcoord}
+
+\ixon{parallel coordinate plots}
+
+<!--
+As we have seen above, scatterplot matrices and generalized pairs plots
+extend data visualization to multivariate data, but these variables
+share one 2D space, so resolution decreases as the number of variable
+increase. You need a very large screen or sheet of paper to see more
+than, say 5-6 variables with any clarity.
+-->
+
+Parallel coordinate plots are an attractive alternative to these methods, with which we
+can visualize an arbitrary number of variables to get a visual summary
+of a potentially high-dimensional dataset, and perhaps recognize
+outliers and clusters in the data in a different way. In these plots,
+each variable is shown on a separate, parallel axis. A multivariate
+observation is then plotted by connecting their respective values on
+each axis with lines across all the axes.
+
+The geometry of parallel coordinates is interesting, because what is a
+point in $n$-dimensional (Euclidean) *data* space becomes a line in the
+*projective* parallel coordinate space with $n$ axes, and vice-versa:
+lines in parallel coordinate space correspond to points in data space.
+Thus, a collection of points in data space map to lines that intersect
+in a point in projective space. What this does is to map $n$-dimensional
+relations into 2D patterns we can see in a parallel coordinates plot.
+
+::: {.callout-note title="History Corner: Who invented parallel coordinates?"}
+> Those who don't know history are doomed to plagiarize it ---The author
+
+The theory of projective geometry originated with the French
+mathematician Maurice d'Ocagne [-@Ocagne:1885] who sought a way to
+provide graphic calculation of mathematical functions with alignment
+diagrams or *nomograms* using parallel axes with different scales. A
+three-variable equation, for example, could be solved using three
+parallel axes, where known values could be marked on their scales, a
+line drawn between them, and an unknown read on its scale at the point
+where the line intersects that scale.
+
+Henry Gannet (1880), in work preceding the *Statistical Atlas of the
+United States* for the 1890 Census [@Gannett:1898], is widely credited
+with being the first to use parallel coordinates plots to show data, in
+his case, to show the [rank ordering of US
+states](https://www.davidrumsey.com/luna/servlet/detail/RUMSEY~8~1~32803~1152181)
+by 10 measures including population, occupations, wealth, manufacturing,
+agriculture and so on.
+
+However, both d'Ocagne and Gannet were far preceded in this by
+Andre-Michel Guerry [-@Guerry:1833] who used this method to show how the
+rank order of various crimes changed with age of the accused. See
+@Friendly2022, Figure 7 for his version and for an appreciation of the
+remarkable contributions of this amateur statistician to the history of
+data visualization.
+
+<!-- **TODO**: Revise the _History_ section of the Wikipedia page for [Parallel coordinates](https://en.wikipedia.org/wiki/Parallel_coordinates). -->
+
+The use of parallel coordinates for display of multidimensional data was
+rediscovered by Alfred Inselberg [-@Inselberg:1985] and extended by
+Edward Wegman [-@Wegman:1990], neither of whom recognized the earlier
+history. Somewhat earlier, David Andrews [-@Andrews:72] proposed mapping
+multivariate observations to smooth Fourrier functions composed of
+alternating $\sin()$ and $\cos()$ terms. And in my book, *SAS System for
+Statistical Graphics* [@Friendly:91], I implemented what I called
+[*profile
+plots*](https://blogs.sas.com/content/iml/2022/11/14/profile-plots-sas.html)
+without knowing their earlier history as parallel coordinate plots.
+:::
+
+Parallel coordinate plots present a challenge for graphic developers, in
+that they require a different way to think about plot construction for
+multiple variables, which can be quantitative, as in the original idea,
+or categorical factors, all to be shown along parallel axes.
+
+Here, I use the `r package("ggpcp", cite=TRUE)`, best described in
+@VanderPlas2023, who also review the modern history.[^other-pcp] This takes some
+getting used to, because they develop `pcp_*()` extensions of the
+`ggplot2` grammar of graphics framework to allow:
+
+[^other-pcp]: Other implementations of parallel coordinate plots in R include:
+`MASS::parcoord()`, `GGally::ggparcoord()` and `PairViz::pcp()`.
+The **ggpcp** version used here is the most general.
+
+-   `pcp_select()`: selections of the variables to be plotted and their
+    horizontal order on parallel axes,
+-   `pcp_scale()`: methods for scaling of the variables to each axis,
+-   `pcp_arrange()`: methods for breaking ties in factor variables to
+    space them out.
+
+Then, it provides `geom_pcp_*()` functions to control the display of
+axes with appropriate aesthetics, labels for categorical factors and so
+forth. @fig-peng-ggpcp1 illustrates this type of display, using sex and
+species in addition to the quantitative variables for the penguin data.
+
+<!-- fig.code: R/peng/peng-ggpcp.R -->
+
+```{r}
+#| label: fig-peng-ggpcp1-code
+#| code-fold: show
+#| eval: false
+#| fig-width: 9
+#| fig-height: 6
+#| out-width: "100%"
+#| fig-cap: "Parallel coordinates plot of penguin size variables, together with sex and species."
+peng |>
+  pcp_select(bill_length:body_mass, sex, species) |>
+  pcp_scale(method = "uniminmax") |>
+  pcp_arrange() |>
+  ggplot(aes_pcp()) +
+  geom_pcp_axes() +
+  geom_pcp(aes(colour = species), alpha = 0.8, overplot = "none") +
+  geom_pcp_labels() +
+  scale_colour_manual(values = peng.colors()) +
+  labs(x = "", y = "") +
+  theme(axis.title.y = element_blank(), axis.text.y = element_blank(), 
+        axis.ticks.y = element_blank(), legend.position = "none")
+```
+
+<!-- CHEATING HERE because ggcpc plots take so long & caching causes problems -->
+
+```{r}
+#| label: fig-peng-ggpcp1
+#| echo: false
+#| fig-width: 9
+#| fig-height: 6
+#| out-width: "100%"
+#| fig-cap: "Parallel coordinates plot of penguin size variables, together with sex and species."
+knitr::include_graphics("figs/fig-peng-ggpcp1-1.png")
+```
+
+
+Rearranging the order of variables and the ordering of factor levels can
+make a difference in what we can see in such plots. For a simple example
+(following @VanderPlas2023), we reorder the levels of species and
+islands to make it clearer which species occur on each island.
+
+```{r}
+#| label: code-peng-ggpcp2
+#| code-fold: show
+#| eval: false
+#| fig-width: 9
+#| fig-height: 6
+#| out-width: "100%"
+#| fig-cap: "Parallel coordinates plot of penguin size variables, with the levels of species and island reordered."
+peng1 <- peng |>
+  mutate(species = factor(species, levels = c("Chinstrap", "Adelie", "Gentoo"))) |>
+  mutate(island = factor(island, levels = c("Dream", "Torgersen", "Biscoe")))
+
+peng1 |>
+  pcp_select(species, island, bill_length:body_mass) |>
+  pcp_scale() |>
+  pcp_arrange(method = "from-left") |>
+  ggplot(aes_pcp()) +
+  geom_pcp_axes() +
+  geom_pcp(aes(colour = species), alpha = 0.6, overplot = "none") +
+  geom_pcp_boxes(fill = "white", alpha = 0.5) +
+  geom_pcp_labels() +
+  scale_colour_manual(values = peng.colors()[c(2,1,3)]) +
+  theme_bw() +
+  labs(x = "", y = "") +
+  theme(axis.text.y = element_blank(), 
+        axis.ticks.y = element_blank(),
+        legend.position = "none") 
+```
+
+<!-- cHEATING HERE because ggcpc plots take so long -->
+```{r}
+#| label: fig-peng-ggpcp2
+#| out-width: "100%"
+#| echo: false
+#| fig-cap: "Parallel coordinates plot of penguin size variables, with the levels of species and island reordered."
+knitr::include_graphics("figs/fig-peng-ggpcp2-1.png")
+```
+
+The order of variables in this plot emphasizes the relation between penguin species and the island
+where they were observed and then shows the values of the quantitative
+body size measurements. 
+
+More generally, quantitative variables can, and probably should,
+be ordered to place the most highly correlated variables adjacently to minimize 
+the degree of crossing lines from one variable to the next [@MartiLaguna2003].
+When variables are highly _negatively_ correlated (such as `bill_depth` and `flipper_length` here),
+crossings can be reduced simply by reversing the scale of one of the variables, e.g.,
+by plotting `-bill_depth`.
+\index{ordering!variables}
+\ixoff{parallel coordinate plots}
+
+```{r child="child/03-grand-tour.qmd"}
+```
+
+```{r child="child/03-network.qmd"}
+```
+

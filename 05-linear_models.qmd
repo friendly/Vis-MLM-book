@@ -46,7 +46,7 @@ When the _predictors_ are also quantitative, simple regression ($p=1$) generaliz
 
 The situation is more interesting when there are $p>1$ predictors. The most common multivariate generalization is 
 _multivariate multiple regression_ (MMRA), where each outcome is regressed on the predictors, as if done separately for each outcome,
-but using multivariate tests that take correlations among the predictors into account.
+but using multivariate tests that take correlations among the response variables into account.
 Other methods for this case include canonical correlation analysis, which tries to explain all relations between $\mathbf{Y}$ and
 a set of $\mathbf{x}$s through maximally correlated linear combinations of each.
 
@@ -54,7 +54,7 @@ When the predictor variables are all discrete or categorical, such as gender or 
 one-way ANOVA and factorial ANOVA with $q=1$ outcome measures all have simple extensions to the case of $q>1$ outcomes.
 
 
-::: {.callout-note title="History Corner"}
+::: {.callout-note title="History Corner: Twins Reared Apart"}
 
 Why are there so many different names for regression vs. ANOVA concepts, statistics and techniques? In regression, we use notation like $x_1, x_2, ...$ to refer to _predictors_ in a model, while in ANOVA, factors $A, B, ...$ are called _main effects_. In regression applications, we often test _linear hypotheses_, are interested in _coefficients_ and
 evaluate a model with an $R^2$ statistic, while in ANOVA we may test _contrasts_ among factor levels, and use $F$-tests
@@ -66,7 +66,8 @@ Methods of regression began in evolutionary biology with Francis Galton's
 [-@Galton:1886; -@Galton:1889] studies of heritability of traits, trying to understand how
 strongly the physical characteristics of one generation of living things resembled those in the next generation.
 From a study of the diameters of sweet peas in parent plants and their size in the next generation, and another on the relationship between heights of human parents and their offspring, he developed the fundamental ideas
-of regression. Karl Pearson [-@Pearson:1896]
+of regression. Karl Pearson [-@Pearson:1896] formalized the mathematical technique of regression and laid
+the foundation for the extension to multiple regression.
 
 In contrast, analysis of variance methods were raised on farms, notably the Rothamsted Experimental Station, where R. A. Fisher
 analyzed vast amounts of data on crop experiments designed to determine the conditions (soil condition, fertilizer treatments) that gave the greatest yields, while controlling for extraneous determiners (plots of planting).
@@ -84,14 +85,14 @@ regression, one-way ANOVA, two-way ANOVA, models with interactions, and so forth
 To complete an analysis, as a graduate student I often had to use three or more different programs.
 
 Then, something remarkable happened on two fronts: theory and computation.
-First, in quick succession textbooks by @Scheffe1960, @Graybill1961, @Winer1962 ...
+First, in quick succession textbooks by @Scheffe1960, @Graybill1961, @Winer1962 and others
 began to layout a general theory of linear models that encompassed all of these separate models,
-giving the "General Linear Model" a well-deserved name.
+giving the "**General Linear Model**" its well-deserved name.
 Second, two symposiums, one at IBM Yorkdown Heights (@IBM1965) and the other at the University of Georgia (@BradshawFindley1967)
-resulted in the first general programs to handle all these cases in an understandable way.
+resulted in the first general programs to handle _all these cases_ in an understandable way.
 
 A bit of matrix algebra thrown into the mix showed that most of the ideas for univariate models
-could be extended to multiple response variables, and so the "Multivariate Linear Model" was born.
+could be extended to multiple response variables, and so the "**Multivariate Linear Model" was born.
 R. Darrell Bock [@Bock1963;@Bock1964] sketched a flowchart of the computational steps, which was implemented at the University of Chicago
 by Jeremy Finn [-@Finn1967] in the MULTIVARIANCE program. A group at the University of North Carolina
 headed by Elliot Cramer developed their MANOVA program [@Clyde-etal-1966] and Willard Dixon [-@Dixon1965] at UCLA developed the BMD programs incorporating these ideas.
@@ -116,18 +117,20 @@ In this chapter I use the following packages. Load them now:
 
 ```{r load-pkgs}
 library(ggplot2)
+library(dplyr)
+library(nestedLogit)
 ```
 
-**TODO**: This stuff on linear combinations seems out of place here. Where to move it?
 
 <!--
+   **TODO**: Removed the stuff on linear combinations
 ```{r child="child/05-linear-combinations.qmd"}
 ```
 -->
 
 ## The General Linear Model {#sec-GLM}
 
-To establish notation and terminology, it is worthwhile to state the the general linear model formally.
+To establish notation and terminology, it is worthwhile to state the general linear model formally.
 For convenience, I use vector and matrix notation.
 This expresses a response variable, $\mathbf{y} = (y_1, y_2, \dots , y_n)^\mathsf{T}$ for $n$ observations, as a sum of terms involving $p$ _regressors_, $\mathbf{x}_1, \mathbf{x}_2, \dots , \mathbf{x}_p$, each of length $n$.
 
@@ -245,8 +248,8 @@ while `poly()` converts these to orthogonal polynomial scores, which are uncorre
 
 **Workers data: Regression models** 
 
-For the `workers` data (@sec-workers-data-pca) you can fit simple regression models predicting
-income from years of experience using a linear and quadratic model as follows:
+For the `workers` data (@exm-workers-pca) you can fit simple regression models predicting
+income from years of experience using a linear and quadratic model as follows.
 
 ```{r workers-mods}
 data(workers, package = "matlib")
@@ -256,6 +259,7 @@ coef(workers.mod1) |> t() |> t()
 workers.mod2 <- lm(Income ~ poly(Experience, 2), data=workers)
 coef(workers.mod2) |> t() |> t()
 ```
+(In this code, `coef(workers.mod2) |> t() |> t()` is used to print the coefficients as a one-column matrix.)
 
 It is simplest to understand  these models by plotting the data overlaid with the fitted regressions.
 Ths uses `geom_smooth()` and specifies the smoothing model as `method = "lm"` with a `formula`,

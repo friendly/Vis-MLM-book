@@ -4,6 +4,9 @@ editor:
     wrap: 120
 ---
 
+@Michael: Because you're using markdown here, you could also use ~~strikethrough~~ corrected text
+in your comments.
+
 # Preface
 
 > However, to do this it is useful to set the stage for multivariate thinking, with a grand scheme for statistics and data visualization, a parable, and an example of multivariate discovery.
@@ -181,7 +184,9 @@ Many of the section headers in this chapter state the kind of plot they discuss.
 
 - Somehow I feel like this chapter should be called `Plots of Multivariable Data`, rather than `Plots of Multivariate Data` per-se...
 
-- This chapter is also ~ 70 pages -- it's probably the one that needs to be intercalated with the other chapters.
+- This chapter is also ~ 70 pages -- it's probably the one that needs to be intercalated with the other chapters. 
+[I'm considering splitting this and hived-off the stuff from parallel coords on into a new chapter, presently `04-higher.qmd` which would become
+Chapter 5, wit all the following chapters renamed.]
 
 - My personal opinion is that the multivariate linear model is particularly well suited as an exploratory method, so there isn't a need to separate the section on Exploratory Methods from everything else. Something like probabilistic graphical models, (Bayesian networks), and SEM is more well-suited for a confirmatory analysis.
 
@@ -233,7 +238,7 @@ crime.pca |>
   theme(legend.position = "top") 
 ```
 
-Perhaps `coord_fixed` needs to be adjusted? Also, the I fixed the y-axis dimension labelling
+Perhaps `coord_fixed` needs to be adjusted? Also, the I fixed the y-axis dimension labelling [c(-3, 3) looks better]
 
 ```{r, eval = FALSE}
 crime.pca |>
@@ -244,7 +249,7 @@ crime.pca |>
   geom_point(size = 1.5) +
   geom_text(aes(label = st), nudge_x = 0.2) +
   stat_ellipse(color = "grey") +
-  coord_fixed(ylim = c(-5,5), ratio = 1) +
+  coord_fixed(ylim = c(-3,3), ratio = 1) +
   labs(x = "PC Dimension 1", y = "PC Dimension 2") +
   theme_minimal(base_size = 14) +
   theme(legend.position = "top") 
@@ -255,7 +260,7 @@ crime.pca |>
   * Variable vectors at right angles are approximately uncorrelated, while those
 pointing in opposite directions are negatively correlated; $r = -1$ if they are at 180$^o$.
 
-- This isn't rendering properly in the HTML version. Perhaps a new line is necessary?
+- This isn't rendering properly in the HTML version. Perhaps a new line is necessary? [Needed indent]
 
 > these are also the eigenvectors of $\mathbf{X} \mathbf{X}'$,
 
@@ -276,7 +281,7 @@ ggbiplot(crime.pca,
 > to help interpret what
 what is shown in the biplot
 
-- Double what
+- Double what [FIXED]
 
 
 This doesn't seem very idiomatic to me...
@@ -286,7 +291,7 @@ cor(reg.data[, 1:4], reg.data[, 5:7]) |>
   print() -> R
 ```
 
-Perhaps the following would be more idiomatic?
+Perhaps the following would be more idiomatic? [OK]
 
 ```{r, eval = FALSE}
 (R <- cor(reg.data[, 1:4], reg.data[, 5:7])) |>
@@ -298,32 +303,259 @@ On one hand, it would have been nice if the mathematics behind Multidimensional 
 
 # Part III: Univariate Linear Models
 
+I have a radical suggestion that perhaps this entire part should be relegated to the online-only section. Although very cool and also a power display of the importance of data visualization, it's not really related to the multivariate response models that were advertised in the beginning of the book. I'm only bringing this up because of the page concerns, otherwise, I would've liked to keep it too. 
+
 ## Chapter 5: Overview of Linear Models
+
+> The most common multivariate generalization is 
+_multivariate multiple regression_ (MMRA), where each outcome is regressed on the predictors, as if done separately for each outcome,
+but using multivariate tests that take correlations among the predictors into account.
+
+- Perhaps emphasize that phase of hypothesis testing of the fitted model is done by taking the correlations of the predictors into account? When I read this, I get the impression that the correlations amongst the predictors is relevant to how the model is fitted. Which I don't think it is? [FIXED]
+
+> From a study of the diameters of sweet peas in parent plants and their size in the next generation, and another on the relationship between heights of human parents and their offspring, he developed the fundamental ideas
+of regression. Karl Pearson [-@Pearson:1896]
+
+- Something about the citation format of this doesn't seem right. Should the citation of Pearson go within the sentence...? [It was incomplete]
+
+
+> To establish notation and terminology, it is worthwhile to state the the general linear model formally.
+
+- Extra `the` [FIXED]
+
+```{r, eval = FALSE}
+data(workers, package = "matlib")
+workers.mod1 <- lm(Income ~ Experience, data=workers)
+coef(workers.mod1) |> t() |> t()
+
+workers.mod2 <- lm(Income ~ poly(Experience, 2), data=workers)
+coef(workers.mod2) |> t() |> t()
+```
+
+- Is it really necessary to transpose the result twice? I think this might confuse beginners [Bizarre, but needed]
+
+- I really like the explicated section on contrasts
 
 ## Chapter 6: Plots for univariate response models
 
-This chapter section should be capitalized
+This name for this section should be capitalized
+
+> Less obvious is the relation between the marginal and AVP ellipses. In 3D, the marginal
+data ellipse is the shadow of the ellipsoid for $(\mathbf{y}, \mathbf{x}_1, \mathbf{x}_2)$ on one of the coordinate planes,
+while the AV plot is a slice through the ellipsoid where either $\mathbf{x}_1$ or $\mathbf{x}_2$
+is held constant.
+
+- I find this very hard to imagine and hence understand. Specifically, what do you mean by "In 3D, the marginal data ellipse is the shadow of the ellipsoid for..." ?
+
+
+I like this chapter, something to bookmark.
+
 
 ## Chapter 7: Topics in Linear Models
 
+I think the discussion of data space and beta-space should be re-ordered. It jumps a bit too directly into the meat of the duality before motivating why we might want to do this and how to even do the duality. In my reading, Figure 7.1 is introduced a bit abruptly -- it was difficult to understand how to interpret this graph and how the beta-space corresponds to the data spa.ce 
+
+[Edited this to remove redundancy with Ch 06, and try to make this discussion clearer]
+
+I'm also a bit lost on why does it matter that the points in beta space are where they are? What does this mean beyond their duality? Perhaps the motivation behind examining beta-space should be explicated earlier?
+
+Why does the data space of Figure 7.4 show 40% and 68% intervals, whereas the beta space shows 95% intervals? Why not making the % of the intervals the same across both? [added a footnote]
+
+> Errors in the response $y$ are accounted for in the model and measured by 
+the mean squared error, $\text{MSE} = \hat{\sigma}_\epsilon^2$.
+But in practice, of course, predictor variables are often also observed
+indicators, subject to their own error. Indeed, in the behavioral sciences
+it is rare that predictors are perfectly reliable and measured exactly.
+This fact that is recognized in errors-in-variables
+regression models [@Fuller2006]
+and in more general structural equation models,
+but often ignored otherwise.  Ellipsoids in data space and $\beta$ space
+are well suited to showing the effect of measurement error in predictors on OLS estimates.
+
+- Perhaps worth emphasizing that measurement error refers to random error that we assume is uncorrelated with anything else and that's normally distributed around the mean. Maybe emphasize that there may be other kinds of non-random measurement error that would require sophisticated modelling to handle correctly.
+
+There's something about Figure 7.6 that makes me think that a table would be better... There's just something about the ordering of True/False on the x-axis, versus the ordering of True/False in the legend, versus the actual ordering of the lines that makes me confused about the meaning of the Model R plot.
+
+I think it would be nice to make the code for the plots in "### Coffee data: $\beta$ space" available as a 'pop-up'. This seems like something that people would want to play with on their own and see with their own 'R'. [Maybe something interactive for the HTML version??]
+
 ## Chapter 8: Collinearity & Ridge Regression
+
+- I think it's worthwhile to add a small note about issues with using VIF when modelling interactions
+
+> These have the property that the resulting numbers
+have common interpretations regardless of the number of predictors.
+
+I think tableplots could've also been illustrated outside the context of plots of collinearity... perhaps?
+[Yes, they are more generally useful]
+
+- Perhaps change period to colon?  [**Where is this in the text?**]
+
+I'm still suspicious about whether the biplots are correctly scaled...?
+
+> Dimension 5 has its' strongest relations to `weight`
+and `horse`. 
+
+- Extra (')?
+
+> [genridge](https://CRAN.R-project.org/package=genridge) package and its [`pkgdown` documentation](https://friendly.github.io/genridge/) for visualization methods.
+
+- Persumably you mean `genridge` documentation and not `pkgdown` documentation?
+
+The text for the left plot Figure 8.8 is clipped [FIXED]
+
+> Because there are multiple
+degree of freedom terms in the model, `car::vif()` calculates GVIFs here.
+
+- I think this deserves greater explanation as to what 'degrees of freedom' means here and why GVIF applies in this case, but not the others? [FIXED]
+
+- Also, I was under the impression that centering wasn't needed for improving standard errors in the case of interactions, is this not the case? Reading your text gives the impression that attempts at re-paramterizing the model (i.e., centering) will change the standard error of the interaction terms -- which I... will go out on a limb to say isn't true and would be very alarming if true? 
+
+> The geometry of ridge regession is illustrated in
+
+- Spelling
 
 # Part IV: Multivariate Linear Models
 
 ## Chapter 9: Hotelling's $T^2$
 
+> * **Maximum $t^2$** : 
+Consider constructing a new variable $w$ as a linear combination of the scores in a matrix 
+$\mathbf{X} = [ \mathbf{x_1}, \mathbf{x_2}, \dots, \mathbf{x_p}]$ with weights $\mathbf{a}$,
+
+- Is it really necessary to call $w$ the linear combination and $a$ the weights? It seems counter-intuitive, perhaps $w$ should be the weights instead? Shouldn't it also be fine to change $w$ to $t$ or $T$?
+
+- It's implied, but also not clear, whether the $a$ used later on i.r.t the Eigenvector and more is the same $a$ that was used to denote weights
+
+> In more complex MANOVA problems, there are more than one non-zero latent roots, $\lambda_1, \lambda_2, \dots \lambda_s$, and test statistics (Wilks' $\Lambda$, Pillai and Hotelling-Lawley trace criteria, Roy's maximum root test)
+
+- The rendering here seems to be broken for html. Perhaps new line and delete tab?
+
+> to give an **exact** $F$ test with the correct
+sampling distribution:
+
+- Worth describing what an exact test is and why it matters
+
+> So, with the Penguins data, you would get the same results if you convert flipper lengths, bill length and depth, from millimeters to centimeters or inches.  The same is true for all MANOVA tests.
+
+- Rendering is also strange here for html -- no tab
+
+> where $\mathbf{S}_p$ is the pooled within-sample variance covariance matrix.
+
+- html rendering -- no tab
+
+> * Group 1 > Group 2 on Basic Math, but worse on Word Problems
+* Group 2 > Group 1 on Word Problems, but worse on Basic Math
+* Within each group, those who do better on Basic Math also do better on Word Problems
+
+- Is there a way to get effect sizes here to quantify the differences between groups? And the effects within groups? 
+
+- Part of me wonders if it'd be better to put chapter 9 after either Chapters 10 or 11. I feel that some of the content in chapter 9 would require knowing Ch 10/11 to really understand it, but it's not super important.
+
+- It does not seem like 'canonical space' is defined in this chapter, yet it seems like a very important concept to understand the last bits of the final sections of this chapter. 
+
 ## Chapter 10: Multivariate Linear Models
+
+> # Multivariate Linear Models {#sec-mlm-review}
+
+- The name of the section header is off
+
+> A weaker form, called **exogeneity** merely asserts that the predictors are independent of (uncorrelated with) the errors, $\Epsilon$.
+
+- What's an example of a violation of exogeneity? Of when a predictor is correlated with the errors in $Y$?
+
+> Implicit in the above is perhaps the most important assumption---that the model has been _correctly specified_. This means:
+
+- I think it's worth arguing that even if the model isn't correctly specified, there is still value in the multivariate linear model. The problem is that we rarely a theory so strong that would warrant the use of something like SEM -- but it's not because your theory is weak that you should constrain yourself to a univariate multiple linear regressi
+
+> In univariate response models, statistical tests and model summaries (like $R^2$) are based on the familiar 
+decomposition of the total sum of squares $SS_T$ into regression or hypothesis ($SS_H$) and error ($SS_E$)
+sums of squares. In the multivariate linear model each of these becomes a $p \times p$ matrix $SSP$
+
+- I think it would be better to explicitly state how the univariate case can be extended into the multivariate case. Perhaps even showing how the univariate case is a special case of the multivariate formula SSP formula would be nice.
+
+
+> $\left(\widehat {\mathbf{Y}}^{\top}\widehat{\mathbf{Y}} - n\overline{\mathbf{y}}\,\overline{\mathbf{y}}^{\top} \right)$ 
+
+- I guess this is $\mathbf{SSP}_{H}$? If so, this needs to be explicitly stated, right as the substition is made. Right now the substitution seems to be implied and seems to show up later in equation 10.6.
+
+> in the off-diagonal, where the sign is important: In $\text{SSP}_H$ the the negative covariance
+
+- in the off-diagonal, where the sign is important: In $\text{SSP}_H$ the ~~the~~ negative covariance
+
+> These are the $p$ values $\lambda$ which solve the determinant equation
+
+- There is something about the grammar of this sentence which seems off
+
+- Why is it that figure 10.2 uses the Basic Math and Word Problems, but Section 10.2 is about Dog food? The flip-flopping is confusing me...
+
+- Can we have a graph for what the meaning of the final result of section 10.2.3 is? Specifically this one 
+
+```
+rownames(eig$vectors) <- rownames(HEinv)
+colnames(eig$vectors) <- paste("Dim", 1:2)
+eig$vectors
+#>         Dim 1  Dim 2
+#> start   0.123 -0.411
+#> amount -0.992 -0.911
+```
+
+What does this mean visually?
+
+## 10.3 Multivariate test statistics
+
+> degrees of freedom, there are $s > 1$
+
+- A refresher on what $s$ means would be useful to know why there are $s > 1$ possible dimensions. 
+
+> Nested dicontomy contrasts are always _orthogonal_, and therefore 
+correspond to statistically independent tests. We are effectively taking a three
+
+- 'dichotomy' instead of dicontomy?
+- For pedagogy, what's an example of a non-orthogonal test? What's an example of the way that the multivariate test statistic can be abused incorrectly using non-orthogonal non-independent tests?
+
+## 10.6.1 
+
+> Among the remaining predictors, income and educ might be considered as background variables necessary to control for. Interest might then be focused on whether the behavioral variables antisoc and hyperact contribute beyond that.
+
+- If we're using short form, then perhaps `educ`, `antisoc` and `hyperact` should all be quoted in back-ticks to give that special font?
+
+> #### Fiting models {.unnumbered}
+
+- Fitting models
 
 ## Chapter 11: Visualizing Multivariate Models
 
+> However in a one-way MANOVA design with more than response three variables, it is difficult
+
+- Howevever, in a one-way MANOVA design with more than three response variables, it is difficult
+
+- What a canonical space itself is does not seem to be defined..?
+- Are canonical scores the same as $\mathbf{Z}$?
+
 ## Chapter 12: Visualizing Equality of Covariance Matrices
 
+> Just as the Welsh $t$-test [@Welch:1947]
+
+- Welch $t$-test
+
+> putting numbers to the visual conslusion from
+
+- visual conclusion
+
+> ## Multivariate analog of Levine's test {#sec-multivar-levene}
+
+- The spelling of Levene's test is sometimes swapped for Levine throughout
+
 ## Chapter 13: Multivariate Influence and Robust Estimation
+
+- Misterious or Mysterious?
+
+- Surely, we could get a higher quality plot than the hand-drawn plot of Figure 13.9 somehow? Section 13.5 also does not seem to be completed.
 
 ## Chapter 14: Case studies
 
 This chapter section should be capitalized
 
-# Part V: End Matter
+# Part V: End matter
 
-- This part section should be capitalized
+- The name for this part should be capitalized
