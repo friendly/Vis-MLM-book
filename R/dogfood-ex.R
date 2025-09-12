@@ -97,10 +97,11 @@ eqn <- "
 # eigenvalues
 
 HEinv <- SSP_H %*% solve(SSP_E) |> print()
-eigen(HEinv)
+eig <- eigen(HEinv)
 
-library(candisc)
-dogfood.can <- candisc(dogfood.mod) |> print()
+rownames(eig$vectors) <- rownames(HEinv)
+colnames(eig$vectors) <- paste("Dim", 1:2)
+
 
 # data ellipses
 covEllipses(cbind(start, amount) ~ formula, data=dogfood,
@@ -112,6 +113,17 @@ dataEllipse(amount ~ start | formula, data=dogfood,
             levels = 0.4,
             fill = TRUE, fill.alpha= 0.1)
 
+#Show eigenvectors in a plot
+
+covEllipses(cbind(start, amount) ~ formula, data=dogfood,
+            pooled = FALSE, 
+            level = 0.40, label.pos = 3,
+            fill = TRUE, fill.alpha= 0.1)
+
+# this doesn't work. Bug in vectors??
+means <- colMeans(dogfood[, -1])
+vecs <- -(eig$vectors)
+matlib::vectors(vecs, origin = means)
 
 # setup contrasts to test interesting comparisons
 # C <- matrix(
@@ -185,6 +197,7 @@ hyp <- list("Ours/Theirs" = "formulac1",
 heplot(dogfood.mod, hypotheses = hyp,
        fill = TRUE, fill.alpha = 0.1)
 
+# Canonical heplot
 dogfood.can <- candisc(dogfood.mod, data=dogfood)
 heplot(dogfood.can, 
        fill = TRUE, fill.alpha = 0.1, 

@@ -122,7 +122,7 @@ w = a_1 \mathbf{x_1} + a_2 \mathbf{x_2} + \dots + a_p \mathbf{x_p} = \mathbf{X} 
 $$
 
 Hotelling's $T^2$ is then the maximum value of a univariate $t^2 (\mathbf{a})$ over all possible choices of the weights in $\mathbf{a}$. In this way, Hotellings test reduces a multivariate problem to a univariate one.
-The weights in $\mathbf{a}$ show how the variables contribute to significance.
+The weights in $\mathbf{a}$ show how the variables contribute to significance: larger absolute values $\vert a_j \vert$ variables have greater impact.
 
 * **Eigenvalue** : Hotelling showed that $T^2$ is the one non-zero eigenvalue (latent root)
 $\lambda$
@@ -133,7 +133,7 @@ $$
 (\mathbf{Q}_H - \lambda \mathbf{Q}_E) \; \mathbf{a} \; = \; 0 \period
 $$ {#eq-eigen}
 
-    In more complex MANOVA problems, there are more than one non-zero latent roots, $\lambda_1, \lambda_2, \dots \lambda_s$, and test statistics (Wilks' $\Lambda$, Pillai and Hotelling-Lawley trace criteria, Roy's maximum root test)
+In more complex MANOVA problems, there are more than one non-zero latent roots, $\lambda_1, \lambda_2, \dots \lambda_s$, and test statistics (Wilks' $\Lambda$, Pillai and Hotelling-Lawley trace criteria, Roy's maximum root test)
 are functions of these as shown in @sec-multivar-tests.
 
 
@@ -145,7 +145,11 @@ $\mathbf{a} = \mathbf{S}^{-1} (\bar{\mathbf{x}} - \mathbf{\mu}_0)$. These are th
 $N-1$ degrees of freedom is an $F (1, N-1)$ statistic. But we chose $\mathbf{a}$
 to give the _maximum_ $t^2 (\mathbf{a})$; this can be taken into account with a
 transformation of $T^2$ to give an **exact** $F$ test with the correct
-sampling distribution:
+sampling distribution:[^exact]
+
+[^exact]: An **exact test** in statistics is a hypothesis test a gives a true, accurate significance level ($p$-value) without relying on approximations or large-sample assumptions. For example, the sampling distribution of the
+statistic $t = (\bar{x}_1 - \bar{x}_$) / s_p$ for a two-sample $t$ test can be shown to be
+exactly the $t$ distribution with $n_1 + n_2 -2$ degrees of freedom regardless of the sample sizes $n_1$ and $n_2$.
 
 $$
 F^* = \frac{N - p}{p (N-1)} T^2 \; \sim \; F (p, N - p) \period
@@ -161,7 +165,7 @@ $$
 \mathbf{x}_{p \times 1} \rightarrow \mathbf{A}_{p \times p} \; \mathbf{x} + \mathbf{b}_{p \times 1} \period
 $$
 
-    So, with the Penguins data, you would get the same results if you convert flipper lengths, bill length and depth, from millimeters to centimeters or inches.  The same is true for all MANOVA tests.
+So, with the Penguins data, you would get the same results if you convert flipper lengths, bill length and depth, from millimeters to centimeters or inches.  The same is true for all MANOVA tests.
 
 * **Two-sample tests** : With minor variations in notation, everything above applies to the more usual test of equality of multivariate means in a two sample test of
 $\mathcal{H}_0 : \mathbf{\mu}_1 = \mathbf{\mu}_2$.
@@ -170,7 +174,7 @@ $$
 T^2 = N (\bar{\mathbf{x}}_1 - \bar{\mathbf{x}}_2)^\mathsf{T} \; \mathbf{S}_p^{-1} \; (\bar{\mathbf{x}}_1 - \bar{\mathbf{x}}_2) \; ,
 $$ {#eq-T2-two-sample}
 
-    where $\mathbf{S}_p$ is the pooled within-sample variance covariance matrix.
+where $\mathbf{S}_p$ is the pooled within-sample variance covariance matrix.
 
 ### Example: Mathscore data {#sec-mathscore-example}
 
@@ -508,7 +512,7 @@ Hotelling's $T^2$ and multivariate tests.
 Multivariate methods become increasingly useful as the number of response variables increases because
 it is harder to show them all together and see how they relate to differences between groups.
 
-A classic example is the dataset `r dataset("banknote")`, containing six size measures made on 100 genuine and 100 counterfeit old-Swiss 1000-franc bank notes [@FluryReidwyl-1988]. The goal is to see how well the real and fake
+A classic example is the dataset `r dataset("mclust::banknote")`, containing six size measures made on 100 genuine and 100 counterfeit old-Swiss 1000-franc bank notes [@FluryReidwyl-1988]. The goal is to see how well the real and fake
 banknotes can be distinguished. The measures are the `Length` and `Diagonal` lengths of a banknote and
 the `Left`, `Right`, `Top` and `Bottom` edge margins in mm.
 
@@ -644,11 +648,16 @@ for ANOVA-type models with categorical, group factors as predictors is  $\eta^2$
 $$
 \eta^2 = \frac{\text{SS}_\text{Between groups}}{\text{SS}_\text{Total}} \period
 $$
+
 For multivariate response models, the generalization of $\eta^2$ uses multivariate analogs of these sums of squares, $\mathbf{Q}_H$
-and $\mathbf{Q}_T = \mathbf{Q}_H + \mathbf{Q}_E$, and there are different calculations for a single
+and $\mathbf{Q}_T = \mathbf{Q}_H + \mathbf{Q}_E$. In larger designs, there are different calculations for a single
 measure corresponding to the various test statistics (Wilks' $\Lambda$, etc.), as described in @sec-mlm-review.
 
-Let's calculate the $\eta^2$ for the multivariate model `banknote.mlm` with `Status` as the only predictor, giving $\eta^2 = 0.92$, or 92% of the total variance. 
+Let's calculate the $\eta^2$ for the multivariate model `banknote.mlm` with `Status` as the only predictor. 
+The function `heplots::etasq()` gives $\eta^2 = 0.92$, or 92% of the total variance.[^etasq]
+
+[^etasq]: `heplots::etasq` calculates overall $\eta^$, across all response variables, for each term in a MLM.
+You can obtain these values for each of the response variables separately using `effectsize::eta_squared()`.
 
 ```{r banknote-etasq}
 heplots::etasq(banknote.mlm)
@@ -664,7 +673,7 @@ of multivariate data. We will meet another multivariate juicer, **canonical disc
 
 ## The Grand Scheme
 
-**TODO**: ~~Combine with `summary/Ch09-summary.qmd ~~
+<!-- **TODO**: ~~Combine with `summary/Ch09-summary.qmd ~~ -->
 
 <!--
 This chapter was designed to illustrate the main ideas for visualizing differences between
@@ -696,10 +705,13 @@ As we will see later (@sec-vis-mlm), the $\mathbf{H}$ ellipse is scaled so that 
 test of significance: it projects somewhere outside the $\mathbf{E}$ ellipse if and only if the
 means differ significantly. 
 
-The direction of the line between the means is also the discriminant
-axis and scores on this axis are weighted sum of the responses that have the greatest possible
-mean difference. A plot of these scores using boxplots, together with vectors for the variable weights
-is what I refer to as "Canonical space" in @fig-HE-framework.
+The direction of the line between the means is also the _discriminant
+axis_. Scores on this axis are shown in @fig-HE-framework as the projection of the points on the line joining the group means. These
+are the weighted sum of the responses that have the greatest possible
+mean difference. 
+A plot of these scores using boxplots, together with vectors for the variable weights
+is shown in the bottom right in @fig-HE-framework. I call this "Canonical space",
+described more generally in @sec-candisc.
 
 ```{r child = "summary/Ch09-summary.qmd"}
 ```

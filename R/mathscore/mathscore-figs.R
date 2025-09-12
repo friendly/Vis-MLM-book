@@ -3,6 +3,7 @@ data(mathscore, package="heplots")
 
 library(car)
 library(heplots)
+library(dplyr)
 
 math.mod <- lm(cbind(BM, WP) ~ group, data=mathscore)
 Anova(math.mod)
@@ -10,6 +11,14 @@ Anova(math.mod)
 summary(Anova(math.mod))
 
 print(summary(Anova(math.mod)), SSP=FALSE)
+
+# effect sizes
+d_BM <- rstatix::cohens_d(BM ~ group, data=mathscore, ci=TRUE)
+d_WP <- rstatix::cohens_d(WP ~ group, data=mathscore, ci=TRUE)
+bind_rows(d_BM, d_WP)
+
+library(effectsize)
+effectsize(math.mod) |> filter(Parameter != "(Intercept)")
 
 png(filename="mathscore-covellipses.png", height=480, width=480)
 op <- par(mar=c(4,4,1,1)+0.5)
