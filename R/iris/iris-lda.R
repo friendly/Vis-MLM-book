@@ -15,6 +15,8 @@ names(iris.lda)
 str(iris.lda)
 
 col <- scales::hue_pal()(3)
+iris.colors <- c("red", "darkgreen", "blue")
+
 panel.pts <- function(x, y, ...) points(x, y, ...)
 plot(iris.lda, 
      panel = panel.pts 
@@ -30,7 +32,7 @@ str(iris.scores)
 dataEllipse(LD2 ~ LD1 | Species, data=iris.scores, 
             levels = 0.68, 
             fill = TRUE, fill.alpha = 0.05,
-            col = col,
+            col = iris.colors,
             pch = 15:17,
             grid = FALSE,
             label.pos = "top",
@@ -85,4 +87,7 @@ ggbiplot(iris.lda,
 
 
 partimat(Species ~ Sepal.Length + Sepal.Width + Petal.Length + Petal.Width, 
-         data=iris, method="lda")
+         data=iris, 
+         method="lda",
+         image.colors = scales::alpha(iris.colors, alpha=0.3)
+         )

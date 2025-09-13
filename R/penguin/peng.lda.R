@@ -1,3 +1,6 @@
+library(MASS)
+library(ggord)
+library(ggplot2)
 
 data(peng, package="heplots")
 source("R/penguin/penguin-colors.R")
@@ -8,8 +11,6 @@ pch <- 15:17
 theme_set(theme_bw(base_size = 14))
 
 
-library(MASS)
-library(ggord)
 
 peng.lda <- lda(species ~  bill_length + bill_depth + flipper_length + body_mass, data = peng)
 peng.lda
@@ -97,7 +98,7 @@ peng.partimat <- peng |>
   partimat(species ~ ., data = _, 
          method = "lda",
          plot.matrix = TRUE,
-         plot.control = list(cex = 1.2),
+         plot.control = list(cex = 1),
          image.colors = col)
 
 peng.partimat <- peng |>
