@@ -1,3 +1,11 @@
+#' ---
+#' title: plot LDA boundaries with ggplot
+#' ---
+
+#' What would be nice is to plot LDA classification in
+#' * space of two observed variables
+#' * space of two discrim axes
+
 library(MASS) # For lda() and qda()
 library(ggplot2)
 library(dplyr)
@@ -39,13 +47,14 @@ means <- iris |>
 ggplot(data = iris, aes(x = Petal.Length, y = Petal.Width)) +
   # Plot decision regions
   geom_tile(data = prediction_data, aes(fill = Species), alpha = 0.2) +
+  stat_ellipse(aes(color=Species), level = 0.68, linewidth = 1.2) +
   # Plot original data points
   geom_point(aes(color = Species, shape=Species),
              size =2) +
   labs(title = "LDA Decision Boundaries") +
   geom_label(data=means, aes(label = Species, color = Species),
              size =5) +
-  theme_minimal() +
+  theme_minimal(base_size = 14) +
   theme(legend.position = "none")
 
 # see also https://www.thomaspuschel.com/post/decision_boundary_plot2/
