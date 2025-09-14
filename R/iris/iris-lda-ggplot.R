@@ -18,9 +18,11 @@ iris.lda <- lda(Species ~ Petal.Length + Petal.Width, data = iris)
 iris.lda <- lda(Species ~ ., data = iris)
 
 # Create a grid for prediction
+# -- vary focal variables along their range
 x_range <- range(iris$Petal.Length)
 y_range <- range(iris$Petal.Width)
 
+# set non-focal variables to their means
 grid_points <- expand.grid(
   Petal.Length = seq(x_range[1], x_range[2], length.out = 100),
   Petal.Width = seq(y_range[1], y_range[2], length.out = 100),
@@ -32,12 +34,8 @@ grid_points <- expand.grid(
 grid_predictions <- predict(iris.lda, newdata = grid_points)$class
 prediction_data <- cbind(grid_points, Species = grid_predictions)
 
-# Plot with ggplot2: Use geom_tile() to plot the predicted classes on the grid, creating the decision regions, and geom_point() to overlay your original data points.
-
-# legend_inside <- function(position) {          # simplify legend placement
-#   theme(legend.position = "inside",
-#         legend.position.inside = position)
-# }
+# Plot with ggplot2: Use geom_tile() to plot the predicted classes on the grid, creating the decision regions, 
+# and geom_point() to overlay your original data points.
 
 means <- iris |>
   group_by(Species) |>
@@ -69,13 +67,18 @@ ggplot(data = iris, aes(x = Petal.Length, y = Petal.Width)) +
 # head(augmented_data)
 
 # TODO: Make a data.frame method
+
+# Generate a grid of predictor values for a predict method
+# Could I do this with marginaleffects::datagrid ?
 make_grid <- function(x, y, 
                       names = NULL,
                       npoints = c(80, 80)) {
 
-  XY <- grDevices::xy.coords(x, y)
-  x <- XY["x"]
-  y <- XY["y"]
+#   XY <- grDevices::xy.coords(x, y)
+#   x <- XY["x"]
+#   y <- XY["y"]
+# browser()
+
   grid_points <- expand.grid(
   x = seq(min(x), max(x), length.out = npoints[1]),
   y = seq(min(y), max(y), length.out = npoints[2])
@@ -85,7 +88,6 @@ if (!is.null(names)) {
   colnames(grid_points) <- names[1:2]
   }
 else {
-#browser()
   names <- c(deparse(substitute(x)),
              deparse(substitute(y)) )
   # data.frame columns
@@ -114,14 +116,24 @@ maxp <- apply(probs, 1, max) |> as.numeric()
 pred.data <- cbind(iris.grid, class, maxp)
 
 pred_lda <- function(object, newdata, ...) {
+  nv <- ncol(newdata)
   pred <- predict(object, newdata, type = "prob")
   class <- pred$class
   probs <- pred$posterior
   maxp <- apply(probs, 1, max)
-  cbind(newdata, class, maxp)
+
+    # get response variable name
+  response <- insight::find_response(object)
+  
+  ret <- cbind(newdata, class, maxp)
+  colnames(ret)[nv+1] <- response
+  ret
 }
 
 # do the initial example, but at the means of Sepal vars
+
+# use all variables -- but this requires the grid account for them
+iris.lda <- lda(Species ~ ., data = iris)
 
 iris.pred <- pred_lda(iris.lda, grid_points) |>
   rename(Species = class)
@@ -138,18 +150,40 @@ ggplot(data = iris, aes(x = Petal.Length, y = Petal.Width)) +
   theme_minimal() +
   theme(legend.position = "none")
 
-# try with raster
-ggplot(data = iris, aes(x = Petal.Length, y = Petal.Width)) +
-  # Plot decision regions
-  geom_raster(data = iris.pred, aes(fill = Species,  alpha=maxp)) +
+# ---------------------------
+# --- do for Sepal variables
 
-  geom_point(data = iris, aes(color = Species, shape=Species),
-             size =3) +
+x_range <- range(iris$Sepal.Length)
+y_range <- range(iris$Sepal.Width)
+
+# set non-focal variables to their means
+grid_points <- expand.grid(
+  Sepal.Length = seq(x_range[1], x_range[2], length.out = 80),
+  Sepal.Width = seq(y_range[1], y_range[2], length.out = 80),
+  Petal.Length = mean(iris$Petal.Length),
+  Petal.Width = mean(iris$Petal.Width)
+)
+
+
+iris.pred <- pred_lda(iris.lda, grid_points) 
+table(iris.pred$Species)
+
+means <- iris |>
+  group_by(Species) |>
+  summarise(across(c(Sepal.Length, Sepal.Width), mean, 
+                   na.rm = TRUE))
+
+ggplot(data = iris, aes(x = Sepal.Length, y = Sepal.Width)) +
+  # Plot decision regions
+  geom_tile(data = iris.pred, aes(fill = Species), alpha = 0.2) +
+  stat_ellipse(aes(color=Species), level = 0.68, linewidth = 1.2) +
+  # Plot original data points
+  geom_point(aes(color = Species, shape=Species),
+             size =2) +
   labs(title = "LDA Decision Boundaries") +
   geom_label(data=means, aes(label = Species, color = Species),
              size =5) +
-  theme_minimal() +
+  theme_minimal(base_size = 14) +
   theme(legend.position = "none")
-
 
 

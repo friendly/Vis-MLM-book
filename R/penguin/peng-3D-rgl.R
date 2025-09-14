@@ -1,5 +1,6 @@
 library(rgl)
 library(bpca)
+library(heplots)
 
 data(peng, package="heplots")
 
@@ -18,7 +19,7 @@ rgl.bringtotop()
 
 col <- colors[peng$species]
 plot3d(peng[, 1:3], type="s", 
-       size=0.6, 
+       size=0.9, 
        col=col, cex=2, 
        box=FALSE)
 
@@ -28,7 +29,10 @@ mu <- colMeans(peng[,1:3])
 shade3d(ellipse3d(cov, centre=mu, level=0.68), 
         col="gray", alpha=0.2)
 
-axes <- heplots::ellipse3d.axes(cov, centre=mu, level=0.8, labels=TRUE, cex=1.5, lwd = 3)
+axes <- ellipse3d.axes(cov, centre=mu, 
+                       level=0.9, labels=TRUE, 
+                       label.ends = 1:6,
+                        cex=1.8, lwd = 3)
 
 # one ellipse for each
 
