@@ -10,6 +10,7 @@ library(MASS) # For lda() and qda()
 library(ggplot2)
 library(dplyr)
 library(broom)
+library(marginaleffects)
 
 # Example data (e.g., iris dataset)
 data(iris)
@@ -29,6 +30,8 @@ grid_points <- expand.grid(
   Sepal.Length = mean(iris$Sepal.Length),
   Sepal.Width = mean(iris$Sepal.Width)
 )
+
+
 
 # Predict class for each grid point
 grid_predictions <- predict(iris.lda, newdata = grid_points)$class
@@ -153,6 +156,10 @@ ggplot(data = iris, aes(x = Petal.Length, y = Petal.Width)) +
 # ---------------------------
 # --- do for Sepal variables
 
+iris.lda <- lda(Species ~ ., data = iris)
+# or just the two folcal ones
+iris.lda <- lda(Species ~ Sepal.Length + Sepal.Width, data = iris)
+
 x_range <- range(iris$Sepal.Length)
 y_range <- range(iris$Sepal.Width)
 
@@ -186,4 +193,11 @@ ggplot(data = iris, aes(x = Sepal.Length, y = Sepal.Width)) +
   theme_minimal(base_size = 14) +
   theme(legend.position = "none")
 
+
+# with marginaleffects
+
+range100 = \(x) seq(min(x), max(x), length.out = 100)
+grid = datagrid(Petal.Width = range100, Petal.Length = range100, newdata = iris)
+
+head(grid)
 

@@ -42,6 +42,8 @@ prediction_data <- predictions(iris.lda,
     newdata = datagrid(Sepal.Width = range100, Sepal.Length = range100)
 )
 
+table(prediction_data$estimate)
+
 ggplot(data = iris, aes(x = Sepal.Length, y = Sepal.Width)) +
     # Plot original data points
     geom_point(aes(color = Species, shape = Species), size = 2) +
