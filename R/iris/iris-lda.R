@@ -20,8 +20,9 @@ iris.colors <- c("red", "darkgreen", "blue")
 # using MASS::plot.lda
 panel.pts <- function(x, y, ...) points(x, y, ...)
 plot(iris.lda, 
-     panel = panel.pts 
-#     col = col #, pch = (15:17)[iris$Species]
+     panel = panel.pts,
+     col = iris.colors,
+     pch = 15:17 
 )
 
 # using dataEllipse
