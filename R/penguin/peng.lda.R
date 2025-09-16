@@ -98,8 +98,9 @@ peng.partimat <- peng |>
   partimat(species ~ ., data = _, 
          method = "lda",
          plot.matrix = TRUE,
-         plot.control = list(cex = 1),
-         image.colors = col)
+         plot.control = list(cex = 1.2),
+         image.colors = scales::alpha(col, alpha = 0.4)
+  )
 
 peng.partimat <- peng |>
   dplyr::select(species, bill_length:body_mass) |>
@@ -107,5 +108,6 @@ peng.partimat <- peng |>
            method = "qda",
            plot.matrix = TRUE,
            plot.control = list(cex = 1.2),
-           image.colors = col)
+           image.colors = scales::alpha(col, alpha = 0.4)
+           )
 
