@@ -31,11 +31,23 @@ $ find ./R |grep "3" |grep "\.R"
 
 ## Discriminant analysis
 
-* Plots in data space showing the discriminant classifications boundaries
+* Plots in data space showing the discriminant classifications boundaries. The beginning of this is in `child/10-discrim.qmd`
 
   - Generate a grid of values for two focal variables.
   - Get predicted class
   - Plot using geom_tile
+  - Examples: 
+
+```
+$ find ./R | grep "lda"
+./R/dogfood/dogfood-lda.R
+./R/iris/iris-lda-ggplot.R
+./R/iris/iris-lda-margeffs.R
+./R/iris/iris-lda.R
+./R/lda-ex.R
+./R/lda-ggord.R
+./R/penguin/peng.lda.R
+```
 
 * Plots in discriminant space showing disc boundaries
 
@@ -47,3 +59,7 @@ $ find ./R |grep "3" |grep "\.R"
   - Parenting data or AddHealth [1 way]
   - MockJury [2-way]
   - use effects::Effect.mlm
+
+## Robust methods
+
+* Add section on robust PCA to Ch 13

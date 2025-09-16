@@ -17,13 +17,18 @@ str(iris.lda)
 col <- scales::hue_pal()(3)
 iris.colors <- c("red", "darkgreen", "blue")
 
-# using MASS::plot.lda
+# using MASS::plot.lda 
 panel.pts <- function(x, y, ...) points(x, y, ...)
 plot(iris.lda, 
-     panel = panel.pts
-     col = iris.colors,
-     pch = 15:17
+     panel = panel.pts,
+     col = iris.colors[iris$Species],
+     pch = (15:17)[iris$Species]
 )
+
+
+# Can now use ggbiplot::reflect() in ggbiplot v 0.6.5 ??
+
+iris.lda <- ggbiplot::reflect(iris.lda, 1)
 
 # using dataEllipse
 iris.scores <- data.frame(
@@ -38,21 +43,9 @@ rownames(vecs) <- sub("\\.", "\n", rownames(vecs))
 vecs
 
 # reflect LD1
-iris.scores[, "LD1"] <- -1 * iris.scores[, "LD1"]
+# iris.scores[, "LD1"] <- -1 * iris.scores[, "LD1"]
+# vecs[, "LD1"] <- -1 * vecs[, "LD1"]
 
-vecs[, "LD1"] <- -1 * vecs[, "LD1"]
-
-# dataEllipse(LD2 ~ LD1 | Species, data=iris.scores, 
-#             levels = 0.68, 
-#             fill = TRUE, fill.alpha = 0.05,
-#             col = iris.colors,
-#             pch = 15:17,
-#             grid = FALSE,
-#             label.pos = "top",
-#             label.cex = 1.8)
-# 
-# candisc::vectors(vecs, 
-#                  col = "black", lwd=2, cex = 1.3)
 
 # use asp=1
 dataEllipse(LD2 ~ LD1 | Species, data=iris.scores, 
@@ -92,13 +85,15 @@ iris.can <- candisc(iris.mod)
 plot(iris.can, ellipse = TRUE, pch = 15:17)
 
 
+# why is this so ugly?
 ggbiplot(iris.lda,
 #         obs.scale = 1, var.scale = 1, 
           scale = 0.5,
          groups = iris$Species,
          ellipse = TRUE
         )
-
+# use ggord instead
+# 
 
 # partimat methods
 partimat(Species ~ Sepal.Length + Sepal.Width + Petal.Length + Petal.Width, 
