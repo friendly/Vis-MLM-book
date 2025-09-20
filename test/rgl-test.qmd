@@ -5,13 +5,15 @@ format:
     toc: false
   pdf:
     toc: false
+    fig-pos: "htb!"
 ---
 
 ```{r}
 #| label: setup
 #| include: false
 library(rgl)
-options(rgl.useNULL = TRUE) # Suppress the separate rgl window during knitting
+options(rgl.useNULL = TRUE, # Suppress the separate rgl window during knitting
+        webshot.quiet = TRUE)
 ```
 
 
@@ -20,30 +22,55 @@ options(rgl.useNULL = TRUE) # Suppress the separate rgl window during knitting
 
 PDF: Will this generate a static plot in @fig-rgl-test-pdf?
 
+It should appear on the same page
+
 ```{r}
 #| label: fig-rgl-test-pdf
 #| dev: pdf
 #| fig-width: 8
 #| fig-height: 8
 #| fig-cap: "Random points in 3D"
+#| message: FALSE
 x <- rnorm(100)
 y <- rnorm(100)
 z <- rnorm(100)
 plot3d(x, y, z, col = "red", type = "s", size = 3)
 outfile <- here::here("images", "rgl-test.png")
 fn <- snapshot3d(filename = outfile, width=800, height = 800)
-knitr::include_graphics(outfile)
+knitr::include_graphics(outfile, dpi = 200)
 ```
+
+Duncan says: "I think that dpi = 200 will give you a 4 inch display, because you have an 800x800 image. I don't know if the fig-width and fig-height options make any difference."
+
+Normally, this code would not be echoed
 
 :::
 
 
 ::: {.content-visible when-format="html"}
 
-HTML: Will this generate a dynamic plot @fig-rgl-test-html?
+HTML: Will this generate a dynamic plot @fig-rgl-test-html1?
+
+Setting the height and width with chunk options or rglwidget()?
 
 ```{r}
-#| label: fig-rgl-test-html
+#| label: fig-rgl-test-html1
+#| fig-width: 8
+#| fig-height: 8
+#| fig-cap: "Random points in 3D. You can drag it around and zoom in and out with your mouse."
+x <- rnorm(100)
+y <- rnorm(100)
+z <- rnorm(100)
+plot3d(x, y, z, col = "blue", type = "s", size = 3)
+rglwidget(width = 500, height = 500) 
+```
+
+### Another test
+
+Including a plot control to rotate around an axis
+
+```{r}
+#| label: fig-rgl-test-html2
 #| fig-width: 8
 #| fig-height: 8
 #| fig-cap: "Random points in 3D"
@@ -51,8 +78,13 @@ x <- rnorm(100)
 y <- rnorm(100)
 z <- rnorm(100)
 plot3d(x, y, z, col = "blue", type = "s", size = 3)
-rglwidget(width = 500, height = 500) |>
-  playwidget()
+M <- r3dDefaults$userMatrix
+fn <- par3dinterp(time = (0:1)*0.75, 
+                  userMatrix = list(M, 
+                                    rotate3d(M, pi/2, 0, 0, 1)) )
+rglwidget() |>
+playwidget(par3dinterpControl(fn, 0, 3, steps=15),
+       step = 0.01, loop = TRUE, rate = 0.5)
 ```
 
 :::
