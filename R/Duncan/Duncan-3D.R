@@ -40,6 +40,25 @@ show2d({
   }, 
   face = "y-")
 
+zoom<-par3d()$zoom
+userMatrix<-par3d()$userMatrix
+windowRect<-par3d()$windowRect
+
+dput(userMatrix)
+structure(c(0.408386796712875, 0.0131282666698098, -0.912714540958405, 
+0, 0, 0.999896585941315, 0.0143822720274329, 0, 0.912808954715729, 
+-0.00587353017181158, 0.408344566822052, 0, 0, 0, 0, 1), dim = c(4L, 
+4L))
+zoom
+1
+
+par3d(userMatrix =
+structure(c(0.408386796712875, 0.0131282666698098, -0.912714540958405, 
+0, 0, 0.999896585941315, 0.0143822720274329, 0, 0.912808954715729, 
+-0.00587353017181158, 0.408344566822052, 0, 0, 0, 0, 1), dim = c(4L, 
+4L)))
+
+snapshot3d(filename = "images/Duncan-3D-ellipses.png")
 
 
 # spin around the Y axis
@@ -49,10 +68,21 @@ play3d(spin3d(axis = c(0,1,0), rpm = 5),
 par3d(op)
 
 
+movie3d(
+  movie="images/Duncan-3D-spin", 
+  spin3d( axis = c(0, 1, 0), rpm = 4),
+  duration = 5, fps = 5,
+  dir = ".",
+  type = "gif", 
+  clean = TRUE)
+
 
 # Plot in vector space
+# -- why can't I control this better?
 # --------------------
-plot(regvec3d(prestige ~ income + education, data=Duncan))
+plot(regvec3d(prestige ~ income + education, data=Duncan),
+     col = c("black", "red", "blue", "brown", "green"),
+     col.plane = scales::alpha("grey"), .20)
 
 plot(regvec3d(prestige ~ income + education, data=Duncan, abbreviate=3))
 
