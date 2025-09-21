@@ -1,5 +1,5 @@
 ---
-title: "another experiment"
+title: "Noteworthy points using Mahalanobis"
 author: "Evangeline Reynolds"
 date: "`r Sys.Date()`"
 output: 
@@ -10,6 +10,7 @@ output:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 options(tidyverse.quiet = TRUE)
+library(tidyverse)
 ```
 
 
@@ -37,6 +38,7 @@ peng_plot <- peng |>
 
 ## Experiment
 
+Basic Penguin plot
 ```{r}
 ggplot(peng_plot, 
        aes(x = bill_length, y = bill_depth,
@@ -53,8 +55,10 @@ ggplot(peng_plot,
   theme_bw(base_size = 14) +
   theme(legend.position = "inside",
         legend.position.inside=c(0.85, 0.15))
+```
 
-
+### StatNoteworthy
+```{r}
 StatNoteworthy <- ggproto(
   "StatNoteworthy", Stat,
   
@@ -72,12 +76,21 @@ StatNoteworthy <- ggproto(
   },
   default_aes = aes(label = after_stat(id))
 )
+```
+
+Try it out
+```{r}
+peng |> 
+  select(x = bill_length, y = bill_depth) |>
+  StatNoteworthy$compute_panel(n=3)
 
 peng |> 
   select(x = bill_length, y = bill_depth) |>
-  StatNoteworthy$compute_panel()
+  StatNoteworthy$compute_panel(n=3, method = "ry")
+```
 
-
+Try it out
+```{r}
 ggplot(peng, 
        aes(x = bill_length, 
            y = bill_depth,
@@ -90,11 +103,8 @@ ggplot(peng,
               se = FALSE, 
               linewidth = 2) +
   stat_ellipse(geom = "polygon", level = 0.95, alpha = 0.1) +
-  geom_text(stat = StatNoteworthy, method = "dsq", n = 3, color = "black") + 
+  geom_text(stat = StatNoteworthy, method = "ry", n = 3, color = "black") + 
   geom_text(stat = StatNoteworthy, method = "mahal", n = 3, color = "red")
-
-
-
 ```
 
 
