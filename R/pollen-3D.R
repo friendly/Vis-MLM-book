@@ -5,7 +5,7 @@ library(dplyr)
 library(HistData)
 library(plotly)
 
-data("Pollen")
+data("Pollen", package ="HistData")
 
 # res <- cor(Pollen)
 # round(res,2)
