@@ -37,3 +37,37 @@ Curiously, the output file, `index.pdf` **does** contain the table of contents, 
 
 I use `TeXStudio` to compile the `index.tex` file ...
 
+## Index
+
+I am unable to pass an argument to `makeindex` through my YML config. I tried:
+
+```
+    latex-makeindex: makeindex
+    latex-makeindex-opts: ["-s", "latex/book.ist"]
+ ```
+
+Configured TeXStudio to use:
+
+```
+makeindex.exe -s latex/book.ist %.idx
+```
+
+# Unresolved cross-references
+
+[WARNING] Duplicate note reference 'control' at line 21215 column 1
+WARNING (C:/Users/friendly/AppData/Local/Programs/Quarto/share/filters/main.lua:14000) Unable to resolve crossref @fig-tesseract
+WARNING (C:/Users/friendly/AppData/Local/Programs/Quarto/share/filters/main.lua:14000) Unable to resolve crossref @fig-datasaurus
+WARNING (C:/Users/friendly/AppData/Local/Programs/Quarto/share/filters/main.lua:14000) Unable to resolve crossref @sec-discoveries
+WARNING (C:/Users/friendly/AppData/Local/Programs/Quarto/share/filters/main.lua:14000) Unable to resolve crossref @fig-pca-animation
+WARNING (C:/Users/friendly/AppData/Local/Programs/Quarto/share/filters/main.lua:14000) Unable to resolve crossref @eq-S-eigen
+WARNING (C:/Users/friendly/AppData/Local/Programs/Quarto/share/filters/main.lua:14000) Unable to resolve crossref @sec-discoveries
+WARNING (C:/Users/friendly/AppData/Local/Programs/Quarto/share/filters/main.lua:14000) Unable to resolve crossref @fig-outlier-animation
+WARNING (C:/Users/friendly/AppData/Local/Programs/Quarto/share/filters/main.lua:14000) Unable to resolve crossref @eq-glm
+WARNING (C:/Users/friendly/AppData/Local/Programs/Quarto/share/filters/main.lua:14000) Unable to resolve crossref @eq-OLS-beta-var
+WARNING (C:/Users/friendly/AppData/Local/Programs/Quarto/share/filters/main.lua:14000) Unable to resolve crossref @eq-ridge-beta-var
+WARNING (C:/Users/friendly/AppData/Local/Programs/Quarto/share/filters/main.lua:14000) Unable to resolve crossref @eq-dfk
+WARNING (C:/Users/friendly/AppData/Local/Programs/Quarto/share/filters/main.lua:14000) Unable to resolve crossref @eq-mlm-models
+WARNING (C:/Users/friendly/AppData/Local/Programs/Quarto/share/filters/main.lua:14000) Unable to resolve crossref @eq-SSP
+WARNING (C:/Users/friendly/AppData/Local/Programs/Quarto/share/filters/main.lua:14000) Unable to resolve crossref @eq-SSP
+WARNING (C:/Users/friendly/AppData/Local/Programs/Quarto/share/filters/main.lua:14000) Unable to resolve crossref @eq-SSP
+WARNING (C:/Users/friendly/AppData/Local/Programs/Quarto/share/filters/main.lua:14000) Unable to resolve crossref @eq-HE-model
