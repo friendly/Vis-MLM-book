@@ -39,6 +39,8 @@ spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 ```
 
+`\tableofcontents` **IS* defined in the `krantz.cls` class file. I have no idea where this `! Undefined control sequence` comes from.
+
 Curiously, the output file, `index.pdf` **does** contain the table of contents, but nothing further is produced.
 
 As well, when I use `Build -> Render book -> All formats`, in the HTML file that results, all of the **section cross references**
@@ -119,3 +121,15 @@ WARNING (C:/Users/friendly/AppData/Local/Programs/Quarto/share/filters/main.lua:
 ## Figure sizes
 
 I use chunk options `fig-height`, `fig-width` to control the size and shape of figures and then `out-width` to control the overall size.
+But sometimes figures that look OK in the HTML version are way to large in the PDF. I don't know how to control this.
+
+## Makefile
+
+I'd like to automate some of the manual steps by using a `Makefile`. But, when I tried this in RStudio, on the `Build` tab, `Render book` is
+replaced by `Make`
+
+## Page headings in PDF
+
+I've defined a `title:` and `subtitle:` in my `_quarto.yml`. In the PDF, it uses both of these as the page heading on alternate pages, which looks ugly. 
+
+What I need to do is override the style for page headings in the LaTeX, but I don't know where/how to do this.
