@@ -33,9 +33,12 @@ and I'll forget about whatever was undefined.
 
 Curiously, the output file, `index.pdf` **does** contain the table of contents, but nothing further is produced.
 
+As well, when I use Build -> Render book -> All formats, in the HTML file that results, all of the section cross references
+appear as the tags like `sec-anscombe` rather than `Section 1.1`.
+
 ## Workaround
 
-I use `TeXStudio` to compile the `index.tex` file ...
+I use `TeXStudio` to compile the `index.tex` file. This works, but it unnecessarily complicated.
 
 ## Index
 
@@ -46,11 +49,22 @@ I am unable to pass an argument to `makeindex` through my YML config. I tried:
     latex-makeindex-opts: ["-s", "latex/book.ist"]
  ```
 
-Configured TeXStudio to use:
+I also tried:
+
+```
+    latex-makeindex-opts:
+      - "-s latex/book.ist"
+```
+
+In both cases this produces an error, and the Quarto render stops.
+
+I configured TeXStudio to use:
 
 ```
 makeindex.exe -s latex/book.ist %.idx
 ```
+
+and this works as intended
 
 # Unresolved cross-references
 
