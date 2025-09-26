@@ -184,6 +184,12 @@ $\\newcommand*{\\diag}[1]{\\ensuremath{\\mathrm{diag}\\, #1}}$
 # See: Demonstration of how to use other fonts in an Rmarkdown document 
 #      https://gist.github.com/richarddmorey/27e74bcbf28190d150d266ae141f5117
 
+# function to create part of an index entry, with name in \texttt{}
+tt <- function(name) {
+  paste0(name, "@\\texttt{", name, "}")
+}
+
+
 # attributes for displaying the package name
 pkgname_font = "bold"    # or: plain, ital, boldital
 pkgname_color ="brown"   # uses colorize()
@@ -212,11 +218,21 @@ pkg <- function(package, cite=FALSE) {
   if (!is.null(pkgname_color)) ref <- colorize(pkgname, pkgname_color)
   if (cite) ref <- paste0(ref, " [@R-", package, "]")
   if (knitr::is_latex_output()) {
-    ref <- paste0(ref, "\n\\index{", package, " package}",
-                        "\n\\index{packages!", package, "}\n")
+    ref <- paste0(ref, "\n\\index{", tt(package), " package}",
+                        "\n\\index{packages!", tt(package), "}\n")
   }
   ref
 }
+
+# # index entries in \texttt{}
+# texstuff <- r"
+# % R packages:  indexed under both package name and packages!
+# \newcommand{\ixp}[1]{%
+#    \index{#1@\textsf{#1} package}%
+#    \index{package!#1@\textsf{#1}}%
+# 	}
+# "
+
 
 # Same, but say "`pkgname` package cite"
 package <- function(package, cite=FALSE) {
@@ -240,10 +256,10 @@ package <- function(package, cite=FALSE) {
   
   ref <- pkgname
   if (!is.null(pkgname_color)) ref <- paste(colorize(pkgname, pkgname_color), "package")
-  if (cite) ref <- paste0(ref, " package [@R-", package, "]")
+  if (cite) ref <- paste0(ref, " [@R-", package, "]")
   if (knitr::is_latex_output()) {
-    ref <- paste0(ref, "\n\\index{", package, " package}",
-                  "\n\\index{packages!", package, "}\n")
+    ref <- paste0(ref, "\n\\index{", tt(package), " package}",
+                  "\n\\index{packages!", tt(package), "}\n")
   }
   ref
 }
@@ -297,15 +313,12 @@ dataset <- function(name, package=NULL) {
 #  if (!is.null(dsetname_color)) ref <- colorize(dsetname, pkgname_color)
   
   if (knitr::is_latex_output()) {
-    ref <- paste0(ref, "\n\\index{", dname, " data}",
-                  "\n\\index{datasets!", dname, "}")
-    # ref <- paste0(ref, "\n\\index{", dname, " data@\\texttt{", dname, "}}",
-    #               "\n\\index{datasets!", dname, "@\\texttt{", dname, "}}")
+    ref <- paste0(ref, "\n\\index{", tt(dname), " data}",
+                  "\n\\index{datasets!", tt(dname), "}")
     # Also index under package name
     if (!is.null(dpkg)) {
-    ref <- paste0(ref, "\n\\index{", dpkg, " package}",
-                  "\n\\index{packages!", dpkg, "}")
-      
+    ref <- paste0(ref, "\n\\index{", tt(dpkg), " package}",
+                  "\n\\index{packages!", tt(dpkg), "}")
     }
   }
   ref
