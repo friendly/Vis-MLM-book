@@ -110,12 +110,7 @@ The warnings look like this:
 WARNING (C:/Users/friendly/AppData/Local/Programs/Quarto/share/filters/main.lua:14000) Unable to resolve crossref @eq-glm
 WARNING (C:/Users/friendly/AppData/Local/Programs/Quarto/share/filters/main.lua:14000) Unable to resolve crossref @eq-OLS-beta-var
 WARNING (C:/Users/friendly/AppData/Local/Programs/Quarto/share/filters/main.lua:14000) Unable to resolve crossref @eq-ridge-beta-var
-WARNING (C:/Users/friendly/AppData/Local/Programs/Quarto/share/filters/main.lua:14000) Unable to resolve crossref @eq-dfk
-WARNING (C:/Users/friendly/AppData/Local/Programs/Quarto/share/filters/main.lua:14000) Unable to resolve crossref @eq-mlm-models
-WARNING (C:/Users/friendly/AppData/Local/Programs/Quarto/share/filters/main.lua:14000) Unable to resolve crossref @eq-SSP
-WARNING (C:/Users/friendly/AppData/Local/Programs/Quarto/share/filters/main.lua:14000) Unable to resolve crossref @eq-SSP
-WARNING (C:/Users/friendly/AppData/Local/Programs/Quarto/share/filters/main.lua:14000) Unable to resolve crossref @eq-SSP
-WARNING (C:/Users/friendly/AppData/Local/Programs/Quarto/share/filters/main.lua:14000) Unable to resolve crossref @eq-HE-model
+ ...
 ```
 
 ## Figure sizes
