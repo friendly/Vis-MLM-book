@@ -147,7 +147,7 @@ window.Quarto = {
 };
 </script>
 </head>
-<body class="nav-sidebar floating slimcontent quarto-light">
+<body class="nav-sidebar floating quarto-light">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top quarto-banner"><nav class="quarto-secondary-nav"><div class="container-fluid d-flex">
@@ -417,7 +417,7 @@ window.Quarto = {
   </ul><div class="toc-actions"><ul><li><a href="https://github.com/friendly/vis-MLM-book/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
-<main class="content quarto-banner-title-block page-columns page-full" id="quarto-document-content"><!--- For HTML Only ---><!-- \require{newcommand} --><!-- %\renewcommand*{\det}[1]{\mathrm{det} (#1)} --><!-- %\renewcommand*{\det}[1]{|#1|} --><!-- \providecommand{\sizedmat}[2]{\mathord{\mathop{\mat{#1}}\limits_{(#2)}}} --><!-- \newcommand*{\E}{\mathcal{E}} --><!-- Index generation --><!-- % R packages:  indexed under both package name and packages! --><!-- % data sets:  --><!-- % R stuff --><p>In univariate multiple regression models, we usually hope to have high correlations between the outcome <span class="math inline">\(y\)</span> and each of the predictors, <span class="math inline">\(\mathbf{X} = [\mathbf{x}_1, \mathbf{x_2}, \dots]\)</span>. But high correlations <em>among</em> the predictors can cause problems in estimating and testing their effects. Exactly the same problems can exist in multivariate response models, because they involve only the relations among the predictor variables, so the problems and solutions discussed here apply equally to MLMs.</p>
+<main class="content quarto-banner-title-block" id="quarto-document-content"><!--- For HTML Only ---><!-- \require{newcommand} --><!-- %\renewcommand*{\det}[1]{\mathrm{det} (#1)} --><!-- %\renewcommand*{\det}[1]{|#1|} --><!-- \providecommand{\sizedmat}[2]{\mathord{\mathop{\mat{#1}}\limits_{(#2)}}} --><!-- \newcommand*{\E}{\mathcal{E}} --><!-- Index generation --><!-- % R packages:  indexed under both package name and packages! --><!-- % data sets:  --><!-- % R stuff --><p>In univariate multiple regression models, we usually hope to have high correlations between the outcome <span class="math inline">\(y\)</span> and each of the predictors, <span class="math inline">\(\mathbf{X} = [\mathbf{x}_1, \mathbf{x_2}, \dots]\)</span>. But high correlations <em>among</em> the predictors can cause problems in estimating and testing their effects. Exactly the same problems can exist in multivariate response models, because they involve only the relations among the predictor variables, so the problems and solutions discussed here apply equally to MLMs.</p>
 <p>The problem of high correlations among the predictors in a model is called <strong>collinearity</strong> (or multicollinearity), referring to the situation when two or more predictors are very nearly linearly related to each other (collinear). This chapter illustrates the nature of collinearity geometrically, using data and confidence ellipsoids (<a href="#sec-what-is-collin" class="quarto-xref"><span class="quarto-unresolved-ref">sec-what-is-collin</span></a>) It describes diagnostic measures to asses these effects (<a href="#sec-measure-collin" class="quarto-xref"><span class="quarto-unresolved-ref">sec-measure-collin</span></a>) and presents some novel visual tools for these purposes using the <span style="color: brown;"><strong>VisCollin</strong></span> package. These include <em>tableplots</em> (<a href="#sec-tableplot" class="quarto-xref"><span class="quarto-unresolved-ref">sec-tableplot</span></a>) and collinearity biplots (<a href="#sec-collin-biplots" class="quarto-xref"><span class="quarto-unresolved-ref">sec-collin-biplots</span></a>).</p>
 <p>One class of solutions for collinearity involves <em>regularization methods</em> such as ridge regression (<a href="#sec-ridge" class="quarto-xref"><span class="quarto-unresolved-ref">sec-ridge</span></a>). Another collection of graphical methods, <em>generalized ridge trace plots</em>, implemented in the <span style="color: brown;"><strong>genridge</strong></span> package, sheds further light on what is accomplished by this technique. In <a href="#sec-ridge-low-rank" class="quarto-xref"><span class="quarto-unresolved-ref">sec-ridge-low-rank</span></a> we see that, once again, PCA-related techniques like the biplot can be insightful—here, to understand the nature of collinearity and ridge regression. More generally, the methods of this chapter are further examples of how data and confidence ellipsoids can be used to visualize bias <strong>and</strong> precision of regression estimates.</p>
 <p><strong>Packages</strong></p>
@@ -433,7 +433,7 @@ window.Quarto = {
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://patchwork.data-imaginist.com">patchwork</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://easystats.github.io/easystats/">easystats</a></span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<section id="sec-what-is-collin" class="level2 page-columns page-full" data-number="8.1"><h2 data-number="8.1" class="anchored" data-anchor-id="sec-what-is-collin">
+<section id="sec-what-is-collin" class="level2" data-number="8.1"><h2 data-number="8.1" class="anchored" data-anchor-id="sec-what-is-collin">
 <span class="header-section-number">8.1</span> What is collinearity?</h2>
 <p>Researchers who have studies standard treatments of linear models (e.g, <span class="citation" data-cites="Graybill1961">Graybill (<a href="#ref-Graybill1961" role="doc-biblioref">1961</a>)</span>; <span class="citation" data-cites="Hocking2013">Hocking (<a href="#ref-Hocking2013" role="doc-biblioref">2013</a>)</span>) are often less than clear about what collinearity is, how to find its sources and how to take steps to resolve them. There are a number of important diagnostic measures that can help, but these are usually presented in a tabular display like <a href="#fig-collinearity-diagnostics-SPSS" class="quarto-xref">Figure&nbsp;<span class="quarto-unresolved-ref">fig-collinearity-diagnostics-SPSS</span></a>, which prompted this query on an online forum:</p>
 <blockquote class="blockquote">
@@ -515,13 +515,16 @@ Figure&nbsp;8.3: Effect of collinearity on the least squares regression plane. (
 </div>
 </div>
 </div>
-</section><section id="sec-data-beta-space" class="level3 page-columns page-full" data-number="8.1.2"><h3 data-number="8.1.2" class="anchored" data-anchor-id="sec-data-beta-space">
+</section><section id="sec-data-beta-space" class="level3" data-number="8.1.2"><h3 data-number="8.1.2" class="anchored" data-anchor-id="sec-data-beta-space">
 <span class="header-section-number">8.1.2</span> Data space and <span class="math inline">\(\beta\)</span> space</h3>
 <p>It is also useful to visualize collinearity by comparing the representation in <strong>data space</strong> with the analogous view of the confidence ellipses for coefficients in <strong>beta space</strong>. To do so in this example, I generate data from a known model <span class="math inline">\(y = 3 x_1 + 3 x_2 + \epsilon\)</span> with <span class="math inline">\(\epsilon \sim \mathcal{N} (0, 100)\)</span> and various true correlations between <span class="math inline">\(x_1\)</span> and <span class="math inline">\(x_2\)</span>, <span class="math inline">\(\rho_{12} = (0, 0.8, 0.97)\)</span> <a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>.</p>
-
-<div class="no-row-height column-margin column-container"><div class="">
-<p>R file: <code>R/collin-data-beta.R</code></p>
-</div></div><p>First, I use <code>MASS:mvrnorm()</code> to construct a list of three data frames <code>XY</code> with the same means and standard deviations, but with different correlations. In each case, the variable <span class="math inline">\(y\)</span> is generated with true coefficients <code>beta</code> <span class="math inline">\(=(3, 3)\)</span>, and the fitted model for that value of <code>rho</code> is added to a corresponding list of models, <code>mods</code>.</p>
+<!--
+::: {.column-margin}
+R file: `R/collin-data-beta.R`
+:::
+-->
+<!-- fig.code: R/collin-data-beta.R -->
+<p>First, I use <code>MASS:mvrnorm()</code> to construct a list of three data frames <code>XY</code> with the same means and standard deviations, but with different correlations. In each case, the variable <span class="math inline">\(y\)</span> is generated with true coefficients <code>beta</code> <span class="math inline">\(=(3, 3)\)</span>, and the fitted model for that value of <code>rho</code> is added to a corresponding list of models, <code>mods</code>.</p>
 <div class="cell" data-layout-align="center">
 <details open="" class="code-fold"><summary>Code</summary><div class="sourceCode" id="cb2" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="http://www.stats.ox.ac.uk/pub/MASS4/">MASS</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://r-forge.r-project.org/projects/car/">car</a></span><span class="op">)</span></span>
@@ -939,7 +942,7 @@ Figure&nbsp;8.7: <strong>Collinearity biplot</strong> of the Cars data, showing 
 </ul>
 <!-- **Example**: Centering --><div id="exm-centering" class="theorem example">
 <p><span class="theorem-title"><strong>Example 8.2</strong></span> <strong>Centering</strong> </p>
-<!-- fig-code: R/collin-centering.R -->
+<!-- fig.code-code: R/collin-centering.R -->
 <p>To illustrate the effect of centering a predictor in a polynomial model, I generate data with a perfect quadratic relationship, <span class="math inline">\(y = x^2\)</span> and consider the correlations of <span class="math inline">\(y\)</span> with <span class="math inline">\(x\)</span> and with <span class="math inline">\((x - \bar{x})^2\)</span>. The correlation of <span class="math inline">\(y\)</span> with <span class="math inline">\(x\)</span> is 0.97, while the correlation of <span class="math inline">\(y\)</span> with <span class="math inline">\((x - \bar{x})^2\)</span> is zero.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb16" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fl">1</span><span class="op">:</span><span class="fl">20</span></span>
