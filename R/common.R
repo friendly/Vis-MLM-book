@@ -349,23 +349,16 @@ func <- function(name, package=NULL) {
   # index entries  
   ref <- funcname
   if (knitr::is_latex_output()) {
-    ref <- paste0(ref, "\n\\index{", fname, " data}",
-                  "\n\\index{datasets!", fname, "}")
+    ref <- paste0(ref, "\n\\index{", tt(fname), "}")
     # ref <- paste0(ref, "\n\\index{", fname, " data@\\texttt{", fname, "}}",
     #               "\n\\index{datasets!", fname, "@\\texttt{", fname, "}}")
     # Also index under package name
-    if (!is.null(fpkg)) {
-    ref <- paste0(ref, "\n\\index{", fpkg, " package}",
-                  "\n\\index{packages!", fpkg, "}")
-      
-    }
-    if (knitr::is_latex_output()) {
-      ref <- paste0(ref, "\n\\index{", name, " function}",
-                    "\n\\index{functions!", name, "}")
-    }
-  ref
-  
+    # if (knitr::is_latex_output()) {
+    #   ref <- paste0(ref, "\n\\index{", name, " function}",
+    #                 "\n\\index{functions!", name, "}")
+    # }
   }
+  ref
 }
 
 # -------------------------

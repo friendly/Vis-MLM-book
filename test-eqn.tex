@@ -117,35 +117,34 @@
 \usepackage{framed}
 \usepackage{color}  % is this needed?
 \definecolor{shadecolor}{RGB}{248,248,248}
+\usepackage[cmyk]{xcolor} % CRC wants CMYK
 % custom colors
 \definecolor{darkgreen}{RGB}{1,50,32}
 
-% section headings
-%\usepackage{xcolor} % Required for color definitions
+%%%% section headings %%%%
 
-
-\usepackage[cmyk]{xcolor} % CRC wants CMYK
 
 % https://tex.stackexchange.com/questions/750528/how-to-change-color-of-section-title-in-the-krantz-cls/750529#750529
-\renewcommand\SectionHeadFont{\color{blue}\fontsize{12}{14}\bfseries\selectfont}
-\renewcommand\SubsectionHeadFont{\color{blue}\fontsize{11}{13}\bfseries\selectfont}
-\renewcommand\SubsubsectionHeadFont{\color{blue}\fontsize{10}{12}\bfseries\selectfont}
+\renewcommand\SectionHeadFont{\color{blue}\fontsize{12}{14}\sffamily\bfseries\selectfont}
+\renewcommand\SubsectionHeadFont{\color{blue}\fontsize{11}{13}\sffamily\bfseries\selectfont}
+\renewcommand\SubsubsectionHeadFont{\color{blue}\fontsize{10}{12}\sffamily\bfseries\selectfont}
 
-
-%\usepackage{sectsty} % Required for styling section titles
-% The sectsty package only works with the following classes: the standard LaTeX document classes
-% article, report, and book; and the KOMA-Script classes scrartcl, scrbook, and scrreprt.
-
-% Try with titlesec package
-%\usepackage{titlesec}
 
 % Define a custom color
 % dark greenish-brown color, with a hexadecimal equivalent of #1A7F33
 \definecolor{mygreen}{rgb}{0.1, 0.5, 0.2} 
 
-% Apply color to section titles
-%\titleformat*{\section}{\color{mygreen}}
-%\titleformat*{\subsection}{\color{blue}}
+%%%% Page headers %%%%%%
+% override krantz default to use chapter/section headers
+\makeatletter
+\def\HeadingsChapterSection{%
+  \def\chaptermark##1{%
+    \markboth{%
+      \thechapter. ##1}{}}%
+  \def\sectionmark##1{%
+    \markright{%
+      \thesection: ##1}}}
+\HeadingsChapterSection
 
 
 % block quotes
@@ -339,12 +338,13 @@
 
 \title{Quarto test-- eqn cross refs}
 \author{Michael Friendly}
-\date{2025-09-26}
+\date{2025-09-27}
 \begin{document}
 \maketitle
 
 
-\textbf{Unresolved cross-references in aligned equations}
+\subsection{Unresolved cross-references in aligned
+equations}\label{unresolved-cross-references-in-aligned-equations}
 
 Aligned equations, using equation labels, like:
 \texttt{\textbackslash{}begin\{align*\}\ equation\ \textbackslash{}end\{align\}\{\#eq-glm\}}
@@ -353,13 +353,10 @@ numbers which can be cross-referenced in HTML, but generate warnings in
 PDF and the cross-refs print as \texttt{?@eq-glm}.
 
 In Quarto, constructs like this already imply an equation environment in
-LaTeX, so they cannot be included within
+LaTeX, so they cannot be included within \texttt{\$\$\ ...\ \$\$}
 
-\begin{verbatim}
-$$
-...
-$$
-\end{verbatim}
+There is discussion of this in
+\href{https://github.com/quarto-dev/quarto-cli/issues/2275}{Quarto-dev}
 
 An example is:
 
@@ -377,7 +374,16 @@ Try this out:
            & = \left[ \mathbf{1},\; \mathbf{x}_1,\; \mathbf{x}_2,\; \dots ,\; \mathbf{x}_p \right] \; \boldsymbol{\beta} + \boldsymbol{\epsilon} \\
 \end{align*} \{\#eq-glm\}
 
-As you see in \textbf{?@eq-glm} \ldots{}
+As you see in Equation~\ref{eq-glm} \ldots{}
+
+Try surrounding this in \texttt{\$\$}
+
+\begin{equation}\phantomsection\label{eq-glm}{
+\begin{align*}
+\mathbf{y} & = \beta_0 + \beta_1 \mathbf{x}_1 + \beta_2 \mathbf{x}_2 + \cdots + \beta_p \mathbf{x}_p + \boldsymbol{\epsilon} \\
+           & = \left[ \mathbf{1},\; \mathbf{x}_1,\; \mathbf{x}_2,\; \dots ,\; \mathbf{x}_p \right] \; \boldsymbol{\beta} + \boldsymbol{\epsilon} \\
+\end{align*} 
+}\end{equation}
 
 
 
