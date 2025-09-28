@@ -1334,47 +1334,69 @@ Figure&nbsp;8.13: Scatterplot matrix of bivariate ridge trace plots. Each panel 
 <li><p><code>norm.beta</code> <span class="math inline">\(= \left \Vert \boldsymbol{\beta}\right \Vert / \max{\left \Vert \boldsymbol{\beta}\right \Vert}\)</span> is a summary measure of shrinkage, the normalized root mean square of the estimated coefficients. It starts at 1.0 for <span class="math inline">\(k=0\)</span> and decreases with the penalty for large coefficients.</p></li>
 <li><p><code>diff.beta</code> is the root mean square of the difference from the OLS estimate <span class="math inline">\(\lVert \boldsymbol{\beta}_{\text{OLS}} - \boldsymbol{\beta}_k \rVert\)</span>. This measure is inversely related to <code>norm.beta</code>.</p></li>
 </ul>
-<p>Plotting shrinkage against a measure of variance gives a <em>direct</em> view of the tradeoff between bias and precision. In <a href="#fig-longley-precision-plot" class="quarto-xref">Figure&nbsp;<span>8.14</span></a> I plot <code>norm.beta</code> against <code>det</code>, and join the points with a curve. (<span style="color: brown;"><strong>genridge</strong></span> contains a plot method for <code>"precision"</code> objects which produce similar plots.)</p>
-<p><strong>TODO</strong>: Redo this fig using <code>plot.precsion()</code> method</p>
+<!--
+Plotting shrinkage against a measure of variance gives a _direct_ view of the tradeoff
+between bias and precision. In @fig-longley-precision-plot I plot `norm.beta` against `det`, and join the
+points with a curve. (<span style='color: brown;'>**genridge**</span> contains a plot method for `"precision"` objects which produce similar plots.)
+--><p>Plotting shrinkage against a measure of variance gives a <em>direct</em> view of the tradeoff between bias and precision. In <a href="#fig-longley-precision-plot" class="quarto-xref">Figure&nbsp;<span>8.14</span></a> I use the <code><a href="https://rdrr.io/r/graphics/plot.default.html">plot()</a></code> method for <code>"precision"</code> objects. By default, this plots <code>norm.beta</code> against <code>det</code>, joins the points with a smooth spline curve and adds labels for the optimum values according to the different criteria. The points are labelled with their equivalent degrees of freedom.</p>
+<!-- **TODO**: Redo this fig using `plot.precsion()` method -->
 <!-- fig.code: R/genridge-longley-fig2.R -->
 <div class="cell" data-layout-align="center">
-<details class="code-fold"><summary>Show the code</summary><div class="sourceCode" id="cb34" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">splines</span><span class="op">)</span></span>
+<details class="code-fold"><summary>Show the code</summary><div class="sourceCode" id="cb34" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">pridge</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://friendly.github.io/genridge/reference/precision.html">precision</a></span><span class="op">(</span><span class="va">lridge</span><span class="op">)</span></span>
+<span><span class="va">criteria</span> <span class="op">&lt;-</span> <span class="va">lridge</span><span class="op">$</span><span class="va">criteria</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">criteria</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html">sub</a></span><span class="op">(</span><span class="st">"k"</span>, <span class="st">""</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">criteria</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">pridge</span>, criteria <span class="op">=</span> <span class="va">criteria</span>, </span>
+<span>     labels<span class="op">=</span><span class="st">"df"</span>, label.prefix<span class="op">=</span><span class="st">"df:"</span>,</span>
+<span>     cex.lab <span class="op">=</span> <span class="fl">1.5</span>,</span>
+<span>     xlab <span class="op">=</span><span class="st">'shrinkage: ||b|| / max(||b||)'</span>,</span>
+<span>     ylab<span class="op">=</span><span class="st">'variance: log |Var(b)|'</span></span>
+<span>     <span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/with.html">with</a></span><span class="op">(</span><span class="va">pdat</span>, <span class="op">{</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">norm.beta</span>, <span class="va">det</span>, type<span class="op">=</span><span class="st">"b"</span>, </span>
-<span>       cex.lab<span class="op">=</span><span class="fl">1.25</span>, pch<span class="op">=</span><span class="fl">16</span>, </span>
-<span>       cex<span class="op">=</span><span class="fl">1.5</span>, col<span class="op">=</span><span class="va">clr</span>, lwd<span class="op">=</span><span class="fl">2</span>,</span>
-<span>       xlab<span class="op">=</span><span class="st">'shrinkage: ||b|| / max(||b||)'</span>,</span>
-<span>       ylab<span class="op">=</span><span class="st">'variance: log |Var(b)|'</span><span class="op">)</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/graphics/text.html">text</a></span><span class="op">(</span><span class="va">norm.beta</span>, <span class="va">det</span>, </span>
-<span>       labels <span class="op">=</span> <span class="va">lambdaf</span>, </span>
-<span>       cex <span class="op">=</span> <span class="fl">1.25</span>, </span>
-<span>       pos <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fl">2</span>,<span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">lambda</span><span class="op">)</span><span class="op">-</span><span class="fl">1</span><span class="op">)</span>,<span class="fl">4</span><span class="op">)</span><span class="op">)</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/graphics/text.html">text</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="va">norm.beta</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">det</span><span class="op">)</span>, </span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/graphics/text.html">text</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="va">norm.beta</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">det</span><span class="op">)</span>, </span>
 <span>       labels <span class="op">=</span> <span class="st">"log |Variance| vs. Shrinkage"</span>, </span>
 <span>       cex<span class="op">=</span><span class="fl">1.5</span>, pos<span class="op">=</span><span class="fl">4</span><span class="op">)</span></span>
-<span>  <span class="op">}</span><span class="op">)</span></span>
-<span><span class="co"># find locations for optimal shrinkage criteria</span></span>
-<span><span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">det</span>, <span class="va">norm.beta</span><span class="op">)</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/splines/bs.html">bs</a></span><span class="op">(</span><span class="va">lambda</span>, df<span class="op">=</span><span class="fl">5</span><span class="op">)</span>, </span>
-<span>          data<span class="op">=</span><span class="va">pdat</span><span class="op">)</span></span>
-<span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span>lambda<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">lridge</span><span class="op">$</span><span class="va">kHKB</span>, </span>
-<span>                         <span class="va">lridge</span><span class="op">$</span><span class="va">kLW</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html">predict</a></span><span class="op">(</span><span class="va">mod</span>, <span class="va">x</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/points.html">points</a></span><span class="op">(</span><span class="va">fit</span><span class="op">[</span>,<span class="fl">2</span><span class="op">:</span><span class="fl">1</span><span class="op">]</span>, pch<span class="op">=</span><span class="fl">15</span>, </span>
-<span>       col<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/grDevices/gray.html">gray</a></span><span class="op">(</span><span class="fl">.82</span><span class="op">)</span>, cex<span class="op">=</span><span class="fl">1.6</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/text.html">text</a></span><span class="op">(</span><span class="va">fit</span><span class="op">[</span>,<span class="fl">2</span><span class="op">:</span><span class="fl">1</span><span class="op">]</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"HKB"</span>, <span class="st">"LW"</span><span class="op">)</span>, </span>
-<span>     pos<span class="op">=</span><span class="fl">3</span>, cex<span class="op">=</span><span class="fl">1.5</span>, col<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/grDevices/gray.html">gray</a></span><span class="op">(</span><span class="fl">.20</span><span class="op">)</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>  <span class="op">}</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details><div class="cell-output-display">
 <div id="fig-longley-precision-plot" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-longley-precision-plot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <img src="figs/ch08/fig-longley-precision-plot-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-longley-precision-plot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;8.14: <strong>Precision plot</strong> showing the tradeoff between bias and precision. Bias increases as we move away from the OLS solution, but precision increases.
+Figure&nbsp;8.14: <strong>Precision plot</strong> showing the tradeoff between bias and precision. Bias increases as we move away from the OLS solution, but precision increases. The slope of the curve indicates the rate at which variance decreases with shrinkage.
 </figcaption></figure>
 </div>
 </div>
 </div>
-<p>You can see that in this example the HKB criterion prefers a smaller degree of shrinkage, but achieves only a modest decrease in variance. But variance decreases more sharply thereafter and the LW choice achieves greater precision.</p>
+<!-- old code
+op <- par(mar=c(4, 4, 1, 1) + 0.2)
+library(splines)
+with(pdat, {
+  plot(norm.beta, det, type="b", 
+       cex.lab=1.25, pch=16, 
+       cex=1.5, col=clr, lwd=2,
+       xlab='shrinkage: ||b|| / max(||b||)',
+       ylab='variance: log |Var(b)|')
+  text(norm.beta, det, 
+       labels = lambdaf, 
+       cex = 1.25, 
+       pos = c(rep(2,length(lambda)-1),4))
+  text(min(norm.beta), max(det), 
+       labels = "log |Variance| vs. Shrinkage", 
+       cex=1.5, pos=4)
+  })
+# find locations for optimal shrinkage criteria
+mod <- lm(cbind(det, norm.beta) ~ bs(lambda, df=5), 
+          data=pdat)
+x <- data.frame(lambda=c(lridge$kHKB, 
+                         lridge$kLW))
+fit <- predict(mod, x)
+points(fit[,2:1], pch=15, 
+       col=gray(.82), cex=1.6)
+text(fit[,2:1], c("HKB", "LW"), 
+     pos=3, cex=1.5, col=gray(.20))
+```
+-->
+<p>You can see that in this example the HKB and CGV criteria prefer a smaller degree of shrinkage, but achieves only a modest decrease in variance. But variance decreases more sharply thereafter and the LW choice achieves greater precision.</p>
 </section></section><section id="sec-ridge-low-rank" class="level2" data-number="8.9"><h2 data-number="8.9" class="anchored" data-anchor-id="sec-ridge-low-rank">
 <span class="header-section-number">8.9</span> Low-rank views</h2>
 <p>Just as principal components analysis gives low-dimensional views of a data set, PCA can be useful to understand ridge regression, just as it did for the problem of collinearity.</p>

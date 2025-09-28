@@ -99,3 +99,16 @@ with(pdat, {
 	     labels = "log |Variance| vs. Shrinkage", 
 	     cex=1.5, pos=4)
   })
+
+# use df for labels
+plot(pridge, criteria = criteria, 
+     labels="df", label.prefix="df:",
+     cex.lab = 1.5,
+     xlab ='shrinkage: ||b|| / max(||b||)',
+     ylab='variance: log |Var(b)|'
+     )
+with(pdat, {
+  	text(min(norm.beta), max(det), 
+	     labels = "log |Variance| vs. Shrinkage", 
+	     cex=1.5, pos=4)
+  })
