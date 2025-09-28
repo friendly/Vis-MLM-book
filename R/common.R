@@ -189,6 +189,11 @@ tt <- function(name) {
   paste0(name, "@\\texttt{", name, "}")
 }
 
+escape <- function(name) {
+  gsub("_", "\\_", name, fixed=TRUE)
+}
+
+
 
 # attributes for displaying the package name
 pkgname_font = "bold"    # or: plain, ital, boldital

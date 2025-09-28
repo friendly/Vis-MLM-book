@@ -10,10 +10,10 @@ lridge <- ridge(Employed ~ GNP + Unemployed + Armed.Forces + Population + Year +
 		data=longley, lambda=lambda)
 
 clr <- c("black", rainbow(length(lambda)-1, start=.6, end=.1))
+(pdat <- precision(lridge))
 
 ##############################
 # Figure 6(a)
-(pdat <- precision(lridge))
 op <- par(mar=c(4, 4, 1, 1) + 0.2)
 with(pdat, {
 	plot(norm.beta, det, type="b", 
@@ -52,15 +52,50 @@ par(op)
 
 #dev.copy2eps(file="fig/precision-var2.eps")
 #dev.copy2pdf(file="fig/precision-var2.pdf")
+#
+# Figure 8.4
+op <- par(mar=c(4, 4, 1, 1) + 0.2)
+library(splines)
+with(pdat, {
+	plot(norm.beta, det, type="b", 
+	     cex.lab=1.25, pch=16, 
+	     cex=1.5, col=clr, lwd=2,
+       xlab='shrinkage: ||b|| / max(||b||)',
+       ylab='variance: log |Var(b)|')
+	text(norm.beta, det, 
+	     labels = lambdaf, 
+	     cex = 1.25, 
+	     pos = c(rep(2,length(lambda)-1),4))
+	text(min(norm.beta), max(det), 
+	     labels = "log |Variance| vs. Shrinkage", 
+	     cex=1.5, pos=4)
+	})
+# find locations for optimal shrinkage criteria
+mod <- lm(cbind(det, norm.beta) ~ bs(lambda, df=5), 
+          data=pdat)
+x <- data.frame(lambda=c(lridge$kHKB, 
+                         lridge$kLW))
+fit <- predict(mod, x)
+points(fit[,2:1], pch=15, 
+       col=gray(.82), cex=1.6)
+text(fit[,2:1], c("HKB", "LW"), 
+     pos=3, cex=1.5, col=gray(.20))
+
 
 # Use plot method for precision objects
 
-criteria <- lridge$criteria |> print()
 pridge <- precision(lridge) |> print()
 plot(pridge)
 
+criteria <- lridge$criteria
+names(criteria) <- sub("k", "", names(criteria))
 plot(pridge, criteria = criteria, 
      cex.lab = 1.5,
      xlab ='shrinkage: ||b|| / max(||b||)',
      ylab='variance: log |Var(b)|'
      )
+with(pdat, {
+  	text(min(norm.beta), max(det), 
+	     labels = "log |Variance| vs. Shrinkage", 
+	     cex=1.5, pos=4)
+  })
