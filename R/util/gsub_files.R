@@ -23,5 +23,5 @@ str_match(test, f)
 
 #gsub_file(files[4], find, replace, perl=TRUE)
 #
-gsub_file(files[4], "`([^`]*\\(\\))`", "`r func(\"\\1\")`", perl=TRUE)
+gsub_file(files[8], "`([\\w\\d:]*\\(\\))`", "`r func(\"\\1\")`", perl=TRUE)
 

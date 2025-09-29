@@ -18,12 +18,12 @@ a single outcome variable from a set of predictors.
 The key ideas are:
 
 * For a single quantitative outcome variable $\mathbf{y}$, methods of linear regression and analysis of variance (ANOVA) are comprised within a single framework of the **general linear model** (GLM). Regression and ANOVA differ only in that the predictors in the former are quantitative, while those in the latter are discrete factors. They can all be fit using
-`lm()`.
+`r func("lm()")`.
 
-* These models extend directly to the multivariate case of $q > 1$ outcomes, $\mathbf{Y} = (\mathbf{y}_1, \mathbf{y}_2, \dots \mathbf{y}_q)$, and are also fit using `lm()`.
+* These models extend directly to the multivariate case of $q > 1$ outcomes, $\mathbf{Y} = (\mathbf{y}_1, \mathbf{y}_2, \dots \mathbf{y}_q)$, and are also fit using `r func("lm()")`.
 
 * A binary outcome $y = (0, 1)$ and categorical outcomes like marital status ("never married", "married", "separated", "divorced") can be handled within a different extension, the **generalized** linear model as logistic regression
-or multinomial regression, fit using `glm()`.
+or multinomial regression, fit using `r func("glm()")`.
 
 * All of these models involve linear combinations of predictors (weighted sums) fit to optimize some criterion, for example minimizing some function of the residuals or maximizing some measure of fit.
 
@@ -134,13 +134,12 @@ To establish notation and terminology, it is worthwhile to state the general lin
 For convenience, I use vector and matrix notation.
 This expresses a response variable, $\mathbf{y} = (y_1, y_2, \dots , y_n)^\mathsf{T}$ for $n$ observations, as a sum of terms involving $p$ _regressors_, $\mathbf{x}_1, \mathbf{x}_2, \dots , \mathbf{x}_p$, each of length $n$.
 
-
-\begin{align*}
+$$
+\begin{aligned}
 \mathbf{y} & = \beta_0 + \beta_1 \mathbf{x}_1 + \beta_2 \mathbf{x}_2 + \cdots + \beta_p \mathbf{x}_p + \boldsymbol{\epsilon} \\
            & = \left[ \mathbf{1},\; \mathbf{x}_1,\; \mathbf{x}_2,\; \dots ,\; \mathbf{x}_p \right] \; \boldsymbol{\beta} + \boldsymbol{\epsilon} \\
-\end{align*} {#eq-glm}
-
-<!-- & = \LARGE{\sizedmat{X}{n \times (p+1)}\; \sizedmat{\boldsymbol{\beta}}{(p+1) \times 1} + \boldsymbol{\epsilon}} -->
+\end{aligned}
+$${#eq-glm}
 
 or, expressed in matrices,
 
@@ -184,7 +183,7 @@ products of each column for $A$ with each column for $B$.
 
 ### Model formulas {#sec-model-formulas}
 
-Statistical models in R, such as those fit by `lm()`, `glm()` and many other modelling function in R are expressed in a simple notation that was developed by @WilkinsonRogers1973
+Statistical models in R, such as those fit by `r func("lm()")`, `r func("glm()")` and many other modelling function in R are expressed in a simple notation that was developed by @WilkinsonRogers1973
 for the GENSTAT software system at the Rothamsted Research Station. It solves the problem
 of having a compact way to specify any model consisting of any combinations of quantitative and discrete factor variables, interactions of these and arbitrary transformations of these.
 
@@ -229,11 +228,11 @@ naturally, `y ~ 0 + X`).
 
 Function calls on the RHS, such as `poly(x, 3)`
 are evaluated directly, but to use a special model operator, like `^` must be "protected"
-by wrapping the term in `I()`, meaning "identity" or "inhibit". Thus, the model
+by wrapping the term in `r func("I()")`, meaning "identity" or "inhibit". Thus, the model
 `y ~ x + I(x^2)` means the quadratic model $y = \beta_0 + \beta_1 x + \beta_2 x^2$.
 This differs from the model `y ~ poly(x, 2)` in that the former uses the raw `x, x^2` values
 (which are necessarily positively correlated)
-while `poly()` converts these to orthogonal polynomial scores, which are uncorrelated
+while `r func("poly()")` converts these to orthogonal polynomial scores, which are uncorrelated
 (and therefore free from problems of collinearity).
 
 ::: {#exm-workers1}
@@ -254,7 +253,10 @@ coef(workers.mod2) |> t() |> t()
 (In this code, `coef(workers.mod2) |> t() |> t()` is used to print the coefficients as a one-column matrix.)
 
 It is simplest to understand  these models by plotting the data overlaid with the fitted regressions.
-Ths uses `geom_smooth()` and specifies the smoothing model as `method = "lm"` with a `formula`,
+Ths uses 
+`geom_smooth()`
+<!-- `r func("geom_smooth()")`  -->
+and specifies the smoothing model as `method = "lm"` with a `formula`,
 which is `y ~ x` for the linear model and `y ~ poly(x, 2)` for the quadratic.
 
 ```{r}
@@ -279,7 +281,7 @@ equatiomatic::extract_eq(workers.mod1, use_coefs = TRUE, coef_digits = 3)
 ```
 
 So a worker with zero years of experience can expect an income of \$29162 and this should increase by \$1119
-for each additional year. However, it is not so simple to interpret the coefficients when a `poly()` term
+for each additional year. However, it is not so simple to interpret the coefficients when a `r func("poly()")` term
 is used. Naively plugging in the coefficients for `workers.mod2` gives
 
 ```{r workers-coeffs2, results = 'asis', echo=FALSE}
@@ -287,7 +289,7 @@ equatiomatic::extract_eq(workers.mod2, use_coefs = TRUE, coef_digits = 3)
 ```
 
 The problem is that $x$ = `Experience` in model `workers.mod` is represented not by the raw values, but rather
-by values of $x$ and $x^2$ that have been made to be uncorrelated. If you really want to interpret the coefficient values in terms of years of experience, use the option `raw = TRUE` in `poly()`:
+by values of $x$ and $x^2$ that have been made to be uncorrelated. If you really want to interpret the coefficient values in terms of years of experience, use the option `raw = TRUE` in `r func("poly()")`:
 
 ```{r}
 workers.mod2b <- lm(Income ~ poly(Experience, 2, raw = TRUE), 
@@ -384,7 +386,7 @@ To test what we've covered above,
 * What about the formula with `y ~ .^2 - A:B:C:D` with factors `A, B, C, D`?
 
 You can work out questions like these or explore model formulae
-using `terms()` for a `"formula"` object.
+using `r func("terms()")` for a `"formula"` object.
 The labels of these terms can then be concatenated to a string and turned back into a formula using `as.formula()`:
 ```{r terms-formula}
 f <- formula(y ~ (x1 + x2 + x3 + x4)^2)
@@ -399,7 +401,7 @@ as.formula(sprintf("y ~ %s", paste(terms, collapse=" + ")))
 
 As noted above, a model formula is used to generate the $n \times (p+1)$ model matrix, $\mathbf{X}$, typically containing the column of 1s for the intercept $\beta_0$ in the model, followed by 
 $p$ columns representing the regressors $\mathbf{x}_1, \mathbf{x}_2, \dots , \mathbf{x}_p$.
-Internally, `lm()` uses `stats::model.matrix()` and you can use this to explore how factors,
+Internally, `r func("lm()")` uses `stats::model.matrix()` and you can use this to explore how factors,
 interactions and other model terms are represented in a model object.
 
 For a small example, here are a few observations representing income (`inc`) and `type` of occupation,
@@ -455,10 +457,10 @@ $\mathcal{H}_0 : \mu_1 = \mu_2 = \cdots = \mu_k$.
 This can be represented as $k-1$ comparisons among the 
 factor level means, or $k-1$ separate questions asking how the means differ.
 
-Base R provides several coding schemes via assignment to the `contrasts()` function for
+Base R provides several coding schemes via assignment to the `r func("contrasts()")` function for
 a factor, as in `contrasts(df$Drug) <- ...` one of:
 
-- `contr.treatment()`: Compares each level to a _reference_ level using $k-1$ dummy (0, 1) variables. This is the default, and the reference level is taken as the first (in alphabetic or numerical order). You can change the reference level using `relevel()` or `reorder()` for the factor, or simply using `factor(A, levels = ...)`.
+- `contr.treatment()`: Compares each level to a _reference_ level using $k-1$ dummy (0, 1) variables. This is the default, and the reference level is taken as the first (in alphabetic or numerical order). You can change the reference level using `r func("relevel()")` or `r func("reorder()")` for the factor, or simply using `factor(A, levels = ...)`.
 
 - `contr.sum()`: Compares each level to the grand mean. 
 - `contr.helmert()`: Compares each level to the mean of the _previous_ levels, which is useful for ordered categories such as `type` of occupation with levels `"bc"` < `"wc"` < `"prof"` or dose of a drug, `"low"` < `"medium"` < `"high"`. 

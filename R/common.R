@@ -186,9 +186,10 @@ $\\newcommand*{\\diag}[1]{\\ensuremath{\\mathrm{diag}\\, #1}}$
 
 # function to create part of an index entry, with name in \texttt{}
 tt <- function(name) {
-  paste0(name, "@\\texttt{", name, "}")
+  paste0(name, "@\\texttt{", escape(name), "}")
 }
 
+# in index entries, need to escape `_` at the least
 escape <- function(name) {
   gsub("_", "\\_", name, fixed=TRUE)
 }
@@ -335,7 +336,7 @@ dataset <- function(name, package=NULL) {
 ## Use as:
 ##   `r func()`
 ##   
-func <- function(name, package=NULL) {
+func <- function(name, package=NULL, test=FALSE) {
   # handle pkg::name
   fname <- name
   fpkg <- package
@@ -353,7 +354,7 @@ func <- function(name, package=NULL) {
 
   # index entries  
   ref <- funcname
-  if (knitr::is_latex_output()) {
+  if (knitr::is_latex_output() | test) {
     ref <- paste0(ref, "\n\\index{", tt(fname), "}")
     # ref <- paste0(ref, "\n\\index{", fname, " data@\\texttt{", fname, "}}",
     #               "\n\\index{datasets!", fname, "@\\texttt{", fname, "}}")
