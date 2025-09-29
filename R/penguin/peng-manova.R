@@ -141,14 +141,15 @@ peng.mlm1 <- lm(cbind(bill_length, bill_depth, flipper_length, body_mass) ~
 peng.mlm2 <- lm(cbind(bill_length, bill_depth, flipper_length, body_mass) ~
                   species + island + sex, data=peng)
 
-peng.rlm1 <- robmlm(cbind(bill_length, bill_depth, flipper_length, body_mass) ~
+peng.rlm <- robmlm(cbind(bill_length, bill_depth, flipper_length, body_mass) ~
                     species, data=peng)
 # all main effects
 peng.rlm2 <- robmlm(cbind(bill_length, bill_depth, flipper_length, body_mass) ~
                   species + island + sex, data=peng)
 
+op <- par(mar = c(4, 4, 3, 1) +.1)
 col = peng.colors("dark")[peng$species]
-plot(peng.rlm1, 
+plot(peng.rlm, 
      groups = peng$species,
      group.axis = TRUE,
      segments = TRUE,
@@ -159,7 +160,7 @@ plot(peng.rlm1,
 notables <- tibble(
   id = c(10, 283),
   name = c("HookNose", "Cyrano"),
-  wts = peng.rlm1$weights[id]
+  wts = peng.rlm$weights[id]
 )
 text(notables$id, notables$wts, 
      label = notables$name, pos = 3,
@@ -167,6 +168,7 @@ text(notables$id, notables$wts,
 
 ctr <- split(seq(nrow(peng)), peng$species) |> lapply(mean)
 axis(side = 3, at=ctr, labels = names(ctr), cex.axis=1.2)
+par(op)
 
 # Same for model 2
 
@@ -190,7 +192,7 @@ axis(side = 3, at=ctr, labels = names(ctr))
 # unusual cases
 
 cases <- c(10, 124, 179, 283)
-peng.rlm1$weights[cases]
+peng.rlm$weights[cases]
 
 peng |> rowid_to_column() |>
   slice(cases) |>
@@ -198,6 +200,6 @@ peng |> rowid_to_column() |>
 
 #compare coeffs
 
-rel_diff(coef(peng.mlm1), coef(peng.rlm1)) |> 
+rel_diff(coef(peng.mlm1), coef(peng.rlm)) |> 
   print(digits=2)
 

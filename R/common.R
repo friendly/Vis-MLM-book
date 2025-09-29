@@ -398,7 +398,8 @@ func <- function(name, package=NULL) {
   "olsrr",
   "HLMdiag",
   "ggdist",
-  "quartets")
+  "quartets",
+  "liminal")
 
 # write list of packages used at end of every chapter
 # NB: use results: "none" to hide the output
