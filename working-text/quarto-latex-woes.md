@@ -8,6 +8,8 @@ along with the `.png` images under `docs/`
 
 ## LaTeX errors
 
+This problem was taken to {Quarto discussions}(https://github.com/quarto-dev/quarto-cli/discussions/13479)
+
 I set `-interaction=nonstopmode` in my `_quarto.yml` and the first `quarto render` pass completes,
 but fails in the second pass to resolve cross-references.
 I'm using this in my `_quarto.yml` file, which is supposed to continue after an error.

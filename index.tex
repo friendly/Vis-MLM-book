@@ -447,7 +447,7 @@
 \@ifundefined{codebgcolor}{\definecolor{codebgcolor}{HTML}{e4f0ef}}{}
 \makeatother
 \makeatletter
-\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[boxrule=0pt, colback={codebgcolor}, frame hidden, sharp corners, breakable, enhanced]}{\end{tcolorbox}}\fi
+\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[colback={codebgcolor}, boxrule=0pt, sharp corners, frame hidden, breakable, enhanced]}{\end{tcolorbox}}\fi
 \makeatother
 \usepackage{bookmark}
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
@@ -472,7 +472,7 @@
 \makeatother
 \subtitle{A Romance in Many Dimensions}
 \author{Michael Friendly}
-\date{2025-09-29}
+\date{2025-09-30}
 \begin{document}
 \maketitle
 
@@ -556,9 +556,13 @@ considers the correlations among the outcomes. Yet, sadly, researchers
 typically examine the outcomes one by one which often only tells part of
 the data story.
 
-However, to do this it is useful to set the stage for multivariate
-thinking, with a grand scheme for statistics and data visualization, a
-parable, and an example of multivariate discovery.
+However, to convey the statistical and graphic methods to do these
+things, I begin with some warm-up exercises in multivariate thinking,
+with a grand scheme for statistics and data visualization, a parable,
+and an example of multivariate discovery.
+
+\textbf{TODO}: Include an overview of the parts and chapters somewhere
+here
 
 \section*{Features}\label{features}
 \addcontentsline{toc}{section}{Features}
@@ -569,14 +573,30 @@ Some key substantive and pedagogical features of the book are:
 
 \begin{itemize}
 \item
+  The writing style is purposely pedagogical (hopefully not too
+  pedantic), in that it aims to teach \textbf{how to think} about
+  analysis and graphics for multivariate data. That is, I try to convey
+  how you can achieve \emph{understanding} of statistical concepts and
+  data visualization through ways of \emph{representing those ideas} in
+  diagrams and plots, and producing graphics using R functions and
+  packages.
+\item
+  To help understand the how modern statistical and graphic methods
+  became more powerful over time, the book takes a **historical
+  perspective*, where it is useful to convey how the innovations we use
+  today evolved.
+\item
   Statistical data visualization is cast in a general framework by their
   \textbf{goal} for communicating information, either to your self or
   others (such as see the \emph{data}, visualize a \emph{model},
   diagnose \emph{problems}), rather than a categorization by
-  \textbf{graphic types}. It is best informed by principles and goals of
-  communication, for example making graphic comparison easy and ordering
-  factors and variables according to what should be seen (\emph{effect
-  ordering}).
+  \textbf{graphic types} like bar charts and line graphs. This is best
+  informed by the principles and goals of \textbf{communication}, for
+  example making graphic comparison easy and ordering factors and
+  variables according to what should be seen, called \emph{effect
+  ordering} for data display
+  (\citeproc{ref-FriendlyKwan:03:effect}{Friendly \& Kwan, 2003}).
+  \ix{effect ordering}
 \item
   Data visualization is seen as a combination of
   \textbf{exposure}---plotting the raw data---and
@@ -585,17 +605,20 @@ Some key substantive and pedagogical features of the book are:
   confidence ellipses are widely used as simple, effective summaries of
   data and fitted model parameters. When the data is complex, the idea
   of \textbf{visual thinning} can be used to balance the tradeoff.
+  \ix{visual thinning}
 \item
   The book exploits the rich connections among \textbf{statistics},
   \textbf{geometry} and \textbf{data visualization}. Statistical ideas,
   particularly for multivariate data, can be more easily understood in
   terms of geometrical ones that can be seen in diagrams and data
-  displays. Moreover, ideas from one domain can amplify what we can
-  understand from another.
+  displays. More importantly, ideas from one domain can amplify what we
+  can understand from another.
 \item
   These graphical tools can be used to understand or explain a wide
   variety of statistical concepts, phenomena, and paradoxes such as
-  Simpson's paradox, effects of measurement error, and so forth.
+  Simpson's paradox (Section~\ref{sec-simpsons}), effects of measurement
+  error (Section~\ref{sec-meas-error}), bias-variance tradeoff
+  (Section~\ref{sec-bias-variance}), and so forth.
 \item
   The HE (``hypothesis - error'') plot framework provides a simple way
   to understand the results of statistical tests and the relations among
@@ -604,7 +627,11 @@ Some key substantive and pedagogical features of the book are:
   Dimension reduction techniques such as PCA and discriminant analysis
   are presented as ``multivariate juicers,'' able to squeeze the
   important information in high-dimensional data into informative
-  two-dimensional views.
+  two-dimensional views. But sometimes, the most important information
+  for a problem lies in the smallest dimensions, as is the case in
+  outlier detection (Section~\ref{sec-multivar-normality}), collinearity
+  (\textbf{?@sec-collin-biplot}) and ridge regression
+  (Section~\ref{sec-ridge-low-rank}).
 \end{itemize}
 
 \section*{What I assume}\label{what-i-assume}
@@ -760,11 +787,140 @@ In addition, there are a few books I recommend:
   to work on a shared dataset to see what they can do.
 \end{itemize}
 
-\section*{Conventions used in this
-book}\label{conventions-used-in-this-book}
-\addcontentsline{toc}{section}{Conventions used in this book}
+\section*{R coding style used here}\label{r-coding-style-used-here}
+\addcontentsline{toc}{section}{R coding style used here}
 
-\markright{Conventions used in this book}
+\markright{R coding style used here}
+
+\begin{tcolorbox}[enhanced jigsaw, toprule=.15mm, colframe=quarto-callout-note-color-frame, breakable, toptitle=1mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Note to reviewers}, colback=white, opacityback=0, coltitle=black, left=2mm, colbacktitle=quarto-callout-note-color!10!white, bottomrule=.15mm, titlerule=0mm, arc=.35mm, bottomtitle=1mm, rightrule=.15mm, opacitybacktitle=0.6, leftrule=.75mm]
+
+The coding style for computing and graphics used in this book are
+expressed using both the traditional functional syntax, \texttt{f(g(x))}
+and the newer approach using pipes (\texttt{\textbar{}\textgreater{}})
+of the tidyverse. Similarly, I use both base R graphics and plots based
+on the ``ggverse'' of \textcolor{brown}{\texttt{\textbf{ggplot2}}}
+\index{ggplot2@\texttt{ggplot2} package}
+\index{packages!ggplot2@\texttt{ggplot2}}
+
+and it's large family of add-on and extension packages.\footnotemark{}
+
+How and why it is this way should be explained to the reader. The
+material below is a start, but needs a bit of fleshing out or editing
+down.
+
+\end{tcolorbox}
+
+\footnotetext{The official
+\href{https://exts.ggplot2.tidyverse.org/gallery/}{ggplot2 extensions
+gallery website}, lists 151 registered extension packages available as
+of this writing. There is also the
+\href{https://ggplot2-extenders.github.io/ggplot-extension-club/}{ggplot2
+extenders club}, an active group of developers organized by Gina
+Reynolds and Teun van den Brand, who aim to facilitate thinking about
+further growth of \texttt{ggplot} ideas and implementations.}
+
+Like natural language and the graphic methods used in this book, R
+syntax and the programming style for graphics has evolved considerably
+since R was first introduced by Ross Ihaka and Robert Gentleman in 1992.
+It was originally based on the S programming language
+(\citeproc{ref-Becker-etal:88}{Becker et al., 1988}) and designed as a
+\emph{functional} language. This means that programs are constructed by
+applying and composing functions, like \texttt{log(x)}, \texttt{exp(x)},
+which return a value. \ldots{}
+
+\begin{itemize}
+\tightlist
+\item
+  pipes
+\item
+  tidyverse
+\item
+  R graphics: \texttt{plot()} -\textgreater{} \texttt{ggplot()}
+\end{itemize}
+
+Rather than being dogmatic about using the newest, most politically
+correct style,\footnote{See Norm Matloff's essay
+  \href{https://matloff.github.io/TidyverseSkeptic/Skeptic.html}{Tidyverse
+  Skeptic}. He argues that the tidyverse is not a good vehicle for
+  teaching novice, noncoders, and that using base-R as the vehicle of
+  instruction brings students to a more skilled level, in shorter time.}
+in this book I have taken the view that what is most important about
+programming and graphics software is that they serve as a route---as
+short and direct as possible---between \textbf{having an idea} in your
+head of what you want to do, and \textbf{seeing the result} on your
+screen or in your report, as illustrated in Figure~\ref{fig-idea-graph}.
+
+\begin{figure}[htb!]
+
+\centering{
+
+\includegraphics[width=0.8\linewidth,height=\textheight,keepaspectratio]{images/idea-graph.png}
+
+}
+
+\caption{\label{fig-idea-graph}The expressive power of graphics software
+can be considered as minimizing the path from an idea in your head to
+finished graphic.}
+
+\end{figure}%
+
+Consequently, for nearly every graph in this book, I used what I
+considered to be the most effective style to produce an \emph{admirable
+graphic}, but---perhaps more importantly--to be able to \emph{describe
+how} I coded that to the reader.
+
+For example, the \textcolor{brown}{\texttt{\textbf{car}}} package
+\index{car@\texttt{car} package} \index{packages!car@\texttt{car}} and
+my \textcolor{brown}{\texttt{\textbf{heplots}}}
+\index{heplots@\texttt{heplots} package}
+\index{packages!heplots@\texttt{heplots}} and related packages use
+base-R graphics, but I could customize their use in examples by using
+the conventions of \texttt{points()}, \texttt{lines()}, \texttt{text()}
+and even \texttt{par()} when necessary. However, if I was starting this
+project anew, I would now use
+\textcolor{brown}{\texttt{\textbf{tinyplot}}}
+(\citeproc{ref-R-tinyplot}{McDermott et al., 2025})
+\index{tinyplot@\texttt{tinyplot} package}
+\index{packages!tinyplot@\texttt{tinyplot}} , which has removed many of
+the cringeworthy features of base-R graphics.
+
+On the other hand, \textcolor{brown}{\texttt{\textbf{ggplot2}}} package
+\index{ggplot2@\texttt{ggplot2} package}
+\index{packages!ggplot2@\texttt{ggplot2}} was designed to be an
+\emph{elegant} language, based on the grammar of graphics
+(\citeproc{ref-Wilkinson:99}{L. Wilkinson, 1999}). It allows you to
+\emph{think of building plots} logically and coherently, layer by layer.
+Instead of memorizing specific function calls and their arguments for
+every type of chart, you learn a flexible, high-level language for
+describing what you \emph{want your graphic to look like}. This promotes
+a more structured thinking about data visualization, making it easier
+for you to iterate\footnote{You should think of the ``80-20'' graphics
+  rule when you work. This says you can produce 80\% of your finished
+  graphic with 20\% of your total effort. But the corollary is that it
+  takes you 80\% of your time to fix the limitations of the remaining
+  20\%.}, as we always do, to create beautiful, publication-quality
+graphics.
+
+\ix{80-20 graphics rule}
+
+This is great in theory, but as you will see here, in many code
+examples, beyond the basic \texttt{geom\_*} elements, a good deal of the
+effort to produce them required multiple steps to (a) get my data into a
+tidy format, (b) assign proper \texttt{scale\_*}s to data variables and
+(c) use \texttt{theme()} arguments to control the large and small
+aspects of graphic design that contribute to the elegance and potential
+beauty of finished product you see.
+
+Consequently, this book stands on the shoulders of \emph{several} giants
+in R graphics software, but the goal of reducing the gap between the
+idea of a graph and the visual result can still be narrowed.
+
+\section*{Typographic conventions used in this
+book}\label{typographic-conventions-used-in-this-book}
+\addcontentsline{toc}{section}{Typographic conventions used in this
+book}
+
+\markright{Typographic conventions used in this book}
 
 The following typographic conventions are used in this book:
 
@@ -849,13 +1005,21 @@ on this book.
 
 Writing this book using \href{https://quarto.org/}{Quarto} within the
 RStudio (now \href{https://posit.co/}{Posit}) development environment
-has presented technical challenges I had not encountered in previous
-books. I am grateful to Mickaël Canouil, Christophe Dervieux, Felix
-Benning and others in the quarto-dev community who graciously helped me
-solve many issues. The book also relies heavily on the graphic ideas and
-software of many R developers, including Cory Brunson, Vincent
-Arel-Bundock, Di Cook, John Fox, Duncan Murdoch, who replied to issues
-and feature requests on their packages.
+presented many technical challenges I had not encountered in previous
+books (Friendly \& Meyer
+(\citeproc{ref-FriendlyMeyer:2016:DDAR}{2016})). I am grateful to
+Mickaël Canouil, Christophe Dervieux, Felix Benning and others in the
+quarto-dev community who graciously helped me solve many issues, and
+again to Michael Truong who helped with this effort.
+
+The book also relies heavily on the graphic ideas and software of many R
+developers, including Cory Brunson, Vincent Arel-Bundock, Di Cook, John
+Fox, Duncan Murdoch, who replied to issues and feature requests on their
+packages. I am also indebted to Gina Reynolds, Teun van den Brand and
+other participants in the the
+\href{https://ggplot2-extenders.github.io/ggplot-extension-club/}{ggplot2
+extenders club} for help with \texttt{ggplot()} methods I needed for
+things like labeling ``noteworthy'' observations in plots.
 
 \mainmatter
 
@@ -912,7 +1076,7 @@ Press.
 
 \markboth{Warm-up Exercises}{Warm-up Exercises}
 
-\begin{tcolorbox}[enhanced jigsaw, left=2mm, colframe=quarto-callout-note-color-frame, coltitle=black, toprule=.15mm, breakable, titlerule=0mm, opacitybacktitle=0.6, toptitle=1mm, opacityback=0, colbacktitle=quarto-callout-note-color!10!white, bottomrule=.15mm, leftrule=.75mm, bottomtitle=1mm, rightrule=.15mm, arc=.35mm, colback=white, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Note}]
+\begin{tcolorbox}[enhanced jigsaw, toprule=.15mm, colframe=quarto-callout-note-color-frame, breakable, toptitle=1mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Note}, colback=white, opacityback=0, coltitle=black, left=2mm, colbacktitle=quarto-callout-note-color!10!white, bottomrule=.15mm, titlerule=0mm, arc=.35mm, bottomtitle=1mm, rightrule=.15mm, opacitybacktitle=0.6, leftrule=.75mm]
 
 This will become a numbered chapter to allow cross-references, but that
 entails renaming the chapter \& figures files
@@ -1536,7 +1700,7 @@ importantly, are questions of how the response variables are predicted
 \emph{jointly} considering their correlations that a multivariate
 approach can reveal.
 
-\begin{tcolorbox}[enhanced jigsaw, left=2mm, colframe=quarto-callout-note-color-frame, coltitle=black, toprule=.15mm, breakable, titlerule=0mm, opacitybacktitle=0.6, toptitle=1mm, opacityback=0, colbacktitle=quarto-callout-note-color!10!white, bottomrule=.15mm, leftrule=.75mm, bottomtitle=1mm, rightrule=.15mm, arc=.35mm, colback=white, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{What about SEM?}]
+\begin{tcolorbox}[enhanced jigsaw, toprule=.15mm, colframe=quarto-callout-note-color-frame, breakable, toptitle=1mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{What about SEM?}, colback=white, opacityback=0, coltitle=black, left=2mm, colbacktitle=quarto-callout-note-color!10!white, bottomrule=.15mm, titlerule=0mm, arc=.35mm, bottomtitle=1mm, rightrule=.15mm, opacitybacktitle=0.6, leftrule=.75mm]
 
 Structural equation modeling (SEM) offers another route to explore and
 analyze the relationships among multiple predictors and multiple
@@ -1895,7 +2059,7 @@ societal questions (\citeproc{ref-Guerry:1833}{Guerry, 1833}) such as
 In the last half of the 18th Century, the idea of correlation was
 developed (\citeproc{ref-Galton:1886}{Galton, 1886};
 \citeproc{ref-Pearson:1896}{Pearson, 1896}) and the period, roughly
-1860--1890, dubbed the ``Golden Age of Graphics
+1860--1890, dubbed the ``Golden Age of Graphics''
 (\citeproc{ref-Friendly:2008:golden}{Friendly, 2008};
 \citeproc{ref-Funkhouser:1937}{Funkhouser, 1937}) became the richest
 period of innovation and beauty in the entire history of data
@@ -2089,7 +2253,7 @@ pulls the line toward discrepant points to minimize the sum of squared
 residuals.}
 \end{quote}
 
-\begin{tcolorbox}[enhanced jigsaw, left=2mm, colframe=quarto-callout-note-color-frame, coltitle=black, toprule=.15mm, breakable, titlerule=0mm, opacitybacktitle=0.6, toptitle=1mm, opacityback=0, colbacktitle=quarto-callout-note-color!10!white, bottomrule=.15mm, leftrule=.75mm, bottomtitle=1mm, rightrule=.15mm, arc=.35mm, colback=white, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Datasaurus Dozen}]
+\begin{tcolorbox}[enhanced jigsaw, toprule=.15mm, colframe=quarto-callout-note-color-frame, breakable, toptitle=1mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Datasaurus Dozen}, colback=white, opacityback=0, coltitle=black, left=2mm, colbacktitle=quarto-callout-note-color!10!white, bottomrule=.15mm, titlerule=0mm, arc=.35mm, bottomtitle=1mm, rightrule=.15mm, opacitybacktitle=0.6, leftrule=.75mm]
 
 The method Anscombe used to compose his quartet is unknown, but it turns
 out that that there is a method to construct a wider collection of
@@ -2144,7 +2308,7 @@ Korkmaz on X}}
 
 \end{figure}%
 
-\begin{tcolorbox}[enhanced jigsaw, left=2mm, colframe=quarto-callout-note-color-frame, coltitle=black, toprule=.15mm, breakable, titlerule=0mm, opacitybacktitle=0.6, toptitle=1mm, opacityback=0, colbacktitle=quarto-callout-note-color!10!white, bottomrule=.15mm, leftrule=.75mm, bottomtitle=1mm, rightrule=.15mm, arc=.35mm, colback=white, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Quartets}]
+\begin{tcolorbox}[enhanced jigsaw, toprule=.15mm, colframe=quarto-callout-note-color-frame, breakable, toptitle=1mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Quartets}, colback=white, opacityback=0, coltitle=black, left=2mm, colbacktitle=quarto-callout-note-color!10!white, bottomrule=.15mm, titlerule=0mm, arc=.35mm, bottomtitle=1mm, rightrule=.15mm, opacitybacktitle=0.6, leftrule=.75mm]
 
 The essential idea of a statistical ``quartet'' is to illustrate four
 quite different datasets or circumstances that seem superficially the
@@ -3278,7 +3442,7 @@ stratifying:
   to another.
 \end{itemize}
 
-\begin{tcolorbox}[enhanced jigsaw, left=2mm, colframe=quarto-callout-note-color-frame, coltitle=black, toprule=.15mm, breakable, titlerule=0mm, opacitybacktitle=0.6, toptitle=1mm, opacityback=0, colbacktitle=quarto-callout-note-color!10!white, bottomrule=.15mm, leftrule=.75mm, bottomtitle=1mm, rightrule=.15mm, arc=.35mm, colback=white, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{History Corner: Coplots and faceting}]
+\begin{tcolorbox}[enhanced jigsaw, toprule=.15mm, colframe=quarto-callout-note-color-frame, breakable, toptitle=1mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{History Corner: Coplots and faceting}, colback=white, opacityback=0, coltitle=black, left=2mm, colbacktitle=quarto-callout-note-color!10!white, bottomrule=.15mm, titlerule=0mm, arc=.35mm, bottomtitle=1mm, rightrule=.15mm, opacitybacktitle=0.6, leftrule=.75mm]
 
 The syntax you use in specifying a plot plays an important role in
 visual thinking. Ideally, you want the shortest path between having a
@@ -5352,7 +5516,7 @@ others, while \textcolor{green}{Gentoo} penguins have smaller bill
 depth, but longer flippers and are heavier than
 \textcolor{purple}{Chinstrap} and \textcolor{orange}{Adelie} penguins.
 
-\begin{tcolorbox}[enhanced jigsaw, left=2mm, colframe=quarto-callout-note-color-frame, coltitle=black, toprule=.15mm, breakable, titlerule=0mm, opacitybacktitle=0.6, toptitle=1mm, opacityback=0, colbacktitle=quarto-callout-note-color!10!white, bottomrule=.15mm, leftrule=.75mm, bottomtitle=1mm, rightrule=.15mm, arc=.35mm, colback=white, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Looking ahead}]
+\begin{tcolorbox}[enhanced jigsaw, toprule=.15mm, colframe=quarto-callout-note-color-frame, breakable, toptitle=1mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Looking ahead}, colback=white, opacityback=0, coltitle=black, left=2mm, colbacktitle=quarto-callout-note-color!10!white, bottomrule=.15mm, titlerule=0mm, arc=.35mm, bottomtitle=1mm, rightrule=.15mm, opacitybacktitle=0.6, leftrule=.75mm]
 
 Figure~\ref{fig-peng-spm} provides a reasonably complete visual summary
 of the data in relation to multivariate models that ask ``do the species
@@ -6020,7 +6184,7 @@ intersect in a point in projective space. What this does is to map
 \(n\)-dimensional relations into 2D patterns we can see in a parallel
 coordinates plot.
 
-\begin{tcolorbox}[enhanced jigsaw, left=2mm, colframe=quarto-callout-note-color-frame, coltitle=black, toprule=.15mm, breakable, titlerule=0mm, opacitybacktitle=0.6, toptitle=1mm, opacityback=0, colbacktitle=quarto-callout-note-color!10!white, bottomrule=.15mm, leftrule=.75mm, bottomtitle=1mm, rightrule=.15mm, arc=.35mm, colback=white, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{History Corner: Who invented parallel coordinates?}]
+\begin{tcolorbox}[enhanced jigsaw, toprule=.15mm, colframe=quarto-callout-note-color-frame, breakable, toptitle=1mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{History Corner: Who invented parallel coordinates?}, colback=white, opacityback=0, coltitle=black, left=2mm, colbacktitle=quarto-callout-note-color!10!white, bottomrule=.15mm, titlerule=0mm, arc=.35mm, bottomtitle=1mm, rightrule=.15mm, opacitybacktitle=0.6, leftrule=.75mm]
 
 \begin{quote}
 \emph{Those who don't know history are doomed to plagiarize it} ---The
@@ -7555,7 +7719,7 @@ show how the original variables relate to this space. For exploratory
 analysis to get an initial, incisive view of a multivariate dataset, a
 biplot is often my first choice.
 
-\begin{tcolorbox}[enhanced jigsaw, left=2mm, colframe=quarto-callout-note-color-frame, coltitle=black, toprule=.15mm, breakable, titlerule=0mm, opacitybacktitle=0.6, toptitle=1mm, opacityback=0, colbacktitle=quarto-callout-note-color!10!white, bottomrule=.15mm, leftrule=.75mm, bottomtitle=1mm, rightrule=.15mm, arc=.35mm, colback=white, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Looking ahead}]
+\begin{tcolorbox}[enhanced jigsaw, toprule=.15mm, colframe=quarto-callout-note-color-frame, breakable, toptitle=1mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Looking ahead}, colback=white, opacityback=0, coltitle=black, left=2mm, colbacktitle=quarto-callout-note-color!10!white, bottomrule=.15mm, titlerule=0mm, arc=.35mm, bottomtitle=1mm, rightrule=.15mm, opacitybacktitle=0.6, leftrule=.75mm]
 
 I'm using the term \emph{multivariate juicer} here to refer the wider
 class of \textbf{dimension reduction} techniques, used for various
@@ -8605,7 +8769,7 @@ necessary to do a bit of processing, including making the
 \texttt{row.names()} into an explicit variable for the purpose of
 labeling.
 
-\begin{tcolorbox}[enhanced jigsaw, left=2mm, colframe=quarto-callout-warning-color-frame, coltitle=black, toprule=.15mm, breakable, titlerule=0mm, opacitybacktitle=0.6, toptitle=1mm, opacityback=0, colbacktitle=quarto-callout-warning-color!10!white, bottomrule=.15mm, leftrule=.75mm, bottomtitle=1mm, rightrule=.15mm, arc=.35mm, colback=white, title=\textcolor{quarto-callout-warning-color}{\faExclamationTriangle}\hspace{0.5em}{\texttt{rownames} in R}]
+\begin{tcolorbox}[enhanced jigsaw, toprule=.15mm, colframe=quarto-callout-warning-color-frame, breakable, toptitle=1mm, title=\textcolor{quarto-callout-warning-color}{\faExclamationTriangle}\hspace{0.5em}{\texttt{rownames} in R}, colback=white, opacityback=0, coltitle=black, left=2mm, colbacktitle=quarto-callout-warning-color!10!white, bottomrule=.15mm, titlerule=0mm, arc=.35mm, bottomtitle=1mm, rightrule=.15mm, opacitybacktitle=0.6, leftrule=.75mm]
 
 R software evolved over many years, particularly in conventions for
 labeling cases in printed output and graphics. In base-R, the convention
@@ -10261,7 +10425,7 @@ use for visualization for multivariate data covered here, that rely on
 its' ability as a \textbf{dimension reduction} technique, that is, to
 find a low-dimensional approximation to a high-dimensional dataset.
 
-\begin{tcolorbox}[enhanced jigsaw, left=2mm, colframe=quarto-callout-note-color-frame, coltitle=black, toprule=.15mm, breakable, titlerule=0mm, opacitybacktitle=0.6, toptitle=1mm, opacityback=0, colbacktitle=quarto-callout-note-color!10!white, bottomrule=.15mm, leftrule=.75mm, bottomtitle=1mm, rightrule=.15mm, arc=.35mm, colback=white, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Machine learning uses}]
+\begin{tcolorbox}[enhanced jigsaw, toprule=.15mm, colframe=quarto-callout-note-color-frame, breakable, toptitle=1mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Machine learning uses}, colback=white, opacityback=0, coltitle=black, left=2mm, colbacktitle=quarto-callout-note-color!10!white, bottomrule=.15mm, titlerule=0mm, arc=.35mm, bottomtitle=1mm, rightrule=.15mm, opacitybacktitle=0.6, leftrule=.75mm]
 
 In machine learning, for example, PCA is a method used to reduce model
 complexity and avoid overfitting by \emph{feature extraction}, which
@@ -10332,8 +10496,6 @@ post} by Kieran Healy.\footnote{https://kieranhealy.org/blog/archives/2019/10/27
 It would take too long to explain the entire method, so I'll just sketch
 the essential parts here. The complete script for this example is
 contained in \href{R/PCA-MonaLisa.R}{PCA-MonaLisa.R}. \ldots{}
-
-\textbf{TODO}: Show the necessary parts, including the screeplot.
 
 An image can be imported using \texttt{imager::load.image()} which
 creates a \texttt{"cimg"} object, a 4-dimensional array with dimensions
@@ -10439,7 +10601,7 @@ dimensions, the variance of additional components looks quite tiny.
 
 \centering{
 
-\includegraphics[width=1\linewidth,height=\textheight,keepaspectratio]{figs/ch04/fig-mona-screeplot-1.pdf}
+\includegraphics[width=0.8\linewidth,height=\textheight,keepaspectratio]{figs/ch04/fig-mona-screeplot-1.pdf}
 
 }
 
@@ -10545,7 +10707,7 @@ visual information is contained in lower-dimensional reconstructions, or
 conversely, how much the image can be compressed by omitting the many
 small dimensions.
 
-\begin{figure}[htb!]
+\begin{figure}[H]
 
 \centering{
 
@@ -10616,9 +10778,10 @@ points stand out on the smallest PCA dimension.}
 
 \end{figure}%
 
-To see this more clearly, \textbf{?@fig-outlier-animation} shows an
-animation of the rotation from data space to PCA space. This uses
-\texttt{heplots::interpPlot()} to interpolate linearly from the
+The online edition of this book shows this more clearly in an
+\href{https://friendly.github.io/Vis-MLM-book/04-pca-biplot.html\#fig-outlier-animation}{animated
+graphic} rotating the points smoothly from data space to PCA space. It
+uses \texttt{heplots::interpPlot()} to interpolate linearly from the
 positions of the points in data space to their locations in PCA space.
 
 \subsection{Example: Penguin data}\label{sec-dsq-penguin}
@@ -10903,7 +11066,7 @@ gender or level of education, methods like the simple \(t\)-test,
 one-way ANOVA and factorial ANOVA with \(q=1\) outcome measures all have
 simple extensions to the case of \(q>1\) outcomes.
 
-\begin{tcolorbox}[enhanced jigsaw, left=2mm, colframe=quarto-callout-note-color-frame, coltitle=black, toprule=.15mm, breakable, titlerule=0mm, opacitybacktitle=0.6, toptitle=1mm, opacityback=0, colbacktitle=quarto-callout-note-color!10!white, bottomrule=.15mm, leftrule=.75mm, bottomtitle=1mm, rightrule=.15mm, arc=.35mm, colback=white, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{History Corner: Twins Reared Apart}]
+\begin{tcolorbox}[enhanced jigsaw, toprule=.15mm, colframe=quarto-callout-note-color-frame, breakable, toptitle=1mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{History Corner: Twins Reared Apart}, colback=white, opacityback=0, coltitle=black, left=2mm, colbacktitle=quarto-callout-note-color!10!white, bottomrule=.15mm, titlerule=0mm, arc=.35mm, bottomtitle=1mm, rightrule=.15mm, opacitybacktitle=0.6, leftrule=.75mm]
 
 Why are there so many different names for regression vs.~ANOVA concepts,
 statistics and techniques? In regression, we use notation like
@@ -16294,7 +16457,7 @@ get the generalized GVIF:
 \index{variance inflation factor|)}
 \index{VIF|)}
 
-\begin{tcolorbox}[enhanced jigsaw, left=2mm, colframe=quarto-callout-tip-color-frame, coltitle=black, toprule=.15mm, breakable, titlerule=0mm, opacitybacktitle=0.6, toptitle=1mm, opacityback=0, colbacktitle=quarto-callout-tip-color!10!white, bottomrule=.15mm, leftrule=.75mm, bottomtitle=1mm, rightrule=.15mm, arc=.35mm, colback=white, title=\textcolor{quarto-callout-tip-color}{\faLightbulb}\hspace{0.5em}{Connection with inverse of correlation matrix}]
+\begin{tcolorbox}[enhanced jigsaw, toprule=.15mm, colframe=quarto-callout-tip-color-frame, breakable, toptitle=1mm, title=\textcolor{quarto-callout-tip-color}{\faLightbulb}\hspace{0.5em}{Connection with inverse of correlation matrix}, colback=white, opacityback=0, coltitle=black, left=2mm, colbacktitle=quarto-callout-tip-color!10!white, bottomrule=.15mm, titlerule=0mm, arc=.35mm, bottomtitle=1mm, rightrule=.15mm, opacitybacktitle=0.6, leftrule=.75mm]
 
 In the linear regression model with standardized predictors, the
 covariance matrix of the estimated intercept-excluded parameter vector
@@ -17681,7 +17844,7 @@ regular, but those involving population are curvilinear, reflecting more
 complex behavior in the ridge method.
 
 \subsection{Visualizing the bias-variance
-tradeoff}\label{visualizing-the-bias-variance-tradeoff}
+tradeoff}\label{sec-bias-variance}
 
 The function \texttt{precision()} calculates a number of measures of the
 effect of shrinkage of the coefficients in relation to the ``size'' of
@@ -18858,7 +19021,7 @@ of how these variables are related to one another.
 
 \end{example}
 
-\begin{tcolorbox}[enhanced jigsaw, left=2mm, colframe=quarto-callout-note-color-frame, coltitle=black, toprule=.15mm, breakable, titlerule=0mm, opacitybacktitle=0.6, toptitle=1mm, opacityback=0, colbacktitle=quarto-callout-note-color!10!white, bottomrule=.15mm, leftrule=.75mm, bottomtitle=1mm, rightrule=.15mm, arc=.35mm, colback=white, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{\textbf{Graph craft}: Layers and transparency}]
+\begin{tcolorbox}[enhanced jigsaw, toprule=.15mm, colframe=quarto-callout-note-color-frame, breakable, toptitle=1mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{\textbf{Graph craft}: Layers and transparency}, colback=white, opacityback=0, coltitle=black, left=2mm, colbacktitle=quarto-callout-note-color!10!white, bottomrule=.15mm, titlerule=0mm, arc=.35mm, bottomtitle=1mm, rightrule=.15mm, opacitybacktitle=0.6, leftrule=.75mm]
 
 Figure~\ref{fig-banknote-violin} is somewhat complex, so it is useful to
 understand the steps needed to make this figure show what I wanted. The
@@ -20042,7 +20205,7 @@ null hypothesis. But conveniently they can all be converted to \(F\)
 statistics. These conversions are \emph{exact} when the hypothesis has
 \(s \le 2\) degrees of freedom, and approximations otherwise.
 
-\begin{tcolorbox}[enhanced jigsaw, left=2mm, colframe=quarto-callout-tip-color-frame, coltitle=black, toprule=.15mm, breakable, titlerule=0mm, opacitybacktitle=0.6, toptitle=1mm, opacityback=0, colbacktitle=quarto-callout-tip-color!10!white, bottomrule=.15mm, leftrule=.75mm, bottomtitle=1mm, rightrule=.15mm, arc=.35mm, colback=white, title=\textcolor{quarto-callout-tip-color}{\faLightbulb}\hspace{0.5em}{Which multivariate test statistic is ``best''?}]
+\begin{tcolorbox}[enhanced jigsaw, toprule=.15mm, colframe=quarto-callout-tip-color-frame, breakable, toptitle=1mm, title=\textcolor{quarto-callout-tip-color}{\faLightbulb}\hspace{0.5em}{Which multivariate test statistic is ``best''?}, colback=white, opacityback=0, coltitle=black, left=2mm, colbacktitle=quarto-callout-tip-color!10!white, bottomrule=.15mm, titlerule=0mm, arc=.35mm, bottomtitle=1mm, rightrule=.15mm, opacitybacktitle=0.6, leftrule=.75mm]
 
 The answer is that it depends on the structure of the size of dimensions
 of an effect reflected in the eigenvalues \(\lambda_i\) and what
@@ -23228,7 +23391,7 @@ challenge and opportunity to introduce the method now called
 discriminant analysis---how to find a weighted composite of variables to
 best discriminate among existing groups.
 
-\begin{tcolorbox}[enhanced jigsaw, left=2mm, colframe=quarto-callout-note-color-frame, coltitle=black, toprule=.15mm, breakable, titlerule=0mm, opacitybacktitle=0.6, toptitle=1mm, opacityback=0, colbacktitle=quarto-callout-note-color!10!white, bottomrule=.15mm, leftrule=.75mm, bottomtitle=1mm, rightrule=.15mm, arc=.35mm, colback=white, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{History corner: Is the iris data racist?}]
+\begin{tcolorbox}[enhanced jigsaw, toprule=.15mm, colframe=quarto-callout-note-color-frame, breakable, toptitle=1mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{History corner: Is the iris data racist?}, colback=white, opacityback=0, coltitle=black, left=2mm, colbacktitle=quarto-callout-note-color!10!white, bottomrule=.15mm, titlerule=0mm, arc=.35mm, bottomtitle=1mm, rightrule=.15mm, opacitybacktitle=0.6, leftrule=.75mm]
 
 I said ``infamous'' above because Fisher published in the \emph{Annals
 of Eugenics}. He was an ardent eugenicist himself, and the work of
@@ -26714,7 +26877,7 @@ large values of the squared studentized residual.}
 
 \end{figure}%
 
-\begin{tcolorbox}[enhanced jigsaw, left=2mm, colframe=quarto-callout-note-color-frame, coltitle=black, toprule=.15mm, breakable, titlerule=0mm, opacitybacktitle=0.6, toptitle=1mm, opacityback=0, colbacktitle=quarto-callout-note-color!10!white, bottomrule=.15mm, leftrule=.75mm, bottomtitle=1mm, rightrule=.15mm, arc=.35mm, colback=white, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Theory into Practice}]
+\begin{tcolorbox}[enhanced jigsaw, toprule=.15mm, colframe=quarto-callout-note-color-frame, breakable, toptitle=1mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Theory into Practice}, colback=white, opacityback=0, coltitle=black, left=2mm, colbacktitle=quarto-callout-note-color!10!white, bottomrule=.15mm, titlerule=0mm, arc=.35mm, bottomtitle=1mm, rightrule=.15mm, opacitybacktitle=0.6, leftrule=.75mm]
 
 Chairman Mao said, ``Theory into practice'', but Tukey
 (\citeproc{ref-Tukey:59}{1959}) said that, ``The practical power of a
@@ -27214,7 +27377,7 @@ you.
 
 \chapter{Case Studies}\label{case-studies}
 
-\begin{tcolorbox}[enhanced jigsaw, left=2mm, colframe=quarto-callout-note-color-frame, coltitle=black, toprule=.15mm, breakable, titlerule=0mm, opacitybacktitle=0.6, toptitle=1mm, opacityback=0, colbacktitle=quarto-callout-note-color!10!white, bottomrule=.15mm, leftrule=.75mm, bottomtitle=1mm, rightrule=.15mm, arc=.35mm, colback=white, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Note}]
+\begin{tcolorbox}[enhanced jigsaw, toprule=.15mm, colframe=quarto-callout-note-color-frame, breakable, toptitle=1mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Note}, colback=white, opacityback=0, coltitle=black, left=2mm, colbacktitle=quarto-callout-note-color!10!white, bottomrule=.15mm, titlerule=0mm, arc=.35mm, bottomtitle=1mm, rightrule=.15mm, opacitybacktitle=0.6, leftrule=.75mm]
 
 This chapter may be moved from the printed PDF copy to an online
 Appendix.
@@ -28367,6 +28530,10 @@ general linear model approach to the analysis of experimental data in
 educational research, final report}.
 \url{https://files.eric.ed.gov/fulltext/ED026737.pdf}
 
+\bibitem[\citeproctext]{ref-Becker-etal:88}
+Becker, R. A., Chambers, J. M., \& Wilks, A. R. (1988). \emph{The new
+{S} language}. Wadsworth \& Brooks/Cole.
+
 \bibitem[\citeproctext]{ref-Becker:1996:VDC}
 Becker, R. A., Cleveland, W. S., \& Shyu, M.-J. (1996). The visual
 design and control of trellis display. \emph{Journal of Computational
@@ -29319,6 +29486,11 @@ Maunder, E. W. (1904). Note on the distribution of sun-spots in
 heliographic latitude, 1874 to 1902. \emph{Royal Astronomical Society
 Monthly Notices}, \emph{64}, 747--761.
 
+\bibitem[\citeproctext]{ref-R-tinyplot}
+McDermott, G., Arel-Bundock, V., \& Zeileis, A. (2025).
+\emph{{tinyplot}: Lightweight extension of the base r graphics system}.
+\url{https://doi.org/10.32614/CRAN.package.tinyplot}
+
 \bibitem[\citeproctext]{ref-McDonald:2009}
 McDonald, G. C. (2009). Ridge regression. \emph{Wiley Interdisciplinary
 Reviews: Computational Statistics}, \emph{1}(1), 93--100.
@@ -29715,6 +29887,9 @@ Media. \href{https://clauswilke.com/dataviz}{clauswilke.com/dataviz}
 Wilkinson, G. N., \& Rogers, C. E. (1973). Symbolic description of
 factorial models for analysis of variance. \emph{Applied Statistics},
 \emph{22}(3), 392. \url{https://doi.org/10.2307/2346786}
+
+\bibitem[\citeproctext]{ref-Wilkinson:99}
+Wilkinson, L. (1999). \emph{The grammar of graphics}. Springer.
 
 \bibitem[\citeproctext]{ref-Wilkinson-etal:2005}
 Wilkinson, L., Anand, A., \& Grossman, R. L. (2005). Graph-theoretic
