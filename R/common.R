@@ -179,6 +179,9 @@ $\\newcommand*{\\diag}[1]{\\ensuremath{\\mathrm{diag}\\, #1}}$
 #   Assumes the bibtex key will be of the form: R-package
 # * Produces appropriate markup for HTML and PDF
 # * Allows package names to be printed in color and in different font styles (bold, ital, ...)
+# 
+# Example:
+#     For example, the `r package("car")` and my `r pkg("heplots")` and related packages.
 #
 #
 # See: Demonstration of how to use other fonts in an Rmarkdown document 
@@ -400,7 +403,8 @@ func <- function(name, package=NULL, test=FALSE) {
   "HLMdiag",
   "ggdist",
   "quartets",
-  "liminal")
+  "liminal",
+  "tinyplot")
 
 # write list of packages used at end of every chapter
 # NB: use results: "none" to hide the output
