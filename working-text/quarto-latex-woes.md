@@ -91,7 +91,7 @@ makeindex.exe -s latex/book.ist %.idx
 
 and this works as intended.
 
-# Unresolved cross-references in aligned equations
+# Unresolved cross-references in aligned equations [FIXED]
 
 Aligned equations, using equation labels, like: `\begin{align*} equation \end{align}{#eq-glm}` work in HTML, _but not in PDF_.
 That is, they generate equation numbers which can be cross-referenced in HTML, but generate warnings in PDF and the cross-refs
@@ -125,7 +125,7 @@ But sometimes figures that look OK in the HTML version are way to large in the P
 I'd like to automate some of the manual steps by using a `Makefile`. But, when I tried this in RStudio, on the `Build` tab, `Render book` is
 replaced by `Make`
 
-## Page headings in PDF
+## Page headings in PDF [FIXED]
 
 I've defined a `title:` and `subtitle:` in my `_quarto.yml`. In the PDF, it uses both of these as the page heading on alternate pages, which looks ugly. 
 
