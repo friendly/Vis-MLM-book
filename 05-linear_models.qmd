@@ -86,7 +86,7 @@ To complete an analysis, as a graduate student I often had to use three or more 
 
 Then, something remarkable happened on two fronts: theory and computation.
 First, in quick succession textbooks by @Scheffe1960, @Graybill1961, @Winer1962 and others
-began to layout a general theory of linear models that encompassed all of these separate models,
+began to layout a general theory of linear models that encompassed _all_ of these separate models,
 giving the "**General Linear Model**" its well-deserved name.
 Second, two symposiums, one at IBM Yorkdown Heights (@IBM1965) and the other at the University of Georgia (@BradshawFindley1967)
 resulted in the first general programs to handle _all these cases_ in an understandable way.
@@ -130,6 +130,7 @@ library(nestedLogit)
 
 ## The General Linear Model {#sec-GLM}
 
+\ixon{general linear model}
 To establish notation and terminology, it is worthwhile to state the general linear model formally.
 For convenience, I use vector and matrix notation.
 This expresses a response variable, $\mathbf{y} = (y_1, y_2, \dots , y_n)^\mathsf{T}$ for $n$ observations, as a sum of terms involving $p$ _regressors_, $\mathbf{x}_1, \mathbf{x}_2, \dots , \mathbf{x}_p$, each of length $n$.
@@ -179,10 +180,11 @@ $\mathbf{x}_1 \times \mathbf{x}_2$. More generally, for variables or
 factors $A$ and $B$ with degrees of freedom $\text{df}_A$ and $\text{df}_B$ the regressors in $\mathbf{X}$ are the $\text{df}_A \times \text{df}_B$
 products of each column for $A$ with each column for $B$.
 
-
+\ixoff{general linear model}
 
 ### Model formulas {#sec-model-formulas}
 
+\ixon{model formulas}
 Statistical models in R, such as those fit by `r func("lm()")`, `r func("glm()")` and many other modelling function in R are expressed in a simple notation that was developed by @WilkinsonRogers1973
 for the GENSTAT software system at the Rothamsted Research Station. It solves the problem
 of having a compact way to specify any model consisting of any combinations of quantitative and discrete factor variables, interactions of these and arbitrary transformations of these.
@@ -235,6 +237,8 @@ This differs from the model `y ~ poly(x, 2)` in that the former uses the raw `x,
 while `r func("poly()")` converts these to orthogonal polynomial scores, which are uncorrelated
 (and therefore free from problems of collinearity).
 
+\ixoff{model formulas}
+
 ::: {#exm-workers1}
 
 **Workers data: Regression models** 
@@ -253,7 +257,7 @@ coef(workers.mod2) |> t() |> t()
 (In this code, `coef(workers.mod2) |> t() |> t()` is used to print the coefficients as a one-column matrix.)
 
 It is simplest to understand  these models by plotting the data overlaid with the fitted regressions.
-Ths uses 
+This uses 
 `geom_smooth()`
 <!-- `r func("geom_smooth()")`  -->
 and specifies the smoothing model as `method = "lm"` with a `formula`,
@@ -306,6 +310,10 @@ yearly increase decreases by $330. Some further details of orthogonal polynomial
 :::
 
 #### Factors
+
+\ix{model formulas!factors}
+\ix{factors}
+
 Factor variables are treated specially in linear models, but have simple
 notations in R formulas. The following examples use `A, B, C` to represent
 discrete factors with two or more levels.
@@ -319,6 +327,9 @@ y ~ (A + B + C)^2     # three-way ANOVA, incl. all two-way interactions
 ```
 
 #### Crossing {.unnnumbered}
+
+\ix{model formulas!crossing}
+
 The `*` operator has special meaning used to specify the crossing of variables and factors and `:` specifies interactions (products of variables).
 So, the model `y ~ x1 * x2` is expanded to give `y ~ x1 + x2 + x1:x2`
 and the interaction term `x1:x2` is calculated as $x_1 \times x_2$.
@@ -344,6 +355,8 @@ allow separate slopes and intercepts for the groups.
 
 
 #### Powers {.unnnumbered}
+
+\ix{model formulas!powers}
 
 The `^` exponent operator indicates _powers of a term expression_ to a specified degree. Thus the term
 `(A + B)^2` is identical to `(A + B) * (A + B)` which expands to the main effects of `A`, `B` and
@@ -399,6 +412,8 @@ as.formula(sprintf("y ~ %s", paste(terms, collapse=" + ")))
 
 ### Model matrices 
 
+\ix{model formulas!model matrices}
+
 As noted above, a model formula is used to generate the $n \times (p+1)$ model matrix, $\mathbf{X}$, typically containing the column of 1s for the intercept $\beta_0$ in the model, followed by 
 $p$ columns representing the regressors $\mathbf{x}_1, \mathbf{x}_2, \dots , \mathbf{x}_p$.
 Internally, `r func("lm()")` uses `stats::model.matrix()` and you can use this to explore how factors,
@@ -433,6 +448,9 @@ model.matrix(~ inc * type)
 ```
  
 ### Coding factors and contrasts {#sec-contrasts}
+
+\ix{factors}
+\ixon{contrasts}
 
 Discrete explanatory variables, such as race, type of occupation or level of education
 require special attention in linear models
@@ -497,6 +515,9 @@ $$
 
 
 #### Treatment coding {.unnumbered}
+
+\ixon{contrasts!treatment coding}
+
 
 Let's examine R's default coding scheme, `contr.treatment` (also called dummy coding), for a factor with 4 levels: 'a', 'b', 'c', and 'd', with a view to understanding the relationship between the true population means,
 $\mu_a$, $\mu_b$, $\mu_c$, and $\mu_d$ and the parameters $\boldsymbol{\beta}$ estimated in a linear model. We get the following:
@@ -642,7 +663,11 @@ From this you can see how the coefficients are interpreted:
 - $\beta_d$: The difference in mean response between level 'd' and reference level 'a' (i.e., $\mu_d = \beta_0 + \beta_d$ or $\beta_d = \mu_d - \mu_a$)
 -->
 
+\ixoff{contrasts!treatment coding}
+
 #### Deviation coding {.unnumbered}
+
+\ixon{contrasts!deviation coding}
 
 Another common coding scheme, useful for unordered factors, is _deviation coding_ given by `contrast.sum()`.
 This has the property that the parameters are constrained to sum to zero, $\Sigma \beta_i = 0$.
@@ -663,7 +688,13 @@ A (redundant) coefficient for the last group is omitted, because with this codin
 a coefficient for that group would be equal to the negative of the sum of the others,
 $\beta_d = \mu_d - \bar{\mu} = -(\beta_1 + \beta_2 + \beta_3)$.
 
+\ixoff{contrasts!deviation coding}
+
 #### Helmert contrasts {.unnumbered}
+
+\ix{contrasts!Helmert}
+\ix{Helmert contrasts}
+\ix{factors!ordered}
 
 For **ordered factors**, it is sensible to take the ordering into account in interpreting the 
 results. _Helmert contrasts_ are designed for this purpose. The intercept is again 
@@ -698,6 +729,8 @@ C.rev
 ```
 
 #### Polynomial contrasts {.unnumbered}
+
+\ixon{contrasts!polynomial}
 
 For ordered factors that are also numeric, like `Age = c(8, 9, 10, 11)` or those that can be
 considered equally spaced along some continuum, polynomial contrasts, given by
@@ -744,13 +777,18 @@ matplot(M1,
   ylab = "Coefficient")
 ```
 
+\ixoff{contrasts!polynomial}
 
 #### Custom contrasts {.unnumbered}
 
 You don't have to be constrained by the kinds of comparisons available in `contr.*` functions.
 For a factor with $k$ levels you are free to make up _any_ $k-1$ contrasts that correspond
 to $k-1$ different questions or tests of hypotheses about the factor level means.
-Even better, if your contrasts are orthogonal, their tests are statistically independent.
+Even better: if your contrasts are orthogonal, their tests are statistically independent
+and they account for non-overlapping portions of the variance for the factor.
+
+\ix{contrasts!orthogonal}
+\ix{contrasts!nested dichotomies}
 
 
 One useful idea for defining orthogonal comparisons of substantive interest is 
@@ -844,6 +882,7 @@ C
 
 These have the same form as the reversed Helmert contrasts considered earlier.
 
+\ixoff{contrasts}
 
 
 <!--
