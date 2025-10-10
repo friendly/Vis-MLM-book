@@ -197,7 +197,8 @@ escape <- function(name) {
   gsub("_", "\\_", name, fixed=TRUE)
 }
 
-
+# Functions for displaying names of R packages, datasets and functions in text
+# with distinctive fonts and or colors and for creating `\index{}` entries in LaTeX
 
 # attributes for displaying the package name
 pkgname_font = "bold"    # or: plain, ital, boldital
@@ -226,9 +227,12 @@ pkg <- function(package, cite=FALSE) {
   ref <- pkgname
   if (!is.null(pkgname_color)) ref <- colorize(pkgname, pkgname_color)
   if (cite) ref <- paste0(ref, " [@R-", package, "]")
+  # create index entry
   if (knitr::is_latex_output()) {
-    ref <- paste0(ref, "\n\\index{", tt(package), " package}",
-                        "\n\\index{packages!", tt(package), "}\n")
+    # ref <- paste0(ref, "\n\\index{", tt(package), " package}",
+    #                     "\n\\index{packages!", tt(package), "}\n")
+    # use \ixp{} latex macro to simplify that
+    ref <- paste0(ref, "\n\\ixp{", package, "}\n")
   }
   ref
 }
