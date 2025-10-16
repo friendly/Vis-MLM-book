@@ -198,7 +198,10 @@ escape <- function(name) {
 }
 
 # Functions for displaying names of R packages, datasets and functions in text
-# with distinctive fonts and or colors and for creating `\index{}` entries in LaTeX
+# with distinctive fonts and or colors and for automatically creating `\index{}` entries in LaTeX
+# 
+# As implemented here, this now relies on defining LaTeX macros in your `preample.tex` file.
+# A strictly R version gave inconsistent index entries
 
 # attributes for displaying the package name
 pkgname_font = "bold"    # or: plain, ital, boldital
@@ -271,8 +274,10 @@ package <- function(package, cite=FALSE) {
   if (!is.null(pkgname_color)) ref <- paste(colorize(pkgname, pkgname_color), "package")
   if (cite) ref <- paste0(ref, " [@R-", package, "]")
   if (knitr::is_latex_output()) {
-    ref <- paste0(ref, "\n\\index{", tt(package), " package}",
-                  "\n\\index{packages!", tt(package), "}\n")
+    # ref <- paste0(ref, "\n\\index{", tt(package), " package}",
+    #               "\n\\index{packages!", tt(package), "}\n")
+    # use \ixp{} latex macro to simplify that
+    ref <- paste0(ref, "\n\\ixp{", package, "}\n")
   }
   ref
 }
@@ -362,14 +367,8 @@ func <- function(name, package=NULL, test=FALSE) {
   # index entries  
   ref <- funcname
   if (knitr::is_latex_output() | test) {
-    ref <- paste0(ref, "\n\\index{", tt(fname), "}")
-    # ref <- paste0(ref, "\n\\index{", fname, " data@\\texttt{", fname, "}}",
-    #               "\n\\index{datasets!", fname, "@\\texttt{", fname, "}}")
-    # Also index under package name
-    # if (knitr::is_latex_output()) {
-    #   ref <- paste0(ref, "\n\\index{", name, " function}",
-    #                 "\n\\index{functions!", name, "}")
-    # }
+    # ref <- paste0(ref, "\n\\index{", tt(fname), "}")
+    ref <- paste0(ref, "\n\\ixfunc{", fname, "}\n")
   }
   ref
 }
