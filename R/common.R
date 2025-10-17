@@ -197,6 +197,9 @@ escape <- function(name) {
   gsub("_", "\\_", name, fixed=TRUE)
 }
 
+# or, try \detokenize{}
+# https://tex.stackexchange.com/questions/145104/use-detokenize-with-command-line-input-that-has-underscores
+
 # Functions for displaying names of R packages, datasets and functions in text
 # with distinctive fonts and or colors and for automatically creating `\index{}` entries in LaTeX
 # 
