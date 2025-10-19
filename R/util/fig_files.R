@@ -15,7 +15,7 @@ chap <- sub("figs/", "", path)
 file <- path_file(figs)
 ext <- path_ext(figs)
 size <- file_size(figs)
-dup <- duplicated(file) | duplicated(file, fromLast = TRUE)
+dup <- duplicated(file, fromLast = TRUE)
 time <- file_info(figs)[, "change_time"]
 
 
