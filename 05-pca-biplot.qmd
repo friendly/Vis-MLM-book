@@ -1,0 +1,2308 @@
+```{r include=FALSE}
+source(here::here("R", "common.R"))
+knitr::opts_chunk$set(fig.path = "figs/ch05/")
+```
+
+::: {.content-visible unless-format="pdf"}
+{{< include latex/latex-commands.qmd >}}
+:::
+
+# Dimension Reduction {#sec-pca-biplot}
+
+## _Flatland_ and _Spaceland_ {#sec-spaceland}
+\ix{Flatland@\emph{Flatland}}
+
+> _It is high time that I should pass from these brief and discursive notes about Flatland to the central event of this book, my initiation into the mysteries of Space. THAT is my subject; all that has gone before is merely preface_ --- Edwin Abbott, _Flatland_, p. 57.
+
+There was a cloud in the sky above _Flatland_ one day. But it was a huge, multidimensional cloud of sparkly points that might contain some important message, perhaps like the hidden EUREKA (@fig-pollen-eureka), or perhaps forecasting the upcoming harvest, if only Flatlanders could appreciate it. 
+
+A leading citizen, A SQUARE, who had traveled once to 
+Spaceland and therefore had an inkling of its majesty beyond the simple world of his life in the plane looked at that cloud and had a brilliant thought, an OMG moment:
+
+> _Oh, can I, in my imagination, rotate that cloud and squeeze its juice so that it rains down on Flatland with greatest joy?_"
+
+As it happened, our Square friend, although he could never really _see_ in three dimensions, he could now 
+at least _think_ of a world described by **height** as well as breadth and width, and think of the
+**shadow** cast by a cloud as something mutable, changing size and shape depending on its' orientation over Flatland.
+
+And what a world it was, inhabited by
+Pyramids, Cubes and wondrous creatures called Polyhedrons with many $C$orners, $F$aces and $E$dges.
+Not only that, but all those Polyhedra were forced in Spaceland to obey a magic formula:
+$C + F - E = 2$.[^1-euler] How cool was that!
+
+[^1-euler]: This is Euler's [-@Euler:1758] formula, which states that any convex polyhedron must obey the formula $V + F - E = 2$ where $V$ is the number of vertexes (corners), $F$ is the number of faces and $E$ is the number of edges.  For example, a tetrahedron
+or pyramid has $(V, F, E) = (4, 4, 6)$ and a cube has $(V, F, E) = (8, 6, 12)$. Stated in words,
+for all solid bodies confined by planes, the sum of the number of vertexes and the number of faces is two less than the number of edges.
+
+Indeed, there were even exalted Spheres,
+having so many faces that its surface became as smooth as a baby's bottom with no need for pointed corners or edges, just as Circles were the smoothest occupants of his world with far too many sides to count.
+It was his dream of a Sphere passing through Flatland (@fig-flatland-spheres) that first awakened him to 
+a third dimension.
+
+He also marveled at Ellipsoids, as smooth as Spheres, but in Spaceland having three natural axes of different extent
+and capable of being appearing fatter or slimmer when rotated from different views. An Ellipsoid
+had magical properties: it could appear as so thin in one or more dimensions that it became a simple
+2D ellipse, or a 1D line, or even a 0D point [@Friendly-etal:ellipses:2013].
+<!-- **TODO**: somehow mention the `gellipsoid` package here. -->
+
+All of these now arose in Square's richer 3D imagination. 
+And, all of this came from just one more dimension than his life in Flatland.
+
+
+### Multivariate juicers
+
+\ixon{multivariate juicer}
+
+Up to now, we have also been living in Flatland. We have been trying to understand data in
+**data space** of possibly many dimensions, but confined to the 2D plane of a graph window.
+Scatterplot matrices and parallel coordinate plots provided some relief. 
+The former did so by **projecting** the data into sets of 2D views in the coordinates of data
+space; the latter did so by providing multiple axes in a 2D space along which we could trace
+the paths of individual observations.
+
+\ix{data space}
+\ix{projection}
+
+This chapter is about seeing data in a different projection---a low-dimensional (usually 2D) space---that squeezes out the most juice
+from multidimensional data for a particular purpose (@fig-MV-juicer), where what we want to
+understand can be more easily seen.
+
+```{r}
+#| label: fig-MV-juicer
+#| echo: false
+#| fig-align: center
+#| out-width: "80%"
+#| fig-cap: "A multivariate juicer takes data from possibly high-dimensional data space and transforms it to a lower-dimenional space in which important effects can be more easily seen."
+knitr::include_graphics("images/MV-juicer.png")
+```
+
+Here, I concentrate on **principal components analysis** (PCA), whose goal reflects A Square's desire to see that sparkly cloud of points 
+in $nD$ space in the plane showing the greatest variation (squeezing the most juice)
+among all other possible views.
+This appealed to his sense of geometry, but left him wondering how the variables in that 
+high-D cloud were related to the dimensions he could see in a best-fitting plane.
+\ix{principal components analysis}
+
+The idea of a **biplot**, showing the data points in the plane, together with thick pointed
+arrows---variable vectors--- in one view is the other topic explained in this chapter (@sec-biplot). The biplot is the simplest example of a multivariate juicer. The essential idea is to project the cloud of data points in $n$ dimensions into the 
+2D space of principal components and _simultaneously_ show how the original variables
+relate to this space. For exploratory analysis to get an initial, incisive view of
+a multivariate dataset, a biplot is often my first choice.
+\ix{biplot}
+
+::: {.callout-note title="Looking ahead"}
+I'm using the term _multivariate juicer_ here to refer the wider class of **dimension reduction** techniques, used for various purposes in data analysis and visualization. PCA is the simplest example and illustrates the general ideas.
+
+The key point is that these methods are designed to transform the data into a low-dimensional space for a particular goal or purpose. In PCA, the goal is to extract the greatest amount of total variability in the data. In the context of univariate multiple regression, the goal is often to reduce the number of predictors necessary to account for an outcome variable, called _feature extraction_ in the machine learning literature.
+
+When the goal is to best distinguish among groups **discriminant analysis** finds uncorrelated weighted sums of
+predictors on which the means of groups are most widely separated in a reduced space of hopefully fewer dimensions.
+
+The methods I cover in this book are all linear methods, but there is also a wide variety of non-linear dimension reduction techniques.
+
+:::
+
+\ixoff{multivariate juicer}
+
+
+**Packages**
+
+In this chapter I use the following packages. Load them now:
+
+```{r load-pkgs}
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(patchwork)
+library(ggbiplot)
+library(FactoMineR)
+library(factoextra)
+library(car)
+library(ggpubr)
+library(matlib)
+```
+
+
+## Principal components analysis (PCA) {#sec-pca}
+
+\ixon{principal components analysis}
+\ix{PCA|see{principal components analysis}}
+
+When Francis Galton [-@Galton:1886] first discovered the idea of regression toward the mean
+and presented his famous diagram (@fig-galton-corr), he had little thought that he had provided a
+window to a higher-dimensional world, beyond what even A Square could imagine. 
+His friend, Karl Pearson [-@Pearson:1896] took that idea and developed it into a theory of
+regression and a measure of correlation that would bear his name, Pearson's $r$.
+
+But then Pearson [-@Pearson:1901] had a further inspiration, akin to that of A Square. 
+If he also had a cloud of sparkly points in $2, 3, 4, ..., p$ dimensions, could he find a
+point ($0D$), or line ($1D$), or plane ($2D$), or even a hyperplane ($nD$) that best summarized ---
+squeezed out the most juice---from multivariate data? This was the first truly multivariate
+problem in the history of statistics [@FriendlyWainer:2021:TOGS, p. 186].
+
+The best $0D$ point was easy--- it was simply the centroid, the means of each of the
+variables in the data, $(\bar{x}_1, \bar{x}_2, ..., \bar{x}_p)$, because that was "closest"
+to the data in the sense of minimizing the sum of squared differences, $\Sigma_i\Sigma_j (x_{ij} - \bar{x}_j)^2$.
+In higher dimensions, his solution was also an application of the method of least squares, but he argued
+it geometrically and visually as shown in @fig-Pearson1901.
+
+```{r}
+#| label: fig-Pearson1901
+#| echo: false
+#| fig-align: center
+#| out-width: "60%"
+#| fig-cap: "Karl Pearson's (1901) geometric, visual argument for finding the line or plane of closest fit to a collection of points, P1, P2, P3, ... "
+knitr::include_graphics("images/Pearson1901.png")
+```
+
+For a $1D$ summary, the line of best fit to the points $P_1, P_2, \dots P_n$ is the line that goes through the
+centroid and made the average squared length of the _perpendicular_ segments from those points to a line as small
+as possible. This was different from the case in linear regression, for fitting $y$ from $x$,
+where the average squared length of the _vertical_ segments, $\Sigma_i (y_i - \hat{y}_i)^2$ was minimized by
+least squares.
+
+He went on to prove the visual insights from simple smoothing of @Galton:1886 (shown in @fig-galton-corr) 
+regarding the regression lines of
+`y ~ x` and `x ~ y`. More importantly, he proved that the cloud of points is captured,
+for the purpose of finding a best line, plane or hyperplane, by
+the ellipsoid that encloses it, as seen in his diagram, @fig-Pearson1901-2. The major axis of the 
+2D ellipse is the line of best fit, along which the data points have the smallest average squared
+distance from the line. The axis at right angles to that---the minor axis--- is labeled "line of worst fit"
+with the largest average squared distance.
+
+```{r}
+#| label: fig-Pearson1901-2
+#| echo: false
+#| fig-align: center
+#| out-width: "80%"
+#| fig-cap: "Karl Pearson's diagram showing the elliptical geometry of regression and principal components analysis ... _Source_: Pearson (1901), p. 566."
+knitr::include_graphics("images/Pearson1901_2.png")
+```
+
+Even more importantly--- and this is the basis for PCA --- he recognized that the two orthogonal axes of the ellipse gave new coordinates for the data which were uncorrelated, whatever the correlation of $x$ and $y$.
+
+> _Physically, the axes of the correlation type-ellipse are the directions of independent and uncorrelated variation._ --- @Pearson:1901, p. 566.
+
+It was but a small step to recognize that for two variables, $x$ and $y$:
+
+* The line of best fit, the major axis (PC1) had the greatest variance of points projected onto it.
+* The line of worst fit, the minor axis (PC2), had the least variance.
+* These could be seen as a rotation of the data space of $(x, y)$ to a new space (PC1, PC2) with uncorrelated variables.
+* The total variation of the points in data space, $\text{Var}(x) + \text{Var}(y)$, being unchanged by rotation, was equally well expressed as the total variation $\text{Var}(PC1) + \text{Var}(PC2)$ of the scores on what are
+now called the principal component axes.
+
+It would have appealed to Pearson (and also to A Square) to see these observations demonstrated in a 3D video. 
+<!-- @fig-pca-animation -->
+`r ifelse(knitr::is_html_output(), '@fig-pca-animation-html', '@fig-pca-animation-pdf')`
+shows a 3D plot of the variables `Sepal.Length`, `Sepal.Width` and `Petal.Length` in Edgar Anderson's `iris`
+data, with points colored by species and the 95% data ellipsoid. This is rotated smoothly by interpolation until the first two principal axes, PC1 and PC2 are aligned with the horizontal and vertical dimensions. 
+Because this is a rigid rotation of the cloud of points, the total variability is obviously unchanged.
+
+
+<!-- ::: {#fig-pca-animation} -->
+<!-- <div align="center"> -->
+<!-- <iframe width="946" height="594" src="images/pca-animation1.gif"></iframe> -->
+<!-- </div> -->
+<!-- Animation of PCA as a rotation in 3D space. The plot shows three variables for the `iris` data, initially -->
+<!-- in data space and its' data ellipsoid, with points colored according to species of the iris flowers. This is rotated smoothly until the first two principal axes are aligned with the horizontal and vertical dimensions. -->
+
+<!-- ::: -->
+
+::: {.content-visible when-format="html"}
+```{r}
+#| label: fig-pca-animation-html
+#| out-width: "100%"
+#| echo: false
+#| fig-cap: "Animation of PCA as a rotation in 3D space. The plot shows three variables for the `iris` data, initially in data space and its' data ellipsoid, with points colored according to species of the iris flowers. This is rotated smoothly until the first two principal axes are aligned with the horizontal and vertical directions in the final frame."
+knitr::include_graphics("images/pca-animation1.gif")
+```
+:::
+
+::: {.content-visible when-format="pdf"}
+```{r}
+#| label: fig-pca-animation-pdf
+#| out-width: "100%"
+#| echo: false
+#| fig-cap: "First and last frames of an animation of PCA as a rotation in 3D space. The plot shows three variables for the `iris` data, initially in data space and its' data ellipsoid, with points colored according to species of the iris flowers. This is rotated smoothly until the first two principal axes are aligned with the horizontal and vertical directions in the final frame."
+knitr::include_graphics("images/pca-animation-combined.jpg")
+```
+:::
+
+### PCA by springs
+
+\ix{principal components analysis!springs}
+
+Before delving into the mathematics of PCA, it is useful to see how Pearson's problem, and fitting by least squares generally, could be solved in a physical realization. 
+
+From elementary statistics, you may be familiar with a
+physical demonstration that the mean, $\bar{x}$, of a sample is the value for which the sum of deviations,
+$\Sigma_i (x_i - \bar{x})$ is zero, so the mean can be visualized as the point of balance on a line where
+those differences $(x_i - \bar{x})$ are placed. Equally well, there is a physical realization of the mean
+as the point along an axis where weights connected by springs will minimize the sum of squared differences,
+because springs with a constant stiffness, $k$, exert forces proportional to $k (x_i - \bar{x}) ^2$. That's
+the reason it is useful as a measure of central tendency: it minimizes the average squared error.
+
+In two dimensions, imagine that we have points, $(x_i, y_i)$ and these are attached by springs of equal stiffness $k$, to a line anchored at the centroid, $(\bar{x}, \bar{y})$ as shown in @fig-pca-springs. 
+If we rotate the line to some initial position and release it, the springs will pull the line clockwise or counterclockwise and the line will bounce around until the forces, proportional to the squares of the lengths of the springs, will eventually balance out at the position 
+(shown by the `r colorize("red")` fixed line segments at the ends). This is the position that minimizes the
+the sum of squared lengths of the connecting springs, and also minimizes the kinetic energy in the system.
+
+If you look closely at @fig-pca-springs you will see something else: When the line is at its final position of minimum
+squared length and energy, the positions of the `r colorize("red")` points on this line are spread out furthest, i.e., have **maximum** variance. Conversely, when the line is at right angles to its final position (shown by the black line at 90$^o$) the projected points have the smallest possible variance.
+
+:::: {.content-visible when-format="html"}
+
+::: {#fig-pca-springs}
+<div align="center">
+<iframe width="412" height="364" src="images/pca-springs-cropped.gif"></iframe>
+</div>
+Animation of PCA fitted by springs. The `r colorize("blue")` data points are connected to their projections on the `r colorize("red")` line by springs perpendicular to that line. From an initial position, the springs pull that line in proportion to their squared distances, until the line finally settles down to the position where the forces are balanced and the minimum is achieved. _Source_: Amoeba, [https://bit.ly/46tAicu](https://bit.ly/46tAicu).
+
+:::
+::::
+
+:::: {.content-visible when-format="pdf"}
+
+```{r}
+#| label: fig-pca-springs
+#| echo: false
+#| out-width: "100%"
+#| fig-cap: "Three frames from an animation of PCA fitted by springs. The blue data points are connected to their projections on the red line by springs perpendicular to that line. From an initial position, the springs pull that line in proportion to their squared distances, until the line finally settles down to the position where the forces are balanced and the minimum is achieved. _Source_: Amoeba, [https://bit.ly/46tAicu](https://bit.ly/46tAicu)."
+knitr::include_graphics("images/pca-springs-frames.jpg")
+```
+<!--
+This doesn't work:
+#| fig-cap: !expr paste("Three frames from an animation of PCA fitted by springs. The", blue, "data points are connected to their projections on the", red, "line by springs perpendicular to that line. From an initial position, the springs pull that line in proportion to their squared distances, until the line finally settles down to the position where the forces are balanced and the minimum is achieved. _Source_: Amoeba, [https://bit.ly/46tAicu](https://bit.ly/46tAicu).")
+-->
+
+::::
+
+
+<!-- See: https://joshualoftus.com/posts/2020-11-23-least-squares-as-springs/least-squares-as-springs.html -->
+
+
+### Mathematics and geometry of PCA
+
+\ix{principal components analysis!geometry}
+
+As the ideas of principal components developed, there was a happy marriage of Galton's geometrical intuition and Pearson's mathematical analysis. The best men at the wedding were ellipses and
+higher-dimensional ellipsoids. The bridesmaids were eigenvectors, pointing in as many
+different directions as space would allow, each sized according to their associated eigenvalues.
+Attending the wedding were the ghosts of uncles, Leonhard Euler, Jean-Louis Lagrange,
+Augustin-Louis Cauchy and others who had earlier discovered the mathematical properties
+of ellipses and quadratic forms in relation to problems in physics.
+
+The key idea in the statistical application was that, for a set of variables $\mathbf{x}_1, \mathbf{x}_2, \dots, \mathbf{x}_p$,
+the $p \times p$ covariance matrix $\mathbf{S}$ could be expressed **exactly** as a matrix
+product involving a matrix $\mathbf{V}$, whose columns are _eigenvectors_ ($\mathbf{v}_i$) and a
+diagonal matrix $\boldsymbol{\Lambda}$, whose diagonal elements ($\lambda_i$) are the corresponding _eigenvalues_.
+
+To explain this, it is helpful to use a bit of matrix math:
+
+$$
+\begin{aligned}
+\mathbf{S}_{p \times p} & = \mathbf{V}_{p \times p} \phantom{0000000000} 
+                            \boldsymbol{\Lambda}_{p \times p} \phantom{00000000000000}
+                            \mathbf{V}_{p \times p}^\mathsf{T} \\
+           & = \left( \mathbf{v}_1, \, \mathbf{v}_2, \,\dots, \, \mathbf{v}_p \right)
+           \begin{pmatrix}
+             \lambda_1 &  &  & \\ 
+             & \lambda_2  &   & \\ 
+             &  & \ddots & \\ 
+             &  &  & \lambda_p 
+            \end{pmatrix}
+            \;
+            \begin{pmatrix}
+            \mathbf{v}_1^\mathsf{T}\\ 
+            \mathbf{v}_2^\mathsf{T}\\ 
+            \vdots\\ 
+            \mathbf{v}_p^\mathsf{T}\\ 
+            \end{pmatrix}
+           \\
+           & = \lambda_1 \mathbf{v}_1 \mathbf{v}_1^\mathsf{T} + \lambda_2 \mathbf{v}_2 \mathbf{v}_2^\mathsf{T} + \cdots + \lambda_p \mathbf{v}_p \mathbf{v}_p^\mathsf{T}
+\end{aligned}
+$${#eq-S-eigen}
+
+In this equation,
+
+1. The last line follows because $\boldsymbol{\Lambda}$ is a diagonal matrix, so $\mathbf{S}$ is expressed as a sum of outer products of each $\mathbf{v}_i$ with itself, times the eigenvalue $\lambda_i$. 
+
+2. The columns of $\mathbf{V}$ are the eigenvectors of $\mathbf{S}$. They are orthogonal
+and of unit length, so $\mathbf{V}^\mathsf{T} \mathbf{V} = \mathbf{I}$. Thus
+they represent orthogonal (uncorrelated) directions in data space. 
+
+3. The column $\mathbf{v}_i$ gives the weights applied to the variables to produce the scores on
+the $i$-th principal component \text{PC}_i$. For example, the first principal component is the weighted sum:
+
+$$
+\text{PC}_1 = v_{11} \mathbf{x}_1 + v_{12} \mathbf{x}_2 + \cdots + v_{1p} \mathbf{x}_p \period
+$$
+
+4. The matrix of _all_ scores on the principal components can be calculated by multiplying the data matrix $\mathbf{X}$ by the eigenvectors, $\mathbf{PC} = \mathbf{X} \mathbf{V}$.
+
+5. The eigenvalues, $\lambda_1, \lambda_2, \dots, \lambda_p$ are the variances of the the components, because
+$\mathbf{v}_i^\mathsf{T} \;\mathbf{S} \; \mathbf{v}_i = \lambda_i$.
+
+6. It is usually the case that the variables $\mathbf{x}_1, \mathbf{x}_2, \dots, \mathbf{x}_p$ are linearly
+independent, which means that none of these is an _exact_ linear combination of the others. In this case,
+all eigenvalues $\lambda_i$ are positive and the covariance matrix $\mathbf{S}$ is said to have **rank** $p$.
+(Rank is the number of non-zero eigenvalues.)
+
+7. Here is a key fact: If, as usual, the eigenvalues are arranged in order, so that $\lambda_1 > \lambda_2 > \dots > \lambda_p$, then the first $d$ components give a $d$-dimensional approximation to $\mathbf{S}$. This approximation accounts for $\Sigma_i^d \lambda_i$ of the $\Sigma_i^p \lambda_i$ total variance, and is usually interpreted as the proportion,
+$(\Sigma_i^d \lambda_i) / (\Sigma_i^p \lambda_i)$.
+
+For the case of two variables, $\mathbf{x}_1$ and $\mathbf{x}_2$ @fig-pca-rotation shows the
+transformation from data space to component space. The eigenvectors, $\mathbf{v}_1, \mathbf{v}_2$ 
+are the major and minor
+axes of the data ellipse, whose lengths are the square roots $\sqrt{\lambda_1}, \sqrt{\lambda_2}$
+of the eigenvalues.
+
+```{r}
+#| label: fig-pca-rotation
+#| out-width: "70%"
+#| echo: false
+#| fig-cap: "Geometry of PCA as a rotation from data space to principal component space, defined by the eigenvectors v1 and v2 of a covariance matrix"
+ knitr::include_graphics("images/pca-rotation.png")
+```
+
+<!-- #### Example: Workers' experience and income {#sec-workers-data-pca} -->
+
+::: {#exm-workers-pca}
+**Workers' experience and income**
+
+
+For a small example, consider the relation between years of experience and income in a small (contrived) sample 
+($n = 10$) of workers in a factory. The dataset `r dataset("workers")` contains these and other variables.
+In a wider context, we might want to fit a regression model to predict `Income`, but here we focus on
+a PCA of just these two variables.
+
+```{r workers-data}
+data(workers, package = "matlib") 
+head(workers)
+```
+
+
+Let's start with a simple scatterplot of `Income` vs. `Experience`, with points labeled by `Name`
+(and colored by `Gender`). There's a fairly strong correlation 
+($r$ = `r with(workers, cor(Income, Experience))`). How does a PCA capture this?
+
+<!-- fig.code: R/workers-pca.R -->
+
+```{r}
+#| label: fig-workers-scat
+#| out-width: "80%"
+#| fig-cap: "Scatterplot of Income vs. Experience for the `workers` data."
+vars <- c("Experience", "Income")
+plot(workers[, vars],
+     pch = 16, cex = 1.5,
+     cex.lab = 1.5)
+text(workers[, vars], 
+     labels = rownames(workers),
+     col = ifelse(workers$Gender == "Female", "red", "blue"),
+     pos = 3, xpd = TRUE)
+```
+
+To carry out a PCA of these variables, first calculate the vector of means ($\bar{\mathbf{x}}$) and covariance matrix $\mathbf{S}$.
+```{r workers-cov}
+mu <- colMeans(workers[, vars]) |> print()
+S <- cov(workers[, vars]) |> print()
+```
+
+The eigenvalues and eigenvectors of `S` are calculated by `eigen()`. This returns a list with components
+`values` for the $\lambda_i$ and `vectors` for $\mathbf{V}$.
+
+```{r workers-eigen}
+S.eig <- eigen(S)
+Lambda <- S.eig$values |> print()
+V <- S.eig$vectors |> print()
+```
+
+From this, you can verify the points above regarding the relations between variances of the variables and
+the eigenvalues:
+
+```{r workers-variances}
+#total variances of the variables = sum of eigenvalues
+sum(diag(S))
+sum(Lambda)
+
+# percent of variance of each PC
+100 * Lambda / sum(Lambda)
+```
+
+Using these, you can express the eigenvalue decomposition of $\mathbf{S}$ in @eq-S-eigen with
+`latexMatrix()` and `Eqn()` from the `r package("matlib", cite=TRUE)` as:
+
+<!-- This works in HTML, but not in PDF
+ERROR: 
+compilation failed- error
+Package amsmath Error: Erroneous nesting of equation structures;
+(amsmath)                trying to recover with `aligned'.
+--> 
+
+```{r eval=FALSE}
+options(digits = 3)
+rownames(S) <- colnames(S) <- c("\\small \\text{Exp}", 
+                                "\\small \\text{Inc}")
+spacer <- "\\phantom{00000000000000}"
+Eqn("\\mathbf{S} & = \\mathbf{V}", spacer,
+    "\\mathbf{\\Lambda}", spacer,  
+    "\\mathbf{V}^\\top", Eqn_newline(),
+    latexMatrix(S), "& =", 
+    latexMatrix(V), "  ", diag(Lambda), "  ", latexMatrix(V, transpose=TRUE),
+    align = TRUE)
+```
+
+<!-- Phil's version:
+Eqn("\\mathbf{S} & = & \\mathbf{V} & &\\mathbf{\\Lambda} & &\\mathbf{V}^\\top", Eqn_newline(),
+    latexMatrix(S), "& = & ", latexMatrix(V), "& &", diag(Lambda), "& &", latexMatrix(V, transpose=TRUE),
+    align = TRUE)
+-->
+
+\begin{align*}
+\mathbf{S} & = \mathbf{V} \phantom{00000000000000} 
+     \boldsymbol{\Lambda} \phantom{00000000000000}  
+     \mathbf{V}^\top \\ 
+\begin{matrix}
+  &  \begin{matrix} \phantom{i} Exp & Inc
+  \end{matrix} \\ 
+ \begin{matrix}  
+   Exp\\ 
+   Inc\\ 
+\end{matrix}  & 
+\begin{pmatrix}  
+136 & 152 \\ 
+152 & 234 \\ 
+\end{pmatrix}
+\\ 
+\end{matrix} 
+& =\begin{pmatrix} 
+ 0.589 & -0.808 \\ 
+ 0.808 &  0.589 \\ 
+\end{pmatrix}
+  \begin{pmatrix} 
+344.3 &   0.0 \\ 
+  0.0 &  25.1 \\ 
+\end{pmatrix}
+  \begin{pmatrix} 
+ 0.589 & -0.808 \\ 
+ 0.808 &  0.589 \\ 
+\end{pmatrix}^\top
+\end{align*}
+
+
+The "scores" on the principal components can be calculated (point (5) above) as $\mathbf{PC} = \mathbf{X} \mathbf{V}$:
+
+```{r}
+PC <- as.matrix(workers[, vars]) %*% V
+colnames(PC) <- paste0("PC", 1:2)
+head(PC)
+```
+
+Then, you can visualize the geometry of PCA as in @fig-pca-rotation (left)
+by plotting the data ellipse for the points, along with the 
+PCA axes (`heplots::ellipse.axes()`). @fig-workers-pca also shows the 
+bounding box of the data ellipse, which are parallel to the PC axes
+and scaled to have the same "radius" as the data ellipse.
+
+<!-- Nasty conflict loading `spida2`: labs() conflicts with ggplot2 -->
+
+```{r echo=-1}
+#| label: fig-workers-pca
+#| code-fold: show
+#| out-width: 80%
+#| fig-cap: "Geometry of the PCA for the `workers` data, showing the data ellipse, the
+#|    eigenvectors of $\\mathbf{S}$, whose half-lengths are the square roots $\\sqrt{\\lambda_i}$ of the eigenvalues,
+#|    and the bounding box of the ellipse."
+op <- par(mar = c(4, 4, 0, 0) + 0.1)
+# calculate conjugate axes for PCA factorization
+pca.fac <- function(x) {
+  xx <- svd(x)
+  ret <- t(xx$v) * sqrt(pmax( xx$d,0))
+  ret
+}
+
+dataEllipse(Income ~ Experience, data=workers,
+    pch = 16, cex = 1.5, 
+    center.pch = "+", center.cex = 2,
+    cex.lab = 1.5,
+    levels = 0.68,
+    grid = FALSE,
+    xlim = c(-10, 40),
+    ylim = c(10, 80),
+    asp = 1)
+abline(h = mu[2], v = mu[1], 
+       lty = 2, col = "grey")
+
+# axes of the ellipse = PC1, PC2
+radius <- sqrt(2 * qf(0.68, 2, nrow(workers)-1 ))
+heplots::ellipse.axes(S, mu, 
+     radius = radius,
+     labels = TRUE,
+     col = "red", lwd = 2,
+     cex = 1.8)
+
+# bounding box of the ellipse
+lines(spida2::ellplus(mu, S, radius = radius,
+              box = TRUE, fac = pca.fac),
+      col = "darkgreen",
+      lwd = 2, lty="longdash")
+```
+
+Finally, to preview the methods of the next section, the results calculated "by hand" above can be obtained using
+`prcomp()`. The values labeled `"Standard deviations"` are the square roots $\sqrt{\lambda}_i$ of the two
+eigenvalues. The eigenvectors are labeled `"Rotation"` because $\mathbf{V}$ is the matrix that rotates the
+data matrix to produce the component scores.
+
+```{r workers-prcomp}
+workers.pca <- prcomp(workers[, vars]) |> 
+  print()
+```
+
+:::
+
+### Finding principal components
+
+In R, PCA is most easily carried out using `stats::prcomp()` or `stats::princomp()`
+or similar functions in other packages such as `FactomineR::PCA()`.
+The `r pkg("FactoMineR")` package [@R-FactoMineR; @Husson-etal-2017] 
+has extensive capabilities for exploratory analysis of multivariate data (PCA, correspondence analysis, cluster analysis).  
+
+A particular strength of FactoMineR
+for PCA is that it allows the inclusion of _supplementary variables_ (which can be categorical
+or quantitative) and _supplementary points_ for individuals. These are not used in the analysis,
+but are projected into the plots to facilitate interpretation. For example, in the analysis of
+the `crime` data described below, it would be useful to have measures of other characteristics
+of the U.S. states, such as poverty and average level of education (@sec-supp-vars).
+
+Unfortunately, although all of these functions perform similar calculations, the options for
+analysis and the details of the result they return differ.
+
+The important options for analysis include: 
+
+* whether or not the data variables are **centered**, to a mean of $\bar{x}_j =0$
+* whether or not the data variables are **scaled**, to a variance of $\text{Var}(x_j) =1$.
+
+It nearly always makes sense to center and scale the variables. This choice of
+scaling determines whether the correlation matrix is analyzed, so that
+each variable contributes _equally_ to the total variance that is to be accounted for.
+The unscaled choice analyzes the covariance matrix, where each variable contributes its
+_own variance_ to the total. Analysis of the covariance matrix makes little sense
+when the variables are measured in different units[^pca-scales], unless you want to
+interpret total variance on the scales of the different variables.
+
+[^pca-scales]: For example, if two variables in the analysis are height and weight, changing the unit of height from inches to centimeters would multiply its variance by $2.54^2$; changing weight from pounds to kilograms would divide its variance by $2.2^2$.
+
+You don't need to scale your data in advance, but be aware of the options:
+`prcomp()` has default options `center = TRUE, scale. = FALSE`[^prcomp-scale]
+so in most cases you should specify `scale. = TRUE`.
+I mostly use this.
+The older `princomp()` has only the option `cor = FALSE` which centers the data and uses the covariance matrix, so
+in most cases you should set `cor = TRUE`. 
+
+[^prcomp-scale]: The unfortunate default `scale. = FALSE` was for consistency with S, the precursor to R 
+but in general scaling is usually advisable.
+
+To illustrate, the analysis of the `workers` data presented above used `scale. = FALSE` by default, so 
+the eigenvalues reflected the variances of Experience and Income. The analogous result, using standardized
+variables ($z$-scores) can be computed in any of the forms shown below, using either `scale. = FALSE`
+or standardizing first using `scale()`:
+
+```{r workers-pca-std}
+prcomp(workers[, vars], scale. = TRUE)
+
+# same as (output suppressed):
+workers[, vars] |> prcomp(scale. = TRUE) |> invisible()
+workers[, vars] |> scale() |> prcomp() |> invisible()
+```
+
+
+In this form, each of Experience and Income have variance = 1, and the `"Standard deviations"` reported
+are the square roots ($\sqrt{\lambda}_i$) of the eigenvalues $\lambda_i$ of the correlation matrix $\mathbf{R}$.
+The eigenvalues of a correlation matrix always sum to $p$, the number of variables.
+This fact prompted the rough _rule of thumb_ to extract principal components whose eigenvalues exceed 1.0,
+which is their average value, $\bar{\lambda} = (\Sigma^p \lambda_i) / p = p / p$.
+
+
+```{r}
+prcomp(workers[, vars], scale. = TRUE)$sdev
+
+# eiven values of correlation matrix
+R <- cor(workers[, vars])
+R.eig <- eigen(R)
+Lambda <- R.eig$values |> print()
+sum(Lambda)
+```
+
+
+#### Example: Crime data {.unnumbered}
+
+The dataset `crime`, analysed in @sec-corrgram, showed all positive correlations among the rates of various
+crimes in the corrgram, @fig-crime-corrplot. What can we see from a PCA?
+Is it possible that a few dimensions can account for most of the juice in this data?
+
+In this example, you can easily find the PCA solution using `prcomp()` in a single line in base-R.
+You need to specify the numeric variables to analyze by their columns in the data frame.
+The most important option here is `scale. = TRUE`.
+
+```{r crime-pca0}
+#| eval: false
+data(crime, package = "ggbiplot")
+crime.pca <- prcomp(crime[, 2:8], scale. = TRUE)
+```
+
+The tidy equivalent is more verbose, but also more expressive about what is being done.
+It selects the variables to analyze by a function, `is.numeric()` applied to each of the columns and feeds
+the result to `prcomp()`.
+```{r crime-pca}
+crime.pca <- 
+  crime |> 
+  dplyr::select(where(is.numeric)) |>
+  prcomp(scale. = TRUE)
+```
+
+As is typical with models in R, the result, `crime.pca` of `prcomp()` is an object of class `"prcomp"`,
+a list of components, and there are a variety of methods for `"prcomp"` objects. Among the simplest
+is `summary()`, which gives the contributions of each component to the total variance in the dataset.
+
+```{r crime-pca-summary}
+summary(crime.pca) |> print(digits=2)
+```
+
+The object, `crime.pca` returned by `prcomp()` is a list of the following the following elements:
+```{r crime-pca-components}
+names(crime.pca)
+```
+
+Of these, for $n$ observations and $p$ variables,
+
+* `sdev` is the length $p$ vector of the standard deviations of the principal components (i.e., the square roots $\sqrt{\lambda_i}$ of the eigenvalues of the covariance/correlation matrix). When the variables are standardized,
+the sum of squares of the eigenvalues is equal to $p$.
+* `rotation` is the $p \times p$ matrix of weights or **loadings** of the variables on the components; the columns are the eigenvectors of the covariance or correlation matrix of the data;
+* `x` is the $n \times p$ matrix of **scores** for the observations on the components, the result of multiplying (rotating) the data matrix by the loadings. These are uncorrelated, so `cov(x)` is a $p \times p$ diagonal matrix whose diagonal elements are the eigenvalues $\lambda_i$ = `sdev^2`.
+* `center` gives the means of the variables when the option `center. = TRUE` (the default)
+
+### Visualizing variance proportions: screeplots
+
+For a high-D dataset, such as the crime data in seven dimensions, a natural question is how much of the
+variation in the data can be captured in 1D, 2D, 3D, ... summaries and views. This is answered by
+considering the proportions of variance accounted by each of the dimensions, or their cumulative values.
+The components returned by various PCA methods have (confusingly) different names, so
+`broom::tidy()` provides methods to unify extraction of these values.
+
+```{r crime-pca-tidy}
+(crime.eig <- crime.pca |> 
+  broom::tidy(matrix = "eigenvalues"))
+```
+
+Then, a simple visualization is a plot of the proportion of variance for each component (or cumulative proportion)
+against the component number, usually called a **screeplot**. The idea, introduced by @Cattell1966, is that
+after the largest, dominant components, the remainder should resemble the rubble, or scree formed by rocks falling
+from a cliff. 
+
+From this plot, imagine
+drawing a straight line through the plotted eigenvalues, starting with the largest one. The typical rough guidance is that the last point to fall on this line represents the last component to extract, the idea being that beyond this, the amount of additional variance explained is non-meaningful. Another rule of thumb is to choose the number
+of components to extract a desired proportion of total variance, usually in the range of 80 - 90%.
+
+`stats::plot(crime.pca)` would give a bar plot of the variances of the components, however `ggbiplot::ggscreeplot()` gives nicer and more flexible displays as shown in @fig-crime-ggscreeplot.
+
+```{r}
+#| label: fig-crime-ggscreeplot
+#| fig-height: 4
+#| out-width: "80%"
+#| fig-cap: "Screeplots for the PCA of the crime data. The left panel shows the traditional version, plotting variance proportions against component number, with linear guideline for the scree rule of thumb. The right panel plots cumulative proportions, showing cutoffs of 80%, 90%."
+p1 <- ggscreeplot(crime.pca) +
+  stat_smooth(data = crime.eig |> filter(PC>=4), 
+              aes(x=PC, y=percent), method = "lm", 
+              se = FALSE,
+              fullrange = TRUE) +
+  theme_bw(base_size = 14)
+
+p2 <- ggscreeplot(crime.pca, type = "cev") +
+  geom_hline(yintercept = c(0.8, 0.9), color = "blue") +
+  theme_bw(base_size = 14)
+
+p1 + p2
+```
+
+From this we might conclude that four components are necessary to satisfy the scree criterion or to
+account for 90% of the total variation in these crime statistics. However two components, giving
+76.5%, might be enough juice to tell a reasonable story.
+
+### Visualizing PCA scores and variable vectors
+
+To see and attempt to understand PCA results, it is useful to plot both the scores for the observations
+on a few of the largest components and also the loadings or variable vectors that give the weights
+for the variables in determining the principal components.
+
+In @sec-biplot I discuss the biplot technique that plots both in a single display. However,
+I do this directly here, using tidy processing to explain what is going on in PCA
+and in these graphical displays.
+
+#### Scores {.unnumbered}
+
+The (uncorrelated) principal component scores can be extracted as `crime.pca$x` or using `purrr::pluck("x")`. As noted above, these are uncorrelated and have variances
+equal to the eigenvalues of the correlation matrix.
+
+```{r scores}
+scores <- crime.pca |> purrr::pluck("x") 
+cov(scores) |> zapsmall()
+```
+
+For plotting, it is more convenient to use `broom::augment()` which 
+extracts the scores (named `.fittedPC*`)
+and appends these to the variables in the dataset.
+
+```{r}
+crime.pca |>
+  broom::augment(crime) |> head()
+```
+
+Then, we can use `ggplot()` to plot any pair of components.
+To aid interpretation, I label the points by their state abbreviation and color them
+by `region` of the U.S.. A geometric interpretation of the plot requires 
+an aspect ratio of 1.0 (via `coord_fixed()`)
+so that a unit distance on the horizontal axis is the
+same length as a unit distance on the vertical.
+To demonstrate that the components are uncorrelated, I also added their data
+ellipse.
+
+```{r}
+#| label: fig-crime-scores-plot12
+#| out-width: "90%"
+#| fig-cap: "Plot of component scores on the first two principal components for the `crime` data. States are colored by `region`."
+crime.pca |>
+  broom::augment(crime) |> # add original dataset back in
+  ggplot(aes(.fittedPC1, .fittedPC2, color = region)) + 
+  geom_hline(yintercept = 0) +
+  geom_vline(xintercept = 0) +
+  geom_point(size = 1.5) +
+  geom_text(aes(label = st), nudge_x = 0.2) +
+  stat_ellipse(color = "grey") +
+  coord_fixed(ylim = c(-3,3), ratio = 1) +
+  scale_color_brewer(palette = "Dark2") +
+  labs(x = "PC Dimension 1", y = "PC Dimension 2") +
+  theme_minimal(base_size = 14) +
+  theme(legend.position = "top") 
+```
+
+To interpret such plots, it is useful consider the observations that are a high
+and low on each of the axes as well as other information, such as region here,
+and ask how these differ on the crime statistics.
+The first component, PC1, contrasts Nevada and California with North Dakota, South Dakota
+and West Virginia. The second component has most of the southern states on the low end
+and Massachusetts, Rhode Island and Hawaii on the high end. However, interpretation is
+easier when we also consider how the various crimes contribute to these dimensions.
+
+When, as here, there
+are more than two components that seem important in the scree plot,
+we could obviously go further and plot other pairs.
+
+#### Variable vectors {.unnumbered}
+
+You can extract the variable loadings using either `crime.pca$rotation` or
+`purrr::pluck("rotation")`, similar to what I did with the scores.
+
+```{r rotation}
+crime.pca |> purrr::pluck("rotation")
+```
+
+But note something important in this output: All of the weights for the first component are negative. In PCA, the directions of the eigenvectors are completely arbitrary, in the sense that the vector $-\mathbf{v}_i$ gives the same linear combination as $\mathbf{v}_i$,
+but with its' sign reversed. For interpretation, it is useful (and usually recommended) to reflect the loadings to a positive orientation by multiplying them by -1. In general, you are free to reflect any of the components
+for ease of interpretation, and not necessarily if all the signs are negative.
+
+To reflect the PCA loadings (multiplying PC1 and PC2 by -1) and get them into a convenient format for plotting with `ggplot()`, it is necessary to do a bit of processing, including making the `row.names()` into an explicit variable for the purpose of labeling.
+
+<!-- **TODO**: Should this be a callout-warning or a footnote?? -->
+
+::: {.callout-warning title="`rownames` in R"}
+R software evolved over many years, particularly in conventions for labeling cases in printed output and graphics.  In base-R, the convention was that the `row.names()` of a matrix or data.frame served as observation labels in all printed output and plots, with a default to use numbers `1:n` if there were no rownames. 
+
+In `ggplot2` and the `tidyverse` framework, the decision was made that observation labels had to be an **explicit** variable in a "tidy" dataset, so it could be used as a variable in constructs like 
+`geom_text(aes(label = label))` as in this example. This change often requires extra steps in pre-tidy software that uses the rownames convention.
+:::
+
+```{r vectors}
+vectors <- crime.pca |> 
+  purrr::pluck("rotation") |>
+  as.data.frame() |>
+  mutate(PC1 = -1 * PC1, PC2 = -1 * PC2) |>      # reflect axes
+  tibble::rownames_to_column(var = "label") 
+
+vectors[, 1:3]
+```
+
+Then, I plot these using `geom_segment()`, taking some care to use arrows
+from the origin with a nice shape and add `geom_text()` labels for the variables positioned slightly to the right. Again, `coord_fixed()` ensures equal scales for the axes, which is important because we want to interpret the angles between the variable vectors and the 
+PCA coordinate axes.
+
+```{r}
+#| label: fig-crime-vectors
+#| fig-height: 8
+#| fig-width: 8
+#| out-width: "70%"
+#| fig-cap: "Plot of component loadings the first two principal components for the `crime` data. These are interpreted as the contributions of the variables to the components."
+arrow_style <- arrow(
+  angle = 20, ends = "first", type = "closed", 
+  length = grid::unit(8, "pt")
+)
+
+vectors |>
+  ggplot(aes(PC1, PC2)) +
+  geom_hline(yintercept = 0) +
+  geom_vline(xintercept = 0) +
+  geom_segment(xend = 0, yend = 0, 
+               linewidth = 1, 
+               arrow = arrow_style,
+               color = "brown") +
+  geom_text(aes(label = label), 
+            size = 5,
+            hjust = "outward",
+            nudge_x = 0.05, 
+            color = "brown") +
+  ggforce::geom_circle(aes(x0 = 0, y0 = 0, r = 0.5),  color = gray(.50)) +
+  xlim(-0.5, 0.9) + 
+  ylim(-0.8, 0.8) +
+  coord_fixed() +         # fix aspect ratio to 1:1
+  theme_minimal(base_size = 14)
+```
+
+The variable vectors (arrows) shown in @fig-crime-vectors have the following interpretations:
+
+
+1. The lengths of the variable vectors, $\lVert\mathbf{v}_i\rVert = \sqrt{\Sigma_{j} \; v_{ij}^2}$ give the relative proportion of variance of each variable accounted for in a two-dimensional display.
+
+2. Each vector points in the direction in component space with which that variable is most highly correlated:
+the value, $v_{ij}$, of the vector for variable $\mathbf{x}_i$ on component $j$ reflects
+the correlation of that variable with the $j$th principal component. Thus,
+
+  * A variable that is perfectly correlated with a component is parallel to it.
+  * A variable uncorrelated with an component is perpendicular to it.
+
+3. The angle between vectors shows the strength and direction of the correlation between those variables:
+the cosine of the angle $\theta$ between two variable vectors, $\mathbf{v}_i$ and $\mathbf{v}_j$, which is
+$\cos(\theta) = \mathbf{v}_i^\prime \; \mathbf{v}_j \;/ \; \| \mathbf{v}_i \| \cdot \| \mathbf{v}_j \|$ 
+gives the approximation of the correlation $r_{ij}$ between $\mathbf{x}_i$ and $\mathbf{x}_j$
+that is shown in this space. This means that: 
+
+  * two variable vectors that point in the same direction are highly correlated; $r = 1$ if they are completely aligned.
+  * Variable vectors at right angles are approximately uncorrelated, while those
+pointing in opposite directions are negatively correlated; $r = -1$ if they are at 180$^o$.
+
+To illustrate point (1), the following indicates that almost 70% of the variance of
+`murder` is represented in the the 2D plot shown in @fig-crime-scores-plot12, but only
+40% of the variance of `robbery` is captured. For point (2), the correlation of `murder`
+with the dimensions is 0.3 for PC1 and 0.63 for PC2. For point (3), the angle between
+`murder` and `burglary` looks to be about 90$^o$, but the actual correlation is 0.39.
+
+<!-- •	Each vector corresponds to a variable, and points in the direction in which that variable is most strongly linearly correlated. -->
+<!-- •	Variables that are perfectly correlated with an axis are parallel to it. -->
+<!-- •	Variables that are uncorrelated with an axis are perpendicular to it. -->
+<!-- •	Each vector can be thought of as the hypotenuse of a triangle with sides along the two axes of the graph.  The length of these sides is proportional to the loading for that variable with those PCs. -->
+<!-- •	The angle between vectors shows the strength and direction of the correlation between those variables.  You should be able to find examples of each of these cases in the above biplot:  -->
+<!-- o	Vectors that are very close to one another represent variables that are strongly positively correlated -->
+<!-- o	Vectors that are perpendicular represent variables that are uncorrelated -->
+<!-- o	Vectors that point in opposite directions represent variables that are strongly negatively correlated -->
+
+```{r}
+vectors |> select(label, PC1, PC2) |> 
+  mutate(length = sqrt(PC1^2 + PC2^2))
+```
+
+\ixoff{principal components analysis}
+
+
+
+## Biplots {#sec-biplot}
+
+\ixon{biplot}
+
+The biplot is a visual multivariate juicer. It is the
+simple and powerful idea that came from the recognition that
+you can overlay a plot of observation scores in a principal components analysis
+with the information of the variable loadings (weights) to give a simultaneous display
+that is easy to interpret. In this sense, a biplot is generalization of a scatterplot,
+projecting from data space to PCA space, where the observations are shown by points, as in the plots of
+component scores in @fig-crime-scores-plot12, but with the 
+variables also shown by vectors (or scaled linear axes aligned with those vectors).
+
+The idea of the biplot was introduced by Ruben Gabriel [-@Gabriel:71;-@Gabriel:81] and later expanded in scope by @GowerHand:96. The book by @Greenacre:2010:biplots gives a practical overview
+of the many variety of biplots. @Gower-etal:2011 _Understanding biplots_ provides a full treatment of many topics, including how to calibrate biplot axes, 3D plots, and so forth.
+
+Biplot methodolgy is far more general than I cover here. Categorical variables can be incorporated in PCA
+using points that represent the levels of discrete categories. 
+Two-way frequency tables of categorical variables
+can be analysed using _correspondence analysis_, which is similar to
+PCA, but designed to account for the maximum amount of the $\chi^2$ statistic
+for association; _multiple correspondence analysis_ extends this to
+method to multi-way tables [@FriendlyMeyer:2016:DDAR;@Greenacre:84].
+
+
+
+### Constructing a biplot {#sec-biplot-svd}
+
+The biplot is constructed by using the singular value decomposition (SVD) to obtain a low-rank approximation to the data matrix $\mathbf{X}_{n \times p}$ (centered, and optionally scaled to unit variances)
+whose $n$ rows are the observations and whose $p$ columns are the variables. 
+
+\ix{singular value decomposition}
+\ix{SVD|see{singular value decomposition}}
+
+```{r}
+#| label: fig-svd-diagram
+#| echo: false
+#| out-width: "75%"
+#| fig-cap: "The singular value decomposition expresses a data matrix **X** as the product of a matrix **U** of observation scores, a diagonal matrix $\\Lambda$ of singular values and a matrix **V** of variable weights."
+knitr::include_graphics("images/SVD.png")
+```
+
+Using the SVD, the matrix $\mathbf{X}$, of rank $r \le p$
+can be expressed _exactly_ as:
+
+$$
+\mathbf{X} = \mathbf{U} \boldsymbol{\Lambda} \mathbf{V}'
+                 = \sum_i^r \lambda_i \mathbf{u}_i \mathbf{v}_i' \; ,
+$$ {#eq-svd1}        
+
+where
+
+* $\mathbf{U}$ is an $n \times r$ orthonormal matrix of uncorrelated observation scores; these are also the eigenvectors of $\mathbf{X} \mathbf{X}'$,
+* $\boldsymbol{\Lambda}$ is an $r \times r$ diagonal matrix of singular values, 
+         $\lambda_1 \ge \lambda_2 \ge \cdots \lambda_r$, which are also the square roots
+         of the eigenvalues of $\mathbf{X} \mathbf{X}'$. 
+* $\mathbf{V}$ is an $r \times p$ orthonormal matrix of variable weights and also the 
+         eigenvectors of $\mathbf{X}' \mathbf{X}$.
+
+Then, a rank 2 (or 3) PCA approximation $\widehat{\mathbf{X}}$ to the data matrix used in the biplot can be obtained from the first 2 (or 3)
+singular values $\lambda_i$ and the corresponding $\mathbf{u}_i, \mathbf{v}_i$ as:
+
+$$
+\mathbf{X} \approx \widehat{\mathbf{X}} = \lambda_1 \mathbf{u}_1 \mathbf{v}_1' + \lambda_2 \mathbf{u}_2 \mathbf{v}_2' \; .
+$$
+
+The variance of $\mathbf{X}$ accounted for by each term is $\lambda_i^2$.
+
+A biplot is then obtained by overlaying two scatterplots that share a common set of axes and have a between-set scalar 
+product interpretation. Typically, the observations (rows of $\mathbf{X}$) are represented as points
+and the variables (columns of $\mathbf{X}$) are represented as vectors from the origin.
+
+The `scale` factor, $\alpha$ allows the variances of the components to be apportioned between the
+row points and column vectors, with different interpretations, by representing the approximation
+$\widehat{\mathbf{X}}$ as the product of two matrices,
+
+$$
+\widehat{\mathbf{X}} = (\mathbf{U} \boldsymbol{\Lambda}^\alpha) (\boldsymbol{\Lambda}^{1-\alpha} \mathbf{V}') = \mathbf{A} \mathbf{B}'
+$$
+
+This notation uses a little math trick involving a power, $0 \le \alpha \le 1$:
+When $\alpha = 1$, $\boldsymbol{\Lambda}^\alpha = \boldsymbol{\Lambda}^1  =\boldsymbol{\Lambda}$,
+and $\boldsymbol{\Lambda}^{1-\alpha} = \boldsymbol{\Lambda}^0  =\mathbf{I}$.
+$\alpha = 1/2$ gives the diagonal matrix $\boldsymbol{\Lambda}^{1/2}$ whose elements are the square roots of the singular values.
+
+The choice $\alpha = 1$ assigns the singular values totally to the left factor;
+then, the angle between two variable vectors, reflecting the inner product 
+$\mathbf{x}_j^\mathsf{T}, \mathbf{x}_{j'}$ approximates their correlation or covariance,
+and the distance between the points approximates their Mahalanobis distances.
+$\alpha = 0$ gives a distance interpretation to the column display.
+$\alpha = 1/2$ gives a symmetrically scaled biplot.
+**TODO**: Explain this better.
+
+When the singular values are assigned totally to the left or to the right factor, the resultant 
+coordinates are called _principal coordinates_ and the sum of squared coordinates
+on each dimension equal the corresponding singular value.
+The other matrix, to which no part of the singular 
+values is assigned, contains the so-called _standard coordinates_ and have sum of squared
+values equal to 1.0. 
+
+
+
+### Biplots in R
+
+There are a large number of R packages providing biplots. The most basic, `stats::biplot()`, provides methods for `"prcomp"` and `"princomp"` objects. Among other packages, `r pkg("factoextra", cite=TRUE)`, an extension of `r pkg("FactoMineR", cite=TRUE)`,
+is perhaps the most comprehensive and provides `ggplot2` graphics.
+In addition to biplot methods for
+quantitative data using PCA (`fviz_pca()`), it offers biplots for categorical data using correspondence analysis
+(`fviz_ca()`) and multiple correspondence analysis (`fviz_mca()`); factor analysis with mixed quantitative and categorical variables (`fviz_famd()`) and cluster analysis (`fviz_cluster()`).
+The `r package("adegraphics", cite=TRUE)` produces lovely biplots using `r pkg("lattice")` graphics, but with its own analytic framework.
+
+
+Here, I use the `r package("ggbiplot", cite=TRUE)`,
+which aims to provide a simple interface to biplots within the `ggplot2` framework. I also use some convenient utility functions from `r pkg("factoextra")`.
+
+### Example: Crime data
+
+A basic biplot of the `crime` data, using standardized principal components and labeling the observation by their state abbreviation is shown in @fig-crime-biplot1.
+The correlation circle reflects the data ellipse of the standardized components. This reminds us that
+these components are uncorrelated and have equal variance in the display.
+
+<!-- fig.code: R/crime/crime-ggbiplot.R -->
+
+```{r}
+#| label: fig-crime-biplot1
+#| out-width: "70%"
+#| fig-cap: "Basic biplot of the crime data. State abbreviations are shown at their standardized scores on the first two dimensions. The variable vectors reflect the correlations of the variables with the biplot dimensions."
+crime.pca <- reflect(crime.pca) # reflect the axes
+
+ggbiplot(crime.pca,
+   obs.scale = 1, var.scale = 1,
+   labels = crime$st ,
+   circle = TRUE,
+   varname.size = 4,
+   varname.color = "brown") +
+  theme_minimal(base_size = 14) 
+```
+
+In this dataset the states are grouped by region and we saw some differences among regions in the plot (@fig-crime-scores-plot12) of component scores.
+`ggbiplot()` provides options to include a `groups =` variable, used to
+color the observation points and also to draw their data ellipses, facilitating interpretation.
+
+```{r}
+#| label: fig-crime-biplot2
+#| out-width: "80%"
+#| fig-cap: "Enhanced biplot of the crime data, grouping the states by region and adding data ellipses."
+ggbiplot(crime.pca,
+   obs.scale = 1, var.scale = 1,
+   groups = crime$region,
+   labels = crime$st,
+   labels.size = 4,
+   var.factor = 1.4,
+   ellipse = TRUE, 
+   ellipse.prob = 0.5, ellipse.alpha = 0.1,
+   circle = TRUE,
+   varname.size = 4,
+   varname.color = "black",
+   clip = "off") +
+  labs(fill = "Region", color = "Region") +
+  theme_minimal(base_size = 14) +
+  theme(legend.direction = 'horizontal', legend.position = 'top')
+```
+
+This plot provides what is necessary to interpret the nature of the components and also the variation of the states in relation to these. In this, the data ellipses for the regions
+provide a visual summary that aids interpretation.
+
+* From the variable vectors, it seems that PC1, having all positive and nearly equal loadings, reflects a total or overall index of crimes. Nevada, California, New York and Florida are highest on this, while North Dakota, South Dakota and West Virginia are lowest.
+
+* The second component, PC2, shows a contrast between crimes against persons (murder, assault, rape) at the top and property crimes (auto theft, larceny) at the bottom. Nearly all the Southern states are high on personal crimes; states in the North East are generally higher
+on property crimes.
+
+* Western states tend to be somewhat higher on overall crime rate, while North Central are lower on average. In these states there is not much variation in the relative proportions of personal vs. property crimes.
+
+Moreover, in this biplot you can interpret the the value for a particular state on a given crime by considering its projection on the variable vector, where the origin corresponds to the mean, positions along the vector have greater than average values on that crime, and the opposite direction have lower than average values. For example, Massachusetts has the highest value on auto theft, but a value less than the mean. Louisiana and South Carolina on the other hand are highest in the rate of murder and slightly less than average on auto theft.
+
+These 2D plots account for only 76.5% of the total variance of crimes, so it is useful to also examine the third principal component, which accounts for an additional 10.4%.
+The `choices =` option controls which dimensions are plotted.
+
+```{r}
+#| label: fig-crime-biplot3
+#| out-width: "80%"
+#| fig-cap: "Biplot of dimensions 1 & 3 of the crime data, with data ellipses for the regions."
+ggbiplot(crime.pca,
+         choices = c(1,3),
+         obs.scale = 1, var.scale = 1,
+         groups = crime$region,
+         labels = crime$st,
+         labels.size = 4,
+         var.factor = 2,
+         ellipse = TRUE, 
+         ellipse.prob = 0.5, ellipse.alpha = 0.1,
+         circle = TRUE,
+         varname.size = 4,
+         varname.color = "black",
+         clip = "off") +
+  labs(fill = "Region", color = "Region") +
+  theme_minimal(base_size = 14) +
+  theme(legend.direction = 'horizontal', legend.position = 'top')
+```
+
+Dimension 3 in @fig-crime-biplot3 is more subtle. One interpretation is a contrast between
+larceny, which is a larceny (simple theft) and robbery, which involves stealing something from a person
+and is considered a more serious crime with an element of possible violence.
+In this plot, murder has a relatively short variable vector, so does not contribute
+very much to differences among the states.
+
+### Biplot contributions and quality
+
+To better understand how much each variable contributes to the biplot dimensions,
+it is helpful to see information about the variance of variables along each dimension.
+Graphically, this is nothing more than a measure of the lengths of projections
+of the variables on each of the dimensions.
+`factoextra::get_pca_var()` calculates a number of tables from a `"prcomp"` or similar object.
+
+```{r var-info}
+var_info <- factoextra::get_pca_var(crime.pca)
+names(var_info)
+```
+
+The component `cor` gives correlations of the variables with the dimensions and
+`contrib` gives their variance contributions as percents, where each row and column sums to 100.
+
+```{r contrib}
+contrib <- var_info$contrib
+cbind(contrib, Total = rowSums(contrib)) |>
+  rbind(Total = c(colSums(contrib), NA)) |> 
+  round(digits=2)
+```
+
+
+These contributions can be visualized as sorted barcharts for a given axis
+using `factoextra::fviz_contrib()`. The dashed horizontal lines are at the average value for each dimension.
+
+```{r}
+#| label: fig-fviz-contrib
+#| out-width: "80%"
+#| fig-cap: "Contributions of the crime variables to dimensions 1 (left) & 2 (right) of the PCA solution. The dashed horizontal lines show the average contribution for each dimension."
+p1 <- fviz_contrib(crime.pca, choice = "var", axes = 1,
+                   fill = "lightgreen", color = "black")
+p2 <- fviz_contrib(crime.pca, choice = "var", axes = 2,
+                   fill = "lightgreen", color = "black")
+p1 + p2
+```
+
+ A simple rubric for interpreting the dimensions in terms of the variable contributions is to mention those that
+are largest or above average on each dimension. So, burglary and rape contribute most to the first dimension, while murder and auto theft contribute most to the second.
+
+Another useful measure is called `cos2`, the _quality_ of representation, meaning how much of a variable is represented in a given component. The columns sum to the eigenvalue for each dimension. 
+The rows each sum to 1.0, meaning each variable is completely
+represented on all components, but we can find the quality of a $k$-D solution by summing the values in the
+first $k$ columns.
+These can be plotted
+in a style similar to @fig-fviz-contrib using `factoextra::fviz_cos2()`.
+
+```{r quality}
+quality <- var_info$cos2
+rowSums(quality)
+
+colSums(quality)
+
+cbind(quality[, 1:2], 
+      Total = rowSums(quality[, 1:2])) |>
+  round(digits = 2)
+```
+
+In two dimensions, murder and burglary are best represented; robbery and larceny are the worst, but as
+we saw above (@fig-crime-biplot3), these crimes are implicated in the third dimension.
+
+### Supplementary variables {#sec-supp-vars}
+
+An important feature of biplot methodology is that once you have a reduced-rank display of the
+relations among a set of variables, you can use _other available data_ to help interpret what
+is shown in the biplot. In a sense, this is what I did above in @fig-crime-biplot2 and @fig-crime-biplot3
+using `region` as a grouping variable and summarizing the variability in the scores for states with their data ellipses by region. 
+
+When we have other quantitative variables on the same observations, these can be represented as supplementary variables in the same space. Geometrically, this amounts to projecting
+the new variables on the space of the principal components.
+It is carried out by regressions of these supplementary variables on the scores for the principal component dimensions. 
+
+For example, the left panel of @fig-supp-regession depicts the vector geometry of a regression 
+of a variable $\mathbf{y}$ on two predictors, $\mathbf{x}_1$ and $\mathbf{x}_2$. The fitted vector,
+$\widehat{\mathbf{y}}$, is the perpendicular projection of $\mathbf{y}$ onto the plane of $\mathbf{x}_1$ and $\mathbf{x}_2$. In the same way, in the right panel, a `r colorize("supplementary variable", "green")` is projected into the plane
+of two principal component axes shown as an ellipse.
+The black fitted vector shows how that additional variable relates to the biplot dimensions.
+
+```{r}
+#| label: fig-supp-regession
+#| echo: false
+#| out-width: "90%"
+#| fig-cap: "Fitting supplementary variables in a biplot is analogous (right) to regression on the principal component dimensions (left). _Source_: @Aluja-etal-2018, Figure 2.11"
+knitr::include_graphics("images/pca4ds-figure-2-11.png")
+```
+
+For this example, it happens that some suitable supplementary
+variables to aid interpretation of crime rates
+are available in the dataset `datsets::state.x77`, which was obtained from the U.S. Bureau of the Census
+_Statistical Abstract of the United States_ for 1977.
+I select a few of these below and make the state name a column variable so it can be merged with the `crime` data.
+
+```{r supp-data}
+supp_data <- state.x77 |>
+  as.data.frame() |>
+  tibble::rownames_to_column(var = "state") |>
+  rename(Life_Exp = `Life Exp`,
+         HS_Grad = `HS Grad`) |>
+  select(state, Income:Life_Exp, HS_Grad) 
+
+head(supp_data)
+```
+
+Then, we can merge the `crime` data with the `supp_data` dataset to produce something suitable
+for analysis using `factoMineR::PCA()`.
+```{r crime-joined}
+crime_joined <-
+  dplyr::left_join(crime[, 1:8], supp_data, by = "state")
+names(crime_joined)
+```
+
+`PCA()` can only get the labels for the observations from the `row.names()` of the dataset,
+so I assign them explicitly. The supplementary variables are specified by the argument `quanti.sup`
+as the indices of the columns in what is passed as the data argument.
+```{r crime-joined-PCA}
+row.names(crime_joined) <- crime$st
+crime.PCA_sup <- PCA(crime_joined[,c(2:8, 9:12)], 
+                     quanti.sup = 8:11,
+                     scale.unit=TRUE, 
+                     ncp=3, 
+                     graph = FALSE)
+```
+
+The essential difference between the result of `prcomp()` used earlier to get the `crime.pca` object
+and the result of `PCA()` with supplementary variables is that the `crime.PCA_sup` object now contains
+a `quanti.sup` component containing the coordinates for the supplementary variables in PCA space. 
+
+These can be calculated directly as a the coefficients of a multivariate regression of the _standardized_ supplementary variables on the PCA scores for the dimensions, with no intercept---which forces the fitted vectors to go through the origin. For example, in the plot below (@fig-crime-factominer), the vector for Income has
+coordinates (0.192, -0.530) on the first two PCA dimensions.
+
+```{r reg-data}
+reg.data <- cbind(scale(supp_data[, -1]), 
+                  crime.PCA_sup$ind$coord) |>
+  as.data.frame()
+
+sup.mod <- lm(cbind(Income, Illiteracy, Life_Exp, HS_Grad) ~ 
+                    0 + Dim.1 + Dim.2 + Dim.3, 
+              data = reg.data )
+
+(coefs <- t(coef(sup.mod)))
+```
+
+Note that, because the supplementary variables are standardized, 
+these coefficients are the same as the correlations between the supplementary variables
+and the scores on the principal components, up to a scaling factor for each dimension. This provides a
+general way to relate dimensions found in other methods to the original data variables using vectors
+as in biplot techniques.
+
+```{r}
+(R <- cor(reg.data[, 1:4], reg.data[, 5:7]))
+
+R / coefs
+```
+
+
+
+The `PCA()` result can then be plotted using `FactoMiner::plot()`
+or various `factoextra` functions like `fviz_pca_var()` for a plot of the variable vectors or
+`fviz_pca_biplot()` for a biplot. When a `quanti.sup` component is present, supplementary variables are
+also shown in the displays.
+
+For simplicity I use `FactoMiner::plot()` here and only show the variable vectors. For consistency with earlier
+plots, I first reflect the orientation of the 2nd PCA dimension so that crimes of personal violence are at the top, as in @fig-crime-vectors.
+
+```{r}
+#| label: fig-crime-factominer
+#| out-width: "60%"
+#| fig-cap: "PCA plot of variables for the crime data, with vectors for the supplementary variables showing their association with the principal component dimensions."
+# reverse coordinates of Dim 2
+crime.PCA_sup <- ggbiplot::reflect(crime.PCA_sup, columns = 2)
+plot(crime.PCA_sup, choix = "var")
+```
+
+Recall that from earlier analyses, I interpreted the the dominant PC1 dimension as reflecting overall
+rate of crime. The contributions to this dimension, which are the projections of the variable vectors
+on the horizontal axis in @fig-crime-vectors and @fig-crime-biplot2 were shown graphically by
+barcharts in the left panel of @fig-fviz-contrib.
+
+But now in @fig-crime-factominer, with the addition of variable vectors for the supplementary variables, you can see how income, rate of illiteracy, life expectancy and proportion of high school graduates are related
+to the variation in rates of crimes for the U.S. states. 
+
+On dimension 1, what stands out is that
+life expectancy is associated with lower overall crime, while other supplementary variable have
+positive associations.
+On dimension 2, crimes against persons (murder, assault, rape) are associated with greater rates of
+illiteracy among the states, which as we earlier saw (@fig-crime-biplot2) were more often Southern states.
+Crimes against property (auto theft, larceny) at the bottom of this dimension are associated with 
+higher levels of income and high school graduates.
+
+### Example: Diabetes data
+
+As another example, consider the data from @ReavenMiller:79 on measures of insulin and glucose
+shown in @fig-diabetes1 and 
+that led to the discovery of two distinct types of development of Type 2 diabetes (@sec-discoveries).
+This dataset is available as `r dataset("Diabetes")`. The three groups are `Normal`, `Chemical_Diabetic` and
+`Overt_Diabetic`, and the (numerical) diagnostic variables are:
+
+* `relwt`: relative weight, the ratio of actual to expected weight, given the person's height,
+* `glufast`: fasting blood plasma glucose level
+* `glutest`: test blood plasma glucose level, a measure of glucose intolerance
+* `instest`: plasma insulin during test, a measure of insulin response to oral glucose
+* `sspg`: steady state plasma glucose, a measure of insulin resistance
+
+**TODO**: Should introduce 3D plots earlier, in Ch3 before @sec-scatmat.
+
+First, let's try to create a 3D plot, analogous to the artist's drawing from PRIM-9
+shown in @fig-ReavenMiller-3d. For this, I use `car::scatter3d()` which
+can show data ellipsoids summarizing each group. The formula notation,
+`z ~ x + y` assigns the `z` variable to the vertical direction in the plot, and the
+`x` and `y` variable form a base plane.
+\ix{PRIM-9}
+
+
+```{r}
+#| label: diabetes-scatter3d
+#| eval: false
+cols <- c("darkgreen", "blue", "red")
+scatter3d(sspg ~ instest + glutest, data=Diabetes,
+          groups = Diabetes$group,
+          ellipsoid = TRUE,
+          surface = FALSE,
+          col = cols,
+          surface.col = cols)
+```
+
+`car::scatter3d()` uses the `r package("rgl", cite=TRUE)` to render 3D graphics on a display device,
+which means that it has facilities for perspective, lighting and other visual properties. You can interactively zoom
+in or out or rotate the display in any of the three dimensions and use `rgl::spin3d()`
+to animate rotations around any axes and record this a a `movie3d()`.
+@fig-diabetes-3d shows two views of this plot, one from the front and one from the back.
+The data ellipsoids are not as evocative as the artist's rendering, but they give a sense
+of the relative sizes and shapes of the clouds of points for the three diagnostic groups.
+```{r}
+#| label: fig-diabetes-3d
+#| echo: false
+#| out-width: "100%"
+#| fig-cap: "Two views of a 3D scatterplot of three main diagnostic variables in the `Diabetes` dataset. The left panel shows an orientation similar to that of @fig-ReavenMiller-3d; the right panel shows a view from the back."
+knitr::include_graphics("images/diabetes-3d-both.png")
+```
+
+The normal group is concentrated near the origin, with relatively low values on all three diagnostic
+measures. The chemical diabetic group forms a wing with higher values on insulin response to oral glucose
+(`instest`), while the overt diabetics form the other wing, with higher values on glucose intolerance
+(`glutest`). The relative sizes and orientations of the data ellipsoids are also informative.
+
+Given this, what can we see in a biplot view based on PCA?
+The PCA of these data shows that 83% of the variance is captured in two dimensions and 96% in
+three. The result for 3D is interesting, in that the view from PRIM-9
+shown in @fig-ReavenMiller-3d and @fig-diabetes-3d nearly captured all available information.
+\ix{PRIM-9}
+
+```{r}
+#| label: diabetes-pca
+data(Diabetes, package="heplots")
+
+diab.pca <- 
+  Diabetes |> 
+  dplyr::select(where(is.numeric)) |>
+  prcomp(scale. = TRUE)
+summary(diab.pca)
+```
+
+A 2D biplot, with data ellipses for the groups, can be produced as before, but I also want to illustrate
+labeling the groups directly, rather than in a legend.
+
+```{r}
+#| label: diabetes-ggbiplot
+plt <- ggbiplot(diab.pca,
+     obs.scale = 1, var.scale = 1,
+     groups = Diabetes$group,
+     var.factor = 1.4,
+     ellipse = TRUE, 
+     ellipse.prob = 0.5, ellipse.alpha = 0.1,
+     circle = TRUE,
+     point.size = 2,
+     varname.size = 4) +
+  labs(fill = "Group", color = "Group") +
+  theme_minimal(base_size = 14) +
+  theme(legend.position = "none")
+```
+
+Then, find the centroids of the component scores and use `geom_label()` to plot the group labels.
+```{r}
+#| label: fig-diabetes-ggbiplot
+#| out-width: "80%"
+#| fig-cap: "2D biplot of the Diabetes data"
+scores <- data.frame(diab.pca$x[, 1:2], group = Diabetes$group)
+centroids <- scores |>
+  group_by(group) |>
+  summarize(PC1 = mean(PC1),
+            PC2 = mean(PC2))
+
+plt + geom_label(data = centroids, 
+                 aes(x = PC1, y = PC2, 
+                     label=group, color = group),
+                 nudge_y = 0.2)
+```
+
+What can we see here, and how does it relate to the artist's depiction shown earlier in @fig-ReavenMiller-3d?
+The variables `instest`, `sspg` and `glutest` correspond approximately to the coordinate
+axes in the artist's drawing. `glutest` and `glufast` primarily separate the
+overt diabetics from the others. The chemical diabetics are distinguished by having larger
+values of insulin response (`instest`) and are also higher in relative weight (`relwt`).
+
+\ixoff{biplot}
+
+## Nonlinear dimension reduction {#sec-nonlinear}
+
+The world of dimension reduction methods reflected by PCA is a simple and attractive one
+in which relationships among variable are at least approximately linear, and 
+can be made visible in a lower-dimensional view by linear transformations and
+projections. PCA does an optimal job of capturing _global_ linear relationships in the data.
+But many phenomena defy linear description or involve _local_ nonlinear relationships and 
+clusters within the data. Our understanding of high-D data can sometimes be improved
+by nonlinear dimension reduction techniques.
+
+To see why, consider the data shown in the left panel of @fig-nonlin-demo and suppose we want to be
+able to separate the two classes by a line. The groups are readily seen in this simple 2D example, but there is no linear combination or projection that shows them as distinct categories. The right panel
+shows the same data after a nonlinear transformation to polar coordinates, where the two groups
+are readily distinguished by radius. Such problems arise in higher dimensions where direct visualization
+is far more difficult and nonlinear methods become attractive.
+
+```{r}
+#| label: fig-nonlin-demo
+#| out-width: "90%"
+#| echo: false
+#| fig-cap: "**Nonlinear patterns**: Two representations of the same data are shown. In the plot at the left, the clusters are clear to the eye, but there is no linear relation that separates them. Transforming the data nonlinearly, to polar coordinates in the plot at the right, makes the two groups distinct."
+knitr::include_graphics("images/nonlin-demo.png")
+```
+
+### Multidimensional scaling
+
+\ixon{multidimensional scaling}
+\ix{MDS|see{multidimensional scaling}}
+
+One way to break out of the "linear-combination, maximize-variance PCA" mold is to consider
+a more intrinsic property of points in _Spaceland_: similarity or distance.
+The earliest expression of this idea was in **multidimensional scaling** (MDS)
+by @Torgerson1952, which involved trying to determine a metric low-D representation of objects
+from their interpoint distances via an application of the SVD.
+
+The break-through for nonlinear methods came from Roger Shepard and William Kruskal
+[@Shepard1962a; @Shepard1962b; @Kruskal1964] who recognized that a more general,
+_nonmetric_ version (nMDS) could be achieved using only the _rank order_ of input distances $d_{ij}$
+among objects. nMDS maps these into a low-D spatial representation of points, $\mathbf{x}_i, \mathbf{x}_j$
+whose fitted distances, $\hat{d}_{ij} = \lVert\mathbf{x}_i - \mathbf{x}_j\rVert$ matches
+the order of the $d_{ij}$ as closely as possible. 
+That is, rather than assume that the observed distances are linearly related to the fitted $\hat{d}_{ij}$,
+nMDS assumes only that their order is the same.
+@BorgGroenen2005 and @Borg2018 give a comprehensive overview of modern developments in MDS.
+
+The impetus for MDS stemmed largely from psychology and the behavioral sciences,
+where simple experimental measures of
+similarity or dissimilarity of psychological objects (color names, facial expressions, words,  Morse code symbols) could be obtained by direct ratings, confusions, or other tasks [@Shepard-etal-1972a;@Shepard-etal-1972b]. 
+MDS was revolutionary in that it
+provided a coherent method to study the dimensions of perceptual and cognitive space
+in applications where the explanation of a cognitive process was derived directly from an MDS solution [@Shoben1983].
+
+To perform nMDS, you need to calculate the matrix of distances between all pairs of observations 
+(`dist()`). The basic function is `MASS::isoMDS()`.[^vegan]
+In the call, you can specify the number of dimensions (`k`) desired, with `k=2` as default.
+It returns the coordinates in a dataset called `points`.
+
+[^vegan]: The `r package("vegan", cite=TRUE)`
+provides `vegan::metaMDS()` which allows a wide range of distance measures ...
+
+
+```{r diabetes-mds}
+diab.dist <- dist(Diabetes[, 1:5])
+mds <- diab.dist |>
+  MASS::isoMDS(k = 2, trace = FALSE) |>
+  purrr::pluck("points") 
+
+colnames(mds) <- c("Dim1", "Dim2")
+mds <- bind_cols(mds, group = Diabetes$group)
+mds |> sample_n(6)
+```
+
+The method works by trying to minimize a measure, "Stress", of the average difference between
+the fitted distances $\hat{d}_{ij}$ and an optimal monotonic (order-preserving) transformation, $f_{\text{mon}}(d_{ij})$, of the distances in the data. Values of Stress around 5-8% and smaller
+are generally considered adequate.
+
+Unlike PCA, where you can fit all possible dimensions once and choose the number of components
+to retain by examining the eigenvalues or variance proportions, in MDS it is necessary to 
+fit the data for several values of `k` and consider the trade-off between goodness of fit
+and complexity.
+
+```{r}
+#| label: diabetes-stress
+stress <- vector(length = 5)
+for(k in 1:5){
+  res <- MASS::isoMDS(diab.dist, k=k, trace = FALSE)
+  stress[k] <- res$stress
+}
+round(stress, 3)
+```
+
+Plotting these shows that a 3D solution is nearly perfect, while a 2D solution is certainly adequate.
+This plot is the MDS analog of a screeplot for PCA.
+
+```{r echo = -1}
+#| label: fig-diabetes-stress
+#| out-width: "70%"
+#| fig-cap: "Badness of fit (Stress) of the MDS solution in relation to number of dimensions."
+op <- par(mar = c(5, 4, 1, 1)+0.1)
+plot(stress, type = "b", pch = 16, cex = 2,
+     xlab = "Number of dimensions",
+     ylab = "Stress (%)")
+```
+
+
+To plot the 2D solution, I'll use `ggpubr::ggscatter()` here because it handles grouping, provides concentration ellipses 
+and other graphical features.
+```{r diabetes-mplot}
+library(ggpubr)
+cols <- scales::hue_pal()(3) |> rev()
+mplot <-
+ggscatter(mds, x = "Dim1", y = "Dim2", 
+          color = "group",
+          shape = "group",
+          palette = cols,
+          size = 2,
+          ellipse = TRUE,
+          ellipse.level = 0.5,
+          ellipse.type = "t") +
+  geom_hline(yintercept = 0, color = "gray") +
+  geom_vline(xintercept = 0, color = "gray") 
+```
+
+For this and other examples using MDS, it would be nice to also show how the dimensions of this
+space relate to the original variables, as in a biplot. Using the idea of
+correlations between variables and dimensions from @sec-supp-vars, I do this as shown below.
+Only the relative directions and lengths of the variable vectors matter, so you can choose
+any convenient scale factor to make the vectors fill the plot region.
+
+```{r}
+#| label: fig-diabetes-mds
+#| out-width: "90%"
+#| fig-cap: "Nonmetric MDS representation of the Diabetes data. The vectors reflect the correlations of the variables with the MDS dimensions."
+vectors <- cor(Diabetes[, 1:5], mds[, 1:2])
+scale_fac <- 500
+mplot + 
+  coord_fixed() +
+  geom_segment(data=vectors,
+               aes(x=0, xend=scale_fac*Dim1, y=0, yend=scale_fac*Dim2),
+               arrow = arrow(length = unit(0.2, "cm"), type = "closed"),
+               linewidth = 1.1) +
+  geom_text(data = vectors,
+            aes(x = 1.15*scale_fac*Dim1, y = 1.07*scale_fac*Dim2, 
+                label=row.names(vectors)),
+            nudge_x = 4,
+            size = 4) +
+  theme(legend.position = "inside",
+        legend.position.inside = c(.8, .8))
+```
+
+The configuration of the groups in @fig-diabetes-mds is similar to that of the biplot in @fig-diabetes-ggbiplot, but the groups are more widely separated along the first
+MDS dimension. The variable vectors are also similar, except that `relwt` 
+is not well-represented in the MDS solution.
+
+\ixoff{multidimensional scaling}
+
+### t-SNE
+
+\ixon{t-SNE}
+
+With the rise of "machine learning" methods for "feature extraction" in "supervised"
+vs. "unsupervised" settings, a variety of new algorithms have been proposed for the
+task of finding low-D representations of high-D data. Among these,
+t-distributed Stochastic Neighbor Embedding (t-SNE) developed by @MaatenHinton2008
+is touted as method for revealing
+_local structure_ and clustering better in possibly complex high-D data and at different scales.
+
+t-SNE differs from MDS in what it tries to preserve in the mapping to low-D space:
+Multidimensional scaling aims to preserve the distances between pairs of data points, focusing on pairs of _distant points_ in the original space. t-SNE, on the other hand focuses on preserving _neighboring_ data points. Data points that are close in the original data space will be tight in the t-SNE embeddings.
+
+
+<!-- Simpler description, from: https://www.displayr.com/using-t-sne-to-visualize-data-before-prediction/ -->
+
+"The t-SNE algorithm models the probability distribution of neighbors around each point. Here, the term _neighbors_ refers to the set of points which are closest to each point. In the original, high-dimensional space, this is modeled as a Gaussian distribution. In the 2-dimensional output space this is modeled as a $t$-distribution. The goal of the procedure is to find a mapping onto the 2-dimensional space that minimizes the differences between these two distributions over all points. The fatter tails of a $t$-distribution compared to a Gaussian help to spread the points more evenly in the 2-dimensional space."
+(Jake Hoare, [How t-SNE works and Dimensionality Reduction](https://www.displayr.com/using-t-sne-to-visualize-data-before-prediction/)).
+
+
+t-SNE also uses the idea of mapping distance measures into a low-D space,
+but converts Euclidean distances into conditional probabilities.
+Stochastic neighbor embedding means that t-SNE constructs a probability distribution over pairs of high-dimensional objects in such a way that similar objects are assigned a higher probability while dissimilar points are assigned a lower probability.
+
+As van der Maaten and Hinton explained: "The similarity of datapoint $\mathbf{x}_{j}$ to datapoint  $\mathbf{x}_{i}$ is the conditional probability, $p_{j|i}$, that $\mathbf{x}_{i}$ would pick  $\mathbf{x}_{j}$ as its neighbor if neighbors were picked in proportion to their probability density under a Gaussian distribution centered at $\mathbf{x}_{i}$." For $i \ne j$, they define:
+
+$$
+p_{j\mid i} = \frac{\exp(-\lVert\mathbf{x}_i - \mathbf{x}_j\rVert^2 / 2\sigma_i^2)}{\sum_{k \neq i} \exp(-\lVert\mathbf{x}_i - \mathbf{x}_k\rVert^2 / 2\sigma_i^2)} \;. 
+$$
+and set $p_{i\mid i} = 0$. $\sigma^2_i$ is the variance of the normal distribution that centered on datapoint $\mathbf{x}_{i}$ and serves as a tuning bandwidth so 
+smaller values of $\sigma _{i}$ are used in denser parts of the data space.
+These conditional probabilities are made symmetric via averaging, giving 
+$p_{ij} = \frac{p_{j\mid i} + p_{i\mid j}}{2n}$.
+
+t-SNE defines a similar probability distribution $q_{ij}$
+over the points $\mathbf{y}_i$
+in the low-dimensional map, and it minimizes the Kullback–Leibler divergence (KL divergence) between the two distributions with respect to the locations of the points in the map,
+
+$$
+D_\mathrm{KL}\left(P \parallel Q\right) = \sum_{i \neq j} p_{ij} \log \frac{p_{ij}}{q_{ij}} \; ,
+$$
+a measure of how different the distribution of $P$ in the data is from that of $Q$ in the
+low-D representation. The _t_ in t-SNE comes from the fact that the probability distribution
+of the points $\mathbf{y}_i$ in the embedding space is taken to be a heavy-tailed $t_{(1)}$
+distribution with one degree of freedom to spread the points more evenly in the 2-dimensional space, 
+rather than the Gaussian distribution for the points
+in the high-D data space.
+
+t-SNE is implemented in the `r package("Rtsne", cite=TRUE)` which is capable of handling thousands
+of points in very high dimensions. It uses a tuning parameter, "perplexity" to choose the
+bandwidth $\sigma^2_i$ for each point. This value effectively controls how many nearest neighbors are taken into account when constructing the embedding in the low-dimensional space.
+It can be thought of as the means to balance between preserving the global and the local structure of the data.[^perplexity]
+
+[^perplexity]: The usual default, `perplexity = 30` focuses  on preserving the distances to the 30 nearest neighbors and puts virtually no weight on preserving distances to the remaining points. For data sets with a small number of points e.g. $n=100$, this will uncover the global structure quite well since each point will preserve distances to a third of the data set. For larger problems, e.g.,
+$n = 10,000$ points, using a higher perplexity value e.g. 500, will do a much better job for of uncovering the global structure. (This description comes from https://opentsne.readthedocs.io/en/latest/parameters.html)
+
+`Rtsne::Rtsne()` finds the locations of the points in the low-D space, of dimension `k=2` by default.
+It returns the coordinates in a component named `Y`. The package has no `print()`, `summary()` or
+plot methods, so you're on your own.
+```{r}
+#| label: diabetes-tsne
+library(Rtsne)
+set.seed(123) 
+diab.tsne <- Rtsne(Diabetes[, 1:5], scale = TRUE)
+df2 <- data.frame(diab.tsne$Y, group = Diabetes$group) 
+colnames(df2) <- c("Dim1", "Dim2", "group")
+```
+
+You can plot this as shown below:
+
+<!-- fig.code: R/diabetes/diabetes-pca-tsne.R -->
+
+```{r}
+#| label: fig-diabetes-tsne
+#| out-width: "80%"
+#| fig-cap: "t-SNE representation of the Diabetes data with data ellipses for the diagnostic groups."
+p2 <- ggplot(df2, aes(x=Dim1, y=Dim2, color = group, shape=group)) + 
+  geom_point(size = 3) + 
+  stat_ellipse(level = 0.68, linewidth=1.1) +
+  geom_hline(yintercept = 0) +
+  geom_vline(xintercept = 0) +
+  scale_color_manual(values = cols) +
+  labs(x = "Dimension 1",
+       y = "Dimension 2") + 
+  ggtitle("tSNE") +
+  theme_bw(base_size = 16) +
+  theme(legend.position = "bottom") 
+p2
+```
+
+
+#### Comparing solutions {#compare-solutions}
+
+For the Diabetes data, I've shown the results of three different dimension reduction techniques,
+PCA (@fig-diabetes-ggbiplot), MDS (@fig-diabetes-mds), and t-SNE (@fig-diabetes-tsne).
+How are these similar, and how do they differ?
+
+One way is to view them side by side as shown in @fig-diabetes-pca-tsne. To an initial glance,
+the t-SNE solution looks like a rotated version of the PCA solution, but there are differences in
+the shapes of the clusters as well.
+
+<!-- fig.code: R/diabetes/diabetes-pca-tsne.R -->
+
+```{r}
+#| label: fig-diabetes-pca-tsne
+#| echo: false
+#| out-width: "100%"
+#| fig-cap: "Comparison of the PCA and t-SNE 2D representations of the Diabetes data."
+knitr::include_graphics("images/diabetes-pca-tsne.png")
+```
+
+Another way to compare these two views is to animate the transition from the PCA to the t-SNE representation by a series of smooth interpolated views. This is a more generally useful 
+visualization technique, so it is useful to spell out the details.
+
+The essential idea is calculate interpolated views as a weighted average of the two endpoints
+using a weight $\gamma$ that is varied from 0 to 1.
+
+$$
+\mathbf{X}_{\text{View}} = \gamma \;\mathbf{X}_{\text{PCA}} + (1-\gamma) \;\mathbf{X}_{\text{t-SNE}}
+$$
+The same idea can be applied to other graphical features: lines, paths (ellipses), and so forth.
+These methods are implemented in the `r package("gganimate", cite=TRUE)`.
+
+In this case, to create an animation
+you can extract the coordinates for the PCA, $\mathbf{X}_{\text{PCA}}$, as a data.frame `df1`,
+and those for the t-SNE, $\mathbf{X}_{\text{t-SNE}}$ as `df2`, each with a constant
+`method` variable. These two are then
+stacked (using `rbind()`) to give a combined `df3`. The animation can then interpolate over `method`
+going from pure PCA to pure t-SNE.
+
+```{r}
+#| label: diabetes-pca-tsne-df
+diab.pca <- prcomp(Diabetes[, 1:5], scale = TRUE, rank.=2) 
+df1 <- data.frame(diab.pca$x, group = Diabetes$group) 
+colnames(df1) <- c("Dim1", "Dim2", "group")
+df1 <- cbind(df1, method="PCA")
+
+set.seed(123) 
+diab.tsne <- Rtsne(Diabetes[, 1:5], scale = TRUE)
+df2 <- data.frame(diab.tsne$Y, group = Diabetes$group) 
+colnames(df2) <- c("Dim1", "Dim2", "group")
+df2 <- cbind(df2, method="tSNE")
+
+# stack the PCA and t-SNE solutions
+df3 <- rbind(df1, df2) 
+```
+
+Then, plot the configuration of the points and add data ellipses as before.
+The key thing for animating the difference between the solutions is to add
+`transition_states(method, ...)`, tweening from PCA to t-SNE.
+The `state_length` argument `transition_states()` controls the relative 
+length of the pause between states. 
+
+This animated graphic is shown only in the online version of the book.
+
+```{r}
+#| label: fig-diabetes-pca-tsne-anim
+#| eval: false
+#| fig-height: 7
+#| fig-width: 8
+#| fig-dpi: 200
+#| out-width: "100%"
+#| fig-cap: "Animation of the relationship of PCA to the t-SNE embedding for the Diabetes data."
+library(gganimate)
+animated_plot <- 
+  ggplot(df3, aes(x=Dim1, y=Dim2, color=group, shape=group)) + 
+  geom_point(size = 3) + 
+  stat_ellipse(level = 0.68, linewidth=1.1) +
+  geom_hline(yintercept = 0) +
+  geom_vline(xintercept = 0) +
+  scale_color_manual(values = cols) +
+  labs(title = "PCA vs. tSNE Dimension Reduction: {closest_state}",
+       subtitle = "Frame {frame} of {nframes}",
+       x = "Dimension 1",
+       y = "Dimension 2") + 
+  transition_states( method, transition_length = 3, state_length = 2 ) + 
+  view_follow() + 
+  theme_bw(base_size = 16) +
+  theme(legend.position = "bottom") 
+
+animated_plot
+```
+
+::: {.content-visible when-format="html"}
+```{r}
+#| label: fig-diabetes-pca-tsne-anim-gif
+#| echo: false
+#| fig-height: 7
+#| fig-width: 8
+#| out-width: "100%"
+#| fig-cap: "Animation of the relationship of PCA to the t-SNE embedding for the Diabetes data. The method name in the title reflects the closest state"
+knitr::include_graphics("images/diabetes-pca-tsne.gif")
+```
+
+You can see that the PCA configuration is morphed into the that for t-SNE largely by 
+rotation 90$^o$ clockwise, so that dimension 1 in PCA becomes dimension 2 in t-SNE.
+This is not unexpected, because PCA finds the dimensions in to order of maximum variance,
+whereas t-SNE is only trying to match the distances in the data to those in the
+solution. To interpret the result from t-SNE you are free to interchange the axes, or indeed
+to rotate the solution arbitrarily.
+
+It is more interesting that the sizes and shapes of the group clusters change from one
+solution to the other. The normal group is most compact in the PCA solution, but becomes
+the least compact in t-SNE.
+
+:::
+
+\ixoff{t-SNE}
+
+
+## Application: Variable ordering for data displays {#sec-var-order}
+
+\ixon{effect ordering}
+\ixon{ordering!variables}
+
+In many multivariate data displays, such as scatterplot matrices, parallel coordinate plots and others
+reviewed in @sec-multivariate_plots,
+the order of different variables might seem arbitrary. They might appear in alphabetic order, or more often in the order they appear in your dataset, for example when you use `pairs(mydata)`.
+Yet, the principle of _effect ordering_ (@FriendlyKwan:03:effect) for variables says you should try to arrange the variables so that adjacent ones are as similar as possible.[^1-seriation]
+
+[^1-seriation]: The general topic of arranging items (variables, factor values) in an orderly sequence is called
+_seriation_, and stems from methods of dating in archaeology, used to arrange stone tools, pottery fragments, and other artifacts in time order. In R, the `r package("seriation", cite=TRUE)` provides a wide range of techniques. ...
+
+
+For example, the `mtcars` dataset contains data on 32 automobiles from the 1974 U.S. magazine
+_Motor Trend_ and consists of fuel comsumption (`mpg`) and 10 aspects of automobile
+design (`cyl`: number of cyliners; `hp`: horsepower, `wt`: weight) and performance
+(`qsec`: time to drive a quarter-mile). What can we see from a simple `corrplot()` of their
+correlations? No coherent pattern stands out in @fig-mtcars-corrplot-varorder.
+
+
+```{r}
+#| label: fig-mtcars-corrplot-varorder
+#| fig-width: 8
+#| fig-height: 8
+#| out-width: "70%"
+#| fig-cap: "Corrplot of `mtcars` data, with the variables arranged in the order they appear in the dataset."
+data(mtcars)
+library(corrplot)
+R <- cor(mtcars)
+corrplot(R, 
+         method = 'ellipse',
+         title = "Dataset variable order",
+         tl.srt = 0, tl.col = "black", tl.pos = 'd',
+         mar = c(0,0,1,0))
+```
+
+
+In this display you can scan the rows and columns to "look up" the sign and approximate magnitude of a given correlation; for example, the correlation between `mpg` and `cyl` appears to be about -0.9,
+while that between `mpg` and `gear` is about 0.5. Of course, you could print the correlation matrix to find the actual values (-0.86 and 0.48 respectively):
+
+```{r mtcars-cor}
+print(floor(100*R))
+```
+
+Because the angles between variable vectors in the biplot reflect their correlations, @FriendlyKwan:03:effect defined **principal component variable ordering** as the order of angles,
+$a_i$ of the first two eigenvectors, $\mathbf{v}_1, \mathbf{v}_2$ around the unit circle. These values are calculated going counter-clockwise from the 12:00 position as:
+
+$$
+a_i = 
+  \begin{cases}
+    \tan^{-1} (v_{i2}/v_{i1}), & \text{if $v_{i1}>0$;}
+     \\
+    \tan^{-1} (v_{i2}/v_{i1}) + \pi, & \text{otherwise.}
+  \end{cases}     
+$$ {#eq-angle-AOE}
+
+In @eq-angle-AOE $\tan^{-1}(x)$ is read as "the angle whose tangent is $x$",
+and so the angles are determined by the tangent ratios "opposite" / "adjacent" = $v_{i2} / v_{i1}$
+in the right triangle defined by the vector and the horizontal axis. 
+
+<!-- **TODO**: Make a diagram of this -->
+
+For the `mtcars` data the biplot in @fig-mtcars-biplot accounts for 84% of the total variance
+so a 2D representation is fairly good.
+The plot shows the variables as widely dispersed. There is a collection at the left of positively correlated variables and another positively correlated set at the right.
+
+```{r}
+#| label: fig-mtcars-biplot
+#| fig-width: 8
+#| fig-height: 8
+#| out-width: "50%"
+#| fig-cap: "Biplot of the `mtcars` data. The order of the variables around the circle, starting from \"gear\" (say) arranges them so that the most similar variables are adjacent in graphical displays."
+mtcars.pca <- prcomp(mtcars, scale. = TRUE)
+ggbiplot(mtcars.pca,
+         circle = TRUE,
+         point.size = 2.5,
+         varname.size = 6,
+         varname.color = "brown") +
+  theme_minimal(base_size = 14) 
+```
+
+In `corrplot()` principal component variable ordering is implemented using the `order = "AOE"` option. There are a variety of other methods based on hierarchical cluster analysis described in the 
+[package vignette](https://cran.r-project.org/web/packages/corrplot/vignettes/corrplot-intro.html).
+
+
+@fig-mtcars-corrplot-pcaorder shows the result of ordering the variables by this method. 
+A nice feature of `corrplot()` is the ability to manually highlight blocks of variables that have a similar pattern of signs by outlining them with
+rectangles. From the biplot, the two main clusters of positively correlated variables seemed clear,
+and are outlined in the plot using `corrplot::corrRect()`. What became clear in the corrplot is that `qsec`, the time to drive a quarter-mile from a dead start didn't quite fit this pattern, so I highlighted it separately.
+
+```{r}
+#| label: fig-mtcars-corrplot-pcaorder
+#| fig-width: 8
+#| fig-height: 8
+#| out-width: "80%"
+#| fig-cap: "Corrplot of `mtcars` data, with the variables ordered according to the variable vectors in the biplot."
+corrplot(R, 
+         method = 'ellipse', 
+         order = "AOE",
+         title = "PCA variable order",
+         tl.srt = 0, tl.col = "black", tl.pos = 'd',
+         mar = c(0,0,1,0)) |>
+  corrRect(c(1, 6, 7, 11))
+```
+
+But wait, there is something else to be seen in @fig-mtcars-corrplot-pcaorder.
+Can you see one cell that doesn't fit with the rest?
+
+Yes, the correlation of number of forward gears (`gear`) and number of carburators (`carb`)
+in the upper left and lower right corners stands out as moderately positive (0.27) while all the others
+in their off-diagonal blocks are negative. This is another benefit of effect ordering: when you arrange
+the variables so that the most highly related variable are together, features that deviate from dominant
+pattern become visible.
+
+\ixoff{effect ordering}
+\ixoff{ordering!variables}
+
+
+## Application: Eigenfaces {#sec-eigenfaces}
+
+\ixon{eigenfaces}
+
+There are many applications of principal components analysis beyond the use for visualization
+for multivariate data covered here, that rely on its' ability as a **dimension reduction** technique,
+that is, to find a low-dimensional approximation to a high-dimensional dataset.
+
+::: {.callout-note title="Machine learning uses"}
+In machine learning, for example, PCA is a method used to reduce model complexity
+and avoid overfitting by _feature extraction_, which amounts to fitting a response variable in
+a low-D space of the predictors.
+This is just another name for _principal components regression_, where, instead of 
+regressing the dependent variable on all the explanatory variables directly, a smaller number
+principal components of the explanatory variables is used as predictors. This has the added
+benefit that it avoids problems of
+collinearity (section-ref) due to high correlations of the predictors, because the principal
+component scores are necessarily uncorrelated. When the goal is model explanation rather
+than pure prediction, it has the disadvantage that the components may be hard to interpret.
+:::
+
+An interesting class of problems have to do with image processing, where an image of size
+width $\times$ height in pixels can be represented by a $w \times h$ array of 
+greyscale values $x_{ij}$ in the range of [0, 1] or $h \times w \times 3$ array $x_{ijk}$
+of (`r red`, `r green`, `r blue`) color values. For example a single $640 \times 640$ photo is comprised of about 400K
+pixels in B/W and 1200K pixels in color.
+
+The uses here include
+
+* **Image compression**:  a process applied to a graphics file to minimize its size in bytes for storage or transmission, without degrading image quality below an acceptable threshold
+* **image enhancement**: improving the quality of an image, with applications in Computer Vision tasks, remote sensing, and satellite imagery. 
+* **facial recognition**: classifying or matching a facial image against a large corpus of stored images.
+
+When PCA is used on facial images, you can think of the process as generating **eigenfaces** (@Turk1991)
+a representation of the pixels in the image in terms of an eigenvalue decomposition. Dimension reduction
+means that a facial image can be considerably compressed by removing the components associated with
+small dimensions.
+
+As an example, consider the black and white version of the Mona Lisa shown in @fig-MonaLisa.
+The idea and code for this example is adapted from this [blog post](https://kieranhealy.org/blog/archives/2019/10/27/reconstructing-images-using-pca/)
+by Kieran Healy.[^healy] 
+
+[^healy]: https://kieranhealy.org/blog/archives/2019/10/27/reconstructing-images-using-pca/
+
+<!-- **TODO**: Web links like this should be footnotes for PDF -->
+
+```{r}
+#| label: fig-MonaLisa
+#| echo: false
+#| out-width: "35%"
+#| fig-cap: "640 x 954 black and white image of the _Mona Lisa_. _Source_: [Wikipedia](https://bit.ly/3Rgo41f)"
+knitr::include_graphics("images/MonaLisa-BW.jpg")
+```
+
+It would take too long to explain the entire method, so I'll just sketch the essential parts here.
+The complete script for this example is contained in [PCA-MonaLisa.R](R/PCA-MonaLisa.R). ...
+
+<!-- **TODO**: Show the necessary parts, including the screeplot. -->
+
+An image can be imported using `imager::load.image()` which creates a `"cimg"` object, 
+a 4-dimensional array with dimensions
+named `x,y,z,c`. `x` and `y` are the usual spatial dimensions, `z` is a depth dimension (which would correspond to time in a movie), and `c` is a color dimension containing R, G, B values.
+```{r mona-load}
+library(imager)
+img <- imager::load.image(here::here("images", "MonaLisa-BW.jpg"))
+dim(img)
+```
+
+<!-- img <- imager::load.image("https://github.com/friendly/Vis-MLM-book/blob/master/images/MonaLisa-BW.jpg?raw=true") -->
+
+
+An `as.data.frame()` method converts this to a data frame with `x` and `y` coordinates.
+Each x-y pair is a location in the 640 by 954 pixel grid, and the `value` is a grayscale value ranging from zero to one.
+```{r mona-reshape-long}
+img_df_long <- as.data.frame(img)
+head(img_df_long)
+```
+
+However, to do a PCA we will need a matrix of data in wide format containing the grayscale pixel values.
+We can do this using `tidyr::pivot_wider()`, giving a result with 640 rows and 954 columns.
+```{r mona-reshape-wide}
+img_df <- pivot_wider(img_df_long, 
+                     names_from = y, 
+                     values_from = value) |>
+  select(-x)
+dim(img_df)
+```
+
+Mona's PCA is produced from this `img_df` with `prcomp()`:
+```{r mona-pca}
+img_pca <- img_df |>
+  prcomp(scale = TRUE, center = TRUE)
+```
+
+With 955 columns, the PCA comprises 955 eigenvalue/eigenvector pairs. However, the rank of a
+matrix is the smaller of the number of rows and columns, so only 640 eigenvalues can be non-zero.
+Printing the first 10 shows that the first three dimensions account for  46% of the variance
+and we only get to 63% with 10 components.
+
+```{r mona-eig}
+img_pca |>
+  broom::tidy(matrix = "eigenvalues") |> head(10)
+```
+
+
+@fig-mona-screeplot shows a screeplot of proportions of variance. 
+Because there are so many components and most of the information
+is concentrated in the largest dimensions, I've used a $\log_{10}()$ scale on the horizontal axis.
+Beyond 10 or so dimensions, the variance of additional components looks quite tiny.
+
+```{r}
+#| label: fig-mona-screeplot
+#| fig-height: 4
+#| out-width: "70%"
+#| fig-cap: "Screeplot of the variance proportions in the Mona Lisa PCA."
+ggscreeplot(img_pca) +
+  scale_x_log10()
+```
+
+Then, if $\mathbf{M}$ is the $640 \times 955$ matrix of pixel values, a best approximation 
+$\widehat{\mathbf{M}}_k$ using $k$ dimensions can be obtained as $\widehat{\mathbf{M}}_k = \mathbf{X}_k\;\mathbf{V}_k^\mathsf{T}$ where $\mathbf{X}_k$ are the principal component scores and
+$\mathbf{V}_k$ are the eigenvectors corresponding to the $k$
+largest eigenvalues. The function `approx_pca()` does this, and also undoes the scaling
+and centering carried out in PCA.
+
+<!-- **TODO**: ~~Also, separate approximation from the pivot_longer code...~~ -->
+
+```{r approx_pca}
+#| code-fold: true
+approx_pca <- function(n_comp = 20, pca_object = img_pca){
+  ## Multiply the matrix of rotated data (component scores) by the transpose of 
+  ## the matrix of eigenvectors (i.e. the component loadings) to get back to a 
+  ## matrix of original data values
+
+  recon <- pca_object$x[, 1:n_comp] %*% t(pca_object$rotation[, 1:n_comp])
+  
+  ## Reverse any scaling and centering that was done by prcomp()
+  if(all(pca_object$scale != FALSE)){
+    ## Rescale by the reciprocal of the scaling factor, i.e. back to
+    ## original range.
+    recon <- scale(recon, center = FALSE, scale = 1/pca_object$scale)
+  }
+  if(all(pca_object$center != FALSE)){
+    ## Remove any mean centering by adding the subtracted mean back in
+    recon <- scale(recon, scale = FALSE, center = -1 * pca_object$center)
+  }
+  
+  ## Make it a data frame that we can easily pivot to long format
+  ## for drawing with ggplot
+  recon_df <- data.frame(cbind(1:nrow(recon), recon))
+  colnames(recon_df) <- c("x", 1:(ncol(recon_df)-1))
+
+  ## Return the data to long form 
+  recon_df_long <- recon_df |>
+    tidyr::pivot_longer(cols = -x, 
+                        names_to = "y", 
+                        values_to = "value") |>
+    mutate(y = as.numeric(y)) |>
+    arrange(y) |>
+    as.data.frame()
+  
+  recon_df_long
+}
+```
+
+
+Finally, the recovered images, using 2, 3 , 4, 5, 10, 15, 20, 50, and 100 principal components can be plotted
+using ggplot. In the code below, the `approx_pca()` function is run for each of the 9 values specified by `n_pcs`
+giving a data frame `recovered_imgs` containing all reconstructed images, with variables `x`, `y` and `value` (the greyscale pixel value).
+
+```{r}
+#| eval: false
+n_pcs <- c(2:5, 10, 15, 20, 50, 100)
+names(n_pcs) <- paste("First", n_pcs, "Components", sep = "_")
+
+recovered_imgs <- map_dfr(n_pcs, 
+                          approx_pca, 
+                          .id = "pcs") |>
+  mutate(pcs = stringr::str_replace_all(pcs, "_", " "), 
+         pcs = factor(pcs, levels = unique(pcs), ordered = TRUE))
+```
+
+In `ggplot()`, each  is plotted using `geom_raster()`, using `value` to as the fill color.
+A quirk of images imported to R is that origin is taken as the upper left corner, so the
+Y axis scale needs to be reversed. The 9 images are then plotted together using `facet_wrap()`.
+
+```{r}
+#| eval: false
+p <- ggplot(data = recovered_imgs, 
+            mapping = aes(x = x, y = y, fill = value))
+p_out <- p + geom_raster() + 
+  scale_y_reverse() + 
+  scale_fill_gradient(low = "black", high = "white") +
+  facet_wrap(~ pcs, ncol = 3) + 
+  guides(fill = "none") + 
+  labs(title = "Recovering Mona Lisa from PCA of her pixels") + 
+  theme(strip.text = element_text(face = "bold", size = rel(1.2)),
+        plot.title = element_text(size = rel(1.5)))
+
+p_out
+
+```
+
+
+The result, in @fig-mona-pca is instructive about how much visual information is contained
+in lower-dimensional reconstructions, or conversely, how much the image can be compressed by omitting the
+many small dimensions.
+
+
+
+```{r}
+#| label: fig-mona-pca
+#| echo: false
+#| out-width: "80%"
+#| fig-pos: "H"
+#| fig-cap: "Re-construction of the Mona Lisa using 2, 3 , 4, 5, 10, 15, 20, 50, and 100 principal components."
+knitr::include_graphics("images/mona-pca.png")
+```
+
+
+In this figure, with 4-5 components most people would recognize this as a blury image of the world's most famous portrait. It is certainly clear that this is the Mona Lisa with 10--15 components.
+Details of the portrait and backgound features become recognizable with 20--50 components, and with 100 components it compares favorably with the original in @fig-MonaLisa.
+In numbers, the original $640 \times 955$) image is of size 600 Kb. The 100 component version is only 93 Kb,
+15.6% of this.
+
+\ixoff{eigenfaces}
+
+
+
+## Elliptical insights: Outlier detection {#sec-outlier-detection}
+
+\ixon{outliers}
+
+The data ellipse (@sec-data-ellipse), or ellipsoid in more than 2D is fundamental in regression. But,
+as Pearson showed, it is also key to understanding principal components analysis, where the principal component directions are simply
+the axes of the ellipsoid of the data. As such, observations that are unusual in data space may not stand out
+in univariate views of the variables, but will stand out in principal component space, usually on the _smallest_ dimension.
+
+As an illustration, I created a dataset of $n = 100$ observations
+with a linear relation, $y = x + \mathcal{N}(0, 1)$ and then
+added two discrepant points at (1.5, -1.5), (-1.5, 1.5).
+
+```{r}
+set.seed(123345)
+x <- c(rnorm(100),             1.5, -1.5)
+y <- c(x[1:100] + rnorm(100), -1.5, 1.5)
+```
+
+When these are plotted with a data ellipse in @fig-outlier-demo (left), you can see
+the discrepant points labeled 101 and 102, but they do not stand out as unusual on
+either $x$ or $y$. The transformation to from data space to principal components space,
+shown in @fig-outlier-demo (right),
+is simply a rotation of $(x, y)$ to a space whose coordinate axes are the major and minor axes of the data ellipse, $(PC_1, PC_2)$. In this view, the additional points appear a univariate outliers on the smallest dimension, $PC_2$.
+
+```{r}
+#| label: fig-outlier-demo
+#| echo: false
+#| out-width: "100%"
+#| fig-cap: "**Outlier demonstration**: The left panel shows the original data and highlights the two discrepant points, which do not appear to be unusual on either x or y. The right panel shows the data rotated to principal components, where the labeled points stand out on the smallest PCA dimension."
+knitr::include_graphics("images/outlier-demo.png")
+```
+
+::: {.content-visible when-format="pdf"}
+The online edition of this book shows this more clearly in an [animated graphic](https://friendly.github.io/Vis-MLM-book/04-pca-biplot.html#fig-outlier-animation) rotating the points smoothly from data space to PCA space. It uses `heplots::interpPlot()` to interpolate linearly from the positions of the points
+in data space to their locations in PCA space.
+:::
+
+::: {.content-visible when-format="html"}
+To see this more clearly, @fig-outlier-animation shows an animation of the rotation from data space to PCA space. This uses `heplots::interpPlot()` to interpolate linearly from the positions of the points
+in data space to their locations in PCA space.
+
+<!-- fig.code:  R/outlier-demo.R -->
+
+```{r}
+#| label: fig-outlier-animation
+#| out-width: "80%"
+#| echo: false
+#| fig-cap: "Animation of rotation from data space to PCA space." 
+knitr::include_graphics("images/outlier-demo.gif")
+```
+:::
+
+### Example: Penguin data {#sec-dsq-penguin}
+
+In @sec-multnorm-penguin we examined the questions of multivariate normality and outliers for the penguin data.
+From a $\chi^2$ QQ plot (@fig-peng-cqplot)
+of the Mahalanobis $D^2$ values, three Penguins (283,  10,  35) were identified as noteworthy, deserving a closer look to see why they are unusual. It was pointed out (@fig-peng-ggplot-out)
+that 2D plots of the data variables were only partially revealing.
+Let's see where they appear in biplots.
+
+First, I find the noteworthy points with the three the largest $D^2$ values as before:
+
+```{r peng-out}
+data(peng, package="heplots")
+
+# find potential multivariate outliers
+DSQ <- heplots::Mahalanobis(peng[, 3:6])
+noteworthy <- order(DSQ, decreasing = TRUE)[1:3] |> print()
+```
+
+The PCA shows that the first two components account for 88% of variance, so this is probably an adequate
+representation of the overall structure of our penguins:
+```{r peng-pca}
+peng.pca <- prcomp(
+  ~ bill_length + bill_depth + flipper_length + body_mass,
+                   data=peng, scale. = TRUE
+  )
+summary(peng.pca)
+```
+
+```{r}
+#| label: fig-peng-out-biplot1
+#| echo: false
+#| out-width: "70%"
+#| fig-cap: "Biplot of the first two dimensions of the Penguin data. The points for the three noteworthy cases
+#| are labeled, but none of these appear to be unusual in this view."
+knitr::include_graphics("images/peng-out-biplot-12.png")
+```
+
+@fig-peng-out-biplot1 gives the biplot for the first two dimensions. It can be seen that:
+
+* PC1 is largely determined by flipper length and body mass. We can interpret this as an overall measure of **penguin size**. On this dimension, Gentoos are the largest, by quite a lot, compared with Adélie and Chinstrap.
+
+* PC2 is mainly determined by variation in the two beak variables: bill length and depth. Chinstrap are lower than the other two species on bill length and depth, but bill length further distinguishes the Gentoos from the Adélies. A penguin biologist could almost certainly provide an explanation, but I'll call this **beak shape**.
+
+* But, our three suspected outliers are well-within the bulk of their species.
+
+That's the point of this exercise. The projection of the data into the space that accounts for the greatest
+**total** variance usually does not reveal a few unusual points.
+
+```{r peng-out-biplot1}
+#| eval: false
+#| code-fold: true
+#| code-summary: Show the code
+source("R/penguin/penguin-colors.R")
+# create vector of labels, blank except for the noteworthy
+lab <- 1:nrow(peng)
+lab <- ifelse(lab %in% noteworthy, lab, "")
+
+ggbiplot(peng.pca,
+         choices = 1:2,
+         groups = peng$species, 
+         ellipse = TRUE, ellipse.alpha = 0.1,
+         circle = TRUE,
+         var.factor = 1,
+         geom.ind = c("point", "text"),
+         point.size = 1,
+         labels = lab, labels.size = 6,
+         varname.size = 5,
+         clip = "off") +
+  theme_minimal(base_size = 14) +
+  theme_penguins("dark") +
+  scale_shape_discrete() +
+  theme(legend.direction = 'horizontal', legend.position = 'top') 
+```
+
+Now, plotting dimensions 3 and 4 gives @fig-peng-out-biplot2. Dimension 3, accounting for 9%,
+is largely determined by
+a contrast of bill length with bill depth and body mass, while dimension 4 involves a contrast between
+body mass and flipper length.
+The Chinstraps here have the longest, straightest
+beaks. 
+```{r}
+#| label: fig-peng-out-biplot2
+#| echo: false
+#| out-width: "70%"
+#| fig-cap: "Biplot of dimensions 3-4 of the Penguin data. The three noteworthy birds stand out in this view."
+knitr::include_graphics("images/peng-out-biplot-34.png")
+```
+
+Recall that the perpendicular projection of observation $i$ on the vector for variable $j$ gives an approximation
+of $\hat{x}_{ij}$ shown in that space.
+Our friend Cyrano (case 283), the only true multivariate outlier, lies at the extreme ends of
+both dimensions, with his exceptionally long, straight bill. 
+Case 10 (Hook Nose) stands out at the high end of dimension 3 with a highly curved beak.
+case 35 is at the high end of dimension 4, so probably is much heavier than most and has short flippers.
+
+\ixoff{outliers}
+
+```{r child="summary/Ch04-summary.qmd"}
+```
+
+<!--
+**Package summary**
+--> 
+
+```{r}
+#| echo: false
+#| results: asis
+#cat("**Packages used here**:\n\n")
+write_pkgs(file = .pkg_file, quiet = TRUE)
+```
+   
+      
+
