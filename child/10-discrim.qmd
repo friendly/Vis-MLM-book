@@ -5,32 +5,43 @@ As described earlier (@sec-t2-discrim), Linear Discriminant Analysis (LDA) is si
 on the problem of _classifying observations_ into groups rather than _testing_ whether there are significant differences
 of the means for the response variables. You would use LDA rather than MANOVA when your goal is to predict group membership and identify which variables best distinguish between pre-defined groups, rather than just testing for group differences.
 
-LDA can be seen as a reversed MANOVA, where the role of dependent and independent variables is flipped.
-You can see this difference in the model formulas used in `lm()` compared with `MASS::lda()`, which fits a linear discriminant analysis (LDA) model.
+Thus, LDA can be seen as a **reversed MANOVA**, where the role of dependent and independent variables is flipped.
+You can see this difference in the model formulas used in `lm()` compared with `MASS::lda()`, which fits a linear discriminant analysis (LDA) model: The outcomes on the right-hand side are `cbind(y1, y2, y3)` for the MANOVA but is simply `group` for a discriminant analysis.
 
 ```{r eval=FALSE}
 manova.mod  <- lm(cbind(y1, y2, y3) ~ group)
 discrim.mod <- MASS::lda(group ~ y1 + y2 + y3)
 ```
 
-One consequence of this flipped emphasis is that predicted values from `predict()` for an LDA is the predicted group membership for an observation
-with values $y_1, y_2, y_3$ rather than the predicted values $\hat{y}_1, \hat{y}_2, \hat{y}_3$ of those responses in MANOVA.
+One consequence of this flipped emphasis is that predicted values from `predict()` for an LDA is the predicted _group membership_ for an observation
+with values $y_1, y_2, y_3$ rather than the predicted _response values_ $\hat{y}_1, \hat{y}_2, \hat{y}_3$ in MANOVA.
 This is useful for classifying new observations from an LDA model, such as determining whether new Swiss banknotes are real or fake (@exm-banknote).
+
+As we have seen, the multivariate linear model fit by `lm()` applies equally well when there are two or more grouping factors
+and or quantitative predictors, whereas discriminant analysis is mostly restricted to the case of a single `group` factor.
+
 
 <!-- method notes
 https://en.wikipedia.org/wiki/Linear_discriminant_analysis
 https://www.sthda.com/english/articles/36-classification-methods-essentials/146-discriminant-analysis-essentials-in-r/
 
 https://stats.stackexchange.com/questions/82959/how-is-manova-related-to-lda
+https://stats.stackexchange.com/questions/48786/algebra-of-lda-fisher-discrimination-power-of-a-variable-and-linear-discriminan#48859
 https://stats.stackexchange.com/questions/22884/how-does-linear-discriminant-analysis-reduce-the-dimensions/22889#22889
 -->
 
-The discussion here is limited to what this altered focus adds to visualizing differences among groups on a collection
+The discussion here is limited to what this altered focus adds to _visualizing differences_ among groups on a collection
 of response variables. See @Kleka1980, @Lachenbruch1975 for a basic, but more general introduction to discriminant analysis methods.
 There is a useful discussion in this Cross Validated question 
 [How is MANOVA related to LDA?](https://bit.ly/4gpMykN) {.content-visible when-format="pdf"} (https://bit.ly/4gpMykN).
 
-As in MANOVA, LDA assumes equal variance covariance matrices across the groups. --> qda()
+As in MANOVA, **linear** discriminant analysis assumes equal variance covariance matrices across the groups. In this case, the boundaries separating
+predicted group memberships are _hyper-planes_ in the data space of the quantitative variables. In 2D plots, these
+appear as lines, and a goal of this section is to show how you can plot these. When the variance covariance matrices differ
+substantially, the boundaries become curved, and the method is called **quadratic** discriminant analysis,
+implemented in `MASS::qda()`.
+
+--> qda()
 
 Another way that LDA differs from MANOVA is that for classification purposes, the relative proportions of the groups
 has a role in determining the classification rules --> prior probs
