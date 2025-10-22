@@ -1,3 +1,12 @@
+if(!require(ggord)) {
+  options(repos = c(
+      fawda123 = 'https://fawda123.r-universe.dev',
+      CRAN = 'https://cloud.r-project.org'))
+  
+  # Install ggord
+  install.packages('ggord')
+}
+
 library(MASS)
 library(ggord)
 library(ggplot2)
@@ -93,12 +102,15 @@ ggord(peng.lda, peng$species,
 # view in data space
 #if(!require(klaR)) install.packages("klaR")
 library(klaR)
+# added cex.pts arg
+#source("C:/Dropbox/R/functions/partimat.R")
 peng.partimat <- peng |>
   dplyr::select(species, bill_length:body_mass) |>
   partimat(species ~ ., data = _, 
          method = "lda",
          plot.matrix = TRUE,
          plot.control = list(cex = 1.2),
+#         cex.pts = 0.7,
          image.colors = scales::alpha(col, alpha = 0.4)
   )
 

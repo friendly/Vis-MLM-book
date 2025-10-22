@@ -42,8 +42,7 @@ prediction_data <- cbind(grid_points, Species = grid_predictions)
 
 means <- iris |>
   group_by(Species) |>
-  summarise(across(c(Petal.Length, Petal.Width), mean, 
-                   na.rm = TRUE))
+  summarise(across(c(Petal.Length, Petal.Width), \(x) mean(x, na.rm = TRUE)))
 
 ggplot(data = iris, aes(x = Petal.Length, y = Petal.Width)) +
   # Plot decision regions
@@ -108,7 +107,7 @@ iris.grid <- make_grid(iris$Petal.Length, iris$Petal.Width, np = c(40,40))
 
 head(iris.grid)
 
-# Make a data frame with preditcted class & posterior for that class
+# Make a data frame with predicted class & posterior for that class
 #class <- predict(iris.lda, newdata=iris.grid)$class
 pred <- predict(iris.lda, newdata=iris.grid, type = 'prob')
 class <- pred$class
@@ -119,6 +118,11 @@ maxp <- apply(probs, 1, max) |> as.numeric()
 pred.data <- cbind(iris.grid, class, maxp)
 
 pred_lda <- function(object, newdata, ...) {
+  if (missing(newdata)) {
+    newdata <- insight::get_modelmatrix(object) |>
+      as.data.frame() |>
+      dplyr::select(-"(Intercept)") 
+  }
   nv <- ncol(newdata)
   pred <- predict(object, newdata, type = "prob")
   class <- pred$class
@@ -195,9 +199,22 @@ ggplot(data = iris, aes(x = Sepal.Length, y = Sepal.Width)) +
 
 
 # with marginaleffects
-
+# Other v ariables are set to their mean 
 range100 = \(x) seq(min(x), max(x), length.out = 100)
-grid = datagrid(Petal.Width = range100, Petal.Length = range100, newdata = iris)
-
+grid <- datagrid(Petal.Width = range100, Petal.Length = range100, newdata = iris)
 head(grid)
+
+# or, use the lda model
+grid <- datagrid(Petal.Width = range100, Petal.Length = range100, model = iris.lda)
+head(grid)
+
+
+# adding an extra arg doesn't work the same way with `datagrid`. Need to give the actual variable
+seq.range = \(x, n) seq(min(x), max(x), length.out = n)
+grid <- datagrid(Petal.Width = seq.range(iris$Petal.Width, 10), 
+                Petal.Length = seq.range(iris$Petal.Length, 10), newdata = iris)
+head(grid)
+
+datagrid()
+
 
