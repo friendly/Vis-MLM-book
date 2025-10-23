@@ -1,11 +1,11 @@
-## Discriminant analysis
+## Discriminant analysis {#sec-discrim-MLM}
 
 
 As described earlier (@sec-t2-discrim), Linear Discriminant Analysis (LDA) is similar to a one-way MANOVA, but with its emphasis
 on the problem of _classifying observations_ into groups rather than _testing_ whether there are significant differences
 of the means for the response variables. You would use LDA rather than MANOVA when your goal is to predict group membership and identify which variables best distinguish between pre-defined groups, rather than just testing for group differences.
 
-Thus, LDA can be seen as a **reversed MANOVA**, where the role of dependent and independent variables is flipped.
+Thus, LDA can be seen as a **flipped MANOVA**, where the role of dependent and independent variables are reversed.
 You can see this difference in the model formulas used in `lm()` compared with `MASS::lda()`, which fits a linear discriminant analysis (LDA) model: The outcomes on the right-hand side are `cbind(y1, y2, y3)` for the MANOVA but is simply `group` for a discriminant analysis.
 
 ```{r eval=FALSE}
@@ -15,10 +15,29 @@ discrim.mod <- MASS::lda(group ~ y1 + y2 + y3)
 
 One consequence of this flipped emphasis is that predicted values from `predict()` for an LDA is the predicted _group membership_ for an observation
 with values $y_1, y_2, y_3$ rather than the predicted _response values_ $\hat{y}_1, \hat{y}_2, \hat{y}_3$ in MANOVA.
-This is useful for classifying new observations from an LDA model, such as determining whether new Swiss banknotes are real or fake (@exm-banknote).
+This is useful for classifying new observations from an LDA model, such as determining whether new Swiss banknotes are real or fake (@exm-banknote) or classifying a new penguin.
 
 As we have seen, the multivariate linear model fit by `lm()` applies equally well when there are two or more grouping factors
-and or quantitative predictors, whereas discriminant analysis is mostly restricted to the case of a single `group` factor.
+and or quantitative predictors, whereas discriminant analysis is mostly restricted to the case of a single `group` factor.[^candisc]
+
+[^candisc]: The function `candisc::candisc()` carries out a _generalized_ discriminant analysis, for one term in a multivariate
+linear model. `candisc::candiscList()` does this for all terms in a model.
+
+In both cases, the analysis and significance tests are based on the familiar breakdown (@eq-SSP) of total variability 
+$\mathbf{T} \equiv \mathbf{SSP}_{T}$ of the observations around the grand means into portions attributable to differences _between_ the group means $\mathbf{H} \equiv \mathbf{SSP}_{H}$
+and the portions attributable to differences _within_ the groups around their means, $\mathbf{E} \equiv \mathbf{SSP}_{E}$ as described in
+@sec-sum-of-squares,
+
+$$
+\mathbf{T} = \mathbf{H} + \mathbf{E} \; .
+$$
+As we saw earlier (@sec-H-vs-E), significance tests are based on the $s = \min{(p, \text{df}_h)}$ non-zero
+eigenvalues $\lambda_i$ of $\mathbf{H}\mathbf{E}^{-1}$ which are combined into a single test statistic such
+as Wilks' $\Lambda = \Pi_i^s (1+\lambda_i)^{-1}$ or Hotelling-Lawley trace, $\Sigma_i^s \lambda_i$.
+The corresponding eigenvectors, $\mathbf{V}$ of $\mathbf{H}\mathbf{E}^{-1}$ are the weights for
+the linear combinations of the quantitative variables on which the groups are most widely separated.
+
+But here is where MANOVA and discriminant analysis diverge again. In discriminant analysis, 
 
 
 <!-- method notes
@@ -28,6 +47,7 @@ https://www.sthda.com/english/articles/36-classification-methods-essentials/146-
 https://stats.stackexchange.com/questions/82959/how-is-manova-related-to-lda
 https://stats.stackexchange.com/questions/48786/algebra-of-lda-fisher-discrimination-power-of-a-variable-and-linear-discriminan#48859
 https://stats.stackexchange.com/questions/22884/how-does-linear-discriminant-analysis-reduce-the-dimensions/22889#22889
+https://stats.stackexchange.com/questions/169436/how-lda-a-classification-technique-also-serves-as-dimensionality-reduction-tec
 -->
 
 The discussion here is limited to what this altered focus adds to _visualizing differences_ among groups on a collection
@@ -51,23 +71,24 @@ _prior probabilities_, which adjust the boundaries used to classify new observat
 **Penguins on Island Z**
 
 For an example, imagine you are a researcher on an expedition to Antarctica to survey the penguin population. 
-You stop at a small, as yet unnamed island "Z", and find three penguins you want to study. You call
-Abe, Betsy and Chloe. How can you determine their species based on what you know of the penguins studied before?
+You stop at a small, as yet unnamed island "Z", and find four penguins you want to study. You call them
+Abe, Betsy, Chloe and Dave. How can you determine their species based on what you know of the penguins studied before?
 
-<!--
-Make up some data for these three new penguins
-
-new_peng <- tibble(
-  id = c("Abe", "Betsy", "Chloe"),
-  species = rep(NA, 3),
-  island = rep("Z", 3),
-  bill_length = c(35, 52, 52, ),
-  bill_depth= c(18, 20, 15),
-  flipper_length = c(220, 190, 210),
-  body_mass = c(5000, 3900, 4000),
-  sex = c("m", "f", "f")
+```{r peng-new}
+peng_new <- data.frame(
+  species = rep(NA, 4),
+  island = rep("Z", 4),
+  bill_length = c(35, 52, 52, 50),
+  bill_depth= c(18, 20, 15, 16),
+  flipper_length = c(220, 190, 210, 190),
+  body_mass = c(5000, 3900, 4000, 3800),
+  sex = c("m", "f", "f", "m")
 )
--->
+rownames(peng_new) <- c("Abe", "Betsy", "Chloe", "Dave")
+peng_new
+```
+
+
 
 
 
