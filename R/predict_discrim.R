@@ -1,3 +1,6 @@
+# TODO: add stuff for other discriminant methods: 
+#  library(mda) -> mda() -> predict.mda()
+#  
 #' Predicted values for discriminant analysis
 #' 
 #' \code{predict_discrim} calculates predicted class membership values for a linear or quadratic discriminant analysis,
@@ -5,7 +8,7 @@
 #' 
 #' @details
 #' The `predict()` methods provided for [MASS::lda()] and [MASS::qda()] are a mess, because they return their results as
-#' a list, with components `class`, `posterior` and `x`
+#' a list, with components `class`, `posterior` and `x`. 
 #' 
 #' 
 #' @param object   An object of class `"lda"` or `"qda"`  such as results from [MASS::lda()] or [MASS::qda()] 
