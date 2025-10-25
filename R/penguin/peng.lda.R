@@ -108,11 +108,23 @@ peng.partimat <- peng |>
   dplyr::select(species, bill_length:body_mass) |>
   partimat(species ~ ., data = _, 
          method = "lda",
-         plot.matrix = TRUE,
-         plot.control = list(cex = 1.2),
+#         plot.matrix = TRUE,
+#         plot.control = list(cex = 1.2),
+#         cex.pts = 0.7,
+         image.colors = scales::alpha(col, alpha = 0.4),
+         main = "Penguin Partition Plot"
+  )
+
+peng.partimat <- peng |>
+  dplyr::select(species, bill_length:body_mass) |>
+  partimat(species ~ ., data = _, 
+         method = "qda",
+#         plot.matrix = TRUE,
+#         plot.control = list(cex = 1.2),
 #         cex.pts = 0.7,
          image.colors = scales::alpha(col, alpha = 0.4)
   )
+
 
 peng.partimat <- peng |>
   dplyr::select(species, bill_length:body_mass) |>

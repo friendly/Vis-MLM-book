@@ -139,3 +139,22 @@ with(pred,{
           xpd = TRUE)
   })
 
+
+pred_all <- predict_discrim(peng.lda, scores=TRUE)
+
+# labels, rather than a legend
+# WHY IS THIS WRONG?
+means <- pred_all |>
+#  group_by(species) |>
+  summarise(LD1 = mean(LD1),
+            LD2 = mean(LD2), .by = species)
+text(means, labels = means$species)  
+
+# add data ellipses
+dataEllipse(LD2 ~ LD1 | species, data = pred_all,
+            levels = 0.68, fill=TRUE, fill.alpha = 0.1,
+            group.labels = NULL,
+            add = TRUE, plot.points = FALSE,
+            col = col)
+
+

@@ -4,6 +4,7 @@
 library(MASS)
 library(ggplot2)
 library(patchwork)
+library(klaR)
 ```
 
 
@@ -83,7 +84,6 @@ implemented in `MASS::qda()`.[^other-discrim]
 [^other-discrim]: There are a number of other methods of discriminant analysis. For example, in
 **mixture discriminant analysis** (MDA), each class is assumed to be a Gaussian mixture of subclasses ...
 **flexible discriminant analysis** (FDA) is anextension of LDA that uses non-linear combinations of predictors such as splines. FDA is useful to model multivariate non-normality or non-linear relationships among variables within each group, allowing for a more accurate classification. These are implemented in the 
-<!-- `r package("mda")`  -->
 package `mda`
 as `mda()` and `fda()`, which have the same syntax and similar
 methods to `lda()`.
@@ -242,8 +242,9 @@ op <- par(mar = c(4, 4, 1, 1)+.5)
 plot(peng.lda)
 ```
 
+But, we can turn this sow's ear into a silk purse!
 My goal here is to illustrate plotting in discriminant space and show how the basic plot from `plot.lda()`
-can be made to be informative. First, `plot_discrim()` can also return the discriminant scores for the new observations
+can be made more informative. First, `predict_discrim()` can also return the discriminant scores for the new observations
 via the argument `scores = TRUE`. I'll use this dataset to add labels to the plot.
 
 ```{r}
@@ -253,8 +254,8 @@ pred <- predict_discrim(peng.lda,
 print(pred[, -(1:4)])
 ```
 
-Then, I want to use more informative axis labels, showing the percent of between-group variance associated with each dimension,
-which come from the `svd` component of the `peng.lda` object.
+Then, I want to use more informative axis labels, showing the percent of between-group variance associated with each dimension.
+These come from the (poorly named) `svd` component of the `peng.lda` object.
 
 ```{r}
 svd <- peng.lda$svd
@@ -266,11 +267,12 @@ labs <- glue::glue("Discriminant dimension {1:2} ({var}%)") |>
 Next, you can override how `plot.lda()` plots the observations by creating a panel function that simply plots the points
 rather than their observation classes,
 
-```{r}
+```{r panel-pts}
 panel.pts <- function(x, y, ...) points(x, y, ...)
 ```
 
-Finally, ...
+Finally, call `plot.lda()` with this panel function, set the color and shape of the point symbols to match our
+Penguin theme and use the axis labels set above in `labs`. You can then add points and labels for the newly classified penguins.
 
 ```{r echo = -1}
 #| label: fig-peng-new-discrim2
@@ -302,9 +304,97 @@ with(pred,{
   })
 ```
 
+Compared with the separate 2D views in data space (@fig-peng-new-data),
+this view accounts for 100% of the variance due to separation of the species groups.
+You can see that Betsy and Dave are rather close to the other Chinstraps.
+Abe, Chloe and Emma are rather far from the centers of the species they are
+classified as, yet they are closer to their groups than to any of the two others.
 
+While @fig-peng-new-discrim2 is a substantial improvement over @fig-peng-new-discrim, it is harder to go much
+further, because `plot.lda()` method conceals what it does to make the plot using the `"lda"` object.
+You have to dive into that object to get the information needed to add additional graphical information.
+
+For example, if you also wanted to show data ellipses or other bivariate summaries in this plot, it would
+be necessary to get the predicted classes for each observation in `peng` dataset, together with the
+discriminant scores, `LD1` and `LD2`, obtained using `scores=TRUE` in the call to `predict_discrim()`.
+Data ellipses could then be added added using `car::dataEllipse()` as follows (not shown)
+
+```{r peng-discrim-ellipses}
+#| eval: false
+pred_all <- predict_discrim(peng.lda, scores=TRUE)
+
+# add data ellipses
+dataEllipse(LD2 ~ LD1 | species, data = pred_all,
+            levels = 0.68, fill=TRUE, fill.alpha = 0.1,
+            group.labels = NULL,
+            add = TRUE, plot.points = FALSE,
+            col = col)
+```
 
 
 
 ### Visualizing prediction regions
+
+It also aids understanding and interpretation to visualize the boundaries that separate the prediction
+into one group rather than another. Our penguins live in a 4-dimensional data space, and the boundaries
+of the predicted classification regions are of one less dimension---3D hyperplanes here.
+
+Any point in this data space can be classified into one of the group using a `predict()` method. Therefore,
+to visualize the prediction regions, you can calculate the prediction over a grid of values of the
+$y$ variables, and then plot those using colored tiles. The steps are:
+
+* Construct a $k \times k$ grid of values of the two focal variables $y_1, y_2$ to be plotted:
+  * For each focal $y$ variable, divide it's range into $k$ intervals, as in `seq(min(y)), max(y), k)`
+  * Set each non-focal variable to its's mean.
+  * Use a `predict()` method to get the predicted classification group for each point. 
+
+* For base R graphs, you can use `image(x, y, z, ...)` to plot this grid of the `(x, y)`, where `z` is a $k \times k$-length vector of the
+predicted class of an observation at this point. In `ggplot2` this is easier, using `geom_tile().
+
+* Boundaries of the regions are the contours of the maximum of the posterior probabilities. You can plot these using `contour(x, y, z, ...)`
+in base R or `geom_contour()` in `ggplot2`.
+
+* On top of this, you can plot the data observations, data ellipses for the groups or anything else.
+
+This idea is essentially the same as used in _effect plots_ ---
+calculate predicted values over a range of the variables shown, while controlling those not shown at a typical value.
+
+**`partimat()`**
+
+The function `klar::partimat()` produces such "partition" plots for `lda()`, `qda()` as well as a number of other classification methods, including recursive partioning trees (`rpart::rpart()`), naive Bayes (`e1071::naiveBayes()`) and other methods. The graphs produced are
+generally UGLY; but they are easy to produce and convey a sense of the method. Once we have the idea in mind, we can try to make
+prettier, more useful versions.
+
+`partimat()` takes a model formula for the classification, here `species ~ .` for the penguin data. It produces a classification plot
+for every combination of two $y$ variables in the data, and can show them either in a scatterplot matrix format (`plot.matrix = TRUE`), or a rectangular display of only the unique pairs. The latter takes less space, and so allows higher resolution in the individual plots.
+The `method` argument asks for `lda()` to determine the result shown in @fig-peng-partimat1.
+
+<!-- fig.code: R/peng.lda.R -->
+
+```{r}
+#| label: fig-peng-partimat1
+#| fig-height: 5
+#| fig-width: 7.5
+#| out-width: "90%"
+#| fig-cap: "Partition plots for the penguin data. Each pairwise scatterplot ..."
+peng |>
+  dplyr::select(species, bill_length:body_mass) |>
+  partimat(species ~ ., data = _, 
+         method = "lda",
+         plot.matrix = FALSE,
+         image.colors = scales::alpha(col, alpha = 0.4),
+         main = "Penguin Partition Plot"
+  )
+```
+
+In each pairwise plot of the penguin variables shown in @fig-peng-partimat1, the background is colored according to the species that
+any observation there (holding others constant) would be classified as. This fails in software design because there is little
+flexibility in what else is shown to represent the observations. The penguin data values are shown using the first letter of
+their species, colored black if that bird is classified correctly, `r red` otherwise.[^partimat-encoding]
+
+[^partimat-encoding]: In fairness, `klaR::partimat()` was designed to emphasize the classification accuracy shown in each pairwise plot,
+also printed as an error rate for each plot. You can see, for example that the plot of `body_mass` against `bill_depth` in row 2, column 2
+of @fig-peng-partimat1 shows only two distinct regions, for Adelie and Gentoo. All the Chinstraps appear mixed in with the Adelies
+and, giving an error rate of 0.204 in this plot. Two other panels also show high error rates.
+
 
