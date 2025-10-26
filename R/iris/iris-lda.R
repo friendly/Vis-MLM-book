@@ -14,7 +14,7 @@ names(iris.lda)
 
 str(iris.lda)
 
-col <- scales::hue_pal()(3)
+#col <- scales::hue_pal()(3)
 iris.colors <- c("red", "darkgreen", "blue")
 
 # using MASS::plot.lda 
@@ -27,6 +27,7 @@ plot(iris.lda,
 
 
 # Can now use ggbiplot::reflect() in ggbiplot v 0.6.5 ??
+
 
 iris.lda <- ggbiplot::reflect(iris.lda, 1)
 
@@ -41,11 +42,6 @@ str(iris.scores)
 vecs <- iris.lda$scaling
 rownames(vecs) <- sub("\\.", "\n", rownames(vecs))
 vecs
-
-# reflect LD1
-# iris.scores[, "LD1"] <- -1 * iris.scores[, "LD1"]
-# vecs[, "LD1"] <- -1 * vecs[, "LD1"]
-
 
 # use asp=1
 dataEllipse(LD2 ~ LD1 | Species, data=iris.scores, 
@@ -72,11 +68,11 @@ vectors(vecs,
 dataEllipse(LD2 ~ LD1 | Species, data=iris.scores, 
             levels = 0.68, 
             fill = TRUE, fill.alpha = 0.05,
-            col = col,
+            col = iris.colors,
             pch = 15:17,
             grid = FALSE,
             label.cex = 1.5,
-            id = list(n = 2, col = col))
+            id = list(n = 2, col = iris.colors))
 
 
 # MANOVA

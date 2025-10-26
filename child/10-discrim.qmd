@@ -7,6 +7,11 @@ library(patchwork)
 library(klaR)
 ```
 
+```{r include=FALSE}
+# only for testing by itself
+source(here::here("R/common.R"))
+library(dplyr)
+```
 
 As described earlier (@sec-t2-discrim), Linear Discriminant Analysis (LDA) is similar to a one-way MANOVA, but with its emphasis
 on the problem of _classifying observations_ into groups rather than _testing_ whether there are significant differences
@@ -82,8 +87,8 @@ substantially, the boundaries become curved, and the method is called **quadrati
 implemented in `MASS::qda()`.[^other-discrim]
 
 [^other-discrim]: There are a number of other methods of discriminant analysis. For example, in
-**mixture discriminant analysis** (MDA), each class is assumed to be a Gaussian mixture of subclasses ...
-**flexible discriminant analysis** (FDA) is anextension of LDA that uses non-linear combinations of predictors such as splines. FDA is useful to model multivariate non-normality or non-linear relationships among variables within each group, allowing for a more accurate classification. These are implemented in the 
+**mixture discriminant analysis** (MDA), each class is assumed to be a mixture of several Gaussian distributions, rather than a single one.
+**flexible discriminant analysis** (FDA) is an extension of LDA that uses non-linear combinations of predictors such as splines. FDA is useful to model multivariate non-normality or non-linear relationships among variables within each group, allowing for a more accurate classification. These are implemented in the 
 package `mda`
 as `mda()` and `fda()`, which have the same syntax and similar
 methods to `lda()`.
@@ -161,8 +166,8 @@ A simple way to understand what happens in discriminant analysis is to plot the 
 for the new observations. To make this easier, I created a function `predict_discrim()`, which joins the measures in the
 test dataset with the predicted class for each new observation.
 
-```{r}
-source("R/predict_discrim.R")
+```{r peng-pred}
+source(here::here("R/predict_discrim.R"))
 pred <- predict_discrim(peng.lda, newdata = peng_new[, 3:6]) |>
   print()
 ```
@@ -170,11 +175,11 @@ pred <- predict_discrim(peng.lda, newdata = peng_new[, 3:6]) |>
 ```{r peng-plots-setup}
 #| echo: false
 ggplot2::theme_set(ggplot2::theme_bw(base_size = 16))
-source("R/penguin/penguin-colors.R")
+source(here::here("R/penguin/penguin-colors.R"))
 
-theme_penguins <- list(
-  scale_color_penguins(shade="dark"),
-  scale_fill_penguins(shade="dark"))
+# theme_penguins <- list(
+#   scale_color_penguins(shade="dark"),
+#   scale_fill_penguins(shade="dark"))
 legend_inside <- function(position) {
   theme(legend.position = "inside",
         legend.position.inside = position)
@@ -199,7 +204,7 @@ p1 <- ggplot(peng,
   stat_ellipse(geom = "polygon", level = 0.95, alpha = 0.4) +
   geom_label(data = pred, label=row.names(pred), 
              fill="white", size = 5, fontface="bold") +
-  theme_penguins +
+  theme_penguins("dark") +
   legend_inside(c(0.87, 0.15))
 
 p2 <- ggplot(peng, 
@@ -209,7 +214,7 @@ p2 <- ggplot(peng,
   stat_ellipse(geom = "polygon", level = 0.95, alpha = 0.4) +
   geom_label(data = pred, label=row.names(pred), 
              fill="white", size = 5, fontface="bold") +
-  theme_penguins +
+  theme_penguins("dark") +
   legend_inside(c(0.87, 0.15))
 
 p1 + p2
@@ -293,7 +298,6 @@ plot(peng.lda,
      cex.lab = 1.3
 )
 
-
 # plot the new observations and label them with their row.names in the predicted data
 with(pred,{
      points(LD1, LD2, pch = 16, col = "black", cex = 2)
@@ -335,7 +339,7 @@ dataEllipse(LD2 ~ LD1 | species, data = pred_all,
 
 ### Visualizing prediction regions
 
-It also aids understanding and interpretation to visualize the boundaries that separate the prediction
+An even better way to understand and interpret discriminant analysis results is to visualize the boundaries that separate the prediction
 into one group rather than another. Our penguins live in a 4-dimensional data space, and the boundaries
 of the predicted classification regions are of one less dimension---3D hyperplanes here.
 
@@ -356,10 +360,10 @@ in base R or `geom_contour()` in `ggplot2`.
 
 * On top of this, you can plot the data observations, data ellipses for the groups or anything else.
 
-This idea is essentially the same as used in _effect plots_ ---
+This idea is essentially the same as used in _effect plots_ (@sec-effect-displays)---you
 calculate predicted values over a range of the variables shown, while controlling those not shown at a typical value.
 
-**`partimat()`**
+**Partition plots with `partimat()`**
 
 The function `klar::partimat()` produces such "partition" plots for `lda()`, `qda()` as well as a number of other classification methods, including recursive partioning trees (`rpart::rpart()`), naive Bayes (`e1071::naiveBayes()`) and other methods. The graphs produced are
 generally UGLY; but they are easy to produce and convey a sense of the method. Once we have the idea in mind, we can try to make
@@ -397,4 +401,74 @@ also printed as an error rate for each plot. You can see, for example that the p
 of @fig-peng-partimat1 shows only two distinct regions, for Adelie and Gentoo. All the Chinstraps appear mixed in with the Adelies
 and, giving an error rate of 0.204 in this plot. Two other panels also show high error rates.
 
+**Using `ggplot()`**
 
+To construct similar (but better) plots using `r pkg("ggplot2")`, I follow the steps outlined above to get predicted
+classes over a grid, in this case for the penguin bill variables. 
+The function `marginaleffects::datagrid()` makes this easy, automatically marginalizing the other variables.
+
+```{r pred-grid}
+# make a grid of values for prediction
+range80 = \(x) seq(min(x), max(x), length.out = 80)
+grid <- marginaleffects::datagrid(bill_length = range80, 
+                                  bill_depth = range80, newdata = peng)
+# get predicted species for the grid points
+pred_grid <- predict_discrim(peng.lda, newdata = grid) 
+head(pred_grid)
+```
+
+Then, in the plotting steps, `geom_tile()` is used to display the predictions in the `pred_grid` dataset, using the penguin colors for the species. Points and other layers use the full `peng` dataset.
+```{r peng-ggplot-code}
+#| echo: true
+#| results: hide
+means <- peng |>
+  group_by(species) |>
+  summarise(across(c(bill_length, bill_depth), \(x) mean(x, na.rm = TRUE) ))
+
+p1 <- ggplot(data = peng, aes(x = bill_length, y = bill_depth)) +
+  # Plot decision regions
+  geom_tile(data = pred_grid, aes(fill = species), alpha = 0.2) +
+  stat_ellipse(aes(color=species), level = 0.68, linewidth = 1.2) +
+  # Plot original data points
+  geom_point(aes(color = species, shape=species),
+             size =2) +
+  geom_label(data=means, aes(label = species, color = species),
+             size =5) +
+  theme_penguins("dark") +
+  theme_minimal(base_size = 16) +
+  theme(legend.position = "none")
+```
+
+Doing the same steps for `flipper_length` and `body_mass`, and then showing the two plots together 
+(as in @fig-peng-new-data) gives @fig-peng-regions.
+```{r}
+#| label: fig-peng-regions
+#| echo: false
+#| fig-height: 5
+#| fig-width: 10
+#| out-width: "100%"
+#| fig-cap: "Plots of the Penguin data showing the linear discriminant prediction regions for the three species."
+grid <- marginaleffects::datagrid(flipper_length = range80, 
+                                  body_mass = range80, newdata = peng)
+pred_grid <- predict_discrim(peng.lda, newdata = grid) 
+
+means <- peng |>
+  group_by(species) |>
+  summarise(across(c(flipper_length, body_mass), \(x) mean(x, na.rm = TRUE) ))
+p2 <- ggplot(data = peng, aes(x = flipper_length, y = body_mass)) +
+  # Plot decision regions
+  geom_tile(data = pred_grid, aes(fill = species), alpha = 0.2) +
+  stat_ellipse(aes(color=species), level = 0.68, linewidth = 1.2) +
+  # Plot original data points
+  geom_point(aes(color = species, shape=species),
+             size =2) +
+  geom_label(data=means, aes(label = species, color = species),
+             size =5) +
+  theme_penguins("dark") +
+  theme_minimal(base_size = 16) +
+  theme(legend.position = "none")
+
+p1 + p2
+```
+
+The groups are nicely separated in the left panel for the bill variables. 

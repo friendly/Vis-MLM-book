@@ -115,7 +115,7 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="sec-discrim-MLM">Discriminant analysis</h2>
 <p>As described earlier (<strong>?@sec-t2-discrim</strong>), Linear Discriminant Analysis (LDA) is similar to a one-way MANOVA, but with its emphasis on the problem of <em>classifying observations</em> into groups rather than <em>testing</em> whether there are significant differences of the means for the response variables. You would use LDA rather than MANOVA when your goal is to predict group membership and identify which variables best distinguish between pre-defined groups, rather than just testing for group differences.</p>
 <p>Thus, LDA can be seen as a <strong>flipped MANOVA</strong>, where the role of dependent and independent variables are reversed. You can see this difference in the model formulas used in <code>lm()</code> compared with <code>MASS::lda()</code>, which fits a linear discriminant analysis (LDA) model: The outcomes on the right-hand side are <code>cbind(y1, y2, y3)</code> for the MANOVA but is simply <code>group</code> for a discriminant analysis.</p>
-<div class="cell">
+<div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>manova.mod  <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="fu">cbind</span>(y1, y2, y3) <span class="sc">~</span> group)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>discrim.mod <span class="ot">&lt;-</span> MASS<span class="sc">::</span><span class="fu">lda</span>(group <span class="sc">~</span> y1 <span class="sc">+</span> y2 <span class="sc">+</span> y3)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
@@ -126,7 +126,7 @@ window.Quarto = {
 \mathbf{T} = \mathbf{H} + \mathbf{E} \; .
 \]</span> As we saw earlier (<strong>?@sec-H-vs-E</strong>), significance tests are based on the <span class="math inline">\(s = \min{(p, \text{df}_h)}\)</span> non-zero eigenvalues <span class="math inline">\(\lambda_i\)</span> of <span class="math inline">\(\mathbf{H}\mathbf{E}^{-1}\)</span> which are combined into a single test statistic such as Wilks’ <span class="math inline">\(\Lambda = \Pi_i^s (1+\lambda_i)^{-1}\)</span> or Hotelling-Lawley trace, <span class="math inline">\(\Sigma_i^s \lambda_i\)</span>.</p>
 <p>The corresponding eigenvectors, <span class="math inline">\(\mathbf{V}\)</span> of <span class="math inline">\(\mathbf{H}\mathbf{E}^{-1}\)</span> are the weights for the linear combinations of the quantitative variables on which the groups are most widely separated. The transformation of the <span class="math inline">\(\mathbf{Y}\)</span> variables in data space to the space of these linear combinations is given by <span class="math inline">\(\mathbf{Z}_{n \times s} = \mathbf{Y} \; \mathbf{E}^{-1/2} \; \mathbf{V}\)</span> as we saw earlier (sec REF?).</p>
-<p>But here is where MANOVA and discriminant analysis diverge again. In discriminant analysis, you an replace the observed <span class="math inline">\(\mathbf{Y}\)</span> variables with the uncorrelated <span class="math inline">\(s\)</span> discriminant variates defined by <span class="math inline">\(\mathbf{V}\)</span> and obtain <em>exactly</em> the same classifications of the observations. The first, <span class="math inline">\(\mathbf{v}_1\)</span>, associated with the largest eigenvalue %_1$, accounts for the greatest proportion of between-group separation; the second, <span class="math inline">\(\mathbf{v}_2\)</span> is next in discriminating power, and so forth. But maybe we can classify nearly as well with a small subset of <span class="math inline">\(k &lt; s\)</span> discriminants without great loss. Hence, just as in PCA, discriminant analysis can be thought of as a <strong>dimension reduction</strong> technique, squeezing the most discrininant juice out of the data in a few dimensions.</p>
+<p>But here is where MANOVA and discriminant analysis diverge again. In discriminant analysis, you an replace the observed <span class="math inline">\(\mathbf{Y}\)</span> variables with the uncorrelated <span class="math inline">\(s\)</span> discriminant variates defined by <span class="math inline">\(\mathbf{V}\)</span> and obtain <em>exactly</em> the same classifications of the observations. The first, <span class="math inline">\(\mathbf{v}_1\)</span>, associated with the largest eigenvalue <span class="math inline">\(\lambda_1\)</span>, accounts for the greatest proportion of between-group separation; the second, <span class="math inline">\(\mathbf{v}_2\)</span> is next in discriminating power, and so forth. But maybe we can classify nearly as well with a small subset of <span class="math inline">\(k &lt; s\)</span> discriminants without great loss. Hence, just as in PCA, discriminant analysis can be thought of as a <strong>dimension reduction</strong> technique, squeezing the most discrininant juice out of the data in a few dimensions.</p>
 <!-- method notes
 https://en.wikipedia.org/wiki/Linear_discriminant_analysis
 https://www.sthda.com/english/articles/36-classification-methods-essentials/146-discriminant-analysis-essentials-in-r/
@@ -139,13 +139,14 @@ https://stats.stackexchange.com/questions/169436/how-lda-a-classification-techni
 Takes up LDA, QDA, mixture MDA models, ...
 https://www.sthda.com/english/articles/36-classification-methods-essentials/146-discriminant-analysis-essentials-in-r/
 -->
-<p>The discussion here is limited to what this altered focus adds to <em>visualizing differences</em> among groups on a collection of response variables. See <span class="citation" data-cites="Kleka1980">@Kleka1980</span>, <span class="citation" data-cites="Lachenbruch1975">@Lachenbruch1975</span> for a basic, but more general introduction to discriminant analysis methods. There is a useful discussion in this Cross Validated question <a href="https://bit.ly/4gpMykN">How is MANOVA related to LDA?</a> {.content-visible when-format=“pdf”} (https://bit.ly/4gpMykN).</p>
-<p>As in MANOVA, <strong>linear</strong> discriminant analysis assumes equal variance covariance matrices across the groups. In this case, the boundaries separating predicted group memberships are <em>hyper-planes</em> in the data space of the quantitative variables. In 2D plots, these appear as lines, and a goal of this section is to show how you can plot these. When the variance covariance matrices differ substantially, the boundaries become curved, and the method is called <strong>quadratic</strong> discriminant analysis, implemented in <code>MASS::qda()</code>.</p>
+<p>The discussion here is limited to what this altered focus adds to <em>visualizing differences</em> among groups on a collection of response variables. See <span class="citation" data-cites="Klecka1980">@Klecka1980</span>, <span class="citation" data-cites="Lachenbruch1975">@Lachenbruch1975</span> for a basic, but more general introduction to discriminant analysis methods. There is a useful discussion in this Cross Validated question <a href="https://bit.ly/4gpMykN">How is MANOVA related to LDA?</a> <!-- {.content-visible when-format="pdf"} (https://bit.ly/4gpMykN). --></p>
+<p>As in MANOVA, <strong>linear</strong> discriminant analysis assumes equal variance covariance matrices across the groups. In this case, the boundaries separating predicted group memberships are <em>hyper-planes</em> in the data space of the quantitative variables. In 2D plots, these appear as lines, and a goal of this section is to show how you can plot these. When the variance covariance matrices differ substantially, the boundaries become curved, and the method is called <strong>quadratic</strong> discriminant analysis, implemented in <code>MASS::qda()</code>.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
 <p>Another way that LDA differs from MANOVA is that for classification purposes, the relative proportions of the groups in your sample or in the population has a role in determining the classification rules. These are called <em>prior probabilities</em>, which adjust the boundaries used to classify new observations. A higher prior probability for a group increases its assigned likelihood, effectively “pulling” the classification boundary in its favor.</p>
 <div id="exm-penguin-new" class="theorem example">
 <p><span class="theorem-title"><strong>Example 1</strong></span> <strong>Penguins on Island Z</strong></p>
+<!-- fig.code: R/peng-lda-pred-new.R -->
 <p>For an example, to illustrate how discriminant analysis works, and how to use it to classify observations, imagine you are a researcher on an expedition to Antarctica to survey the penguin population. You stop at a small, as yet unnamed island “Z”, and find five penguins you want to study. You call them Abe, Betsy, Chloe, Dave and Emma. How can you determine their species based on what you know of the penguins studied before?</p>
-<div class="cell">
+<div class="cell" data-layout-align="center">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>peng_new <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">species =</span> <span class="fu">rep</span>(<span class="cn">NA</span>, <span class="dv">5</span>),</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">island =</span> <span class="fu">rep</span>(<span class="st">"Z"</span>, <span class="dv">5</span>),</span>
@@ -156,48 +157,50 @@ https://www.sthda.com/english/articles/36-classification-methods-essentials/146-
 <span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">sex =</span> <span class="fu">c</span>(<span class="st">"m"</span>, <span class="st">"f"</span>, <span class="st">"f"</span>, <span class="st">"m"</span>, <span class="st">"f"</span>),</span>
 <span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">row.names =</span> <span class="fu">c</span>(<span class="st">"Abe"</span>, <span class="st">"Betsy"</span>, <span class="st">"Chloe"</span>, <span class="st">"Dave"</span>, <span class="st">"Emma"</span>)</span>
 <span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>peng_new</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>      species island bill_length bill_depth flipper_length body_mass sex
-Abe        NA      Z          35         18            220      5000   m
-Betsy      NA      Z          52         20            190      3900   f
-Chloe      NA      Z          52         15            210      4000   f
-Dave       NA      Z          50         16            190      3500   m
-Emma       NA      Z          40         15            195      5500   f</code></pre>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>peng_new</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co">#       species island bill_length bill_depth flipper_length</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Abe        NA      Z          35         18            220</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Betsy      NA      Z          52         20            190</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Chloe      NA      Z          52         15            210</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Dave       NA      Z          50         16            190</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Emma       NA      Z          40         15            195</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="co">#       body_mass sex</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Abe        5000   m</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Betsy      3900   f</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Chloe      4000   f</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Dave       3500   m</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Emma       5500   f</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-</div>
-<p>So, you can run a discriminant analysis using the existing data and then use that to classify the new penguins on island Z. By default, <code>MASS::lda()</code> uses the proportions of the three species as the prior probabilities.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(peng, <span class="at">package =</span> <span class="st">"heplots"</span>)</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>peng.lda <span class="ot">&lt;-</span> <span class="fu">lda</span>(species <span class="sc">~</span> bill_length <span class="sc">+</span> bill_depth <span class="sc">+</span> flipper_length <span class="sc">+</span> body_mass, </span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>                <span class="at">data =</span> peng)</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(peng.lda, <span class="at">digits =</span> <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Call:
-lda(species ~ bill_length + bill_depth + flipper_length + body_mass, 
-    data = peng)
-
-Prior probabilities of groups:
-   Adelie Chinstrap    Gentoo 
-    0.438     0.204     0.357 
-
-Group means:
-          bill_length bill_depth flipper_length body_mass
-Adelie           38.8       18.3            190      3706
-Chinstrap        48.8       18.4            196      3733
-Gentoo           47.6       15.0            217      5092
-
-Coefficients of linear discriminants:
-                    LD1      LD2
-bill_length    -0.08593 -0.41660
-bill_depth      1.04165 -0.01042
-flipper_length -0.08455  0.01425
-body_mass      -0.00135  0.00169
-
-Proportion of trace:
-  LD1   LD2 
-0.866 0.135 </code></pre>
-</div>
+<p>So, you can run a discriminant analysis using the existing data and then use that to classify the new penguins on island Z. By default, <code>MASS::lda()</code> uses the proportions of the three species as the prior probabilities, which are given in the printed output. With <span class="math inline">\(g = 3\)</span> groups, and <span class="math inline">\(p = 4\)</span> variables, there are only <span class="math inline">\(s = 2\)</span> discriminant dimensions, of which the first, <code>LD1</code> accounts for 86.6% of the total …</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(peng, <span class="at">package =</span> <span class="st">"heplots"</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>peng.lda <span class="ot">&lt;-</span> <span class="fu">lda</span>(species <span class="sc">~</span> bill_length <span class="sc">+</span> bill_depth <span class="sc">+</span> flipper_length <span class="sc">+</span> body_mass, </span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>                <span class="at">data =</span> peng)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(peng.lda, <span class="at">digits =</span> <span class="dv">3</span>)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Call:</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co"># lda(species ~ bill_length + bill_depth + flipper_length + body_mass, </span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co">#     data = peng)</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Prior probabilities of groups:</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="co">#    Adelie Chinstrap    Gentoo </span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="co">#     0.438     0.204     0.357 </span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Group means:</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="co">#           bill_length bill_depth flipper_length body_mass</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Adelie           38.8       18.3            190      3706</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Chinstrap        48.8       18.4            196      3733</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Gentoo           47.6       15.0            217      5092</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Coefficients of linear discriminants:</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="co">#                     LD1      LD2</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="co"># bill_length    -0.08593 -0.41660</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a><span class="co"># bill_depth      1.04165 -0.01042</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="co"># flipper_length -0.08455  0.01425</span></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a><span class="co"># body_mass      -0.00135  0.00169</span></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a><span class="co"># Proportion of trace:</span></span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a><span class="co">#   LD1   LD2 </span></span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a><span class="co"># 0.866 0.135</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>The output from this, <code>peng.lda</code>, can be used to classify our new penguins using the <code>MASS::predict.lda()</code> method for an <code>"lda"</code> object. The printed result isn’t pretty, because the function simply returns a list, with elements:</p>
 <ul>
@@ -205,53 +208,298 @@ Proportion of trace:
 <li><code>posterior</code>: The posterior probabilities for the observations being assigned to each <code>class</code>. The predicted class is that of the maximum probability.</li>
 <li><code>x</code>: The scores of the test cases on the discriminant variables.</li>
 </ul>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>peng_pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(peng.lda, <span class="at">newdata =</span> peng_new) <span class="sc">|&gt;</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="at">digits =</span> <span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>$class
-[1] Adelie    Chinstrap Gentoo    Chinstrap Gentoo   
-Levels: Adelie Chinstrap Gentoo
-
-$posterior
-         Adelie Chinstrap    Gentoo
-Abe   9.693e-01 6.150e-10 3.069e-02
-Betsy 2.205e-05 1.000e+00 3.244e-20
-Chloe 2.263e-11 1.277e-03 9.987e-01
-Dave  5.484e-07 1.000e+00 2.766e-09
-Emma  1.518e-07 8.504e-13 1.000e+00
-
-$x
-          LD1    LD2
-Abe   -1.0351  5.345
-Betsy  3.6062 -4.039
-Chloe -3.4278 -3.534
-Dave   0.1504 -3.839
-Emma  -3.1495  3.780</code></pre>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>peng_pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(peng.lda, <span class="at">newdata =</span> peng_new) <span class="sc">|&gt;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="at">digits =</span> <span class="dv">4</span>)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co"># $class</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># [1] Adelie    Chinstrap Gentoo    Chinstrap Gentoo   </span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Levels: Adelie Chinstrap Gentoo</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co"># $posterior</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="co">#          Adelie Chinstrap    Gentoo</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Abe   9.693e-01 6.150e-10 3.069e-02</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Betsy 2.205e-05 1.000e+00 3.244e-20</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Chloe 2.263e-11 1.277e-03 9.987e-01</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Dave  5.484e-07 1.000e+00 2.766e-09</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Emma  1.518e-07 8.504e-13 1.000e+00</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="co"># $x</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="co">#           LD1    LD2</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Abe   -1.0351  5.345</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Betsy  3.6062 -4.039</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Chloe -3.4278 -3.534</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Dave   0.1504 -3.839</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Emma  -3.1495  3.780</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-</div>
-<p>A little manipulation of the result from <code>predict()</code> makes what has happened here clear.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>class <span class="ot">&lt;-</span> peng_pred<span class="sc">$</span>class </span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>posterior <span class="ot">&lt;-</span> peng_pred<span class="sc">$</span>posterior</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>maxp <span class="ot">&lt;-</span> <span class="fu">apply</span>(posterior, <span class="dv">1</span>, max)</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="fu">data.frame</span>(class, <span class="fu">round</span>(posterior, <span class="dv">4</span>), maxp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>          class Adelie Chinstrap Gentoo      maxp
-Abe      Adelie 0.9693    0.0000 0.0307 0.9693051
-Betsy Chinstrap 0.0000    1.0000 0.0000 0.9999780
-Chloe    Gentoo 0.0000    0.0013 0.9987 0.9987234
-Dave  Chinstrap 0.0000    1.0000 0.0000 0.9999994
-Emma     Gentoo 0.0000    0.0000 1.0000 0.9999998</code></pre>
-</div>
+<p>A little manipulation of the result from <code>predict()</code> makes what has happened here more apparent.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>class <span class="ot">&lt;-</span> peng_pred<span class="sc">$</span>class </span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>posterior <span class="ot">&lt;-</span> peng_pred<span class="sc">$</span>posterior</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>maxp <span class="ot">&lt;-</span> <span class="fu">apply</span>(posterior, <span class="dv">1</span>, max)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="fu">data.frame</span>(class, <span class="fu">round</span>(posterior, <span class="dv">4</span>), maxp)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co">#           class Adelie Chinstrap Gentoo  maxp</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Abe      Adelie  0.969    0.0000 0.0307 0.969</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Betsy Chinstrap  0.000    1.0000 0.0000 1.000</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Chloe    Gentoo  0.000    0.0013 0.9987 0.999</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Dave  Chinstrap  0.000    1.0000 0.0000 1.000</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Emma     Gentoo  0.000    0.0000 1.0000 1.000</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>This says that Abe has the highest probability in the Adelie class, Betty and Dave are almost certainly of the Chinstrap species, while Chloe and Emma are almost certainly Gentoos.</p>
 </div>
 <section id="visualizing-classification-in-data-space" class="level3">
 <h3 class="anchored" data-anchor-id="visualizing-classification-in-data-space">Visualizing classification in data space</h3>
+<p>A simple way to understand what happens in discriminant analysis is to plot the original data in data space and add labeled points for the new observations. To make this easier, I created a function <code>predict_discrim()</code>, which joins the measures in the test dataset with the predicted class for each new observation.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"R/predict_discrim.R"</span>))</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>pred <span class="ot">&lt;-</span> <span class="fu">predict_discrim</span>(peng.lda, <span class="at">newdata =</span> peng_new[, <span class="dv">3</span><span class="sc">:</span><span class="dv">6</span>]) <span class="sc">|&gt;</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>()</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co">#         species bill_length bill_depth flipper_length body_mass</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Abe      Adelie          35         18            220      5000</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Betsy Chinstrap          52         20            190      3900</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Chloe    Gentoo          52         15            210      4000</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Dave  Chinstrap          50         16            190      3500</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Emma     Gentoo          40         15            195      5500</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="co">#        maxp</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Abe   0.969</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Betsy 1.000</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Chloe 0.999</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Dave  1.000</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Emma  1.000</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Using this you can simply plot the original Penguin data for two variables and use <code>geom_label()</code> to plot the observations of the new penguins in this space. In <a href="#fig-peng-new-data" class="quarto-xref">Figure&nbsp;1</a>, I do this in two separate plots, one for the bill length and depth variables, and another for <code>flipper_length</code> vs.&nbsp;<code>body_mass</code>. The key thing is that the call to <code>geom_label()</code> uses the predicted <code>species</code> and coordinates for the new penguins from the <code>pred</code> dataset obtained from <code>predict_discrim()</code>.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>p1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(peng, </span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> bill_length, <span class="at">y =</span> bill_depth,</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>           <span class="at">color =</span> species, <span class="at">shape =</span> species, <span class="at">fill=</span>species)) <span class="sc">+</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size=</span><span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_ellipse</span>(<span class="at">geom =</span> <span class="st">"polygon"</span>, <span class="at">level =</span> <span class="fl">0.95</span>, <span class="at">alpha =</span> <span class="fl">0.4</span>) <span class="sc">+</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_label</span>(<span class="at">data =</span> pred, <span class="at">label=</span><span class="fu">row.names</span>(pred), </span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">fill=</span><span class="st">"white"</span>, <span class="at">size =</span> <span class="dv">5</span>, <span class="at">fontface=</span><span class="st">"bold"</span>) <span class="sc">+</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_penguins</span>(<span class="st">"dark"</span>) <span class="sc">+</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">legend_inside</span>(<span class="fu">c</span>(<span class="fl">0.87</span>, <span class="fl">0.15</span>))</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>p2 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(peng, </span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> flipper_length, <span class="at">y =</span> body_mass,</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>           <span class="at">color =</span> species, <span class="at">shape =</span> species, <span class="at">fill=</span>species)) <span class="sc">+</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size=</span><span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_ellipse</span>(<span class="at">geom =</span> <span class="st">"polygon"</span>, <span class="at">level =</span> <span class="fl">0.95</span>, <span class="at">alpha =</span> <span class="fl">0.4</span>) <span class="sc">+</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_label</span>(<span class="at">data =</span> pred, <span class="at">label=</span><span class="fu">row.names</span>(pred), </span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>             <span class="at">fill=</span><span class="st">"white"</span>, <span class="at">size =</span> <span class="dv">5</span>, <span class="at">fontface=</span><span class="st">"bold"</span>) <span class="sc">+</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_penguins</span>(<span class="st">"dark"</span>) <span class="sc">+</span></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">legend_inside</span>(<span class="fu">c</span>(<span class="fl">0.87</span>, <span class="fl">0.15</span>))</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>p1 <span class="sc">+</span> p2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-peng-new-data" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-peng-new-data-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/fig-peng-new-data-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-peng-new-data-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Plots of the Penguin data, showing the locations of the newly classified observations from island Z.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>In <a href="#fig-peng-new-data" class="quarto-xref">Figure&nbsp;1</a>, Betsy is well within the data ellipses for their species in both plots. Abe looks very much like an Adelie in the panel for the bill variables, but more like a Gentoo in terms of flipper length and body mass. Chloe, classed as a Gentoo is at the margin of the 95% ellipses. Dave, classified as a Chinstrap, looks more like a Gentoo in terms of bill length and depth, but is in the region occupied by Adelie and Chinstraps in the right panel. Emma is outside the data ellipses for all three species in both plots.</p>
+<p>These plots are just two of the <span class="math inline">\(4 \times 3 / 2 = 6\)</span> possible pairwise plots that would appear in a scatterplot matrix.</p>
+</section>
+<section id="visualizing-classification-in-discriminant-space" class="level3">
+<h3 class="anchored" data-anchor-id="visualizing-classification-in-discriminant-space">Visualizing classification in discriminant space</h3>
+<p>One main virtue of discriminant analysis is that it allows us to see the data in the reduced-rank space that shows the greatest differences among the groups. If you add points for the newly classified observations, you can see better why they are classified as they were. The <span style="color: brown;"><strong>MASS</strong></span> package has a <code>plot.lda()</code> method, but the result is far too ugly to be useful. Here’s what you get with the default settings:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(peng.lda)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-peng-new-discrim" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-peng-new-discrim-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/fig-peng-new-discrim-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:60.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-peng-new-discrim-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: Plot of the Penguin observations in the space of the two discriminant dimensions. The default plot method uses the classes of the observations as labels.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>But, we can turn this sow’s ear into a silk purse! My goal here is to illustrate plotting in discriminant space and show how the basic plot from <code>plot.lda()</code> can be made more informative. First, <code>predict_discrim()</code> can also return the discriminant scores for the new observations via the argument <code>scores = TRUE</code>. I’ll use this dataset to add labels to the plot.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>pred <span class="ot">&lt;-</span> <span class="fu">predict_discrim</span>(peng.lda, </span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>                        <span class="at">newdata =</span> peng_new[, <span class="dv">3</span><span class="sc">:</span><span class="dv">6</span>],</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>                        <span class="at">scores =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(pred[, <span class="sc">-</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>)])</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="co">#       body_mass  maxp   LD1   LD2</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Abe        5000 0.969 -1.04  5.35</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Betsy      3900 1.000  3.61 -4.04</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Chloe      4000 0.999 -3.43 -3.53</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Dave       3500 1.000  0.15 -3.84</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Emma       5500 1.000 -3.15  3.78</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Then, I want to use more informative axis labels, showing the percent of between-group variance associated with each dimension. These come from the (poorly named) <code>svd</code> component of the <code>peng.lda</code> object.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>svd <span class="ot">&lt;-</span> peng.lda<span class="sc">$</span>svd</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>var <span class="ot">&lt;-</span> <span class="dv">100</span> <span class="sc">*</span> <span class="fu">round</span>(svd<span class="sc">^</span><span class="dv">2</span><span class="sc">/</span><span class="fu">sum</span>(svd<span class="sc">^</span><span class="dv">2</span>), <span class="dv">3</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>labs <span class="ot">&lt;-</span> glue<span class="sc">::</span><span class="fu">glue</span>(<span class="st">"Discriminant dimension {1:2} ({var}%)"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>()</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Discriminant dimension 1 (86.5%)</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Discriminant dimension 2 (13.5%)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Next, you can override how <code>plot.lda()</code> plots the observations by creating a panel function that simply plots the points rather than their observation classes,</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>panel.pts <span class="ot">&lt;-</span> <span class="cf">function</span>(x, y, ...) <span class="fu">points</span>(x, y, ...)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Finally, call <code>plot.lda()</code> with this panel function, set the color and shape of the point symbols to match our Penguin theme and use the axis labels set above in <code>labs</code>. You can then add points and labels for the newly classified penguins.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>panel.pts <span class="ot">&lt;-</span> <span class="cf">function</span>(x, y, ...) <span class="fu">points</span>(x, y, ...)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>col <span class="ot">&lt;-</span> <span class="fu">peng.colors</span>()</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(peng.lda, </span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>     <span class="at">panel =</span> panel.pts,</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>     <span class="at">col =</span> col[peng<span class="sc">$</span>species],</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>     <span class="at">pch =</span> (<span class="dv">15</span><span class="sc">:</span><span class="dv">17</span>)[peng<span class="sc">$</span>species],</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> labs[<span class="dv">1</span>],</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>     <span class="at">ylab =</span> labs[<span class="dv">2</span>],</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>     <span class="at">ylim =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">6</span>, <span class="dv">6</span>),</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>     <span class="at">cex.lab =</span> <span class="fl">1.3</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a><span class="co"># plot the new observations and label them with their row.names in the predicted data</span></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a><span class="fu">with</span>(pred,{</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>     <span class="fu">points</span>(LD1, LD2, <span class="at">pch =</span> <span class="dv">16</span>, <span class="at">col =</span> <span class="st">"black"</span>, <span class="at">cex =</span> <span class="dv">2</span>)</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>     <span class="fu">text</span>(LD1, LD2, <span class="at">label=</span><span class="fu">row.names</span>(pred),</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>          <span class="at">col =</span> col[species], <span class="at">cex =</span> <span class="fl">1.3</span>, <span class="at">font =</span> <span class="dv">2</span>,</span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>          <span class="at">pos =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">3</span>),</span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>          <span class="at">xpd =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>  })</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-peng-new-discrim2" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-peng-new-discrim2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/fig-peng-new-discrim2-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:60.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-peng-new-discrim2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3: A customized plot of the Penguin observations in the space of the two discriminant dimensions….
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>Compared with the separate 2D views in data space (<a href="#fig-peng-new-data" class="quarto-xref">Figure&nbsp;1</a>), this view accounts for 100% of the variance due to separation of the species groups. You can see that Betsy and Dave are rather close to the other Chinstraps. Abe, Chloe and Emma are rather far from the centers of the species they are classified as, yet they are closer to their groups than to any of the two others.</p>
+<p>While <a href="#fig-peng-new-discrim2" class="quarto-xref">Figure&nbsp;3</a> is a substantial improvement over <a href="#fig-peng-new-discrim" class="quarto-xref">Figure&nbsp;2</a>, it is harder to go much further, because <code>plot.lda()</code> method conceals what it does to make the plot using the <code>"lda"</code> object. You have to dive into that object to get the information needed to add additional graphical information.</p>
+<p>For example, if you also wanted to show data ellipses or other bivariate summaries in this plot, it would be necessary to get the predicted classes for each observation in <code>peng</code> dataset, together with the discriminant scores, <code>LD1</code> and <code>LD2</code>, obtained using <code>scores=TRUE</code> in the call to <code>predict_discrim()</code>. Data ellipses could then be added added using <code>car::dataEllipse()</code> as follows (not shown)</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>pred_all <span class="ot">&lt;-</span> <span class="fu">predict_discrim</span>(peng.lda, <span class="at">scores=</span><span class="cn">TRUE</span>)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="co"># add data ellipses</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="fu">dataEllipse</span>(LD2 <span class="sc">~</span> LD1 <span class="sc">|</span> species, <span class="at">data =</span> pred_all,</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">levels =</span> <span class="fl">0.68</span>, <span class="at">fill=</span><span class="cn">TRUE</span>, <span class="at">fill.alpha =</span> <span class="fl">0.1</span>,</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">group.labels =</span> <span class="cn">NULL</span>,</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>            <span class="at">add =</span> <span class="cn">TRUE</span>, <span class="at">plot.points =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>            <span class="at">col =</span> col)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 </section>
 <section id="visualizing-prediction-regions" class="level3">
 <h3 class="anchored" data-anchor-id="visualizing-prediction-regions">Visualizing prediction regions</h3>
+<p>An even better way to understand and interpret discriminant analysis results is to visualize the boundaries that separate the prediction into one group rather than another. Our penguins live in a 4-dimensional data space, and the boundaries of the predicted classification regions are of one less dimension—3D hyperplanes here.</p>
+<p>Any point in this data space can be classified into one of the group using a <code>predict()</code> method. Therefore, to visualize the prediction regions, you can calculate the prediction over a grid of values of the <span class="math inline">\(y\)</span> variables, and then plot those using colored tiles. The steps are:</p>
+<ul>
+<li><p>Construct a <span class="math inline">\(k \times k\)</span> grid of values of the two focal variables <span class="math inline">\(y_1, y_2\)</span> to be plotted:</p>
+<ul>
+<li>For each focal <span class="math inline">\(y\)</span> variable, divide it’s range into <span class="math inline">\(k\)</span> intervals, as in <code>seq(min(y)), max(y), k)</code></li>
+<li>Set each non-focal variable to its’s mean.</li>
+<li>Use a <code>predict()</code> method to get the predicted classification group for each point.</li>
+</ul></li>
+<li><p>For base R graphs, you can use <code>image(x, y, z, ...)</code> to plot this grid of the <code>(x, y)</code>, where <code>z</code> is a <span class="math inline">\(k \times k\)</span>-length vector of the predicted class of an observation at this point. In <code>ggplot2</code> this is easier, using `geom_tile().</p></li>
+<li><p>Boundaries of the regions are the contours of the maximum of the posterior probabilities. You can plot these using <code>contour(x, y, z, ...)</code> in base R or <code>geom_contour()</code> in <code>ggplot2</code>.</p></li>
+<li><p>On top of this, you can plot the data observations, data ellipses for the groups or anything else.</p></li>
+</ul>
+<p>This idea is essentially the same as used in <em>effect plots</em> (<strong>?@sec-effect-displays</strong>)—you calculate predicted values over a range of the variables shown, while controlling those not shown at a typical value.</p>
+<p><strong>Partition plots with <code>partimat()</code></strong></p>
+<p>The function <code>klar::partimat()</code> produces such “partition” plots for <code>lda()</code>, <code>qda()</code> as well as a number of other classification methods, including recursive partioning trees (<code>rpart::rpart()</code>), naive Bayes (<code>e1071::naiveBayes()</code>) and other methods. The graphs produced are generally UGLY; but they are easy to produce and convey a sense of the method. Once we have the idea in mind, we can try to make prettier, more useful versions.</p>
+<p><code>partimat()</code> takes a model formula for the classification, here <code>species ~ .</code> for the penguin data. It produces a classification plot for every combination of two <span class="math inline">\(y\)</span> variables in the data, and can show them either in a scatterplot matrix format (<code>plot.matrix = TRUE</code>), or a rectangular display of only the unique pairs. The latter takes less space, and so allows higher resolution in the individual plots. The <code>method</code> argument asks for <code>lda()</code> to determine the result shown in <a href="#fig-peng-partimat1" class="quarto-xref">Figure&nbsp;4</a>.</p>
+<!-- fig.code: R/peng.lda.R -->
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>peng <span class="sc">|&gt;</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(species, bill_length<span class="sc">:</span>body_mass) <span class="sc">|&gt;</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">partimat</span>(species <span class="sc">~</span> ., <span class="at">data =</span> _, </span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>         <span class="at">method =</span> <span class="st">"lda"</span>,</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>         <span class="at">plot.matrix =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>         <span class="at">image.colors =</span> scales<span class="sc">::</span><span class="fu">alpha</span>(col, <span class="at">alpha =</span> <span class="fl">0.4</span>),</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">main =</span> <span class="st">"Penguin Partition Plot"</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-peng-partimat1" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-peng-partimat1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/fig-peng-partimat1-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:90.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-peng-partimat1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;4: Partition plots for the penguin data. Each pairwise scatterplot …
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>In each pairwise plot of the penguin variables shown in <a href="#fig-peng-partimat1" class="quarto-xref">Figure&nbsp;4</a>, the background is colored according to the species that any observation there (holding others constant) would be classified as. This fails in software design because there is little flexibility in what else is shown to represent the observations. The penguin data values are shown using the first letter of their species, colored black if that bird is classified correctly, <span style="color: red;">red</span> otherwise.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p>
+<p><strong>Using <code>ggplot()</code></strong></p>
+<p>To construct similar (but better) plots using <span style="color: brown;"><strong>ggplot2</strong></span>, I follow the steps outlined above to get predicted classes over a grid, in this case for the penguin bill variables. The function <code>marginaleffects::datagrid()</code> makes this easy, automatically marginalizing the other variables.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># make a grid of values for prediction</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>range80 <span class="ot">=</span> \(x) <span class="fu">seq</span>(<span class="fu">min</span>(x), <span class="fu">max</span>(x), <span class="at">length.out =</span> <span class="dv">80</span>)</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>grid <span class="ot">&lt;-</span> marginaleffects<span class="sc">::</span><span class="fu">datagrid</span>(<span class="at">bill_length =</span> range80, </span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>                                  <span class="at">bill_depth =</span> range80, <span class="at">newdata =</span> peng)</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="co"># get predicted species for the grid points</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>pred_grid <span class="ot">&lt;-</span> <span class="fu">predict_discrim</span>(peng.lda, <span class="at">newdata =</span> grid) </span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(pred_grid)</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="co">#   species rowid island flipper_length body_mass sex year</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a><span class="co"># 1  Gentoo     1 Biscoe            201      4207   m 2008</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a><span class="co"># 2  Gentoo     2 Biscoe            201      4207   m 2008</span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a><span class="co"># 3  Gentoo     3 Biscoe            201      4207   m 2008</span></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a><span class="co"># 4  Gentoo     4 Biscoe            201      4207   m 2008</span></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a><span class="co"># 5  Gentoo     5 Biscoe            201      4207   m 2008</span></span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a><span class="co"># 6  Gentoo     6 Biscoe            201      4207   m 2008</span></span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a><span class="co">#   bill_length bill_depth maxp</span></span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a><span class="co"># 1        32.1       13.1    1</span></span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a><span class="co"># 2        32.1       13.2    1</span></span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a><span class="co"># 3        32.1       13.3    1</span></span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a><span class="co"># 4        32.1       13.4    1</span></span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a><span class="co"># 5        32.1       13.5    1</span></span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a><span class="co"># 6        32.1       13.6    1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Then, in the plotting steps, <code>geom_tile()</code> is used to display the predictions in the <code>pred_grid</code> dataset, using the penguin colors for the species. Points and other layers use the full <code>peng</code> dataset.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>means <span class="ot">&lt;-</span> peng <span class="sc">|&gt;</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(species) <span class="sc">|&gt;</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="fu">across</span>(<span class="fu">c</span>(bill_length, bill_depth), \(x) <span class="fu">mean</span>(x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) ))</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>p1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> peng, <span class="fu">aes</span>(<span class="at">x =</span> bill_length, <span class="at">y =</span> bill_depth)) <span class="sc">+</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Plot decision regions</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_tile</span>(<span class="at">data =</span> pred_grid, <span class="fu">aes</span>(<span class="at">fill =</span> species), <span class="at">alpha =</span> <span class="fl">0.2</span>) <span class="sc">+</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_ellipse</span>(<span class="fu">aes</span>(<span class="at">color=</span>species), <span class="at">level =</span> <span class="fl">0.68</span>, <span class="at">linewidth =</span> <span class="fl">1.2</span>) <span class="sc">+</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Plot original data points</span></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">color =</span> species, <span class="at">shape=</span>species),</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>             <span class="at">size =</span><span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a><span class="co">#  labs(title = "LDA Decision Boundaries") +</span></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_label</span>(<span class="at">data=</span>means, <span class="fu">aes</span>(<span class="at">label =</span> species, <span class="at">color =</span> species),</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>             <span class="at">size =</span><span class="dv">5</span>) <span class="sc">+</span></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_penguins</span>(<span class="st">"dark"</span>) <span class="sc">+</span></span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">16</span>) <span class="sc">+</span></span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div id="fig-peng-regions" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-peng-regions-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/fig-peng-regions-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-peng-regions-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;5: Plots of the Penguin data with discriminant regions
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
 </section>
 </section>
 
@@ -260,6 +508,8 @@ Emma     Gentoo 0.0000    0.0000 1.0000 0.9999998</code></pre>
 
 <ol>
 <li id="fn1"><p>The function <code>candisc::candisc()</code> carries out a <em>generalized</em> discriminant analysis, for one term in a multivariate linear model. <code>candisc::candiscList()</code> does this for all terms in a model.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>There are a number of other methods of discriminant analysis. For example, in <strong>mixture discriminant analysis</strong> (MDA), each class is assumed to be a mixture of several Gaussian distributions, rather than a single one. <strong>flexible discriminant analysis</strong> (FDA) is an extension of LDA that uses non-linear combinations of predictors such as splines. FDA is useful to model multivariate non-normality or non-linear relationships among variables within each group, allowing for a more accurate classification. These are implemented in the package <code>mda</code> as <code>mda()</code> and <code>fda()</code>, which have the same syntax and similar methods to <code>lda()</code>.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>In fairness, <code>klaR::partimat()</code> was designed to emphasize the classification accuracy shown in each pairwise plot, also printed as an error rate for each plot. You can see, for example that the plot of <code>body_mass</code> against <code>bill_depth</code> in row 2, column 2 of <a href="#fig-peng-partimat1" class="quarto-xref">Figure&nbsp;4</a> shows only two distinct regions, for Adelie and Gentoo. All the Chinstraps appear mixed in with the Adelies and, giving an error rate of 0.204 in this plot. Two other panels also show high error rates.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section></div></main>
 <!-- /main column -->

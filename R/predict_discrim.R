@@ -18,7 +18,7 @@
 #' @param scores A logical. If `TRUE`, the discriminant scores of the cases in `newdata` are appended as additional columns in the the result, with names `LD1`, `LD2`, ...
 #' @param ...      arguments based from or to other methods, not yet used here
 #' @md
-#' @returns        A data.frame, containing the values of the `newdata` variables, the predicted class of the observations and the maximum value of the posterior probabilities of the classes. `rownames()` in the result are inherited from those in `newdata`.
+#' @returns        A data.frame, containing the the predicted class of the observations, values of the `newdata` variables and the maximum value of the posterior probabilities of the classes. `rownames()` in the result are inherited from those in `newdata`.
 #' @export
 #' @examples
 #' # none yet.
@@ -43,11 +43,16 @@ predict_discrim <- function(object,
   probs <- pred$posterior
   maxp <- apply(probs, 1, max)
 
-    # get response variable name to substitute for `class`
+  # get response variable name to substitute for `class`
   response <- insight::find_response(object)
   
-  ret <- cbind(newdata, class, maxp)
-  colnames(ret)[nv+1] <- response
+  # if it is already in newdata, remove it
+  if (response %in% colnames(newdata)) 
+    newdata <- newdata[, !(names(newdata) %in% response)]
+  
+  
+  ret <- cbind(class, newdata, maxp)
+  colnames(ret)[1] <- response
   
   if (scores) {
     scores <- pred$x
