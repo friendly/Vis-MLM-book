@@ -73,3 +73,15 @@ p2 <- ggplot(data = peng, aes(x = flipper_length, y = body_mass)) +
   theme(legend.position = "none")
 
 p1 + p2
+
+# ----------------------
+# Do it in discrim  space, using LD1 & LD2 as predictors
+# 
+
+peng_scored <- predict_discrim(peng.lda, scores=TRUE)
+head(peng_scored)
+
+peng.lda2 <- lda(species ~ LD1 + LD2, data=peng_scored)
+peng.lda2
+
+
