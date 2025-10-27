@@ -199,7 +199,7 @@ ggplot(data = iris, aes(x = Sepal.Length, y = Sepal.Width)) +
 
 
 # with marginaleffects
-# Other v ariables are set to their mean 
+# Other variables are set to their mean 
 range100 = \(x) seq(min(x), max(x), length.out = 100)
 grid <- datagrid(Petal.Width = range100, Petal.Length = range100, newdata = iris)
 head(grid)
@@ -211,6 +211,12 @@ head(grid)
 
 # adding an extra arg doesn't work the same way with `datagrid`. Need to give the actual variable
 seq.range = \(x, n) seq(min(x), max(x), length.out = n)
+
+# doesn't work
+grid <- datagrid(Petal.Width = seq.range(Petal.Width, 10), 
+                Petal.Length = seq.range(Petal.Length, 10), newdata = iris)
+
+
 grid <- datagrid(Petal.Width = seq.range(iris$Petal.Width, 10), 
                 Petal.Length = seq.range(iris$Petal.Length, 10), newdata = iris)
 head(grid)

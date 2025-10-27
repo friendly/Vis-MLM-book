@@ -14,6 +14,24 @@ source(here::here("R/predict_discrim.R"))
 peng.lda <- lda(species ~ bill_length + bill_depth + flipper_length + body_mass, 
                 data = peng)
 
+# classification accuracy
+class_table <- table(peng$species,
+                     predict(peng.lda)$class,
+                     dnn = c("actual", "predicted")) |>
+  print()
+# overall rates
+accuracy <- sum(diag(class_table))/sum(class_table) * 100
+error <- 100 - accuracy
+c(accuracy, error)
+
+# which ones are misclassified?
+
+data.frame(id = row.names(peng),
+           peng[, c(1, 3:6)],
+           predicted = predict(peng.lda)$class) |>
+  filter(species != predicted) |>
+  relocate(predicted, .after = species)
+
 
 # make a grid of values for prediction
 range80 = \(x) seq(min(x), max(x), length.out = 80)
@@ -78,18 +96,19 @@ p1 + p2
 # Do it in discrim  space, using LD1 & LD2 as predictors
 # 
 
-peng_scored <- predict_discrim(peng.lda, scores=TRUE)
+peng_scored <- predict_discrim(peng.lda, scores=TRUE, posterior = FALSE)
 head(peng_scored)
 
 peng.lda2 <- lda(species ~ LD1 + LD2, data=peng_scored)
 peng.lda2
 
-# maxp gets duplicated
+# NB: LD1 is flipped in signs
+# maxp gets duplicated -- FIXED that
 grid <- datagrid(LD1 = range80, 
-                 LD2 = range80, newdata = peng_scored) |>
-  dplyr::select(-maxp)
+                 LD2 = range80, newdata = peng_scored) 
 
-pred_grid <- predict_discrim(peng.lda2, newdata = grid) 
+
+pred_grid <- predict_discrim(peng.lda2, newdata = grid, posterior = FALSE) 
 head(pred_grid)
 
 means <- peng_scored |>
@@ -104,7 +123,6 @@ ggplot(data = peng_scored, aes(x = LD1, y = LD2)) +
   # Plot original data points
   geom_point(aes(color = species, shape=species),
              size =2) +
-#  labs(title = "LDA Decision Boundaries") +
   geom_label(data=means, aes(label = species, color = species),
              size =5) +
   theme_penguins() +

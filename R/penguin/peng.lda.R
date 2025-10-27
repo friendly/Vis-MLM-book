@@ -56,7 +56,7 @@ data_pred <- tidy_pred(peng.lda, "Species")
 
 LDA.lda <- lda(Species ~ LD1 + LD2, data=data_pred)
 
-make_grid <- function(x, y, names, mul = 0.05, ngrid = 200) {
+make_grid <- function(x, y, names, mul = 0.05, ngrid = 100) {
   xlim <- expand_range(min(x), max(x), mul = mul)
   ylim <- expand_range(min(y), max(y), mul = mul)
   xval <- seq(from = xlim[1], to = xlim[2], length.out = ngrid)
