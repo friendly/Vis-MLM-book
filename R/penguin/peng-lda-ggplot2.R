@@ -8,8 +8,8 @@ library(patchwork)
 library(marginaleffects)   # for datagrid
 
 data(peng, package="heplots")
-source("R/penguin/penguin-colors.R")
-source("R/predict_discrim.R")
+source(here::here("R/penguin/penguin-colors.R"))
+source(here::here("R/predict_discrim.R"))
 
 peng.lda <- lda(species ~ bill_length + bill_depth + flipper_length + body_mass, 
                 data = peng)
@@ -84,4 +84,29 @@ head(peng_scored)
 peng.lda2 <- lda(species ~ LD1 + LD2, data=peng_scored)
 peng.lda2
 
+# maxp gets duplicated
+grid <- datagrid(LD1 = range80, 
+                 LD2 = range80, newdata = peng_scored) |>
+  dplyr::select(-maxp)
 
+pred_grid <- predict_discrim(peng.lda2, newdata = grid) 
+head(pred_grid)
+
+means <- peng_scored |>
+  group_by(species) |>
+  summarise(across(LD1:LD2, \(x) mean(x, na.rm = TRUE) ))
+means
+
+ggplot(data = peng_scored, aes(x = LD1, y = LD2)) +
+  # Plot decision regions
+  geom_tile(data = pred_grid, aes(fill = species), alpha = 0.2) +
+  stat_ellipse(aes(color=species), level = 0.68, linewidth = 1.2) +
+  # Plot original data points
+  geom_point(aes(color = species, shape=species),
+             size =2) +
+#  labs(title = "LDA Decision Boundaries") +
+  geom_label(data=means, aes(label = species, color = species),
+             size =5) +
+  theme_penguins() +
+  theme_minimal(base_size = 16) +
+  theme(legend.position = "none")
