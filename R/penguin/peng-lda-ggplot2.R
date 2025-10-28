@@ -34,9 +34,12 @@ data.frame(id = row.names(peng),
 
 
 # make a grid of values for prediction
-range80 = \(x) seq(min(x), max(x), length.out = 80)
-grid <- marginaleffects::datagrid(bill_length = range80, 
-                                  bill_depth = range80, newdata = peng)
+#range80 = \(x) seq(min(x), max(x), length.out = 80)
+seq.range = \(n) \(x) seq(min(x), max(x), length.out = n)
+
+grid <- marginaleffects::datagrid(bill_length = seq.range(80), 
+                                  bill_depth = seq.range(80), 
+                                  newdata = peng)
 head(grid)
 
 
@@ -54,7 +57,7 @@ p1 <- ggplot(data = peng, aes(x = bill_length, y = bill_depth)) +
   # Plot original data points
   geom_point(aes(color = species, shape=species),
              size =2) +
-  labs(title = "LDA Decision Boundaries") +
+#  labs(title = "LDA Decision Boundaries") +
   geom_label(data=means, aes(label = species, color = species),
              size =5) +
   theme_penguins() +
@@ -65,8 +68,8 @@ p1
 # -----------------------------------------
 # Do the same for flipper_length, body_mass
 
-grid <- marginaleffects::datagrid(flipper_length = range80, 
-                                  body_mass = range80, newdata = peng)
+grid <- marginaleffects::datagrid(flipper_length = seq.range(80), 
+                                  body_mass = seq.range(80), newdata = peng)
 head(grid)
 
 
@@ -102,18 +105,20 @@ head(peng_scored)
 peng.lda2 <- lda(species ~ LD1 + LD2, data=peng_scored)
 peng.lda2
 
-# Can't reflect and lda object!!!
-# peng.lda2 <- ggbiplot::reflect(peng.lda2, columns = 1)
-# peng.lda2
 
-# NB: LD1 is flipped in signs
-# maxp gets duplicated -- FIXED that
-grid <- datagrid(LD1 = range80, 
-                 LD2 = range80, newdata = peng_scored) 
+# NB: LD1 is flipped in signs - reflect it
+# But this doesn't look right
+peng_scored <- peng_scored |>
+  mutate(LD1 = -LD1)
+
+
+grid <- datagrid(LD1 = seq.range(80), 
+                 LD2 = seq.range(80), newdata = peng_scored) 
 
 
 pred_grid <- predict_discrim(peng.lda2, newdata = grid, posterior = FALSE) 
 head(pred_grid)
+
 
 means <- peng_scored |>
   group_by(species) |>
