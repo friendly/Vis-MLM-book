@@ -92,7 +92,7 @@ p2 <- ggplot(data = peng, aes(x = flipper_length, y = body_mass)) +
 
 p1 + p2
 
-# ----------------------
+# ------------------------------------------------------
 # Do it in discrim  space, using LD1 & LD2 as predictors
 # 
 
@@ -101,6 +101,10 @@ head(peng_scored)
 
 peng.lda2 <- lda(species ~ LD1 + LD2, data=peng_scored)
 peng.lda2
+
+# Can't reflect and lda object!!!
+# peng.lda2 <- ggbiplot::reflect(peng.lda2, columns = 1)
+# peng.lda2
 
 # NB: LD1 is flipped in signs
 # maxp gets duplicated -- FIXED that
