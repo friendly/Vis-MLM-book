@@ -17,13 +17,18 @@
 #' @param prior The prior probabilities of the classes. By default, taken to be the proportions in what was set in the call to [MASS::lda()] or [MASS::qda()] 
 #' @param dimen The dimension of the space to be used. If this is less than the number of available dimensions, min(p, ng-1), only the first `dimen` discriminant components are used. (This argument is not yet implemented.)
 #' @param scores A logical. If `TRUE`, the discriminant scores of the cases in `newdata` are appended as additional columns in the the result, with names `LD1`, `LD2`, ...
-#' @param posterior Either a logical or the character string `max`. If `TRUE`, the posterior probabilities for all classes are included as columns named for the classes. If `max`, the maximum
+#' @param posterior Either a logical or the character string `"max"`. If `TRUE`, the posterior probabilities for all classes are included as columns named for the classes. If `FALSE`, these are omitted. If `"max"`, the maximum value of the probabilities across the classes are included, with the variable name `"maxp"`.
 #' @param ...      arguments based from or to other methods, not yet used here
 #' @md
 #' @returns        A data.frame, containing the the predicted class of the observations, values of the `newdata` variables and the maximum value of the posterior probabilities of the classes. `rownames()` in the result are inherited from those in `newdata`.
 #' @export
 #' @examples
-#' # none yet.
+#' data(peng, package="heplots")
+#' peng.lda <- lda(species ~ bill_length + bill_depth + flipper_length + body_mass, 
+#'                 data = peng)
+#' peng_pred <- predict(peng.lda)
+#' str(pend_pred)
+
 predict_discrim <- function(object, 
                             newdata, 
                             prior = object$prior,

@@ -1,5 +1,6 @@
 #' ---
 #' title: Penguin data discriminant boundaries
+#' ---
 
 library(MASS)
 #library(ggord)
@@ -108,8 +109,8 @@ peng.lda2
 
 # NB: LD1 is flipped in signs - reflect it
 # But this doesn't look right
-peng_scored <- peng_scored |>
-  mutate(LD1 = -LD1)
+# peng_scored <- peng_scored |>
+#   mutate(LD1 = -LD1)
 
 
 grid <- datagrid(LD1 = seq.range(80), 
@@ -119,6 +120,10 @@ grid <- datagrid(LD1 = seq.range(80),
 pred_grid <- predict_discrim(peng.lda2, newdata = grid, posterior = FALSE) 
 head(pred_grid)
 
+svd <- peng.lda$svd
+var <- 100 * round(svd^2/sum(svd^2), 3)
+labs <- glue::glue("Discriminant dimension {1:2} ({var}%)") |>
+  print()
 
 means <- peng_scored |>
   group_by(species) |>
@@ -134,6 +139,62 @@ ggplot(data = peng_scored, aes(x = LD1, y = LD2)) +
              size =2) +
   geom_label(data=means, aes(label = species, color = species),
              size =5) +
+  labs(x = labs[1], y = labs[2]) +
   theme_penguins() +
   theme_minimal(base_size = 16) +
   theme(legend.position = "none")
+
+p <- last_plot()
+
+
+# add variable vectors
+# --------------------
+# vecs <- peng.lda$scaling |>
+#   as.data.frame()
+# labs <- row.names(peng.lda$scaling) |>
+#   stringr::str_replace("_", "\n")
+# source(here::here("R/ggvectors.R"))
+# 
+# p + ggvectors(vecs[, "LD1"], vecs[, "LD2"],
+#               label = labs,
+#               scale = 3)
+
+vecs <- peng.lda$scaling |>
+  as.data.frame() |>
+  tibble::rownames_to_column(var = "label") |>
+  mutate(label = stringr::str_replace(label, "_", "\n"))
+
+p + gggda::geom_vector(
+  data = vecs,
+  aes(x = 5*LD1, y = 5*LD2, label = label),
+  lineheight = 0.8, linewidth = 1.25, size = 5
+  ) +
+  coord_equal()
+
+
+# Compare to MANOVA, CDA
+#
+library(candisc)
+peng.mlm <- lm(cbind(bill_length, bill_depth, flipper_length, body_mass) ~ species , 
+                data = peng)
+
+peng.can <- candisc(peng.mlm, data=peng)
+
+# there should also be a formula method that fits the model first
+# peng.can <- candisc(cbind(bill_length, bill_depth, flipper_length, body_mass) ~ species, 
+#                     data = peng)
+
+
+# candisc plot
+
+plot(peng.can,
+     col = peng.colors(),
+     pch = 15:17,
+     ellipse = TRUE,
+     rev.axes = c(TRUE, FALSE),
+     var.labels = vecs$label,
+     var.col = "black", var.lwd = 2,
+     scale = 8.5,
+     cex.lab = 1.3)
+
+heplot(peng.can, size="effect", fill=c(TRUE, FALSE))

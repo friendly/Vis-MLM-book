@@ -18,8 +18,9 @@ ggvectors <- function(x, y, label,
                      scale = 1,
                      origin = c(0, 0),
                      arrow_style,
-                     color,
+                     color = "black",
                      linewidth = 1.4,
+                     lineheight = 1,
                      adjust = 1.25,
                      size = 3
 ){
@@ -32,7 +33,7 @@ ggvectors <- function(x, y, label,
   df$angle <- with(df, (180/pi) * atan(y / x))
   df$hjust <- with(df, (1 - adjust * sign(x)) / 2)
   
-  res <- geom_segment(data = df,
+  geom_segment(data = df,
                aes(x = origin[1], y = origin[2], 
                    xend = x, yend = y),
                arrow = arrow_style, 

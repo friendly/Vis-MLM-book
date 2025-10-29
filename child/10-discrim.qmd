@@ -1,11 +1,17 @@
 ## Discriminant analysis {#sec-discrim-MLM}
 
+::: {.callout-note}
+This material will most likely become a chapter in the online Appendix.
+:::
+
+
 ```{r load-em, include=FALSE}
 library(MASS)             # lda() and qda()
 library(ggplot2)
-library(patchwork)
+library(patchwork)        # combining plots
 library(klaR)             # for partimat()
 library(marginaleffects)  # for datagrid()
+library(candisc)          # canonical discriminant analysis
 ```
 
 ```{r include=FALSE}
@@ -44,8 +50,11 @@ and the portions attributable to differences _within_ the groups around their me
 $$
 \mathbf{T} = \mathbf{H} + \mathbf{E} \; .
 $$
-As we saw earlier (@sec-H-vs-E), significance tests are based on the $s = \min{(p, \text{df}_h)}$ non-zero
-eigenvalues $\lambda_i$ of $\mathbf{H}\mathbf{E}^{-1}$ which are combined into a single test statistic such
+As we saw earlier (@sec-H-vs-E), for $p$ variables and $g$ groups, having $\text{df}_h = g-1$ degrees of freedom,
+significance tests are based on the $s = \min{(p, \text{df}_h)}$ non-zero
+eigenvalues $\lambda_i$ of the matrix product $\mathbf{H}\mathbf{E}^{-1}$, reflecting a ratio of
+between-group to within-group variation.
+These are combined into a single test statistic such
 as Wilks' $\Lambda = \Pi_i^s (1+\lambda_i)^{-1}$ or Hotelling-Lawley trace, $\Sigma_i^s \lambda_i$.
 
 The corresponding eigenvectors, $\mathbf{V}$ of $\mathbf{H}\mathbf{E}^{-1}$ are the weights for
@@ -59,8 +68,14 @@ and obtain _exactly_ the same classifications of the observations.
 The first, $\mathbf{v}_1$, associated with the largest eigenvalue $\lambda_1$, accounts for the greatest
 proportion of between-group separation; the second, $\mathbf{v}_2$ is next in discriminating power, and so forth.
 But maybe we can classify nearly as well with a small subset of $k < s$ discriminants without great loss.
+
 Hence, just as in PCA, discriminant analysis can be thought of as a **dimension reduction** technique,
-squeezing the most discrininant juice out of the data in a few dimensions.
+squeezing the most discriminant juice out of the data in a few dimensions.
+These methods differ is that in PCA, the "juice" is the total variance of the cloud of points in $p$-dimensional
+data space, whose contributions are the $p$ eigenvalues of $\mathbf{T}$.
+However, in discriminant analysis, the "juice" is _ratio_ of between-class variation ($\mathbf{H}$) of the group
+means
+to the within-class ($\mathbf{E}$) variation in the cloud, reflected in the $s$ non-zero eigenvalues of $\mathbf{H} \mathbf{E}^{-1}$.
 
 
 <!-- method notes
@@ -198,12 +213,15 @@ while Chloe and Emma are almost certainly Gentoos.
 ### Visualizing classification in data space
 
 A simple way to understand what happens in discriminant analysis is to plot the original data in data space and add labeled points
-for the new observations. To make this easier, I created a function `predict_discrim()`, which joins the measures in the
+for the new observations. To make this easier, I created a general function `predict_discrim()`, which joins the measures in the
 test dataset with the predicted class for each new observation. In the result, `species` is the predicted class.
+[**TODO**: This should be moved to the `candisc` package.]
 
 ```{r peng-pred}
 source(here::here("R/predict_discrim.R"))
-pred <- predict_discrim(peng.lda, newdata = peng_new[, 3:6]) |>
+pred <- predict_discrim(peng.lda, 
+                        newdata = peng_new[, 3:6],
+                        posterior = FALSE) |>
   print()
 ```
 
@@ -212,16 +230,14 @@ pred <- predict_discrim(peng.lda, newdata = peng_new[, 3:6]) |>
 ggplot2::theme_set(ggplot2::theme_bw(base_size = 16))
 source(here::here("R/penguin/penguin-colors.R"))
 
-# theme_penguins <- list(
-#   scale_color_penguins(shade="dark"),
-#   scale_fill_penguins(shade="dark"))
 legend_inside <- function(position) {
   theme(legend.position = "inside",
         legend.position.inside = position)
   }
 ```
 
-Using this you can simply plot the original Penguin data for two variables and use `geom_label()` to identify the observations of the
+Using this you can simply plot the original Penguin data for two variables and use `geom_text()` or
+`geom_label()` to identify the observations of the
 new penguins in this space. In @fig-peng-new-data, I do this in two separate plots, one for the bill length and depth variables, and another
 for `flipper_length` vs. `body_mass`. The key thing is that the call to `geom_label()` uses the predicted `species` and
 coordinates for the new penguins from the `pred` dataset obtained from `predict_discrim()`.
@@ -255,14 +271,14 @@ p2 <- ggplot(peng,
 p1 + p2
 ```
 
-In @fig-peng-new-data, Betsy is well within the data ellipses for their species in both plots.
+In @fig-peng-new-data, Betsy is well within the data ellipses for her species in both plots.
 Abe looks very much like an Adelie in the panel for the bill variables, but more like a Gentoo
 in terms of flipper length and body mass.
 Chloe, classed as a Gentoo is at the margin of the 95% ellipses. Dave, classified as a Chinstrap, looks more like
 a Gentoo in terms of bill length and depth, but is in the region occupied by Adelie and Chinstraps in the
 right panel. Emma is outside the data ellipses for all three species in both plots.
 
-These plots are just two of the $4 \times 3 / 2 = 6$ possible pairwise plots that would appear in a scatterplot matrix.
+These plots are just two of the $(4 \times 3) / 2 = 6$ possible pairwise plots that would appear in a scatterplot matrix.
 
 ### Visualizing classification in discriminant space
 
@@ -299,7 +315,7 @@ print(pred[, -(1:4)])
 Then, I want to use more informative axis labels, showing the percent of between-group variance associated with each dimension.
 These come from the (poorly named) `svd` component of the `peng.lda` object.
 
-```{r}
+```{r svd-labs}
 svd <- peng.lda$svd
 var <- 100 * round(svd^2/sum(svd^2), 3)
 labs <- glue::glue("Discriminant dimension {1:2} ({var}%)") |>
@@ -347,10 +363,13 @@ with(pred,{
 ```
 
 Compared with the separate 2D views in data space (@fig-peng-new-data),
-this view accounts for 100% of the variance due to separation of the species groups.
+this single view accounts for 100% of the variance due to separation of the species groups.
 You can see that Betsy and Dave are rather close to the other Chinstraps.
 Abe, Chloe and Emma are rather far from the centers of the species they are
 classified as, yet they are closer to their groups than to any of the two others.
+
+
+#### Going further
 
 While @fig-peng-new-discrim2 is a substantial improvement over @fig-peng-new-discrim, it is harder to go much
 further, because `plot.lda()` method conceals what it does to make the plot using the `"lda"` object.
@@ -401,7 +420,9 @@ in base R or `geom_contour()` in `ggplot2`.
 This idea is essentially the same as used in _effect plots_ (@sec-effect-displays)---you
 calculate predicted values over a range of the variables shown, while controlling those not shown at a typical value.
 
-**Partition plots with `partimat()`**
+<!-- **Partition plots with `partimat()`** -->
+
+#### Partition plots with `partimat()`
 
 The function `klar::partimat()` produces such "partition" plots for `lda()`, `qda()` as well as a number of other classification methods, including recursive partioning trees (`rpart::rpart()`), naive Bayes (`e1071::naiveBayes()`) and other methods. The graphs produced are
 generally UGLY; but they are easy to produce and convey a sense of the method. Once we have the idea in mind, we can try to make
@@ -439,7 +460,9 @@ also printed as an error rate for each plot. You can see, for example that the p
 of @fig-peng-partimat1 shows only two distinct regions, for Adelie and Gentoo. All the Chinstraps appear mixed in with the Adelies
 and, giving an error rate of 0.204 in this plot. Two other panels also show high error rates.
 
-**Using `ggplot()`**
+<!-- **Using `ggplot()`** -->
+
+#### Using `ggplot()`
 
 To construct similar (but better) plots using `r pkg("ggplot2")`, I follow the steps outlined above to get predicted
 classes over a grid, in this case for the penguin bill variables. 
@@ -457,7 +480,7 @@ head(pred_grid)
 ```
 
 Then, in the plotting steps, `geom_tile()` is used to display the predictions in the `pred_grid` dataset, using the penguin colors for the species. Points and other layers use the full `peng` dataset. I also calculate the 
-means for each species and use these as direct labels for the groups, to avoid a legend. [**TODO** Should probably use `asp = 1` (`coord_equal()`) here to equate axes.]
+means for each species and use these as direct labels for the groups, to avoid a legend. 
 
 ```{r peng-ggplot-code}
 #| echo: true
@@ -546,7 +569,8 @@ over the discriminant space of `peng_scored` and obtain the predicted classifica
 
 ```{r grid-scored}
 grid <- datagrid(LD1 = range80, 
-                 LD2 = range80, newdata = peng_scored) 
+                 LD2 = range80, 
+                 newdata = peng_scored) 
 pred_grid <- predict_discrim(peng.lda2, newdata = grid, posterior = FALSE) 
 ```
 
@@ -575,8 +599,100 @@ ggplot(data = peng_scored, aes(x = LD1, y = LD2)) +
              size =2) +
   geom_label(data=means, aes(label = species, color = species),
              size =5) +
+  labs(x = labs[1], y = labs[2]) +
   theme_penguins() +
   theme_minimal(base_size = 16) +
   theme(legend.position = "none")
+
+p <- last_plot() # save for later
 ```
 
+#### Adding variable vectors: LDA biplot
+
+@fig-peng-LD-predict is like a PCA plot of observation scores on the first two dimensions, but with the
+addition of the prediction regions for LDA. As we saw earlier (@sec-biplot), interpretation of
+such dimension reduction plots is considerably enhanced by drawing vectors, whose orientation (angles)
+with respect to the axes reflect the correlations of the _observed_ variables
+$\mathbf{y}_1, \mathbf{y}_2, \dots$ to what is shown in the plot. The relative lengths of these
+vectors reflect their contributions.
+
+In the result of `lda()` the weights for the observed variable are given in the `scaling` component, which is a matrix.
+For use with `ggplot()`, this must be converted to a `data.frame`, and the row names of the observed variables
+must be made into an explicit variable. To take less space in the plot, the underline (`_`) is replaced by
+a newline (`\n`).
+
+```{r peng-lda-scaling}
+vecs <- peng.lda$scaling |>
+  as.data.frame() |>
+  tibble::rownames_to_column(var = "label") |>
+  mutate(label = stringr::str_replace(label, "_", "\n")) |>
+  print()
+```
+
+Then, I use `gggda::geom_vector()` to draw the variable vectors. Only the relative lengths of these matter,
+so you are free to multiply them by any constant to make them fill the plotting space. Because the interpretation
+of angles is important, it is necessary to assure that the aspect ratio of the plot is 1,
+so that one unit on the x-axis is the same length as one unit on the y-axis, 
+which is done using `coord_equal()`.
+
+```{r}
+#| label: fig-peng-LD-biplot
+#| code-fold: false
+#| fig-height: 6
+#| fig-width: 6
+#| out-width: "60%"
+#| fig-cap: "Plot of the Penguin data in discriminant space, adding variable vectors to show the correlations of the observed variables with the discriminant dimensions."
+p + gggda::geom_vector(
+  data = vecs,
+  aes(x = 5*LD1, y = 5*LD2, label = label),
+  lineheight = 0.8, linewidth = 1.25, size = 5
+  ) +
+  coord_equal()
+```
+
+
+### Relation to MANOVA and CDA
+
+As I noted at the outset, LDA is in some sense a twin of MANOVA, but with it's emphasis flipped from 
+significance tests to classification. This connection can be made more apparent by using the
+**canonical** representation of the MANOVA (@sec-candisc)
+implemented in the `r package("candisc")`. You simply send the `"mlm"` object computed with `lm()`
+to `candisc()` and get
+significance tests for the model in terms of the dimensions that discriminate best among the
+species.
+
+```{r}
+peng.mlm <- lm(cbind(bill_length, bill_depth, flipper_length, body_mass) ~ species , 
+                data = peng)
+
+peng.can <- candisc(peng.mlm, data=peng) |>
+  print()
+```
+
+In the table printed, the eigenvalues are the $\lambda_i$ of $\mathbf{H}\mathbf{E}^{-1}$ and their
+percent contributions are the same as what we saw from the discriminant analysis given by `lda()`.
+
+The `plot()` method for a `"candisc"` object give something similar to what we saw in @fig-peng-LD-biplot.
+In the code, `ellipse = TRUE` adds 68% data ellipses for the disciminant scores for each species,
+and `rev.axes` is used to reflect the directon of the horizontal axis to make it similar to @fig-peng-LD-biplot.
+The result is shown in @fig-peng-candisc.
+
+```{r}
+#| label: fig-peng-candisc
+#| code-fold: false
+#| fig-height: 6
+#| fig-width: 6
+#| out-width: "60%"
+#| fig-cap: "Canonical discriminant plot of the Penguin data for the MANOVA model `peng.mlm`. Data ellipses summarize the within-group variation of the canonical scores. Variable vectors to show the correlations of the observed variables with the discriminant dimensions."
+plot(peng.can,
+     col = peng.colors(),
+     pch = 15:17,
+     ellipse = TRUE,
+     rev.axes = c(TRUE, FALSE),
+     var.labels = vecs$label,
+     var.col = "black", var.lwd = 2,
+     scale = 8.5,
+     cex.lab = 1.3)
+```
+
+What is most apparent in @fig-peng-candisc is that the horizontal axis i
