@@ -34,6 +34,7 @@ data.frame(class, round(posterior, 4), maxp)
 
 #zapsmall(peng_pred$posterior)
 
+# This is now superceded by predict_discrim()
 pred_lda <- function(object, newdata, ...) {
   if (missing(newdata)) {
     newdata <- insight::get_modelmatrix(object) |>
