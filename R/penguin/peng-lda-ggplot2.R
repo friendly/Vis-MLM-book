@@ -187,6 +187,7 @@ peng.can <- candisc(peng.mlm, data=peng)
 
 # candisc plot
 
+op <- par(mar = c(4, 4, 1, 1)+.5)
 plot(peng.can,
      col = peng.colors(),
      pch = 15:17,
@@ -194,7 +195,18 @@ plot(peng.can,
      rev.axes = c(TRUE, FALSE),
      var.labels = vecs$label,
      var.col = "black", var.lwd = 2,
-     scale = 8.5,
+     scale = 7.3,
      cex.lab = 1.3)
+par(op)
 
-heplot(peng.can, size="effect", fill=c(TRUE, FALSE))
+op <- par(mar = c(4, 4, 1, 1)+.5)
+heplot(peng.can, 
+       size="effect", 
+       fill=c(TRUE, TRUE), fill.alpha = 0.1,
+       rev.axes = c(TRUE, FALSE),
+       var.labels = vecs$label,
+       var.col = "black", var.lwd = 2, var.cex = 1.3,
+       xlim = c(-8, 8), ylim = c(-8, 4),
+       scale = 8.2,
+       cex.lab = 1.3, cex = 1.3)
+par(op)
