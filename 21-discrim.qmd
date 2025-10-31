@@ -155,8 +155,6 @@ peng_new <- data.frame(
 
 So, you can run a discriminant analysis using the existing data and then use that to classify the new penguins on island Z.
 By default, `MASS::lda()` uses the proportions of the three species as the prior probabilities, which are given in the printed output.
-With $g = 3$ groups, and $p = 4$ variables, there are only $s = 2$ discriminant dimensions, of which the first, `LD1` accounts for
-86.6% of the total ...
 
 ```{r peng-lda}
 data(peng, package = "heplots")
@@ -164,6 +162,9 @@ peng.lda <- lda(species ~ bill_length + bill_depth + flipper_length + body_mass,
                 data = peng)
 print(peng.lda, digits = 3)
 ```
+
+With $g = 3$ groups, having $\text{df}_h = 2$ degrees of freedom and $p = 4$ variables, there are only $s = 2$ discriminant dimensions. The first, `LD1` accounts for 86.6% of the total between/within variance and the second for the remaining 13.5%. LDA doesn't provide significance tests, but these are available 
+as described below (@sec-discrim-MANOVA).
 
 ## Classification accuracy
 
@@ -176,6 +177,7 @@ class_table <- table(peng$species,
                      predict(peng.lda)$class,
                      dnn = c("actual", "predicted")) |>
   print()
+
 # overall rates
 accuracy <- sum(diag(class_table))/sum(class_table) * 100
 error <- 100 - accuracy
@@ -228,7 +230,7 @@ while Chloe and Emma are almost certainly Gentoos.
 A simple way to understand what happens in discriminant analysis is to plot the original data in data space and add labeled points
 for the new observations. To make this easier, I created a general function `predict_discrim()`, which joins the measures in the
 test dataset with the predicted class for each new observation. In the result, `species` is the predicted class.
-[**TODO**: This should be moved to the `candisc` package.]
+[**TODO**: Replace source() with `candisc::predict_discrim`.]
 
 ```{r peng-pred}
 source(here::here("R/predict_discrim.R"))
@@ -257,7 +259,7 @@ coordinates for the new penguins from the `pred` dataset obtained from `predict_
 
 ```{r}
 #| label: fig-peng-new-data
-#| fig-height: 5
+#| fig-height: 6
 #| fig-width: 12
 #| out-width: "100%"
 #| fig-cap: "Plots of the Penguin data, showing the locations of the newly classified observations from island Z."
