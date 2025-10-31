@@ -4,7 +4,7 @@ library(ggplot2)
 library(patchwork)
 
 data(peng, package="heplots")
-source("R/penguin/penguin-colors.R")
+source(here::here("R/penguin/penguin-colors.R"))
 
 
 peng_new <- data.frame(
@@ -67,9 +67,9 @@ pred <- predict_discrim(peng.lda, newdata = peng_new[, 3:6]) |>
 
 ggplot2::theme_set(ggplot2::theme_bw(base_size = 16))
 
-theme_penguins <- list(
-  scale_color_penguins(shade="dark"),
-  scale_fill_penguins(shade="dark"))
+# theme_penguins <- list(
+#   scale_color_penguins(shade="dark"),
+#   scale_fill_penguins(shade="dark"))
 legend_inside <- function(position) {
   theme(legend.position = "inside",
         legend.position.inside = position)
@@ -82,7 +82,8 @@ p1 <- ggplot(peng,
   stat_ellipse(geom = "polygon", level = 0.95, alpha = 0.4) +
   geom_label(data = pred, label=row.names(pred), 
              fill="white", size = 5, fontface="bold") +
-  theme_penguins +
+  theme_penguins("dark") +
+  theme(legend.position = "none")
   legend_inside(c(0.87, 0.15))
 
 p2 <- ggplot(peng, 
@@ -92,7 +93,7 @@ p2 <- ggplot(peng,
   stat_ellipse(geom = "polygon", level = 0.95, alpha = 0.4) +
   geom_label(data = pred, label=row.names(pred), 
              fill="white", size = 5, fontface="bold") +
-  theme_penguins +
+  theme_penguins("dark") +
   legend_inside(c(0.87, 0.15))
 
 p1 + p2
