@@ -164,6 +164,7 @@ peng.lda <- lda(species ~ bill_length + bill_depth + flipper_length + body_mass,
                 data = peng)
 print(peng.lda, digits = 3)
 ```
+:::
 
 ## Classification accuracy
 
@@ -177,9 +178,9 @@ class_table <- table(peng$species,
                      dnn = c("actual", "predicted")) |>
   print()
 # overall rates
-accuracy <- sum(diag(class_table))/sum(class_table) * 100
-error <- 100 - accuracy
-c(accuracy, error)
+acc <- sum(diag(class_table))/sum(class_table) * 100
+err <- 100 - accuracy
+c("accuracy" = acc, "error" = err)
 ```
 
 That's pretty good! Only 4 penguins are misclassified, giving an error rate of 1.2%. You can identify the
@@ -211,6 +212,8 @@ peng_pred <- predict(peng.lda, newdata = peng_new) |>
 ```
 
 A little manipulation of the result from `predict()` makes what has happened here more apparent.
+I extract the predicted `class` of the observations and join this with the `posterior` probabilities
+and their maximum `maxp` across the levels of `species`.
 
 ```{r peng-class-data}
 class <- peng_pred$class 
@@ -221,14 +224,26 @@ data.frame(class, round(posterior, 4), maxp)
 
 This says that Abe has the highest probability in the Adelie class, Betty and Dave are almost certainly of the Chinstrap species,
 while Chloe and Emma are almost certainly Gentoos.
-:::
+
+### Working with `"lda"` objects
+
+The implementation of discriminant analysis in `r pkg("MASS")` is untidy and awkward to work with.
+The `r package("candisc")` now provides a collection of convenience functions which simplify analysis,
+display and plotting for this class of models.
+
+* `predict_discrim()`: a wrapper to `MASS::predict.lda()` returning a data.frame
+* `cor_lda()` calculates structure correlations between variables and discriminant scores
+* `scores.lda()` a `scores()` method to extract discriminant scores
+
+**TODO**: Need to re-write much of what is below to use these methods
+
 
 ## Visualizing classification in data space
 
 A simple way to understand what happens in discriminant analysis is to plot the original data in data space and add labeled points
-for the new observations. To make this easier, I created a general function `predict_discrim()`, which joins the measures in the
+for the new observations. You can use `candisc::predict_discrim()`, which joins the measures in the
 test dataset with the predicted class for each new observation. In the result, `species` is the predicted class.
-[**TODO**: This should be moved to the `candisc` package.]
+
 
 ```{r peng-pred}
 source(here::here("R/predict_discrim.R"))
@@ -249,7 +264,7 @@ legend_inside <- function(position) {
   }
 ```
 
-Using this you can simply plot the original Penguin data for two variables and use `geom_text()` or
+Using this result you can simply plot the original Penguin data for two variables and use `geom_text()` or
 `geom_label()` to identify the observations of the
 new penguins in this space. In @fig-peng-new-data, I do this in two separate plots, one for the bill length and depth variables, and another
 for `flipper_length` vs. `body_mass`. The key thing is that the call to `geom_label()` uses the predicted `species` and
