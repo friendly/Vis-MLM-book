@@ -1,0 +1,1484 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.29">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>Appendix A — Discriminant analysis – Visualizing Multivariate Data and Models in R</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./95-references.html" rel="prev">
+<link href="./images/favicon/favicon.ico" rel="icon">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-0815c480559380816a4d1ea211a47e91.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-54ba0423ea0ae7481c4c4fc8775fd264.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/quarto-contrib/line-highlight-1.0.0/line-highlight.css" rel="stylesheet"><script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script><script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script><script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script><script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+</head>
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top quarto-banner"><nav class="quarto-secondary-nav"><div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./21-discrim.html">Appendices</a></li><li class="breadcrumb-item"><a href="./21-discrim.html"><span class="chapter-number">A</span>&nbsp; <span class="chapter-title">Discriminant analysis</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav></header><!-- content --><header id="title-block-header" class="quarto-title-block default page-columns page-full"><div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./21-discrim.html">Appendices</a></li><li class="breadcrumb-item"><a href="./21-discrim.html"><span class="chapter-number">A</span>&nbsp; <span class="chapter-title">Discriminant analysis</span></a></li></ol></nav>
+      <h1 class="title"><span id="sec-discrim-MLM" class="quarto-section-identifier">Appendix A — Discriminant analysis</span></h1>
+                      </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto"><div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Visualizing Multivariate Data and Models in R</a> 
+        <div class="sidebar-tools-main">
+    <a href="https://github.com/friendly/vis-MLM-book" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./00-Author.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Author</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Orienting Ideas</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./01-Prelude.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Warm-up Exercises</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-intro.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Introduction</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./03-getting_started.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Getting Started</span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Exploratory Methods</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./04-multivariate_plots.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Plots of Multivariate Data</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./05-pca-biplot.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Dimension Reduction</span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Univariate Linear Models</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06-linear_models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Overview of Linear models</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07-linear_models-plots.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Plots for Univariate Response Models</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./08-lin-mod-topics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Topics in Linear Models</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./09-collinearity-ridge.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Collinearity &amp; Ridge Regression</span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Multivariate Linear Models</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./10-hotelling.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Hotelling’s <span class="math inline">\(T^2\)</span></span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./11-mlm-review.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Multivariate Linear Models</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./12-mlm-viz.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Visualizing Multivariate Models</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./13-eqcov.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Visualizing Equality of Covariance Matrices</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./14-infl-robust.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Multiviate Influence and Robust Estimation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./15-case-studies.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Case Studies</span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">End Matter</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./91-colophon.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Colophon</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./95-references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">References</span></a>
+  </div>
+</li>
+      </ul>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendices</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">
+<li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./21-discrim.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">A</span>&nbsp; <span class="chapter-title">Discriminant analysis</span></span></a>
+  </div>
+</li>
+      </ul>
+</li>
+    </ul>
+</div>
+</nav><div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active"><h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+<li><a href="#sec-discrim-data" id="toc-sec-discrim-data" class="nav-link active" data-scroll-target="#sec-discrim-data"><span class="header-section-number">A.3</span> Visualizing classification in data space</a></li>
+  <li>
+<a href="#sec-discrim-discrim" id="toc-sec-discrim-discrim" class="nav-link" data-scroll-target="#sec-discrim-discrim"><span class="header-section-number">A.4</span> Visualizing classification in discriminant space</a>
+  <ul class="collapse">
+<li><a href="#going-further" id="toc-going-further" class="nav-link" data-scroll-target="#going-further"><span class="header-section-number">A.4.1</span> Going further</a></li>
+  </ul>
+</li>
+  <li>
+<a href="#sec-pred-regions" id="toc-sec-pred-regions" class="nav-link" data-scroll-target="#sec-pred-regions"><span class="header-section-number">A.5</span> Visualizing prediction regions</a>
+  <ul class="collapse">
+<li><a href="#partition-plots-with-partimat" id="toc-partition-plots-with-partimat" class="nav-link" data-scroll-target="#partition-plots-with-partimat"><span class="header-section-number">A.5.1</span> Partition plots with <code>partimat()</code></a></li>
+  <li><a href="#using-ggplot" id="toc-using-ggplot" class="nav-link" data-scroll-target="#using-ggplot"><span class="header-section-number">A.5.2</span> Using <code>ggplot()</code></a></li>
+  <li><a href="#prediction-regions-in-discriminant-space" id="toc-prediction-regions-in-discriminant-space" class="nav-link" data-scroll-target="#prediction-regions-in-discriminant-space"><span class="header-section-number">A.5.3</span> Prediction regions in discriminant space</a></li>
+  <li><a href="#adding-variable-vectors-lda-biplot" id="toc-adding-variable-vectors-lda-biplot" class="nav-link" data-scroll-target="#adding-variable-vectors-lda-biplot"><span class="header-section-number">A.5.4</span> Adding variable vectors: LDA biplot</a></li>
+  </ul>
+</li>
+  <li>
+<a href="#sec-discrim-MANOVA" id="toc-sec-discrim-MANOVA" class="nav-link" data-scroll-target="#sec-discrim-MANOVA"><span class="header-section-number">A.6</span> Relation to MANOVA and CDA</a>
+  <ul class="collapse">
+<li><a href="#canonical-discriminant-plot" id="toc-canonical-discriminant-plot" class="nav-link" data-scroll-target="#canonical-discriminant-plot"><span class="header-section-number">A.6.1</span> Canonical discriminant plot</a></li>
+  <li><a href="#canonical-he-plot" id="toc-canonical-he-plot" class="nav-link" data-scroll-target="#canonical-he-plot"><span class="header-section-number">A.6.2</span> Canonical HE plot</a></li>
+  </ul>
+</li>
+  </ul><div class="toc-actions"><ul><li><a href="https://github.com/friendly/vis-MLM-book/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content"><!--- For HTML Only ---><!-- \require{newcommand} --><!-- %\renewcommand*{\det}[1]{\mathrm{det} (#1)} --><!-- %\renewcommand*{\det}[1]{|#1|} --><!-- \providecommand{\sizedmat}[2]{\mathord{\mathop{\mat{#1}}\limits_{(#2)}}} --><!-- \newcommand*{\E}{\mathcal{E}} --><!-- Index generation --><!-- % R packages:  indexed under both package name and packages! --><!-- % data sets:  --><!-- % R stuff --><div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This material will become a chapter in the online Appendix.</p>
+</div>
+</div>
+<!-- ```{r include=FALSE} -->
+<!-- # only for testing by itself -->
+<!-- source(here::here("R/common.R")) -->
+<!-- library(dplyr) -->
+<!-- ``` -->
+<p>As described earlier (<a href="10-hotelling.html#sec-t2-discrim" class="quarto-xref"><span>Section 10.4</span></a>), Linear Discriminant Analysis (LDA) is similar to a one-way MANOVA, but with its emphasis on the problem of <em>classifying observations</em> into groups rather than <em>testing</em> whether there are significant differences of the means for the response variables. You would use LDA rather than MANOVA when your goal is to predict group membership and identify which variables best distinguish between pre-defined groups, rather than just testing for group differences.</p>
+<p>Thus, LDA can be seen as a <strong>flipped MANOVA</strong>, where the role of dependent and independent variables are reversed. You can see this difference in the model formulas used in <code><a href="https://rdrr.io/r/stats/lm.html">lm()</a></code> compared with <code><a href="https://rdrr.io/pkg/MASS/man/lda.html">MASS::lda()</a></code>, which fits a linear discriminant analysis (LDA) model: The outcomes on the right-hand side are <code>cbind(y1, y2, y3)</code> for the MANOVA but is simply <code>group</code> for a discriminant analysis.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb1" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">manova.mod</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">y1</span>, <span class="va">y2</span>, <span class="va">y3</span><span class="op">)</span> <span class="op">~</span> <span class="va">group</span><span class="op">)</span></span>
+<span><span class="va">discrim.mod</span> <span class="op">&lt;-</span> <span class="fu">MASS</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/MASS/man/lda.html">lda</a></span><span class="op">(</span><span class="va">group</span> <span class="op">~</span> <span class="va">y1</span> <span class="op">+</span> <span class="va">y2</span> <span class="op">+</span> <span class="va">y3</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>One consequence of this flipped emphasis is that predicted values from <code><a href="https://rdrr.io/r/stats/predict.html">predict()</a></code> for an LDA is the predicted <em>group membership</em> for an observation with values <span class="math inline">\(y_1, y_2, y_3\)</span> rather than the predicted <em>response values</em> <span class="math inline">\(\hat{y}_1, \hat{y}_2, \hat{y}_3\)</span> in MANOVA. This is useful for classifying new observations from an LDA model, such as determining whether new Swiss banknotes are real or fake (<a href="10-hotelling.html#exm-banknote" class="quarto-xref">Example&nbsp;<span>10.1</span></a>) or classifying a new penguin.</p>
+<p>As we have seen, the multivariate linear model fit by <code><a href="https://rdrr.io/r/stats/lm.html">lm()</a></code> applies equally well when there are two or more grouping factors and or quantitative predictors, whereas discriminant analysis is mostly restricted to the case of a single <code>group</code> factor.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+<p>In both cases, the analysis and significance tests are based on the familiar breakdown (<a href="11-mlm-review.html#eq-SSP" class="quarto-xref">Equation&nbsp;<span>11.3</span></a>) of total variability, <span class="math inline">\(\mathbf{T} \equiv \mathbf{SSP}_{T}\)</span>, of the observations around the grand means into portions attributable to differences <em>between</em> the group means <span class="math inline">\(\mathbf{H} \equiv \mathbf{SSP}_{H}\)</span> and the portions attributable to differences <em>within</em> the groups around their means, <span class="math inline">\(\mathbf{E} \equiv \mathbf{SSP}_{E}\)</span> as described in <span class="quarto-unresolved-ref">?sec-sum-of-squares</span>,</p>
+<p><span class="math display">\[
+\mathbf{T} = \mathbf{H} + \mathbf{E} \; .
+\]</span> As we saw earlier (<a href="11-mlm-review.html#sec-H-vs-E" class="quarto-xref"><span>Section 11.2.3</span></a>), for <span class="math inline">\(p\)</span> variables and <span class="math inline">\(g\)</span> groups, having <span class="math inline">\(\text{df}_h = g-1\)</span> degrees of freedom, significance tests are based on the <span class="math inline">\(s = \min{(p, \text{df}_h)}\)</span> non-zero eigenvalues <span class="math inline">\(\lambda_i\)</span> of the matrix product <span class="math inline">\(\mathbf{H}\mathbf{E}^{-1}\)</span>, reflecting a ratio of between-group to within-group variation. These are combined into a single test statistic such as Wilks’ <span class="math inline">\(\Lambda = \Pi_i^s (1+\lambda_i)^{-1}\)</span> or Hotelling-Lawley trace, <span class="math inline">\(\Sigma_i^s \lambda_i\)</span>.</p>
+<p>The corresponding eigenvectors, <span class="math inline">\(\mathbf{V}\)</span> of <span class="math inline">\(\mathbf{H}\mathbf{E}^{-1}\)</span> are the weights for the linear combinations of the quantitative variables on which the groups are most widely separated. The transformation of the <span class="math inline">\(\mathbf{Y}\)</span> variables in data space to the space of these linear combinations is given by <span class="math inline">\(\mathbf{Z}_{n \times s} = \mathbf{Y} \; \mathbf{E}^{-1/2} \; \mathbf{V}\)</span> as we saw earlier (<a href="12-mlm-viz.html#sec-candisc" class="quarto-xref"><span>Section 12.7</span></a>, <a href="12-mlm-viz.html#eq-canZ" class="quarto-xref">Equation&nbsp;<span>12.4</span></a>).</p>
+<p>But here is where MANOVA and discriminant analysis diverge again. In discriminant analysis, you an replace the observed <span class="math inline">\(\mathbf{Y}\)</span> variables with the uncorrelated <span class="math inline">\(s\)</span> discriminant variates defined by <span class="math inline">\(\mathbf{V}\)</span> and obtain <em>exactly</em> the same classifications of the observations. The first, <span class="math inline">\(\mathbf{v}_1\)</span>, associated with the largest eigenvalue <span class="math inline">\(\lambda_1\)</span>, accounts for the greatest proportion of between-group separation; the second, <span class="math inline">\(\mathbf{v}_2\)</span> is next in discriminating power, and so forth. But maybe we can classify nearly as well with a small subset of <span class="math inline">\(k &lt; s\)</span> discriminants without great loss.</p>
+<p>Hence, just as in PCA, discriminant analysis can be thought of as a <strong>dimension reduction</strong> technique, squeezing the most discriminant juice out of the data in a few dimensions. These methods differ is that in PCA, the “juice” is the total variance of the cloud of points in <span class="math inline">\(p\)</span>-dimensional data space, whose contributions are the <span class="math inline">\(p\)</span> eigenvalues of <span class="math inline">\(\mathbf{T}\)</span>. However, in discriminant analysis, the “juice” is <em>ratio</em> of between-class variation (<span class="math inline">\(\mathbf{H}\)</span>) of the group means to the within-class (<span class="math inline">\(\mathbf{E}\)</span>) variation in the cloud, reflected in the <span class="math inline">\(s\)</span> non-zero eigenvalues of <span class="math inline">\(\mathbf{H} \mathbf{E}^{-1}\)</span>.</p>
+<!-- method notes
+https://en.wikipedia.org/wiki/Linear_discriminant_analysis
+https://www.sthda.com/english/articles/36-classification-methods-essentials/146-discriminant-analysis-essentials-in-r/
+
+https://stats.stackexchange.com/questions/82959/how-is-manova-related-to-lda
+https://stats.stackexchange.com/questions/48786/algebra-of-lda-fisher-discrimination-power-of-a-variable-and-linear-discriminan#48859
+https://stats.stackexchange.com/questions/22884/how-does-linear-discriminant-analysis-reduce-the-dimensions/22889#22889
+https://stats.stackexchange.com/questions/169436/how-lda-a-classification-technique-also-serves-as-dimensionality-reduction-tec
+
+Takes up LDA, QDA, mixture MDA models, ...
+https://www.sthda.com/english/articles/36-classification-methods-essentials/146-discriminant-analysis-essentials-in-r/
+-->
+<p>The discussion here is limited to what this altered focus adds to <em>visualizing differences</em> among groups on a collection of response variables. See <span class="citation" data-cites="Klecka1980">Klecka (<a href="95-references.html#ref-Klecka1980" role="doc-biblioref">1980</a>)</span>, <span class="citation" data-cites="Lachenbruch1975">Lachenbruch (<a href="95-references.html#ref-Lachenbruch1975" role="doc-biblioref">1975</a>)</span> for a basic, but more general introduction to discriminant analysis methods. There is a useful discussion in this Cross Validated question <a href="https://bit.ly/4gpMykN">How is MANOVA related to LDA?</a> <!-- {.content-visible when-format="pdf"} (https://bit.ly/4gpMykN). --></p>
+<p>As in MANOVA, <strong>linear</strong> discriminant analysis assumes equal variance covariance matrices across the groups. In this case, the boundaries separating predicted group memberships are <em>hyper-planes</em> in the data space of the quantitative variables. In 2D plots, these appear as lines, and a goal of this section is to show how you can plot these. When the variance covariance matrices differ substantially, the boundaries become curved, and the method is called <strong>quadratic</strong> discriminant analysis, implemented in <code><a href="https://rdrr.io/pkg/MASS/man/qda.html">MASS::qda()</a></code>.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
+<p>Another way that LDA differs from MANOVA is that for classification purposes, the relative proportions of the groups in your sample or in the population has a role in determining the classification rules. These are called <strong>prior probabilities</strong>, which adjust the boundaries used to classify new observations. A higher prior probability for a group increases its assigned likelihood, effectively “pulling” the classification boundary in its favor.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p>
+<div id="exm-penguin-new" class="theorem example">
+<p><span class="theorem-title"><strong>Example A.1</strong></span> <strong>Penguins on Island Z</strong></p>
+<!-- fig.code: R/peng-lda-pred-new.R -->
+<p>For an example, to illustrate how discriminant analysis works and how to use it to classify observations, imagine you are a researcher on an expedition to Antarctica to survey the penguin population. You stop at a small, as yet unnamed island “Z”, and find five penguins you want to study. You call them Abe, Betsy, Chloe, Dave and Emma. How can you determine their species based on what you know of the penguins studied before?</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb2" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">peng_new</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span></span>
+<span>  species <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="fl">5</span><span class="op">)</span>,</span>
+<span>  island <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"Z"</span>, <span class="fl">5</span><span class="op">)</span>,</span>
+<span>  bill_length <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">35</span>, <span class="fl">52</span>, <span class="fl">52</span>, <span class="fl">50</span>, <span class="fl">40</span><span class="op">)</span>,</span>
+<span>  bill_depth<span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">18</span>, <span class="fl">20</span>, <span class="fl">15</span>, <span class="fl">16</span>, <span class="fl">15</span><span class="op">)</span>,</span>
+<span>  flipper_length <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">220</span>, <span class="fl">190</span>, <span class="fl">210</span>, <span class="fl">190</span>, <span class="fl">195</span><span class="op">)</span>,</span>
+<span>  body_mass <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">5000</span>, <span class="fl">3900</span>, <span class="fl">4000</span>, <span class="fl">3500</span>, <span class="fl">5500</span><span class="op">)</span>,</span>
+<span>  sex <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"m"</span>, <span class="st">"f"</span>, <span class="st">"f"</span>, <span class="st">"m"</span>, <span class="st">"f"</span><span class="op">)</span>,</span>
+<span>  row.names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Abe"</span>, <span class="st">"Betsy"</span>, <span class="st">"Chloe"</span>, <span class="st">"Dave"</span>, <span class="st">"Emma"</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#       species island bill_length bill_depth flipper_length</span></span>
+<span><span class="co"># Abe        NA      Z          35         18            220</span></span>
+<span><span class="co"># Betsy      NA      Z          52         20            190</span></span>
+<span><span class="co"># Chloe      NA      Z          52         15            210</span></span>
+<span><span class="co"># Dave       NA      Z          50         16            190</span></span>
+<span><span class="co"># Emma       NA      Z          40         15            195</span></span>
+<span><span class="co">#       body_mass sex</span></span>
+<span><span class="co"># Abe        5000   m</span></span>
+<span><span class="co"># Betsy      3900   f</span></span>
+<span><span class="co"># Chloe      4000   f</span></span>
+<span><span class="co"># Dave       3500   m</span></span>
+<span><span class="co"># Emma       5500   f</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>So, you can run a discriminant analysis using the existing data and then use that to classify the new penguins on island Z. By default, <code><a href="https://rdrr.io/pkg/MASS/man/lda.html">MASS::lda()</a></code> uses the proportions of the three species as the prior probabilities, which are given in the printed output. With <span class="math inline">\(g = 3\)</span> groups, and <span class="math inline">\(p = 4\)</span> variables, there are only <span class="math inline">\(s = 2\)</span> discriminant dimensions, of which the first, <code>LD1</code> accounts for 86.6% of the total …</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb3" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">peng</span>, package <span class="op">=</span> <span class="st">"heplots"</span><span class="op">)</span></span>
+<span><span class="va">peng.lda</span> <span class="op">&lt;-</span> <span class="fu">lda</span><span class="op">(</span><span class="va">species</span> <span class="op">~</span> <span class="va">bill_length</span> <span class="op">+</span> <span class="va">bill_depth</span> <span class="op">+</span> <span class="va">flipper_length</span> <span class="op">+</span> <span class="va">body_mass</span>, </span>
+<span>                data <span class="op">=</span> <span class="va">peng</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">peng.lda</span>, digits <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="co"># Call:</span></span>
+<span><span class="co"># lda(species ~ bill_length + bill_depth + flipper_length + body_mass, </span></span>
+<span><span class="co">#     data = peng)</span></span>
+<span><span class="co"># </span></span>
+<span><span class="co"># Prior probabilities of groups:</span></span>
+<span><span class="co">#    Adelie Chinstrap    Gentoo </span></span>
+<span><span class="co">#     0.438     0.204     0.357 </span></span>
+<span><span class="co"># </span></span>
+<span><span class="co"># Group means:</span></span>
+<span><span class="co">#           bill_length bill_depth flipper_length body_mass</span></span>
+<span><span class="co"># Adelie           38.8       18.3            190      3706</span></span>
+<span><span class="co"># Chinstrap        48.8       18.4            196      3733</span></span>
+<span><span class="co"># Gentoo           47.6       15.0            217      5092</span></span>
+<span><span class="co"># </span></span>
+<span><span class="co"># Coefficients of linear discriminants:</span></span>
+<span><span class="co">#                     LD1      LD2</span></span>
+<span><span class="co"># bill_length    -0.08593 -0.41660</span></span>
+<span><span class="co"># bill_depth      1.04165 -0.01042</span></span>
+<span><span class="co"># flipper_length -0.08455  0.01425</span></span>
+<span><span class="co"># body_mass      -0.00135  0.00169</span></span>
+<span><span class="co"># </span></span>
+<span><span class="co"># Proportion of trace:</span></span>
+<span><span class="co">#   LD1   LD2 </span></span>
+<span><span class="co"># 0.866 0.135</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="classification-accuracy" class="level2" data-number="A.1"><h2 data-number="A.1" class="anchored" data-anchor-id="classification-accuracy">
+<span class="header-section-number">A.1</span> Classification accuracy</h2>
+<p>How well did LDA succeed in classifying the penguins in the <em>existing</em> <code>peng</code> dataset? You can answer this by making a table of the frequencies of the species in the data against their predicted <code>class</code>, obtained from the <code><a href="https://rdrr.io/pkg/MASS/man/predict.lda.html">MASS::predict.lda()</a></code> method for an <code>"lda"</code> object:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb4" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">class_table</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/table.html">table</a></span><span class="op">(</span><span class="va">peng</span><span class="op">$</span><span class="va">species</span>,</span>
+<span>                     <span class="fu"><a href="https://rdrr.io/r/stats/predict.html">predict</a></span><span class="op">(</span><span class="va">peng.lda</span><span class="op">)</span><span class="op">$</span><span class="va">class</span>,</span>
+<span>                     dnn <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"actual"</span>, <span class="st">"predicted"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#            predicted</span></span>
+<span><span class="co"># actual      Adelie Chinstrap Gentoo</span></span>
+<span><span class="co">#   Adelie       145         1      0</span></span>
+<span><span class="co">#   Chinstrap      3        65      0</span></span>
+<span><span class="co">#   Gentoo         0         0    119</span></span>
+<span><span class="co"># overall rates</span></span>
+<span><span class="va">accuracy</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/diag.html">diag</a></span><span class="op">(</span><span class="va">class_table</span><span class="op">)</span><span class="op">)</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">class_table</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span></span>
+<span><span class="va">error</span> <span class="op">&lt;-</span> <span class="fl">100</span> <span class="op">-</span> <span class="va">accuracy</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">accuracy</span>, <span class="va">error</span><span class="op">)</span></span>
+<span><span class="co"># [1] 98.8  1.2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>That’s pretty good! Only 4 penguins are misclassified, giving an error rate of 1.2%. You can identify the errors by joining the data with the predicted class and filtering those that don’t match.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb5" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span>id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/row.names.html">row.names</a></span><span class="op">(</span><span class="va">peng</span><span class="op">)</span>,</span>
+<span>           <span class="va">peng</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">3</span><span class="op">:</span><span class="fl">6</span><span class="op">)</span><span class="op">]</span>,</span>
+<span>           predicted <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html">predict</a></span><span class="op">(</span><span class="va">peng.lda</span><span class="op">)</span><span class="op">$</span><span class="va">class</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">species</span> <span class="op">!=</span> <span class="va">predicted</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">relocate</span><span class="op">(</span><span class="va">predicted</span>, .after <span class="op">=</span> <span class="va">species</span><span class="op">)</span></span>
+<span><span class="co">#    id   species predicted bill_length bill_depth flipper_length</span></span>
+<span><span class="co"># 1  68    Adelie Chinstrap        45.8       18.9            197</span></span>
+<span><span class="co"># 2 286 Chinstrap    Adelie        42.4       17.3            181</span></span>
+<span><span class="co"># 3 296 Chinstrap    Adelie        40.9       16.6            187</span></span>
+<span><span class="co"># 4 320 Chinstrap    Adelie        42.5       17.3            187</span></span>
+<span><span class="co">#   body_mass</span></span>
+<span><span class="co"># 1      4150</span></span>
+<span><span class="co"># 2      3600</span></span>
+<span><span class="co"># 3      3200</span></span>
+<span><span class="co"># 4      3350</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The only confusions are between Adelie and Chinstraps. We’ll see why this is the case in plots developed below.</p>
+</section><section id="classifying-new-penguins" class="level2" data-number="A.2"><h2 data-number="A.2" class="anchored" data-anchor-id="classifying-new-penguins">
+<span class="header-section-number">A.2</span> Classifying new penguins</h2>
+<p>The fitted model, <code>peng.lda</code>, can also be used to classify our new penguins by supplying the call to <code>predict.lda()</code> with <code>newdata = peng_new</code>. Only those cases are classified. The printed result isn’t pretty, because the function simply returns a list, with elements:</p>
+<ul>
+<li>
+<code>class</code>: The predicted class for each observation</li>
+<li>
+<code>posterior</code>: The posterior probabilities for the observations being assigned to each <code>class</code>. The predicted class is that of the maximum probability.</li>
+<li>
+<code>x</code>: The scores of the test cases on the discriminant variables.</li>
+</ul>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb6" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">peng_pred</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html">predict</a></span><span class="op">(</span><span class="va">peng.lda</span>, newdata <span class="op">=</span> <span class="va">peng_new</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span>digits <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span>
+<span><span class="co"># $class</span></span>
+<span><span class="co"># [1] Adelie    Chinstrap Gentoo    Chinstrap Gentoo   </span></span>
+<span><span class="co"># Levels: Adelie Chinstrap Gentoo</span></span>
+<span><span class="co"># </span></span>
+<span><span class="co"># $posterior</span></span>
+<span><span class="co">#          Adelie Chinstrap    Gentoo</span></span>
+<span><span class="co"># Abe   9.693e-01 6.150e-10 3.069e-02</span></span>
+<span><span class="co"># Betsy 2.205e-05 1.000e+00 3.244e-20</span></span>
+<span><span class="co"># Chloe 2.263e-11 1.277e-03 9.987e-01</span></span>
+<span><span class="co"># Dave  5.484e-07 1.000e+00 2.766e-09</span></span>
+<span><span class="co"># Emma  1.518e-07 8.504e-13 1.000e+00</span></span>
+<span><span class="co"># </span></span>
+<span><span class="co"># $x</span></span>
+<span><span class="co">#           LD1    LD2</span></span>
+<span><span class="co"># Abe   -1.0351  5.345</span></span>
+<span><span class="co"># Betsy  3.6062 -4.039</span></span>
+<span><span class="co"># Chloe -3.4278 -3.534</span></span>
+<span><span class="co"># Dave   0.1504 -3.839</span></span>
+<span><span class="co"># Emma  -3.1495  3.780</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>A little manipulation of the result from <code><a href="https://rdrr.io/r/stats/predict.html">predict()</a></code> makes what has happened here more apparent.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb7" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">class</span> <span class="op">&lt;-</span> <span class="va">peng_pred</span><span class="op">$</span><span class="va">class</span> </span>
+<span><span class="va">posterior</span> <span class="op">&lt;-</span> <span class="va">peng_pred</span><span class="op">$</span><span class="va">posterior</span></span>
+<span><span class="va">maxp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/apply.html">apply</a></span><span class="op">(</span><span class="va">posterior</span>, <span class="fl">1</span>, <span class="va">max</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span><span class="va">class</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">posterior</span>, <span class="fl">4</span><span class="op">)</span>, <span class="va">maxp</span><span class="op">)</span></span>
+<span><span class="co">#           class Adelie Chinstrap Gentoo  maxp</span></span>
+<span><span class="co"># Abe      Adelie  0.969    0.0000 0.0307 0.969</span></span>
+<span><span class="co"># Betsy Chinstrap  0.000    1.0000 0.0000 1.000</span></span>
+<span><span class="co"># Chloe    Gentoo  0.000    0.0013 0.9987 0.999</span></span>
+<span><span class="co"># Dave  Chinstrap  0.000    1.0000 0.0000 1.000</span></span>
+<span><span class="co"># Emma     Gentoo  0.000    0.0000 1.0000 1.000</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>This says that Abe has the highest probability in the Adelie class, Betty and Dave are almost certainly of the Chinstrap species, while Chloe and Emma are almost certainly Gentoos.</p>
+</section>
+</div>
+<section id="sec-discrim-data" class="level2" data-number="A.3"><h2 data-number="A.3" class="anchored" data-anchor-id="sec-discrim-data">
+<span class="header-section-number">A.3</span> Visualizing classification in data space</h2>
+<p>A simple way to understand what happens in discriminant analysis is to plot the original data in data space and add labeled points for the new observations. To make this easier, I created a general function <code>predict_discrim()</code>, which joins the measures in the test dataset with the predicted class for each new observation. In the result, <code>species</code> is the predicted class. [<strong>TODO</strong>: This should be moved to the <code>candisc</code> package.]</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb8" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/source.html">source</a></span><span class="op">(</span><span class="fu">here</span><span class="fu">::</span><span class="fu"><a href="https://here.r-lib.org/reference/here.html">here</a></span><span class="op">(</span><span class="st">"R/predict_discrim.R"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">pred</span> <span class="op">&lt;-</span> <span class="fu">predict_discrim</span><span class="op">(</span><span class="va">peng.lda</span>, </span>
+<span>                        newdata <span class="op">=</span> <span class="va">peng_new</span><span class="op">[</span>, <span class="fl">3</span><span class="op">:</span><span class="fl">6</span><span class="op">]</span>,</span>
+<span>                        posterior <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#         species bill_length bill_depth flipper_length body_mass</span></span>
+<span><span class="co"># Abe      Adelie          35         18            220      5000</span></span>
+<span><span class="co"># Betsy Chinstrap          52         20            190      3900</span></span>
+<span><span class="co"># Chloe    Gentoo          52         15            210      4000</span></span>
+<span><span class="co"># Dave  Chinstrap          50         16            190      3500</span></span>
+<span><span class="co"># Emma     Gentoo          40         15            195      5500</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Using this, you can simply plot the original Penguin data for two variables and use <code>geom_text()</code> or <code>geom_label()</code> to identify the observations of the new penguins in this space. In <a href="#fig-peng-new-data" class="quarto-xref">Figure&nbsp;<span>A.1</span></a>, I do this in two separate plots, one for the bill length and depth variables, and another for <code>flipper_length</code> vs.&nbsp;<code>body_mass</code>. The key thing is that the call to <code>geom_label()</code> uses the predicted <code>species</code> and coordinates for the new penguins from the <code>pred</code> dataset obtained from <code>predict_discrim()</code>.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb9" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu">ggplot</span><span class="op">(</span><span class="va">peng</span>, </span>
+<span>       <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">bill_length</span>, y <span class="op">=</span> <span class="va">bill_depth</span>,</span>
+<span>           color <span class="op">=</span> <span class="va">species</span>, shape <span class="op">=</span> <span class="va">species</span>, fill<span class="op">=</span><span class="va">species</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">geom_point</span><span class="op">(</span>size<span class="op">=</span><span class="fl">2</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">stat_ellipse</span><span class="op">(</span>geom <span class="op">=</span> <span class="st">"polygon"</span>, level <span class="op">=</span> <span class="fl">0.95</span>, alpha <span class="op">=</span> <span class="fl">0.4</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">geom_label</span><span class="op">(</span>data <span class="op">=</span> <span class="va">pred</span>, label<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/row.names.html">row.names</a></span><span class="op">(</span><span class="va">pred</span><span class="op">)</span>, </span>
+<span>             fill<span class="op">=</span><span class="st">"white"</span>, size <span class="op">=</span> <span class="fl">5</span>, fontface<span class="op">=</span><span class="st">"bold"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_penguins</span><span class="op">(</span><span class="st">"dark"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme</span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"none"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu">ggplot</span><span class="op">(</span><span class="va">peng</span>, </span>
+<span>       <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">flipper_length</span>, y <span class="op">=</span> <span class="va">body_mass</span>,</span>
+<span>           color <span class="op">=</span> <span class="va">species</span>, shape <span class="op">=</span> <span class="va">species</span>, fill<span class="op">=</span><span class="va">species</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">geom_point</span><span class="op">(</span>size<span class="op">=</span><span class="fl">2</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">stat_ellipse</span><span class="op">(</span>geom <span class="op">=</span> <span class="st">"polygon"</span>, level <span class="op">=</span> <span class="fl">0.95</span>, alpha <span class="op">=</span> <span class="fl">0.4</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">geom_label</span><span class="op">(</span>data <span class="op">=</span> <span class="va">pred</span>, label<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/row.names.html">row.names</a></span><span class="op">(</span><span class="va">pred</span><span class="op">)</span>, </span>
+<span>             fill<span class="op">=</span><span class="st">"white"</span>, size <span class="op">=</span> <span class="fl">5</span>, fontface<span class="op">=</span><span class="st">"bold"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_penguins</span><span class="op">(</span><span class="st">"dark"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">legend_inside</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.87</span>, <span class="fl">0.15</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p1</span> <span class="op">+</span> <span class="va">p2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-peng-new-data" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-peng-new-data-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/discrim/fig-peng-new-data-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-peng-new-data-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;A.1: Plots of the Penguin data, showing the locations of the newly classified observations from island Z.
+</figcaption></figure>
+</div>
+</div>
+</div>
+<p>In <a href="#fig-peng-new-data" class="quarto-xref">Figure&nbsp;<span>A.1</span></a>, Betsy is well within the data ellipses for her species in both plots. Abe looks very much like an Adelie in the panel for the bill variables, but more like a Gentoo in terms of flipper length and body mass. Chloe, classed as a Gentoo is at the margin of the 95% ellipses. Dave, classified as a Chinstrap, looks more like a Gentoo in terms of bill length and depth, but is in the region occupied by Adelie and Chinstraps in the right panel. Emma is outside the data ellipses for all three species in both plots.</p>
+<p>These plots are just two of the <span class="math inline">\((4 \times 3) / 2 = 6\)</span> possible pairwise plots that would appear in a scatterplot matrix.</p>
+</section><section id="sec-discrim-discrim" class="level2" data-number="A.4"><h2 data-number="A.4" class="anchored" data-anchor-id="sec-discrim-discrim">
+<span class="header-section-number">A.4</span> Visualizing classification in discriminant space</h2>
+<p>One main virtue of discriminant analysis is that it allows us to see the data in the reduced-rank space that shows the greatest differences among the groups. The 4D data space of the observed <span class="math inline">\(\mathbf{y}\)</span> variables is replaced by 2D discriminant space of the <span class="math inline">\(\mathbf{z}\)</span>s, which contains the same information for classification.</p>
+<p>If you add points for the newly classified observations, you can see better why they are classified as they were in a single plot. The <span style="color: brown;"><strong>MASS</strong></span> package has a <code>plot.lda()</code> method, but the usual result is far too ugly to be useful. Here’s what you get with the default settings:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb10" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">peng.lda</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-peng-new-discrim" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-peng-new-discrim-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/discrim/fig-peng-new-discrim-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:60.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-peng-new-discrim-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;A.2: Plot of the Penguin observations in the space of the two discriminant dimensions. The default plot method uses the classes of the observations as labels.
+</figcaption></figure>
+</div>
+</div>
+</div>
+<p>But, you can turn this sow’s ear into a silk purse (with a little graph-craft)! My goal here is to illustrate plotting in discriminant space and show how the basic plot from <code>plot.lda()</code> can be made more informative. First, <code>predict_discrim()</code> can also return the discriminant scores (<code>LD1</code>, <code>LD2</code>) for the new observations via the argument <code>scores = TRUE</code>. I’ll use this dataset to add labels to the plot.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb11" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">pred</span> <span class="op">&lt;-</span> <span class="fu">predict_discrim</span><span class="op">(</span><span class="va">peng.lda</span>, </span>
+<span>                        newdata <span class="op">=</span> <span class="va">peng_new</span><span class="op">[</span>, <span class="fl">3</span><span class="op">:</span><span class="fl">6</span><span class="op">]</span>,</span>
+<span>                        scores <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">pred</span><span class="op">[</span>, <span class="op">-</span><span class="op">(</span><span class="fl">2</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="co">#         species   LD1   LD2  maxp</span></span>
+<span><span class="co"># Abe      Adelie -1.04  5.35 0.969</span></span>
+<span><span class="co"># Betsy Chinstrap  3.61 -4.04 1.000</span></span>
+<span><span class="co"># Chloe    Gentoo -3.43 -3.53 0.999</span></span>
+<span><span class="co"># Dave  Chinstrap  0.15 -3.84 1.000</span></span>
+<span><span class="co"># Emma     Gentoo -3.15  3.78 1.000</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Then, I want to use more informative axis labels, showing the percent of between-group variance associated with each dimension. These come from the (poorly named) <code>svd</code> component of the <code>peng.lda</code> object.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb12" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">svd</span> <span class="op">&lt;-</span> <span class="va">peng.lda</span><span class="op">$</span><span class="va">svd</span></span>
+<span><span class="va">var</span> <span class="op">&lt;-</span> <span class="fl">100</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">svd</span><span class="op">^</span><span class="fl">2</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">svd</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span>, <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="va">labs</span> <span class="op">&lt;-</span> <span class="fu">glue</span><span class="fu">::</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Discriminant dimension {1:2} ({var}%)"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co"># Discriminant dimension 1 (86.5%)</span></span>
+<span><span class="co"># Discriminant dimension 2 (13.5%)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Fortunately, <code>plot.lda()</code> allows a <code>panel =</code> argument, to control how the observations are are represented. You can override the default (observation class labels) by creating a panel function that simply plots the points.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb13" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">panel.pts</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span>, <span class="va">...</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/graphics/points.html">points</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span>, <span class="va">...</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Finally, call <code>plot.lda()</code> with this panel function, set the color and shape of the point symbols to match our Penguin theme and use the axis labels set above in <code>labs</code>. You can then add points and labels for the newly classified penguins.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb14" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">col</span> <span class="op">&lt;-</span> <span class="fu">peng.colors</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">peng.lda</span>, </span>
+<span>     panel <span class="op">=</span> <span class="va">panel.pts</span>,</span>
+<span>     col <span class="op">=</span> <span class="va">col</span><span class="op">[</span><span class="va">peng</span><span class="op">$</span><span class="va">species</span><span class="op">]</span>,</span>
+<span>     pch <span class="op">=</span> <span class="op">(</span><span class="fl">15</span><span class="op">:</span><span class="fl">17</span><span class="op">)</span><span class="op">[</span><span class="va">peng</span><span class="op">$</span><span class="va">species</span><span class="op">]</span>,</span>
+<span>     xlab <span class="op">=</span> <span class="va">labs</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>,</span>
+<span>     ylab <span class="op">=</span> <span class="va">labs</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>,</span>
+<span>     ylim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">6</span>, <span class="fl">6</span><span class="op">)</span>,</span>
+<span>     cex.lab <span class="op">=</span> <span class="fl">1.3</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># plot new observations &amp; label them with their row.names in the predicted data</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/with.html">with</a></span><span class="op">(</span><span class="va">pred</span>,<span class="op">{</span></span>
+<span>     <span class="fu"><a href="https://rdrr.io/r/graphics/points.html">points</a></span><span class="op">(</span><span class="va">LD1</span>, <span class="va">LD2</span>, pch <span class="op">=</span> <span class="fl">16</span>, col <span class="op">=</span> <span class="st">"black"</span>, cex <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
+<span>     <span class="fu"><a href="https://rdrr.io/r/graphics/text.html">text</a></span><span class="op">(</span><span class="va">LD1</span>, <span class="va">LD2</span>, label<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/row.names.html">row.names</a></span><span class="op">(</span><span class="va">pred</span><span class="op">)</span>,</span>
+<span>          col <span class="op">=</span> <span class="va">col</span><span class="op">[</span><span class="va">species</span><span class="op">]</span>, cex <span class="op">=</span> <span class="fl">1.3</span>, font <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>          pos <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">3</span><span class="op">)</span>,</span>
+<span>          xpd <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>  <span class="op">}</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-peng-new-discrim2" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-peng-new-discrim2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/discrim/fig-peng-new-discrim2-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:60.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-peng-new-discrim2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;A.3: A customized plot of the Penguin observations in the space of the two discriminant dimensions. Predicted values for the new observations are shown with labeled points.
+</figcaption></figure>
+</div>
+</div>
+</div>
+<p>Compared with the separate 2D views in data space (<a href="#fig-peng-new-data" class="quarto-xref">Figure&nbsp;<span>A.1</span></a>), this single view accounts for 100% of the variance due to separation of the species groups. You can see that Betsy and Dave are rather close to the other Chinstraps. Abe, Chloe and Emma are rather far from the centers of the species they are classified as, yet they are closer to their groups than to any of the two others.</p>
+<section id="going-further" class="level3" data-number="A.4.1"><h3 data-number="A.4.1" class="anchored" data-anchor-id="going-further">
+<span class="header-section-number">A.4.1</span> Going further</h3>
+<p>While <a href="#fig-peng-new-discrim2" class="quarto-xref">Figure&nbsp;<span>A.3</span></a> is a substantial improvement over <a href="#fig-peng-new-discrim" class="quarto-xref">Figure&nbsp;<span>A.2</span></a>, it is harder to go much further, because <code>plot.lda()</code> method conceals what it does to make the plot using the <code>"lda"</code> object. You have to dive into that object to get the information needed to add additional graphical information.</p>
+<p>For example, if you also wanted to show data ellipses or other bivariate summaries in this plot, it would be necessary to get the predicted classes for all observations in <code>peng</code> dataset, together with the discriminant scores, <code>LD1</code> and <code>LD2</code>, obtained using <code>scores=TRUE</code> in the call to <code>predict_discrim()</code>. Data ellipses could then be added added using <code><a href="https://rdrr.io/pkg/car/man/Ellipses.html">car::dataEllipse()</a></code> as follows (this plot is not shown).</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb15" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">pred_all</span> <span class="op">&lt;-</span> <span class="fu">predict_discrim</span><span class="op">(</span><span class="va">peng.lda</span>, scores<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># add data ellipses</span></span>
+<span><span class="fu">dataEllipse</span><span class="op">(</span><span class="va">LD2</span> <span class="op">~</span> <span class="va">LD1</span> <span class="op">|</span> <span class="va">species</span>, data <span class="op">=</span> <span class="va">pred_all</span>,</span>
+<span>            levels <span class="op">=</span> <span class="fl">0.68</span>, fill<span class="op">=</span><span class="cn">TRUE</span>, fill.alpha <span class="op">=</span> <span class="fl">0.1</span>,</span>
+<span>            group.labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>            add <span class="op">=</span> <span class="cn">TRUE</span>, plot.points <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>            col <span class="op">=</span> <span class="va">col</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section></section><section id="sec-pred-regions" class="level2" data-number="A.5"><h2 data-number="A.5" class="anchored" data-anchor-id="sec-pred-regions">
+<span class="header-section-number">A.5</span> Visualizing prediction regions</h2>
+<p>An even better way to understand and interpret discriminant analysis results is to visualize the boundaries that separate the prediction into one group rather than another. Our penguins live in a 4-dimensional data space, and the boundaries of the predicted classification regions are of one less dimension—3D hyperplanes here.</p>
+<p>Any point in this data space can be classified into one of the group using a <code><a href="https://rdrr.io/r/stats/predict.html">predict()</a></code> method. Therefore, to visualize the prediction regions, you can calculate the prediction over a grid of values of the <span class="math inline">\(y\)</span> variables, and then plot those using colored tiles. The steps are:</p>
+<ul>
+<li>
+<p>Construct a <span class="math inline">\(k \times k\)</span> grid of values of the two focal variables <span class="math inline">\(y_1, y_2\)</span> to be plotted:</p>
+<ul>
+<li>For each focal <span class="math inline">\(y\)</span> variable, divide it’s range into <span class="math inline">\(k\)</span> intervals, as in <code>seq(min(y)), max(y), k)</code>
+</li>
+<li>Set each non-focal variable to its’s mean.</li>
+<li>Use a <code><a href="https://rdrr.io/r/stats/predict.html">predict()</a></code> method to get the predicted classification group for each point.</li>
+</ul>
+</li>
+<li><p>For base R graphs, you can use <code>image(x, y, z, ...)</code> to plot this grid of the <code>(x, y)</code>, where <code>z</code> is a <span class="math inline">\(k \times k\)</span>-length vector of the predicted class of an observation at this point. In <code>ggplot2</code> this is easier, using `geom_tile().</p></li>
+<li><p>Boundaries of the regions are the contours of the maximum of the posterior probabilities. You can plot these using <code>contour(x, y, z, ...)</code> in base R or <code>geom_contour()</code> in <code>ggplot2</code>.</p></li>
+<li><p>On top of this, you can plot the data observations, data ellipses for the groups or anything else.</p></li>
+</ul>
+<p>This idea is essentially the same as used in <em>effect plots</em> (<a href="07-linear_models-plots.html#sec-effect-displays" class="quarto-xref"><span>Section 7.4</span></a>)—you calculate predicted values over a range of the variables shown, while controlling those not shown at a typical value.</p>
+<section id="partition-plots-with-partimat" class="level3" data-number="A.5.1"><h3 data-number="A.5.1" class="anchored" data-anchor-id="partition-plots-with-partimat">
+<span class="header-section-number">A.5.1</span> Partition plots with <code>partimat()</code>
+</h3>
+<p>The function <code>klar::partimat()</code> produces such “partition” plots for <code>lda()</code>, <code>qda()</code> as well as a number of other classification methods, including recursive partioning trees (<code><a href="https://rdrr.io/pkg/rpart/man/rpart.html">rpart::rpart()</a></code>), naive Bayes (<code><a href="https://rdrr.io/pkg/e1071/man/naiveBayes.html">e1071::naiveBayes()</a></code>) and other methods. The graphs produced are generally UGLY; but they are easy to produce and convey a sense of the method. Once we have the idea in mind, we can try to make prettier, more useful versions.</p>
+<p><code>partimat()</code> takes a model formula for the classification, here <code>species ~ .</code> for the penguin data. It produces a classification plot for every combination of two <span class="math inline">\(y\)</span> variables in the data, and can show them either in a scatterplot matrix format (<code>plot.matrix = TRUE</code>), or a rectangular display of only the unique pairs. The latter takes less space, and so allows higher resolution in the individual plots. The <code>method</code> argument in the call uses <code>lda()</code> to determine the result shown in <a href="#fig-peng-partimat1" class="quarto-xref">Figure&nbsp;<span>A.4</span></a>.</p>
+<!-- fig.code: R/peng.lda.R -->
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb16" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">peng</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">species</span>, <span class="va">bill_length</span><span class="op">:</span><span class="va">body_mass</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">partimat</span><span class="op">(</span><span class="va">species</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">_</span>, </span>
+<span>         method <span class="op">=</span> <span class="st">"lda"</span>,</span>
+<span>         plot.matrix <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>         image.colors <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/alpha.html">alpha</a></span><span class="op">(</span><span class="va">col</span>, alpha <span class="op">=</span> <span class="fl">0.4</span><span class="op">)</span>,</span>
+<span>         main <span class="op">=</span> <span class="st">"Penguin Partition Plot"</span></span>
+<span>  <span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-peng-partimat1" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-peng-partimat1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/discrim/fig-peng-partimat1-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:90.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-peng-partimat1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;A.4: Partition plots for the penguin data. Each pairwise scatterplot shades the plot background according to how an observation there would be classified. Observations are shown by the first letter of their actual class, colored red if that observation is classified incorrectly.
+</figcaption></figure>
+</div>
+</div>
+</div>
+<p>In each pairwise plot of the penguin variables shown in <a href="#fig-peng-partimat1" class="quarto-xref">Figure&nbsp;<span>A.4</span></a>, the background is colored according to the species that any observation there (holding others constant) would be classified as. This fails in software design because there is little flexibility in what else is shown to represent the observations. The penguin data values are shown using the first letter of their species, colored black if that bird is classified correctly, <span style="color: red;">red</span> otherwise.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p>
+<!-- **Using `ggplot()`** -->
+</section><section id="using-ggplot" class="level3" data-number="A.5.2"><h3 data-number="A.5.2" class="anchored" data-anchor-id="using-ggplot">
+<span class="header-section-number">A.5.2</span> Using <code>ggplot()</code>
+</h3>
+<p>To construct similar (but better) plots using <span style="color: brown;"><strong>ggplot2</strong></span>, I follow the steps outlined above to get predicted classes over a grid, in this case for the penguin bill variables. The function <code><a href="https://marginaleffects.com/man/r/datagrid.html">marginaleffects::datagrid()</a></code> makes this easy, automatically marginalizing the other variables. You can supply a function, here <code>range80()</code>, to specify a sequence of a variable over its range.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb17" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># make a grid of values for prediction</span></span>
+<span><span class="va">range80</span> <span class="op">=</span> \<span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>, length.out <span class="op">=</span> <span class="fl">80</span><span class="op">)</span></span>
+<span><span class="va">grid</span> <span class="op">&lt;-</span> <span class="fu">datagrid</span><span class="op">(</span>bill_length <span class="op">=</span> <span class="va">range80</span>, </span>
+<span>                 bill_depth <span class="op">=</span> <span class="va">range80</span>, newdata <span class="op">=</span> <span class="va">peng</span><span class="op">)</span></span>
+<span><span class="co"># get predicted species for the grid points</span></span>
+<span><span class="va">pred_grid</span> <span class="op">&lt;-</span> <span class="fu">predict_discrim</span><span class="op">(</span><span class="va">peng.lda</span>, newdata <span class="op">=</span> <span class="va">grid</span><span class="op">)</span> </span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">pred_grid</span><span class="op">)</span></span>
+<span><span class="co">#   species rowid island flipper_length body_mass sex year</span></span>
+<span><span class="co"># 1  Gentoo     1 Biscoe            201      4207   m 2008</span></span>
+<span><span class="co"># 2  Gentoo     2 Biscoe            201      4207   m 2008</span></span>
+<span><span class="co"># 3  Gentoo     3 Biscoe            201      4207   m 2008</span></span>
+<span><span class="co"># 4  Gentoo     4 Biscoe            201      4207   m 2008</span></span>
+<span><span class="co"># 5  Gentoo     5 Biscoe            201      4207   m 2008</span></span>
+<span><span class="co"># 6  Gentoo     6 Biscoe            201      4207   m 2008</span></span>
+<span><span class="co">#   bill_length bill_depth maxp</span></span>
+<span><span class="co"># 1        32.1       13.1    1</span></span>
+<span><span class="co"># 2        32.1       13.2    1</span></span>
+<span><span class="co"># 3        32.1       13.3    1</span></span>
+<span><span class="co"># 4        32.1       13.4    1</span></span>
+<span><span class="co"># 5        32.1       13.5    1</span></span>
+<span><span class="co"># 6        32.1       13.6    1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Then, in the plotting steps, <code>geom_tile()</code> is used to display the predictions in the <code>pred_grid</code> dataset, using the penguin colors for the species. Points and other layers use the full <code>peng</code> dataset. I also calculate the means for each species and use these as direct labels for the groups, to avoid a legend.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb18" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">means</span> <span class="op">&lt;-</span> <span class="va">peng</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">group_by</span><span class="op">(</span><span class="va">species</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">summarise</span><span class="op">(</span><span class="fu">across</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">bill_length</span>, <span class="va">bill_depth</span><span class="op">)</span>, \<span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">x</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu">ggplot</span><span class="op">(</span>data <span class="op">=</span> <span class="va">peng</span>, <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">bill_length</span>, y <span class="op">=</span> <span class="va">bill_depth</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="co"># Plot decision regions</span></span>
+<span>  <span class="fu">geom_tile</span><span class="op">(</span>data <span class="op">=</span> <span class="va">pred_grid</span>, <span class="fu">aes</span><span class="op">(</span>fill <span class="op">=</span> <span class="va">species</span><span class="op">)</span>, alpha <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">stat_ellipse</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>color<span class="op">=</span><span class="va">species</span><span class="op">)</span>, level <span class="op">=</span> <span class="fl">0.68</span>, linewidth <span class="op">=</span> <span class="fl">1.2</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="co"># Plot original data points</span></span>
+<span>  <span class="fu">geom_point</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>color <span class="op">=</span> <span class="va">species</span>, shape<span class="op">=</span><span class="va">species</span><span class="op">)</span>,</span>
+<span>             size <span class="op">=</span><span class="fl">2</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">geom_label</span><span class="op">(</span>data<span class="op">=</span><span class="va">means</span>, <span class="fu">aes</span><span class="op">(</span>label <span class="op">=</span> <span class="va">species</span>, color <span class="op">=</span> <span class="va">species</span><span class="op">)</span>,</span>
+<span>             size <span class="op">=</span><span class="fl">5</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_penguins</span><span class="op">(</span><span class="st">"dark"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_minimal</span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">16</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme</span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"none"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Doing the same steps for <code>flipper_length</code> and <code>body_mass</code>, and then showing the two plots together (as in <a href="#fig-peng-new-data" class="quarto-xref">Figure&nbsp;<span>A.1</span></a>) gives <a href="#fig-peng-regions" class="quarto-xref">Figure&nbsp;<span>A.5</span></a>.</p>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div id="fig-peng-regions" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-peng-regions-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/discrim/fig-peng-regions-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-peng-regions-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;A.5: Plots of the Penguin data showing the linear discriminant prediction regions for the three species.
+</figcaption></figure>
+</div>
+</div>
+</div>
+<p>The groups are nicely separated in the left panel for the bill variables. For the other two variables in the right panel, Adelie and Chinstrap overlap considerably, but are well distinguished from the Gentoos. The predictions for these two groups favor Adelie for penguins of greater body mass.</p>
+<p>These plots are essentially the same as those in the (1, 1) and (2, 3) panels in <a href="#fig-peng-partimat1" class="quarto-xref">Figure&nbsp;<span>A.4</span></a>, but with axes reversed. You should understand that such plots in data space hold all other variables fixed at their means, so they show more observations that appear to be misclassified, as in the plot for flipper length and body mass.</p>
+</section><section id="prediction-regions-in-discriminant-space" class="level3" data-number="A.5.3"><h3 data-number="A.5.3" class="anchored" data-anchor-id="prediction-regions-in-discriminant-space">
+<span class="header-section-number">A.5.3</span> Prediction regions in discriminant space</h3>
+<p>The 2D plot of the data in discriminant space (<a href="#fig-peng-new-discrim2" class="quarto-xref">Figure&nbsp;<span>A.3</span></a>) is much simpler to understand because it captures all the information regarding penguin classification in a single plot, rather than the six shown in <a href="#fig-peng-partimat1" class="quarto-xref">Figure&nbsp;<span>A.4</span></a>. Can we make a similar plot, showing the prediction regions in discriminant space?</p>
+<p>If you recall that dimension reduction interpretation of discriminant analysis allows you to replace the observed <span class="math inline">\(\mathbf{y}\)</span>s with their discriminant scores <span class="math inline">\(\mathbf{z}\)</span> with the same accuracy when there are only <span class="math inline">\(s=2\)</span> possible dimensions, you can do this first finding the discriminant scores, <code>LD1</code> and <code>LD2</code> and using those as predictors in a new call to <code>lda()</code>:</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb19" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">peng_scored</span> <span class="op">&lt;-</span> <span class="fu">predict_discrim</span><span class="op">(</span><span class="va">peng.lda</span>, scores<span class="op">=</span><span class="cn">TRUE</span>, posterior <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">peng.lda2</span> <span class="op">&lt;-</span> <span class="fu">lda</span><span class="op">(</span><span class="va">species</span> <span class="op">~</span> <span class="va">LD1</span> <span class="op">+</span> <span class="va">LD2</span>, data<span class="op">=</span><span class="va">peng_scored</span><span class="op">)</span></span>
+<span><span class="va">peng.lda2</span></span>
+<span><span class="co"># Call:</span></span>
+<span><span class="co"># lda(species ~ LD1 + LD2, data = peng_scored)</span></span>
+<span><span class="co"># </span></span>
+<span><span class="co"># Prior probabilities of groups:</span></span>
+<span><span class="co">#    Adelie Chinstrap    Gentoo </span></span>
+<span><span class="co">#     0.444     0.198     0.357 </span></span>
+<span><span class="co"># </span></span>
+<span><span class="co"># Group means:</span></span>
+<span><span class="co">#             LD1    LD2</span></span>
+<span><span class="co"># Adelie     3.26  1.117</span></span>
+<span><span class="co"># Chinstrap  1.94 -2.970</span></span>
+<span><span class="co"># Gentoo    -5.13  0.257</span></span>
+<span><span class="co"># </span></span>
+<span><span class="co"># Coefficients of linear discriminants:</span></span>
+<span><span class="co">#          LD1      LD2</span></span>
+<span><span class="co"># LD1 -1.00129 -0.00155</span></span>
+<span><span class="co"># LD2 -0.00739  1.00569</span></span>
+<span><span class="co"># </span></span>
+<span><span class="co"># Proportion of trace:</span></span>
+<span><span class="co">#   LD1   LD2 </span></span>
+<span><span class="co"># 0.864 0.136</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>As you can see from the results, the proportions of between-class variance accounted for are nearly the same as in the original <code>peng.lda</code>. Note that the coefficients for the old vs.&nbsp;new discriminants are nearly the identity matrix, except that the sign of the coefficients for <code>LD</code> have been flipped. [<strong>TODO</strong>: Can I fix this, ie., flip LD1 in the plot?]</p>
+<p>Then you can follow the earlier examples in data space: Set up a grid of values for <code>LD1</code> and <code>LD2</code> over the discriminant space of <code>peng_scored</code> and obtain the predicted classifications for each point.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb20" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">grid</span> <span class="op">&lt;-</span> <span class="fu">datagrid</span><span class="op">(</span>LD1 <span class="op">=</span> <span class="va">range80</span>, </span>
+<span>                 LD2 <span class="op">=</span> <span class="va">range80</span>, </span>
+<span>                 newdata <span class="op">=</span> <span class="va">peng_scored</span><span class="op">)</span> </span>
+<span><span class="va">pred_grid</span> <span class="op">&lt;-</span> <span class="fu">predict_discrim</span><span class="op">(</span><span class="va">peng.lda2</span>, newdata <span class="op">=</span> <span class="va">grid</span>, posterior <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Finally, the plotting steps are identical to that used in <a href="#fig-peng-regions" class="quarto-xref">Figure&nbsp;<span>A.5</span></a>. The resulting plot in <a href="#fig-peng-LD-predict" class="quarto-xref">Figure&nbsp;<span>A.6</span></a> gives a single, complete picture of the results of discriminant analysis for this dataset.</p>
+<div class="cell" data-layout-align="center">
+<details class="code-fold"><summary>Code</summary><div class="sourceCode" id="cb21" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">means</span> <span class="op">&lt;-</span> <span class="va">peng_scored</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">group_by</span><span class="op">(</span><span class="va">species</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">summarise</span><span class="op">(</span><span class="fu">across</span><span class="op">(</span><span class="va">LD1</span><span class="op">:</span><span class="va">LD2</span>, \<span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">x</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">means</span></span>
+<span><span class="co"># # A tibble: 3 × 3</span></span>
+<span><span class="co">#   species     LD1    LD2</span></span>
+<span><span class="co">#   &lt;fct&gt;     &lt;dbl&gt;  &lt;dbl&gt;</span></span>
+<span><span class="co"># 1 Adelie     3.26  1.12 </span></span>
+<span><span class="co"># 2 Chinstrap  1.94 -2.97 </span></span>
+<span><span class="co"># 3 Gentoo    -5.13  0.257</span></span>
+<span></span>
+<span><span class="fu">ggplot</span><span class="op">(</span>data <span class="op">=</span> <span class="va">peng_scored</span>, <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">LD1</span>, y <span class="op">=</span> <span class="va">LD2</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="co"># Plot decision regions</span></span>
+<span>  <span class="fu">geom_tile</span><span class="op">(</span>data <span class="op">=</span> <span class="va">pred_grid</span>, <span class="fu">aes</span><span class="op">(</span>fill <span class="op">=</span> <span class="va">species</span><span class="op">)</span>, alpha <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">stat_ellipse</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>color<span class="op">=</span><span class="va">species</span><span class="op">)</span>, level <span class="op">=</span> <span class="fl">0.68</span>, linewidth <span class="op">=</span> <span class="fl">1.2</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="co"># Plot original data points</span></span>
+<span>  <span class="fu">geom_point</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>color <span class="op">=</span> <span class="va">species</span>, shape<span class="op">=</span><span class="va">species</span><span class="op">)</span>,</span>
+<span>             size <span class="op">=</span><span class="fl">2</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">geom_label</span><span class="op">(</span>data<span class="op">=</span><span class="va">means</span>, <span class="fu">aes</span><span class="op">(</span>label <span class="op">=</span> <span class="va">species</span>, color <span class="op">=</span> <span class="va">species</span><span class="op">)</span>,</span>
+<span>             size <span class="op">=</span><span class="fl">5</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">labs</span><span class="op">(</span>x <span class="op">=</span> <span class="va">labs</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, y <span class="op">=</span> <span class="va">labs</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_penguins</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_minimal</span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">16</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme</span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"none"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu">last_plot</span><span class="op">(</span><span class="op">)</span> <span class="co"># save for later</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details><div class="cell-output-display">
+<div id="fig-peng-LD-predict" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-peng-LD-predict-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/discrim/fig-peng-LD-predict-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:60.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-peng-LD-predict-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;A.6: Plot of the Penguin data in discriminant space showing the prediction regions for the three species.
+</figcaption></figure>
+</div>
+</div>
+</div>
+</section><section id="adding-variable-vectors-lda-biplot" class="level3" data-number="A.5.4"><h3 data-number="A.5.4" class="anchored" data-anchor-id="adding-variable-vectors-lda-biplot">
+<span class="header-section-number">A.5.4</span> Adding variable vectors: LDA biplot</h3>
+<p><a href="#fig-peng-LD-predict" class="quarto-xref">Figure&nbsp;<span>A.6</span></a> is like a PCA plot of observation scores on the first two dimensions, but with the addition of the prediction regions for LDA. As we saw earlier (<a href="05-pca-biplot.html#sec-biplot" class="quarto-xref"><span>Section 5.3</span></a>), interpretation of such dimension reduction plots is considerably enhanced by drawing vectors, whose orientation (angles) with respect to the axes reflect the relations of the <em>observed</em> variables <span class="math inline">\(\mathbf{y}_1, \mathbf{y}_2, \dots\)</span> to what is shown in the plot. The relative lengths of these vectors reflect their contributions.</p>
+<p>In the result of <code>lda()</code> the weights for the observed variable are given in the <code>scaling</code> component, which is a matrix. For use with <code>ggplot()</code>, this must be converted to a <code>data.frame</code>, and the row names of the observed variables must be made into an explicit variable. To take less space in the plot, the underline (<code>_</code>) is replaced by a newline (<code>\n</code>).</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb22" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">vecs</span> <span class="op">&lt;-</span> <span class="va">peng.lda</span><span class="op">$</span><span class="va">scaling</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html">rownames_to_column</a></span><span class="op">(</span>var <span class="op">=</span> <span class="st">"label"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">mutate</span><span class="op">(</span>label <span class="op">=</span> <span class="fu">stringr</span><span class="fu">::</span><span class="fu"><a href="https://stringr.tidyverse.org/reference/str_replace.html">str_replace</a></span><span class="op">(</span><span class="va">label</span>, <span class="st">"_"</span>, <span class="st">"\n"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#             label      LD1      LD2</span></span>
+<span><span class="co"># 1    bill\nlength -0.08593 -0.41660</span></span>
+<span><span class="co"># 2     bill\ndepth  1.04165 -0.01042</span></span>
+<span><span class="co"># 3 flipper\nlength -0.08455  0.01425</span></span>
+<span><span class="co"># 4      body\nmass -0.00135  0.00169</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Then, I use <code><a href="https://corybrunson.github.io/gggda/reference/geom_vector.html">gggda::geom_vector()</a></code> to draw the variable vectors. Only the relative lengths of these matter, so you are free to multiply them by any constant to make them fill the plotting space. Because the interpretation of angles is important, it is necessary to assure that the aspect ratio of the plot is 1, so that one unit on the x-axis is the same length as one unit on the y-axis, which is done using <code>coord_equal()</code>.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb23" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">p</span> <span class="op">+</span> <span class="fu">gggda</span><span class="fu">::</span><span class="fu"><a href="https://corybrunson.github.io/gggda/reference/geom_vector.html">geom_vector</a></span><span class="op">(</span></span>
+<span>  data <span class="op">=</span> <span class="va">vecs</span>,</span>
+<span>  <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="fl">5</span><span class="op">*</span><span class="va">LD1</span>, y <span class="op">=</span> <span class="fl">5</span><span class="op">*</span><span class="va">LD2</span>, label <span class="op">=</span> <span class="va">label</span><span class="op">)</span>,</span>
+<span>  lineheight <span class="op">=</span> <span class="fl">0.8</span>, linewidth <span class="op">=</span> <span class="fl">1.25</span>, size <span class="op">=</span> <span class="fl">5</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">coord_equal</span><span class="op">(</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-peng-LD-biplot" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-peng-LD-biplot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/discrim/fig-peng-LD-biplot-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:60.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-peng-LD-biplot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;A.7: Plot of the Penguin data in discriminant space, adding variable vectors to show the relations of the observed variables to the discriminant dimensions.
+</figcaption></figure>
+</div>
+</div>
+</div>
+</section></section><section id="sec-discrim-MANOVA" class="level2" data-number="A.6"><h2 data-number="A.6" class="anchored" data-anchor-id="sec-discrim-MANOVA">
+<span class="header-section-number">A.6</span> Relation to MANOVA and CDA</h2>
+<p>As I noted at the outset, LDA is in some sense a twin of MANOVA, but with it’s emphasis flipped from significance tests to classification. This connection can be made more apparent by using the <strong>canonical</strong> representation of the MANOVA (<a href="12-mlm-viz.html#sec-candisc" class="quarto-xref"><span>Section 12.7</span></a>) implemented in the <span style="color: brown;"><strong>candisc</strong></span> package. You simply send the <code>"mlm"</code> object computed with <code><a href="https://rdrr.io/r/stats/lm.html">lm()</a></code> to <code>candisc()</code> and get significance tests for the model in terms of the dimensions that discriminate best among the species.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb24" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">peng.mlm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">bill_length</span>, <span class="va">bill_depth</span>, <span class="va">flipper_length</span>, <span class="va">body_mass</span><span class="op">)</span> <span class="op">~</span> <span class="va">species</span> , </span>
+<span>                data <span class="op">=</span> <span class="va">peng</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">peng.can</span> <span class="op">&lt;-</span> <span class="fu">candisc</span><span class="op">(</span><span class="va">peng.mlm</span>, data<span class="op">=</span><span class="va">peng</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co"># </span></span>
+<span><span class="co"># Canonical Discriminant Analysis for species:</span></span>
+<span><span class="co"># </span></span>
+<span><span class="co">#   CanRsq Eigenvalue Difference Percent Cumulative</span></span>
+<span><span class="co"># 1  0.938      15.03       12.7    86.5       86.5</span></span>
+<span><span class="co"># 2  0.700       2.34       12.7    13.5      100.0</span></span>
+<span><span class="co"># </span></span>
+<span><span class="co"># Test of H0: The canonical correlations in the </span></span>
+<span><span class="co"># current row and all that follow are zero</span></span>
+<span><span class="co"># </span></span>
+<span><span class="co">#   LR test stat approx F numDF denDF Pr(&gt; F)    </span></span>
+<span><span class="co"># 1       0.0187      516     8   654  &lt;2e-16 ***</span></span>
+<span><span class="co"># 2       0.2997      255     3   328  &lt;2e-16 ***</span></span>
+<span><span class="co"># ---</span></span>
+<span><span class="co"># Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>In the table printed, the eigenvalues are the <span class="math inline">\(\lambda_i\)</span> of <span class="math inline">\(\mathbf{H}\mathbf{E}^{-1}\)</span> and their percent contributions are the same as what we saw from the discriminant analysis given by <code>lda()</code>. The significance tests printed are a variety called <strong>step-down tests</strong>, which test the contributions of the current row and all that follow in each line.</p>
+<section id="canonical-discriminant-plot" class="level3" data-number="A.6.1"><h3 data-number="A.6.1" class="anchored" data-anchor-id="canonical-discriminant-plot">
+<span class="header-section-number">A.6.1</span> Canonical discriminant plot</h3>
+<p>The <code><a href="https://rdrr.io/r/graphics/plot.default.html">plot()</a></code> method for a <code>"candisc"</code> object gives something similar to what we saw in <a href="#fig-peng-LD-biplot" class="quarto-xref">Figure&nbsp;<span>A.7</span></a>, but with more sensible scaling of the variable vectors. In the code, <code>ellipse = TRUE</code> adds 68% data ellipses for the disciminant scores for each species, and <code>rev.axes</code> is used to reflect the directon of the horizontal axis to make it similar to <a href="#fig-peng-LD-biplot" class="quarto-xref">Figure&nbsp;<span>A.7</span></a>. The result is shown in <a href="#fig-peng-candisc" class="quarto-xref">Figure&nbsp;<span>A.8</span></a>.</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold"><summary>Code</summary><div class="sourceCode" id="cb25" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">peng.can</span>,</span>
+<span>     col <span class="op">=</span> <span class="fu">peng.colors</span><span class="op">(</span><span class="op">)</span>,</span>
+<span>     pch <span class="op">=</span> <span class="fl">15</span><span class="op">:</span><span class="fl">17</span>,</span>
+<span>     ellipse <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>     rev.axes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="cn">TRUE</span>, <span class="cn">FALSE</span><span class="op">)</span>,</span>
+<span>     var.labels <span class="op">=</span> <span class="va">vecs</span><span class="op">$</span><span class="va">label</span>,</span>
+<span>     var.col <span class="op">=</span> <span class="st">"black"</span>, var.lwd <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>     scale <span class="op">=</span> <span class="fl">7.3</span>,</span>
+<span>     cex.lab <span class="op">=</span> <span class="fl">1.3</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details><div class="cell-output-display">
+<div id="fig-peng-candisc" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-peng-candisc-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/discrim/fig-peng-candisc-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:60.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-peng-candisc-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;A.8: Canonical discriminant plot of the Penguin data for the MANOVA model <code>peng.mlm</code>. Data ellipses summarize the within-group variation of the canonical scores. Variable vectors to show the correlations of the observed variables with the discriminant dimensions.
+</figcaption></figure>
+</div>
+</div>
+</div>
+<!--
+REVERSED the axis, so this is no longer true:
+What is most apparent in @fig-peng-candisc is that the horizontal axis is reversed relative to @fig-peng-LD-biplot,
+with the Gentoo penguins on the left rather than the right. But that's OK because the signs of the eigenvectors
+are arbitrary. 
+-->
+<p>To interpret such plots, first consider the separation among the groups on a given dimension, and then how the variable vectors point on this dimension. In <a href="#fig-peng-candisc" class="quarto-xref">Figure&nbsp;<span>A.8</span></a>, the first canonical dimension largely separates the Gentoos on the left from Adelie and Chinstrap on the right. This dimension is positively aligned with <code>bill_depth</code>, so these two groups have straighter bills than the Gentoo. But, the Gentoos tend to have larger body mass and longer flippers. The second dimension distinguishes mostly between the Adelie and Chinstraps, where the Chinstraps tend to have longer bills.</p>
+<p>An important difference between this plot (<a href="#fig-peng-candisc" class="quarto-xref">Figure&nbsp;<span>A.8</span></a>) and that shown for the discriminant analysis (<a href="#fig-peng-LD-biplot" class="quarto-xref">Figure&nbsp;<span>A.7</span></a>) is that the relative lengths and angles of the variable vectors differ in the two plots. This is because the variable coefficients in <code>peng.lda$scaling</code> calculated by <code>lda()</code> are <em>unstandardized</em> by default, whereas the plot from <code>candisc()</code> uses standardized, <em>structure</em> coefficients (correlations). These can be compared directly among variables to assess their relative importance. In the penguin data, <code>body_mass</code> is measured in grams, while the other variables are in millimeters. You would get more similar results from <code>lda()</code> if the variables were standardized first.</p>
+</section><section id="canonical-he-plot" class="level3" data-number="A.6.2"><h3 data-number="A.6.2" class="anchored" data-anchor-id="canonical-he-plot">
+<span class="header-section-number">A.6.2</span> Canonical HE plot</h3>
+<p>Finally, if the focus is on MANOVA, to simply determine whether and how the penguin species differ on these variables, you can summarize that with the canonical version of an HE plot, as shown in <a href="#fig-peng-candisc-HE" class="quarto-xref">Figure&nbsp;<span>A.9</span></a>, which effectively substitutes the canonical <span class="math inline">\(\mathbf{H}\)</span> and <span class="math inline">\(\mathbf{E}\)</span> ellipses for the canonical scores displayed in <a href="#fig-peng-candisc" class="quarto-xref">Figure&nbsp;<span>A.8</span></a>.</p>
+<p>This is shown using effect scaling (<a href="12-mlm-viz.html#sec-signif-scaling" class="quarto-xref"><span>Section 12.4</span></a>) because the differences among the groups (<span class="math inline">\(\mathbf{H}\)</span>) are so large relative to within group variation (<span class="math inline">\(\mathbf{E}\)</span>). The <span class="math inline">\(\mathbf{E}\)</span> ellipse plots as a circle because the canonical scores are uncorrelated with variances of 1.</p>
+<div class="cell" data-layout-align="center">
+<details open="" class="code-fold"><summary>Code</summary><div class="sourceCode" id="cb26" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">heplot</span><span class="op">(</span><span class="va">peng.can</span>, </span>
+<span>       size<span class="op">=</span><span class="st">"effect"</span>, </span>
+<span>       fill<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="cn">TRUE</span>, <span class="cn">TRUE</span><span class="op">)</span>, fill.alpha <span class="op">=</span> <span class="fl">0.1</span>,</span>
+<span>       rev.axes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="cn">TRUE</span>, <span class="cn">FALSE</span><span class="op">)</span>,</span>
+<span>       var.labels <span class="op">=</span> <span class="va">vecs</span><span class="op">$</span><span class="va">label</span>,</span>
+<span>       var.col <span class="op">=</span> <span class="st">"black"</span>, var.lwd <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>       xlim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">8</span>, <span class="fl">8</span><span class="op">)</span>, ylim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">8</span>, <span class="fl">4</span><span class="op">)</span>,</span>
+<span>       scale <span class="op">=</span> <span class="fl">8.2</span>,</span>
+<span>       cex.lab <span class="op">=</span> <span class="fl">1.3</span>, cex <span class="op">=</span> <span class="fl">1.3</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details><div class="cell-output-display">
+<div id="fig-peng-candisc-HE" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-peng-candisc-HE-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figs/discrim/fig-peng-candisc-HE-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:60.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-peng-candisc-HE-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;A.9: Canonical discriminant HE plot of the Penguin data for the MANOVA model <code>peng.mlm</code>.
+</figcaption></figure>
+</div>
+</div>
+</div>
+
+
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" data-line-spacing="2" role="list" style="display: none">
+<div id="ref-Klecka1980" class="csl-entry" role="listitem">
+Klecka, W. (1980). <em>Discriminant analysis</em>. SAGE Publications, Inc. <a href="https://doi.org/10.4135/9781412983938">https://doi.org/10.4135/9781412983938</a>
+</div>
+<div id="ref-Lachenbruch1975" class="csl-entry" role="listitem">
+Lachenbruch, P. A. (1975). <em>Discriminant analysis</em>. Hafner Press. <a href="https://books.google.ca/books?id=0hrvAAAAMAAJ">https://books.google.ca/books?id=0hrvAAAAMAAJ</a>
+</div>
+</div>
+</section></section><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><hr>
+<ol>
+<li id="fn1"><p>The function <code><a href="https://friendly.github.io/candisc/reference/candisc.html">candisc::candisc()</a></code> carries out a <em>generalized</em> discriminant analysis, for one term in a multivariate linear model. <code><a href="https://friendly.github.io/candisc/reference/candiscList.html">candisc::candiscList()</a></code> does this for all terms in a model.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>There are a number of other methods of discriminant analysis. For example, in <strong>mixture discriminant analysis</strong> (MDA), each class is assumed to be a mixture of several Gaussian distributions, rather than a single one. <strong>flexible discriminant analysis</strong> (FDA) is an extension of LDA that uses non-linear combinations of predictors such as splines. FDA is useful to model multivariate non-normality or non-linear relationships among variables within each group, allowing for a more accurate classification. These are implemented in the package <code>mda</code> as <code>mda()</code> and <code>fda()</code>, which have the same syntax and similar methods to <code>lda()</code>.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>You can choose prior probabilities for discriminant analysis by (a) using equal probabilities for the groups, (b) calculating them based on the observed sample sizes in your dataset, or (c) manually specifying known prior probabilities if you have external information about the population. The choice depends on whether you want the model to be influenced by group sizes or if you have pre-existing knowledge about the likelihood of group membership. The choice is also influenced by the cost of misclassification. …<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>In fairness, <code><a href="https://rdrr.io/pkg/klaR/man/partimat.html">klaR::partimat()</a></code> was designed to emphasize the classification accuracy shown in each pairwise plot, also printed as an error rate for each plot. You can see, for example that the plot of <code>body_mass</code> against <code>bill_depth</code> in row 2, column 2 of <a href="#fig-peng-partimat1" class="quarto-xref">Figure&nbsp;<span>A.4</span></a> shows only two distinct regions, for Adelie and Gentoo. All the Chinstraps appear mixed in with the Adelies and, giving an error rate of 0.204 in this plot. Two other panels also show high error rates.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol></section></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/friendly\.github\.io\/Vis-MLM-book");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script><nav class="page-navigation"><div class="nav-page nav-page-previous">
+      <a href="./95-references.html" class="pagination-link" aria-label="References">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">References</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/friendly/vis-MLM-book/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></div></div></footer><script src="site_libs/quarto-contrib/line-highlight-1.0.0/line-highlight.js" defer="true"></script>
+</body></html>
