@@ -2,6 +2,7 @@ library(MASS)
 #library(ggord)
 library(ggplot2)
 library(patchwork)
+library(candisc)
 
 data(peng, package="heplots")
 source(here::here("R/penguin/penguin-colors.R"))
@@ -59,8 +60,8 @@ pred_lda <- function(object, newdata, ...) {
 pred_lda(peng.lda, newdata = peng_new[, -1])
 
 # try predict_discrim
-# 
-source("R/predict_discrim.R")
+#  -- now in candisc
+#source("R/predict_discrim.R")
 
 pred <- predict_discrim(peng.lda, newdata = peng_new[, 3:6]) |>
   print()

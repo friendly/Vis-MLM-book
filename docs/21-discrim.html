@@ -386,7 +386,14 @@ window.Quarto = {
         <nav id="TOC" role="doc-toc" class="toc-active"><h2 id="toc-title">Table of contents</h2>
    
   <ul>
-<li><a href="#sec-discrim-data" id="toc-sec-discrim-data" class="nav-link active" data-scroll-target="#sec-discrim-data"><span class="header-section-number">A.3</span> Visualizing classification in data space</a></li>
+<li><a href="#classification-accuracy" id="toc-classification-accuracy" class="nav-link active" data-scroll-target="#classification-accuracy"><span class="header-section-number">A.1</span> Classification accuracy</a></li>
+  <li>
+<a href="#classifying-new-penguins" id="toc-classifying-new-penguins" class="nav-link" data-scroll-target="#classifying-new-penguins"><span class="header-section-number">A.2</span> Classifying new penguins</a>
+  <ul class="collapse">
+<li><a href="#working-with-lda-objects" id="toc-working-with-lda-objects" class="nav-link" data-scroll-target="#working-with-lda-objects"><span class="header-section-number">A.2.1</span> Working with <code>"lda"</code> objects</a></li>
+  </ul>
+</li>
+  <li><a href="#sec-discrim-data" id="toc-sec-discrim-data" class="nav-link" data-scroll-target="#sec-discrim-data"><span class="header-section-number">A.3</span> Visualizing classification in data space</a></li>
   <li>
 <a href="#sec-discrim-discrim" id="toc-sec-discrim-discrim" class="nav-link" data-scroll-target="#sec-discrim-discrim"><span class="header-section-number">A.4</span> Visualizing classification in discriminant space</a>
   <ul class="collapse">
@@ -489,7 +496,7 @@ https://www.sthda.com/english/articles/36-classification-methods-essentials/146-
 <span><span class="co"># Dave       3500   m</span></span>
 <span><span class="co"># Emma       5500   f</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>So, you can run a discriminant analysis using the existing data and then use that to classify the new penguins on island Z. By default, <code><a href="https://rdrr.io/pkg/MASS/man/lda.html">MASS::lda()</a></code> uses the proportions of the three species as the prior probabilities, which are given in the printed output. With <span class="math inline">\(g = 3\)</span> groups, and <span class="math inline">\(p = 4\)</span> variables, there are only <span class="math inline">\(s = 2\)</span> discriminant dimensions, of which the first, <code>LD1</code> accounts for 86.6% of the total …</p>
+<p>So, you can run a discriminant analysis using the existing data and then use that to classify the new penguins on island Z. By default, <code><a href="https://rdrr.io/pkg/MASS/man/lda.html">MASS::lda()</a></code> uses the proportions of the three species as the prior probabilities, which are given in the printed output.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb3" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">peng</span>, package <span class="op">=</span> <span class="st">"heplots"</span><span class="op">)</span></span>
 <span><span class="va">peng.lda</span> <span class="op">&lt;-</span> <span class="fu">lda</span><span class="op">(</span><span class="va">species</span> <span class="op">~</span> <span class="va">bill_length</span> <span class="op">+</span> <span class="va">bill_depth</span> <span class="op">+</span> <span class="va">flipper_length</span> <span class="op">+</span> <span class="va">body_mass</span>, </span>
@@ -520,6 +527,8 @@ https://www.sthda.com/english/articles/36-classification-methods-essentials/146-
 <span><span class="co">#   LD1   LD2 </span></span>
 <span><span class="co"># 0.866 0.135</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+</div>
+<p>With <span class="math inline">\(g = 3\)</span> groups, having <span class="math inline">\(\text{df}_h = 2\)</span> degrees of freedom and <span class="math inline">\(p = 4\)</span> variables, there are only <span class="math inline">\(s = 2\)</span> discriminant dimensions. The first, <code>LD1</code> accounts for 86.6% of the total between/within variance and the second for the remaining 13.5%. LDA doesn’t provide significance tests, but these are available as described below (<a href="#sec-discrim-MANOVA" class="quarto-xref"><span>Section A.6</span></a>).</p>
 <section id="classification-accuracy" class="level2" data-number="A.1"><h2 data-number="A.1" class="anchored" data-anchor-id="classification-accuracy">
 <span class="header-section-number">A.1</span> Classification accuracy</h2>
 <p>How well did LDA succeed in classifying the penguins in the <em>existing</em> <code>peng</code> dataset? You can answer this by making a table of the frequencies of the species in the data against their predicted <code>class</code>, obtained from the <code><a href="https://rdrr.io/pkg/MASS/man/predict.lda.html">MASS::predict.lda()</a></code> method for an <code>"lda"</code> object:</p>
@@ -533,11 +542,13 @@ https://www.sthda.com/english/articles/36-classification-methods-essentials/146-
 <span><span class="co">#   Adelie       145         1      0</span></span>
 <span><span class="co">#   Chinstrap      3        65      0</span></span>
 <span><span class="co">#   Gentoo         0         0    119</span></span>
+<span></span>
 <span><span class="co"># overall rates</span></span>
-<span><span class="va">accuracy</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/diag.html">diag</a></span><span class="op">(</span><span class="va">class_table</span><span class="op">)</span><span class="op">)</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">class_table</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span></span>
-<span><span class="va">error</span> <span class="op">&lt;-</span> <span class="fl">100</span> <span class="op">-</span> <span class="va">accuracy</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">accuracy</span>, <span class="va">error</span><span class="op">)</span></span>
-<span><span class="co"># [1] 98.8  1.2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="va">acc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/diag.html">diag</a></span><span class="op">(</span><span class="va">class_table</span><span class="op">)</span><span class="op">)</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">class_table</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span></span>
+<span><span class="va">err</span> <span class="op">&lt;-</span> <span class="fl">100</span> <span class="op">-</span> <span class="va">acc</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span>accuracy <span class="op">=</span> <span class="va">acc</span>, error <span class="op">=</span> <span class="va">err</span><span class="op">)</span></span>
+<span><span class="co"># accuracy    error </span></span>
+<span><span class="co">#     98.8      1.2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>That’s pretty good! Only 4 penguins are misclassified, giving an error rate of 1.2%. You can identify the errors by joining the data with the predicted class and filtering those that don’t match.</p>
 <div class="cell" data-layout-align="center">
@@ -557,7 +568,7 @@ https://www.sthda.com/english/articles/36-classification-methods-essentials/146-
 <span><span class="co"># 3      3200</span></span>
 <span><span class="co"># 4      3350</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>The only confusions are between Adelie and Chinstraps. We’ll see why this is the case in plots developed below.</p>
+<p>The only confusions are between Adélie and Chinstraps. We’ll see why this is the case in plots developed below.</p>
 </section><section id="classifying-new-penguins" class="level2" data-number="A.2"><h2 data-number="A.2" class="anchored" data-anchor-id="classifying-new-penguins">
 <span class="header-section-number">A.2</span> Classifying new penguins</h2>
 <p>The fitted model, <code>peng.lda</code>, can also be used to classify our new penguins by supplying the call to <code>predict.lda()</code> with <code>newdata = peng_new</code>. Only those cases are classified. The printed result isn’t pretty, because the function simply returns a list, with elements:</p>
@@ -592,7 +603,7 @@ https://www.sthda.com/english/articles/36-classification-methods-essentials/146-
 <span><span class="co"># Dave   0.1504 -3.839</span></span>
 <span><span class="co"># Emma  -3.1495  3.780</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>A little manipulation of the result from <code><a href="https://rdrr.io/r/stats/predict.html">predict()</a></code> makes what has happened here more apparent.</p>
+<p>A little manipulation of the result from <code><a href="https://rdrr.io/r/stats/predict.html">predict()</a></code> makes what has happened here more apparent. I extract the predicted <code>class</code> of the observations and join this with the <code>posterior</code> probabilities and their maximum <code>maxp</code> across the levels of <code>species</code>.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb7" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">class</span> <span class="op">&lt;-</span> <span class="va">peng_pred</span><span class="op">$</span><span class="va">class</span> </span>
 <span><span class="va">posterior</span> <span class="op">&lt;-</span> <span class="va">peng_pred</span><span class="op">$</span><span class="va">posterior</span></span>
@@ -605,14 +616,24 @@ https://www.sthda.com/english/articles/36-classification-methods-essentials/146-
 <span><span class="co"># Dave  Chinstrap  0.000    1.0000 0.0000 1.000</span></span>
 <span><span class="co"># Emma     Gentoo  0.000    0.0000 1.0000 1.000</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>This says that Abe has the highest probability in the Adelie class, Betty and Dave are almost certainly of the Chinstrap species, while Chloe and Emma are almost certainly Gentoos.</p>
-</section>
-</div>
-<section id="sec-discrim-data" class="level2" data-number="A.3"><h2 data-number="A.3" class="anchored" data-anchor-id="sec-discrim-data">
+<p>This says that Abe has the highest probability in the Adélie class, Betty and Dave are almost certainly of the Chinstrap species, while Chloe and Emma are almost certainly Gentoos.</p>
+<section id="working-with-lda-objects" class="level3" data-number="A.2.1"><h3 data-number="A.2.1" class="anchored" data-anchor-id="working-with-lda-objects">
+<span class="header-section-number">A.2.1</span> Working with <code>"lda"</code> objects</h3>
+<p>The implementation of discriminant analysis in <span style="color: brown;"><strong>MASS</strong></span> is untidy and awkward to work with. The <span style="color: brown;"><strong>candisc</strong></span> package now provides a collection of convenience functions which simplify analysis, display and plotting for this class of models.</p>
+<ul>
+<li>
+<code>predict_discrim()</code>: a wrapper to <code><a href="https://rdrr.io/pkg/MASS/man/predict.lda.html">MASS::predict.lda()</a></code> returning a data.frame</li>
+<li>
+<code>cor_lda()</code> calculates structure correlations between variables and discriminant scores</li>
+<li>
+<code>scores.lda()</code> a <code>scores()</code> method to extract discriminant scores</li>
+</ul>
+<p><strong>TODO</strong>: Need to re-write much of what is below to use these methods</p>
+</section></section><section id="sec-discrim-data" class="level2" data-number="A.3"><h2 data-number="A.3" class="anchored" data-anchor-id="sec-discrim-data">
 <span class="header-section-number">A.3</span> Visualizing classification in data space</h2>
-<p>A simple way to understand what happens in discriminant analysis is to plot the original data in data space and add labeled points for the new observations. To make this easier, I created a general function <code>predict_discrim()</code>, which joins the measures in the test dataset with the predicted class for each new observation. In the result, <code>species</code> is the predicted class. [<strong>TODO</strong>: This should be moved to the <code>candisc</code> package.]</p>
+<p>A simple way to understand what happens in discriminant analysis is to plot the original data in data space and add labeled points for the new observations. You can use <code><a href="https://friendly.github.io/candisc/reference/predict_discrim.html">candisc::predict_discrim()</a></code>, which joins the measures in the test dataset with the predicted class for each new observation. In the result, <code>species</code> is the predicted class. [<strong>TODO</strong>: Replace source() with <code><a href="https://friendly.github.io/candisc/reference/predict_discrim.html">candisc::predict_discrim</a></code>.]</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb8" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/source.html">source</a></span><span class="op">(</span><span class="fu">here</span><span class="fu">::</span><span class="fu"><a href="https://here.r-lib.org/reference/here.html">here</a></span><span class="op">(</span><span class="st">"R/predict_discrim.R"</span><span class="op">)</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb8" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co">#source(here::here("R/predict_discrim.R"))</span></span>
 <span><span class="va">pred</span> <span class="op">&lt;-</span> <span class="fu">predict_discrim</span><span class="op">(</span><span class="va">peng.lda</span>, </span>
 <span>                        newdata <span class="op">=</span> <span class="va">peng_new</span><span class="op">[</span>, <span class="fl">3</span><span class="op">:</span><span class="fl">6</span><span class="op">]</span>,</span>
 <span>                        posterior <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -624,7 +645,7 @@ https://www.sthda.com/english/articles/36-classification-methods-essentials/146-
 <span><span class="co"># Dave  Chinstrap          50         16            190      3500</span></span>
 <span><span class="co"># Emma     Gentoo          40         15            195      5500</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Using this, you can simply plot the original Penguin data for two variables and use <code>geom_text()</code> or <code>geom_label()</code> to identify the observations of the new penguins in this space. In <a href="#fig-peng-new-data" class="quarto-xref">Figure&nbsp;<span>A.1</span></a>, I do this in two separate plots, one for the bill length and depth variables, and another for <code>flipper_length</code> vs.&nbsp;<code>body_mass</code>. The key thing is that the call to <code>geom_label()</code> uses the predicted <code>species</code> and coordinates for the new penguins from the <code>pred</code> dataset obtained from <code>predict_discrim()</code>.</p>
+<p>Using this result you can simply plot the original Penguin data for two variables and use <code>geom_text()</code> or <code>geom_label()</code> to identify the observations of the new penguins in this space. In <a href="#fig-peng-new-data" class="quarto-xref">Figure&nbsp;<span>A.1</span></a>, I do this in two separate plots, one for the bill length and depth variables, and another for <code>flipper_length</code> vs.&nbsp;<code>body_mass</code>. The key thing is that the call to <code>geom_label()</code> uses the predicted <code>species</code> and coordinates for the new penguins from the <code>pred</code> dataset obtained from <code>predict_discrim()</code>.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb9" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu">ggplot</span><span class="op">(</span><span class="va">peng</span>, </span>
 <span>       <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">bill_length</span>, y <span class="op">=</span> <span class="va">bill_depth</span>,</span>
@@ -658,7 +679,7 @@ Figure&nbsp;A.1: Plots of the Penguin data, showing the locations of the newly c
 </div>
 </div>
 </div>
-<p>In <a href="#fig-peng-new-data" class="quarto-xref">Figure&nbsp;<span>A.1</span></a>, Betsy is well within the data ellipses for her species in both plots. Abe looks very much like an Adelie in the panel for the bill variables, but more like a Gentoo in terms of flipper length and body mass. Chloe, classed as a Gentoo is at the margin of the 95% ellipses. Dave, classified as a Chinstrap, looks more like a Gentoo in terms of bill length and depth, but is in the region occupied by Adelie and Chinstraps in the right panel. Emma is outside the data ellipses for all three species in both plots.</p>
+<p>In <a href="#fig-peng-new-data" class="quarto-xref">Figure&nbsp;<span>A.1</span></a>, Betsy is well within the data ellipses for her species in both plots. Abe looks very much like an Adélie in the panel for the bill variables, but more like a Gentoo in terms of flipper length and body mass. Chloe, classed as a Gentoo is at the margin of the 95% ellipses. Dave, classified as a Chinstrap, looks more like a Gentoo in terms of bill length and depth, but is in the region occupied by Adélie and Chinstraps in the right panel. Emma is outside the data ellipses for all three species in both plots.</p>
 <p>These plots are just two of the <span class="math inline">\((4 \times 3) / 2 = 6\)</span> possible pairwise plots that would appear in a scatterplot matrix.</p>
 </section><section id="sec-discrim-discrim" class="level2" data-number="A.4"><h2 data-number="A.4" class="anchored" data-anchor-id="sec-discrim-discrim">
 <span class="header-section-number">A.4</span> Visualizing classification in discriminant space</h2>
@@ -677,7 +698,7 @@ Figure&nbsp;A.2: Plot of the Penguin observations in the space of the two discri
 </div>
 </div>
 </div>
-<p>But, you can turn this sow’s ear into a silk purse (with a little graph-craft)! My goal here is to illustrate plotting in discriminant space and show how the basic plot from <code>plot.lda()</code> can be made more informative. First, <code>predict_discrim()</code> can also return the discriminant scores (<code>LD1</code>, <code>LD2</code>) for the new observations via the argument <code>scores = TRUE</code>. I’ll use this dataset to add labels to the plot.</p>
+<p>But, you can turn this sow’s ear into a silk purse with a little graph-craft! My goal here is to illustrate plotting in discriminant space and show how the basic plot from <code>plot.lda()</code> can be made more informative. First, <code>predict_discrim()</code> can also return the discriminant scores (<code>LD1</code>, <code>LD2</code>) for the new observations via the argument <code>scores = TRUE</code>. I’ll use this dataset to add labels to the plot.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb11" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">pred</span> <span class="op">&lt;-</span> <span class="fu">predict_discrim</span><span class="op">(</span><span class="va">peng.lda</span>, </span>
 <span>                        newdata <span class="op">=</span> <span class="va">peng_new</span><span class="op">[</span>, <span class="fl">3</span><span class="op">:</span><span class="fl">6</span><span class="op">]</span>,</span>
@@ -690,7 +711,7 @@ Figure&nbsp;A.2: Plot of the Penguin observations in the space of the two discri
 <span><span class="co"># Dave  Chinstrap  0.15 -3.84 1.000</span></span>
 <span><span class="co"># Emma     Gentoo -3.15  3.78 1.000</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Then, I want to use more informative axis labels, showing the percent of between-group variance associated with each dimension. These come from the (poorly named) <code>svd</code> component of the <code>peng.lda</code> object.</p>
+<p>Then, I want to use more informative axis labels, showing the percent of between-group variance associated with each dimension. These come from the <code>svd</code> component of the <code>peng.lda</code> object whose squares <span class="math inline">\(\lambda_i^2\)</span> give the amount of between-to-within variance accounted for by each dimension.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb12" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">svd</span> <span class="op">&lt;-</span> <span class="va">peng.lda</span><span class="op">$</span><span class="va">svd</span></span>
 <span><span class="va">var</span> <span class="op">&lt;-</span> <span class="fl">100</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">svd</span><span class="op">^</span><span class="fl">2</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">svd</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span>, <span class="fl">3</span><span class="op">)</span></span>
@@ -764,15 +785,15 @@ Figure&nbsp;A.3: A customized plot of the Penguin observations in the space of t
 <li>Use a <code><a href="https://rdrr.io/r/stats/predict.html">predict()</a></code> method to get the predicted classification group for each point.</li>
 </ul>
 </li>
-<li><p>For base R graphs, you can use <code>image(x, y, z, ...)</code> to plot this grid of the <code>(x, y)</code>, where <code>z</code> is a <span class="math inline">\(k \times k\)</span>-length vector of the predicted class of an observation at this point. In <code>ggplot2</code> this is easier, using `geom_tile().</p></li>
+<li><p>For base R graphs, you can use <code>image(x, y, z, ...)</code> to plot this grid of the <code>(x, y)</code>, where <code>z</code> is a <span class="math inline">\(k \times k\)</span>-length vector of the predicted class of an observation at this point. In <code>ggplot2</code> this is easier, using <code>geom_tile()</code>.</p></li>
 <li><p>Boundaries of the regions are the contours of the maximum of the posterior probabilities. You can plot these using <code>contour(x, y, z, ...)</code> in base R or <code>geom_contour()</code> in <code>ggplot2</code>.</p></li>
 <li><p>On top of this, you can plot the data observations, data ellipses for the groups or anything else.</p></li>
 </ul>
-<p>This idea is essentially the same as used in <em>effect plots</em> (<a href="07-linear_models-plots.html#sec-effect-displays" class="quarto-xref"><span>Section 7.4</span></a>)—you calculate predicted values over a range of the variables shown, while controlling those not shown at a typical value.</p>
+<p>This idea is essentially the same as used in <em>effect plots</em> (<a href="07-linear_models-plots.html#sec-effect-displays" class="quarto-xref"><span>Section 7.4</span></a>)—you calculate predicted values over a range of the variables shown, while controlling those not shown at a typical value. These plots for discriminant analysis are also called “<em>territorial maps</em>” or “<em>partition plots</em>”.</p>
 <section id="partition-plots-with-partimat" class="level3" data-number="A.5.1"><h3 data-number="A.5.1" class="anchored" data-anchor-id="partition-plots-with-partimat">
 <span class="header-section-number">A.5.1</span> Partition plots with <code>partimat()</code>
 </h3>
-<p>The function <code>klar::partimat()</code> produces such “partition” plots for <code>lda()</code>, <code>qda()</code> as well as a number of other classification methods, including recursive partioning trees (<code><a href="https://rdrr.io/pkg/rpart/man/rpart.html">rpart::rpart()</a></code>), naive Bayes (<code><a href="https://rdrr.io/pkg/e1071/man/naiveBayes.html">e1071::naiveBayes()</a></code>) and other methods. The graphs produced are generally UGLY; but they are easy to produce and convey a sense of the method. Once we have the idea in mind, we can try to make prettier, more useful versions.</p>
+<p>The function <code>klar::partimat()</code> produces such partition plots for <code>lda()</code>, <code>qda()</code> as well as a number of other classification methods, including recursive partioning trees (<code><a href="https://rdrr.io/pkg/rpart/man/rpart.html">rpart::rpart()</a></code>), naive Bayes (<code><a href="https://rdrr.io/pkg/e1071/man/naiveBayes.html">e1071::naiveBayes()</a></code>) and other methods. The graphs produced are generally UGLY; but they are easy to produce and convey a sense of the method. Once we have the idea in mind, we can try to make prettier, more useful versions.</p>
 <p><code>partimat()</code> takes a model formula for the classification, here <code>species ~ .</code> for the penguin data. It produces a classification plot for every combination of two <span class="math inline">\(y\)</span> variables in the data, and can show them either in a scatterplot matrix format (<code>plot.matrix = TRUE</code>), or a rectangular display of only the unique pairs. The latter takes less space, and so allows higher resolution in the individual plots. The <code>method</code> argument in the call uses <code>lda()</code> to determine the result shown in <a href="#fig-peng-partimat1" class="quarto-xref">Figure&nbsp;<span>A.4</span></a>.</p>
 <!-- fig.code: R/peng.lda.R -->
 <div class="cell" data-layout-align="center">
@@ -781,7 +802,7 @@ Figure&nbsp;A.3: A customized plot of the Penguin observations in the space of t
 <span>  <span class="fu">partimat</span><span class="op">(</span><span class="va">species</span> <span class="op">~</span> <span class="va">.</span>, data <span class="op">=</span> <span class="va">_</span>, </span>
 <span>         method <span class="op">=</span> <span class="st">"lda"</span>,</span>
 <span>         plot.matrix <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>         image.colors <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/alpha.html">alpha</a></span><span class="op">(</span><span class="va">col</span>, alpha <span class="op">=</span> <span class="fl">0.4</span><span class="op">)</span>,</span>
+<span>         image.colors <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/alpha.html">alpha</a></span><span class="op">(</span><span class="va">col</span>, alpha <span class="op">=</span> <span class="fl">0.3</span><span class="op">)</span>,</span>
 <span>         main <span class="op">=</span> <span class="st">"Penguin Partition Plot"</span></span>
 <span>  <span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
@@ -800,12 +821,13 @@ Figure&nbsp;A.4: Partition plots for the penguin data. Each pairwise scatterplot
 </section><section id="using-ggplot" class="level3" data-number="A.5.2"><h3 data-number="A.5.2" class="anchored" data-anchor-id="using-ggplot">
 <span class="header-section-number">A.5.2</span> Using <code>ggplot()</code>
 </h3>
-<p>To construct similar (but better) plots using <span style="color: brown;"><strong>ggplot2</strong></span>, I follow the steps outlined above to get predicted classes over a grid, in this case for the penguin bill variables. The function <code><a href="https://marginaleffects.com/man/r/datagrid.html">marginaleffects::datagrid()</a></code> makes this easy, automatically marginalizing the other variables. You can supply a function, here <code>range80()</code>, to specify a sequence of a variable over its range.</p>
+<p>To construct similar (but better) plots using <span style="color: brown;"><strong>ggplot2</strong></span>, I follow the steps outlined above to get predicted classes over a grid, in this case for the penguin bill variables. The function <code><a href="https://marginaleffects.com/man/r/datagrid.html">marginaleffects::datagrid()</a></code> makes this easy, automatically marginalizing the other variables. You can supply a function, here <code>seq.range()</code>, to specify a sequence of a variable over its range.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb17" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="co"># make a grid of values for prediction</span></span>
 <span><span class="va">range80</span> <span class="op">=</span> \<span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>, length.out <span class="op">=</span> <span class="fl">80</span><span class="op">)</span></span>
-<span><span class="va">grid</span> <span class="op">&lt;-</span> <span class="fu">datagrid</span><span class="op">(</span>bill_length <span class="op">=</span> <span class="va">range80</span>, </span>
-<span>                 bill_depth <span class="op">=</span> <span class="va">range80</span>, newdata <span class="op">=</span> <span class="va">peng</span><span class="op">)</span></span>
+<span><span class="va">seq.range</span> <span class="op">=</span> \<span class="op">(</span><span class="va">n</span><span class="op">)</span> \<span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>, length.out <span class="op">=</span> <span class="va">n</span><span class="op">)</span></span>
+<span><span class="va">grid</span> <span class="op">&lt;-</span> <span class="fu">datagrid</span><span class="op">(</span>bill_length <span class="op">=</span> <span class="fu">seq.range</span><span class="op">(</span><span class="fl">80</span><span class="op">)</span>, </span>
+<span>                 bill_depth <span class="op">=</span> <span class="fu">seq.range</span><span class="op">(</span><span class="fl">80</span><span class="op">)</span>, newdata <span class="op">=</span> <span class="va">peng</span><span class="op">)</span></span>
 <span><span class="co"># get predicted species for the grid points</span></span>
 <span><span class="va">pred_grid</span> <span class="op">&lt;-</span> <span class="fu">predict_discrim</span><span class="op">(</span><span class="va">peng.lda</span>, newdata <span class="op">=</span> <span class="va">grid</span><span class="op">)</span> </span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">pred_grid</span><span class="op">)</span></span>
@@ -856,40 +878,31 @@ Figure&nbsp;A.5: Plots of the Penguin data showing the linear discriminant predi
 </div>
 </div>
 </div>
-<p>The groups are nicely separated in the left panel for the bill variables. For the other two variables in the right panel, Adelie and Chinstrap overlap considerably, but are well distinguished from the Gentoos. The predictions for these two groups favor Adelie for penguins of greater body mass.</p>
+<p>The groups are nicely separated in the left panel for the bill variables. For the other two variables in the right panel, Adélie and Chinstrap overlap considerably, but are well distinguished from the Gentoos. The predictions for these two groups favor Adélie for penguins of greater body mass.</p>
 <p>These plots are essentially the same as those in the (1, 1) and (2, 3) panels in <a href="#fig-peng-partimat1" class="quarto-xref">Figure&nbsp;<span>A.4</span></a>, but with axes reversed. You should understand that such plots in data space hold all other variables fixed at their means, so they show more observations that appear to be misclassified, as in the plot for flipper length and body mass.</p>
 </section><section id="prediction-regions-in-discriminant-space" class="level3" data-number="A.5.3"><h3 data-number="A.5.3" class="anchored" data-anchor-id="prediction-regions-in-discriminant-space">
 <span class="header-section-number">A.5.3</span> Prediction regions in discriminant space</h3>
 <p>The 2D plot of the data in discriminant space (<a href="#fig-peng-new-discrim2" class="quarto-xref">Figure&nbsp;<span>A.3</span></a>) is much simpler to understand because it captures all the information regarding penguin classification in a single plot, rather than the six shown in <a href="#fig-peng-partimat1" class="quarto-xref">Figure&nbsp;<span>A.4</span></a>. Can we make a similar plot, showing the prediction regions in discriminant space?</p>
 <p>If you recall that dimension reduction interpretation of discriminant analysis allows you to replace the observed <span class="math inline">\(\mathbf{y}\)</span>s with their discriminant scores <span class="math inline">\(\mathbf{z}\)</span> with the same accuracy when there are only <span class="math inline">\(s=2\)</span> possible dimensions, you can do this first finding the discriminant scores, <code>LD1</code> and <code>LD2</code> and using those as predictors in a new call to <code>lda()</code>:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb19" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">peng_scored</span> <span class="op">&lt;-</span> <span class="fu">predict_discrim</span><span class="op">(</span><span class="va">peng.lda</span>, scores<span class="op">=</span><span class="cn">TRUE</span>, posterior <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb19" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">peng_scored</span> <span class="op">&lt;-</span> <span class="fu">predict_discrim</span><span class="op">(</span><span class="va">peng.lda</span>, </span>
+<span>                               scores<span class="op">=</span><span class="cn">TRUE</span>, posterior <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">peng.lda2</span> <span class="op">&lt;-</span> <span class="fu">lda</span><span class="op">(</span><span class="va">species</span> <span class="op">~</span> <span class="va">LD1</span> <span class="op">+</span> <span class="va">LD2</span>, data<span class="op">=</span><span class="va">peng_scored</span><span class="op">)</span></span>
-<span><span class="va">peng.lda2</span></span>
-<span><span class="co"># Call:</span></span>
-<span><span class="co"># lda(species ~ LD1 + LD2, data = peng_scored)</span></span>
-<span><span class="co"># </span></span>
-<span><span class="co"># Prior probabilities of groups:</span></span>
-<span><span class="co">#    Adelie Chinstrap    Gentoo </span></span>
-<span><span class="co">#     0.444     0.198     0.357 </span></span>
-<span><span class="co"># </span></span>
-<span><span class="co"># Group means:</span></span>
-<span><span class="co">#             LD1    LD2</span></span>
-<span><span class="co"># Adelie     3.26  1.117</span></span>
-<span><span class="co"># Chinstrap  1.94 -2.970</span></span>
-<span><span class="co"># Gentoo    -5.13  0.257</span></span>
-<span><span class="co"># </span></span>
-<span><span class="co"># Coefficients of linear discriminants:</span></span>
+<span></span>
+<span><span class="co"># coefficients</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">peng.lda2</span><span class="op">)</span></span>
 <span><span class="co">#          LD1      LD2</span></span>
 <span><span class="co"># LD1 -1.00129 -0.00155</span></span>
 <span><span class="co"># LD2 -0.00739  1.00569</span></span>
-<span><span class="co"># </span></span>
-<span><span class="co"># Proportion of trace:</span></span>
+<span></span>
+<span><span class="co"># proportions of variance</span></span>
+<span><span class="va">var</span> <span class="op">&lt;-</span> <span class="va">peng.lda2</span><span class="op">$</span><span class="va">svd</span><span class="op">^</span><span class="fl">2</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">peng.lda2</span><span class="op">$</span><span class="va">svd</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/setNames.html">setNames</a></span><span class="op">(</span><span class="va">var</span>, nm <span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"LD1"</span>, <span class="st">"LD2"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#   LD1   LD2 </span></span>
 <span><span class="co"># 0.864 0.136</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>As you can see from the results, the proportions of between-class variance accounted for are nearly the same as in the original <code>peng.lda</code>. Note that the coefficients for the old vs.&nbsp;new discriminants are nearly the identity matrix, except that the sign of the coefficients for <code>LD</code> have been flipped. [<strong>TODO</strong>: Can I fix this, ie., flip LD1 in the plot?]</p>
+<p>As you can see from the results, the proportions of between-class variance accounted for are nearly the same as in the original <code>peng.lda</code>. Note that the coefficients for the old vs.&nbsp;new discriminants are nearly the identity matrix, except that the sign of the coefficients for <code>LD1</code> have been flipped. [<strong>TODO</strong>: Can I fix this, ie., flip LD1 in the plot?]</p>
 <p>Then you can follow the earlier examples in data space: Set up a grid of values for <code>LD1</code> and <code>LD2</code> over the discriminant space of <code>peng_scored</code> and obtain the predicted classifications for each point.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb20" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">grid</span> <span class="op">&lt;-</span> <span class="fu">datagrid</span><span class="op">(</span>LD1 <span class="op">=</span> <span class="va">range80</span>, </span>
@@ -1027,7 +1040,7 @@ What is most apparent in @fig-peng-candisc is that the horizontal axis is revers
 with the Gentoo penguins on the left rather than the right. But that's OK because the signs of the eigenvectors
 are arbitrary. 
 -->
-<p>To interpret such plots, first consider the separation among the groups on a given dimension, and then how the variable vectors point on this dimension. In <a href="#fig-peng-candisc" class="quarto-xref">Figure&nbsp;<span>A.8</span></a>, the first canonical dimension largely separates the Gentoos on the left from Adelie and Chinstrap on the right. This dimension is positively aligned with <code>bill_depth</code>, so these two groups have straighter bills than the Gentoo. But, the Gentoos tend to have larger body mass and longer flippers. The second dimension distinguishes mostly between the Adelie and Chinstraps, where the Chinstraps tend to have longer bills.</p>
+<p>To interpret such plots, first consider the separation among the groups on a given dimension, and then how the variable vectors point on this dimension. In <a href="#fig-peng-candisc" class="quarto-xref">Figure&nbsp;<span>A.8</span></a>, the first canonical dimension largely separates the Gentoos on the left from Adélie and Chinstrap on the right. This dimension is positively aligned with <code>bill_depth</code>, so these two groups have straighter bills than the Gentoo. But, the Gentoos tend to have larger body mass and longer flippers. The second dimension distinguishes mostly between the Adélie and Chinstraps, where the Chinstraps tend to have longer bills.</p>
 <p>An important difference between this plot (<a href="#fig-peng-candisc" class="quarto-xref">Figure&nbsp;<span>A.8</span></a>) and that shown for the discriminant analysis (<a href="#fig-peng-LD-biplot" class="quarto-xref">Figure&nbsp;<span>A.7</span></a>) is that the relative lengths and angles of the variable vectors differ in the two plots. This is because the variable coefficients in <code>peng.lda$scaling</code> calculated by <code>lda()</code> are <em>unstandardized</em> by default, whereas the plot from <code>candisc()</code> uses standardized, <em>structure</em> coefficients (correlations). These can be compared directly among variables to assess their relative importance. In the penguin data, <code>body_mass</code> is measured in grams, while the other variables are in millimeters. You would get more similar results from <code>lda()</code> if the variables were standardized first.</p>
 </section><section id="canonical-he-plot" class="level3" data-number="A.6.2"><h3 data-number="A.6.2" class="anchored" data-anchor-id="canonical-he-plot">
 <span class="header-section-number">A.6.2</span> Canonical HE plot</h3>
@@ -1069,7 +1082,7 @@ Lachenbruch, P. A. (1975). <em>Discriminant analysis</em>. Hafner Press. <a href
 <li id="fn1"><p>The function <code><a href="https://friendly.github.io/candisc/reference/candisc.html">candisc::candisc()</a></code> carries out a <em>generalized</em> discriminant analysis, for one term in a multivariate linear model. <code><a href="https://friendly.github.io/candisc/reference/candiscList.html">candisc::candiscList()</a></code> does this for all terms in a model.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn2"><p>There are a number of other methods of discriminant analysis. For example, in <strong>mixture discriminant analysis</strong> (MDA), each class is assumed to be a mixture of several Gaussian distributions, rather than a single one. <strong>flexible discriminant analysis</strong> (FDA) is an extension of LDA that uses non-linear combinations of predictors such as splines. FDA is useful to model multivariate non-normality or non-linear relationships among variables within each group, allowing for a more accurate classification. These are implemented in the package <code>mda</code> as <code>mda()</code> and <code>fda()</code>, which have the same syntax and similar methods to <code>lda()</code>.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn3"><p>You can choose prior probabilities for discriminant analysis by (a) using equal probabilities for the groups, (b) calculating them based on the observed sample sizes in your dataset, or (c) manually specifying known prior probabilities if you have external information about the population. The choice depends on whether you want the model to be influenced by group sizes or if you have pre-existing knowledge about the likelihood of group membership. The choice is also influenced by the cost of misclassification. …<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn4"><p>In fairness, <code><a href="https://rdrr.io/pkg/klaR/man/partimat.html">klaR::partimat()</a></code> was designed to emphasize the classification accuracy shown in each pairwise plot, also printed as an error rate for each plot. You can see, for example that the plot of <code>body_mass</code> against <code>bill_depth</code> in row 2, column 2 of <a href="#fig-peng-partimat1" class="quarto-xref">Figure&nbsp;<span>A.4</span></a> shows only two distinct regions, for Adelie and Gentoo. All the Chinstraps appear mixed in with the Adelies and, giving an error rate of 0.204 in this plot. Two other panels also show high error rates.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>In fairness, <code><a href="https://rdrr.io/pkg/klaR/man/partimat.html">klaR::partimat()</a></code> was designed to emphasize the classification accuracy shown in each pairwise plot, also printed as an error rate for each plot. You can see, for example that the plot of <code>body_mass</code> against <code>bill_depth</code> in row 2, column 2 of <a href="#fig-peng-partimat1" class="quarto-xref">Figure&nbsp;<span>A.4</span></a> shows only two distinct regions, for Adélie and Gentoo. All the Chinstraps appear mixed in with the Adélies and, giving an error rate of 0.204 in this plot. Two other panels also show high error rates.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol></section></main><!-- /main --><script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
     const icon = "";

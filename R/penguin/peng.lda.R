@@ -111,7 +111,7 @@ peng.partimat <- peng |>
 #         plot.matrix = TRUE,
 #         plot.control = list(cex = 1.2),
 #         cex.pts = 0.7,
-         image.colors = scales::alpha(col, alpha = 0.4),
+         image.colors = scales::alpha(col, alpha = 0.3),
          main = "Penguin Partition Plot"
   )
 

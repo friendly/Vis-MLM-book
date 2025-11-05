@@ -57,7 +57,7 @@ p1 <- ggplot(data = peng, aes(x = bill_length, y = bill_depth)) +
   stat_ellipse(aes(color=species), level = 0.68, linewidth = 1.2) +
   # Plot original data points
   geom_point(aes(color = species, shape=species),
-             size =2) +
+             size = 2) +
 #  labs(title = "LDA Decision Boundaries") +
   geom_label(data=means, aes(label = species, color = species),
              size =5) +
@@ -100,11 +100,18 @@ p1 + p2
 # Do it in discrim  space, using LD1 & LD2 as predictors
 # 
 
-peng_scored <- predict_discrim(peng.lda, scores=TRUE, posterior = FALSE)
+peng_scored <- predict_discrim(peng.lda, scores=TRUE, 
+                               posterior = FALSE)
 head(peng_scored)
 
 peng.lda2 <- lda(species ~ LD1 + LD2, data=peng_scored)
 peng.lda2
+
+# coefficients
+coef(peng.lda2)
+
+# proportions of variance
+peng.lda2$svd^2 / sum(peng.lda2$svd^2)
 
 
 # NB: LD1 is flipped in signs - reflect it
