@@ -140,7 +140,7 @@ colorize <- function(text, color) {
     sprintf("\\textcolor{%s}{%s}", color, text)
   } else if (knitr::is_html_output()) {
     sprintf("<span style='color: %s;'>%s</span>", color, text)
-  } else text
+  } else text      # Fallback for other formats
 }
 
 # Define some color names for use in figure captions.
@@ -157,6 +157,7 @@ brown <- colorize("brown", "brown4")
 
 # perhaps better to color the background
 colorize_bg <- function(text, bgcolor) {
+  if (missing(bgcolor)) bgcolor <- text
   if (knitr::is_latex_output()) {
     sprintf("\\colorbox{%s}{%s}", bgcolor, text)
   } else if (knitr::is_html_output()) {
