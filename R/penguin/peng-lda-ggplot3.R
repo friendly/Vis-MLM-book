@@ -19,6 +19,10 @@ means <- peng |>
   summarise(across(c(bill_length, bill_depth), \(x) mean(x, na.rm = TRUE) ))
 
 plot_discrim(peng.lda, bill_depth ~ bill_length,
-             data = peng) +
-    theme_penguins() 
+             data = peng,
+             pt.size = 2) +
+  stat_ellipse(aes(color=species), level = 0.68, linewidth = 1.2) +
+  geom_label(data=means, aes(label = species, color = species),
+             size =5) +
+  theme_penguins() 
 

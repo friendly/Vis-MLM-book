@@ -58,7 +58,7 @@ linear model. `candisc::candiscList()` does this for all terms in a model.
 In both cases, the analysis and significance tests are based on the familiar breakdown (@eq-SSP) of total variability, 
 $\mathbf{T} \equiv \mathbf{SSP}_{T}$, of the observations around the grand means into portions attributable to differences _between_ the group means $\mathbf{H} \equiv \mathbf{SSP}_{H}$
 and the portions attributable to differences _within_ the groups around their means, $\mathbf{E} \equiv \mathbf{SSP}_{E}$ as described in
-@sec-sum-of-squares,
+@sec-sums-of-squares,
 
 $$
 \mathbf{T} = \mathbf{H} + \mathbf{E} \; .
@@ -80,7 +80,8 @@ you an replace the observed $\mathbf{Y}$ variables with the uncorrelated $s$ dis
 and obtain _exactly_ the same classifications of the observations. 
 The first, $\mathbf{v}_1$, associated with the largest eigenvalue $\lambda_1$, accounts for the greatest
 proportion of between-group separation; the second, $\mathbf{v}_2$ is next in discriminating power, and so forth.
-But maybe we can classify nearly as well with a small subset of $k < s$ discriminants without great loss.
+But if there are more than $s=2$ dimensions,
+maybe we can classify nearly as well with a small subset of $k < s$ discriminants without great loss.
 
 Hence, just as in PCA, discriminant analysis can be thought of as a **dimension reduction** technique,
 squeezing the most discriminant juice out of the data in a few dimensions.
@@ -124,10 +125,24 @@ methods to `lda()`.
 
 Another way that LDA differs from MANOVA is that for classification purposes, the relative proportions of the groups
 in your sample or in the population has a role in determining the classification rules. These are called
-**prior probabilities**, which adjust the boundaries used to classify new observations. A higher prior probability for a group increases its assigned likelihood, effectively "pulling" the classification boundary in its favor.[^prior-probs]
+**prior probabilities**, which adjust the boundaries used to classify new observations. 
+
+A higher prior probability, $\pi_k$ for group $k$ increases its assigned likelihood, effectively "pulling" the classification boundary in its favor.[^prior-probs] [^prior-cost]
+This is expressed in the formula for the discriminant function $\delta(\mathbf{x})$ for a new data point $\mathbf{x}$,
+
+$$
+\delta_k(\mathbf{x})=x^\top \, \boldsymbol{\Sigma}^{-1} \, \bar{\mathbf{x}}_k - \frac{1}{2} \bar{\mathbf{x}}_k^\top \, \boldsymbol{\Sigma}^{-1} \,\bar{\mathbf{x}}_k+\log \left(\pi_k\right) \; ,
+$$
+where $bar{\mathbf{x}}_k$ is the estimated mean vector for class $k$, and 
+$\boldsymbol{\Sigma}^{-1} = \mathbf{S}_p^{-1}$ is the inverse of the pooled covariance matrix.
 
 [^prior-probs]: You can choose prior probabilities for discriminant analysis by (a)
-using equal probabilities for the groups, (b) calculating them based on the observed sample sizes in your dataset, or (c) manually specifying known prior probabilities if you have external information about the population. The choice depends on whether you want the model to be influenced by group sizes or if you have pre-existing knowledge about the likelihood of group membership. The choice is also influenced by the cost of misclassification. ...
+using equal probabilities for the groups, (b) calculating them based on the observed sample sizes in your dataset, or (c) manually specifying known prior probabilities if you have external information about the population. The choice depends on whether you want the model to be influenced by group sizes or if you have pre-existing knowledge about the likelihood of group membership. 
+
+[^prior-cost]:
+The choice of prior probabilities can also be influenced by the _cost_ of misclassification. For example in a two-group
+case of medical diagnosis, the cost of misclassifying a sample as "normal" rather than "disease" might be much
+higher than the reverse error.
 
 ::: {#exm-penguin-new}
 **Penguins on Island Z**
@@ -245,7 +260,6 @@ display and plotting for this class of models.
 A simple way to understand what happens in discriminant analysis is to plot the original data in data space and add labeled points
 for the new observations. You can use `candisc::predict_discrim()`, which joins the measures in the
 test dataset with the predicted class for each new observation. In the result, `species` is the predicted class.
-[**TODO**: Replace source() with `candisc::predict_discrim`.]
 
 ```{r peng-pred}
 #source(here::here("R/predict_discrim.R"))
@@ -277,7 +291,7 @@ coordinates for the new penguins from the `pred` dataset obtained from `predict_
 #| fig-height: 6
 #| fig-width: 12
 #| out-width: "100%"
-#| fig-cap: "Plots of the Penguin data, showing the locations of the newly classified observations from island Z."
+#| fig-cap: "Two pairwise plots of the Penguin data, with 95% data ellipses, showing the locations of the newly classified observations from island Z."
 p1 <- ggplot(peng, 
        aes(x = bill_length, y = bill_depth,
            color = species, shape = species, fill=species)) +
@@ -312,7 +326,7 @@ These plots are just two of the $(4 \times 3) / 2 = 6$ possible pairwise plots t
 
 ## Visualizing classification in discriminant space {#sec-discrim-discrim}
 
-One main virtue of discriminant analysis is that it allows us to see the data in the reduced-rank space that shows the
+The main virtue of discriminant analysis is that it allows us to see the data in the reduced-rank space that shows the
 greatest differences among the groups. The 4D data space of the observed $\mathbf{y}$ variables is replaced by 2D discriminant space of the $\mathbf{z}$s, which contains the same information for classification.
 
 If you add points for the newly  classified observations, you can see
