@@ -155,6 +155,16 @@ lightgreen <- colorize("lightgreen")
 darkgreen <- colorize("darkgreen")
 brown <- colorize("brown", "brown4")
 
+# perhaps better to color the background
+colorize_bg <- function(text, bgcolor) {
+  if (knitr::is_latex_output()) {
+    sprintf("\\colorbox{%s}{%s}", bgcolor, text)
+  } else if (knitr::is_html_output()) {
+    sprintf("<span style='background-color: %s;'>%s</span>", bgcolor, text)
+  } else {
+    text # Fallback for other formats
+  }
+}
 
 if (knitr::is_latex_output()) {
   # options(crayon.enabled = FALSE)
