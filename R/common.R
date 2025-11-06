@@ -110,8 +110,8 @@ Rexpr = function(expr, digits = 3) {
 }
 
 #' colorize text: 
-# use inline as `r colorize(text, color)` to print `text` in a given `color`
-# can also be used to color a color name, as in `r colorize("red")`
+# Use inline as `r colorize(text, color)` to print `text` in a given `color`
+# Can also be used to color a color name, as in `r colorize("red")`
 #
 
 #' Render text in color for Markdown / Quarto documents using LaTeX or CSS styles
@@ -151,6 +151,7 @@ red <- colorize('red')
 pink <- colorize("pink")
 blue <- colorize('blue')
 green <- colorize("green")
+yellow <- colorize("yellow")
 lightgreen <- colorize("lightgreen")
 darkgreen <- colorize("darkgreen")
 brown <- colorize("brown", "brown4")
