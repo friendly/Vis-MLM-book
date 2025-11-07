@@ -1,0 +1,105 @@
+---
+title: "Test colorize_bg"
+author: "Michael Friendly"
+date: today
+format:
+  html:
+    html-math-method: mathjax
+    theme:
+      - styles.scss
+  pdf:
+    documentclass: krantz
+    classoption: [10pt, krantz2, titlepage, letterpaper]
+    include-in-header: latex/preamble.tex
+    keep-tex: true
+    latex-tinytex: true
+---
+
+```{r include=FALSE}
+source("R/common.R")
+knitr::opts_chunk$set(error = TRUE)
+```
+
+## Printing text in color in HTML and LaTeX
+
+When I refer to colors, I want to print ther names in their actual color. But if the color is light, it doesn't show up well on
+a white background. Alternatively I could color the background, but if the color is dark, black text for the color name doesn't
+show up well. 
+
+
+```{r test-colors}
+test_colors <- c("red", "blue", "green",
+                 "white", "black", "gray",
+                 "pink", "yellow", "darkgreen",
+                 "orange", "purple")
+```
+
+RStudio does a reasonable job of this in editor windows, using various shades of gray for the text on a colored background
+of the named color. How can I achieve this in a Quarto document to be rendered in either HTML or PDF?
+
+### Using `colorize()`
+
+Define a function to print `text` in `color`. If `color` is missing, assume `text` is the color.
+```{r colorize}
+colorize <- function(text, color) {
+  if (missing(color)) color <- text
+  if (knitr::is_latex_output()) {
+    sprintf("\\textcolor{%s}{%s}", color, text)
+  } else if (knitr::is_html_output()) {
+    sprintf("<span style='color: %s;'>%s</span>", color, text)
+  } else text      # Fallback for other formats
+}
+
+```
+
+Try it:
+
+`r colorize("Gentoo", "orange")` and  `r colorize("Adelie", "purple")` and  `r colorize("Chinstrap", "darkgreen")` are Penguins.
+
+This plot has `r colorize("red")` points, `r colorize("blue")` points, `r colorize("green")` points, which are nice.
+Other colors used in the plot are `r colorize("yellow")`, `r colorize("pink")`, `r colorize("gray")` and `r colorize("black")`.
+
+As you can see, `r colorize("yellow")` and `r colorize("pink")` are illegible.
+
+### Using `colorize_bg()`
+
+Define a function to print text with background color:
+
+```{r colorize-bg}
+colorize_bg_bg <- function(text, bgcolor) {
+  if (missing(bgcolor)) bgcolor <- text
+  if (knitr::is_latex_output()) {
+    sprintf("\\colorbox{%s}{%s}", bgcolor, text)
+  } else if (knitr::is_html_output()) {
+    sprintf("<span style='background-color: %s;'>%s</span>", bgcolor, text)
+  } else {
+    text # Fallback for other formats
+  }
+}
+```
+
+Try it:
+
+`r colorize_bg("Gentoo", "orange")` and  `r colorize_bg("Adelie", "purple")` and  `r colorize_bg("Chinstrap", "darkgreen")` are Penguins.
+
+This plot has `r colorize_bg("red")` points, `r colorize_bg("blue")` points, `r colorize_bg("green")` points, which are nice.
+Other colors used in the plot are `r colorize_bg("yellow")`, `r colorize_bg("pink")`, `r colorize_bg("gray")` and `r colorize_bg("black")`.
+
+As you can see, `r colorize_bg("blue")` and `r colorize_bg("black")` are illegible.
+
+
+## What I want
+
+Create a new function, `colorize2()` which works similar to the RStudio scheme, using the named color as the **background**
+color and printing the text in a contrasting shade of gray.
+
+* Get the HCL luminance values of colors?? This doesn't work.
+
+```{r}
+library(colorspace)
+hcl_colors <- as(test_colors, "HCL") |>
+  print()
+luminance <- hcl_colors[, "L"] |>
+  print()
+```
+

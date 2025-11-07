@@ -124,7 +124,7 @@ Rexpr = function(expr, digits = 3) {
 #'    \definecolor{darkgreen}{RGB}{1,50,32}
 #'
 #' @param text  Text to display, a character string
-#' @param color Color to use, a valid color designation
+#' @param color Color to use, a valid color designation; if missing, use `text` as the color
 #'
 #' @return A character string with color-encoded text
 #' @export
@@ -147,6 +147,8 @@ colorize <- function(text, color) {
 # use as: 
 #    #| fig-cap: !expr glue::glue("Some points are ", {red}, " some are ", {blue}, "some are ", {green})
 
+white <- colorize("white")
+black <- colorize("black")
 red <- colorize('red')
 pink <- colorize("pink")
 blue <- colorize('blue')
