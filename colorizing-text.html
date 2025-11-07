@@ -116,7 +116,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="printing-text-in-color-in-html-and-latex" class="level2">
 <h2 class="anchored" data-anchor-id="printing-text-in-color-in-html-and-latex">Printing text in color in HTML and LaTeX</h2>
 <p>In the Quarto book I’m writing when I refer to colors, used in graphs in the text, or in figure captions, I want to print their names in their actual color to give a direct impression of the color, like “red” shown in red, “blue” shown in blue. This is similar to the use of direct labels in graphs, which are perceptually bound to what is portrayed, rather than an indirect legend which takes more cognitive energy.</p>
-<p>But, for text display, if the color is light, it doesn’t show up well on a white background. Alternatively I could color the background, but if the color is dark, black text for the color name doesn’t show up well. Here are some colors for testing these ideas and solutions.</p>
+<p>But, for text display, if the color is light, it doesn’t show up well on a white background. Alternatively I could color the background, but if the color is dark, black text for the color name doesn’t show up well.</p>
+<p>Here are some colors for testing these ideas and solutions.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>test_colors <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"red"</span>, <span class="st">"blue"</span>, <span class="st">"green"</span>,</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"white"</span>, <span class="st">"black"</span>, <span class="st">"gray"</span>,</span>
@@ -130,10 +131,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <figcaption>test-colors</figcaption>
 </figure>
 </div>
-<p>My question was, “How can I achieve this in a Quarto document to be rendered in either HTML or PDF?” The immediate answer was to define a function, <code>colorize(text, color)</code> that could be used inline in text.</p>
+<p>My question was, “How can I achieve this in a Quarto document to be rendered in either HTML or PDF?”</p>
+<p>The immediate answer was to define a function, <code>colorize(text, color)</code> that could be used inline in text.</p>
 <section id="using-colorize---original-approach" class="level3">
 <h3 class="anchored" data-anchor-id="using-colorize---original-approach">Using <code>colorize()</code> - Original approach</h3>
-<p>Define a function <code>colorize(text, color)</code> to print <code>text</code> in <code>color</code>. If <code>color</code> is missing, assume <code>text</code> is the color. This uses <code>knitr::is_*</code> functions to decide whether to use HTML or LaTeX coding to achieve this.</p>
+<p>Define a function <code>colorize(text, color)</code> to print <code>text</code> in <code>color</code>. If <code>color</code> is missing, assume <code>text</code> is the color when I just want to color the color name itself.</p>
+<p>This uses <code>knitr::is_*</code> functions to decide whether to use HTML (<code>&lt;span ...&gt;</code>) or LaTeX (<code>\textcolor{...}</code>) coding to achieve this.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>colorize <span class="ot">&lt;-</span> <span class="cf">function</span>(text, color) {</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">missing</span>(color)) color <span class="ot">&lt;-</span> text</span>
@@ -146,23 +149,88 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>Here’s what this gives, trying out both forms, where <code>color</code> is supplied or missing:</p>
 <p><span style="color: orange;">Gentoo</span> and <span style="color: purple;">Adelie</span> and <span style="color: darkgreen;">Chinstrap</span> are Penguins.</p>
-<p>This plot has <span style="color: red;">red</span> points, <span style="color: blue;">blue</span> points, <span style="color: green;">green</span> points, which are nice. Other colors used in the plot are <span style="color: yellow;">yellow</span>, <span style="color: pink;">pink</span>, <span style="color: gray;">gray</span> and <span style="color: black;">black</span>.</p>
+<p>This plot has <span style="color: red;">red</span> points, <span style="color: blue;">blue</span> points, <span style="color: green;">green</span> points, which are nice! Other colors used in the plot are <span style="color: yellow;">yellow</span>, <span style="color: pink;">pink</span>, <span style="color: gray;">gray</span> and <span style="color: black;">black</span>.</p>
 <p>As you can see, <span style="color: yellow;">yellow</span> and <span style="color: pink;">pink</span> are illegible.</p>
+<p>The text used in this document for this, showing how <code>colorize()</code> is used in inline text, is:</p>
+<div class="cell">
+<pre class="text cell-code"><code>`r colorize("Gentoo", "orange")` and  `r colorize("Adelie", "purple")` and  
+`r colorize("Chinstrap", "darkgreen")` are Penguins.
+
+This plot has `r colorize("red")` points, `r colorize("blue")` points, 
+`r colorize("green")` points, which are nice!
+Other colors used in the plot are `r colorize("yellow")`, `r colorize("pink")`, 
+`r colorize("gray")` and `r colorize("black")`.
+
+As you can see, `r colorize("yellow")` and `r colorize("pink")` are illegible.</code></pre>
+</div>
+<section id="figure-captions" class="level4">
+<h4 class="anchored" data-anchor-id="figure-captions">Figure captions</h4>
+<p>This approach doesn’t work in figure captions, because the calls to <code>colorize()</code> must be evaluated as expression before they are valid for Quarto. What I have used so far is <code>!expr paste()</code> to interpolate the colorize calls in <code>#| fig-cap:</code></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-Salaries-lm</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: !expr paste("Scatterplot of Salary vs. years since PhD, showing", </span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co">#|   colorize("linear", "red"), </span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co">#|   "and", colorize("quadratic", "darkgreen"), </span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co">#|   "smooths with 95% confidence bands.")</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>gg1 <span class="sc">+</span> </span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">formula =</span> <span class="st">"y ~ x"</span>, </span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>              <span class="at">color =</span> <span class="st">"red"</span>, <span class="at">fill=</span> <span class="st">"pink"</span>,</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>              <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">formula =</span> <span class="st">"y ~ poly(x,2)"</span>, </span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>              <span class="at">color =</span> <span class="st">"darkgreen"</span>, <span class="at">fill =</span> <span class="st">"lightgreen"</span>,</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>              <span class="at">linewidth =</span> <span class="dv">2</span>) </span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>For just using the color names themselves in figure captions, this is easier if I define variables for colors like this somewhere in my document:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>red <span class="ot">&lt;-</span> <span class="fu">colorize</span>(<span class="st">'red'</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>pink <span class="ot">&lt;-</span> <span class="fu">colorize</span>(<span class="st">"pink"</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>blue <span class="ot">&lt;-</span> <span class="fu">colorize</span>(<span class="st">'blue'</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>green <span class="ot">&lt;-</span> <span class="fu">colorize</span>(<span class="st">"green"</span>)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>yellow <span class="ot">&lt;-</span> <span class="fu">colorize</span>(<span class="st">"yellow"</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>lightgreen <span class="ot">&lt;-</span> <span class="fu">colorize</span>(<span class="st">"lightgreen"</span>)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>darkgreen <span class="ot">&lt;-</span> <span class="fu">colorize</span>(<span class="st">"darkgreen"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Then, I can use them inside <code>glue::glue()</code> more simply as <code>{blue}</code>, <code>{green}</code>, …, which interpolates their values into the caption string. Using <code>paste()</code> with long captions often gave errors, where I had left out a <code>,</code> somewhere.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-Salaries-loess</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: !expr glue::glue("Scatterplot of Salary vs. years since PhD, adding the loess smooth. </span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co">#|    The loess smooth curve and confidence band in {green} is nearly indistinguishable </span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="co">#|    from a quadratic fit in {blue}.")</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>gg1 <span class="sc">+</span> </span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"loess"</span>, <span class="at">formula =</span> <span class="st">"y ~ x"</span>, </span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>              <span class="at">color =</span> <span class="st">"blue"</span>, <span class="at">fill =</span> scales<span class="sc">::</span><span class="fu">muted</span>(<span class="st">"blue"</span>),</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>              <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">formula =</span> <span class="st">"y ~ x"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>              <span class="at">color =</span> <span class="st">"red"</span>,</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>              <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">formula =</span> <span class="st">"y ~ poly(x,2)"</span>, </span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>              <span class="at">color =</span> <span class="st">"darkgreen"</span>, <span class="at">fill =</span> <span class="st">"lightgreen"</span>,</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>              <span class="at">linewidth =</span> <span class="dv">2</span>) </span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
 </section>
 <section id="using-colorize_bg---background-approach" class="level3">
 <h3 class="anchored" data-anchor-id="using-colorize_bg---background-approach">Using <code>colorize_bg()</code> - Background approach</h3>
-<p>For legibility, it may work better to use the supplied color as background color, rather than text color. Here’s an analogous function to do this. In the HTML output, it uses <code>&lt;span style='background-color:</code> rather than <code>&lt;span style='color:</code> and similarly for LaTeX, where it uses <code>\colorbox{}</code> rather than <code>\textcolor{}</code>.</p>
+<p>For legibility, it may work better to use the supplied color as background color, rather than text color, as RStudio does.</p>
+<p>Here’s an analogous function, <code>colorize_bg()</code> to do this. In the HTML output, it uses <code>&lt;span style='background-color:</code> rather than <code>&lt;span style='color:</code> and similarly for LaTeX, where it uses <code>\colorbox{}</code> rather than <code>\textcolor{}</code>.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>colorize_bg <span class="ot">&lt;-</span> <span class="cf">function</span>(text, bgcolor) {</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">missing</span>(bgcolor)) bgcolor <span class="ot">&lt;-</span> text</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (knitr<span class="sc">::</span><span class="fu">is_latex_output</span>()) {</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sprintf</span>(<span class="st">"</span><span class="sc">\\</span><span class="st">colorbox{%s}{%s}"</span>, bgcolor, text)</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> <span class="cf">if</span> (knitr<span class="sc">::</span><span class="fu">is_html_output</span>()) {</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sprintf</span>(<span class="st">"&lt;span style='background-color: %s;'&gt;%s&lt;/span&gt;"</span>, bgcolor, text)</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    text <span class="co"># Fallback for other formats</span></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>colorize_bg <span class="ot">&lt;-</span> <span class="cf">function</span>(text, bgcolor) {</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">missing</span>(bgcolor)) bgcolor <span class="ot">&lt;-</span> text</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (knitr<span class="sc">::</span><span class="fu">is_latex_output</span>()) {</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sprintf</span>(<span class="st">"</span><span class="sc">\\</span><span class="st">colorbox{%s}{%s}"</span>, bgcolor, text)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> <span class="cf">if</span> (knitr<span class="sc">::</span><span class="fu">is_html_output</span>()) {</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sprintf</span>(<span class="st">"&lt;span style='background-color: %s;'&gt;%s&lt;/span&gt;"</span>, bgcolor, text)</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    text <span class="co"># Fallback for other formats</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Trying this out gives:</p>
 <p><span style="background-color: orange;">Gentoo</span> and <span style="background-color: purple;">Adelie</span> and <span style="background-color: darkgreen;">Chinstrap</span> are Penguins.</p>
@@ -174,105 +242,105 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="solution-colorize2-with-luminance-based-text-color">Solution: <code>colorize2()</code> with luminance-based text color</h2>
 <p>The key is to calculate the luminance of the background color and choose an appropriate gray shade for the text. I’ll use relative luminance (similar to WCAG standards) to determine if a color is “light” or “dark”.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(colorspace)</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>colorize2 <span class="ot">&lt;-</span> <span class="cf">function</span>(text, color) {</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">missing</span>(color)) color <span class="ot">&lt;-</span> text</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># grey -&gt; gray, because xcolor doesn't recognize this</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (color <span class="sc">==</span> <span class="st">"grey"</span>) color <span class="ot">&lt;-</span> <span class="st">"gray"</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Convert color to RGB and then to relative luminance</span></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Using sRGB color space for accurate luminance calculation</span></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  rgb_vals <span class="ot">&lt;-</span> <span class="fu">col2rgb</span>(color)[, <span class="dv">1</span>] <span class="sc">/</span> <span class="dv">255</span></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Apply gamma correction for sRGB</span></span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>  rgb_linear <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(rgb_vals <span class="sc">&lt;=</span> <span class="fl">0.03928</span>,</span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>                       rgb_vals <span class="sc">/</span> <span class="fl">12.92</span>,</span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>                       ((rgb_vals <span class="sc">+</span> <span class="fl">0.055</span>) <span class="sc">/</span> <span class="fl">1.055</span>)<span class="sc">^</span><span class="fl">2.4</span>)</span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Calculate relative luminance (ITU-R BT.709)</span></span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>  luminance <span class="ot">&lt;-</span> <span class="fl">0.2126</span> <span class="sc">*</span> rgb_linear[<span class="dv">1</span>] <span class="sc">+</span> </span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>               <span class="fl">0.7152</span> <span class="sc">*</span> rgb_linear[<span class="dv">2</span>] <span class="sc">+</span> </span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>               <span class="fl">0.0722</span> <span class="sc">*</span> rgb_linear[<span class="dv">3</span>]</span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Choose text color based on luminance</span></span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Adjusted thresholds for better contrast</span></span>
-<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>  <span class="co"># LaTeX uses black!X notation where X is percentage of black (0-100)</span></span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (luminance <span class="sc">&gt;</span> <span class="fl">0.65</span>) {</span>
-<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Very light backgrounds: use very dark gray</span></span>
-<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>    text_color_latex <span class="ot">&lt;-</span> <span class="st">"black!90"</span>  <span class="co"># 90% black</span></span>
-<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>    text_color_html <span class="ot">&lt;-</span> <span class="st">"#1a1a1a"</span></span>
-<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> <span class="cf">if</span> (luminance <span class="sc">&gt;</span> <span class="fl">0.45</span>) {</span>
-<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Light-medium backgrounds: use dark gray  </span></span>
-<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>    text_color_latex <span class="ot">&lt;-</span> <span class="st">"black!80"</span>  <span class="co"># 80% black</span></span>
-<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>    text_color_html <span class="ot">&lt;-</span> <span class="st">"#333333"</span></span>
-<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> <span class="cf">if</span> (luminance <span class="sc">&gt;</span> <span class="fl">0.25</span>) {</span>
-<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Medium-dark backgrounds: use light gray</span></span>
-<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>    text_color_latex <span class="ot">&lt;-</span> <span class="st">"black!20"</span>  <span class="co"># 20% black (80% white)</span></span>
-<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>    text_color_html <span class="ot">&lt;-</span> <span class="st">"#cccccc"</span></span>
-<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
-<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Very dark backgrounds: use very light gray</span></span>
-<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>    text_color_latex <span class="ot">&lt;-</span> <span class="st">"black!10"</span>  <span class="co"># 10% black (90% white)</span></span>
-<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>    text_color_html <span class="ot">&lt;-</span> <span class="st">"#e6e6e6"</span></span>
-<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Generate output based on format</span></span>
-<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (knitr<span class="sc">::</span><span class="fu">is_latex_output</span>()) {</span>
-<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sprintf</span>(<span class="st">"</span><span class="sc">\\</span><span class="st">colorbox{%s}{</span><span class="sc">\\</span><span class="st">textcolor{%s}{%s}}"</span>, color, text_color_latex, text)</span>
-<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> <span class="cf">if</span> (knitr<span class="sc">::</span><span class="fu">is_html_output</span>()) {</span>
-<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sprintf</span>(<span class="st">"&lt;span style='background-color: %s; color: %s;'&gt;%s&lt;/span&gt;"</span>, </span>
-<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a>            color, text_color_html, text)</span>
-<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
-<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a>    text  <span class="co"># Fallback for other formats</span></span>
-<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(colorspace)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>colorize2 <span class="ot">&lt;-</span> <span class="cf">function</span>(text, color) {</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">missing</span>(color)) color <span class="ot">&lt;-</span> text</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># grey -&gt; gray, because xcolor doesn't recognize this</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (color <span class="sc">==</span> <span class="st">"grey"</span>) color <span class="ot">&lt;-</span> <span class="st">"gray"</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Convert color to RGB and then to relative luminance</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Using sRGB color space for accurate luminance calculation</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>  rgb_vals <span class="ot">&lt;-</span> <span class="fu">col2rgb</span>(color)[, <span class="dv">1</span>] <span class="sc">/</span> <span class="dv">255</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Apply gamma correction for sRGB</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>  rgb_linear <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(rgb_vals <span class="sc">&lt;=</span> <span class="fl">0.03928</span>,</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>                       rgb_vals <span class="sc">/</span> <span class="fl">12.92</span>,</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>                       ((rgb_vals <span class="sc">+</span> <span class="fl">0.055</span>) <span class="sc">/</span> <span class="fl">1.055</span>)<span class="sc">^</span><span class="fl">2.4</span>)</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Calculate relative luminance (ITU-R BT.709)</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>  luminance <span class="ot">&lt;-</span> <span class="fl">0.2126</span> <span class="sc">*</span> rgb_linear[<span class="dv">1</span>] <span class="sc">+</span> </span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>               <span class="fl">0.7152</span> <span class="sc">*</span> rgb_linear[<span class="dv">2</span>] <span class="sc">+</span> </span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>               <span class="fl">0.0722</span> <span class="sc">*</span> rgb_linear[<span class="dv">3</span>]</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Choose text color based on luminance</span></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Adjusted thresholds for better contrast</span></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>  <span class="co"># LaTeX uses black!X notation where X is percentage of black (0-100)</span></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (luminance <span class="sc">&gt;</span> <span class="fl">0.65</span>) {</span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Very light backgrounds: use very dark gray</span></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>    text_color_latex <span class="ot">&lt;-</span> <span class="st">"black!90"</span>  <span class="co"># 90% black</span></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>    text_color_html <span class="ot">&lt;-</span> <span class="st">"#1a1a1a"</span></span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> <span class="cf">if</span> (luminance <span class="sc">&gt;</span> <span class="fl">0.45</span>) {</span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Light-medium backgrounds: use dark gray  </span></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>    text_color_latex <span class="ot">&lt;-</span> <span class="st">"black!80"</span>  <span class="co"># 80% black</span></span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>    text_color_html <span class="ot">&lt;-</span> <span class="st">"#333333"</span></span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> <span class="cf">if</span> (luminance <span class="sc">&gt;</span> <span class="fl">0.25</span>) {</span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Medium-dark backgrounds: use light gray</span></span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a>    text_color_latex <span class="ot">&lt;-</span> <span class="st">"black!20"</span>  <span class="co"># 20% black (80% white)</span></span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a>    text_color_html <span class="ot">&lt;-</span> <span class="st">"#cccccc"</span></span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Very dark backgrounds: use very light gray</span></span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a>    text_color_latex <span class="ot">&lt;-</span> <span class="st">"black!10"</span>  <span class="co"># 10% black (90% white)</span></span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a>    text_color_html <span class="ot">&lt;-</span> <span class="st">"#e6e6e6"</span></span>
+<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Generate output based on format</span></span>
+<span id="cb8-44"><a href="#cb8-44" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (knitr<span class="sc">::</span><span class="fu">is_latex_output</span>()) {</span>
+<span id="cb8-45"><a href="#cb8-45" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sprintf</span>(<span class="st">"</span><span class="sc">\\</span><span class="st">colorbox{%s}{</span><span class="sc">\\</span><span class="st">textcolor{%s}{%s}}"</span>, color, text_color_latex, text)</span>
+<span id="cb8-46"><a href="#cb8-46" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> <span class="cf">if</span> (knitr<span class="sc">::</span><span class="fu">is_html_output</span>()) {</span>
+<span id="cb8-47"><a href="#cb8-47" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sprintf</span>(<span class="st">"&lt;span style='background-color: %s; color: %s;'&gt;%s&lt;/span&gt;"</span>, </span>
+<span id="cb8-48"><a href="#cb8-48" aria-hidden="true" tabindex="-1"></a>            color, text_color_html, text)</span>
+<span id="cb8-49"><a href="#cb8-49" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb8-50"><a href="#cb8-50" aria-hidden="true" tabindex="-1"></a>    text  <span class="co"># Fallback for other formats</span></span>
+<span id="cb8-51"><a href="#cb8-51" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb8-52"><a href="#cb8-52" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="test-colorize2-with-all-colors" class="level3">
 <h3 class="anchored" data-anchor-id="test-colorize2-with-all-colors">Test <code>colorize2()</code> with all colors</h3>
 <p>Let’s try the new function with all test colors:</p>
 <p><span style="background-color: orange; color: #333333;">Gentoo</span> and <span style="background-color: purple; color: #e6e6e6;">Adelie</span> and <span style="background-color: darkgreen; color: #e6e6e6;">Chinstrap</span> are Penguins.</p>
 <p>This plot has <span style="background-color: red; color: #e6e6e6;">red</span> points, <span style="background-color: blue; color: #e6e6e6;">blue</span> points, <span style="background-color: green; color: #1a1a1a;">green</span> points, which are nice. Other colors used in the plot are <span style="background-color: yellow; color: #1a1a1a;">yellow</span>, <span style="background-color: pink; color: #333333;">pink</span>, <span style="background-color: gray; color: #333333;">gray</span>, <span style="background-color: white; color: #1a1a1a;">white</span> and <span style="background-color: black; color: #e6e6e6;">black</span>.</p>
-<p>All colors should now be legible!</p>
+<p>All colors should now be legible! Well, this may need a tweak. In HTML, <span style="background-color: darkgreen; color: #e6e6e6;">Chinstrap</span> looks OK, but the text in <span style="background-color: green; color: #1a1a1a;">green</span> is somewat too dark.</p>
 </section>
 <section id="diagnostic-show-luminance-values" class="level3">
 <h3 class="anchored" data-anchor-id="diagnostic-show-luminance-values">Diagnostic: Show luminance values</h3>
-<p>Let’s see the calculated luminance for each test color:</p>
+<p>Let’s look at how the luminance is calculated for each test color, using <code>grDevices::col2rgb()</code></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(colorspace)</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Function to calculate luminance</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>get_luminance <span class="ot">&lt;-</span> <span class="cf">function</span>(color) {</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  rgb_vals <span class="ot">&lt;-</span> <span class="fu">col2rgb</span>(color)[, <span class="dv">1</span>] <span class="sc">/</span> <span class="dv">255</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  rgb_linear <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(rgb_vals <span class="sc">&lt;=</span> <span class="fl">0.03928</span>,</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>                       rgb_vals <span class="sc">/</span> <span class="fl">12.92</span>,</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>                       ((rgb_vals <span class="sc">+</span> <span class="fl">0.055</span>) <span class="sc">/</span> <span class="fl">1.055</span>)<span class="sc">^</span><span class="fl">2.4</span>)</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  luminance <span class="ot">&lt;-</span> <span class="fl">0.2126</span> <span class="sc">*</span> rgb_linear[<span class="dv">1</span>] <span class="sc">+</span> </span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>               <span class="fl">0.7152</span> <span class="sc">*</span> rgb_linear[<span class="dv">2</span>] <span class="sc">+</span> </span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>               <span class="fl">0.0722</span> <span class="sc">*</span> rgb_linear[<span class="dv">3</span>]</span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(luminance)</span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate luminance for all test colors</span></span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>luminance_df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">color =</span> test_colors,</span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">luminance =</span> <span class="fu">round</span>(<span class="fu">sapply</span>(test_colors, get_luminance), <span class="dv">3</span>),</span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">text_color_html =</span> <span class="fu">sapply</span>(test_colors, <span class="cf">function</span>(col) {</span>
-<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>    lum <span class="ot">&lt;-</span> <span class="fu">get_luminance</span>(col)</span>
-<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (lum <span class="sc">&gt;</span> <span class="fl">0.65</span>) <span class="st">"#1a1a1a"</span></span>
-<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span> <span class="cf">if</span> (lum <span class="sc">&gt;</span> <span class="fl">0.45</span>) <span class="st">"#333333"</span></span>
-<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span> <span class="cf">if</span> (lum <span class="sc">&gt;</span> <span class="fl">0.25</span>) <span class="st">"#cccccc"</span></span>
-<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span> <span class="st">"#e6e6e6"</span></span>
-<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>  }),</span>
-<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>  <span class="at">text_color_latex =</span> <span class="fu">sapply</span>(test_colors, <span class="cf">function</span>(col) {</span>
-<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>    lum <span class="ot">&lt;-</span> <span class="fu">get_luminance</span>(col)</span>
-<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (lum <span class="sc">&gt;</span> <span class="fl">0.65</span>) <span class="st">"black!90"</span></span>
-<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span> <span class="cf">if</span> (lum <span class="sc">&gt;</span> <span class="fl">0.45</span>) <span class="st">"black!80"</span></span>
-<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span> <span class="cf">if</span> (lum <span class="sc">&gt;</span> <span class="fl">0.25</span>) <span class="st">"black!20"</span></span>
-<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span> <span class="st">"black!10"</span></span>
-<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>  })</span>
-<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(luminance_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Function to calculate luminance</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>get_luminance <span class="ot">&lt;-</span> <span class="cf">function</span>(color) {</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  rgb_vals <span class="ot">&lt;-</span> <span class="fu">col2rgb</span>(color)[, <span class="dv">1</span>] <span class="sc">/</span> <span class="dv">255</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  rgb_linear <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(rgb_vals <span class="sc">&lt;=</span> <span class="fl">0.03928</span>,</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>                       rgb_vals <span class="sc">/</span> <span class="fl">12.92</span>,</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>                       ((rgb_vals <span class="sc">+</span> <span class="fl">0.055</span>) <span class="sc">/</span> <span class="fl">1.055</span>)<span class="sc">^</span><span class="fl">2.4</span>)</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  luminance <span class="ot">&lt;-</span> <span class="fl">0.2126</span> <span class="sc">*</span> rgb_linear[<span class="dv">1</span>] <span class="sc">+</span> </span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>               <span class="fl">0.7152</span> <span class="sc">*</span> rgb_linear[<span class="dv">2</span>] <span class="sc">+</span> </span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>               <span class="fl">0.0722</span> <span class="sc">*</span> rgb_linear[<span class="dv">3</span>]</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(luminance)</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Then check this out using my <code>test_colors</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate luminance for all test colors</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>luminance_df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">color =</span> test_colors,</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">luminance =</span> <span class="fu">round</span>(<span class="fu">sapply</span>(test_colors, get_luminance), <span class="dv">3</span>),</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">text_color_html =</span> <span class="fu">sapply</span>(test_colors, <span class="cf">function</span>(col) {</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    lum <span class="ot">&lt;-</span> <span class="fu">get_luminance</span>(col)</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (lum <span class="sc">&gt;</span> <span class="fl">0.65</span>) <span class="st">"#1a1a1a"</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span> <span class="cf">if</span> (lum <span class="sc">&gt;</span> <span class="fl">0.45</span>) <span class="st">"#333333"</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span> <span class="cf">if</span> (lum <span class="sc">&gt;</span> <span class="fl">0.25</span>) <span class="st">"#cccccc"</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span> <span class="st">"#e6e6e6"</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>  }),</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">text_color_latex =</span> <span class="fu">sapply</span>(test_colors, <span class="cf">function</span>(col) {</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>    lum <span class="ot">&lt;-</span> <span class="fu">get_luminance</span>(col)</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (lum <span class="sc">&gt;</span> <span class="fl">0.65</span>) <span class="st">"black!90"</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span> <span class="cf">if</span> (lum <span class="sc">&gt;</span> <span class="fl">0.45</span>) <span class="st">"black!80"</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span> <span class="cf">if</span> (lum <span class="sc">&gt;</span> <span class="fl">0.25</span>) <span class="st">"black!20"</span></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span> <span class="st">"black!10"</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(luminance_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>                  color luminance text_color_html text_color_latex
 red.red             red     0.213         #e6e6e6         black!10
@@ -288,13 +356,13 @@ orange.red       orange     0.482         #333333         black!80
 purple.red       purple     0.148         #e6e6e6         black!10</code></pre>
 </div>
 </div>
-<p>But, in this, I was surprised that I could not find function in the <code>colorspace</code> package to do <code>this</code>get_numinance()<code>more simply. Searching on the web, I found</code>chroma::lumkinance()` but this is not available on CRAN, and I couldn’t take this on as a dependence.</p>
+<p>In this, I was surprised that I could not find function in the <code>colorspace</code> package to do this <code>get_luminance()</code> more simply. Searching on the web, I found <code>chroma::luminance()</code> but this is not available on CRAN, and I couldn’t take this on as a dependence.</p>
 </section>
 <section id="complete-test-of-all-colors" class="level3">
 <h3 class="anchored" data-anchor-id="complete-test-of-all-colors">Complete test of all colors</h3>
 <p>Here’s a comprehensive test showing all colors with their appropriate contrast:</p>
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Colors: "</span>, </span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">paste</span>(<span class="fu">sapply</span>(test_colors, colorize2), <span class="at">collapse =</span> <span class="st">", "</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Colors: "</span>, </span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">paste</span>(<span class="fu">sapply</span>(test_colors, colorize2), <span class="at">collapse =</span> <span class="st">", "</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Colors: <span style="background-color: red; color: #e6e6e6;">red</span>, <span style="background-color: blue; color: #e6e6e6;">blue</span>, <span style="background-color: green; color: #1a1a1a;">green</span>, <span style="background-color: white; color: #1a1a1a;">white</span>, <span style="background-color: black; color: #e6e6e6;">black</span>, <span style="background-color: gray; color: #333333;">gray</span>, <span style="background-color: pink; color: #333333;">pink</span>, <span style="background-color: yellow; color: #1a1a1a;">yellow</span>, <span style="background-color: darkgreen; color: #e6e6e6;">darkgreen</span>, <span style="background-color: orange; color: #333333;">orange</span>, <span style="background-color: purple; color: #e6e6e6;">purple</span></p>
 </section>
 </section>
@@ -322,29 +390,29 @@ purple.red       purple     0.148         #e6e6e6         black!10</code></pre>
 <h4 class="anchored" data-anchor-id="using-hcl-lightness">Using HCL Lightness</h4>
 <p>The <code>colorspace</code> package provides HCL (Hue-Chroma-Luminance) color space, where the <code>L</code> component represents perceptual lightness:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(colorspace)</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>colorize2_simple <span class="ot">&lt;-</span> <span class="cf">function</span>(text, color) {</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">missing</span>(color)) color <span class="ot">&lt;-</span> text</span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (color <span class="sc">==</span> <span class="st">"grey"</span>) color <span class="ot">&lt;-</span> <span class="st">"gray"</span></span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Get HCL lightness (0-100 scale)</span></span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>  hcl_L <span class="ot">&lt;-</span> <span class="fu">as</span>(<span class="fu">hex2RGB</span>(color), <span class="st">"polarLUV"</span>)<span class="sc">@</span>coords[, <span class="st">"L"</span>]</span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Choose text color based on lightness</span></span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (hcl_L <span class="sc">&gt;</span> <span class="dv">70</span>) {</span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    text_color_latex <span class="ot">&lt;-</span> <span class="st">"black!80"</span></span>
-<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    text_color_html <span class="ot">&lt;-</span> <span class="st">"#333333"</span></span>
-<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> <span class="cf">if</span> (hcl_L <span class="sc">&gt;</span> <span class="dv">50</span>) {</span>
-<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>    text_color_latex <span class="ot">&lt;-</span> <span class="st">"black!60"</span></span>
-<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>    text_color_html <span class="ot">&lt;-</span> <span class="st">"#666666"</span></span>
-<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
-<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>    text_color_latex <span class="ot">&lt;-</span> <span class="st">"black!20"</span></span>
-<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>    text_color_html <span class="ot">&lt;-</span> <span class="st">"#cccccc"</span></span>
-<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>  <span class="co"># ... rest of function</span></span>
-<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(colorspace)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>colorize2_simple <span class="ot">&lt;-</span> <span class="cf">function</span>(text, color) {</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">missing</span>(color)) color <span class="ot">&lt;-</span> text</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (color <span class="sc">==</span> <span class="st">"grey"</span>) color <span class="ot">&lt;-</span> <span class="st">"gray"</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Get HCL lightness (0-100 scale)</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>  hcl_L <span class="ot">&lt;-</span> <span class="fu">as</span>(<span class="fu">hex2RGB</span>(color), <span class="st">"polarLUV"</span>)<span class="sc">@</span>coords[, <span class="st">"L"</span>]</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Choose text color based on lightness</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (hcl_L <span class="sc">&gt;</span> <span class="dv">70</span>) {</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>    text_color_latex <span class="ot">&lt;-</span> <span class="st">"black!80"</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>    text_color_html <span class="ot">&lt;-</span> <span class="st">"#333333"</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> <span class="cf">if</span> (hcl_L <span class="sc">&gt;</span> <span class="dv">50</span>) {</span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>    text_color_latex <span class="ot">&lt;-</span> <span class="st">"black!60"</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>    text_color_html <span class="ot">&lt;-</span> <span class="st">"#666666"</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>    text_color_latex <span class="ot">&lt;-</span> <span class="st">"black!20"</span></span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>    text_color_html <span class="ot">&lt;-</span> <span class="st">"#cccccc"</span></span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>  <span class="co"># ... rest of function</span></span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>This approach is simpler but has some drawbacks:</p>
 <ul>
@@ -357,12 +425,12 @@ purple.red       purple     0.148         #e6e6e6         black!10</code></pre>
 <h4 class="anchored" data-anchor-id="using-simple-rgb-averaging">Using simple RGB averaging</h4>
 <p>An even simpler approach is to just average the RGB values:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Very simple but less accurate</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>rgb_vals <span class="ot">&lt;-</span> <span class="fu">col2rgb</span>(color)[, <span class="dv">1</span>]</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>avg_brightness <span class="ot">&lt;-</span> <span class="fu">mean</span>(rgb_vals)  <span class="co"># 0-255 scale</span></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (avg_brightness <span class="sc">&gt;</span> <span class="dv">180</span>) use_dark_text</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span> use_light_text</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Very simple but less accurate</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>rgb_vals <span class="ot">&lt;-</span> <span class="fu">col2rgb</span>(color)[, <span class="dv">1</span>]</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>avg_brightness <span class="ot">&lt;-</span> <span class="fu">mean</span>(rgb_vals)  <span class="co"># 0-255 scale</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (avg_brightness <span class="sc">&gt;</span> <span class="dv">180</span>) use_dark_text</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span> use_light_text</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>This works for many colors but fails for some important cases. For example, pure blue (RGB: 0, 0, 255) has an average of 85, suggesting light text would be appropriate. But blue is actually quite dark to our eyes, so you’d want light text. The proper luminance calculation accounts for this.</p>
 </section>
