@@ -145,7 +145,7 @@ colorize <- function(text, color) {
 
 # Define some color names for use in figure captions.
 # use as: 
-#    #| fig-cap: !expr glue::glue("Some points are ", {red}, " some are ", {blue}, "some are ", {green})
+#    #| fig-cap: !expr glue::glue("Some points are {red}, some are  {blue}, some are {green}")
 
 white <- colorize("white")
 black <- colorize("black")
