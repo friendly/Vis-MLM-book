@@ -170,6 +170,9 @@ colorize_bg <- function(text, bgcolor) {
   }
 }
 
+# Make colorbox() accessible
+colorbox <- colorize::colorbox
+
 if (knitr::is_latex_output()) {
   # options(crayon.enabled = FALSE)
   # options(cli.unicode = TRUE)

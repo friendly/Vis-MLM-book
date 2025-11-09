@@ -262,7 +262,6 @@ for the new observations. You can use `candisc::predict_discrim()`, which joins 
 test dataset with the predicted class for each new observation. In the result, `species` is the predicted class.
 
 ```{r peng-pred}
-#source(here::here("R/predict_discrim.R"))
 pred <- predict_discrim(peng.lda, 
                         newdata = peng_new[, 3:6],
                         posterior = FALSE) |>
@@ -531,7 +530,8 @@ means for each species and use these as direct labels for the groups, to avoid a
 #| results: hide
 means <- peng |>
   group_by(species) |>
-  summarise(across(c(bill_length, bill_depth), \(x) mean(x, na.rm = TRUE) ))
+  summarise(across(c(bill_length, bill_depth), 
+                   \(x) mean(x, na.rm = TRUE) ))
 
 p1 <- ggplot(data = peng, aes(x = bill_length, y = bill_depth)) +
   # Plot decision regions
@@ -588,7 +588,43 @@ but with axes reversed. You should understand that such plots in data space hold
 fixed at their means, so they show more observations that appear to be misclassified, as in the plot
 for flipper length and body mass.
 
-### Prediction regions in discriminant space
+### Using `plot_discrim()`
+
+Plots showing decision regions such as @fig-peng-regions are made even easier using `candisc::plot_discim()`.
+This takes an `"lda"` (or `"qda"`) model, finds the predicted class over a grid of values, and
+plots the points together with the boundaries of classification and/or the classification regions
+colored by group. 
+
+It produces a `"ggplot"` object to which additional layers can be added, such as data ellipses and labels,
+similar to what was done in @fig-peng-regions. You can use this as in the code below for a plot of
+`body_mass ~ bill_length`, which gives
+@fig-peng-plot-discrim. Here I simply added the data ellipses and text labels for the species
+at their centroids.
+
+```{r}
+#| label: fig-peng-plot-discrim
+#| fig-height: 6
+#| fig-width: 6
+#| out-width: "60%"
+#| fig-cap: ""
+means <- peng |>
+  group_by(species) |>
+  summarise(across(c(bill_length, body_mass), mean))
+
+plot_discrim(peng.lda, body_mass ~ bill_length,
+             data = peng,
+             pt.size = 2) +
+  stat_ellipse(aes(color=species), level = 0.68, 
+               linewidth = 1.2) +
+  geom_label(data=means, aes(label = species, color = species),
+             size =5) +
+  theme_penguins() +
+  theme_minimal(base_size = 16) +
+  theme(legend.position = "none")
+```
+
+
+## Prediction regions in discriminant space
 
 The 2D plot of the data in discriminant space (@fig-peng-new-discrim2) is much simpler to understand because it captures
 all the information regarding penguin classification in a single plot, rather than the six shown in 
@@ -806,3 +842,8 @@ heplot(peng.can,
        cex.lab = 1.3, cex = 1.3)
 ```
 
+## Quadratic discriminant analysis
+
+Linear discriminant analysis breaks down when the covariance matrices for the groups differ substantially. 
+In the context of MANOVA, this issue was addressed in @sec-eqcov through statistical tests and graphical
+methods for understanding **how** the group covariance matrices differ.
