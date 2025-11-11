@@ -473,10 +473,12 @@ https://www.sthda.com/english/articles/36-classification-methods-essentials/146-
 <p>The discussion here is limited to what this altered focus adds to <em>visualizing differences</em> among groups on a collection of response variables. See <span class="citation" data-cites="Klecka1980">Klecka (<a href="95-references.html#ref-Klecka1980" role="doc-biblioref">1980</a>)</span>, <span class="citation" data-cites="Lachenbruch1975">Lachenbruch (<a href="95-references.html#ref-Lachenbruch1975" role="doc-biblioref">1975</a>)</span> for a basic, but more general introduction to discriminant analysis methods. There is a useful discussion in this Cross Validated question <a href="https://bit.ly/4gpMykN">How is MANOVA related to LDA?</a> <!-- {.content-visible when-format="pdf"} (https://bit.ly/4gpMykN). --></p>
 <p>As in MANOVA, <strong>linear</strong> discriminant analysis assumes equal variance covariance matrices across the groups. In this case, the boundaries separating predicted group memberships are <em>hyper-planes</em> in the data space of the quantitative variables. In 2D plots, these appear as lines, and a goal of this section is to show how you can plot these. When the variance covariance matrices differ substantially, the boundaries become curved, and the method is called <strong>quadratic</strong> discriminant analysis, implemented in <code><a href="https://rdrr.io/pkg/MASS/man/qda.html">MASS::qda()</a></code>.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
 <p>Another way that LDA differs from MANOVA is that for classification purposes, the relative proportions of the groups in your sample or in the population has a role in determining the classification rules. These are called <strong>prior probabilities</strong>, which adjust the boundaries used to classify new observations.</p>
-<p>A higher prior probability, <span class="math inline">\(\pi_k\)</span> for group <span class="math inline">\(k\)</span> increases its assigned likelihood, effectively “pulling” the classification boundary in its favor.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a> <a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a> This is expressed in the formula for the discriminant function <span class="math inline">\(\delta(\mathbf{x})\)</span> for a new data point <span class="math inline">\(\mathbf{x}\)</span>,</p>
-<p><span class="math display">\[
+<p>A higher prior probability, <span class="math inline">\(\pi_k\)</span> for group <span class="math inline">\(k\)</span> increases its assigned likelihood, effectively “pulling” the classification boundary in its favor.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>,<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a> This is expressed in the formula for the discriminant function <span class="math inline">\(\delta(\mathbf{x})\)</span> for a new data point <span class="math inline">\(\mathbf{x}\)</span>,</p>
+<p><span id="eq-lda-fun"><span class="math display">\[
 \delta_k(\mathbf{x})=x^\top \, \boldsymbol{\Sigma}^{-1} \, \bar{\mathbf{x}}_k - \frac{1}{2} \bar{\mathbf{x}}_k^\top \, \boldsymbol{\Sigma}^{-1} \,\bar{\mathbf{x}}_k+\log \left(\pi_k\right) \; ,
-\]</span> where <span class="math inline">\(bar{\mathbf{x}}_k\)</span> is the estimated mean vector for class <span class="math inline">\(k\)</span>, and <span class="math inline">\(\boldsymbol{\Sigma}^{-1} = \mathbf{S}_p^{-1}\)</span> is the inverse of the pooled covariance matrix.</p>
+\tag{A.1}\]</span></span></p>
+<p>where <span class="math inline">\(\bar{\mathbf{x}}_k\)</span> is the estimated mean vector for class <span class="math inline">\(k\)</span>, and <span class="math inline">\(\boldsymbol{\Sigma}^{-1} = \mathbf{S}_p^{-1}\)</span> is the inverse of the pooled covariance matrix.</p>
+<p><strong>TODO</strong>: Needs a History Corner here, describing development from <span class="citation" data-cites="Fisher:1936">Fisher (<a href="95-references.html#ref-Fisher:1936" role="doc-biblioref">1936</a>)</span>, through <span class="citation" data-cites="Rao1948">Rao (<a href="95-references.html#ref-Rao1948" role="doc-biblioref">1948</a>)</span>, with Bayesian developments.</p>
 <div id="exm-penguin-new" class="theorem example">
 <p><span class="theorem-title"><strong>Example A.1</strong></span> <strong>Penguins on Island Z</strong></p>
 <!-- fig.code: R/peng-lda-pred-new.R -->
@@ -894,29 +896,28 @@ Figure&nbsp;A.5: Plots of the Penguin data showing the linear discriminant predi
 <span class="header-section-number">A.5.3</span> Using <code>plot_discrim()</code>
 </h3>
 <p>Plots showing decision regions such as <a href="#fig-peng-regions" class="quarto-xref">Figure&nbsp;<span>A.5</span></a> are made even easier using <code>candisc::plot_discim()</code>. This takes an <code>"lda"</code> (or <code>"qda"</code>) model, finds the predicted class over a grid of values, and plots the points together with the boundaries of classification and/or the classification regions colored by group.</p>
-<p>It produces a <code>"ggplot"</code> object to which additional layers can be added, such as data ellipses and labels, similar to what was done in <a href="#fig-peng-regions" class="quarto-xref">Figure&nbsp;<span>A.5</span></a>. You can use this as in the code below for a plot of <code>body_mass ~ bill_length</code>, which gives <a href="#fig-peng-plot-discrim" class="quarto-xref">Figure&nbsp;<span>A.6</span></a>. Here I simply added the data ellipses and text labels for the species at their centroids.</p>
+<p>It produces a <code>"ggplot"</code> object which can be customized with <code>theme()</code> and <code>scale_*()</code> components. Data ellipses can be added through the <code>ellipse</code> argument, and you can add labels for the groups similar to what was done in <a href="#fig-peng-regions" class="quarto-xref">Figure&nbsp;<span>A.5</span></a>.</p>
+<p>You can use this as shown in the code below for a plot of <code>body_mass ~ bill_length</code>, which gives <a href="#fig-peng-plot-discrim" class="quarto-xref">Figure&nbsp;<span>A.6</span></a>. Here I simply added text labels for the species at their centroids.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb19" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">means</span> <span class="op">&lt;-</span> <span class="va">peng</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">group_by</span><span class="op">(</span><span class="va">species</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">summarise</span><span class="op">(</span><span class="fu">across</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">bill_length</span>, <span class="va">body_mass</span><span class="op">)</span>, <span class="va">mean</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">plot_discrim</span><span class="op">(</span><span class="va">peng.lda</span>, <span class="va">body_mass</span> <span class="op">~</span> <span class="va">bill_length</span>,</span>
-<span>             data <span class="op">=</span> <span class="va">peng</span>,</span>
+<span>             ellipse <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>             pt.size <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">stat_ellipse</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>color<span class="op">=</span><span class="va">species</span><span class="op">)</span>, level <span class="op">=</span> <span class="fl">0.68</span>, </span>
-<span>               linewidth <span class="op">=</span> <span class="fl">1.2</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">geom_label</span><span class="op">(</span>data<span class="op">=</span><span class="va">means</span>, <span class="fu">aes</span><span class="op">(</span>label <span class="op">=</span> <span class="va">species</span>, color <span class="op">=</span> <span class="va">species</span><span class="op">)</span>,</span>
 <span>             size <span class="op">=</span><span class="fl">5</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_penguins</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme_minimal</span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">16</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">theme</span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"none"</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div id="fig-peng-plot-discrim" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center" width="60%">
+<div id="fig-peng-plot-discrim" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-peng-plot-discrim-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="figs/discrim/fig-peng-plot-discrim-1.png" id="fig-peng-plot-discrim" class="img-fluid quarto-figure quarto-figure-center anchored figure-img" style="width:60.0%">
+<img src="figs/discrim/fig-peng-plot-discrim-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:60.0%">
 </div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-peng-plot-discrim-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;A.6
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-peng-plot-discrim-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;A.6: <code>plot_dicsrim()</code> plot of <code>bill_depth ~ bill_length</code> for the Penguin data showing the linear discriminant prediction regions for the three species.
 </figcaption></figure>
 </div>
 </div>
@@ -1027,7 +1028,8 @@ Figure&nbsp;A.8: Plot of the Penguin data in discriminant space, adding variable
 </div>
 </section></section><section id="sec-discrim-MANOVA" class="level2" data-number="A.7"><h2 data-number="A.7" class="anchored" data-anchor-id="sec-discrim-MANOVA">
 <span class="header-section-number">A.7</span> Relation to MANOVA and CDA</h2>
-<p>As I noted at the outset, LDA is in some sense a twin of MANOVA, but with it’s emphasis flipped from significance tests to classification. This connection can be made more apparent by using the <strong>canonical</strong> representation of the MANOVA (<a href="12-mlm-viz.html#sec-candisc" class="quarto-xref"><span>Section 12.7</span></a>) implemented in the <span style="color: brown;"><strong>candisc</strong></span> package. You simply send the <code>"mlm"</code> object computed with <code><a href="https://rdrr.io/r/stats/lm.html">lm()</a></code> to <code>candisc()</code> and get significance tests for the model in terms of the dimensions that discriminate best among the species.</p>
+<p>As I noted at the outset, LDA is in some sense a twin of MANOVA, but with it’s emphasis flipped from significance tests to classification. This connection can be made more apparent by using the <strong>canonical</strong> representation of the MANOVA (<a href="12-mlm-viz.html#sec-candisc" class="quarto-xref"><span>Section 12.7</span></a>) implemented in the <span style="color: brown;"><strong>candisc</strong></span> package.</p>
+<p>You can simply send the <code>"mlm"</code> object computed with <code><a href="https://rdrr.io/r/stats/lm.html">lm()</a></code> to <code>candisc()</code> and get significance tests for the model in terms of the dimensions that discriminate best among the species.</p>
 <div class="cell" data-layout-align="center">
 <div class="sourceCode" id="cb25" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">peng.mlm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">bill_length</span>, <span class="va">bill_depth</span>, <span class="va">flipper_length</span>, <span class="va">body_mass</span><span class="op">)</span> <span class="op">~</span> <span class="va">species</span> , </span>
 <span>                data <span class="op">=</span> <span class="va">peng</span><span class="op">)</span></span>
@@ -1050,7 +1052,7 @@ Figure&nbsp;A.8: Plot of the Penguin data in discriminant space, adding variable
 <span><span class="co"># ---</span></span>
 <span><span class="co"># Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>In the table printed, the eigenvalues are the <span class="math inline">\(\lambda_i\)</span> of <span class="math inline">\(\mathbf{H}\mathbf{E}^{-1}\)</span> and their percent contributions are the same as what we saw from the discriminant analysis given by <code>lda()</code>. The significance tests printed are a variety called <strong>step-down tests</strong>, which test the contributions of the current row and all that follow in each line.</p>
+<p>In the table printed, the eigenvalues are the <span class="math inline">\(\lambda_i\)</span> of <span class="math inline">\(\mathbf{H}\mathbf{E}^{-1}\)</span> and their percent contributions are the same as what we saw from the discriminant analysis given by <code>lda()</code>. The significance tests printed are a variety called <strong>step-down tests</strong> (#REF), which test the contributions of the current row and all that follow in each line.</p>
 <section id="canonical-discriminant-plot" class="level3" data-number="A.7.1"><h3 data-number="A.7.1" class="anchored" data-anchor-id="canonical-discriminant-plot">
 <span class="header-section-number">A.7.1</span> Canonical discriminant plot</h3>
 <p>The <code><a href="https://rdrr.io/r/graphics/plot.default.html">plot()</a></code> method for a <code>"candisc"</code> object gives something similar to what we saw in <a href="#fig-peng-LD-biplot" class="quarto-xref">Figure&nbsp;<span>A.8</span></a>, but with more sensible scaling of the variable vectors. In the code, <code>ellipse = TRUE</code> adds 68% data ellipses for the disciminant scores for each species, and <code>rev.axes</code> is used to reflect the directon of the horizontal axis to make it similar to <a href="#fig-peng-LD-biplot" class="quarto-xref">Figure&nbsp;<span>A.8</span></a>. The result is shown in <a href="#fig-peng-candisc" class="quarto-xref">Figure&nbsp;<span>A.9</span></a>.</p>
@@ -1111,14 +1113,37 @@ Figure&nbsp;A.10: Canonical discriminant HE plot of the Penguin data for the MAN
 </section></section><section id="quadratic-discriminant-analysis" class="level2" data-number="A.8"><h2 data-number="A.8" class="anchored" data-anchor-id="quadratic-discriminant-analysis">
 <span class="header-section-number">A.8</span> Quadratic discriminant analysis</h2>
 <p>Linear discriminant analysis breaks down when the covariance matrices for the groups differ substantially. In the context of MANOVA, this issue was addressed in <a href="13-eqcov.html" class="quarto-xref"><span>Chapter 13</span></a> through statistical tests and graphical methods for understanding <strong>how</strong> the group covariance matrices differ.</p>
+<p>When the covariance matrices <span class="math inline">\(\mathbf{S}_k\)</span> differ across the groups, the disciminant function <a href="#eq-lda-fun" class="quarto-xref">Equation&nbsp;<span>A.1</span></a> becomes (<span class="citation" data-cites="Rao1948">Rao (<a href="95-references.html#ref-Rao1948" role="doc-biblioref">1948</a>)</span>)</p>
+<p><span id="eq-qda-fun"><span class="math display">\[
+\delta_k(x) = -\frac{1}{2}\ln|\mathbf{S}_k| - \frac{1}{2}(x-\bar{\mathbf{x}}_k)^\top\mathbf{S}_k^{-1}(x-\bar{\mathbf{x}}_k) + \ln(\pi_k) \; ,
+\tag{A.2}\]</span></span></p>
+<p>and again the observation <span class="math inline">\(\mathbf{x}\)</span> is assigned to the class <span class="math inline">\(k\)</span> that has the largest discriminant score. The method gets its name because the resulting decision boundaries are quadratic (curved) rather than straight lines.</p>
+<p>Happily, with these developments, all the methods for analysis and visualization work just the same, if you substitute <code><a href="https://rdrr.io/pkg/MASS/man/qda.html">MASS::qda()</a></code> for <code><a href="https://rdrr.io/pkg/MASS/man/lda.html">MASS::lda()</a></code> in the material above.</p>
+<div id="exm-penguin-qda" class="theorem example">
+<p><span class="theorem-title"><strong>Example A.2</strong></span> <strong>Quadratic penguins</strong></p>
+<p>In <a href="13-eqcov.html" class="quarto-xref"><span>Chapter 13</span></a>, we saw that the Penguin groups had unequal covariance matrices when tested by Box’s <span class="math inline">\(\mathcal{M}\)</span> test, but these did not differ dramatically in visual displays (e.g., <span class="quarto-unresolved-ref">?fig-covEllipse-pairs</span>).</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode" id="cb28" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">peng.qda</span> <span class="op">&lt;-</span> <span class="fu">qda</span><span class="op">(</span><span class="va">species</span> <span class="op">~</span> <span class="va">bill_length</span> <span class="op">+</span> <span class="va">bill_depth</span> <span class="op">+</span> <span class="va">flipper_length</span> <span class="op">+</span> <span class="va">body_mass</span>, </span>
+<span>                data <span class="op">=</span> <span class="va">peng</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="recursive-partition-methods" class="level2" data-number="A.9"><h2 data-number="A.9" class="anchored" data-anchor-id="recursive-partition-methods">
+<span class="header-section-number">A.9</span> Recursive partition methods</h2>
 
 
+</section>
+</div>
 <div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" data-line-spacing="2" role="list" style="display: none">
+<div id="ref-Fisher:1936" class="csl-entry" role="listitem">
+Fisher, R. A. (1936). The use of multiple measurements in taxonomic problems. <em>Annals of Eugenics</em>, <em>7</em>(2), 179–188. <a href="https://doi.org/10.1111/j.1469-1809.1936.tb02137.x">https://doi.org/10.1111/j.1469-1809.1936.tb02137.x</a>
+</div>
 <div id="ref-Klecka1980" class="csl-entry" role="listitem">
 Klecka, W. (1980). <em>Discriminant analysis</em>. SAGE Publications, Inc. <a href="https://doi.org/10.4135/9781412983938">https://doi.org/10.4135/9781412983938</a>
 </div>
 <div id="ref-Lachenbruch1975" class="csl-entry" role="listitem">
 Lachenbruch, P. A. (1975). <em>Discriminant analysis</em>. Hafner Press. <a href="https://books.google.ca/books?id=0hrvAAAAMAAJ">https://books.google.ca/books?id=0hrvAAAAMAAJ</a>
+</div>
+<div id="ref-Rao1948" class="csl-entry" role="listitem">
+Rao, C. R. (1948). The utilization of multiple measurements in problems of biological classification. <em>Journal of the Royal Statistical Society Series B: Statistical Methodology</em>, <em>10</em>(2), 159–193. <a href="https://doi.org/10.1111/j.2517-6161.1948.tb00008.x">https://doi.org/10.1111/j.2517-6161.1948.tb00008.x</a>
 </div>
 </div>
 </section><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><hr>

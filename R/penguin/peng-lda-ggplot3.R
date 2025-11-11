@@ -25,7 +25,6 @@ means <- peng |>
   summarise(across(c(bill_length, bill_depth), \(x) mean(x, na.rm = TRUE) ))
 
 plot_discrim(peng.lda, bill_depth ~ bill_length,
-             data = peng,
              pt.size = 2) +
   stat_ellipse(aes(color=species), level = 0.68, linewidth = 1.2) +
   geom_label(data=means, aes(label = species, color = species),
@@ -39,14 +38,42 @@ means <- peng |>
   summarise(across(c(bill_length, body_mass), mean))
 
 plot_discrim(peng.lda, body_mass ~ bill_length,
-             data = peng,
+             ellipse = TRUE,
+#             data = peng,
              pt.size = 2) +
-  stat_ellipse(aes(color=species), level = 0.68, 
-               linewidth = 1.2) +
+  # stat_ellipse(aes(color=species), level = 0.68, 
+  #              linewidth = 1.2) +
   geom_label(data=means, aes(label = species, color = species),
              size =5) +
   theme_penguins() +
   theme_minimal(base_size = 16) +
   theme(legend.position = "none")
 
+
+# ---- Do the same for qda() ----------
+peng.qda <- qda(species ~ bill_length + bill_depth + flipper_length + body_mass, 
+                data = peng)
+
+means <- peng |>
+  group_by(species) |>
+  summarise(across(c(bill_length, bill_depth), \(x) mean(x, na.rm = TRUE) ))
+
+plot_discrim(peng.qda, bill_depth ~ bill_length,
+             ellipse = TRUE,
+             pt.size = 2) +
+#  stat_ellipse(aes(color=species), level = 0.68, linewidth = 1.2) +
+  geom_label(data=means, aes(label = species, color = species),
+             size =5) +
+  theme_penguins() 
+
+means <- peng |>
+  group_by(species) |>
+  summarise(across(c(bill_length, body_mass), mean))
+
+plot_discrim(peng.qda, body_mass ~ bill_length,
+             ellipse = TRUE,
+             pt.size = 2) +
+  geom_label(data=means, aes(label = species, color = species),
+             size =5) +
+  theme_penguins() 
 

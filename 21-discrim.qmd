@@ -127,13 +127,14 @@ Another way that LDA differs from MANOVA is that for classification purposes, th
 in your sample or in the population has a role in determining the classification rules. These are called
 **prior probabilities**, which adjust the boundaries used to classify new observations. 
 
-A higher prior probability, $\pi_k$ for group $k$ increases its assigned likelihood, effectively "pulling" the classification boundary in its favor.[^prior-probs] [^prior-cost]
+A higher prior probability, $\pi_k$ for group $k$ increases its assigned likelihood, effectively "pulling" the classification boundary in its favor.[^prior-probs],[^prior-cost]
 This is expressed in the formula for the discriminant function $\delta(\mathbf{x})$ for a new data point $\mathbf{x}$,
 
 $$
 \delta_k(\mathbf{x})=x^\top \, \boldsymbol{\Sigma}^{-1} \, \bar{\mathbf{x}}_k - \frac{1}{2} \bar{\mathbf{x}}_k^\top \, \boldsymbol{\Sigma}^{-1} \,\bar{\mathbf{x}}_k+\log \left(\pi_k\right) \; ,
-$$
-where $bar{\mathbf{x}}_k$ is the estimated mean vector for class $k$, and 
+$${#eq-lda-fun}
+
+where $\bar{\mathbf{x}}_k$ is the estimated mean vector for class $k$, and 
 $\boldsymbol{\Sigma}^{-1} = \mathbf{S}_p^{-1}$ is the inverse of the pooled covariance matrix.
 
 [^prior-probs]: You can choose prior probabilities for discriminant analysis by (a)
@@ -143,6 +144,10 @@ using equal probabilities for the groups, (b) calculating them based on the obse
 The choice of prior probabilities can also be influenced by the _cost_ of misclassification. For example in a two-group
 case of medical diagnosis, the cost of misclassifying a sample as "normal" rather than "disease" might be much
 higher than the reverse error.
+
+**TODO**: Needs a History Corner here, describing development from @Fisher:1936, through @Rao1948, with Bayesian
+developments.
+
 
 ::: {#exm-penguin-new}
 **Penguins on Island Z**
@@ -595,10 +600,14 @@ This takes an `"lda"` (or `"qda"`) model, finds the predicted class over a grid 
 plots the points together with the boundaries of classification and/or the classification regions
 colored by group. 
 
-It produces a `"ggplot"` object to which additional layers can be added, such as data ellipses and labels,
-similar to what was done in @fig-peng-regions. You can use this as in the code below for a plot of
+It produces a `"ggplot"` object which can be customized with `theme()` and `scale_*()` components.
+Data ellipses can be added through the `ellipse` argument, and you can add
+labels for the groups
+similar to what was done in @fig-peng-regions. 
+
+You can use this as shown in the code below for a plot of
 `body_mass ~ bill_length`, which gives
-@fig-peng-plot-discrim. Here I simply added the data ellipses and text labels for the species
+@fig-peng-plot-discrim. Here I simply added  text labels for the species
 at their centroids.
 
 ```{r}
@@ -606,16 +615,14 @@ at their centroids.
 #| fig-height: 6
 #| fig-width: 6
 #| out-width: "60%"
-#| fig-cap: ""
+#| fig-cap: "`plot_dicsrim()` plot of `bill_depth ~ bill_length` for the Penguin data showing the linear discriminant prediction regions for the three species."
 means <- peng |>
   group_by(species) |>
   summarise(across(c(bill_length, body_mass), mean))
 
 plot_discrim(peng.lda, body_mass ~ bill_length,
-             data = peng,
+             ellipse = TRUE,
              pt.size = 2) +
-  stat_ellipse(aes(color=species), level = 0.68, 
-               linewidth = 1.2) +
   geom_label(data=means, aes(label = species, color = species),
              size =5) +
   theme_penguins() +
@@ -850,11 +857,31 @@ Linear discriminant analysis breaks down when the covariance matrices for the gr
 In the context of MANOVA, this issue was addressed in @sec-eqcov through statistical tests and graphical
 methods for understanding **how** the group covariance matrices differ.
 
-**TODO**: Needs a History Corner here, describing development from @Fisher:1936, through @Rao1948, with Bayesian
-developments.
+When the covariance matrices $\mathbf{S}_k$ differ across the groups, the disciminant function @eq-lda-fun becomes
+(@Rao1948)
+
+$$
+\delta_k(x) = -\frac{1}{2}\ln|\mathbf{S}_k| - \frac{1}{2}(x-\bar{\mathbf{x}}_k)^\top\mathbf{S}_k^{-1}(x-\bar{\mathbf{x}}_k) + \ln(\pi_k) \; ,
+$${#eq-qda-fun}
+
+and again the observation $\mathbf{x}$ is assigned to the class $k$ that has the largest discriminant score.
+The method gets its name because the resulting decision boundaries are quadratic (curved) rather than straight lines.
 
 Happily, with these developments, all the methods for analysis and visualization work just the same, if
 you substitute `MASS::qda()` for `MASS::lda()` in the material above.
+
+::: {#exm-penguin-qda}
+**Quadratic penguins**
+
+In @sec-eqcov, we saw that the Penguin groups had unequal covariance matrices when tested by
+Box's $\mathcal{M}$ test, but these did not differ dramatically in visual displays (e.g., @fig-covEllipse-pairs).
+
+```{r peng-qda}
+peng.qda <- qda(species ~ bill_length + bill_depth + flipper_length + body_mass, 
+                data = peng)
+```
+
+:::
 
 ## Recursive partition methods
 
