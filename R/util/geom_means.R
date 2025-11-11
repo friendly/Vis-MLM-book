@@ -68,8 +68,10 @@ penguins_clean |>
   geom_means(size = 8, shape = "+")  + 
   labs(title = "Testing geom_means()")
 
-# Test group-wise behavior
-last_plot() + 
+plt <- last_plot()
+
+# Test group-wise behavior --
+plt + 
   aes(color = species) 
 
 # Test geom flexibility of stat_*() function.
@@ -77,4 +79,11 @@ last_plot() +
 last_plot() + 
   stat_means(geom = "label", aes(label = species))  + 
   labs(subtitle = "and stat_means()")
+
+
+
+# but not flexible enough for hline/vline
+last_plot() +
+  stat_means(geom = "hline", aes(yintercept = y))  + 
+  labs(subtitle = "and geom_hline")
 }
