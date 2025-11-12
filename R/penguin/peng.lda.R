@@ -71,7 +71,8 @@ make_grid <- function(x, y, names, mul = 0.05, ngrid = 100) {
 
 
 
-peng.qda <- qda(species ~  bill_length + bill_depth + flipper_length + body_mass, data = peng)
+peng.qda <- qda(species ~ bill_length + bill_depth + flipper_length + body_mass, 
+                data = peng)
 peng.qda
 
 ggord(peng.qda, peng$species,
