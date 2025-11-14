@@ -113,6 +113,7 @@ Rexpr = function(expr, digits = 3) {
 # Use inline as `r colorize(text, color)` to print `text` in a given `color`
 # Can also be used to color a color name, as in `r colorize("red")`
 #
+# This is superceded by `colorize` package
 
 #' Render text in color for Markdown / Quarto documents using LaTeX or CSS styles
 #' 

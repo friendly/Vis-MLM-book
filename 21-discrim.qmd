@@ -59,22 +59,27 @@ linear model. `candisc::candiscList()` does this for all terms in a model.
 
 The essential ideas are illustrated in @fig-discrim-demo for two groups, "A" and "B" measured on two variables,
 $\mathbf{y}_1$ and $\mathbf{y}_2$. The two groups differ in their bivariate means $\boldsymbol{\mu}_A = (3,4); \boldsymbol{\mu}_B = (6,2)$,
-but were sampled with $n=100$ points each, having the same within-group variances of 2 for both variables and correlation $\rho = 0.5$.
+and were sampled with $n=100$ points each, having the same within-group variances of 2 for both variables and correlation $\rho = 0.5$.
 
 ```{r}
 #| label: fig-discrim-demo
 #| echo: false
 #| out-width: "70%"
-#| fig-cap: "Illustration of linear discriminant analysis"
+#| fig-cap: "Illustration of main ideas of linear discriminant analysis for $g=2$ groups represented by their data ellipses. The discriminant scores are the projections of the points on an axis along which the means are most widely separated."
 knitr::include_graphics("images/discrim-demo-both.jpg")
 ```
 
-Here,
+The geometric and statistical ideas shown here are:
 
 * LDA calculates a weighted sum of the variables, $\text{LD}_1 = v_1 \mathbf{y}_1 +  v_2 \mathbf{y}_2$, such that
-the groups are most widely separated.
-* The oblique figure at the bottom left shows the distributions of the $\text{LD}_1$ scores, which are the projections
-of the $(y_1, y_2)$ points on this axis.
+the groups are most widely separated, relative to the variability with each group.
+* The oblique figure at the bottom left shows the distributions of the $\text{LD}_1$ scores. These are just the orthogonal projections of the $(y_1, y_2)$ points on this axis.
+* For classification, LDA provides a line in this space which is the boundary between points that would be classified
+as belonging to groups "A" or "B".
+* In the case shown here with $g=2$ groups, and equal sample sizes, $n_1 = n_2$, the decision boundary is perpendicular to
+the line joining the means $\boldsymbol{\mu}_A, \boldsymbol{\mu}_B$ and half-way between them.
+* With only $g=2$ groups, the discriminant space (LD1) is always one-dimensional, no matter how many $\mathbf{y}$ variables
+there are in data space.
 
 ## Theory
 
@@ -134,11 +139,13 @@ of response variables. See @Klecka1980, @Lachenbruch1975 for a basic, but more g
 There is a useful discussion in this Cross Validated question 
 [How is MANOVA related to LDA?](https://bit.ly/4gpMykN) <!-- {.content-visible when-format="pdf"} (https://bit.ly/4gpMykN). -->
 
+### Linear vs. quadratic discriminant analysis
 As in MANOVA, **linear** discriminant analysis assumes equal variance covariance matrices across the groups. In this case, the boundaries separating
 predicted group memberships are _hyper-planes_ in the data space of the quantitative variables. In 2D plots, these
 appear as lines, and a goal of this section is to show how you can plot these. When the variance covariance matrices differ
 substantially, the boundaries become curved, and the method is called **quadratic** discriminant analysis,
 implemented in `MASS::qda()`.[^other-discrim]
+This method is illustrated in @sec-QDA.
 
 [^other-discrim]: There are a number of other methods of discriminant analysis. For example, in
 **mixture discriminant analysis** (MDA), each class is assumed to be a mixture of several Gaussian distributions, rather than a single one.
@@ -146,6 +153,8 @@ implemented in `MASS::qda()`.[^other-discrim]
 package `mda`
 as `mda()` and `fda()`, which have the same syntax and similar
 methods to `lda()`.
+
+### Prior probabilities {.unnumbered}
 
 Another way that LDA differs from MANOVA is that for classification purposes, the relative proportions of the groups
 in your sample or in the population has a role in determining the classification rules. These are called
@@ -169,8 +178,14 @@ The choice of prior probabilities can also be influenced by the _cost_ of miscla
 case of medical diagnosis, the cost of misclassifying a sample as "normal" rather than "disease" might be much
 higher than the reverse error.
 
+You can see this from @fig-discrim-demo. If the prior probability of group "A" was greater than that of group "B",
+the line for the discriminant boundary would be shifted away from group "A", resulting in more observations
+being classified in that group.
+
+<!--
 **TODO**: Needs a History Corner here, describing development from @Fisher:1936, through @Rao1948, with Bayesian
 developments.
+-->
 
 ::: {.callout-note title="History Corner: Origins of discriminant analysis"}
 The idea of classification based on multiple measurements has a long history in medicine 
@@ -178,34 +193,23 @@ The idea of classification based on multiple measurements has a long history in 
 biology, taxonomy (classifying organisms to species or varieties, based on
 morphological measurements). It arose in statistics at a time when statisticians 
 like Karl Pearson and Prasanta Mahalanobis first began to think of multivariate
-problems like principal components and distance in geometric terms, with matrix
+problems like principal components and multivariate distance in geometric terms, with matrix
 algebra as the handmaid to express these ideas and find solutions.
 
-Ronald Fisher's landmark 1936 paper [@Fisher1936] introduced the idea of a "discriminant function",
+Ronald Fisher's landmark paper [@Fisher1936] introduced the idea of a "discriminant function",
 a weighted sum of observed measurements as a means to classifying observations into predefined groups.
 His perfect test case was the now famous data collected by Edgar Anderson [@Anderson:35] on iris flowers
-of the Gaspe Peninsula. His elegant approach essentially involved the eigenvectors of
-what I call here $\mathbf{H} \mathbf{E}^{-1}, representing between-group relative to within-group
-variation, as the weights to apply to the observed variables.
+of the Gaspé Peninsula. His elegant approach essentially involved the eigenvectors of
+what I call here $\mathbf{H} \mathbf{E}^{-1}$, representing between-group relative to within-group
+variation, as the weights to apply to the observed variables to best discriminate among the
+iris species.
 
 C. R. Rao [@Rao1948] extended Fisher's framework in 1948, introducing what would 
 become known as quadratic discriminant analysis (QDA). He relaxed Fisher's 
 assumption of equal covariance structure, allowing each group to have its own covariance matrix. This generalization led to quadratic, rather than linear, decision boundaries, providing greater flexibility in modeling how groups differ. 
 
-These methods evolved considerably in subsequent decades. McLachlan's [-@McLachlan2004]] comprehensive work in the 1990s unified and extended classical discriminant analysis, incorporating robust methods. More recently, Bayesian approaches have brought new perspectives to discriminant analysis, treating group membership probabilities and model parameters as uncertain quantities to be estimated from data. These methods naturally incorporate prior information and provide full posterior distributions rather than point estimates, offering richer uncertainty quantification [@Hastie-etal-2009].
+These methods evolved considerably in subsequent decades. McLachlan's [-@McLachlan2004] comprehensive work in the 1990s unified and extended classical discriminant analysis, incorporating robust methods. More recently, Bayesian approaches have brought new perspectives to discriminant analysis, treating group membership probabilities and model parameters as uncertain quantities to be estimated from data. These methods naturally incorporate prior information and provide full posterior distributions rather than point estimates, offering richer uncertainty quantification [@Hastie-etal-2009].
 
-<!--
-were first 
-with Ronald Fisher's landmark 1936 paper, where 
-he introduced linear discriminant analysis (LDA) as a method for 
-classifying observations into predefined groups. Fisher developed this technique 
-while working on a practical problem: distinguishing between species of iris 
-flowers based on their physical measurements. His approach was elegant—finding 
-the linear combination of variables that best separated the groups 
-while minimizing within-group variation. This work laid the foundation for 
-classification methods that would become central to statistics and machine 
-learning [@Fisher1936].
---> 
 :::
 
 ::: {#exm-penguin-new}
@@ -700,6 +704,7 @@ If you recall that dimension reduction interpretation of discriminant analysis a
 observed $\mathbf{y}$s with their discriminant scores $\mathbf{z}$ with the same accuracy when there are
 only $s=2$ possible dimensions, you can do this first finding the discriminant scores, `LD1` and `LD2`
 and using those as predictors in a new call to `lda()`:
+**TODO**: `posterior` now defaults to `FALSE` so no longer needed.
 
 ```{r peng-lda2}
 peng_scored <- predict_discrim(peng.lda, 
@@ -910,7 +915,7 @@ heplot(peng.can,
        cex.lab = 1.3, cex = 1.3)
 ```
 
-## Quadratic discriminant analysis
+## Quadratic discriminant analysis {#sec-QDA}
 
 Linear discriminant analysis breaks down when the covariance matrices for the groups differ substantially. 
 In the context of MANOVA, this issue was addressed in @sec-eqcov through statistical tests and graphical
