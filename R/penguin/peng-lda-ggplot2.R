@@ -7,10 +7,11 @@ library(MASS)
 library(ggplot2)
 library(patchwork)
 library(marginaleffects)   # for datagrid
+library(candisc)           # predict_discrim
 
 data(peng, package="heplots")
 source(here::here("R/penguin/penguin-colors.R"))
-source(here::here("R/predict_discrim.R"))
+#source(here::here("R/predict_discrim.R"))
 
 peng.lda <- lda(species ~ bill_length + bill_depth + flipper_length + body_mass, 
                 data = peng)
@@ -20,6 +21,13 @@ class_table <- table(peng$species,
                      predict(peng.lda)$class,
                      dnn = c("actual", "predicted")) |>
   print()
+
+class_table <- table(
+  accuracy  = peng$species,
+  predicted = predict(peng.lda)$class) |>
+  print()
+
+
 # overall rates
 accuracy <- sum(diag(class_table))/sum(class_table) * 100
 error <- 100 - accuracy
