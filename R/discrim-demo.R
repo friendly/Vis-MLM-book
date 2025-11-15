@@ -1,13 +1,16 @@
 #' ---
 #' title: discriminant analysis demo
+#' author: Michael Friendly
 #' ---
+
+# https://gist.github.com/friendly/7cd853ced1eeae3b3a91b64205163743
 
 library(MASS)
 library(ggplot2)
-library(candisc)
+#library(candisc)
 library(dplyr)
-source(here::here("R/util/geom_means.R"))
 
+# Parameters: two groups with different means, but same covariance matrix
 set.seed(1234)
 n <- 100
 mu1 <- c(3,4)
@@ -27,6 +30,7 @@ X2 <- mvrnorm(n, mu2, Sigma) |>
 
 X <- rbind(X1, X2)
 
+# get the sample means for use in plots
 means <- X |>
   summarise(y1 = mean(y1),
             y2 = mean(y2), .by = group)
@@ -39,7 +43,9 @@ means_all <- X |>
   summarise(y1 = mean(y1),
             y2 = mean(y2))
   
-
+# --------------------------------------
+# Plot 1: scatterplot with data ellipses
+# --------------------------------------
 ggplot(data = X, 
        aes(y1, y2, 
            color = group, shape = group, fill = group)) +
@@ -74,7 +80,10 @@ ggsave("images/discrim-demo1.png",
        dpi = 200)
 
 
-# plot the densities of the discriminant scores
+# -------------------------------------------
+# plot 2 densities of the discriminant scores
+# -------------------------------------------
+
 X.lda <- lda(group ~ ., data = X)
 
 X.pred <- predict_discrim(X.lda, scores = TRUE, post=FALSE)
@@ -109,5 +118,5 @@ ggsave("images/discrim-demo2.png",
        height = 4.75, width = 15.25, units = "cm",
        dpi = 200)
 
-plot_discrim(X.lda, y2 ~ y1,
-             showgrid = "none", ellipse = TRUE) 
+# plot_discrim(X.lda, y2 ~ y1,
+#              showgrid = "none", ellipse = TRUE) 
