@@ -13,13 +13,16 @@ iris.lda
 names(iris.lda)
 
 # accuracy
-class_table <- table(iris$Species,
-                     predict(iris.lda)$class,
-                     dnn = c("actual", "predicted")) |>
+class_table <- table(
+  accuracy  = iris$Species,
+  predicted = predict(iris.lda)$class) |>
   print()
+
 acc <- sum(diag(class_table))/sum(class_table) * 100
 err <- 100 - acc
 c(accuracy = acc, error = err)
+
+
 
 #col <- scales::hue_pal()(3)
 iris.colors <- c("red", "darkgreen", "blue")
