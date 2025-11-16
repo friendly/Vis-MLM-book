@@ -259,9 +259,26 @@ as described below (@sec-discrim-MANOVA).
 It is historically relevant to illustrate some of these methods using Anderson's data on iris flowers,
 which was the inspiration for Fisher [-@Fisher1936] to construct the LDA method. The structure is similar
 to that of the penguin data, with three `Species`: _setosa_, _versicolor_, and _virginica_.
-There are also four quantitative variables to be used to classify the flowers.
+There are also four quantitative variables to be used to classify the flowers. ...
 
-<!-- fig.code: R/iris-lda-pred-new.R -->
+Fitting the LDA model to the `iris` dataset is quite simple, because the variables for petal and sepal
+lengths and widths can be specified as `.` in the model formula, `Species ~ .`
+
+```{r iris-lda}
+data(iris)
+iris.lda <- lda(Species ~ ., data = iris)
+```
+
+And, the results are simpler also. From the singular values, extracted as `iris.lda$svd`, we see that
+the first dimension, `LD1` accounts for 99.1% of the differences among the species means on these four variables.
+```{r iris-svd}
+svd <- iris.lda$svd
+100 * round(svd^2/sum(svd^2), 3) |> 
+  setNames(c("LD1", "LD2"))
+```
+
+
+<!-- fig.code: R/iris-lda-ggplot.R -->
 
 
 
@@ -273,7 +290,7 @@ their predicted `class`, obtained from the `MASS::predict.lda()` method for an `
 object:
 ```{r class-table}
 class_table <- table(
-  accuracy  = peng$species,
+  actual    = peng$species,
   predicted = predict(peng.lda)$class) |>
   print()
 
