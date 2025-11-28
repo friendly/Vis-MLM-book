@@ -14,9 +14,26 @@ library(marginaleffects)
 
 # Example data (e.g., iris dataset)
 data(iris)
-iris.lda <- lda(Species ~ Petal.Length + Petal.Width, data = iris)
+#iris.lda <- lda(Species ~ Petal.Length + Petal.Width, data = iris)
 # use all variables -- but this requires the grid account for them
 iris.lda <- lda(Species ~ ., data = iris)
+
+svd <- iris.lda$svd
+var <- 100 * round(svd^2/sum(svd^2), 3) |> setNames(c("LD1", "LD2"))
+
+class_table <- table(
+  actual    = iris$Species,
+  predicted = predict(iris.lda)$class) |>
+  print()
+
+# overall rates
+acc <- sum(diag(class_table))/sum(class_table) * 100
+err <- 100 - acc
+c(accuracy = acc, error = err)
+
+
+# weights
+iris.lda$scaling
 
 # Create a grid for prediction
 # -- vary focal variables along their range

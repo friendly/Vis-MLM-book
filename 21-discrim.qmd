@@ -194,8 +194,7 @@ The idea of classification based on multiple measurements has a long history in 
 biology, taxonomy (classifying organisms to species or varieties, based on
 morphological measurements). It arose in statistics at a time when statisticians 
 like Karl Pearson and Prasanta Mahalanobis first began to think of multivariate
-problems like principal components and multivariate distance in geometric terms, with matrix
-algebra as the handmaid to express these ideas and find solutions.
+problems like principal components [@Pearson:1901] and multivariate distance [@Mahalanobis1936] in geometric terms, with matrix algebra as a muse to express these ideas and handmaid find solutions.
 
 Ronald Fisher's landmark paper [@Fisher1936] introduced the idea of a "discriminant function",
 a weighted sum of observed measurements as a means to classifying observations into predefined groups.
@@ -203,7 +202,8 @@ His perfect test case was the now famous data collected by Edgar Anderson [@Ande
 of the Gaspé Peninsula. His elegant approach essentially involved the eigenvectors of
 what I call here $\mathbf{H} \mathbf{E}^{-1}$, representing between-group relative to within-group
 variation, as the weights to apply to the observed variables to best discriminate among the
-iris species.
+iris species. The method quickly found application in crainometry [@Fisher1936b], sex
+classification of Egyptian mandible bones [@Martin1936] ...
 
 C. R. Rao [-@Rao1948] extended Fisher's framework, introducing what would 
 become known as quadratic discriminant analysis (QDA). He relaxed Fisher's 
@@ -247,10 +247,40 @@ peng.lda <- lda(species ~ bill_length + bill_depth + flipper_length + body_mass,
                 data = peng)
 print(peng.lda, digits = 3)
 ```
-:::
 
 With $g = 3$ groups, having $\text{df}_h = 2$ degrees of freedom and $p = 4$ variables, there are only $s = 2$ discriminant dimensions. The first, `LD1` accounts for 86.6% of the total between/within variance and the second for the remaining 13.5%. LDA doesn't provide significance tests, but these are available 
 as described below (@sec-discrim-MANOVA).
+
+:::
+
+::: {#exm-penguin-new}
+**Iris flowers**
+
+It is historically relevant to illustrate some of these methods using Anderson's data on iris flowers,
+which was the inspiration for Fisher [-@Fisher1936] to construct the LDA method. The structure is similar
+to that of the penguin data, with three `Species`: _setosa_, _versicolor_, and _virginica_.
+There are also four quantitative variables to be used to classify the flowers. ...
+
+Fitting the LDA model to the `iris` dataset is quite simple, because the variables for petal and sepal
+lengths and widths can be specified as `.` in the model formula, `Species ~ .`
+
+```{r iris-lda}
+data(iris)
+iris.lda <- lda(Species ~ ., data = iris)
+```
+
+And, the results are simpler also. From the singular values, extracted as `iris.lda$svd`, we see that
+the first dimension, `LD1` accounts for 99.1% of the differences among the species means on these four variables.
+```{r iris-svd}
+svd <- iris.lda$svd
+100 * round(svd^2/sum(svd^2), 3) |> 
+  setNames(c("LD1", "LD2"))
+```
+
+
+<!-- fig.code: R/iris-lda-ggplot.R -->
+
+
 
 ## Classification accuracy
 
@@ -260,7 +290,7 @@ their predicted `class`, obtained from the `MASS::predict.lda()` method for an `
 object:
 ```{r class-table}
 class_table <- table(
-  accuracy  = peng$species,
+  actual    = peng$species,
   predicted = predict(peng.lda)$class) |>
   print()
 
@@ -564,7 +594,7 @@ peng |>
 In each pairwise plot of the penguin variables shown in @fig-peng-partimat1, the background is colored according to the species that
 any observation there (holding others constant) would be classified as. This fails in software design because there is little
 flexibility in what else is shown to represent the observations. The penguin data values are shown using the first letter of
-their species, colored black if that bird is classified correctly, `r red` otherwise.[^partimat-encoding]
+their species, colored **black** if that bird is classified correctly, `r red` otherwise.[^partimat-encoding]
 
 [^partimat-encoding]: In fairness, `klaR::partimat()` was designed to emphasize the classification accuracy shown in each pairwise plot,
 also printed as an error rate for each plot. You can see, for example that the plot of `body_mass` against `bill_depth` in row 2, column 2
