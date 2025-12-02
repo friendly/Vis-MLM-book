@@ -132,7 +132,7 @@ grid <- datagrid(LD1 = seq.range(80),
                  LD2 = seq.range(80), newdata = peng_scored) 
 
 
-pred_grid <- predict_discrim(peng.lda2, newdata = grid, posterior = FALSE) 
+pred_grid <- predict_discrim(peng.lda2, newdata = grid) 
 head(pred_grid)
 
 svd <- peng.lda$svd

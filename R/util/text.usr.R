@@ -3,13 +3,14 @@
 #' Add text to a plot at normalized device coordinates
 #' 
 #' @description
-#' text.usr draws the strings given in the vector labels at the coordinates given by \code{x} and \code{y}, 
+#' `text.usr()` draws the strings given in the vector labels at the coordinates given by \code{x} and \code{y}, 
 #' but using normalized device coordinates (0, 1) to position text at absolute locations in a plot.
-#' \code{y} may be missing since \code{\link[gfDevices]{xy.coords(x, y)}} is used for construction of the coordinates.
+#' \code{y} may be missing since \code{\link[grDevices]{xy.coords(x, y)}} is used for construction of the coordinates.
 #' 
 #' @param x,y  numeric vectors of coordinates where the text \code{labels} should be written. If the length of 
 #'        \code{x} and \code{y} differs, the shorter one is recycled.
 #' @param labels a character vector or \code{\link[base]{expression}} specifying the text to be written
+#' @param ...    other arguments passed to \code{\link[grDevices]{text}}, such as `pos`, `cex`, `col`, ...
 #' @source From \url{https://stackoverflow.com/questions/25450719/plotting-text-in-r-at-absolute-position}
 #' @export 
 #' @examples
