@@ -1,12 +1,22 @@
 # Tasks and Issues for Revisions of Book
 
+## Getting Started (original notes)
+
+Scan the contents of this project to understand the organization of the files for producing
+both an HTML and PDF version of the book. See `CLAUDE.md` at the project root for a quick-start
+summary useful for resuming work in a new session. [DONE]
+
+---
+
 ## File Organization
 
-Files that are tasks or issues have been moved here from `working-text/` and `test/`.
+Files that are tasks or issues have been moved to `issues/` from `working-text/` and `test/`.
 Reviewer comment files are prefixed `reviewer-`.
 Files whose issues are fully resolved should be moved to `issues/solved/`.
 
 ### Issues files here
+
+Some of these are old/stale/solved; review these & move to solved/ those no longer active.
 
 | File | Contents |
 |------|----------|
@@ -30,12 +40,11 @@ Files whose issues are fully resolved should be moved to `issues/solved/`.
 * **PDF build reliability**: Quarto's PDF build often fails with LaTeX errors; current workaround
   is to compile the generated `.tex` via TeXStudio. Goal: make `Build -> Render Book` work reliably.
   See `quarto-pdf-help.md` and `general-issues.md`. Key sub-issues:
-  - MikTeX vs TinyTeX conflict on Windows (both installed; Quarto prefers TinyTeX)
+  - MikTeX vs TinyTeX conflict on Windows (both installed; Quarto prefers TinyTeX) [FIXED: Now using TinyTeX]
   - See Quarto discussion: https://github.com/quarto-dev/quarto-cli/discussions/11087
   - Reference model: https://github.com/bgreenwell/quarto-crc (Quarto-CRC starter)
 
-* **Author index**: `authorindex` Perl script fails. Previously tracked in `build-problems/authorindex.md`
-  (now deleted from tree; recoverable from git history if needed).
+* **Author index**: `authorindex` Perl script fails. Tracked in `build-problems/authorindex.md`.
 
 * **Cover page**: `images/cover/cover-peng.jpg` cannot be included via Quarto front matter;
   currently added manually in Adobe Acrobat post-compile.
@@ -64,9 +73,9 @@ Files whose issues are fully resolved should be moved to `issues/solved/`.
 
 See `content-todos.md` for full list. Highlights:
 * 3D plots (rgl): data + PCA axes, regression surface, HE plot 3D
-* Discriminant analysis: classification boundary plots in data space and discriminant space
+* Discriminant analysis: classification boundary plots in data space and discriminant space [DONE: `21-discrim.qmd`, but intended to be online only]
 * Effect plots for MLM chapters
-* Robust PCA section (Ch 13/14)
+* Robust PCA section (Ch 13/14) [DONE: `14-infl-robust.qmd#sec-robust-estimation`]
 * Dominance analysis visualization (see `content-dominance-analysis.txt`)
 
 ### Priority 5: Reviewer Comments
@@ -92,8 +101,3 @@ See `content-todos.md` for full list. Highlights:
 
 ---
 
-## Getting Started (original notes)
-
-Scan the contents of this project to understand the organization of the files for producing
-both an HTML and PDF version of the book. See `CLAUDE.md` at the project root for a quick-start
-summary useful for resuming work in a new session.
