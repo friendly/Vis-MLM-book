@@ -69,6 +69,11 @@ See `issues/Tasks-Issues.md` for the full prioritized list. Top items:
 6. **Reviewer comments** — see `issues/reviewer-MichaelT-*.Rmd` and `reviews/*.pdf`
 7. **Content additions** — see `issues/content-todos.md`
 
+## Claude Memory
+
+Session context and persistent notes live in `memory/` at the project root (git-tracked).
+**Always read `memory/MEMORY.md` at the start of each session** to load prior context.
+
 ## Conventions
 
 - `\index{}` entries are being added incrementally; systematic pass still needed.
