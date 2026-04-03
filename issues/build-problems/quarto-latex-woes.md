@@ -3,8 +3,10 @@
 The book is nearly done, but I still have unresolved problems compiling the PDF version.
 
 The first thing is that when I use `Build -> Render book -> PDF format`, all the `docs/*.html` files are deleted
-along with the `.png` images under `docs/`
+along with the `.png` images under `docs/`. Also, the output files are confusingly named: `index.*` for latex-generated
+files, output to `Vis-MLM.tex`, but the PDF goes to something in Downloads.
 
+The other issues, described below have largely been **solved**. They are included here for historical purposes.
 
 ## LaTeX errors
 

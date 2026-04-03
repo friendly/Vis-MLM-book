@@ -59,7 +59,11 @@ Some of these are old/stale/solved; review these & move to solved/ those no long
   
   - Upgraded Quarto to v. 1.9.36. In `quarto.yml`, now have `book: output-file: "Vis-MLM"`. This completes, and opens
   `http://localhost:7466/web/viewer.html` in the browser. Click on Download gives `file:///C:/Users/friendly/Downloads/Vis-MLM.pdf`.
-  The Quarto-compiled TeX file is named `Vis-MLM.tex in the project root. All other artifacts of Xelatex are named `index.{aux,toc,idx,...}`
+  The Quarto-compiled TeX file is named `Vis-MLM.tex in the project root. All other artifacts of Xelatex are named `index.{aux,toc,idx,...}
+  But this run, with `Build -> PDF` also deletes all the `docs/` files for the HTML version.
+  
+  - Tried `Build -> All formats`. This finally (26 min!) opens the HTML version in the browser; looks OK. `index.*` and `Vis-MLM.tex`
+  are in the root directory, but surprisingly, no PDF. Found the PDF file in `docs/Vis-MLM.pdf`, along with all the HTML files.
   
   See `quarto-pdf-help.md` and `general-issues.md`. Key sub-issues:
   - MikTeX vs TinyTeX conflict on Windows (both installed; Quarto prefers TinyTeX) [FIXED: Now using TinyTeX]
