@@ -81,6 +81,9 @@ knit_hooks$set(output = function(x, options) {
   hook_output(x, options)
 })
 
+# Other useful hooks?
+#  See: `test/fig-cap-glue.R` for a hook to allow use of glue::glue() in figure captions
+
 
 # --------------
 # ggplot options
@@ -88,8 +91,12 @@ knit_hooks$set(output = function(x, options) {
 
 ggplot2::theme_set(ggplot2::theme_bw(base_size = 16))
 
+## TODO?
+# Define a distinctive VisMLM theme for figures??
+
 # shorthands
 
+## Could use ggguides package here?
 legend_inside <- function(position) {
   theme(legend.position = "inside",
         legend.position.inside = position)
@@ -188,13 +195,14 @@ $\\newcommand*{\\diag}[1]{\\ensuremath{\\mathrm{diag}\\, #1}}$
 }
 
 # -------------
-# packages
+# packages, datasets and functions named in the text
 # -------------
 
 # References to package inline in text
 #   Use as: `r pkg("lattice")` or `r pkg("lattice", cite=TRUE)`
 #
 #   Assumes the bibtex key will be of the form: R-package
+#   Note that the file `bib/pkgs.bib` is maintained automatically
 # * Produces appropriate markup for HTML and PDF
 # * Allows package names to be printed in color and in different font styles (bold, ital, ...)
 # 
@@ -367,7 +375,9 @@ dataset <- function(name, package=NULL) {
 ## R functions -- format the function name and produce index entries
 ## 
 ## Use as:
-##   `r func()`
+##   `r func()` e.g., `r func(lm())`
+##
+## NB: This doesn't work for function names containing "_" like `r func("stat_ellipse())` b/c LaTeX treats this as a subscript
 ##   
 func <- function(name, package=NULL, test=FALSE) {
   # handle pkg::name
