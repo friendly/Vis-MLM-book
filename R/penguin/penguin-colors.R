@@ -64,14 +64,14 @@ cols.vec <- c(oranges, purples, greens)
 
 
 (cols.mat <- 
-  matrix(cols.mat, 3, 3, 
+  matrix(cols.vec, 3, 3, 
        byrow = TRUE,
        dimnames = list(species = c("Adelie", "Chinstrap", "Gentoo"),
                        shade = c("light", "medium", "dark")))
 )
 
 # get medium colors
-cols.med <- cols.mat["medium",]
+cols.med <- cols.mat[, "medium"]
 
 # https://stackoverflow.com/questions/25726276/visualize-a-list-of-colors-palette-in-r
 library(scales)

@@ -2,10 +2,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.29">
+<meta name="generator" content="quarto-1.9.36">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <title>9&nbsp; Collinearity &amp; Ridge Regression – Visualizing Multivariate Data and Models in R</title>
 <style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -90,10 +93,10 @@ div.csl-indent {
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-0815c480559380816a4d1ea211a47e91.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-845c23b38eaddc0f92fda52bfe77a8c8.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-54ba0423ea0ae7481c4c4fc8775fd264.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-e5f3ea6630f848d5f49a84b9e9640718.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <link href="site_libs/quarto-contrib/line-highlight-1.0.0/line-highlight.css" rel="stylesheet"><script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -120,7 +123,7 @@ div.csl-indent {
     "search-submit-button-title": "Submit",
     "search-label": "Search"
   }
-}</script><script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script><script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script><script type="text/javascript">
+}</script><script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script><script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script><script type="text/javascript">
 const typesetMath = (el) => {
   if (window.MathJax) {
     // MathJax Typeset
@@ -131,7 +134,7 @@ const typesetMath = (el) => {
     var macros = [];
     for (var i = 0; i < mathElements.length; i++) {
       var texText = mathElements[i].firstChild;
-      if (mathElements[i].tagName == "SPAN") {
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
         window.katex.render(texText.data, mathElements[i], {
           displayMode: mathElements[i].classList.contains('display'),
           throwOnError: false,
@@ -440,15 +443,15 @@ window.Quarto = {
 <p><strong>Packages</strong></p>
 <p>In this chapter I use the following packages. Load them now.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb1" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://r-forge.r-project.org/projects/car/">car</a></span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/bprice2652/car_repo">car</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/friendly/VisCollin">VisCollin</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/friendly/genridge">genridge</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="http://www.stats.ox.ac.uk/pub/MASS4/">MASS</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org">dplyr</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="http://www.sthda.com/english/rpkgs/factoextra">factoextra</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/kassambara/factoextra">factoextra</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggrepel.slowkow.com/">ggrepel</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://patchwork.data-imaginist.com">patchwork</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://easystats.github.io/easystats/">easystats</a></span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://easystats.github.io/easystats/">easystats</a></span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <section id="sec-what-is-collin" class="level2" data-number="9.1"><h2 data-number="9.1" class="anchored" data-anchor-id="sec-what-is-collin">
 <span class="header-section-number">9.1</span> What is collinearity?</h2>
@@ -545,8 +548,8 @@ R file: `R/collin-data-beta.R`
 <!-- fig.code: R/collin-data-beta.R -->
 <p>First, I use <code>MASS:mvrnorm()</code> to construct a list of three data frames <code>XY</code> with the same means and standard deviations, but with different correlations. In each case, the variable <span class="math inline">\(y\)</span> is generated with true coefficients <code>beta</code> <span class="math inline">\(=(3, 3)\)</span>, and the fitted model for that value of <code>rho</code> is added to a corresponding list of models, <code>mods</code>.</p>
 <div class="cell" data-layout-align="center">
-<details open="" class="code-fold"><summary>Code</summary><div class="sourceCode" id="cb2" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="http://www.stats.ox.ac.uk/pub/MASS4/">MASS</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://r-forge.r-project.org/projects/car/">car</a></span><span class="op">)</span></span>
+<details open="" class="code-fold"><summary>Code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="http://www.stats.ox.ac.uk/pub/MASS4/">MASS</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/bprice2652/car_repo">car</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">421</span><span class="op">)</span>            <span class="co"># reproducibility</span></span>
 <span><span class="va">N</span> <span class="op">&lt;-</span> <span class="fl">200</span>                 <span class="co"># sample size</span></span>
@@ -574,22 +577,22 @@ R file: `R/collin-data-beta.R`
 <span></span>
 <span>  <span class="va">XY</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span><span class="va">X</span>, y<span class="op">=</span><span class="va">y</span><span class="op">)</span></span>
 <span>  <span class="va">mods</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">x1</span> <span class="op">+</span> <span class="va">x2</span>, data<span class="op">=</span><span class="va">XY</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
-<span><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <p>The estimated coefficients can then be extracted using <code><a href="https://rdrr.io/r/stats/coef.html">coef()</a></code> applied to each model:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb3" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">coefs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="va">coef</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">coefs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="va">coef</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">coefs</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"mod"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">3</span>, <span class="st">" (rho="</span>, <span class="va">rho</span>, <span class="st">")"</span><span class="op">)</span></span>
 <span><span class="va">coefs</span></span>
 <span><span class="co">#             mod1 (rho=0) mod2 (rho=0.8) mod3 (rho=0.97)</span></span>
 <span><span class="co"># (Intercept)         1.01        -0.0535           0.141</span></span>
 <span><span class="co"># x1                  3.18         3.4719           3.053</span></span>
-<span><span class="co"># x2                  1.68         2.9734           2.059</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co"># x2                  1.68         2.9734           2.059</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Then, I define a function to plot the data ellipse (<code><a href="https://rdrr.io/pkg/car/man/Ellipses.html">car::dataEllipse()</a></code>) for each data frame and confidence ellipse (<code><a href="https://rdrr.io/pkg/car/man/Ellipses.html">car::confidenceEllipse()</a></code>) for the coefficients in the corresponding fitted model. In the plots in <a href="#fig-collin-data-beta" class="quarto-xref">Figure&nbsp;<span>9.4</span></a>, I specify the x, y limits for each plot so that the relative sizes of these ellipses are comparable, so that variance inflation can be assessed visually.</p>
 <div class="cell" data-layout-align="center">
-<details open="" class="code-fold"><summary>Code</summary><div class="sourceCode" id="cb4" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">do_plots</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">XY</span>, <span class="va">mod</span>, <span class="va">r</span><span class="op">)</span> <span class="op">{</span></span>
+<details open="" class="code-fold"><summary>Code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">do_plots</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">XY</span>, <span class="va">mod</span>, <span class="va">r</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">X</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span><span class="op">(</span><span class="va">XY</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/car/man/Ellipses.html">dataEllipse</a></span><span class="op">(</span><span class="va">X</span>,</span>
 <span>    levels<span class="op">=</span> <span class="fl">0.95</span>,</span>
@@ -617,7 +620,7 @@ R file: `R/collin-data-beta.R`
 <span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_along</a></span><span class="op">(</span><span class="va">rho</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu">do_plots</span><span class="op">(</span><span class="va">XY</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span>, <span class="va">mods</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span>, <span class="va">rho</span><span class="op">[</span><span class="va">i</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html">par</a></span><span class="op">(</span><span class="va">op</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html">par</a></span><span class="op">(</span><span class="va">op</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div id="fig-collin-data-beta" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-collin-data-beta-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -650,7 +653,7 @@ s^2 (\widehat{b_j}) = \frac{MSE}{(n-1) \; s^2(x_j)} \; \times \; \left[ \frac{1}
 \]</span> In practice, it is often easier to think in terms of the square root, <span class="math inline">\(\sqrt{\text{VIF}_j}\)</span> as the multiplier of the standard errors. The denominator, <span class="math inline">\(1-R^2_{j | \text{others}}\)</span> is sometimes called <strong>tolerance</strong>, a term I don’t find particularly useful, but it is just the proportion of the variance of <span class="math inline">\(x_j\)</span> that is <em>not</em> explainable from the others.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p>
 <p>For the cases shown in <a href="#fig-collin-data-beta" class="quarto-xref">Figure&nbsp;<span>9.4</span></a> the VIFs and their square roots are:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb5" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">vifs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="fu">car</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/car/man/vif.html">vif</a></span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">vifs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span><span class="op">(</span><span class="va">mods</span>, <span class="fu">car</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/car/man/vif.html">vif</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">vifs</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="st">"rho:"</span>, <span class="va">rho</span><span class="op">)</span></span>
 <span><span class="va">vifs</span></span>
 <span><span class="co">#    rho: 0 rho: 0.8 rho: 0.97</span></span>
@@ -660,7 +663,7 @@ s^2 (\widehat{b_j}) = \frac{MSE}{(n-1) \; s^2(x_j)} \; \times \; \left[ \frac{1}
 <span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">sqrt</a></span><span class="op">(</span><span class="va">vifs</span><span class="op">)</span></span>
 <span><span class="co">#    rho: 0 rho: 0.8 rho: 0.97</span></span>
 <span><span class="co"># x1      1     1.76      4.31</span></span>
-<span><span class="co"># x2      1     1.76      4.31</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co"># x2      1     1.76      4.31</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <section id="generalized-vif" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="generalized-vif">Generalized VIF</h4>
 <p>Note that when there are terms in the model with more than one degree of freedom, such as education with four levels (and hence 3 df) or a polynomial term specified as <code>poly(age, 3)</code>, that variable, education or age is represented by <em>three separate</em> <span class="math inline">\(x\)</span>s in the model matrix, and the standard VIF calculation gives results that vary with how those terms are coded in the model.</p>
@@ -670,7 +673,7 @@ s^2 (\widehat{b_j}) = \frac{MSE}{(n-1) \; s^2(x_j)} \; \times \; \left[ \frac{1}
 <!-- **TODO**: Use `performance::check_collinearity` and `plot()` method here -->
 <p>This example uses the <code>cars</code> dataset in the <code>VisCollin</code> package which contains various measures of size and performance on 406 models of automobiles from 1982. Interest is focused on predicting gas mileage, <code>mpg</code>.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb6" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">cars</span>, package <span class="op">=</span> <span class="st">"VisCollin"</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">cars</span>, package <span class="op">=</span> <span class="st">"VisCollin"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span><span class="op">(</span><span class="va">cars</span><span class="op">)</span></span>
 <span><span class="co"># 'data.frame': 406 obs. of  10 variables:</span></span>
 <span><span class="co">#  $ make    : Factor w/ 30 levels "amc","audi","bmw",..: 6 4 22 1 12 12 6 22 23 1 ...</span></span>
@@ -682,11 +685,11 @@ s^2 (\widehat{b_j}) = \frac{MSE}{(n-1) \; s^2(x_j)} \; \times \; \left[ \frac{1}
 <span><span class="co">#  $ weight  : int  3504 3693 3436 3433 3449 4341 4354 4312 4425 3850 ...</span></span>
 <span><span class="co">#  $ accel   : num  12 11.5 11 12 10.5 10 9 8.5 10 8.5 ...</span></span>
 <span><span class="co">#  $ year    : int  70 70 70 70 70 70 70 70 70 70 ...</span></span>
-<span><span class="co">#  $ origin  : Factor w/ 3 levels "Amer","Eur","Japan": 1 1 1 1 1 1 1 1 1 1 ...</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#  $ origin  : Factor w/ 3 levels "Amer","Eur","Japan": 1 1 1 1 1 1 1 1 1 1 ...</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>We fit a model predicting gas mileage (<code>mpg</code>) from the number of cylinders, engine displacement, horsepower, weight, time to accelerate from 0 – 60 mph and model year (1970–1982). Perhaps surprisingly, only <code>weight</code> and <code>year</code> appear to significantly predict gas mileage. What’s going on here?</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb7" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cars.mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span> <span class="op">(</span><span class="va">mpg</span> <span class="op">~</span> <span class="va">cylinder</span> <span class="op">+</span> <span class="va">engine</span> <span class="op">+</span> <span class="va">horse</span> <span class="op">+</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cars.mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span> <span class="op">(</span><span class="va">mpg</span> <span class="op">~</span> <span class="va">cylinder</span> <span class="op">+</span> <span class="va">engine</span> <span class="op">+</span> <span class="va">horse</span> <span class="op">+</span> </span>
 <span>                      <span class="va">weight</span> <span class="op">+</span> <span class="va">accel</span> <span class="op">+</span> <span class="va">year</span>, </span>
 <span>                data<span class="op">=</span><span class="va">cars</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova</a></span><span class="op">(</span><span class="va">cars.mod</span><span class="op">)</span></span>
@@ -702,22 +705,22 @@ s^2 (\widehat{b_j}) = \frac{MSE}{(n-1) \; s^2(x_j)} \; \times \; \left[ \frac{1}
 <span><span class="co"># year        2419   1  204.99 &lt;2e-16 ***</span></span>
 <span><span class="co"># Residuals   4543 385                   </span></span>
 <span><span class="co"># ---</span></span>
-<span><span class="co"># Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co"># Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>We check the variance inflation factors, using <code><a href="https://rdrr.io/pkg/car/man/vif.html">car::vif()</a></code>. We see that most predictors have very high VIFs, indicating moderately severe multicollinearity.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb8" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/car/man/vif.html">vif</a></span><span class="op">(</span><span class="va">cars.mod</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/car/man/vif.html">vif</a></span><span class="op">(</span><span class="va">cars.mod</span><span class="op">)</span></span>
 <span><span class="co"># cylinder   engine    horse   weight    accel     year </span></span>
 <span><span class="co">#    10.63    19.64     9.40    10.73     2.63     1.24</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">sqrt</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/car/man/vif.html">vif</a></span><span class="op">(</span><span class="va">cars.mod</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co"># cylinder   engine    horse   weight    accel     year </span></span>
-<span><span class="co">#     3.26     4.43     3.07     3.28     1.62     1.12</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#     3.26     4.43     3.07     3.28     1.62     1.12</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>According to <span class="math inline">\(\sqrt{\text{VIF}}\)</span>, the standard error of <code>cylinder</code> has been multiplied by <span class="math inline">\(\sqrt{10.63} = 3.26\)</span> and it’s <span class="math inline">\(t\)</span>-value is divided by this number, compared with the case when all predictors are uncorrelated. <code>engine</code>, <code>horse</code> and <code>weight</code> suffer a similar fate.</p>
 <p>If we also included the factor <code>origin</code> in the models, we would get the generalized GVIF:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb9" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cars.mod2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span> <span class="op">(</span><span class="va">mpg</span> <span class="op">~</span> <span class="va">cylinder</span> <span class="op">+</span> <span class="va">engine</span> <span class="op">+</span> <span class="va">horse</span> <span class="op">+</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cars.mod2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span> <span class="op">(</span><span class="va">mpg</span> <span class="op">~</span> <span class="va">cylinder</span> <span class="op">+</span> <span class="va">engine</span> <span class="op">+</span> <span class="va">horse</span> <span class="op">+</span> </span>
 <span>                       <span class="va">weight</span> <span class="op">+</span> <span class="va">accel</span> <span class="op">+</span> <span class="va">year</span> <span class="op">+</span> <span class="va">origin</span>, </span>
 <span>                 data<span class="op">=</span><span class="va">cars</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/car/man/vif.html">vif</a></span><span class="op">(</span><span class="va">cars.mod2</span><span class="op">)</span></span>
@@ -728,7 +731,7 @@ s^2 (\widehat{b_j}) = \frac{MSE}{(n-1) \; s^2(x_j)} \; \times \; \left[ \frac{1}
 <span><span class="co"># weight   11.07  1            3.33</span></span>
 <span><span class="co"># accel     2.63  1            1.62</span></span>
 <span><span class="co"># year      1.30  1            1.14</span></span>
-<span><span class="co"># origin    2.10  2            1.20</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co"># origin    2.10  2            1.20</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 <div class="callout callout-style-default callout-tip callout-titled" title="Connection with inverse of correlation matrix">
@@ -737,7 +740,7 @@ s^2 (\widehat{b_j}) = \frac{MSE}{(n-1) \; s^2(x_j)} \; \times \; \left[ \frac{1}
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Connection with inverse of correlation matrix
+<span class="screen-reader-only">Tip</span>Connection with inverse of correlation matrix
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -752,11 +755,11 @@ Connection with inverse of correlation matrix
 <span class="header-section-number">9.2.2</span> VIF displays</h3>
 <p>Beyond the console output from <code><a href="https://rdrr.io/pkg/car/man/vif.html">car::vif()</a></code>, the <span style="color: brown;"><strong>easystats</strong></span> suite of packages has some useful functions for displaying VIFs in helpful tables and plots. <code><a href="https://easystats.github.io/performance/reference/check_collinearity.html">performance::check_collinearity()</a></code> calculates VIFs and their standard errors and returns a <code>"check_collinearity"</code> data frame. The plot method for this uses a log scale for VIF because it is <em>multiples</em> of variance that matter here. It uses intervals of <span style="color: darkgreen;">1-5</span>, <span style="color: blue;">5-10</span>, <span style="color: red;">10+</span> to highlight <span style="color: darkgreen;">low</span>, <span style="color: blue;">medium</span> and <span style="color: red;">high</span> variance inflation with colored backgrounds.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb10" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cars.collin</span> <span class="op">&lt;-</span> <span class="fu">check_collinearity</span><span class="op">(</span><span class="va">cars.mod</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cars.collin</span> <span class="op">&lt;-</span> <span class="fu">check_collinearity</span><span class="op">(</span><span class="va">cars.mod</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">cars.collin</span>, </span>
 <span>     linewidth <span class="op">=</span> <span class="fl">1.1</span>,</span>
-<span>     size_point <span class="op">=</span> <span class="fl">5</span>, size_title <span class="op">=</span> <span class="fl">16</span>, base_size <span class="op">=</span> <span class="fl">14</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>     size_point <span class="op">=</span> <span class="fl">5</span>, size_title <span class="op">=</span> <span class="fl">16</span>, base_size <span class="op">=</span> <span class="fl">14</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div id="fig-cars-check-collin" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-cars-check-collin-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -804,7 +807,7 @@ Figure&nbsp;9.5: Variance inflation plot. VIF is plotted on a log scale. Colored
 </ul>
 <p>These measures can be calculated using <code><a href="https://rdrr.io/pkg/VisCollin/man/colldiag.html">VisCollin::colldiag()</a></code>. For the current model, the usual display contains both the condition indices and variance proportions. However, even for a small example, it is often difficult to know what numbers to pay attention to.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb11" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="op">(</span><span class="va">cd</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/VisCollin/man/colldiag.html">colldiag</a></span><span class="op">(</span><span class="va">cars.mod</span>, center<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="op">(</span><span class="va">cd</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/VisCollin/man/colldiag.html">colldiag</a></span><span class="op">(</span><span class="va">cars.mod</span>, center<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co"># Condition</span></span>
 <span><span class="co"># Index Variance Decomposition Proportions</span></span>
 <span><span class="co">#           cylinder engine horse weight accel year </span></span>
@@ -813,11 +816,11 @@ Figure&nbsp;9.5: Variance inflation plot. VIF is plotted on a log scale. Colored
 <span><span class="co"># 3   2.515 0.004    0.001  0.002 0.010  0.423 0.142</span></span>
 <span><span class="co"># 4   5.660 0.309    0.014  0.306 0.087  0.063 0.005</span></span>
 <span><span class="co"># 5   8.342 0.115    0.000  0.654 0.715  0.469 0.052</span></span>
-<span><span class="co"># 6  10.818 0.563    0.981  0.032 0.176  0.013 0.004</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co"># 6  10.818 0.563    0.981  0.032 0.176  0.013 0.004</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p><span class="citation" data-cites="Belsley:91a">Belsley (<a href="95-references.html#ref-Belsley:91a" role="doc-biblioref">1991</a>)</span> recommends that the sources of collinearity be diagnosed (a) only for those components with large <span class="math inline">\(\kappa_j\)</span>, and (b) for those components for which the variance proportion is large (say, <span class="math inline">\(\ge 0.5\)</span>) on <em>two</em> or more predictors. The print method for <code>"colldiag"</code> objects has a <code>fuzz</code> argument controlling this. The <code>descending = TRUE</code> argument puts the rows with the largest condition indices at the top.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb12" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">cd</span>, fuzz <span class="op">=</span> <span class="fl">0.5</span>, descending <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">cd</span>, fuzz <span class="op">=</span> <span class="fl">0.5</span>, descending <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co"># Condition</span></span>
 <span><span class="co"># Index Variance Decomposition Proportions</span></span>
 <span><span class="co">#           cylinder engine horse weight accel year </span></span>
@@ -826,7 +829,7 @@ Figure&nbsp;9.5: Variance inflation plot. VIF is plotted on a log scale. Colored
 <span><span class="co"># 3   2.515  .        .      .     .      .     .   </span></span>
 <span><span class="co"># 4   5.660  .        .      .     .      .     .   </span></span>
 <span><span class="co"># 5   8.342  .        .     0.654 0.715   .     .   </span></span>
-<span><span class="co"># 6  10.818 0.563    0.981   .     .      .     .</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co"># 6  10.818 0.563    0.981   .     .      .     .</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The Waldo mystery is nearly solved, if you can read that table with these recommendations in mind. There are two nearly collinear relations among the predictors, corresponding to the two smallest dimensions with largest condition indices.</p>
 <ul>
@@ -849,8 +852,8 @@ Figure&nbsp;9.5: Variance inflation plot. VIF is plotted on a log scale. Colored
 <!-- ::: -->
 <!-- fig.code: R/cars-colldiag.R -->
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb13" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/VisCollin/man/tableplot.html">tableplot</a></span><span class="op">(</span><span class="va">cd</span>, title <span class="op">=</span> <span class="st">"Tableplot of cars data"</span>, </span>
-<span>          cond.max <span class="op">=</span> <span class="fl">30</span> <span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/VisCollin/man/tableplot.html">tableplot</a></span><span class="op">(</span><span class="va">cd</span>, title <span class="op">=</span> <span class="st">"Tableplot of cars data"</span>, </span>
+<span>          cond.max <span class="op">=</span> <span class="fl">30</span> <span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div id="fig-cars-tableplot" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-cars-tableplot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -869,7 +872,7 @@ Figure&nbsp;9.6: <strong>Tableplot</strong> of condition indices and variance pr
 <p>A standard biplot <span class="citation" data-cites="Gabriel:71 GowerHand:96">(<a href="95-references.html#ref-Gabriel:71" role="doc-biblioref">Gabriel, 1971</a>; <a href="95-references.html#ref-GowerHand:96" role="doc-biblioref">Gower &amp; Hand, 1996</a>)</span> showing the 2 (or 3) largest dimensions in the data is what we usually want to use. By projecting multivariate data into a low-D space, we can see the main variation in the data an how this related to the variables.</p>
 <p>However the standard biplot of the largest dimensions is less useful for visualizing the relations among the predictors that lead to nearly collinear relations. Instead, biplots of the <strong>smallest dimensions</strong> show these relations directly, and can show other features of the data as well, such as outliers and leverage points. I use <code>prcomp(X, scale.=TRUE)</code> to obtain the PCA of the correlation matrix of the predictors in the <code>cars</code> dataset:</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb14" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cars.X</span> <span class="op">&lt;-</span> <span class="va">cars</span> <span class="op">|&gt;</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cars.X</span> <span class="op">&lt;-</span> <span class="va">cars</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/MASS/man/lm.ridge.html">select</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/where.html">where</a></span><span class="op">(</span><span class="va">is.numeric</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/MASS/man/lm.ridge.html">select</a></span><span class="op">(</span><span class="op">-</span><span class="va">mpg</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/drop_na.html">drop_na</a></span><span class="op">(</span><span class="op">)</span></span>
@@ -885,12 +888,12 @@ Figure&nbsp;9.6: <strong>Tableplot</strong> of condition indices and variance pr
 <span><span class="co"># horse    -0.462 -0.0177 -0.123  0.620 -0.6123 -0.1067</span></span>
 <span><span class="co"># weight   -0.444 -0.2598  0.278  0.350  0.6860 -0.2539</span></span>
 <span><span class="co"># accel     0.330 -0.2098  0.865  0.143 -0.2774  0.0337</span></span>
-<span><span class="co"># year      0.237 -0.9092 -0.335  0.025 -0.0624  0.0142</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co"># year      0.237 -0.9092 -0.335  0.025 -0.0624  0.0142</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The standard deviations above are the square roots <span class="math inline">\(\sqrt{\lambda_j}\)</span> of the eigenvalues of the correlation matrix; these are returned in the <code>sdev</code> component of the <code>"prcomp"</code> object. The eigenvectors are returned in the <code>rotation</code> component. Their orientations are arbitrary and can be reversed for ease of interpretation. Because we are interested in seeing the <em>relative magnitude</em> of variable vectors, we are also free to multiply them all by any constant to make them to zoom in or out, making them more visible in relation to the scores for the cars.</p>
 <p>I use <code><a href="https://rdrr.io/pkg/factoextra/man/fviz_pca.html">factoextra::fviz_pca_biplot()</a></code> for the biplot in <a href="#fig-cars-collin-biplot" class="quarto-xref">Figure&nbsp;<span>9.7</span></a> because I want to illustrate identification of noteworthy points with <code><a href="https://ggrepel.slowkow.com/reference/geom_text_repel.html">geom_text_repel()</a></code>.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb15" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cars.pca</span><span class="op">$</span><span class="va">rotation</span> <span class="op">&lt;-</span> <span class="op">-</span><span class="fl">2.5</span> <span class="op">*</span> <span class="va">cars.pca</span><span class="op">$</span><span class="va">rotation</span>    <span class="co"># reflect &amp; scale var vectors</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cars.pca</span><span class="op">$</span><span class="va">rotation</span> <span class="op">&lt;-</span> <span class="op">-</span><span class="fl">2.5</span> <span class="op">*</span> <span class="va">cars.pca</span><span class="op">$</span><span class="va">rotation</span>    <span class="co"># reflect &amp; scale var vectors</span></span>
 <span></span>
 <span><span class="va">ggp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/factoextra/man/fviz_pca.html">fviz_pca_biplot</a></span><span class="op">(</span></span>
 <span>  <span class="va">cars.pca</span>,</span>
@@ -914,7 +917,7 @@ Figure&nbsp;9.6: <strong>Tableplot</strong> of condition indices and variance pr
 <span>                    y <span class="op">=</span> <span class="va">PC5</span>,</span>
 <span>                    label <span class="op">=</span> <span class="va">name</span><span class="op">)</span>,</span>
 <span>                vjust <span class="op">=</span> <span class="op">-</span><span class="fl">0.5</span>,</span>
-<span>                size <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>                size <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div id="fig-cars-collin-biplot" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-cars-collin-biplot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -964,7 +967,7 @@ Figure&nbsp;9.7: <strong>Collinearity biplot</strong> of the Cars data, showing 
 <!-- fig.code-code: R/collin-centering.R -->
 <p>To illustrate the effect of centering a predictor in a polynomial model, I generate data with a perfect quadratic relationship, <span class="math inline">\(y = x^2\)</span> and consider the correlations of <span class="math inline">\(y\)</span> with <span class="math inline">\(x\)</span> and with <span class="math inline">\((x - \bar{x})^2\)</span>. The correlation of <span class="math inline">\(y\)</span> with <span class="math inline">\(x\)</span> is 0.97, while the correlation of <span class="math inline">\(y\)</span> with <span class="math inline">\((x - \bar{x})^2\)</span> is zero.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb16" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fl">1</span><span class="op">:</span><span class="fl">20</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fl">1</span><span class="op">:</span><span class="fl">20</span></span>
 <span><span class="va">y1</span> <span class="op">&lt;-</span> <span class="va">x</span><span class="op">^</span><span class="fl">2</span></span>
 <span><span class="va">y2</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="va">x</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span></span>
 <span><span class="va">XY</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">y1</span>, <span class="va">y2</span><span class="op">)</span></span>
@@ -973,11 +976,11 @@ Figure&nbsp;9.7: <strong>Collinearity biplot</strong> of the Cars data, showing 
 <span><span class="co">#        x    y1    y2</span></span>
 <span><span class="co"># x  1.000 0.971 0.000</span></span>
 <span><span class="co"># y1 0.971 1.000 0.238</span></span>
-<span><span class="co"># y2 0.000 0.238 1.000</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co"># y2 0.000 0.238 1.000</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The effect of centering here is remove the linear association in what is a purely quadratic relationship. This can be seen in <a href="#fig-collin-centering" class="quarto-xref">Figure&nbsp;<span>9.8</span></a> by plotting <code>y1</code> and <code>y2</code> against <code>x</code>.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb17" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">r1</span> <span class="op">&lt;-</span> <span class="va">R</span><span class="op">[</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">]</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">r1</span> <span class="op">&lt;-</span> <span class="va">R</span><span class="op">[</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">]</span></span>
 <span><span class="va">r2</span> <span class="op">&lt;-</span> <span class="va">R</span><span class="op">[</span><span class="fl">1</span>, <span class="fl">3</span><span class="op">]</span></span>
 <span></span>
 <span><span class="va">gg1</span> <span class="op">&lt;-</span></span>
@@ -1000,7 +1003,7 @@ Figure&nbsp;9.7: <strong>Collinearity biplot</strong> of the Cars data, showing 
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/annotate.html">annotate</a></span><span class="op">(</span><span class="st">"text"</span>, x <span class="op">=</span> <span class="fl">5</span>, y <span class="op">=</span> <span class="fl">80</span>, size <span class="op">=</span> <span class="fl">6</span>,</span>
 <span>           label <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="st">"X Centered\nr ="</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">r2</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">gg1</span> <span class="op">+</span> <span class="va">gg2</span>         <span class="co"># show plots side-by-side</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="va">gg1</span> <span class="op">+</span> <span class="va">gg2</span>         <span class="co"># show plots side-by-side</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div id="fig-collin-centering" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-collin-centering-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -1015,15 +1018,15 @@ Figure&nbsp;9.8: Centering a predictor removes the nessessary correlation in a q
 <p><strong>Interpretation</strong></p>
 <p>Centering of predictors has an added benefit: the fitted coefficients are <strong>easier to interpret</strong>*, particularly the intercept in this example. In the left panel of <a href="#fig-collin-centering" class="quarto-xref">Figure&nbsp;<span>9.8</span></a>, the fitted <span style="color: blue;">blue</span> line has an intercept of -77 and slope of 21. But <code>x = 0</code> is outside the range of the data and it is hard to understand what -77 means.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb18" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">y1</span> <span class="op">~</span> <span class="va">x</span>, data <span class="op">=</span> <span class="va">XY</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">y1</span> <span class="op">~</span> <span class="va">x</span>, data <span class="op">=</span> <span class="va">XY</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co"># (Intercept)           x </span></span>
-<span><span class="co">#         -77          21</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#         -77          21</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Contrast this with the coefficients for the model using the centered <code>x</code> and shown by the <span style="color: blue;">blue</span> line in the right panel. The slope of the line is clearly zero and the intercept 33.25 is the average value of y.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb19" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">y2</span> <span class="op">~</span> <span class="va">x</span>, data <span class="op">=</span> <span class="va">XY</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/zapsmall.html">zapsmall</a></span><span class="op">(</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">y2</span> <span class="op">~</span> <span class="va">x</span>, data <span class="op">=</span> <span class="va">XY</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/zapsmall.html">zapsmall</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co"># (Intercept)           x </span></span>
-<span><span class="co">#        33.3         0.0</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#        33.3         0.0</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>This ease of interpretation is more pronounced in polynomial models. For example, in the quadratic model <span class="math inline">\(y = \beta_0 + \beta_1 x + \beta_2 x^2\)</span> with <span class="math inline">\(x\)</span> uncentered, the slope coefficient <span class="math inline">\(\beta_1\)</span> gives the slope of the curve at the value <span class="math inline">\(x = 0\)</span>, which may be well-outside the range of data. With a centered predictor <span class="math inline">\(x^\star = x - \bar{x}\)</span>, the analogous coefficient <span class="math inline">\(\beta_1^\star\)</span> in the model <span class="math inline">\(y = \beta_0^\star + \beta_1^\star x^\star + \beta_2^\star (x^\star)^2\)</span> is gives the slope at the mean value of <span class="math inline">\(x\)</span>.</p>
 </div>
@@ -1031,12 +1034,12 @@ Figure&nbsp;9.8: Centering a predictor removes the nessessary correlation in a q
 <div id="exm-interactions" class="theorem example">
 <p><span class="theorem-title"><strong>Example 9.3</strong></span> <strong>Interactions and response surface models</strong></p>
 <p>Centering of numeric predictors becomes even more important in polynomial models that also include interaction effects, such as response surface models this include all quadratic terms of the predictors and all possible pairwise interactions. The simple notation in an R formula<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a> is <code>y ~ (x1 + x2 + ...)^2</code>. Spelled out for two predictors with uncentered <code>x1</code> and <code>x2</code>, this would be:</p>
-<div class="sourceCode" id="cb20" data-code-line-numbers=""><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">y</span> <span class="op">~</span> <span class="va">x1</span> <span class="op">+</span> <span class="va">x2</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html">I</a></span><span class="op">(</span><span class="va">x1</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html">I</a></span><span class="op">(</span><span class="va">x2</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span><span class="op">+</span> <span class="va">x1</span><span class="op">:</span><span class="va">x2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20" data-code-line-numbers=""><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">y</span> <span class="op">~</span> <span class="va">x1</span> <span class="op">+</span> <span class="va">x2</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html">I</a></span><span class="op">(</span><span class="va">x1</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html">I</a></span><span class="op">(</span><span class="va">x2</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span><span class="op">+</span> <span class="va">x1</span><span class="op">:</span><span class="va">x2</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Here, the product term is necessarily correlated with each of the predictors involved. This gives more opportunities for collinearity and more places for Waldo to hide.</p>
 <p>To illustrate, I use the the <code><a href="https://friendly.github.io/genridge/reference/Acetylene.html">genridge::Acetylene</a></code> dataset, which gives results from a manufacturing experiment to study the <code>yield</code> of acetylene in relation to reactor temperature (<code>temp</code>), the <code>ratio</code> of two components and the contact <code>time</code> in the reactor. A naive response surface model might suggest that yield is quadratic in time and there are potential interactions among all pairs of predictors. Without centering <code>time</code> the quadratic effect is fit as a term <code>I(time^2)</code>, which simply squares the value of time.<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a></p>
 <!-- fig.code: R/acetlyne-colldiag.R -->
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb21" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">Acetylene</span>, package <span class="op">=</span> <span class="st">"genridge"</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">Acetylene</span>, package <span class="op">=</span> <span class="st">"genridge"</span><span class="op">)</span></span>
 <span><span class="va">acetyl.mod0</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span></span>
 <span>  <span class="va">yield</span> <span class="op">~</span> <span class="va">temp</span> <span class="op">+</span> <span class="va">ratio</span> <span class="op">+</span> <span class="va">time</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html">I</a></span><span class="op">(</span><span class="va">time</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>          <span class="va">temp</span><span class="op">:</span><span class="va">time</span> <span class="op">+</span> <span class="va">temp</span><span class="op">:</span><span class="va">ratio</span> <span class="op">+</span> <span class="va">time</span><span class="op">:</span><span class="va">ratio</span>,</span>
@@ -1046,11 +1049,11 @@ Figure&nbsp;9.8: Centering a predictor removes the nessessary correlation in a q
 <span><span class="co">#       temp      ratio       time  I(time^2)  temp:time temp:ratio </span></span>
 <span><span class="co">#        383      10555      18080        564       9719       9693 </span></span>
 <span><span class="co"># ratio:time </span></span>
-<span><span class="co">#        225</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#        225</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>These results are horrible! How much does centering help? I first center all three predictors and then use <code><a href="https://rdrr.io/r/stats/update.html">update()</a></code> to re-fit the same model using the centered data.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb22" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">Acetylene.centered</span> <span class="op">&lt;-</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">Acetylene.centered</span> <span class="op">&lt;-</span></span>
 <span>  <span class="va">Acetylene</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>temp <span class="op">=</span> <span class="va">temp</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">temp</span><span class="op">)</span>,</span>
 <span>         time <span class="op">=</span> <span class="va">time</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">time</span><span class="op">)</span>,</span>
@@ -1063,19 +1066,19 @@ Figure&nbsp;9.8: Centering a predictor removes the nessessary correlation in a q
 <span><span class="co">#       temp      ratio       time  I(time^2)  temp:time temp:ratio </span></span>
 <span><span class="co">#      57.09       1.09      81.57      51.49      44.67      30.69 </span></span>
 <span><span class="co"># ratio:time </span></span>
-<span><span class="co">#      33.33</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#      33.33</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>This is far better, although still not great in terms of VIF. But, how much have we improved the situation by the simple act of centering the predictors? The square roots of the ratios of VIFs tell us the impact of centering on the standard errors.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb23" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">sqrt</a></span><span class="op">(</span><span class="va">acetyl.vif0</span> <span class="op">/</span> <span class="va">acetyl.vif1</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">sqrt</a></span><span class="op">(</span><span class="va">acetyl.vif0</span> <span class="op">/</span> <span class="va">acetyl.vif1</span><span class="op">)</span></span>
 <span><span class="co">#       temp      ratio       time  I(time^2)  temp:time temp:ratio </span></span>
 <span><span class="co">#       2.59      98.24      14.89       3.31      14.75      17.77 </span></span>
 <span><span class="co"># ratio:time </span></span>
-<span><span class="co">#       2.60</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#       2.60</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Finally, I use <code>poly(time, 2)</code> in the model for the centered data. Because this polynomial term has 2 degree of freedom, <code><a href="https://rdrr.io/pkg/car/man/vif.html">car::vif()</a></code> calculates GVIFs here. The final column gives <span class="math inline">\(\sqrt{\text{GVIF}^{1/2 \text{df}}}\)</span>, the remaining effect of collinearity on the standard errors of terms in this model.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb24" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">acetyl.mod2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">yield</span> <span class="op">~</span> <span class="va">temp</span> <span class="op">+</span> <span class="va">ratio</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/poly.html">poly</a></span><span class="op">(</span><span class="va">time</span>, <span class="fl">2</span><span class="op">)</span> <span class="op">+</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb24" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">acetyl.mod2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">yield</span> <span class="op">~</span> <span class="va">temp</span> <span class="op">+</span> <span class="va">ratio</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/poly.html">poly</a></span><span class="op">(</span><span class="va">time</span>, <span class="fl">2</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>                          <span class="va">temp</span><span class="op">:</span><span class="va">time</span> <span class="op">+</span> <span class="va">temp</span><span class="op">:</span><span class="va">ratio</span> <span class="op">+</span> <span class="va">time</span><span class="op">:</span><span class="va">ratio</span>,</span>
 <span>                  data<span class="op">=</span><span class="va">Acetylene.centered</span><span class="op">)</span></span>
 <span></span>
@@ -1086,7 +1089,7 @@ Figure&nbsp;9.8: Centering a predictor removes the nessessary correlation in a q
 <span><span class="co"># poly(time, 2) 1733.56  2            6.45</span></span>
 <span><span class="co"># temp:time       44.67  1            6.68</span></span>
 <span><span class="co"># temp:ratio      30.69  1            5.54</span></span>
-<span><span class="co"># ratio:time      33.33  1            5.77</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co"># ratio:time      33.33  1            5.77</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 </section><section id="sec-ridge" class="level2" data-number="9.6"><h2 data-number="9.6" class="anchored" data-anchor-id="sec-ridge">
@@ -1192,7 +1195,7 @@ Figure&nbsp;9.9: Geometric interpretation of ridge regression, using elliptical 
 <!-- fig.code: taken from genridge  README.Rmd -->
 <!-- fig.code: R/genridge-longley-figs1.R -->
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb25" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">longley</span>, package<span class="op">=</span><span class="st">"datasets"</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb25" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">longley</span>, package<span class="op">=</span><span class="st">"datasets"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/str.html">str</a></span><span class="op">(</span><span class="va">longley</span><span class="op">)</span></span>
 <span><span class="co"># 'data.frame': 16 obs. of  7 variables:</span></span>
 <span><span class="co">#  $ GNP.deflator: num  83 88.5 88.2 89.5 96.2 ...</span></span>
@@ -1201,7 +1204,7 @@ Figure&nbsp;9.9: Geometric interpretation of ridge regression, using elliptical 
 <span><span class="co">#  $ Armed.Forces: num  159 146 162 165 310 ...</span></span>
 <span><span class="co">#  $ Population  : num  108 109 110 111 112 ...</span></span>
 <span><span class="co">#  $ Year        : int  1947 1948 1949 1950 1951 1952 1953 1954 1955 1956 ...</span></span>
-<span><span class="co">#  $ Employed    : num  60.3 61.1 60.2 61.2 63.2 ...</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#  $ Employed    : num  60.3 61.1 60.2 61.2 63.2 ...</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>These data were constructed to illustrate numerical problems in least squares software at the time, and they are (purposely) perverse, in that:</p>
 <ul>
@@ -1210,18 +1213,18 @@ Figure&nbsp;9.9: Geometric interpretation of ridge regression, using elliptical 
 </ul>
 <p>We fit the regression model, and sure enough, there are some extremely large VIFs. The largest, for <code>GNP</code> represents a multiplier of <span class="math inline">\(\sqrt{1788.5} = 42.3\)</span> on the standard errors.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb26" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">longley.lm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">Employed</span> <span class="op">~</span> <span class="va">GNP</span> <span class="op">+</span> <span class="va">Unemployed</span> <span class="op">+</span> <span class="va">Armed.Forces</span> <span class="op">+</span> </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">longley.lm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">Employed</span> <span class="op">~</span> <span class="va">GNP</span> <span class="op">+</span> <span class="va">Unemployed</span> <span class="op">+</span> <span class="va">Armed.Forces</span> <span class="op">+</span> </span>
 <span>                            <span class="va">Population</span> <span class="op">+</span> <span class="va">Year</span> <span class="op">+</span> <span class="va">GNP.deflator</span>, </span>
 <span>                 data<span class="op">=</span><span class="va">longley</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/car/man/vif.html">vif</a></span><span class="op">(</span><span class="va">longley.lm</span><span class="op">)</span></span>
 <span><span class="co">#          GNP   Unemployed Armed.Forces   Population         Year </span></span>
 <span><span class="co">#      1788.51        33.62         3.59       399.15       758.98 </span></span>
 <span><span class="co"># GNP.deflator </span></span>
-<span><span class="co">#       135.53</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co">#       135.53</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Shrinkage values can be specified using <span class="math inline">\(k\)</span> (where <span class="math inline">\(k = 0\)</span> corresponds to OLS) or the equivalent degrees of freedom <span class="math inline">\(\text{df}_k\)</span> (<a href="#eq-dfk" class="quarto-xref">Equation&nbsp;<span>9.6</span></a>). (The function uses argument <code>lambda</code>, <span class="math inline">\(\lambda \equiv k\)</span> for the shrinkage constant.) Among other quantities, <code><a href="https://friendly.github.io/genridge/reference/ridge.html">ridge()</a></code> returns a matrix containing the coefficients for each predictor for each shrinkage value and other quantities.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb27" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">lambda</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.002</span>, <span class="fl">0.005</span>, <span class="fl">0.01</span>, <span class="fl">0.02</span>, <span class="fl">0.04</span>, <span class="fl">0.08</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">lambda</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.002</span>, <span class="fl">0.005</span>, <span class="fl">0.01</span>, <span class="fl">0.02</span>, <span class="fl">0.04</span>, <span class="fl">0.08</span><span class="op">)</span></span>
 <span><span class="va">lridge</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://friendly.github.io/genridge/reference/ridge.html">ridge</a></span><span class="op">(</span><span class="va">Employed</span> <span class="op">~</span> <span class="va">GNP</span> <span class="op">+</span> <span class="va">Unemployed</span> <span class="op">+</span> <span class="va">Armed.Forces</span> <span class="op">+</span> </span>
 <span>                           <span class="va">Population</span> <span class="op">+</span> <span class="va">Year</span> <span class="op">+</span> <span class="va">GNP.deflator</span>, </span>
 <span>    data<span class="op">=</span><span class="va">longley</span>, lambda<span class="op">=</span><span class="va">lambda</span><span class="op">)</span></span>
@@ -1242,14 +1245,14 @@ Figure&nbsp;9.9: Geometric interpretation of ridge regression, using elliptical 
 <span><span class="co"># 0.010  -0.026      </span></span>
 <span><span class="co"># 0.020   0.098      </span></span>
 <span><span class="co"># 0.040   0.321      </span></span>
-<span><span class="co"># 0.080   0.570</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co"># 0.080   0.570</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The standard univariate plot, given by <code><a href="https://friendly.github.io/genridge/reference/traceplot.html">traceplot()</a></code>, simply plots the estimated coefficients for each predictor against the shrinkage factor <span class="math inline">\(k\)</span>.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb28" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://friendly.github.io/genridge/reference/traceplot.html">traceplot</a></span><span class="op">(</span><span class="va">lridge</span>, </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb28" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://friendly.github.io/genridge/reference/traceplot.html">traceplot</a></span><span class="op">(</span><span class="va">lridge</span>, </span>
 <span>          X <span class="op">=</span> <span class="st">"lambda"</span>,</span>
 <span>          xlab <span class="op">=</span> <span class="st">"Ridge constant (k)"</span>,</span>
-<span>          xlim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">0.02</span>, <span class="fl">0.08</span><span class="op">)</span>, cex.lab<span class="op">=</span><span class="fl">1.25</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>          xlim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">0.02</span>, <span class="fl">0.08</span><span class="op">)</span>, cex.lab<span class="op">=</span><span class="fl">1.25</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div id="fig-longley-traceplot1" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-longley-traceplot1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -1264,16 +1267,16 @@ Figure&nbsp;9.10: Univariate ridge trace plot for the coefficients of predictors
 <p>You can see that the coefficients for Year and GNP are shrunk considerably. Differences from the <span class="math inline">\(\beta\)</span> value at <span class="math inline">\(k =0\)</span> represent the bias (smaller <span class="math inline">\(\mid \beta \mid\)</span>) needed to achieve more stable estimates.</p>
 <p>The dotted lines in <a href="#fig-longley-traceplot1" class="quarto-xref">Figure&nbsp;<span>9.10</span></a> show choices for the ridge constant by two commonly used criteria to balance bias against precision due to <span class="citation" data-cites="Hoerl-etal-1975">Hoerl et al. (<a href="95-references.html#ref-Hoerl-etal-1975" role="doc-biblioref">1975</a>)</span> (<code>HKB</code>) and <span class="citation" data-cites="LawlessWang:1976">Lawless &amp; Wang (<a href="95-references.html#ref-LawlessWang:1976" role="doc-biblioref">1976</a>)</span> (<code>LW</code>). These values (along with a generalized cross-validation value <code>GCV</code>) are also stored in the “ridge” object as a vector <code>criteria</code>.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb29" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">lridge</span><span class="op">$</span><span class="va">criteria</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb29" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">lridge</span><span class="op">$</span><span class="va">criteria</span></span>
 <span><span class="co">#    kHKB     kLW    kGCV </span></span>
-<span><span class="co"># 0.00428 0.03230 0.00200</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co"># 0.00428 0.03230 0.00200</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <!-- These values seem rather small, but note that the coefficients for Year and GNP are shrunk considerably. -->
 <p>The shrinkage constant <span class="math inline">\(k\)</span> doesn’t have much intrinsic meaning, so it is often easier to interpret the plot when coefficients are plotted against the equivalent degrees of freedom, <span class="math inline">\(\text{df}_k\)</span>. OLS corresponds to <span class="math inline">\(\text{df}_k = 6\)</span> degrees of freedom in the space of six parameters, and the effect of shrinkage is to decrease the degrees of freedom, as if estimating fewer parameters.<a href="#fn7" class="footnote-ref" id="fnref7" role="doc-noteref"><sup>7</sup></a> This more natural scale also makes the changes in coefficient with shrinkage more nearly linear.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb30" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://friendly.github.io/genridge/reference/traceplot.html">traceplot</a></span><span class="op">(</span><span class="va">lridge</span>, </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb30" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://friendly.github.io/genridge/reference/traceplot.html">traceplot</a></span><span class="op">(</span><span class="va">lridge</span>, </span>
 <span>          X <span class="op">=</span> <span class="st">"df"</span>,</span>
-<span>          xlim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">6.2</span><span class="op">)</span>, cex.lab<span class="op">=</span><span class="fl">1.25</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>          xlim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">6.2</span><span class="op">)</span>, cex.lab<span class="op">=</span><span class="fl">1.25</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div id="fig-longley-traceplot2" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-longley-traceplot2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -1296,7 +1299,7 @@ Figure&nbsp;9.11: Univariate ridge trace plot using equivalent degrees of freedo
 <p>The size and shapes of the covariance ellipses show directly the effect on <em>precision</em> of the estimates as a function of the ridge tuning constant; their size and shape indicate sampling variance and covariance, given by <span class="math inline">\(\widehat{\text{Var}} (\boldsymbol{\widehat{\beta}}_{ij})\)</span>.</p>
 <p>Here (<a href="#fig-longley-plot-ridge" class="quarto-xref">Figure&nbsp;<span>9.12</span></a>), I plot those for GNP against four of the other predictors. The <code><a href="https://rdrr.io/r/graphics/plot.default.html">plot()</a></code> method for <code>"ridge"</code> objects plots these ellipses for a pair of variables.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb31" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">clr</span> <span class="op">&lt;-</span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"black"</span>, <span class="st">"red"</span>, <span class="st">"brown"</span>, <span class="st">"darkgreen"</span>,<span class="st">"blue"</span>, <span class="st">"cyan4"</span>, <span class="st">"magenta"</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">clr</span> <span class="op">&lt;-</span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"black"</span>, <span class="st">"red"</span>, <span class="st">"brown"</span>, <span class="st">"darkgreen"</span>,<span class="st">"blue"</span>, <span class="st">"cyan4"</span>, <span class="st">"magenta"</span><span class="op">)</span></span>
 <span><span class="va">pch</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">15</span><span class="op">:</span><span class="fl">18</span>, <span class="fl">7</span>, <span class="fl">9</span>, <span class="fl">12</span><span class="op">)</span></span>
 <span><span class="va">lambdaf</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/expression.html">expression</a></span><span class="op">(</span><span class="op">~</span><span class="fu">widehat</span><span class="op">(</span><span class="va">beta</span><span class="op">)</span><span class="op">^</span><span class="va">OLS</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/character.html">as.character</a></span><span class="op">(</span><span class="va">lambda</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
@@ -1308,7 +1311,7 @@ Figure&nbsp;9.11: Univariate ridge trace plot using equivalent degrees of freedo
 <span>       <span class="fu"><a href="https://rdrr.io/r/base/expression.html">expression</a></span><span class="op">(</span><span class="op">~</span><span class="fu">widehat</span><span class="op">(</span><span class="va">beta</span><span class="op">)</span><span class="op">^</span><span class="va">OLS</span><span class="op">)</span>, </span>
 <span>       cex<span class="op">=</span><span class="fl">1.5</span>, pos<span class="op">=</span><span class="fl">4</span>, offset<span class="op">=</span><span class="fl">.1</span><span class="op">)</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/graphics/text.html">text</a></span><span class="op">(</span><span class="va">lridge</span><span class="op">$</span><span class="va">coef</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="va">i</span><span class="op">)</span><span class="op">]</span>, <span class="va">lambdaf</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span><span class="op">]</span>, pos<span class="op">=</span><span class="fl">3</span>, cex<span class="op">=</span><span class="fl">1.3</span><span class="op">)</span></span>
-<span><span class="op">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div id="fig-longley-plot-ridge" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-longley-plot-ridge-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -1323,8 +1326,8 @@ Figure&nbsp;9.12: <strong>Bivariate ridge trace</strong> plots for the coefficie
 <p>As can be seen, the coefficients for each pair of predictors trace a graceful path generally toward the origin (0,0), and the covariance ellipses get smaller, indicating increased precision. Most often these paths are rather direct, but it takes a peculiar curvilinear route in the case of population and GNP here.</p>
 <p>The <code><a href="https://rdrr.io/r/graphics/pairs.html">pairs()</a></code> method for <code>"ridge"</code> objects shows all pairwise views in scatterplot matrix form. <code>radius</code> sets the base size of the ellipse-generating circle for the covariance ellipses.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb32" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/pairs.html">pairs</a></span><span class="op">(</span><span class="va">lridge</span>, radius<span class="op">=</span><span class="fl">0.5</span>, diag.cex <span class="op">=</span> <span class="fl">2</span>, </span>
-<span>      fill <span class="op">=</span> <span class="cn">TRUE</span>, fill.alpha <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb32" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/pairs.html">pairs</a></span><span class="op">(</span><span class="va">lridge</span>, radius<span class="op">=</span><span class="fl">0.5</span>, diag.cex <span class="op">=</span> <span class="fl">2</span>, </span>
+<span>      fill <span class="op">=</span> <span class="cn">TRUE</span>, fill.alpha <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div id="fig-longley-pairs" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-longley-pairs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -1341,7 +1344,7 @@ Figure&nbsp;9.13: Scatterplot matrix of bivariate ridge trace plots. Each panel 
 <span class="header-section-number">9.8.1</span> Visualizing the bias-variance tradeoff</h3>
 <p>The function <code><a href="https://friendly.github.io/genridge/reference/precision.html">precision()</a></code> calculates a number of measures of the effect of shrinkage of the coefficients in relation to the “size” of the covariance matrix <span class="math inline">\(\boldsymbol{\mathcal{V}}_k \equiv \widehat{\mathsf{Var}} (\widehat{\boldsymbol{\beta}}^{\mathrm{RR}}_k)\)</span>. Larger shrinkage <span class="math inline">\(k\)</span> should lead to a smaller ellipsoid for <span class="math inline">\(\boldsymbol{\mathcal{V}}_k\)</span>, indicating increased precision.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb33" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">pdat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://friendly.github.io/genridge/reference/precision.html">precision</a></span><span class="op">(</span><span class="va">lridge</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb33" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">pdat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://friendly.github.io/genridge/reference/precision.html">precision</a></span><span class="op">(</span><span class="va">lridge</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#       lambda   df   det  trace max.eig norm.beta norm.diff</span></span>
 <span><span class="co"># 0.000  0.000 6.00 -12.9 18.119  15.419     1.000     0.000</span></span>
 <span><span class="co"># 0.002  0.002 5.70 -13.6 11.179   8.693     0.857     0.695</span></span>
@@ -1349,7 +1352,7 @@ Figure&nbsp;9.13: Scatterplot matrix of bivariate ridge trace plots. Each panel 
 <span><span class="co"># 0.010  0.010 5.14 -15.4  4.042   2.181     0.637     1.783</span></span>
 <span><span class="co"># 0.020  0.020 4.82 -16.8  2.218   1.025     0.528     2.262</span></span>
 <span><span class="co"># 0.040  0.040 4.48 -18.7  1.165   0.581     0.423     2.679</span></span>
-<span><span class="co"># 0.080  0.080 4.13 -21.1  0.587   0.260     0.337     3.027</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co"># 0.080  0.080 4.13 -21.1  0.587   0.260     0.337     3.027</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Here, the first three terms described below are (inverse) measures of precision; the last two quantify shrinkage:</p>
 <ul>
@@ -1367,7 +1370,7 @@ points with a curve. (<span style='color: brown;'>**genridge**</span> contains a
 <!-- **TODO**: Redo this fig using `plot.precsion()` method -->
 <!-- fig.code: R/genridge-longley-fig2.R -->
 <div class="cell" data-layout-align="center">
-<details class="code-fold"><summary>Show the code</summary><div class="sourceCode" id="cb34" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">pridge</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://friendly.github.io/genridge/reference/precision.html">precision</a></span><span class="op">(</span><span class="va">lridge</span><span class="op">)</span></span>
+<details class="code-fold"><summary>Show the code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb34" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">pridge</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://friendly.github.io/genridge/reference/precision.html">precision</a></span><span class="op">(</span><span class="va">lridge</span><span class="op">)</span></span>
 <span><span class="va">criteria</span> <span class="op">&lt;-</span> <span class="va">lridge</span><span class="op">$</span><span class="va">criteria</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">criteria</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html">sub</a></span><span class="op">(</span><span class="st">"k"</span>, <span class="st">""</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">criteria</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">pridge</span>, criteria <span class="op">=</span> <span class="va">criteria</span>, </span>
@@ -1380,7 +1383,7 @@ points with a curve. (<span style='color: brown;'>**genridge**</span> contains a
 <span>    <span class="fu"><a href="https://rdrr.io/r/graphics/text.html">text</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="va">norm.beta</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">det</span><span class="op">)</span>, </span>
 <span>       labels <span class="op">=</span> <span class="st">"log |Variance| vs. Shrinkage"</span>, </span>
 <span>       cex<span class="op">=</span><span class="fl">1.5</span>, pos<span class="op">=</span><span class="fl">4</span><span class="op">)</span></span>
-<span>  <span class="op">}</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>  <span class="op">}</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details><div class="cell-output-display">
 <div id="fig-longley-precision-plot" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-longley-precision-plot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -1428,7 +1431,7 @@ text(fit[,2:1], c("HKB", "LW"),
 <p>The <code>visCollin::pca()</code> method transforms a <code>"ridge"</code> object from parameter space, where the estimated coefficients are <span class="math inline">\(\beta_k\)</span> with covariance matrices <span class="math inline">\(\boldsymbol{\mathcal{V}}_k\)</span>, to the principal component space defined by the right singular vectors, <span class="math inline">\(\mathbf{V}\)</span>, of the singular value decomposition <span class="math inline">\(\mathbf{U} \mathbf{D} \mathbf{V}^\mathsf{T}\)</span> of the scaled predictor matrix, <span class="math inline">\(\mathbf{X}\)</span>. </p>
 <p>In PCA space the total variance of the predictors remains the same, but it is distributed among the linear combinations that account for successively greatest variance.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb35" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">plridge</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://friendly.github.io/genridge/reference/pca.html">pca</a></span><span class="op">(</span><span class="va">lridge</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb35" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">plridge</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://friendly.github.io/genridge/reference/pca.html">pca</a></span><span class="op">(</span><span class="va">lridge</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co"># Ridge Coefficients:</span></span>
 <span><span class="co">#        dim1     dim2     dim3     dim4     dim5     dim6   </span></span>
@@ -1438,13 +1441,13 @@ text(fit[,2:1], c("HKB", "LW"),
 <span><span class="co"># 0.010  1.51521  0.37918  1.79579  0.33205  4.79871  2.53553</span></span>
 <span><span class="co"># 0.020  1.51500  0.37898  1.79031  0.31922  4.00988  1.56135</span></span>
 <span><span class="co"># 0.040  1.51459  0.37858  1.77944  0.29633  3.01774  0.88291</span></span>
-<span><span class="co"># 0.080  1.51377  0.37778  1.75810  0.25915  2.01876  0.47238</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="co"># 0.080  1.51377  0.37778  1.75810  0.25915  2.01876  0.47238</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p><strong>Traceplot</strong></p>
 <p>Then, a <code><a href="https://friendly.github.io/genridge/reference/traceplot.html">traceplot()</a></code> of the resulting <code>"pcaridge"</code> object shows how the dimensions are affected by shrinkage, shown on the scale of degrees of freedom in <a href="#fig-longley-pca-traceplot" class="quarto-xref">Figure&nbsp;<span>9.15</span></a>.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb36" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://friendly.github.io/genridge/reference/traceplot.html">traceplot</a></span><span class="op">(</span><span class="va">plridge</span>, X<span class="op">=</span><span class="st">"df"</span>, </span>
-<span>          cex.lab <span class="op">=</span> <span class="fl">1.2</span>, lwd<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb36" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://friendly.github.io/genridge/reference/traceplot.html">traceplot</a></span><span class="op">(</span><span class="va">plridge</span>, X<span class="op">=</span><span class="st">"df"</span>, </span>
+<span>          cex.lab <span class="op">=</span> <span class="fl">1.2</span>, lwd<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div id="fig-longley-pca-traceplot" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-longley-pca-traceplot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -1461,7 +1464,7 @@ Figure&nbsp;9.15: Ridge traceplot for the longley regression viewed in PCA space
 <p><strong>pairs() plot</strong></p>
 <p>A <code><a href="https://rdrr.io/r/graphics/pairs.html">pairs()</a></code> plot gives a dramatic representation bivariate effects of shrinkage in PCA space: the principal components of X are uncorrelated, so the ellipses are all aligned with the coordinate axes. The ellipses largely coincide for dimensions 1 to 4 where there is little effect of shrinkage. You can see them shrink in one direction in the last two columns and rows, and in both for the combination of (<code>dim5</code>, <code>dim6</code>).</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb37" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/pairs.html">pairs</a></span><span class="op">(</span><span class="va">plridge</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb37" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/pairs.html">pairs</a></span><span class="op">(</span><span class="va">plridge</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div id="fig-longley-pca-pairs" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-longley-pca-pairs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -1475,11 +1478,11 @@ Figure&nbsp;9.16: <strong>pairs method</strong>: All pairwise bivariate ridge pl
 </div>
 <p>If we focus on the plot of dimensions <code>dim5:dim6</code>, we can see where all the shrinkage action is in this representation. Generally, the predictors that are related to the smallest dimension (6) are shrunk quickly at first.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb38" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">plridge</span>, variables<span class="op">=</span><span class="fl">5</span><span class="op">:</span><span class="fl">6</span>, </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb38" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">plridge</span>, variables<span class="op">=</span><span class="fl">5</span><span class="op">:</span><span class="fl">6</span>, </span>
 <span>     fill <span class="op">=</span> <span class="cn">TRUE</span>, fill.alpha<span class="op">=</span><span class="fl">0.15</span>, cex.lab <span class="op">=</span> <span class="fl">1.5</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/text.html">text</a></span><span class="op">(</span><span class="va">plridge</span><span class="op">$</span><span class="va">coef</span><span class="op">[</span>, <span class="fl">5</span><span class="op">:</span><span class="fl">6</span><span class="op">]</span>, </span>
 <span>     label <span class="op">=</span> <span class="va">lambdaf</span>, </span>
-<span>     cex<span class="op">=</span><span class="fl">1.5</span>, pos<span class="op">=</span><span class="fl">4</span>, offset<span class="op">=</span><span class="fl">.1</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span>     cex<span class="op">=</span><span class="fl">1.5</span>, pos<span class="op">=</span><span class="fl">4</span>, offset<span class="op">=</span><span class="fl">.1</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div id="fig-longley-pca-dim56" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-longley-pca-dim56-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -1496,13 +1499,13 @@ Figure&nbsp;9.17: Bivariate ridge trace plot for the smallest two dimensions. Th
 <p>The question arises how to relate this view of shrinkage in PCA space to the original predictors. The biplot is again your friend. In effect, it adds vectors showing the contributions of the predictors to a plot like <a href="#fig-longley-pca-dim56" class="quarto-xref">Figure&nbsp;<span>9.17</span></a>. You can project variable vectors for the predictor variables into the PCA space of the smallest dimensions, where the shrinkage action mostly occurs to see how the predictor variables relate to these dimensions.</p>
 <p><code>biplot.pcaridge()</code> supplements the standard display of the covariance ellipsoids for a ridge regression problem in PCA/SVD space with labeled arrows showing the contributions of the original variables to the dimensions plotted. Recall from <a href="05-pca-biplot.html#sec-biplot" class="quarto-xref"><span>Section 5.3</span></a> that these reflect the correlations of the variables with the PCA dimensions. The lengths of the arrows reflect the proportion of variance that each predictors shares with the components.</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode" id="cb39" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/biplot.html">biplot</a></span><span class="op">(</span><span class="va">plridge</span>, radius<span class="op">=</span><span class="fl">0.5</span>, </span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb39" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/biplot.html">biplot</a></span><span class="op">(</span><span class="va">plridge</span>, radius<span class="op">=</span><span class="fl">0.5</span>, </span>
 <span>       ref<span class="op">=</span><span class="cn">FALSE</span>, asp<span class="op">=</span><span class="fl">1</span>, </span>
 <span>       var.cex<span class="op">=</span><span class="fl">1.15</span>, cex.lab<span class="op">=</span><span class="fl">1.3</span>, col<span class="op">=</span><span class="va">clr</span>,</span>
 <span>       fill<span class="op">=</span><span class="cn">TRUE</span>, fill.alpha<span class="op">=</span><span class="fl">0.15</span>, </span>
 <span>       prefix<span class="op">=</span><span class="st">"Dimension "</span><span class="op">)</span></span>
 <span><span class="co"># Vector scale factor set to  5.25</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/text.html">text</a></span><span class="op">(</span><span class="va">plridge</span><span class="op">$</span><span class="va">coef</span><span class="op">[</span>,<span class="fl">5</span><span class="op">:</span><span class="fl">6</span><span class="op">]</span>, <span class="va">lambdaf</span>, pos<span class="op">=</span><span class="fl">2</span>, cex<span class="op">=</span><span class="fl">1.3</span><span class="op">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/text.html">text</a></span><span class="op">(</span><span class="va">plridge</span><span class="op">$</span><span class="va">coef</span><span class="op">[</span>,<span class="fl">5</span><span class="op">:</span><span class="fl">6</span><span class="op">]</span>, <span class="va">lambdaf</span>, pos<span class="op">=</span><span class="fl">2</span>, cex<span class="op">=</span><span class="fl">1.3</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div id="fig-longley-pca-biplot" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
 <figure class="quarto-float quarto-float-fig figure"><div aria-describedby="fig-longley-pca-biplot-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -1673,13 +1676,14 @@ Vinod, H. D. (1978). A survey of ridge regression and related techniques for imp
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy
