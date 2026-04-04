@@ -16,8 +16,9 @@ my $bibenv="BIBINPUTS";	# Env Variable holding search path for BibTeX databases
 my $DEBUG="DEBUG";     # Environmental var for debugging: Use DEBUG=1; authorindex ...
 
 my $tmp="_autidx_";	# Name base for temporary files
-my $cwdpath=".";	# Directory where files are generated
-my $pathsep=($^O eq "MSWin32") ? ';' : ":"; # Seperator between paths in a list
+use Cwd 'getcwd';
+(my $cwdpath = getcwd()) =~ s{^/([a-zA-Z])/}{$1:/};  # convert MINGW /c/foo -> c:/foo
+my $pathsep=($^O =~ /MSWin32|msys/) ? ';' : ':'; # ; on Windows/MINGW, : on Unix
 
 # This script takes LaTeX .aux files as input. It extracts all citations made
 # with page number information. These, together with the bibliography data base
@@ -118,13 +119,16 @@ open(AUXFILE,">$tmp.aux") || die "Can't open temporary file $tmp.aux\n";
 open(BIBFILE,">$tmp.bib") || die "Can't open temporary file $tmp.bib\n";
 
 while(<>){
+    s/\r//g;    # strip Windows CRLF so regexes match correctly
     if(/^\\citationpage\{\s*([^{ ]+)\s*\}\{(.+)\}$/){
+	my ($key, $page) = ($1, $2);
+	$key =~ s/^ref-//;   # strip pandoc citeproc "ref-" prefix
 	$citationcount++;	# used for statistics only.
-	$workscount++ unless ($1 eq '*') or (exists $Lab2Pag{$1})
-	  or (exists $Lab2Bib{$1}) or (exists $Lab2Num{$1});
-	$pnlist{$2}="";
-	push @{$Lab2Pag{$1}},$2;
-	print AUXFILE "\\citation{$1}\n";
+	$workscount++ unless ($key eq '*') or (exists $Lab2Pag{$key})
+	  or (exists $Lab2Bib{$key}) or (exists $Lab2Num{$key});
+	$pnlist{$page}="";
+	push @{$Lab2Pag{$key}},$page;
+	print AUXFILE "\\citation{$key}\n";
     }elsif(/^\\aibibcite\{([^{]+)\}\{(.+)\}$/){
 	$workscount++ unless ($1 eq '*') or (exists $Lab2Pag{$1})
 	  or (exists $Lab2Bib{$1}) or (exists $Lab2Num{$1});
@@ -137,11 +141,13 @@ while(<>){
 	$useaibibcite="yes";
     }elsif(/^\\bibcite\{([^{]+)\}\{(.+)\}$/){
 	unless($useaibibcite){
-	    $workscount++ unless ($1 eq '*') or (exists $Lab2Pag{$1})
-		or (exists $Lab2Bib{$1}) or (exists $Lab2Num{$1});
-	    $pnlist{$2}="";
-	    push @{$Lab2Num{$1}},$2;
-	    print AUXFILE "\\citation{$1}\n" if $usenum;
+	    my ($key, $num) = ($1, $2);
+	    $key =~ s/^ref-//;   # strip pandoc citeproc "ref-" prefix
+	    $workscount++ unless ($key eq '*') or (exists $Lab2Pag{$key})
+		or (exists $Lab2Bib{$key}) or (exists $Lab2Num{$key});
+	    $pnlist{$num}="";
+	    push @{$Lab2Num{$key}},$num;
+	    print AUXFILE "\\citation{$key}\n" if $usenum;
 	}
     }elsif(/^\\bibpage\{([^{]+)\}\{(.+)\}$/){
 	$workscount++ unless (exists $Lab2Pag{$1})
@@ -299,7 +305,14 @@ $ENV{$bibenv}="$cwdpath$pathsep" . (exists $ENV{$bibenv} ? $ENV{$bibenv} : "") i
 # $bst.bst.
 
 print STDERR `bibtex $tmp`;
-die "BibTeX error. Aborting leaving all temporary files $tmp.*\n" if $?;
+if ($?) {
+    if (-e "$tmp.bbl") {
+        print STDERR "Warning: BibTeX reported errors but produced $tmp.bbl; continuing.\n";
+        print STDERR "(Repeated entry warnings are normal when bib files overlap.)\n";
+    } else {
+        die "BibTeX error. Aborting leaving all temporary files $tmp.*\n";
+    }
+}
 
 # if things went well, we can delete all these temporary files made for BibTeX.
 # The generated .bst file is kept if the user wishes so (-k option).

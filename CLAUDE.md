@@ -44,7 +44,9 @@ Front matter: `index.qmd`, `00-Author.qmd`
 
 ## Build
 
-**HTML:** `quarto render` or RStudio `Build -> Render Book` → output to `docs/`
+**HTML + PDF together:** Use `Build -> All Formats` (not `Render Book`). Building only HTML
+wipes out `docs/` and can leave inconsistent filenames between formats; building all formats
+together avoids this. The PDF output is `Vis-MLM.pdf`; HTML goes to `docs/`.
 
 **PDF:** Uses xelatex + `documentclass: krantz` (CRC house style).
 - Quarto PDF build is **unreliable** — often fails with LaTeX errors.
