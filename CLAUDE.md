@@ -46,12 +46,21 @@ Front matter: `index.qmd`, `00-Author.qmd`
 
 **HTML + PDF together:** Use `Build -> All Formats` (not `Render Book`). Building only HTML
 wipes out `docs/` and can leave inconsistent filenames between formats; building all formats
-together avoids this. The PDF output is `Vis-MLM.pdf`; HTML goes to `docs/`.
+together avoids this.
+
+**Output locations:**
+- PDF → `./index.pdf` (project root). Named after the entry point `index.qmd`, not after
+  `output-file: Vis-MLM` in `_quarto.yml` (that setting names the `.tex` intermediate only).
+- HTML → `docs/` (served to GitHub Pages)
+- TeX intermediate → `./Vis-MLM.tex` (kept because `keep-tex: true`)
+- Older PDF copies are manually archived to `pdf/`
 
 **PDF:** Uses xelatex + `documentclass: krantz` (CRC house style).
 - Quarto PDF build is **unreliable** — often fails with LaTeX errors.
 - Workaround: `keep-tex: true` is set; compile `Vis-MLM.tex` manually in TeXStudio.
 - Both MikTeX and TinyTeX are installed on this Windows machine; Quarto prefers TinyTeX.
+- **Close `index.pdf` in Acrobat before every build** — Quarto cannot overwrite the file
+  while it is open and will fail with "process cannot access the file" (os error 32).
 - See `issues/quarto-pdf-help.md` and https://github.com/quarto-dev/quarto-cli/discussions/11087
 
 **R setup:** `R/common.R` is sourced at the start of each chapter. It defines:

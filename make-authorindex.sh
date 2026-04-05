@@ -10,11 +10,12 @@ export BSTINPUTS="C:/Users/friendly/AppData/Roaming/TinyTeX/texmf-dist/bibtex/bs
 cd "C:/R/Projects/Vis-MLM-book"
 
 echo "Running authorindex on index.aux ..."
-perl latex/authorindex_debug -d index
+perl latex/authorindex -d index
 
 if [ $? -eq 0 ]; then
     echo "Success: index.ain written."
-    echo "Now uncomment \\printauthorindex in latex/after-body.tex and recompile."
+    echo "Recompile the PDF to incorporate the author index."
 else
     echo "authorindex failed. Check output above."
+    echo "(For deeper debugging, try: perl latex/authorindex_debug -d index)"
 fi

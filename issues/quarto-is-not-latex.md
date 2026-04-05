@@ -9,13 +9,9 @@
 
 ## Prelude
 
-When I started writing this book, [*Visualizing Multivariate Data and Linear Models with R*]()
+When I started writing this book, [*Visualizing Multivariate Data and Linear Models with R*](https://friendly.github.io/Vis-MLM-book/)
 I chose Quarto over bookdown and other modern solutions to publishing complex documents with R code, output, figures
 automatically included. I made this choice because Quarto promised to be able to produce both a print-quality PDF and an online HTML version from the same source.
-I had, I thought, carefully reviewed a number of online versions of R-related books
-## list a few here
-##  - Rohan Alexander
-##  - Di Cook: Mulgur
 
 Some publishers, such as CRC Press, allow authors to do this, with the online version being free. A trade-off is that the publisher wants me
 to submit, before printing, essentially camera-ready copy they can ship off to a 3rd world printer. That means: All pages are correctly laid out,
@@ -25,7 +21,7 @@ For comparison, my
 previous book ([*Discrete Data Analysis with R*](https://www.taylorfrancis.com/books/mono/10.1201/b19022/discrete-data-analysis-michael-friendly-david-meyer)) was written in `.Rnw` format — This was essentially text written in LaTeX (`\chapter{}, \begin{itemize}, \emph{}, $math$, ...`)
 with embedded R code chunks (Sweave/knitr).
 
-In that workflow, I had **complete control** over the entire process of turning LaTeX source into the PDF was exactly what I wrote. I could easily define shorthands
+In that workflow, I had **complete control** over the entire process of turning LaTeX source into the PDF was exactly what I wanted. I could easily define shorthands
 for LaTeX math in one file (`commands.tex`), used as `\input{commands}`
 With Quarto, I was trading that control for
 convenience — write once in Markdown, get both formats.
@@ -34,7 +30,15 @@ The trade-off turned out to be less favourable than advertised. This post docume
 Quarto's abstraction layer over LaTeX broke things that were trivial in `.Rnw`, and the
 workarounds I found (or didn't).
 
-**Ref**: Mention Kieran Hiely's post on re-writing his book in Quarto / anything from Frank Harrell?
+CRC press provides a bare-bones Quarto framework for a book: 
+Over time, I carefully reviewed a number of online versions of R-related books using Quarto. I learned the most from:
+
+  - Rohan Alexander: [*Telling Stories With Data*](). GitHub source: 
+  - Cook & Laa: [*Interactive and dynamic graphics for high-dimensional data using R*](https://dicook.github.io/mulgar_book/). GitHub source: https://github.com/dicook/mulgar_book
+
+
+
+**Ref**: Kieran Healy's post on re-writing his data visualization book in Quarto: [Using Quarto to Write a Book](https://kieranhealy.org/blog/archives/2026/03/09/using-quarto-to-write-a-book/) / anything from Frank Harrell?
 
 ---
 
@@ -61,20 +65,37 @@ Pandoc acts as an opaque intermediary. It reads your Markdown, resolves citation
 written. External tools that plug into the traditional LaTeX pipeline often break, because the
 `.tex` file and `.aux` file don't have the structure those tools expect.
 
+What this also means for an author is that you have much, much more to try to understand for writing a
+book if you want to take advantages of some of the lovely features Quarto offers:
+
+* Extensions:
+* Multiple language support: 
+* Conditional compilation: The possibility to produce multiple output formats (HTML, PDF, eBook,) from a single source
+* 
+
 ---
 
-## Problem 2: You can't keep your project on Dropbox
+## Problem 1: You can't keep your project on Dropbox
 
-In `.Rnw`, the project lived in a Dropbox folder with no issues. Quarto writes many temporary
-files during compilation (`.aux`, `.log`, `.quarto/`, figure caches) and is sensitive to files
+In `.Rnw`, the DDAR project lived in a `C:/Dropbox/` folder with no issues, and was sync'd with other authors via GitHub.
+I use multiple machines (Home / Office) to work on my writing projects, and Dropbox was a simple way to sync this work
+across machines. Edit something on my laptop, and it is there on my other machines.
+Other Cloud services may work similarly.
+
+Quarto writes many temporary
+files during compilation (`.aux`, `.log`, `.quarto/`, figure caches) and is very sensitive to files
 being locked or modified by external processes. Dropbox's continuous sync interferes: Quarto
 hits file-locking errors (`The process cannot access the file because it is being used by
-another process`) and compilation fails or produces corrupted output.
+another process`) and compilation fails or produces corrupted output. This sometimes caused problems
+with `git`. 
 
-**Workaround:** Move the project to a local directory outside Dropbox. Back up with git instead.
+**Workaround:** I moved the project to a local directory outside Dropbox. Back up / share only with `git` instead.
+Dropbox now does a more convenient way to handle the files it syncs: You can create a file
+`~/Dropbox/rules-dropboxignore` that tells it to stay your of your way in various folders,
+similar in spirit to your standard `.gitignore`.
 
 ---
-## Problem 1: The `authorindex` disaster
+## Problem 2: The `authorindex` disaster
 
 **In `.Rnw`:** I used `\aicite{key}` throughout the source (or `\usepackage{authorindex}` with
 natbib, which patches `\cite` globally). BibTeX ran as a normal build step, writing `\bibdata`
@@ -107,9 +128,18 @@ it needed and produced a `.ain` file for `\printauthorindex`. Straightforward.
    but `\r` sits before `\n` and causes every pattern match to silently fail. Nothing matches.
    No errors, no output, no index.
 
-**Workaround:** Patch `\@citex` in `preamble.tex` via `\AtBeginDocument` to also call
+6. **`@Preamble` directives in `.bib` files are silently ignored** — in `.Rnw`, a
+   `@Preamble{ " \providecommand{\de}[1]{d'#1} " }` in `references.bib` worked because
+   BibTeX emitted it into the `.bbl` file, which LaTeX read. With citeproc, the `.bib` file
+   is read by pandoc (not BibTeX), and `@Preamble` content is never passed to LaTeX. Author
+   names using such commands (e.g. `{\de{O}}cagne`) cause "Undefined control sequence" errors
+   when the author index is typeset. **Workaround:** define the command in `preamble.tex`
+   instead: `\providecommand{\de}[1]{d'#1}`.
+
+**Workaround summary:** Patch `\@citex` in `preamble.tex` via `\AtBeginDocument` to also call
 `\@aicitey`; write `\bibdata` manually to the `.aux` file; fix CRLF in the Perl script;
-strip `ref-` prefix from keys. See `issues/task-authorindex.md` for details.
+strip `ref-` prefix from keys; move `@Preamble` command definitions into `preamble.tex`.
+See `issues/task-authorindex.md` for details.
 
 ---
 
@@ -197,21 +227,50 @@ sometimes swallowed or misattributed. In practice:
   that can confuse external tools.
 - **Workaround:** Always use `Build -> All Formats` to keep HTML and PDF in sync.
 
-Also: Quarto's PDF build runs LaTeX, but the file it operates on is `index.tex` (from the
-`index.qmd` cover page), not `Vis-MLM.tex` (the output filename). The `.aux` file is
-therefore `index.aux`, not `Vis-MLM.aux` — which breaks tools that expect the aux file to
-match the output file name.
+Also, Quarto's naming is inconsistent and counterintuitive:
+
+- The `output-file: Vis-MLM` setting in `_quarto.yml` sounds like it controls the PDF
+  filename. It doesn't — it names the *LaTeX intermediate* (`Vis-MLM.tex`). The final PDF
+  is named after the book's entry-point file (`index.qmd`) and lands in the project root
+  as `index.pdf`, regardless of `output-file`.
+- The `.aux` file is therefore `index.aux`, not `Vis-MLM.aux` — which breaks external
+  tools (like `authorindex`) that expect the aux file to match the output filename.
+
+In plain LaTeX, `\jobname` is always the name you gave your file, and every output
+(`jobname.pdf`, `jobname.aux`, `jobname.idx`, ...) follows from it consistently. In Quarto,
+the job name, the tex filename, and the PDF filename can all be different things.
 
 ---
 
 ## Problem 7: No Makefile / incremental build
 
-In `.Rnw`, a `Makefile` could specify dependencies and rebuild only what had changed — a
-specific chapter, the bibliography, the index. With 15 chapters, full rebuilds are slow.
+**In `.Rnw` (DDAR book):** The build was controlled by a `Makefile` (`C:\Dropbox\Documents\VCDR\Makefile`)
+and a thin `Make.R` wrapper (`C:\Dropbox\Documents\VCDR\Make.R`) that called:
 
-Quarto has caching (via `cache: true` in chunk options) but it operates at the chunk level,
-not the chapter level. A change to `_quarto.yml` or `preamble.tex` can invalidate the whole
-cache. There is no official Quarto equivalent to a chapter-level Makefile target.
+```r
+knitr::knit2pdf(input = 'book.Rnw', quiet = TRUE)
+```
+
+The Makefile could specify dependencies and rebuild only what had changed — a specific chapter,
+the bibliography, the index. You could run `make chapter3` and only that chapter would be
+re-knitted and re-typeset. The PDF viewer could stay open during the build because pdflatex
+overwrites the file in place; the viewer reloads automatically on the next page turn.
+
+**In Quarto:** There is no Makefile equivalent. `Build -> All Formats` is one monolithic
+operation. Quarto has caching (`cache: true` in chunk options) but it operates at the R
+chunk level, not the chapter level. A change to `_quarto.yml` or `preamble.tex` can
+invalidate the entire cache and force a full rebuild of all 15 chapters.
+
+Additionally, Quarto deletes and recreates `index.pdf` on every build rather than overwriting
+it in place. This means the PDF **must be closed** in Acrobat (or any viewer) before building,
+or Quarto fails with:
+
+```
+ERROR: The process cannot access the file because it is being used by another process.
+(os error 32): remove 'C:\R\Projects\Vis-MLM-book\index.pdf'
+```
+
+In `.Rnw`, the PDF viewer could stay open indefinitely.
 
 **Status:** Open. A `Makefile` is planned but not yet written; see `working-text/Makefile`
 for a draft.
@@ -260,6 +319,7 @@ In fairness:
 | Footnote links in print | One `\renewcommand{\href}` | Requires per-link conditional blocks |
 | Build control | Explicit multi-step Makefile | One button; hard to customize |
 | Dropbox-friendly | Yes | No |
+| PDF viewer during build | Can stay open (overwrites in place) | Must be closed (deletes and recreates) |
 | Windows compatibility | Good | CRLF issues with external tools |
 | HTML output | Minimal (via `htlatex` etc.) | Excellent, first-class |
 | Online publishing | Manual | Built-in GitHub Pages workflow |
