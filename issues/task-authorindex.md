@@ -80,9 +80,9 @@ pipeline, and the failures compounded in non-obvious ways.
 
 ## Approaches / Solutions
 
-### Option A: Fix the Perl script invocation (minimal change) ← **IN PROGRESS**
+### Option A: Fix the Perl script invocation (minimal change) ← **SOLVED**
 
-#### Changes made (2026-04-04)
+#### Changes made (2026-04-04 / 2026-04-05)
 
 **`latex/preamble.tex`:**
 
@@ -106,7 +106,7 @@ pipeline, and the failures compounded in non-obvious ways.
        \string\bibdata{references,R-refs,pkgs,packages,Rpackages-4.5.1}}\fi}
    ```
 
-**`latex/authorindex_debug`:**
+**`latex/authorindex_debug`** (working copy; fixes later promoted to `latex/authorindex`):
 
 1. Added `s/\r//g;` at the top of the `while(<>)` input loop to strip Windows CRLF
    line endings before any regex matching.
@@ -116,35 +116,48 @@ pipeline, and the failures compounded in non-obvious ways.
 
 3. In the `\bibcite` handler: same `ref-` prefix stripping for consistency.
 
-**`make-authorindex.sh`** (new file at project root):
+4. Changed the BibTeX exit-code check from a hard `die` to a warning when the `.bbl`
+   file was produced anyway — "Repeated entry" errors are expected when multiple `.bib`
+   files share package keys, and BibTeX still produces usable output.
+
+**`make-authorindex.sh`** (project root):
 
 Shell script that sets `BIBINPUTS` and `BSTINPUTS` and runs the script:
 ```bash
 export BIBINPUTS="C:/R/Projects/Vis-MLM-book/bib"
 export BSTINPUTS="C:/Users/friendly/AppData/Roaming/TinyTeX/texmf-dist/bibtex/bst"
-perl latex/authorindex_debug -d index
+perl latex/authorindex -d index
 ```
+*(Note: script was updated 2026-04-05 to call `latex/authorindex` after fixes were
+promoted from `authorindex_debug`. The debug copy is retained for further debugging.)*
 
-#### Remaining steps
+**`latex/after-body.tex`:**
 
-- [ ] **Recompile the PDF** — necessary so that the new `\AtBeginDocument` patch writes
-  `\citationpage` entries and `\bibdata` into `index.aux`. The current `index.aux` predates
-  these fixes.
+Added `\renewenvironment{theauthorindex}` before `\printauthorindex` to enforce
+single-line spacing and remove inter-entry paragraph space (the default environment
+produced double-spaced output). Per authorindex docs, redefining this environment
+is the recommended way to control index formatting.
 
-- [ ] **Run `bash make-authorindex.sh`** — should produce `index.ain` if the compile succeeded.
-  Check the output for BibTeX errors (missing keys, etc.).
+**`latex/preamble.tex`** (2026-04-05):
 
-- [ ] **Uncomment `\printauthorindex`** in `latex/after-body.tex` (also uncomment the
-  surrounding `\addcontentsline`, `\renewcommand{\indexname}`, `\chapter*`, and `\begin{multicols}`
-  lines as desired).
+3. Added `\providecommand{\de}[1]{d'#1}` near the `authorindex` setup. This was
+   previously defined via `@Preamble` in `references.bib`, which worked in `.Rnw`
+   because BibTeX emitted preamble content into the `.bbl` file read by LaTeX. With
+   pandoc citeproc, `.bib` files are read by pandoc and `@Preamble` directives are
+   silently discarded — they never reach LaTeX. Author names using `\de{}` (e.g.
+   `{\de{O}}cagne`) caused "Undefined control sequence" errors during author index
+   typesetting. Fix: define the command directly in `preamble.tex`.
 
-- [ ] **Recompile the PDF** once more to incorporate the `.ain` file into the printed index.
+#### Status (2026-04-05): SOLVED
 
-- [ ] **Verify output** — spot-check a few authors against the bibliography to confirm page
-  numbers are correct.
-
-- [ ] Once confirmed working, consider copying the fixes from `authorindex_debug` back to
-  `authorindex` (or simply always use `authorindex_debug`).
+- [x] Recompile PDF — `\citationpage` entries and `\bibdata` now written to `index.aux`
+- [x] Run `bash make-authorindex.sh` — produces `index.ain` (808 lines, ~400 authors)
+- [x] `\printauthorindex` active in `latex/after-body.tex`
+- [x] Recompile PDF — author index appears in two columns, single-spaced
+- [x] Fixes promoted from `authorindex_debug` to `latex/authorindex`
+- [ ] **Remaining**: recompile once more after adding `\providecommand{\de}` to
+  `preamble.tex` to clear the "Undefined control sequence" error on `{\de{O}}cagne`
+- [ ] Spot-check a few author entries against the bibliography for correctness
 
 ---
 

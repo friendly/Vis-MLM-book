@@ -5,6 +5,12 @@
 **Status:** Seed / notes. A formal task to write this up will be created later.
 **Related file:** `working-text/quarto-pains.qmd` — an earlier draft on similar themes.
 
+### Possible title variants
+
+- *The Hidden Costs of "Write Once, Render Twice": A Quarto Book Diary*
+- *From `.Rnw` to Quarto: What I Gained, What I Lost*
+- *Quarto Growing Pains: A Technical Post-Mortem*
+
 ---
 
 ## Prelude
@@ -26,14 +32,14 @@ for LaTeX math in one file (`commands.tex`), used as `\input{commands}`
 With Quarto, I was trading that control for
 convenience — write once in Markdown, get both formats.
 
-The trade-off turned out to be less favourable than advertised. This post documents the places where
+The trade-off turned out to be less favorable than advertised. This post documents the places where
 Quarto's abstraction layer over LaTeX broke things that were trivial in `.Rnw`, and the
 workarounds I found (or didn't).
 
-CRC press provides a bare-bones Quarto framework for a book: 
+CRC press provides a [bare-bones Quarto framework](https://github.com/bgreenwell/quarto-crc) for a book using their house `krantz` style.
 Over time, I carefully reviewed a number of online versions of R-related books using Quarto. I learned the most from:
 
-  - Rohan Alexander: [*Telling Stories With Data*](). GitHub source: 
+  - Rohan Alexander: [*Telling Stories With Data*](https://tellingstorieswithdata.com/). GitHub source: https://github.com/RohanAlexander/tswd
   - Cook & Laa: [*Interactive and dynamic graphics for high-dimensional data using R*](https://dicook.github.io/mulgar_book/). GitHub source: https://github.com/dicook/mulgar_book
 
 
@@ -44,7 +50,7 @@ Over time, I carefully reviewed a number of online versions of R-related books u
 
 ## The fundamental tension
 
-In `.Rnw`, the pipeline was transparent and controllable:
+In `.Rnw`, the pipeline was **totally transparent**, involving only LaTeX and R. All stages were controllable:
 
 ```
 .Rnw  →  knitr  →  .tex  →  LaTeX  →  BibTeX  →  LaTeX  →  PDF
@@ -53,6 +59,13 @@ In `.Rnw`, the pipeline was transparent and controllable:
 Every step was explicit. You could run them individually, inspect intermediate files, and
 insert extra steps (like `authorindex`) at precisely the right point. The `.tex` file was
 *yours* — it contained exactly the `\cite{}`, `\index{}`, and `\usepackage{}` calls you wrote.
+
+If need be, I could open the generated `.tex` file in [TeXStudio]() and see exactly where there
+were problems, re-run different build steps, and so forth. Not only was this conceptually simple,
+but the LaTeX-based process allowed me to:
+
+* Set something in `book.Rnw` so that only selected chapters were compiled, to save time when testing: `includeonly = c("ch01", "ch02", "ch03", "ch04")` 
+* Have other sources in the same folder to build something of an Instructor's Manual, with solutions to problems in the chapters.
 
 In Quarto, the pipeline is:
 
@@ -77,7 +90,7 @@ book if you want to take advantages of some of the lovely features Quarto offers
 
 ## Problem 1: You can't keep your project on Dropbox
 
-In `.Rnw`, the DDAR project lived in a `C:/Dropbox/` folder with no issues, and was sync'd with other authors via GitHub.
+In `.Rnw`, the DDAR project lived in a `C:/Dropbox/` folder with no issues, and this was sync'd with other authors and contributors via GitHub.
 I use multiple machines (Home / Office) to work on my writing projects, and Dropbox was a simple way to sync this work
 across machines. Edit something on my laptop, and it is there on my other machines.
 Other Cloud services may work similarly.
@@ -326,9 +339,3 @@ In fairness:
 
 ---
 
-## Possible title variants
-
-- *Why Quarto Is Not LaTeX, However Hard It Tries*
-- *The Hidden Costs of "Write Once, Render Twice": A Quarto Book Diary*
-- *From `.Rnw` to Quarto: What I Gained, What I Lost*
-- *Quarto Growing Pains: A Technical Post-Mortem*
