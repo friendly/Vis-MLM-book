@@ -71,29 +71,18 @@ backticks instead of `r func()`. These need to be updated chapter by chapter.
 
 ### Priority cases found (scan of *.qmd files, 2026-04-06)
 
-**`03-getting_started.qmd`** — specific example to fix first:
-- Line 130: `<!-- (produced by \`r func("stat_ellipse()")\`) -->` — uncomment and use
-- Line 131: `(produced by \`stat_ellipse()\`)` — replace with `r func("stat_ellipse()")`
-- Line 134: `\ix{stat_ellipse()@\texttt{stat\_ellipse()}}` — **remove** (redundant once
-  line 131 uses `func()`)
+**`03-getting_started.qmd`** — DONE (user fixed directly):
+- `stat_ellipse()` converted; old bare-backtick and `\ix{}` commented out.
 
-**`04-multivariate_plots.qmd`** — many bare backtick functions:
-```
-line 367:  `geom_smooth()`
-line 465:  `facet_wrap()`
-line 1176: `theme_penguins()`
-line 1273: `stat_bagplot()`
-line 1328: `geom_hdr()`
-line 1716: `geom_text()`
-line 1873: `scales::hue_pal()`
-line 2342: `ggally_cor()`
-line 2344: `ggally_points()`
-line 2345: `ggally_densityDiag()`
-line 2346: `ggally_barDiag()`
-line 2523: `pcp_select()`
-line 2525: `pcp_scale()`
-line 2526: `pcp_arrange()`
-```
+**`04-multivariate_plots.qmd`** — DONE (2026-04-06):
+Converted: `geom_smooth()`, `facet_wrap()`, `theme_penguins()` (×2), `legend_inside()`,
+`stat_bagplot()`, `geom_density_2d()` (×2), `MASS::kde2d()`, `geom_hdr()` (×2),
+`geom_text()`, `scales::hue_pal()`, `ggpairs()`, `ggally_cor()`, `ggally_points()`,
+`ggally_densityDiag()`, `ggally_barDiag()`, `my_panel()`, `pcp_select()`, `pcp_scale()`,
+`pcp_arrange()`.
+
+Left as bare backtick: `facet_grid(row ~ col)` (shows argument syntax, not just name);
+`ggally_NAME()` (placeholder pattern, not a real function).
 
 **`05-pca-biplot.qmd`**:
 ```
