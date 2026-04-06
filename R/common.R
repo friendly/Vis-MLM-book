@@ -389,17 +389,18 @@ func <- function(name, package=NULL, test=FALSE) {
     fpkg  <- wds[1]
   }
   if (knitr::is_latex_output()) {
-    funcname <- paste0("\\texttt{", name, "}")
+    funcname <- paste0("\\texttt{", escape(name), "}")  # escape _ as \_ for display
   }
   else {
     funcname <- paste0("`", name, "`")
   }
 
-  # index entries  
+  # index entries
   ref <- funcname
   if (knitr::is_latex_output() | test) {
-    # ref <- paste0(ref, "\n\\index{", tt(fname), "}")
-    ref <- paste0(ref, "\n\\ixfunc{", fname, "}\n")
+    # \ixfunc{sort-key}{display}: sort key keeps raw _ (makeindex handles it);
+    # display uses \_ so LaTeX can typeset it when processing the .ind file
+    ref <- paste0(ref, "\n\\ixfunc{", fname, "}{", escape(fname), "}\n")
   }
   ref
 }

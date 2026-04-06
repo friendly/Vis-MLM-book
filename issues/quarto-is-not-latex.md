@@ -21,7 +21,7 @@ automatically included. I made this choice because Quarto promised to be able to
 
 Some publishers, such as CRC Press, allow authors to do this, with the online version being free. A trade-off is that the publisher wants me
 to submit, before printing, essentially camera-ready copy they can ship off to a 3rd world printer. That means: All pages are correctly laid out,
-with regard to figure size & placement, no widow-lines breaking pages, 
+with regard to figure size & placement, no widow-lines breaking pages, proper, comprehensive indexes (Subject, Author), ...
 
 For comparison, my
 previous book ([*Discrete Data Analysis with R*](https://www.taylorfrancis.com/books/mono/10.1201/b19022/discrete-data-analysis-michael-friendly-david-meyer)) was written in `.Rnw` format — This was essentially text written in LaTeX (`\chapter{}, \begin{itemize}, \emph{}, $math$, ...`)
@@ -60,6 +60,10 @@ Every step was explicit. You could run them individually, inspect intermediate f
 insert extra steps (like `authorindex`) at precisely the right point. The `.tex` file was
 *yours* — it contained exactly the `\cite{}`, `\index{}`, and `\usepackage{}` calls you wrote.
 
+Most importantly, I had only two languages to work with--- R for the code, analyses, outputs and graphs,
+(knitr for including that stuff),
+and LaTeX for compiling the knitted `.tex` file to a PDF book I felt proud of.
+
 If need be, I could open the generated `.tex` file in [TeXStudio]() and see exactly where there
 were problems, re-run different build steps, and so forth. Not only was this conceptually simple,
 but the LaTeX-based process allowed me to:
@@ -73,8 +77,12 @@ In Quarto, the pipeline is:
 .qmd  →  knitr  →  .md  →  pandoc (citeproc + LaTeX writer)  →  .tex  →  LaTeX  →  PDF
 ```
 
+The first thing to recognize is that nearly everything is controlled by your `_quarto.yml` file. You set the `project:` type,
+`book:` parameters (title, author, ...), then list your `chapters:`, include `bibliography:` information and so forth.
+That works great for simple projects, but, when you have trouble, it is hard to tell where to look for a solution.
+
 Pandoc acts as an opaque intermediary. It reads your Markdown, resolves citations itself
-(via citeproc), and generates `.tex` that doesn't necessarily look like LaTeX you would have
+(via pandoc's `citeproc`), and generates `.tex` that doesn't necessarily look like LaTeX you would have
 written. External tools that plug into the traditional LaTeX pipeline often break, because the
 `.tex` file and `.aux` file don't have the structure those tools expect.
 

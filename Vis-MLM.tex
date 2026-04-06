@@ -184,6 +184,7 @@
 
 %%%%%%%%%%%%%%%  Start of preamble.tex %%%%%%%%%%%%%%%%%% 
 %%%%%%%%%%%%%%%  --------------------- %%%%%%%%%%%%%%%%%%
+\usepackage{pdfpages}  % for inserting cover page PDF
 \usepackage{booktabs}
 \usepackage{longtable}
 \usepackage[bf,singlelinecheck=off]{caption}
@@ -333,7 +334,9 @@
   \let\@ai@orig@citex\@citex
   \def\@citex[#1]#2{\@ai@orig@citex[#1]{#2}\@aicitey{#2}}%
   \if@filesw\immediate\write\@auxout{%
-    \string\bibdata{references,R-refs,pkgs,packages,Rpackages-4.5.1}}\fi}
+    \string\bibdata{references,R-refs,pkgs,packages,Rpackages-4.5.1}}\fi
+  \includepdf[pages=1, fitpaper=true]{images/cover/cover-peng.pdf}
+    }
 
 \newcommand{\IX}[1]{\index{#1}#1}
 \newcommand{\ix}[1]{\index{#1}}
@@ -341,10 +344,14 @@
 \newcommand{\ixon}[1]{\index{#1|(}}
 \newcommand{\ixoff}[1]{\index{#1|)}}
 
-% R functions
-\newcommand{\ixfunc}[1]{%
-  \index{#1@\texttt{#1()}}%
- }
+% R functions — two args: {sort-key}{display-name}
+% Caller includes () in both args; \ixfunc does NOT add them.
+% Sort key: plain name with raw _ (OK for makeindex sorting; not typeset)
+% Display:   name with \_ escaping so LaTeX can typeset it from the .ind file
+% e.g. \ixfunc{stat_ellipse()}{stat\_ellipse()}
+\newcommand{\ixfunc}[2]{%
+  \index{#1@\texttt{#2}}%
+}
 
 % R packages:  indexed under both package name and packages!
 \newcommand{\ixp}[1]{%
@@ -461,9 +468,9 @@
 \newcommand*\listoflistings{\listof{codelisting}{List of Listings}}
 \usepackage{amsthm}
 \theoremstyle{definition}
-\newtheorem{exercise}{Exercise}[chapter]
-\theoremstyle{definition}
 \newtheorem{example}{Example}[chapter]
+\theoremstyle{definition}
+\newtheorem{exercise}{Exercise}[chapter]
 \theoremstyle{remark}
 \AtBeginDocument{\renewcommand*{\proofname}{Proof}}
 \newtheorem*{remark}{Remark}
@@ -512,11 +519,16 @@
 \makeatother
 \subtitle{A Romance in Many Dimensions}
 \author{Michael Friendly}
-\date{2026-04-05}
+\date{2026-04-06}
 \begin{document}
 \maketitle
 
 %%%%%%%%%%%%%  START: before-body.tex ##############
+
+% Insert cover page from external PDF (pdfpages preserves bookmarks/hyperlinks)
+% Moved to preamble.tex in \AtBeginDocument{}
+%\includepdf[pages=1, fitpaper=true]{images/cover/cover-peng.pdf}
+\cleardoublepage
 
 \thispagestyle{empty}
 
@@ -1087,19 +1099,12 @@ Press.
 
 \chapter{Warm-up Exercises}\label{prelude}
 
-\begin{tcolorbox}[enhanced jigsaw, arc=.35mm, bottomrule=.15mm, bottomtitle=1mm, breakable, colback=white, colbacktitle=quarto-callout-note-color!10!white, colframe=quarto-callout-note-color-frame, coltitle=black, left=2mm, leftrule=.75mm, opacityback=0, opacitybacktitle=0.6, rightrule=.15mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Note}, titlerule=0mm, toprule=.15mm, toptitle=1mm]
-
-This will become a numbered chapter to allow cross-references, but that
-entails renaming the chapter \& figures files
-
-\end{tcolorbox}
-
-The aim of this book is to blow your mind! Or at least to expand your
-imagination and take visual thinking to higher dimensions. But, just
-like kneading dough to make it more flexible before shaping and baking,
-or stretching your muscles before a race or starting your car before you
-drive, it is helpful to begin with some warm-up exercises, mental ones
-here.
+The aim of this book is to blow your mind! OK, that's way too
+hyperbolic. At the very least, I hope to expand your imagination and
+take visual thinking to higher dimensions. But, just like kneading dough
+to make it more flexible before shaping and baking, or stretching your
+muscles before a race or starting your car before you drive, it is
+helpful to begin with some warm-up exercises, mental ones here.
 
 In this book, I present a number of graphical methods, some novel,
 designed to help you understand multivariate data and models,
@@ -1907,10 +1912,10 @@ matrix \(\mathbf{B}\), with one column for each of the \(p\) outcome
 variables.
 
 Computationally, all of these are handled by a single R function,
-\texttt{lm()} \ixfunc{lm()} . Methods for the resulting \texttt{"lm"}
-objects (also of class \texttt{mlm"} for the multivariate case) provide
-general means for analysis and graphics and have been developed widely
-in various R packages.
+\texttt{lm()} \ixfunc{lm()}{lm()} . Methods for the resulting
+\texttt{"lm"} objects (also of class \texttt{mlm"} for the multivariate
+case) provide general means for analysis and graphics and have been
+developed widely in various R packages.
 
 Happily as well, hypothesis tests for the MLM are also straight-forward
 generalizations of the familiar \(F\) and \(t\)-tests for univariate
@@ -2221,11 +2226,11 @@ representing the correlation between \(x\) and \(y\).}
 \end{figure}%
 
 This figure is produced as follows, using a single call to
-\texttt{ggplot()} \ixfunc{ggplot()} , faceted by \texttt{dataset}. As we
-will see later (Section~\ref{sec-data-ellipse}), the data ellipse
-(produced by \texttt{stat\_ellipse()}) reflects the correlation between
-the variables. \index{data ellipse}
-\index{stat_ellipse()@\texttt{stat\_ellipse()}}
+\texttt{ggplot()} \ixfunc{ggplot()}{ggplot()} , faceted by
+\texttt{dataset}. As we will see later (Section~\ref{sec-data-ellipse}),
+the data ellipse (produced by \texttt{stat\_ellipse()}
+\ixfunc{stat_ellipse()}{stat\_ellipse()} ) reflects the correlation
+between the variables. \index{data ellipse}
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -2840,7 +2845,7 @@ capsule was drawn randomly from the first drum, another from the numbers
 drum was picked simultaneously, giving a doubly-randomized sequence.
 
 Of course, if they had R, the entire process could have been done using
-\texttt{sample()} \ixfunc{sample()} :
+\texttt{sample()} \ixfunc{sample()}{sample()} :
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -2950,10 +2955,10 @@ For example, the plot of the Davis data in Figure~\ref{fig-davis-reg1}
 effectively fits a separate regression line for males and females, which
 is expressed by the model formula
 \texttt{repwt\ \textasciitilde{}\ weight\ *\ sex}. Having fit the model
-using \texttt{lm()} \ixfunc{lm()} , the plot method for a \texttt{"lm"}
-object produces a set of four diagnostic plots (called the ``regression
-quartet'' Section~\ref{sec-regression-quartet}) designed to highlight
-problems with the fitted model.
+using \texttt{lm()} \ixfunc{lm()}{lm()} , the plot method for a
+\texttt{"lm"} object produces a set of four diagnostic plots (called the
+``regression quartet'' Section~\ref{sec-regression-quartet}) designed to
+highlight problems with the fitted model.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -11156,18 +11161,18 @@ The key ideas are:
   within a single framework of the \textbf{general linear model} (GLM).
   Regression and ANOVA differ only in that the predictors in the former
   are quantitative, while those in the latter are discrete factors. They
-  can all be fit using \texttt{lm()} \ixfunc{lm()} .
+  can all be fit using \texttt{lm()} \ixfunc{lm()}{lm()} .
 \item
   These models extend directly to the multivariate case of \(q > 1\)
   outcomes,
   \(\mathbf{Y} = (\mathbf{y}_1, \mathbf{y}_2, \dots \mathbf{y}_q)\), and
-  are also fit using \texttt{lm()} \ixfunc{lm()} .
+  are also fit using \texttt{lm()} \ixfunc{lm()}{lm()} .
 \item
   A binary outcome \(y = (0, 1)\) and categorical outcomes like marital
   status (``never married'', ``married'', ``separated'', ``divorced'')
   can be handled within a different extension, the \textbf{generalized}
   linear model as logistic regression or multinomial regression, fit
-  using \texttt{glm()} \ixfunc{glm()} .
+  using \texttt{glm()} \ixfunc{glm()}{glm()} .
 \item
   All of these models involve linear combinations of predictors
   (weighted sums) fit to optimize some criterion, for example minimizing
@@ -11389,13 +11394,14 @@ parameter \(\beta_1\) appears as an exponent.\footnote{Taking logarithms
 \index{model formulas|(}
 
 Statistical models in R, such as those fit by \texttt{lm()}
-\ixfunc{lm()} , \texttt{glm()} \ixfunc{glm()} and many other modelling
-function in R are expressed in a simple notation that was developed by
-G. N. Wilkinson \& Rogers (\citeproc{ref-WilkinsonRogers1973}{1973}) for
-the GENSTAT software system at the Rothamsted Research Station. It
-solves the problem of having a compact way to specify any model
-consisting of any combinations of quantitative and discrete factor
-variables, interactions of these and arbitrary transformations of these.
+\ixfunc{lm()}{lm()} , \texttt{glm()} \ixfunc{glm()}{glm()} and many
+other modelling function in R are expressed in a simple notation that
+was developed by G. N. Wilkinson \& Rogers
+(\citeproc{ref-WilkinsonRogers1973}{1973}) for the GENSTAT software
+system at the Rothamsted Research Station. It solves the problem of
+having a compact way to specify any model consisting of any combinations
+of quantitative and discrete factor variables, interactions of these and
+arbitrary transformations of these.
 
 In this, a \textbf{model formula} take the forms
 
@@ -11451,15 +11457,15 @@ intercept \(\beta_0 = 0\) can be specifies as
 
 Function calls on the RHS, such as \texttt{poly(x,\ 3)} are evaluated
 directly, but to use a special model operator, like \texttt{\^{}} must
-be ``protected'' by wrapping the term in \texttt{I()} \ixfunc{I()} ,
-meaning ``identity'' or ``inhibit''. Thus, the model
+be ``protected'' by wrapping the term in \texttt{I()} \ixfunc{I()}{I()}
+, meaning ``identity'' or ``inhibit''. Thus, the model
 \texttt{y\ \textasciitilde{}\ x\ +\ I(x\^{}2)} means the quadratic model
 \(y = \beta_0 + \beta_1 x + \beta_2 x^2\). This differs from the model
 \texttt{y\ \textasciitilde{}\ poly(x,\ 2)} in that the former uses the
 raw \texttt{x,\ x\^{}2} values (which are necessarily positively
-correlated) while \texttt{poly()} \ixfunc{poly()} converts these to
-orthogonal polynomial scores, which are uncorrelated (and therefore free
-from problems of collinearity).
+correlated) while \texttt{poly()} \ixfunc{poly()}{poly()} converts these
+to orthogonal polynomial scores, which are uncorrelated (and therefore
+free from problems of collinearity).
 
 \index{model formulas|)}
 
@@ -11536,8 +11542,8 @@ The coefficients of the linear model are also easy to interpret:
 So a worker with zero years of experience can expect an income of
 \$29162 and this should increase by \$1119 for each additional year.
 However, it is not so simple to interpret the coefficients when a
-\texttt{poly()} \ixfunc{poly()} term is used. Naively plugging in the
-coefficients for \texttt{workers.mod2} gives
+\texttt{poly()} \ixfunc{poly()}{poly()} term is used. Naively plugging
+in the coefficients for \texttt{workers.mod2} gives
 
 \begin{equation}
 \operatorname{\widehat{Income}} = 46.5 + 39.111(\operatorname{Experience}) - 11.16(\operatorname{Experience^2})
@@ -11548,7 +11554,7 @@ The problem is that \(x\) = \texttt{Experience} in model
 values of \(x\) and \(x^2\) that have been made to be uncorrelated. If
 you really want to interpret the coefficient values in terms of years of
 experience, use the option \texttt{raw\ =\ TRUE} in \texttt{poly()}
-\ixfunc{poly()} :
+\ixfunc{poly()}{poly()} :
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -11700,9 +11706,9 @@ To test what we've covered above,
 \end{itemize}
 
 You can work out questions like these or explore model formulae using
-\texttt{terms()} \ixfunc{terms()} for a \texttt{"formula"} object. The
-labels of these terms can then be concatenated to a string and turned
-back into a formula using \texttt{as.formula()}:
+\texttt{terms()} \ixfunc{terms()}{terms()} for a \texttt{"formula"}
+object. The labels of these terms can then be concatenated to a string
+and turned back into a formula using \texttt{as.formula()}:
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -11727,9 +11733,9 @@ As noted above, a model formula is used to generate the
 the column of 1s for the intercept \(\beta_0\) in the model, followed by
 \(p\) columns representing the regressors
 \(\mathbf{x}_1, \mathbf{x}_2, \dots , \mathbf{x}_p\). Internally,
-\texttt{lm()} \ixfunc{lm()} uses \texttt{stats::model.matrix()} and you
-can use this to explore how factors, interactions and other model terms
-are represented in a model object.
+\texttt{lm()} \ixfunc{lm()}{lm()} uses \texttt{stats::model.matrix()}
+and you can use this to explore how factors, interactions and other
+model terms are represented in a model object.
 
 For a small example, here are a few observations representing income
 (\texttt{inc}) and \texttt{type} of occupation, taking on values
@@ -11841,8 +11847,8 @@ represented as \(k-1\) comparisons among the factor level means, or
 \(k-1\) separate questions asking how the means differ.
 
 Base R provides several coding schemes via assignment to the
-\texttt{contrasts()} \ixfunc{contrasts()} function for a factor, as in
-\texttt{contrasts(df\$Drug)\ \textless{}-\ ...} one of:
+\texttt{contrasts()} \ixfunc{contrasts()}{contrasts()} function for a
+factor, as in \texttt{contrasts(df\$Drug)\ \textless{}-\ ...} one of:
 
 \begin{itemize}
 \item
@@ -11850,8 +11856,9 @@ Base R provides several coding schemes via assignment to the
   level using \(k-1\) dummy (0, 1) variables. This is the default, and
   the reference level is taken as the first (in alphabetic or numerical
   order). You can change the reference level using \texttt{relevel()}
-  \ixfunc{relevel()} or \texttt{reorder()} \ixfunc{reorder()} for the
-  factor, or simply using \texttt{factor(A,\ levels\ =\ ...)}.
+  \ixfunc{relevel()}{relevel()} or \texttt{reorder()}
+  \ixfunc{reorder()}{reorder()} for the factor, or simply using
+  \texttt{factor(A,\ levels\ =\ ...)}.
 \item
   \texttt{contr.sum()}: Compares each level to the grand mean.
 \item
@@ -31825,7 +31832,7 @@ for \texttt{MASS::lda()} in the material above.
 In Chapter~\ref{sec-eqcov}, we saw that the Penguin groups had unequal
 covariance matrices when tested by Box's \(\mathcal{M}\) test, but these
 did not differ dramatically in visual displays (e.g.,
-\textbf{?@fig-covEllipse-pairs}).
+Figure~\ref{fig-peng-covEllipse-pairs}).
 
 \begin{Shaded}
 \begin{Highlighting}[]
