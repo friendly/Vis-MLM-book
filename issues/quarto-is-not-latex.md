@@ -24,14 +24,21 @@ to submit, before printing, essentially camera-ready copy they can ship off to a
 with regard to figure size & placement, no widow-lines breaking pages, proper, comprehensive indexes (Subject, Author), ...
 
 For comparison, my
-previous book ([*Discrete Data Analysis with R*](https://www.taylorfrancis.com/books/mono/10.1201/b19022/discrete-data-analysis-michael-friendly-david-meyer)) was written in `.Rnw` format — This was essentially text written in LaTeX (`\chapter{}, \begin{itemize}, \emph{}, $math$, ...`)
+previous book ([*Discrete Data Analysis with R*](https://www.taylorfrancis.com/books/mono/10.1201/b19022/discrete-data-analysis-michael-friendly-david-meyer)) was written in `.Rnw` format — This was essentially text written in LaTeX (Using `\chapter{}, \begin/end{itemize}, \emph{}, $math$, ...`)
 with embedded R code chunks (Sweave/knitr).
 
 In that workflow, I had **complete control** over the entire process of turning LaTeX source into the PDF was exactly what I wanted. I could easily define shorthands
-for LaTeX math in one file (`commands.tex`), used as `\input{commands}`
-With Quarto, I was trading that control for
-convenience — write once in Markdown, get both formats.
+for LaTeX math in one file (`commands.tex`), used as `\input{commands}` available globally. More importantly, I could control the page design and layout
+even though my book design skills are limited. For example, I wanted to have a visual table of contents for each chapter, which I did using `tikz`
+fairly easily.
 
+![](images/DDAR-Ch2-header.png)
+
+I also designed similar visual Part pages using `tikz` for the chapters within each part, and  a coherent scheme of accent colors for the chapters within
+each part. Among other books I've written, it's the one I'm most proud of.
+
+With Quarto, as I later realized, I was trading that control for
+convenience — I could write once in Markdown, and get both formats (HTML, PDF) from a single source. That is something I didn't have before.
 The trade-off turned out to be less favorable than advertised. This post documents the places where
 Quarto's abstraction layer over LaTeX broke things that were trivial in `.Rnw`, and the
 workarounds I found (or didn't).
@@ -64,11 +71,12 @@ Most importantly, I had only two languages to work with--- R for the code, analy
 (knitr for including that stuff),
 and LaTeX for compiling the knitted `.tex` file to a PDF book I felt proud of.
 
-If need be, I could open the generated `.tex` file in [TeXStudio]() and see exactly where there
+If need be, I could open the generated `.tex` file in [TeXStudio](https://www.texstudio.org/), a remarkable IDE for anything LaTeX
+and see exactly where there
 were problems, re-run different build steps, and so forth. Not only was this conceptually simple,
 but the LaTeX-based process allowed me to:
 
-* Set something in `book.Rnw` so that only selected chapters were compiled, to save time when testing: `includeonly = c("ch01", "ch02", "ch03", "ch04")` 
+* Set something in the main `book.Rnw` so that only selected chapters were compiled, to save time when testing: `includeonly = c("ch01", "ch02", "ch03", "ch04")` 
 * Have other sources in the same folder to build something of an Instructor's Manual, with solutions to problems in the chapters.
 
 In Quarto, the pipeline is:
@@ -79,7 +87,7 @@ In Quarto, the pipeline is:
 
 The first thing to recognize is that nearly everything is controlled by your `_quarto.yml` file. You set the `project:` type,
 `book:` parameters (title, author, ...), then list your `chapters:`, include `bibliography:` information and so forth.
-That works great for simple projects, but, when you have trouble, it is hard to tell where to look for a solution.
+That works great for simple projects. But, when you have trouble, it is hard to tell where to look for a solution.
 
 Pandoc acts as an opaque intermediary. It reads your Markdown, resolves citations itself
 (via pandoc's `citeproc`), and generates `.tex` that doesn't necessarily look like LaTeX you would have
@@ -89,12 +97,39 @@ written. External tools that plug into the traditional LaTeX pipeline often brea
 What this also means for an author is that you have much, much more to try to understand for writing a
 book if you want to take advantages of some of the lovely features Quarto offers:
 
-* Extensions:
-* Multiple language support: 
-* Conditional compilation: The possibility to produce multiple output formats (HTML, PDF, eBook,) from a single source
-* 
+* **Extensions**: In a way reminiscent of LaTeX packages, the Quarto community has developed a wide range of Quarto extensions ...
+* **Multiple language** support: Quarto beautifully support the use of different computer languages. You can have code chunks using R, or Python; `mermaid` allows simple diagrams, syntax highlighting is largely built-in, and so forth.
+* **Conditional** compilation: The possibility to have different content processed for different output formats (HTML, PDF, ...) all from a single source. For example, in Vis-MLM I'm able to include animated graphics in the HTML version, and replace these with static images in the PDF version.
+* **Tabsets**: For HTML output, you can easily design outputs to allow a reader to see alternative views of something (R code vs. Python, views of data for different strata, ...). But this is a feature that has no natural equivalent in a printed book.
 
+But you can quickly get into trouble if you want to take advantage of features (like easy index generation, fancy page design, ...) that
+are simple in LaTeX but frought in Quarto. As I write this, a [new Quarto 2.0](https://quarto.org/docs/blog/posts/2026-04-06-whats-next-quarto-2/) is in the works. They say: "Quarto 1 is built by integrating a number of tools that work very well in isolation, but aren’t designed to be performant when used together." But the issues run deeper.
 ---
+
+## Whitespace shouldn't matter
+
+When you are writing, the focus should be on your ideas, expressed in words, using markup to express those in style and with formatting.
+What you see and do in an editor window should reflect the WYSEIWYG principle that "What You See Is What You Get". Markdown and Quarto
+violate this in several ways.
+
+* **Hard line breaks**: ending a line with two or more spaces followed by a return creates the equivalent to an HTML `<br>` tag within the same paragraph, breaking the text to a new line at that point. 
+
+
+## The `<div>` vs `:::` design flaw
+
+Before considering content of what you want to write and how you do it, I have to comment on one aspect of the Quarto implementation of nearly everything
+that is not straight-up text or code, and allows things like conditional compilation. The HTML `<div> ... </div>`  (short for "division")  construct
+is a generic container used to group other HTML elements together to provide 
+a flexible tool for web structure and styling. For example:
+
+* It is used to divide a web page into distinct sections, such as a navigation bar, sidebar, or footer.
+* By assigning a class or id to a <div>, developers can apply specific CSS styles (like background colors, borders, or alignment) to a whole group of elements at once.
+* It serves as a "hook" for Javascript scripts to target and manipulate content dynamically, such as showing or hiding a specific section of a page.
+
+A key feature is that `<div> ... </div>` can be nested inside one another to create complex, hierarchical structures whose properties
+are naturally inherited from their parents. If you are writing with HTML directly or using an R package (??) to write HTML in your work,
+an important feature is to be able to **see** the visual hierarchy in the text, usually done by indenting.
+
 
 ## Problem 1: You can't keep your project on Dropbox
 
@@ -314,6 +349,110 @@ automatically on the next page refresh. In Quarto, you must close the PDF before
 
 ---
 
+## Problem 9: The Mysterious Cache
+
+### The underscore-in-index fix that broke footnotes (April 2026)
+
+**In `.Rnw`:** `\index{}` entries are written directly in the `.tex` source by the author.
+If a dataset name like `Prestige` is referenced inline, the author writes something like
+`\texttt{Prestige}\index{Prestige@\texttt{Prestige} data}` and the structure is exactly what
+the author typed — no intermediary, no caching.
+
+**In Quarto:** Inline R expressions (`` `r dataset("Prestige")` ``) are executed by knitr and
+their output is spliced into the Markdown, which pandoc then converts to LaTeX. The executed
+output is also cached in `.quarto/_freeze/<chapter>/execute-results/tex.json` so Quarto can
+skip re-executing unchanged chunks on subsequent builds.
+
+This cache is a hidden layer between the R source and the LaTeX output. When the R function
+changes but the surrounding `.qmd` source does not, Quarto sees no reason to invalidate the
+cache — and the old output silently persists.
+
+#### How the error arose
+
+Earlier (Problem 3), the `func()` and `dataset()` helpers in `R/common.R` were updated to fix
+underscore-in-index entries. The old version emitted multiple lines from a single inline R call:
+
+```latex
+\texttt{Prestige}
+\index{Prestige@\texttt{Prestige} data}%
+\index{datasets!Prestige@\texttt{Prestige}}%
+```
+
+Note the trailing `%` on each `\index` line — a TeX comment character. In LaTeX, `%` discards
+everything to the right of it on the same line, including any following whitespace or newline.
+This was intentional in the original code to suppress unwanted blank lines between the
+`\index{}` calls. The fix changed the function to emit a single-line macro call instead:
+
+```latex
+\texttt{Prestige}\ixd{Prestige}
+```
+
+where `\ixd{}` is defined in `preamble.tex` with the `%` safely inside the macro body (where
+it is consumed during tokenization and never appears in the expansion).
+
+The problem: the freeze cache for `04-multivariate_plots` still held the **old output** with
+trailing `%`. Chapter 4 contains the only occurrence of this pattern:
+
+```qmd
+The `r dataset("Prestige")` dataset[^fn-blishen] ...
+```
+
+In the cached LaTeX, this became:
+
+```latex
+\texttt{Prestige}
+\index{Prestige@\texttt{Prestige} data}%
+\index{datasets!Prestige@\texttt{Prestige}}%.\footnote{...}
+```
+
+The `%` on the last `\index{}` line commented out `.\footnote{The dataset was ...` — the
+footnote brace was never opened. When LaTeX later encountered the closing `}` for the footnote,
+it had nothing to close, producing:
+
+```
+! Extra }, or forgotten \endgroup.
+l.4219 ...citeproc{ref-Blishen-etal-1987}{1987}).}
+```
+
+Because the error occurred before the bibliography section was typeset, the `.aux` file was
+truncated — `\bibcite` entries were not written — and the **next build also failed** for the
+same reason. Classic deadlock: the first failure corrupts the state that the second build needs.
+
+The error message pointed at `\citeproc{ref-Blishen-etal-1987}{1987}` (the last token before
+the orphaned `}`), which led to a long but incorrect investigation of the citeproc machinery,
+the author-index `\@citex` patch, and `.aux` file integrity. The real culprit — the stale
+freeze cache — was invisible to that investigation.
+
+#### Why the upgrade to Quarto 1.9.36 surfaced the bug
+
+The broken cache had presumably existed since the `dataset()`/`func()` fix was applied. Earlier
+Quarto builds (before the upgrade) had not triggered the error, possibly because the cache was
+freshly generated or re-executed at that time. After upgrading to 1.9.36, a full rebuild
+re-used all existing freeze caches, including the stale `tex.json` for chapter 4.
+
+#### Fix
+
+Delete the stale freeze cache file:
+
+```bash
+rm .quarto/_freeze/04-multivariate_plots/execute-results/tex.json
+```
+
+On the next build, Quarto re-executes chapter 4's R code, generating fresh output with
+`\ixd{Prestige}` (no trailing `%`), and the footnote opens normally.
+
+**Status:** Fixed. The `\ixd{}` macro in `preamble.tex` is the permanent solution; the cache
+deletion was a one-time cleanup. The Quarto freeze cache should be treated as a build artifact
+that can become stale whenever R helper functions change — analogous to a `.o` file that is not
+recompiled because the header it depends on has no Make rule connecting them.
+
+**Lesson:** When a LaTeX error appears immediately after an R helper function is changed, check
+the freeze cache before investigating the LaTeX machinery. Look in
+`.quarto/_freeze/<chapter>/execute-results/tex.json` for the cached output and compare it
+against what the current R function would produce.
+
+---
+
 ## Things Quarto does better
 
 In fairness:
@@ -341,6 +480,7 @@ In fairness:
 | Build control | Explicit multi-step Makefile | One button; hard to customize |
 | Dropbox-friendly | Yes | No |
 | PDF viewer during build | Can stay open (overwrites in place) | Must be closed (deletes and recreates) |
+| Freeze cache staleness | No cache; re-knit is explicit | Cache can persist stale output; silent until LaTeX fails |
 | Windows compatibility | Good | CRLF issues with external tools |
 | HTML output | Minimal (via `htlatex` etc.) | Excellent, first-class |
 | Online publishing | Manual | Built-in GitHub Pages workflow |

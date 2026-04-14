@@ -148,7 +148,7 @@ is the recommended way to control index formatting.
    `{\de{O}}cagne`) caused "Undefined control sequence" errors during author index
    typesetting. Fix: define the command directly in `preamble.tex`.
 
-#### Status (2026-04-05): SOLVED
+#### Status (2026-04-05): SOLVED — but see new problem below
 
 - [x] Recompile PDF — `\citationpage` entries and `\bibdata` now written to `index.aux`
 - [x] Run `bash make-authorindex.sh` — produces `index.ain` (808 lines, ~400 authors)
@@ -158,6 +158,113 @@ is the recommended way to control index formatting.
 - [ ] **Remaining**: recompile once more after adding `\providecommand{\de}` to
   `preamble.tex` to clear the "Undefined control sequence" error on `{\de{O}}cagne`
 - [ ] Spot-check a few author entries against the bibliography for correctness
+
+---
+
+### NEW PROBLEM (2026-04-07): `\@citex` patch breaks PDF build — deadlock
+
+#### Symptom
+
+```
+! Extra }, or forgotten \endgroup.
+l.4211 ...citeproc{ref-Blishen-etal-1987}{1987}).}
+```
+
+LaTeX stops at page 74, writing an incomplete `.aux` file. Next build fails for
+the same reason (citation still undefined). **Deadlock.**
+
+#### Root cause
+
+The `\@citex` patch (Option A above) calls `\@aicitey{key}` inside the same
+invocation as `\@ai@orig@citex`. When `\citeproc{key}{text}` is called inside
+`\footnote{}`, the call sequence is:
+
+```
+\footnote{ ... \citeproc{key}{text} ... }
+    ↳ \begingroup                          ← from \citeproc
+        \cite{key}
+            ↳ \@citex[]{key}              ← patched version calls \@aicitey{key}
+                  group imbalance here when citation is undefined on first pass
+    \endgroup
+}                                          ← LaTeX says "Extra }"
+```
+
+The group balance breaks when `\@citex` processes an undefined citation inside
+the `\begingroup...\endgroup` + `\footnote{}` combination. The error is fatal:
+LaTeX stops after page 74, writing an incomplete `.aux`. Since `\bibcite`
+entries are only written at the end of the document (where the bibliography is),
+the next build also has undefined citations → same error → deadlock.
+
+**Why Tufte:83 footnote (ch. 3, line 2065) did NOT trigger the error:**
+Its `\bibcite` entry survived in the `.aux` from an even-earlier successful
+build. The Blishen-etal-1987 entry was lost when the `.aux` was truncated by
+the first failed build.
+
+**Why citations in footnotes "used to work":**
+Before the `\@citex` patch was added (2026-04-05), `\citeproc` in footnotes
+worked fine. The patch is what broke them. The first build after adding the
+patch went far enough to truncate the `.aux`, and subsequent builds were
+trapped in the deadlock.
+
+#### Fix applied (2026-04-07)
+
+Two changes to `latex/preamble.tex`:
+
+1. **Disabled the `\@citex` patch** (commented out the `\let` and `\def` lines
+   in `\AtBeginDocument`). This means `\@aicitey` is no longer called on every
+   citation, so the author index cannot be regenerated. The pre-built `index.ain`
+   is still used for typesetting.
+
+2. **Redefined `\citeproc`** to handle undefined citations gracefully:
+
+   ```latex
+   \makeatletter
+   \renewcommand\citeproc[2]{%
+     \@ifundefined{b@#1}{#2}%
+       {\begingroup\def\citeproctext{#2}\cite{#1}\endgroup}%
+   }
+   \makeatother
+   ```
+
+   If the citation is **undefined** (first pass, stale `.aux`): output the
+   pre-formatted text `#2` directly — no `\begingroup...\endgroup`, no group
+   imbalance. If **defined**: use the original mechanism (preserves hyperlinks).
+
+   Pandoc provides the correct formatted text in `#2` regardless, so the output
+   is identical either way. This breaks the deadlock permanently.
+
+   The same redefinition was also applied directly to `Vis-MLM.tex` for
+   immediate use (Quarto will regenerate Vis-MLM.tex from preamble.tex on the
+   next build).
+
+#### Status (2026-04-07): Build fixed; author index disabled
+
+- The `\@citex` patch is **disabled** — author index cannot be regenerated
+  (would cause the same "Extra }" deadlock).
+- The pre-built `index.ain` (from 2026-04-05) is still used for typesetting.
+  It will become stale as chapters change.
+- To regenerate the author index: re-enable the `\@citex` patch, do a
+  **TeXStudio** build (not Quarto — Quarto can't resume after first-pass errors),
+  run `bash make-authorindex.sh`, then **disable the patch again** before the
+  next Quarto build.
+
+#### Alternative fix if author index needs updating frequently
+
+Instead of patching `\@citex`, patch `\citeproc` directly — call `\@aicitey`
+**before** `\begingroup`, avoiding the group interaction:
+
+```latex
+\AtBeginDocument{%
+  \let\@ai@orig@citeproc\citeproc
+  \RenewDocumentCommand\citeproc{mm}{%
+    \@aicitey{#1}%
+    \@ai@orig@citeproc{#1}{#2}%
+  }%
+}
+```
+
+This hasn't been tested yet. The risk is that `\@aicitey{key}` expects keys in
+`ref-...` Pandoc format; needs verification against the Perl script's key-stripping logic.
 
 ---
 

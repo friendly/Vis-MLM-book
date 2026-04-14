@@ -150,11 +150,62 @@ Not acceptable for iterative review copies.
 
 ---
 
-## Recommendation
+## Status (2026-04-08): SOLVED — cover included automatically via `\AtBeginDocument`
 
-Try **Option A** (`pdfpages`) first — add `\usepackage{pdfpages}` to `preamble.tex`
-and `\includepdf[pages=1]{images/cover/cover-peng.pdf}\cleardoublepage` to
-the top of `before-body.tex`. Recompile and verify links are intact.
+Problem A1 (sizing) and A2 (ordering) are both resolved.
+
+### A1 fix — pre-scaled cover PDF
+
+`cover-peng.pdf` is A4 (597.6 × 842.4 pt = 8.27" × 11.69"). The book is
+`letterpaper` (8.5" × 11"). `fitpaper=true` changed the output page size instead
+of scaling the image; explicit `width=/height=` options were unreliable.
+
+**Solution:** Created `images/cover/cover-peng-scaled.pdf` — a letter-sized
+wrapper PDF produced by the minimal LaTeX file `latex/make-cover-scaled.tex`:
+
+```latex
+\documentclass{article}
+\usepackage[paperwidth=8.5in, paperheight=11in, margin=0pt, noheadfoot]{geometry}
+\usepackage{graphicx}
+\pagestyle{empty}
+\begin{document}
+\noindent\makebox[\paperwidth][c]{%
+  \includegraphics[height=\paperheight, keepaspectratio]{images/cover/cover-peng.pdf}%
+}%
+\end{document}
+```
+
+The A4 image is scaled to fill the page height (scale ≈ 0.94), centered
+horizontally with ~0.36" white margins on each side. Compile with:
+
+```bash
+xelatex -output-directory=images/cover latex/make-cover-scaled.tex
+mv images/cover/make-cover-scaled.pdf images/cover/cover-peng-scaled.pdf
+```
+
+If the source cover image changes, rerun this command to regenerate.
+
+### A2 fix — `\AtBeginDocument` in `preamble.tex`
+
+The `\includepdf` call was moved from `before-body.tex` into `\AtBeginDocument`
+in `preamble.tex`, so it fires before Quarto's generated title page:
+
+```latex
+\AtBeginDocument{%
+  \if@filesw\immediate\write\@auxout{%
+    \string\bibdata{references,R-refs,pkgs,packages,Rpackages-4.5.1}}\fi
+  \includepdf[pages=1]{images/cover/cover-peng-scaled.pdf}
+}
+```
+
+No `fitpaper`, no scaling options — the cover PDF is already the correct size.
+
+### Result
+
+- Cover appears as the first page of the compiled PDF, before Quarto's title page.
+- Correctly sized and centered on a letter-sized page.
+- Bookmarks and hyperlinks in the rest of the document are unaffected.
+- No post-processing in Acrobat needed for review copies.
 
 ---
 

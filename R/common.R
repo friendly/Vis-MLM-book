@@ -264,7 +264,9 @@ pkg <- function(package, cite=FALSE) {
     # ref <- paste0(ref, "\n\\index{", tt(package), " package}",
     #                     "\n\\index{packages!", tt(package), "}\n")
     # use \ixp{} latex macro to simplify that
-    ref <- paste0(ref, "\n\\ixp{", package, "}\n")
+    # NO \n before/after: multi-line inline output causes pandoc to add % at line breaks,
+    # which can comment out .\footnote{} that follows in the .qmd source.
+    ref <- paste0(ref, "\\ixp{", package, "}")
   }
   ref
 }
@@ -306,7 +308,8 @@ package <- function(package, cite=FALSE) {
     # ref <- paste0(ref, "\n\\index{", tt(package), " package}",
     #               "\n\\index{packages!", tt(package), "}\n")
     # use \ixp{} latex macro to simplify that
-    ref <- paste0(ref, "\n\\ixp{", package, "}\n")
+    # NO \n: see pkg() comment above.
+    ref <- paste0(ref, "\\ixp{", package, "}")
   }
   ref
 }
@@ -360,12 +363,12 @@ dataset <- function(name, package=NULL) {
 #  if (!is.null(dsetname_color)) ref <- colorize(dsetname, pkgname_color)
   
   if (knitr::is_latex_output()) {
-    ref <- paste0(ref, "\n\\index{", tt(dname), " data}",
-                  "\n\\index{datasets!", tt(dname), "}")
-    # Also index under package name
+    # Use \ixd / \ixp macros so index entries match those from pkg() — consistent spacing
+    # NO \n before macros: multi-line inline R output causes pandoc to add % at line
+    # breaks, which can comment out .\footnote{} that follows in the .qmd source.
+    ref <- paste0(ref, "\\ixd{", dname, "}")
     if (!is.null(dpkg)) {
-    ref <- paste0(ref, "\n\\index{", tt(dpkg), " package}",
-                  "\n\\index{packages!", tt(dpkg), "}")
+      ref <- paste0(ref, "\\ixp{", dpkg, "}")
     }
   }
   ref
@@ -400,7 +403,7 @@ func <- function(name, package=NULL, test=FALSE) {
   if (knitr::is_latex_output() | test) {
     # \ixfunc{sort-key}{display}: sort key keeps raw _ (makeindex handles it);
     # display uses \_ so LaTeX can typeset it when processing the .ind file
-    ref <- paste0(ref, "\n\\ixfunc{", fname, "}{", escape(fname), "}\n")
+    ref <- paste0(ref, "\\ixfunc{", fname, "}{", escape(fname), "}")
   }
   ref
 }

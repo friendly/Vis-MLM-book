@@ -7,9 +7,14 @@
 -- filter.
 PANDOC_VERSION:must_be_at_least '2.9'
 
--- Return an empty filter if the target format is LaTeX: the snippets will be
--- passed through unchanged.
-if FORMAT:match 'latex' then
+-- Only run this filter for HTML output. For LaTeX/PDF output the raw TeX
+-- snippets must be passed through unchanged so XeLaTeX can expand them.
+-- The original guard was `FORMAT:match 'latex'`, but Quarto's PDF build
+-- pipeline may pass a FORMAT value that does not contain "latex" (e.g. "pdf"
+-- or a Quarto-internal format), allowing the filter to run and incorrectly
+-- expand custom macros like \ixd{} into multi-line \index{} calls — which
+-- pandoc then wraps with %, commenting out following .\footnote{} openers.
+if not FORMAT:match 'html' then
   return {}
 end
 

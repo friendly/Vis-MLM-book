@@ -147,12 +147,24 @@
 % intercepts \aicite, not \cite.
 % Also write \bibdata so the Perl script knows which .bib files to pass to BibTeX.
 \AtBeginDocument{%
-  \let\@ai@orig@citex\@citex
-  \def\@citex[#1]#2{\@ai@orig@citex[#1]{#2}\@aicitey{#2}}%
+  % Disabled: \@citex patch causes "Extra }, or forgotten \endgroup" when
+  % \citeproc (used by pandoc) is inside a \footnote{} on the first LaTeX pass.
+  % index.ain is pre-built; authorindex does not need to re-run.
+  %  \let\@ai@orig@citex\@citex
+  %  \def\@citex[#1]#2{\@ai@orig@citex[#1]{#2}\@aicitey{#2}}%
   \if@filesw\immediate\write\@auxout{%
     \string\bibdata{references,R-refs,pkgs,packages,Rpackages-4.5.1}}\fi
-  \includepdf[pages=1, fitpaper=true]{images/cover/cover-peng.pdf}
+  \includepdf[pages=1]{images/cover/cover-peng-scaled.pdf}
     }
+
+% Pandoc's \citeproc{key}{text} uses \begingroup\cite{key}\endgroup.
+% On the first LaTeX pass (or when .aux is stale from a failed build),
+% undefined citations inside \footnote{} cause "Extra }, or forgotten \endgroup".
+% \renewcommand does not reliably override \NewDocumentCommand-defined commands
+% in modern LaTeX (xparse internal dispatch). Use \def at the TeX primitive level.
+% Pandoc provides the correctly formatted text in #2 — \cite{#1} is redundant
+% for Pandoc citeproc documents (no BibTeX step; bibliography is already in .tex).
+\def\citeproc#1#2{#2}
 
 \newcommand{\IX}[1]{\index{#1}#1}
 \newcommand{\ix}[1]{\index{#1}}
@@ -165,23 +177,17 @@
 % Sort key: plain name with raw _ (OK for makeindex sorting; not typeset)
 % Display:   name with \_ escaping so LaTeX can typeset it from the .ind file
 % e.g. \ixfunc{stat_ellipse()}{stat\_ellipse()}
-\newcommand{\ixfunc}[2]{%
-  \index{#1@\texttt{#2}}%
-}
+% Single-line definitions: parse-latex (pandoc filter) expands these macros during
+% the PDF pandoc pass and inserts the body literally. Multi-line bodies with %
+% at line-ends produce %.\footnote{} when a footnote follows — commenting out the
+% footnote opener. Single-line bodies expand safely with no embedded %.
+\newcommand{\ixfunc}[2]{\index{#1@\texttt{#2}}}
 
 % R packages:  indexed under both package name and packages!
-\newcommand{\ixp}[1]{%
-   \index{#1@\texttt{#1} package}%
-   \index{packages!#1@\texttt{#1}}%
-	}
+\newcommand{\ixp}[1]{\index{#1@\texttt{#1} package}\index{packages!#1@\texttt{#1}}}
 
-% data sets: 
-\newcommand{\ixd}[1]{%
-  \index{#1}
-  \index{datasets!#1}
-  % \index{datasets!@\texttt{#1}}
-  % \index{@\texttt{#1} dataset}
-  }
+% data sets: \ixd{name} — indexes under name and datasets!name, both with \texttt
+\newcommand{\ixd}[1]{\index{#1@\texttt{#1} data}\index{datasets!#1@\texttt{#1}}}
 
 % Index: see entries
 \input{latex/indsee.tex} 
