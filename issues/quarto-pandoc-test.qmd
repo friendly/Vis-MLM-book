@@ -1,0 +1,164 @@
+---
+title: "Minimal Repro: Multi-line LaTeX macro + footnote → Extra }"
+subtitle: |
+  Tests whether parse-latex expands user-defined macros during PDF builds,
+  and whether pandoc itself expands them independently
+date: today
+format:
+  html:
+    filters:
+      - ../_extensions/tarleb/parse-latex/parse-latex.lua
+  pdf:
+    keep-tex: true
+    include-in-header:
+      text: |
+        \usepackage{makeidx}
+        \makeindex
+---
+
+## Context
+
+In a Quarto book (`HTML + PDF`), every chapter includes `latex/latex-commands.qmd`
+via `{{< include >}}`. That file defines fallback index macros for HTML contexts:
+
+```latex
+\providecommand{\ixd}[1]{%
+  \index{#1@\texttt{#1} data}%
+  \index{datasets!#1@\texttt{#1}}%
+}
+```
+
+Standard LaTeX multi-line style: `%` at line-ends suppresses whitespace in the
+macro *expansion* (XeLaTeX interprets `%` as a comment, discards the newline).
+This is correct and normal for LaTeX. When XeLaTeX expands `\ixd{Prestige}`,
+it produces `\index{...}\index{...}` with no `%` in the result.
+
+**The problem:** Something during the *pandoc pass* expands `\ixd{Prestige}` *literally*,
+inserting the `%` characters from the definition body into the output text.
+When a Markdown footnote (`.[^fn]`) follows in the source, the output becomes:
+
+```latex
+\index{Prestige@\texttt{Prestige} data}%
+\index{datasets!Prestige@\texttt{Prestige}}%.\footnote{...}
+```
+
+The `%.\footnote{` means XeLaTeX never opens the footnote → `! Extra }, or forgotten \endgroup`.
+
+**Setup:** `parse-latex` is in `format: html: filters:` only (not global `filters:`).
+Per @mcanouil, `FORMAT = "latex"` during the PDF pandoc pass, so the filter's
+`if not FORMAT:match 'html' then return {} end` guard should fire and do nothing.
+**If that is correct, the expansion must come from a different mechanism.**
+
+---
+
+## Test 1: Static macro + footnote (parse-latex in HTML filters only) {#sec-test1}
+
+A raw LaTeX block defines a multi-line macro; a raw inline uses it; a Markdown
+footnote follows immediately. This is the minimal reproduction of the book scenario.
+
+```{=latex}
+\providecommand{\myone}[1]{%
+  \textit{T1: #1}%
+}
+```
+
+Static inline then footnote:
+`\myone{alpha}`{=tex}.[^t1]
+
+[^t1]: Test 1 footnote. **If PDF build fails here** with `Extra }`, something
+  expanded `\myone` during the pandoc pass (inserting literal `%`).
+  Check the generated `.tex` file for:
+  - PASS: `\myone{alpha}.\footnote{Test 1 footnote...}` (unexpanded, one line)
+  - FAIL: `\textit{T1: alpha}%\n.\footnote{...}` (expanded, `%` before footnote)
+
+---
+
+## Test 2: Definition via `{{< include >}}` {#sec-test2}
+
+In the actual book, the `\providecommand` comes from an included file, not directly
+in the chapter source. Quarto resolves `{{< include >}}` before the pandoc pass,
+so the included content ends up in the freeze cache (`tex.json`). Any stale cache
+will embed the *old* multi-line definition even after the source file is updated.
+
+{{< include quarto-pandoc-test-macros.qmd >}}
+
+`\mytwo{beta}`{=tex}.[^t2]
+
+[^t2]: Test 2 footnote. If this fails but Test 1 passes, the issue is specific
+  to `{{< include >}}`'d definitions (e.g., a stale freeze cache embedding the
+  definition from a previous build).
+
+---
+
+## Test 3: Inline R output near footnote {#sec-test3}
+
+The book uses inline R expressions that emit raw LaTeX macros for PDF:
+
+```r
+dataset("Prestige")  →  "\texttt{Prestige}\ixd{Prestige}"  (for PDF)
+```
+
+This test simulates that without the full book infrastructure:
+
+```{r}
+#| echo: false
+#| results: asis
+if (knitr::is_latex_output()) {
+  cat("\\mythree{gamma}")
+} else {
+  cat("*gamma*")
+}
+```
+.[^t3]
+
+[^t3]: Test 3 footnote. If this fails but Test 1 passes, the issue is specific
+  to knitr-emitted raw LaTeX content and how Quarto's freeze cache stores it.
+  (`\mythree` is defined in `quarto-pandoc-test-macros.qmd`, included in Test 2.)
+
+---
+
+## How to run
+
+```bash
+# From the project root:
+quarto render issues/quarto-pandoc-test.qmd --to pdf
+quarto render issues/quarto-pandoc-test.qmd --to html
+```
+
+**To test WITHOUT parse-latex** (isolates pandoc's own behavior):
+Remove `filters: [tarleb/parse-latex]` from the YAML and rebuild. If the error
+persists, pandoc itself is expanding the macros — parse-latex is not involved.
+
+**To test WITHOUT `{{< include >}}`**:
+Remove the `{{< include >}}` line and `\mytwo`/`\mythree` tests.
+
+**To diagnose which mechanism is expanding macros**, add this Lua filter alongside
+parse-latex (per @mcanouil's suggestion) to confirm FORMAT during the PDF pass:
+
+```lua
+-- debug-format.lua
+function Pandoc(doc)
+  io.stderr:write("[debug] FORMAT = " .. tostring(FORMAT) .. "\n")
+  return doc
+end
+```
+
+---
+
+## Expected `.tex` content (with `keep-tex: true`)
+
+**If macros are NOT expanded during pandoc pass** (correct):
+```latex
+\myone{alpha}.\footnote{Test 1 footnote...}
+\mytwo{beta}.\footnote{Test 2 footnote...}
+```
+XeLaTeX then expands these natively; the `%` in the definition body acts as a
+TeX comment (discards the newline), so the expansion contains no `%`.
+
+**If macros ARE expanded during pandoc pass** (the bug):
+```latex
+\textit{T1: alpha}%
+.\footnote{Test 1 footnote...}
+```
+The literal `%` from the definition body is inserted into the pandoc output,
+commenting out the `.\footnote{` opener.

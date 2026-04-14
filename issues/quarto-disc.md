@@ -1,30 +1,29 @@
-# Quarto Discussion Post: parse-latex filter expands macros during PDF build via pandoc macro table
+# Quarto Discussion Post: Complex error in PDF build--- parse-latex filter, pandoc, Quarto
 
+(parse-latex filter expands macros during PDF build via pandoc macro table)
 **Forum:** https://github.com/quarto-dev/quarto-cli/discussions  
 **Category:** Q&A / Potential Enhancement  
 **Date:** 2026-04-14
 
 ---
 
-## Summary
+For nearly two weeks I've been struggling to re-build the HTML & PDF versions of my book, [_Visualizing Multivariare Data and Models in R_](https://github.com/friendly/Vis-MLM-book/). I get the same, persistent error every time. Each build takes ~18 min, so this is extremely frustrating.
 
-The [`tarleb/parse-latex`](https://github.com/tarleb/parse-latex) extension, when listed
-under `format: html: filters:` in `_quarto.yml`, still expands user-defined LaTeX macros
-during the **PDF** pandoc pass. This is because the filter calls `pandoc.read(raw.text,
-'latex')` on raw LaTeX blocks, which populates pandoc's internal macro table. Subsequent
-`pandoc.read()` calls on raw inline content then expand those macros — using whatever
-multi-line `\providecommand` or `\newcommand` definition was registered — and the
-expanded text contains `%` characters from the definition body. When a Markdown footnote
-reference (`.[^fn]`) follows the expanded inline in the source, the last `%` comments
-out the `.\footnote{` opener, producing:
+With the help of Claude, I think I tracked this down to two problems, one related to the  [`tarleb/parse-latex`](https://github.com/tarleb/parse-latex) extension and the other to the Quarto freeze/cache mechanism, described below. I'll also post this as an issue for `tarleb/parse-latex`, but the  behavior I saw leads me to ask for help here.
+
+I've documented the attempts at solving this problem at [Two Weeks in Quarto / Pandoc / LaTeX Hell](https://github.com/friendly/Vis-MLM-book/blob/master/issues/quarto-hell.Rmd)
+
+## Problem
+
+The [`tarleb/parse-latex`](https://github.com/tarleb/parse-latex) extension, when listed under `format: html: filters:` in `_quarto.yml`, still expands user-defined LaTeX macros during the **PDF** pandoc pass. This is seems to be because the filter calls `pandoc.read(raw.text,'latex')` on raw LaTeX blocks, which populates pandoc's internal macro table. Subsequent `pandoc.read()` calls on raw inline content then expand those macros — using whatever multi-line `\providecommand` or `\newcommand` definition was registered — and the expanded text contains `%` characters from the definition body, causing Xelatex to fail!
+
+When a Markdown footnote reference (`.[^fn]`) follows the expanded inline in the source, the last `%` comments out the `.\footnote{` opener, producing:
 
 ```
 ! Extra }, or forgotten \endgroup
 ```
 
-A compounding factor: Quarto's freeze cache does not track changes to
-`{{< include >}}`'d files, so stale macro definitions can persist in cached chapter
-output even after the included file is corrected.
+A compounding factor: Quarto's freeze cache does not track changes to `{{< include >}}`'d files, so stale macro definitions can persist in cached chapter output even after the included file is corrected.
 
 ---
 
@@ -35,6 +34,8 @@ output even after the included file is corrected.
 - **Extension:** `tarleb/parse-latex` 
 - **`_quarto.yml`:**
 
+My `_quarto.yml` includes:
+
 ```yaml
 format:
   html:
@@ -44,9 +45,7 @@ format:
       - parse-latex
 ```
 
-The book uses `{{< include latex/latex-commands.qmd >}}` at the top of every chapter.
-`latex-commands.qmd` defines fallback versions of custom indexing macros for HTML
-rendering contexts:
+The book uses `{{< include latex/latex-commands.qmd >}}` at the top of every chapter. `latex-commands.qmd` defines fallback versions of custom indexing macros for HTML rendering contexts:
 
 ```latex
 \providecommand{\ixd}[1]{%
@@ -130,16 +129,14 @@ ref <- paste0(ref, "\\ixd{", dname, "}")   # single-line, no \n
 
 ### Fix 2 — Delete all freeze caches
 
-Suspected the `.quarto/_freeze/*/execute-results/tex.json` files were stale and
-serving old multi-line output. Deleted all 15+ `tex.json` files.
+Suspected the `.quarto/_freeze/*/execute-results/tex.json` files were stale and serving old multi-line output. Deleted all 15+ `tex.json` files.
 
 **Result:** Error persisted. Caches were regenerated with new `\ixd{}` format —
 but the expansion was still happening downstream.
 
 ### Fix 3 — Move parse-latex to `format: html: filters:` only
 
-parse-latex was originally in the global `filters:` list. Moved it to
-`format: html: filters:` to prevent it running during the PDF pandoc pass.
+parse-latex was originally in the global `filters:` list. Moved it to `format: html: filters:` to prevent it running during the PDF pandoc pass.
 
 **Result:** Error persisted.
 
@@ -152,8 +149,7 @@ if FORMAT:match 'latex' then
 end
 ```
 
-Hypothesis: Quarto's PDF pandoc pass uses a FORMAT value that doesn't contain
-`"latex"` (e.g. `"pdf"` or a Quarto-internal format). Changed to:
+Hypothesis: Quarto's PDF pandoc pass uses a FORMAT value that doesn't contain `"latex"` (e.g. `"pdf"` or a Quarto-internal format). Changed to:
 
 ```lua
 if not FORMAT:match 'html' then
@@ -166,26 +162,19 @@ end
 
 ### Fix 5 — Make preamble.tex macro definitions single-line
 
-Hypothesis: parse-latex expands `\ixd{}` using its definition from `preamble.tex`,
-and the multi-line definition body (with `%` at line ends) causes the problem.
-Changed to single-line:
+Hypothesis: parse-latex expands `\ixd{}` using its definition from `preamble.tex`, and the multi-line definition body (with `%` at line ends) causes the problem. Changed to single-line:
 
 ```latex
 \newcommand{\ixd}[1]{\index{#1@\texttt{#1} data}\index{datasets!#1@\texttt{#1}}}
 ```
 
-**Result:** Error persisted. The content of `index.tex` was **identical** — unchanged
-by the preamble fix. This ruled out preamble.tex as the source of the definition
-being used.
+**Result:** Error persisted. The content of `index.tex` was **identical** — unchanged by the preamble fix. This ruled out preamble.tex as the source of the definition being used.
 
 ---
 
 ## Root Cause
 
-Inspecting the freeze cache (`tex.json`) revealed that it contained not just the
-knitr R output, but the **full resolved chapter content** including the
-`{{< include latex/latex-commands.qmd >}}` content. Crucially, `tex.json` stored
-the **old multi-line** `\providecommand{\ixd}` definition:
+Inspecting the freeze cache (`tex.json`) revealed that it contained not just the knitr R output, but the **full resolved chapter content** including the `{{< include latex/latex-commands.qmd >}}` content. Crucially, `tex.json` stored the **old multi-line** `\providecommand{\ixd}` definition:
 
 ```json
 "\\providecommand{\\ixd}[1]{%\n  \\index{#1@\\texttt{#1} data}%\n  \\index{datasets!#1@\\texttt{#1}}%\n}"
@@ -215,10 +204,7 @@ body, which come from the freeze cache, not from `include-in-header`.
 
 ### Compounding factor: freeze cache doesn't track `{{< include >}}` dependencies
 
-After fixing `latex-commands.qmd` to use single-line definitions, the `tex.json`
-freeze caches still contained the old multi-line definitions — because Quarto's freeze
-invalidation only tracks changes to the main `.qmd` file, not to `{{< include >}}`'d
-files. The fix required:
+After fixing `latex-commands.qmd` to use single-line definitions, the `tex.json` freeze caches still contained the old multi-line definitions — because Quarto's freeze invalidation only tracks changes to the main `.qmd` file, not to `{{< include >}}`'d files. The fix required:
 
 1. Updating `latex-commands.qmd` to single-line definitions
 2. **Manually deleting all `tex.json` freeze caches** to force regeneration
@@ -263,7 +249,7 @@ Required because Quarto does not invalidate freeze caches when included files ch
 
 3. **Should the freeze cache track `{{< include >}}` file dependencies?** Currently,
    changing an included file requires manual cache deletion. This is a significant
-   footgun when included files define LaTeX macros that are then embedded in cached
+   problem when included files define LaTeX macros that are then embedded in cached
    chapter output.
 
 ---
@@ -273,7 +259,8 @@ Required because Quarto does not invalidate freeze caches when included files ch
 ```
 Quarto: 1.8.25 (also reproduced on 1.9.x)
 Platform: Windows 11
-R: 4.5.x
+R: 4.5.2
 pandoc: (Quarto-bundled)
 Extension: tarleb/parse-latex (from _extensions/)
 ```
+
