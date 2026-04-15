@@ -71,10 +71,10 @@ Some of these are old/stale/solved; review these & move to solved/ those no long
   - Reference model: https://github.com/bgreenwell/quarto-crc (Quarto-CRC starter)
 
 * **Author index**: `authorindex` Perl script fails. Tracked in `build-problems/authorindex.md`. If this cannot be made
-  to run, I wonder if it would be possible to re-write what this does in R.
+  to run, I wonder if it would be possible to re-write what this does in R. [DONE: See `task-authorindex.md`]
 
 * **Cover page**: `images/cover/cover-peng.jpg` cannot be included via Quarto front matter;
-  currently added manually in Adobe Acrobat post-compile.
+  currently added manually in Adobe Acrobat post-compile. [DONE: Now using `\includepdf{}` in `preamble.tex`]
 
 * **Part-pages**: I would like to have something more than just a page that says: "Part I Orienting Ideas". E.g.,: A brief overview
   of the content, or a gallery-like selection of images or a tikz diagram of the contents, such as I used in my DDAR book.

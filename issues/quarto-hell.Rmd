@@ -1,0 +1,555 @@
+---
+title: "Two Weeks in Quarto / Pandoc / LaTeX Hell"
+subtitle: "Tracking down `Extra }, or forgotten \\endgroup` across three tool layers"
+author: "Michael Friendly (with Claude assistance)"
+date: "2026-04-13"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Background
+
+I am writing a book, *Visualizing Multivariate Data and Models in R*, using
+[Quarto](https://quarto.org/) with both HTML and PDF (via LaTeX) output.
+The PDF uses the `krantz` document class (CRC Press house style), compiled
+with XeLaTeX. The build pipeline is roughly:
+
+```
+.qmd source files
+  → knitr (R code execution)
+  → pandoc (markdown → LaTeX, with citeproc for citations)
+  → XeLaTeX (LaTeX → PDF)
+  → makeindex (subject index)
+  → authorindex Perl script (author index)
+  → XeLaTeX (final PDF)
+```
+
+I have several helper R functions in `R/common.R` that generate inline LaTeX
+for formatted, indexed references to R packages, datasets, and functions:
+
+- `pkg("ggplot2")` → `\texttt{\textbf{ggplot2}}` + index entries
+- `dataset("Prestige")` → `\texttt{Prestige}` + index entries
+- `func("lm()")` → `\texttt{lm()}` + index entries
+
+These are called as inline R code in the `.qmd` source:
+
+```markdown
+The function `r func("lm()")` fits linear models...
+```
+
+**Everything was working perfectly** — both HTML and PDF builds succeeded,
+the subject index and author index were generated correctly — until I tried
+to fix a long-standing annoyance with function names containing underscores.
+
+---
+
+# The Triggering Change: Fixing `_` in Function Names
+
+Function names like `stat_ellipse()`, `geom_smooth()`, and `facet_wrap()`
+contain underscores. In LaTeX math mode, `_` is the subscript character
+(catcode 8). In text mode it can cause "Missing \$" errors if it appears
+unescaped in index entries.
+
+The fix was conceptually simple: add an `escape()` helper that converts `_`
+to `\_`, and use two-argument `\ixfunc{sort-key}{display-name}` so that the
+sort key could use the raw `_` (fine for makeindex) while the display name
+used `\_` (required for LaTeX typesetting in the `.ind` file).
+
+In `R/common.R`, `func()` went from:
+
+```r
+ref <- paste0(ref, "\n\\ixfunc{", fname, "}{", escape(fname), "}\n")
+```
+
+to (after further fixes):
+
+```r
+ref <- paste0(ref, "\\ixfunc{", fname, "}{", escape(fname), "}")
+```
+
+This was committed around April 4. The PDF build broke immediately —
+not with a "Missing \$" error from `_`, but with something completely
+different and far more baffling.
+
+---
+
+# The Error
+
+```
+! Extra }, or forgotten \endgroup.
+l.4192 ...citeproc{ref-Blishen-etal-1987}{1987}).}
+```
+
+This error appeared on every PDF build attempt. The offending line (in
+Quarto's internal `index.tex`, which is what xelatex actually compiles)
+was the closing brace of a footnote in Chapter 4:
+
+```latex
+\texttt{Prestige}%
+  \index{Prestige@\texttt{Prestige} data}%
+  \index{datasets!Prestige@\texttt{Prestige}}%.\footnote{The dataset was
+  collected by Bernard Blishen, William Carroll and Catherine Moore, but
+  apparently unpublished. A version updated to the 1981 census is
+  described in Blishen et al. (\citeproc{ref-Blishen-etal-1987}{1987}).}
+```
+
+The `.qmd` source at this location was entirely innocent:
+
+```markdown
+recorded in `r dataset("Prestige")`.[^prestige-src]
+
+[^prestige-src]: The dataset was collected by Bernard Blishen...
+  described in @Blishen-etal-1987.
+```
+
+---
+
+# Investigation: Week One
+
+## First Diagnosis: Multi-line Inline R Output
+
+The pattern `%.\footnote{` jumped out immediately. In LaTeX, `%` is a comment
+character that silences everything to the end of the line — including the period
+and the `\footnote{` that opens the footnote. LaTeX then encounters the
+footnote text as orphaned content, and the closing `}` of the footnote is
+"extra" with nothing to close.
+
+**How did `%` get there?** Pandoc adds `%` at line breaks when it formats
+multi-line raw inline LaTeX spans to prevent spurious spaces. If an inline R
+expression returns a string containing `\n`, knitr stores it as a raw LaTeX
+inline spanning multiple lines. When pandoc writes the `.tex` file, it inserts
+`%` at each break.
+
+So the culprit was `dataset("Prestige")` returning:
+
+```
+\texttt{Prestige}\n\index{Prestige@\texttt{Prestige} data}\n\index{datasets!...}
+```
+
+The `\n` characters caused pandoc to format this as:
+
+```latex
+\texttt{Prestige}%
+  \index{Prestige@\texttt{Prestige} data}%
+  \index{datasets!Prestige@\texttt{Prestige}}%
+```
+
+And then `%` at the end of the last `\index{}%` line commented out the
+`.\footnote{...}` that followed on the same line.
+
+**Fix #1:** Remove `\n` from `dataset()` in `common.R`. The old code was:
+
+```r
+# old — causes multi-line output → pandoc adds %
+ref <- paste0(ref, "\n\\index{...", dname, "...}\n\\index{...}\n")
+```
+
+The new code used a macro call instead:
+
+```r
+# new — single-line, pandoc passes it through unchanged
+ref <- paste0(ref, "\\ixd{", dname, "}")
+```
+
+**Result:** Error persisted. The `%` was gone, but so was something else.
+
+## Second Diagnosis: Stale Freeze Cache
+
+Quarto's freeze mechanism stores R execution results in
+`.quarto/_freeze/<chapter>/execute-results/tex.json`. When the source
+hasn't changed, Quarto reuses cached results instead of re-running R.
+
+Inspection of the freeze cache with `grep` showed:
+
+```
+# In tex.json (freeze cache, regenerated April 12):
+recorded in \\texttt{Prestige}\\ixd{Prestige}.[^prestige-src]
+```
+
+But in `Vis-MLM.tex` (the `keep-tex: true` copy of the last *successful* build,
+timestamped April 10):
+
+```latex
+\texttt{Prestige} %
+        \index{data sets!Prestige}.\footnote{The dataset was collected
+```
+
+The freeze cache had the **new** `\ixd{Prestige}` format. The `.tex` copy had
+an **old** `\index{data sets!Prestige}` format — a completely different format
+that predated the `\ixd{}` macro. Something was happening *between* the freeze
+cache being read and the `.tex` file being written.
+
+**Important clarification about Quarto's tex files:** Quarto's internal build
+compiles `index.tex` (named after the entry point `index.qmd`). The file
+`Vis-MLM.tex` is a separate copy, saved by `keep-tex: true` and named after
+`output-file: Vis-MLM` in `_quarto.yml`. It is only written when a build
+progresses far enough — on a failed build, it may be stale from a previous
+run. This caused endless confusion: `Vis-MLM.tex` was from April 10 and
+compiled fine in TeXStudio (it predated the `\ixd{}` expansion); `index.tex`
+(the actual compiled file) had the current, broken content.
+
+**Hypothesis:** The freeze cache was stale and being read from a previous
+build where `dataset()` still produced the old multi-line format.
+
+**Fix #2:** Delete all 35 `tex.json` freeze cache files. Force full
+re-execution of every chapter.
+
+**Result:** Error persisted. The same discrepancy remained.
+
+## Third Diagnosis: parse-latex Filter
+
+The project uses the `tarleb/parse-latex` Quarto extension, which expands
+user-defined LaTeX macros for HTML output. The extension was listed in the
+global `filters:` section of `_quarto.yml` (not just under `format: html:`).
+
+If `parse-latex` was running during the PDF build as well as the HTML build,
+it might be expanding `\ixd{Prestige}` — reading the `\providecommand{\ixd}`
+definition from the document content and substituting the full multi-line
+`\index{}` expansion. Pandoc would then add `%` at the line breaks, re-creating
+the `%.\footnote{}` problem.
+
+**Fix #3:** Move `parse-latex` from global filters to `format: html: filters:`
+only.
+
+The `parse-latex` Lua filter had an explicit guard at the top:
+
+```lua
+-- Return an empty filter if the target format is LaTeX
+if FORMAT:match 'latex' then
+  return {}
+end
+```
+
+The assumption was: for PDF builds, Quarto's pandoc pass uses `FORMAT = "latex"`,
+so this guard would fire and the filter would return empty. **This assumption
+was wrong.**
+
+Quarto's PDF build pipeline passes a FORMAT value that does **not** contain
+the string `"latex"` (it may be `"pdf"` or a Quarto-internal format identifier).
+So `FORMAT:match 'latex'` evaluated to `nil` (falsy), the guard did NOT fire,
+and parse-latex ran for the PDF build — expanding `\ixd{Prestige}` into its
+multi-line `\index{}` definition, which pandoc then wrapped in `%` comments.
+
+The fix was to invert the guard:
+
+```lua
+-- Only run for HTML output
+if not FORMAT:match 'html' then
+  return {}
+end
+```
+
+This correctly skips the filter for any non-HTML format (PDF, docx, etc.).
+
+**Result:** This fix eliminates the `%.\footnote{}` mechanism. Combined with
+the `preamble.tex` fix below, the build succeeds.
+
+## Red Herrings Along the Way
+
+- **Quarto version:** The error started after upgrading Quarto from 1.8.x to
+  1.9.36. Reverting to 1.8.25 was tried as a diagnostic — to determine whether
+  the Quarto upgrade itself was responsible. Error persisted on 1.8.25, ruling
+  out Quarto as the cause. (Plan: upgrade back to latest once the build is
+  confirmed working.)
+
+- **`sec-labels: arabic`:** This invalid option had been added to the `crossref:`
+  block in `_quarto.yml` (attempting to fix a separate HTML cross-reference
+  issue). It was removed, but didn't affect the PDF error.
+
+- **The timestamp mystery:** The `.quarto/_freeze/04-multivariate_plots/execute-results/tex.json`
+  had timestamp 14:58 (April 12) while `Vis-MLM.tex` showed 18:48 (April 10).
+  This suggested the `.tex` file was from an *older* build and never got
+  regenerated during the April 12 build — possibly because Quarto's PDF build
+  failed before the pandoc step, or due to Windows NTFS timestamp quirks. This
+  led to considerable confusion about whether fixes had actually taken effect.
+
+---
+
+# The Actual Root Cause (Week Two)
+
+## Following the Chain
+
+The real clue was in the `\citeproc` macro. Pandoc generates this for every
+citation; it appears in `Vis-MLM.tex` as:
+
+```latex
+% In pandoc-generated preamble (lines 141–154 of Vis-MLM.tex):
+\NewDocumentCommand\citeproc{mm}{%
+  \begingroup\def\citeproctext{#2}\cite{#1}\endgroup}
+```
+
+Translation: every `[@Blishen-etal-1987]` becomes
+`\citeproc{ref-Blishen-etal-1987}{1987}`, which expands to
+`\begingroup\cite{ref-Blishen-etal-1987}\endgroup`.
+
+Now look at `latex/preamble.tex`. To make the author index work with
+pandoc citeproc (which doesn't emit plain `\cite{}` calls), I had added a
+patch to `\@citex` (LaTeX's internal citation dispatcher) inside
+`\AtBeginDocument{}`:
+
+```latex
+\AtBeginDocument{%
+  \let\@ai@orig@citex\@citex
+  \def\@citex[#1]#2{\@ai@orig@citex[#1]{#2}\@aicitey{#2}}%
+  ...
+}
+```
+
+The `\@aicitey{#2}` call writes citation-page data to the `.ain` file
+for the authorindex Perl script.
+
+**The fatal combination:**
+
+1. `\citeproc{key}{text}` inside `\footnote{}` expands to `\begingroup\cite{key}\endgroup`
+2. `\cite{key}` triggers the patched `\@citex`
+3. Patched `\@citex` calls `\@aicitey{key}`, which does `\write` to the aux file
+4. `\write` inside a `\footnote{}` context on the first LaTeX pass — where
+   footnote content is "harvested" into a token list for deferred typesetting —
+   causes the group boundaries from `\begingroup...\endgroup` to become
+   misaligned
+5. LaTeX reports `Extra }, or forgotten \endgroup` when it encounters the
+   closing `}` of the footnote
+
+This is a variant of the classic **fragile command in moving argument** problem.
+`\footnote{}` moves its argument (the footnote text is stored as a token list
+and typeset later on a different page). Commands that open and close groups,
+or that do `\write` operations, can behave differently when "moved" than when
+typeset in place.
+
+## Why It Started With the `func()` Fix
+
+The `func()` fix didn't directly cause the `\@citex` patch to misbehave — it
+had always been misbehaving. What changed was that the April 4 work involved
+multiple round-trips of building and debugging. At some point:
+
+- The `\@citex` patch was written to intercept citations for the author index
+- A Quarto upgrade (1.9.36) likely changed how pandoc's preamble was generated
+- The particular `.tex` file that landed on disk combined the active `\@citex`
+  patch with a `\footnote{}` containing `\citeproc{...}` such that the error
+  became reproducible every build
+
+The footnote in ch04 about the Prestige dataset source
+(`[^prestige-src]` → `@Blishen-etal-1987`) was the first — and only — citation
+inside a footnote in that chapter. Without that citation, the error wouldn't
+trigger there. With it, every build failed at exactly that footnote.
+
+## Why `dataset()` Multi-line Output Was a Separate Concurrent Problem
+
+While the `\@citex` patch was the root cause of the `Extra }`, the
+multi-line `\n` output from `dataset()`, `pkg()`, and `package()` was a
+*concurrent* problem that would have caused the *same error* by a different
+mechanism: `%.\footnote{...}` commenting out the footnote opening. Both
+problems needed fixing:
+
+1. `dataset()`, `pkg()`, `package()` — remove `\n` from around `\\ixp{}`,
+   `\\ixd{}` etc.
+2. `preamble.tex` — disable the `\@citex` patch that caused
+   `\citeproc`-in-footnote to fail
+
+---
+
+# The Fix
+
+## `latex/preamble.tex`
+
+Disable the `\@citex` patch (it was only needed if authorindex needed to
+re-run dynamically; since `index.ain` is pre-built, it's unnecessary):
+
+```latex
+\AtBeginDocument{%
+  % Disabled: \@citex patch causes "Extra }, or forgotten \endgroup" when
+  % \citeproc (used by pandoc) is inside a \footnote{} on the first LaTeX pass.
+  % index.ain is pre-built; authorindex does not need to re-run.
+  %  \let\@ai@orig@citex\@citex
+  %  \def\@citex[#1]#2{\@ai@orig@citex[#1]{#2}\@aicitey{#2}}%
+  \if@filesw\immediate\write\@auxout{...}\fi
+  \includepdf[pages=1]{images/cover/cover-peng-scaled.pdf}
+}
+```
+
+Add an explicit override for `\citeproc` as defense-in-depth (pandoc's own
+template also adds this in recent versions, but belt-and-suspenders):
+
+```latex
+% Pandoc's \citeproc{key}{text} uses \begingroup\cite{key}\endgroup.
+% On the first LaTeX pass (or when .aux is stale from a failed build),
+% undefined citations inside \footnote{} cause "Extra }, or forgotten \endgroup".
+% \renewcommand does not reliably override \NewDocumentCommand-defined commands
+% in modern LaTeX (xparse internal dispatch). Use \def at the TeX primitive level.
+\def\citeproc#1#2{#2}
+```
+
+## `_extensions/tarleb/parse-latex/parse-latex.lua`
+
+Change the format guard from matching `'latex'` (which Quarto's PDF pandoc
+pass does NOT use) to excluding non-HTML formats:
+
+```lua
+-- WRONG: Quarto's PDF pandoc pass may not use FORMAT = "latex"
+if FORMAT:match 'latex' then
+  return {}
+end
+
+-- RIGHT: only run for HTML
+if not FORMAT:match 'html' then
+  return {}
+end
+```
+
+## `R/common.R`
+
+Remove all `\n` characters from around LaTeX macro calls in the index-entry
+generating functions. The principle: **inline R code output must be
+single-line**, because pandoc wraps multi-line raw inline LaTeX in `%` comments.
+
+```r
+# WRONG — multi-line output; pandoc adds % at breaks
+ref <- paste0(ref, "\n\\ixp{", package, "}\n")
+
+# RIGHT — single-line; pandoc passes through unchanged
+ref <- paste0(ref, "\\ixp{", package, "}")
+```
+
+This applies to all four functions: `pkg()`, `package()`, `dataset()`, `func()`.
+
+---
+
+# Lessons Learned
+
+## Quarto/Pandoc ≠ LaTeX
+
+When writing in Quarto for PDF output, you are operating in **three separate
+layers**:
+
+1. **R layer** (knitr): generates strings that become raw LaTeX
+2. **Pandoc layer**: converts Markdown + raw LaTeX snippets into a `.tex` file,
+   applying filters and adding `%` at multi-line raw inline breaks
+3. **LaTeX layer** (XeLaTeX): compiles the `.tex` file, expanding macros,
+   processing groups, handling fragile/moving arguments
+
+A bug can live at any layer, but its *symptoms* appear at a different layer.
+The `Extra }` error was a LaTeX-layer symptom of a pandoc-layer mechanism
+(`%` at line breaks) caused by an R-layer problem (`\n` in string output) —
+AND simultaneously a LaTeX-layer problem (fragile `\@citex` patch inside
+moving argument) also manifesting at the same location.
+
+## The Freeze Cache Complicates Debugging
+
+Quarto's freeze cache stores knitr execution results in `.quarto/_freeze/`.
+When debugging "why does my `.tex` file have wrong content", you are looking at
+a file generated from the cached results, not the current R code. Changes to
+`common.R` won't appear in the `.tex` file until the cache is invalidated.
+Quarto invalidates the cache when the `.qmd` source changes, but NOT when a
+sourced helper file like `common.R` changes (in all configurations). This led
+to much confusion about whether fixes had taken effect.
+
+**Defensive practice:** After changing `common.R`, delete or force-invalidate
+the relevant freeze cache entries before rebuilding.
+
+## `\write` in Footnotes Is a Classic LaTeX Trap
+
+If you are using any LaTeX package or macro that writes to auxiliary files
+from within citations (`\cite`, `\bibitem`, etc.), and those citations can
+appear inside `\footnote{}`, you are living dangerously. The `\footnote{}`
+environment moves its argument, and commands that manipulate group level or
+do file I/O can misbehave inside moving arguments.
+
+The `authorindex` package patches `\@citex` to intercept citation calls and
+record author-page data. This is fine for normal in-text citations. It is NOT
+fine when `\citeproc{key}{text}` calls `\cite{key}` inside a footnote,
+because the `\begingroup...\endgroup` wrapper around `\cite` inside
+`\footnote{}` hits the `\write` in the patched `\@citex` at the wrong time.
+
+**The fix:** Either use `\protect\cite` inside footnotes (the traditional
+LaTeX answer), or — for pandoc citeproc documents where bibliography is
+already pre-formatted — bypass `\cite` entirely with `\def\citeproc#1#2{#2}`.
+
+## Quarto PDF Builds Are Not Reproducible Without Attention
+
+The Quarto build is not a single atomic step. The knitr step, the pandoc step,
+and the XeLaTeX step each produce intermediate files. If any step fails:
+
+- The freeze cache (`.quarto/_freeze/*/tex.json`) may have been updated
+- `Vis-MLM.tex` (the `keep-tex: true` copy) may or may not have been updated
+- Quarto's internal `index.tex` (what xelatex actually compiled) is separate and
+  is not the same as `Vis-MLM.tex`
+- The PDF may be from a previous successful build
+
+This means that when debugging, you cannot assume that `Vis-MLM.tex` on
+disk corresponds to the current source or the current freeze cache. Check
+file timestamps. They may tell a different story than you expect — especially
+on Windows, where NTFS timestamps sometimes lag or are preserved across
+certain file operations.
+
+## TeXStudio as a Fallback for LaTeX Errors
+
+When Quarto's xelatex step fails, `Vis-MLM.tex` (from the last successful build)
+can still be compiled manually in TeXStudio. This is valuable for:
+
+- Iterating on LaTeX errors without re-running knitr and pandoc
+- Getting a working PDF while the Quarto pipeline is being debugged
+
+**Caveat:** `Vis-MLM.tex` may be from an older build and not reflect recent
+source changes. The authorindex data is in `index.ain` (Quarto's name),
+not `Vis-MLM.ain` (TeXStudio's expected name). Fix:
+
+```bash
+cp index.ain Vis-MLM.ain
+```
+
+Then compile `Vis-MLM.tex` in TeXStudio normally.
+
+---
+
+# Timeline
+
+| Date | Event |
+|------|-------|
+| Pre-Apr 4 | HTML + PDF builds working; author index working |
+| Apr 4 | Began fixing `_` in `func()` (index underscore problem) |
+| Apr 4 | First `Extra }, or forgotten \endgroup` errors appear |
+| Apr 4–10 | Multiple failed fix attempts: removed `\n` from `dataset()`, deleted freeze caches, moved `parse-latex` filter to HTML-only, upgraded to Quarto 1.9.36 then reverted to 1.8.25 as a diagnostic (ruled out Quarto as cause) |
+| Apr 10 | Added `\def\citeproc#1#2{#2}` to `preamble.tex` (partial fix) |
+| Apr 12 | Freeze cache regenerated (April 12 timestamps on `tex.json`) but `Vis-MLM.tex` still showing April 10 — stale keep-tex copy; Quarto compiles `index.tex` internally |
+| Apr 13 | Root cause #1 identified: `\@citex` patch in `preamble.tex` causes `Extra }` when `\citeproc` is inside `\footnote{}` |
+| Apr 13 | Root cause #2 identified: `parse-latex.lua` FORMAT guard (`FORMAT:match 'latex'`) was wrong — Quarto's PDF pandoc pass uses a non-"latex" FORMAT value; filter was running for PDF, expanding `\ixd{}` macros |
+| Apr 13 | Fixes applied: disabled `\@citex` patch; removed `\n` from `pkg()` and `package()`; fixed parse-latex.lua guard to `not FORMAT:match 'html'` |
+| Apr 13 | Confirmed: `Vis-MLM.tex` (April 10) compiles in TeXStudio; `cp index.ain Vis-MLM.ain` restores author index |
+
+---
+
+# Appendix: The Quarto–Pandoc–LaTeX Tool Chain for This Book
+
+```
+.qmd source
+  ↓  knitr (R execution)
+     · inline `r expr` → raw LaTeX strings via common.R functions
+     · results cached in .quarto/_freeze/*/execute-results/tex.json
+  ↓  pandoc (markdown → LaTeX)
+     · expands @citations via built-in citeproc → \citeproc{key}{text}
+     · wraps multi-line raw inline LaTeX with % at line breaks
+     · applies Lua filters (parse-latex guard: FORMAT:match 'html' only)
+     · embeds preamble.tex via include-in-header
+  ↓  index.tex (Quarto's internal LaTeX file — named after entry point index.qmd)
+     · Vis-MLM.tex is a keep-tex:true copy, written only on successful builds
+  ↓  XeLaTeX (first pass)
+     · \AtBeginDocument hooks fire (including old \@citex patch)
+     · \citeproc inside \footnote{} triggers the bug here ← THE BUG
+  ↓  makeindex → index.ind file (subject index)
+  ↓  authorindex Perl script → index.ain file (author index)
+     · NOTE: index.ain, not Vis-MLM.ain — must cp index.ain Vis-MLM.ain
+       when compiling Vis-MLM.tex manually in TeXStudio
+  ↓  XeLaTeX (second pass) → index.pdf (renamed Vis-MLM.pdf / index.pdf)
+```
+
+---
+
+*Written in the immediate aftermath of the fix, while the memory was fresh
+and the relief was palpable.*

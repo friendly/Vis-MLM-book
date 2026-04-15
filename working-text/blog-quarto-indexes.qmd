@@ -1,0 +1,382 @@
+---
+title: "Creating Book Indexes in Quarto"
+subtitle: "R helper functions, LaTeX macros, and the underscore problem"
+author: "Michael Friendly"
+date: "2026-04-07"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+---
+
+A good index is essential for a printed textbook or technical book because it transforms a linear text into an efficient research tool,
+allowing you to find specific information without flipping through pages to find what you're looking for.
+While a table of contents provides a general overview, a high-quality index acts as a detailed, analytical map, enhancing the book's usability, credibility, and long-term value. In a book using R a good index helps you find the use of functions, packages and datasets used as examples.
+In a book illustrating statistical models or data visualization methods, a high-quality index helps you find the concepts or methods discussed,
+particularly when they are spread across multiple chapters. Conversely, lack of a good index can make a printed book frustrating to use
+when you want to find out how to do some particular thing or how some method should be understood.[^bookdown]
+
+[^bookdown]: I don't want to shame anyone, but a few books in the CRC Press R Series produced with early `bookdown` stand out for their
+spectacularly poor indexes, sometimes just one page, making them nearly useless for reference purposes.
+
+Modern writing tools like Rmarkdown, Pandoc and Quarto open new vistas in book writing and publishing.
+From a single source of text files, you can produce output in HTML, PDF, eBook and other formats
+now widely used.
+However, writing a book with Quarto for dual HTML/PDF output creates interesting challenges
+for indexing. In a traditional LaTeX workflow (`.Rnw` files) you pepper your source with
+`\index{entry}` commands by hand and get PDF output.
+In Quarto, you write in a Quarto-flavored Markdown, R code chunks, processed by `knitr`
+produce output text and graphics inline. 
+But the same source must serve both an HTML website and
+a print-ready PDF. This post describes how I handled indexing for
+*Visualizing Multivariate Data and Models in R*
+(CRC Press / Chapman & Hall, in preparation).
+
+## The basic problem
+
+For PDF output, LaTeX's `\index{entry}` command is the standard mechanism. It
+writes entries to a `.idx` file, which `makeindex` sorts and formats into the
+final `.ind` file that LaTeX typesets as the back-of-book index.
+
+For HTML output there is no logical equivalent of an index, because it doesn't
+have "pages" that can be referred to. Instead, for book projects, Quarto provides a Search facility; useful,
+but not as much as a well-crafted index could do.
+But what happens with those `\index{}` commands?
+In Quarto one solution is straightforward for _any text_ you want to appear only in the PDF version:
+wrap index calls in a conditional block:
+
+````markdown
+::: {.content-visible when-format="pdf"}
+\index{some term}
+:::
+````
+
+
+But this is cumbersome when you want to index *every mention* of an R package,
+dataset, or function — which might appear dozens of times in inline code like
+`` `ggplot2` ``. You want indexing to happen automatically at the point of use,
+without cluttering the prose with conditional blocks.
+
+## R helper functions for inline use
+
+The solution I adopted is a set of R helper functions — `pkg()`, `package()`,
+`dataset()`, and `func()` — defined in `R/common.R` and sourced at the top of
+every chapter. 
+
+These are used as inline R expressions in the text; they format names appropriately for
+each output format *and* emit `\index{}` entries for PDF. They do not generate the
+`\index{}` entries directly. Rather, they rely on LaTeX macros (described below)
+to ensure consistency of the index entries and allow for generating
+more than one index entry for a package or dataset.
+
+### `pkg()` — R packages
+
+```r
+pkg <- function(package, cite = FALSE) {
+  if (knitr::is_latex_output()) {
+    pkgname <- paste0("\\texttt{\\textbf{", package, "}}")
+  } else {
+    pkgname <- paste0("**", package, "**")   # bold in HTML
+  }
+  ref <- colorize(pkgname, "brown")          # distinctive color in both formats
+  if (cite) ref <- paste0(ref, " [@R-", package, "]")
+  if (knitr::is_latex_output()) {
+    ref <- paste0(ref, "\n\\ixp{", package, "}\n")
+  }
+  ref
+}
+```
+
+The actual `pkg()` function is more general. It allows you to set the font properties (face, color) for the package name
+globally, e.g.,
+
+```r
+pkgname_font = "bold"    # or: plain, ital, boldital
+pkgname_color ="brown"   # uses colorize()
+```
+
+In prose you write:
+
+```markdown
+The `r pkg("ggplot2")` package provides a grammar of graphics...
+```
+
+For PDF this expands to something like:
+
+```latex
+\textcolor{brown}{\texttt{\textbf{ggplot2}}}
+\ixp{ggplot2}
+```
+
+For HTML it produces `**ggplot2**` in brown (via a CSS span), with no LaTeX
+leaking through.
+
+The `package()` function is nearly identical but appends the word "package" —
+useful for sentences like "the `r package("car")` provides..." where you want
+"the **car** package provides..." rather than just the bare name.
+
+### Package citations
+
+The argument `cite = TRUE` also generates a citation to the package, with a citation key of the form `@R-package`.
+The file `R/common.R` includes code to collect the names of packages loaded via `library()` calls in the current 
+chapter and write these to a file `packages.bib` after the last chapter.
+
+
+### `dataset()` — named datasets
+
+```r
+dataset <- function(name, package = NULL) {
+  dname <- name
+  dpkg  <- package
+  # handle pkg::name syntax
+  if (stringr::str_detect(name, "::")) {
+    parts <- stringr::str_split(name, "::", 2)[[1]]
+    dname <- parts[2]; dpkg <- parts[1]
+  }
+  if (knitr::is_latex_output()) {
+    ref <- paste0("\\texttt{", name, "}")
+    ref <- paste0(ref, "\n\\ixd{", dname, "}")
+    if (!is.null(dpkg)) ref <- paste0(ref, "\n\\ixp{", dpkg, "}")
+  } else {
+    ref <- paste0("`", name, "`")
+  }
+  ref
+}
+```
+
+Usage:
+
+```markdown
+The `r dataset("Prestige", "carData")` dataset records occupational prestige
+scores for 102 Canadian occupations.
+```
+
+The `pkg::name` shorthand is also supported:
+
+```markdown
+`r dataset("carData::Prestige")`
+```
+
+Both expand to the same PDF output: `\texttt{Prestige}` followed by index
+entries via `\ixd{Prestige}` and `\ixp{carData}`.
+
+### `func()` — R functions
+
+```r
+func <- function(name, package = NULL) {
+  fname <- name
+  if (stringr::str_detect(name, "::")) {
+    parts <- stringr::str_split(name, "::", 2)[[1]]
+    fname <- parts[2]
+  }
+  if (knitr::is_latex_output()) {
+    ref <- paste0("\\texttt{", escape(name), "}")
+    ref <- paste0(ref, "\n\\ixfunc{", fname, "}{", escape(fname), "}\n")
+  } else {
+    ref <- paste0("`", name, "`")
+  }
+  ref
+}
+```
+
+The helper `escape()` converts `_` to `\_`:
+
+```r
+escape <- function(name) gsub("_", "\\_", name, fixed = TRUE)
+```
+
+Usage:
+
+```markdown
+Use `r func("lm()")` to fit a linear model.
+```
+
+## LaTeX macros
+
+The R functions emit short macro calls rather than raw `\index{}` strings. The
+macros live in `latex/preamble.tex` and provide three benefits:
+
+1. **Consistent formatting** — the display text in the index is always
+   `\texttt{name}`, never accidentally `name` (plain) or `\texttt  {name}`
+   (with spurious spaces from TeX's write mechanism).
+
+2. **Dual entry** — packages and datasets appear under *two* headings
+   automatically: their own name *and* a collective subheading
+   (`packages!`, `datasets!`).
+
+3. **Correct `makeindex` sorting** — the `sort-key@display-text` syntax
+   ensures alphabetical ordering by the plain name while the typeset entry
+   uses monospace.
+
+### `\ixp` — packages
+
+```latex
+\newcommand{\ixp}[1]{%
+  \index{#1@\texttt{#1} package}%
+  \index{packages!#1@\texttt{#1}}%
+}
+```
+
+`\ixp{ggplot2}` produces two `.idx` entries:
+
+```
+\indexentry{ggplot2@\texttt{ggplot2} package}{42}
+\indexentry{packages!ggplot2@\texttt{ggplot2}}{42}
+```
+
+The first gives a standalone entry "**ggplot2** package"; the second collects
+all packages under a "packages" heading with sub-entries.
+
+### `\ixd` — datasets
+
+```latex
+\newcommand{\ixd}[1]{%
+  \index{#1@\texttt{#1} data}%
+  \index{datasets!#1@\texttt{#1}}%
+}
+```
+
+Exactly parallel to `\ixp`, but appending "data" to the display text and
+grouping under "datasets".
+
+### `\ixfunc` — R functions
+
+```latex
+\newcommand{\ixfunc}[2]{%
+  \index{#1@\texttt{#2}}%
+}
+```
+
+`\ixfunc` takes *two* arguments — the sort key and the display text — for
+reasons explained in the next section. The caller includes `()` in both
+arguments; the macro does not add them.
+
+### Other index macros
+
+```latex
+\newcommand{\IX}[1]{\index{#1}#1}   % index + typeset in surrounding font
+\newcommand{\ix}[1]{\index{#1}}     % index only, no output
+\newcommand{\ixmain}[1]{\index{#1|textbf}}  % bold (main) page number
+\newcommand{\ixon}[1]{\index{#1|(}}  % open a page range
+\newcommand{\ixoff}[1]{\index{#1|)}} % close a page range
+```
+
+`\ixon{}` / `\ixoff{}` are useful for marking the start and end of an extended
+discussion, so the index shows a range like "lm(), 87–93" rather than individual
+page numbers on every page of the section.
+
+## The underscore problem
+
+R function names commonly contain underscores: `stat_ellipse()`,
+`geom_point()`, `coord_flip()`. In LaTeX, `_` outside math mode raises an error
+(it is the subscript character). Inside `\texttt{}` it is tolerated in some
+contexts, but inside `\index{}` entries — which are written to an external `.idx`
+file and later read back during `\ind` generation — it causes problems.
+
+The difficulty comes in two places:
+
+### 1. Display text in `\index{}`
+
+The display portion of a makeindex entry (after `@`) is LaTeX source that will
+be *typeset* when the `.ind` file is processed. `_` must therefore be escaped as
+`\_`. The `escape()` helper and the two-argument `\ixfunc` macro handle this:
+
+```r
+# R side: generate the macro call
+ref <- paste0(ref, "\n\\ixfunc{", fname, "}{", escape(fname), "}\n")
+```
+
+For `func("stat_ellipse()")` this produces:
+
+```latex
+\ixfunc{stat_ellipse()}{stat\_ellipse()}
+```
+
+Which writes to `.idx`:
+
+```
+\indexentry{stat_ellipse()@\texttt{stat\_ellipse()}}{58}
+```
+
+The sort key `stat_ellipse()` uses a raw underscore (makeindex treats it as a
+plain character for sorting purposes). The display text `stat\_ellipse()` uses
+`\_` so LaTeX can typeset it safely.
+
+### 2. `\texttt{}` in inline text
+
+When `func("stat_ellipse()")` formats the *displayed* name in the prose, it
+also needs `\_`:
+
+```r
+funcname <- paste0("\\texttt{", escape(name), "}")
+```
+
+Without the escape, the PDF output contains `\texttt{stat_ellipse()}` and
+`_` triggers a LaTeX subscript warning (or error, depending on the document
+class and font encoding).
+
+### Why not use `\detokenize{}`?
+
+`\detokenize{stat_ellipse()}` would handle `_` automatically in some contexts,
+but it produces output in a *non-expanding* form that breaks the `@sort@display`
+syntax makeindex requires. Using an explicit `escape()` function is simpler and
+more portable.
+
+### What does not work
+
+Inline Markdown backtick code like `` `stat_ellipse()` `` in Quarto Markdown is
+fine for HTML — Pandoc renders it as `<code>stat_ellipse()</code>`. But for PDF,
+Pandoc converts it to `\texttt{stat\_ellipse()}`, and the result contains no
+`\index{}` entry. Using `` `r func("stat_ellipse()")` `` is the only way to
+get *both* correct typesetting and automatic indexing.
+
+## Avoiding duplicate index entries
+
+A subtle source of duplicate entries is the spacing that TeX's `\write` mechanism
+introduces. When TeX processes `\ixp{car}`, it expands the macro and writes the
+result to the `.idx` file. Because `\texttt` is a control word ending in a
+letter, TeX inserts a space after it:
+
+```
+\indexentry{car@\texttt  {car} package}{42}   % two spaces — from \write
+```
+
+If the same package was indexed by a direct `\index{car@\texttt{car} package}`
+call elsewhere (e.g., in stale generated `.tex` content), makeindex sees two
+*different* display texts and creates two separate entries:
+
+```
+  car package, 42         ← from \ixp{car}
+  car package, 17         ← from old direct \index{}
+```
+
+The fix is to route *all* indexing through the macros (`\ixp`, `\ixd`,
+`\ixfunc`) — never write raw `\index{}` calls for packages, datasets, or
+functions. The R functions `pkg()`, `dataset()`, and `func()` do this
+consistently. A full Quarto re-render (to flush stale `.tex` content) ensures
+that old direct calls disappear.
+
+## Lessons learned
+
+1. **Put indexing logic in R, not Markdown.** An inline `` `r pkg("ggplot2")` ``
+   call is invisible when it works and easy to find when it breaks. Scattered
+   `\index{}` commands buried in conditional Quarto blocks are hard to maintain.
+
+2. **Use macros, not raw `\index{}` strings in R.** Generating `\ixp{name}`
+   from R and defining the macro once in `preamble.tex` gives you one place to
+   change the index format. Generating `\index{name@\texttt{name} package}` from
+   R strings is brittle — spacing inconsistencies creep in.
+
+3. **Sort key and display text must be separated for names with special
+   characters.** Underscores in function names require the two-argument
+   `\ixfunc{sort}{display}` pattern. Any name with `_`, `!`, `@`, or `|` needs
+   careful handling in the `@`-separated makeindex syntax.
+
+4. **Conditional format detection belongs in R, not in Quarto blocks.** Using
+   `knitr::is_latex_output()` inside the helper function means you write the
+   call once in the prose and the output format is handled automatically. No
+   `:::` conditional blocks needed.
+
+5. **A full re-render is necessary after changing the macro definitions.** Quarto
+   caches chapter output. If `preamble.tex` or the R helper functions change, a
+   full rebuild ensures all chapters pick up the new behavior.

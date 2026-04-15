@@ -21,7 +21,7 @@ The problem of high correlations among the predictors in a model is called **col
 are very nearly linearly related to each other (collinear).
 This chapter illustrates the nature of collinearity geometrically, using data and confidence
 ellipsoids (@sec-what-is-collin)
-It describes diagnostic measures to asses these effects (@sec-measure-collin) 
+It describes diagnostic measures to assess these effects (@sec-measure-collin) 
 and presents some novel visual tools for these purposes using the  `r pkg("VisCollin")` package. These include
 _tableplots_ (@sec-tableplot) and collinearity biplots (@sec-collin-biplots).
 
@@ -31,6 +31,7 @@ _tableplots_ (@sec-tableplot) and collinearity biplots (@sec-collin-biplots).
 One class of solutions for collinearity involves _regularization methods_ such as ridge regression (@sec-ridge). 
 Another collection of graphical methods, _generalized ridge trace plots_, implemented 
 in the `r pkg("genridge")` package, sheds further light on what is accomplished by this technique.
+
 In @sec-ridge-low-rank we see that, once again, PCA-related techniques like the biplot can be insightful---here, to 
 understand the nature of collinearity and ridge regression.
 More generally, the methods of this chapter are further examples of how data and confidence
@@ -55,7 +56,7 @@ library(easystats)
 
 \ixon{collinearity}
 
-Researchers who have studies standard treatments of linear models
+Researchers who have studied standard treatments of linear models
 (e.g, @Graybill1961; @Hocking2013)
 are often less than clear about what collinearity is, how to find its sources and how to take steps to resolve them.
 There are a number of important diagnostic measures that can help, but these are usually presented
@@ -137,11 +138,11 @@ when you include two variables $x$ and $y$ and their sum $z = x + y$ in a model.
 For instance, a dataset may include variables for income, expenses, and savings. But
 income is the sum of expenses and savings, so not all three should be used as predictors.
 
-A more subtle case is the use _ipsatized_, defined as
+A more subtle case is the use of _ipsatized_, defined as
 scores that sum to a constant, such as proportions of a total. You might have scores on
 tests of reading, math, spelling and geography. With ipsatized scores, any one of these
 is necessarily 1 $-$ sum of the others, i.e., if reading is 0.5, math and geography are
-both 0.15, then geography must be 0.2. Once thre of the four scores are known, the last
+both 0.15, then geography must be 0.2. Once three of the four scores are known, the last
 provides no new information.
 \ix{ipsatized scores}
 
@@ -149,14 +150,14 @@ More generally, collinearity refers to the case when there are very high
 **multiple correlations** among the predictors, such as $R^2 (x_i | \text{other }x) \ge 0.9$. 
 Note that you can't tell simply by looking at the simple correlations. A large correlation
 $r_{ij}$ is _sufficient_ for collinearity, but not _necessary_---you can have variables
-$x_1, x_2, x_3$ for which the pairwise correlation are low, but the multiple correlation is high.
+$x_1, x_2, x_3$ for which the pairwise correlations are low, but the multiple correlation is high.
 
 The consequences are:
 
 * The estimated coefficients have large standard errors, $s(\hat{b}_j)$. They are multiplied by
 the square root of the variance inflation factor, $\sqrt{\text{VIF}}$, discussed below.
 * The large standard errors deflate the $t$-statistics, $t = \hat{b}_j / s(\hat{b}_j)$, by the same factor,
-so a coefficient that would significant if the predictors were uncorrelated becomes insignificant
+so a coefficient that would be significant if the predictors were uncorrelated becomes insignificant
 when collinearity is present.
 * Thus you may find a situation where an overall model is highly significant (large $F$-statistic), while
 no (or few) of the individual predictors are. This is a puzzlement!
@@ -186,7 +187,7 @@ any weighted sum of them in a model and get the same predicted values.
 (c) Shows a typical case where there is a strong correlation between $X_1$ and $X_2$. The regression plane
 here is unique, but is not well determined. A small change in Y **can** make quite a difference
 in the fitted value or coefficients, depending on the values of $X_1$ and $X_2$.
-Where $X_1$ and $X_2$ are far from their near linear relation in the botom plane,
+Where $X_1$ and $X_2$ are far from their near linear relation in the bottom plane,
 you can imagine that it is easy to tilt the plane substantially by a small change in $Y$.
 
 ```{r}
@@ -271,8 +272,8 @@ coefs
 
 
 
-Then, I define a function to plot the data ellipse (`car::dataEllipse()`) for each data frame and confidence ellipse
-(`car::confidenceEllipse()`) for the coefficients in the corresponding fitted model. In the plots in @fig-collin-data-beta, I specify the x, y limits for each plot
+Then, I define a function to plot the data ellipse (`r func("car::dataEllipse()")`) for each data frame and confidence ellipse
+(`r func("car::confidenceEllipse()")`) for the coefficients in the corresponding fitted model. In the plots in @fig-collin-data-beta, I specify the x, y limits for each plot
 so that the relative sizes of these ellipses are comparable, so that variance inflation can be assessed visually.
 
 ```{r}
@@ -338,7 +339,7 @@ effects more readily understandable, to answer the "Where's Waldo" question pose
 \ixon{VIF}
 \ix{collinearity!variance inflation factor}
 
-How can we measure the effect of collinearity? The essential idea is to compare, for each predictor the variance
+How can we measure the effect of collinearity? The essential idea is to compare, for each predictor, the variance
 $s^2 (\widehat{b_j})$ that the coefficient that $x_j$ would have if it was totally unrelated to the other
 predictors to the actual variance it has in the given model.
 
@@ -370,7 +371,8 @@ multiplier of the standard errors. The denominator, $1-R^2_{j | \text{others}}$ 
 variance of $x_j$ that is _not_ explainable from the others.[^vif-av-plot]
 
 [^vif-av-plot]: Recall that in an added-variable plot (@sec-avplots), the horizontal axis for predictor $x_j$ is
-$x^\star_j = x_j  \,|\, \text{others}$ ... **TODO** complete this thought
+$x^\star_j = x_j  \,|\, \text{others}$. This is, it plots the values of that predictor which uncorrelated with
+(or linearly independent of) all the other predictors in the model.
 
 For the cases shown in @fig-collin-data-beta the VIFs and their square roots are:
 
@@ -397,7 +399,7 @@ of such terms, relative to what would be obtained with uncorrelated data. Visual
 by comparing the areas of the ellipses in the bottom row of @fig-collin-data-beta.
 Because the magnitude of the GVIF increases with the number of degrees of freedom for the set of parameters, 
 Fox & Monette suggest the analog $\sqrt{\text{GVIF}^{1/2 \text{df}}}$ as the measure of impact on standard
-errors. This is what `car::vif()` calculates for a factor or other term with more than 1 df.
+errors. This is what `r func("car::vif()")` calculates for a factor or other term with more than 1 df.
 
 ::: {#exm-cars-collin}
 **Cars data**
@@ -424,7 +426,7 @@ Anova(cars.mod)
 ```
 
 
-We check the variance inflation factors, using `car::vif()`. We see that most predictors have very high
+We check the variance inflation factors, using `r func("car::vif()")`. We see that most predictors have very high
 VIFs, indicating moderately severe multicollinearity.
 
 ```{r cars-vif}
@@ -479,8 +481,8 @@ This inverse connection is analogous to the dual relationship (@sec-data-beta-sp
 \ix{variance inflation factor!plot}
 
 
-Beyond the console output from  `car::vif()`, the `r pkg("easystats")` suite of packages has some useful functions for displaying VIFs in
-helpful tables and plots. `performance::check_collinearity()` calculates VIFs and their standard errors
+Beyond the console output from  `r func("car::vif()")`, the `r pkg("easystats")` suite of packages has some useful functions for displaying VIFs in
+helpful tables and plots. `r func("performance::check_collinearity()")` calculates VIFs and their standard errors
 and returns a `"check_collinearity"` data frame.  The plot method for this uses a log scale for VIF
 because it is _multiples_ of variance that matter here. It uses intervals of 
 `r colorize("1-5", "darkgreen")`, `r colorize("5-10", "blue")`, `r colorize("10+", "red")` to 
@@ -520,7 +522,7 @@ Answers to these questions are provided using measures developed by Belsley and 
 These measures are based on the eigenvalues $\lambda_1, \lambda_2, \dots \lambda_p$
 of the correlation matrix $R_{X}$ of the predictors (preferably centered and scaled, and not including the constant term
 for the intercept), and the corresponding eigenvectors in the columns of $\mathbf{V}_{p \times p}$, given by
-the the eigen decomposition
+the eigen decomposition
 
 $$
 \mathbf{R}_{X} = \mathbf{V} \boldsymbol{\Lambda} \mathbf{V}^\mathsf{T} \; .
@@ -540,8 +542,11 @@ $$
 \text{VIF}_j = \sum_{k=1}^p \frac{V^2_{jk}}{\lambda_k} \; .
 $$ {#eq-VIF-sum}
 
-This shows that (a) only the _small_ eigenvalues contribute to variance inflation, but 
+This shows that (a) only the _small_ eigenvalues ($\lambda_k$ in the denominator) contribute to variance inflation, but 
 (b) only for those predictors that have large eigenvector coefficients $V_{jk}$ on those small components.
+The general principle is that:
+
+> small eigenvalues reflect **redundancy** in the predictors: variables that are measuring nearly the same thing.
 
 These facts lead to the following diagnostic statistics for collinearity:
 
@@ -560,6 +565,7 @@ have common interpretations regardless of the number of predictors.
   + As any $\lambda_k \rightarrow 0$ the corresponding $\kappa_j \rightarrow \infty$.
   + As a rule of thumb, @Belsley:91a suggests that values $\kappa_j > 10$ reflect a moderate problem, while
   $\kappa_j > 30$ indicates severe collinearity. Even worse values use bounds of 100, 300, ... as collinearity becomes more extreme.
+  + Thus, these values are perhaps better named **redundancy indices**.
 
 * **Variance decomposition proportions**:
 Large VIFs indicate variables that are involved in _some_ nearly collinear
@@ -569,7 +575,7 @@ the _proportions of variance_ of each variable associated with each principal co
 as a decomposition of the coefficient variance for each dimension. These are simply the 
 the terms in @eq-VIF-sum divided by their sum.
 
-These measures can be calculated using `VisCollin::colldiag()`.
+These measures can be calculated using `r func("VisCollin::colldiag()")`.
 For the current model, the usual display contains both the condition indices and
 variance proportions. However, even for a small example, it is often difficult to know
 what numbers to pay attention to.
@@ -660,7 +666,7 @@ to see where the problems lie in a space that relates to observations and variab
 
 A standard biplot [@Gabriel:71; @GowerHand:96] showing the 2 (or 3) largest dimensions in the
 data is what we usually want to use. By projecting multivariate data into a low-D space,
-we can see the main variation in the data an how this related to the variables.
+we can see the main variation in the data and how this is related to the variables.
 
 However the standard biplot of the largest dimensions is less useful for visualizing the relations among the
 predictors that lead to nearly collinear relations.  Instead, biplots of
@@ -686,8 +692,8 @@ Because we are interested in seeing the _relative magnitude_ of variable vectors
 we are also free to multiply them all by any constant to make them to zoom in or out, making them more visible in relation to the
 scores for the cars.
 
-I use `factoextra::fviz_pca_biplot()` for the biplot in @fig-cars-collin-biplot because I want to illustrate identification of
-noteworthy points with `geom_text_repel()`.
+I use `r func("factoextra::fviz_pca_biplot()")` for the biplot in @fig-cars-collin-biplot because I want to illustrate identification of
+noteworthy points with `r func("geom_text_repel()")`.
 
 ```{r}
 #| label: fig-cars-collin-biplot
@@ -746,7 +752,7 @@ and `horse`.
 Moreover, there is one observation, #20, that stands out as
 an outlier in predictor space, far from the centroid.
 It turns out that this vehicle, a Buick Estate wagon, is an early-year (1970) American behemoth.
-It had an 8-cylinder, 455 cu. in, 225 horse-power engine, and able to go from 0 to 60 mph
+It had an 8-cylinder, 455 cu. in, 225 horse-power engine, and was able to go from 0 to 60 mph
 in 10 sec.
 (Its MPG is only slightly under-predicted from the regression model, however.)
 \ix{outliers}
@@ -815,7 +821,7 @@ a small amount of bias. I illustrate ridge regression below (@sec-ridge) using t
 for visualization methods.
 
   + Use **Bayesian regression**. If multicollinearity prevents a regression coefficient from being estimated precisely, 
-  Bayesian regression (e.g., @Pesaran2019) can reduce collinearity by imposing shrinkage priors; these incorporate prior information to regularize the model, making it less sensitive to correlated predictors and reducing its _posterior varioance_.
+  Bayesian regression (e.g., @Pesaran2019) can reduce collinearity by imposing shrinkage priors; these incorporate prior information to regularize the model, making it less sensitive to correlated predictors and reducing its _posterior variance_.
 
 <!-- **Example**: Centering -->
 
@@ -840,14 +846,14 @@ XY <- data.frame(x, y1, y2)
 (R <- cor(XY))
 ```
 
-The effect of centering here is remove the linear association in what is a purely quadratic relationship.
+The effect of centering here is to remove the linear association in what is a purely quadratic relationship.
 This can be seen in @fig-collin-centering by plotting `y1` and `y2` against `x`.
 ```{r}
 #| label: fig-collin-centering
 #| fig-width: 10
 #| fig-height: 5
 #| out-width: "90%"
-#| fig.cap: "Centering a predictor removes the nessessary correlation in a quadratic regression. Left: linear relatioship fitting $y$ to the uncentered $x$. Right: fitting to the centered $(x - \\bar{x}$."
+#| fig.cap: "Centering a predictor removes the necessary correlation in a quadratic regression. Left: linear relatioship fitting $y$ to the uncentered $x$. Right: fitting to the centered $(x - \\bar{x}$."
 r1 <- R[1, 2]
 r2 <- R[1, 3]
 
@@ -898,7 +904,7 @@ $y = \beta_0 + \beta_1 x + \beta_2 x^2$ with $x$ uncentered, the slope coefficie
 slope of the curve at the value $x = 0$, which may be well-outside the range of data. 
 With a centered predictor $x^\star = x - \bar{x}$, the analogous coefficient $\beta_1^\star$
 in the model $y = \beta_0^\star + \beta_1^\star x^\star + \beta_2^\star (x^\star)^2$
-is gives the slope at the mean value of $x$.
+gives the slope at the mean value of $x$.
 
 \ixoff{centering!effect on collinearity}
 \ixoff{collinearity!centering}
@@ -911,7 +917,7 @@ is gives the slope at the mean value of $x$.
 **Interactions and response surface models**
 
 Centering of numeric predictors becomes even more important in polynomial models that also include interaction effects,
-such as response surface models this include all quadratic terms of the predictors and all possible pairwise interactions.
+such as response surface models that include all quadratic terms of the predictors and all possible pairwise interactions.
 The simple notation in an R formula[^rsm] is `y ~ (x1 + x2 + ...)^2`. Spelled out for two predictors with uncentered `x1` and `x2`,
 this would be:
 
@@ -973,7 +979,7 @@ sqrt(acetyl.vif0 / acetyl.vif1)
 ```
 
 Finally, I use `poly(time, 2)` in the model for the centered data. Because this polynomial term has 2
-degree of freedom, `car::vif()` calculates GVIFs here.
+degree of freedom, `r func("car::vif()")` calculates GVIFs here.
 The final column gives $\sqrt{\text{GVIF}^{1/2 \text{df}}}$, the remaining effect of
 collinearity on the standard errors of terms in this model.
 
@@ -1042,7 +1048,7 @@ To avoid unnecessary details related to the intercept, assume
 the predictors have been centered at their means and the unit vector is
 omitted from $\mathbf{X}$. 
 Further, to avoid scaling issues, we
-standardize the columns of $\mathbf{X}$ to unit length, so that $\mathbf{X}\trans \mathbf{X}$ is a also correlation matrix.
+standardize the columns of $\mathbf{X}$ to unit length, so that $\mathbf{X}\trans \mathbf{X}$ is also a correlation matrix.
 
 The ordinary least squares estimates of coefficients and their estimated
 variance covariance matrix take the (hopefully now) familiar form
@@ -1184,7 +1190,7 @@ including
 `r pkg("MASS")` (the `lm.ridge()` function),
 `r pkg("glmnet", cite=TRUE)`, and
 `r pkg("penalized", cite=TRUE)`, but none of these provides insightful graphical displays.
-`glmnet::glmnet()` also implements a method for multivariate responses with
+`r func("glmnet::glmnet()")` also implements a method for multivariate responses with
 a `family="mgaussian".
 
 Here, I focus in the `r package("genridge", cite=TRUE)`, where the `ridge()` function
@@ -1471,7 +1477,7 @@ You can see that in this example the HKB and CGV criteria prefer a smaller degre
 Just as principal components analysis gives low-dimensional views of a data set, PCA can
 be useful to understand ridge regression, just as it did for the problem of collinearity.
 
-The  `visCollin::pca()` method transforms a `"ridge"` object
+The  `r func("visCollin::pca()")` method transforms a `"ridge"` object
 from parameter space, where the estimated coefficients are
 $\beta_k$ with covariance matrices $\boldsymbol{\mathcal{V}}_k$, to the
 principal component space defined by the right singular vectors, $\mathbf{V}$,
