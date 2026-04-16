@@ -1,7 +1,7 @@
 ---
-name: User profile
-description: Michael Friendly — statistician, author, experienced R/LaTeX user writing a Quarto book
+name: User Profile
+description: Michael Friendly — professor, book author, R/LaTeX expert using Quarto for the first time
 type: user
 ---
 
-Michael Friendly is a statistician and author writing "Visualizing Multivariate Data and Models in R" for CRC Press / Chapman & Hall. He has deep expertise in R and LaTeX (wrote DDAR book in .Rnw), but is newer to Quarto's PDF pipeline. He is comfortable with git, RStudio, and TeXStudio on Windows 11. He collaborates with a reviewer named Michael T. (Udi also contributed inline edits historically). He prefers concise, direct responses.
+Michael Friendly is a professor (York University) and experienced R/LaTeX author. He wrote a previous book (DDAR) using `.Rnw` format with deep LaTeX customization. He is comfortable with R, statistical methods, and LaTeX, but is newer to Quarto (especially its PDF/LaTeX pipeline). He uses RStudio on Windows 11 with both MikTeX and TinyTeX installed. He publishes his HTML book to GitHub Pages from the `docs/` folder.
