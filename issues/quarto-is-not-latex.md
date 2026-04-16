@@ -1,14 +1,15 @@
-# Blog post seed: "Why Quarto Is Not LaTeX, However Hard It Tries"
+# Blog post seed: "Quarto Is Not LaTeX, However Hard It Tries"
 
 **Working title:** *Why Quarto Is Not LaTeX, However Hard It Tries*
 
 **Status:** Seed / notes. A formal task to write this up will be created later.
 **Related file:** `working-text/quarto-pains.qmd` — an earlier draft on similar themes.
 
-### Possible title variants
+### Possible subtitles
 
+- *From `.Rnw` to Quarto: What I Gained, What I Lost* [use this!]
+- *The Making of Vis-MLM* (or, use that as a section, describing `Makefile` vs `build.sh`)
 - *The Hidden Costs of "Write Once, Render Twice": A Quarto Book Diary*
-- *From `.Rnw` to Quarto: What I Gained, What I Lost*
 - *Quarto Growing Pains: A Technical Post-Mortem*
 
 ---
@@ -20,60 +21,81 @@ I chose Quarto over bookdown and other modern solutions to publishing complex do
 automatically included. I made this choice because Quarto promised to be able to produce both a print-quality PDF and an online HTML version from the same source.
 
 Some publishers, such as CRC Press, allow authors to do this, with the online version being free. A trade-off is that the publisher wants me
-to submit, before printing, essentially camera-ready copy they can ship off to a 3rd world printer. That means: All pages are correctly laid out,
-with regard to figure size & placement, no widow-lines breaking pages, proper, comprehensive indexes (Subject, Author), ...
+to submit, before printing, essentially camera-ready copy they can ship off to an inexpensive printer. That means: All pages are correctly laid out, with regard to figure size & placement, no widow-lines breaking pages, proper, comprehensive indexes (Subject, Author), ...
 
 For comparison, my
-previous book ([*Discrete Data Analysis with R*](https://www.taylorfrancis.com/books/mono/10.1201/b19022/discrete-data-analysis-michael-friendly-david-meyer)) was written in `.Rnw` format — This was essentially text written in LaTeX (Using `\chapter{}, \begin/end{itemize}, \emph{}, $math$, ...`)
-with embedded R code chunks (Sweave/knitr).
+previous book ([*Discrete Data Analysis with R*](https://www.taylorfrancis.com/books/mono/10.1201/b19022/discrete-data-analysis-michael-friendly-david-meyer)) was written in `.Rnw` format. This was essentially text written in LaTeX  (using `\chapter{}, \begin/end{itemize}, \emph{}, $math$, ...`)
+with embedded R code chunks (in Sweave/knitr syntax).
 
-In that workflow, I had **complete control** over the entire process of turning LaTeX source into the PDF was exactly what I wanted. I could easily define shorthands
-for LaTeX math in one file (`commands.tex`), used as `\input{commands}` available globally. More importantly, I could control the page design and layout
-even though my book design skills are limited. For example, I wanted to have a visual table of contents for each chapter, which I did using `tikz`
-fairly easily.
+In that workflow, I had **complete control** over the entire process of turning LaTeX source into the PDF was exactly what I wanted. I could:
+
+* easily define shorthands for LaTeX math in a single file (`commands.tex`), used as `\input{commands}` and therefore available globally in the entire book. 
+* For writing & editing, it was easy to setup _conditional rendering_ (using `\includeonly{ch05,ch06}`) so that only those chapters were compiled to the PDF, but all page numbers, cross-references to figures or sections, ... reflected the entire book.
+* More importantly, I could control the page design and layout even though my book design skills are limited. For example, I wanted to have a visual table of contents for each chapter, which I did using `tikz` fairly easily.
 
 ![](images/DDAR-Ch2-header.png)
 
-I also designed similar visual Part pages using `tikz` for the chapters within each part, and  a coherent scheme of accent colors for the chapters within
-each part. Among other books I've written, it's the one I'm most proud of.
+I also designed similar visual Part pages using `tikz` for the chapters within each part, and I developed a coherent scheme of different accent colors for the chapters within each part, so that section headings and running titles used a unique accent color throughout that
+part. Among other books I've written, it's the one I'm most proud of.
+
+![](images/DDAR-title-page.png)
+
 
 With Quarto, as I later realized, I was trading that control for
-convenience — I could write once in Markdown, and get both formats (HTML, PDF) from a single source. That is something I didn't have before.
-The trade-off turned out to be less favorable than advertised. This post documents the places where
-Quarto's abstraction layer over LaTeX broke things that were trivial in `.Rnw`, and the
-workarounds I found (or didn't).
+convenience -- I could write once in Markdown, and get both formats (HTML, PDF) from a single source. That is something I didn't have before.
+The trade-off turned out to be less favorable than advertised, at least when trying to achieve the goals of beautiful and consistent
+online and print versions.
+
+This post documents the places where Quarto's abstraction layer over LaTeX broke things that were trivial in `.Rnw`, but much more difficult
+in Quarto. I was able to solve many of these, often with great assistance from Team Quarto in the [Quarto Dev Discussion](https://github.com/orgs/quarto-dev/discussions/) forum. (Thanks, guys!)
+For authors facing a similar writing task, I thought it would be useful to describe these problems and my solutions so far.
+
+
+
+## Starting point
 
 CRC press provides a [bare-bones Quarto framework](https://github.com/bgreenwell/quarto-crc) for a book using their house `krantz` style.
+When I say "bare-bones", it's just that: It generates a table of contents, contains a few chapters, and shows some simple R code with output. Importantly, it includes the [`_quarto.yml`](https://github.com/bgreenwell/quarto-crc/blob/main/_quarto.yml) that sets this up
+as a Quarto Project in RStudio, which can be rendered via the `Build -> {formats}` button. 
+
+But, this didn't allow for, or suggest how do do anything fancier than a very dry `krantz`-style book. There was nothing here about using the potential of Quarto to provide for parallel (but perhaps slightly different) online and print versions. 
+
 Over time, I carefully reviewed a number of online versions of R-related books using Quarto. I learned the most from:
 
   - Rohan Alexander: [*Telling Stories With Data*](https://tellingstorieswithdata.com/). GitHub source: https://github.com/RohanAlexander/tswd
   - Cook & Laa: [*Interactive and dynamic graphics for high-dimensional data using R*](https://dicook.github.io/mulgar_book/). GitHub source: https://github.com/dicook/mulgar_book
 
+These provided ideas for using Quarto features (like `.content-visible when-format="html"` divs)
+and knitr chunk options (like `echo=knitr::is_html_output()` and `eval=knitr::is_html_output()`) that would allow for different
+content in online and printed versions.
 
+Recently, I've enjoyed reading Kieran Healy's post on re-writing his data visualization book in Quarto: [Using Quarto to Write a Book](https://kieranhealy.org/blog/archives/2026/03/09/using-quarto-to-write-a-book/). He discusses the features of
+Quarto in the publishing process in relation to what he as an author wants.
+As well, I've been impressed with what Frank Harrell has done in turning his lovely [_Regression Modeling Strategies_](https://www.academia.edu/43291466/Regression_Modeling_Strategies_With_Applications_to_Linear_Models_Logistic_and_Ordinal_Regression_and_Survival_Analysis) book
+into a [web-based spinoff]() ...
 
-**Ref**: Kieran Healy's post on re-writing his data visualization book in Quarto: [Using Quarto to Write a Book](https://kieranhealy.org/blog/archives/2026/03/09/using-quarto-to-write-a-book/) / anything from Frank Harrell?
 
 ---
 
 ## The fundamental tension
 
-In `.Rnw`, the pipeline was **totally transparent**, involving only LaTeX and R. All stages were controllable:
+In `.Rnw`, the pipeline was **totally transparent**, involving only LaTeX and R. All stages were controllable in a simple, coherent pipeline:
 
 ```
 .Rnw  →  knitr  →  .tex  →  LaTeX  →  BibTeX  →  LaTeX  →  PDF
 ```
 
 Every step was explicit. You could run them individually, inspect intermediate files, and
-insert extra steps (like `authorindex`) at precisely the right point. The `.tex` file was
-*yours* — it contained exactly the `\cite{}`, `\index{}`, and `\usepackage{}` calls you wrote.
+insert extra steps (like `authorindex`) at precisely the right point. The final `book.tex` file was
+*yours* -- it contained exactly the `\cite{}`, `\index{}`, and `\usepackage{}` calls you wrote.
 
 Most importantly, I had only two languages to work with--- R for the code, analyses, outputs and graphs,
-(knitr for including that stuff),
+`(`knitr` for including that stuff),
 and LaTeX for compiling the knitted `.tex` file to a PDF book I felt proud of.
 
 If need be, I could open the generated `.tex` file in [TeXStudio](https://www.texstudio.org/), a remarkable IDE for anything LaTeX
 and see exactly where there
-were problems, re-run different build steps, and so forth. Not only was this conceptually simple,
+were problems; I could re-run different build steps, and so forth. Not only was this conceptually simple,
 but the LaTeX-based process allowed me to:
 
 * Set something in the main `book.Rnw` so that only selected chapters were compiled, to save time when testing: `includeonly = c("ch01", "ch02", "ch03", "ch04")` 
@@ -108,11 +130,13 @@ are simple in LaTeX but frought in Quarto. As I write this, a [new Quarto 2.0](h
 
 ## Whitespace shouldn't matter
 
-When you are writing, the focus should be on your ideas, expressed in words, using markup to express those in style and with formatting.
+When you are writing, the focus should be on your _ideas_, expressed in words, using markup to express those in style and with formatting.
 What you see and do in an editor window should reflect the WYSEIWYG principle that "What You See Is What You Get". Markdown and Quarto
-violate this in several ways.
+violate this in several ways. In RStudio, there is a Visual Editor ...
 
 * **Hard line breaks**: ending a line with two or more spaces followed by a return creates the equivalent to an HTML `<br>` tag within the same paragraph, breaking the text to a new line at that point. 
+
+* **Blank lines matter**: When you write text, followed immediately by a code chunk or equation, or itemized lists the results are often not as you expected, unless you insert blank likes
 
 
 ## The `<div>` vs `:::` design flaw
@@ -131,7 +155,7 @@ are naturally inherited from their parents. If you are writing with HTML directl
 an important feature is to be able to **see** the visual hierarchy in the text, usually done by indenting.
 
 
-## Problem 1: You can't keep your project on Dropbox
+## Problem: You can't keep your project on Dropbox
 
 In `.Rnw`, the DDAR project lived in a `C:/Dropbox/` folder with no issues, and this was sync'd with other authors and contributors via GitHub.
 I use multiple machines (Home / Office) to work on my writing projects, and Dropbox was a simple way to sync this work
@@ -151,12 +175,16 @@ Dropbox now does a more convenient way to handle the files it syncs: You can cre
 similar in spirit to your standard `.gitignore`.
 
 ---
-## Problem 2: The `authorindex` disaster
+## Problem: The `authorindex` disaster
 
-**In `.Rnw`:** I used `\aicite{key}` throughout the source (or `\usepackage{authorindex}` with
-natbib, which patches `\cite` globally). BibTeX ran as a normal build step, writing `\bibdata`
-and `\bibcite` entries to the `.aux` file. The `authorindex` Perl script could find everything
-it needed and produced a `.ain` file for `\printauthorindex`. Straightforward.
+**In `.Rnw`:** I used [`\usepackage{authorindex}`]() to create an Author Index in the book.
+BibTeX ran as a normal build step, writing `\bibdata`
+and `\bibcite` entries to the `.aux` file. The `authorindex` Perl script was designed to
+read the `.aux` file, find the citations and the pages cited and write these to an
+`.ain` file, using a special `\aicite{} macro for formatting.
+Then, the line `\printauthorindex` automatically generated the author index, in the same way that
+`\printindex` did for the Subject Index.
+This was completely straightforward and allowed formatting of the index entries to be customized.
 
 **In Quarto:** Five separate things broke simultaneously:
 
@@ -200,7 +228,7 @@ See `issues/task-authorindex.md` for details.
 ---
 
 
-## Problem 3: Indexing R function names with underscores
+## Problem: Indexing R function names with underscores
 
 In LaTeX, `_` is a special character (subscript in math mode). In `.Rnw`, a macro like:
 
@@ -345,7 +373,7 @@ ERROR: The process cannot access the file because it is being used by another pr
 ```
 
 In `.Rnw`, you could have the PDF open in a viewer while re-compiling; the viewer would reload
-automatically on the next page refresh. In Quarto, you must close the PDF before every build.
+automatically on the next page refresh. In Quarto, you must close the PDF (and every other related output file) before every build.
 
 ---
 
