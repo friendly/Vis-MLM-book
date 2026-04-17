@@ -1,3 +1,7 @@
+#' ---
+#' title: Longley data-- generalized ridge trace plots
+#' ---
+
 if (!require(genridge)) {install.packages("genridge"); library(genridge)}
 library(splines)
 

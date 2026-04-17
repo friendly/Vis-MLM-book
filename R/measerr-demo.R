@@ -1,3 +1,7 @@
+#' ---
+#' title: Simulation for measurement error
+#' ---
+
 # simulation for measurement error
 # from: https://statmodeling.stat.columbia.edu/2024/04/14/simulation-to-understand-measurement-error-in-regression/
 

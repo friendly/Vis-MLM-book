@@ -1,3 +1,8 @@
+#' ---
+#' title: Longley data-- generalized ridge trace plots
+#' ---
+
+
 ### R code producing the figures used in the Generalized Ridge Trace Plots paper
 #
 #  Figs 1-5

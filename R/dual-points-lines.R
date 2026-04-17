@@ -1,4 +1,6 @@
-# dual points & lines
+#' ---
+#' title: Illustrate dual points & lines
+#' ---
 
 library(matlib)
 

@@ -1,3 +1,8 @@
+#' ---
+#' title: Demonstrate correlated data with 2 outliers
+#' ---
+
+
 # correlated bivariate data with 2 outliers
 library(car)
 library(ggplot2)

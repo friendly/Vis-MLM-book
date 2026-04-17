@@ -1,3 +1,6 @@
+#' ---
+#' title: mathscore data 
+#' ---
 
 data(mathscore, package="heplots")
 

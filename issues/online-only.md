@@ -1,5 +1,11 @@
 # Online-only chapters: HTML vs PDF conditional compilation
 
+This problem was discussed at: https://github.com/orgs/quarto-dev/discussions/14365 
+The answer seems to be to use profile groups, e.g., a `_quarto-print.yml` for
+the pdf and a `_quarto-online.yml` for the HTML version, which should be the default.
+There is an example of this at: https://github.com/mcanouil/quarto-issues-experiments/tree/main/quarto-cli-14365
+
+
 ## Problem
 
 My book, [_Visualizing Multivariate Data and Models in R](https://friendly.github.io/Vis-MLM-book/)
