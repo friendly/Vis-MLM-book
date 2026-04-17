@@ -26,7 +26,7 @@ Replace each `<!-- fig.code: R/foo.R -->` with a visible margin note (HTML only)
 
 ---
 
-## Current problems with the `fig.code` comments
+## Current problems with the `fig.code` comments [FIXED]
 
 The comments are inconsistently formatted — any automated processing must handle all these variants:
 
@@ -44,7 +44,7 @@ The comments are inconsistently formatted — any automated processing must hand
 
 ---
 
-## Recommended approach
+## Recommended approach [DONE]
 
 ### Step 1: Normalize the comments (one-time sed/R pass)
 Write a small R script (`R/normalize-figcode.R`) that reads each `.qmd`, normalises all `fig.code` comments to the canonical form, and writes back. Flag lines that don't look like valid paths (e.g., the free-text genridge note).
