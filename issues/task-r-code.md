@@ -76,14 +76,27 @@ A Quarto pre-render R script (`R/make-rcode-appendix.R`) run via `_quarto.yml` `
 
 This script runs automatically before each online render, keeping the appendix current.
 
+**NO**: Wrote the script (`R/make-rcode-appendix.R`), but will be doing this infrequently, so no need to pre-render.
+
 ---
 
 ## Implementation order
 
-1. [ ] Normalize `fig.code` comments (Step 1) — prerequisite for reliable parsing
-2. [ ] Add `title:` headers to R files that lack them (incremental; flag via Step 1 script)
+1. [x] Normalize `fig.code` comments (Step 1) — prerequisite for reliable parsing
+2. [x] Add `title:` headers to R files that lack them (incremental; flag via Step 1 script)
 3. [ ] Lua filter for margin notes (Step 2) — high value, small effort
 4. [ ] Pre-render script for `Rcode.qmd` (Step 3) — more effort, lower urgency
+
+### Step 4: Find other R files that could be added.
+
+There are probably a bunch more of R examples that could be listed here. I don't want to include absolutely every one,
+but it would be useful to: 
+
+* scan the chapter `.qmd` files looking for figures produced by R code that don't already have the `<!-- fig.code: R/filename.R -->` comment.
+
+* try to find the likely source under `R/` that includes this source. Note cases where this cannot be found.
+
+* make an easy way for me to decide to include them in the chapters by adding those `<!-- fig.code: R/filename.R -->` comments
 
 ---
 
