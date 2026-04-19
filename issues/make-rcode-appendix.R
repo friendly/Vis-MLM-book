@@ -225,7 +225,7 @@ Files marked &#9888; do not yet have a descriptive title in their header.
 ', file = con)
 
 for (ch in chapter_data) {
-  cat(sprintf("## %s\n\n", ch$heading), file = con)
+  cat(sprintf("## %s {.unnumbered}\n\n", ch$heading), file = con)
 
   for (e in ch$entries) {
     url   <- paste0(GITHUB_BASE, e$path)
@@ -243,7 +243,7 @@ for (ch in chapter_data) {
 }
 
 if (length(utility_entries)) {
-  cat('## Utilities
+  cat('## Utilities {.unnumbered}
 
 These R files are `source()`d by one or more of the scripts above.
 They define custom functions and helpers used across multiple chapters.
