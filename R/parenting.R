@@ -1,3 +1,7 @@
+#' ---
+#' title: Analyses and plots for the `heplots::Parenting` dataset
+#' ---
+
 #' ## Load packages and the data
 library(car)
 library(heplots)
@@ -119,7 +123,8 @@ t(C) %*% B
 
 # write out symbolic matrices [use dev version]
 library(matlib)
-source("C:/Dropbox/R/projects/matlib/dev/symbolicMatrix.R")
+#source("C:/Dropbox/R/projects/matlib/dev/symbolicMatrix.R")
+
 Fractions <- matlib:::Fractions
 symbolicMatrix("\\bar{y}", 3, 3)
 cont <- matrix(c(1, -.5, -.5, 0, 1, -1), 2,3, byrow=TRUE)

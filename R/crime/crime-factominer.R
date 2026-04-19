@@ -1,5 +1,5 @@
 #' ---
-#' title: crime data - biplot with supplementary variables
+#' title: crime data - FactoExtra biplot with supplementary variables
 #' ---
 
 library(ggplot2)

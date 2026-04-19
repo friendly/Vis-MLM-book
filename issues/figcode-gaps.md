@@ -55,21 +55,30 @@ To add a comment, insert it in the `.qmd` file immediately before the opening ` 
 **`fig-Salaries-facet-sex`** (line 516)
 → `<!-- fig.code: R/Salaries-scatterplots.R -->`
 
-**`fig-Prestige-scatterplot-educ1`** (line 937) — *no match for token `Prestige`*
+**`fig-Prestige-scatterplot-educ1`** (line 937) — no need to cite again
 
-**`fig-Prestige-scatterplot-educ2`** (line 964) — *no match for token `Prestige`*
+**`fig-Prestige-scatterplot-educ2`** (line 964) — no need to cite again
 
-**`fig-Prestige-scatterplot2`** (line 1004) — *no match for token `Prestige`*
+**`fig-Prestige-scatterplot2`** (line 1004) — no need to cite again
 
-**`fig-Prestige-scatterplot3`** (line 1036) — *no match for token `Prestige`*
+**`fig-Prestige-scatterplot3`** (line 1036) — no need to cite again
 
-**`fig-peng-ggplot1`** (line 1200) — *no match for token `peng`*
+**`fig-peng-ggplot1`** (line 1200) — 
 
-**`fig-peng-ggplot2`** (line 1232) — *no match for token `peng`*
+<!-- fig.code: R/penguin/peng-ggplot.R -->
 
-**`fig-peng-bagplot`** (line 1277) — *no match for token `peng`*
+**`fig-peng-ggplot2`** (line 1232) 
 
-**`fig-peng-ggdensity`** (line 1341) — *no match for token `peng`*
+<!-- fig.code: R/penguin/peng-ggplot.R -->
+
+**`fig-peng-bagplot`** (line 1277) 
+
+<!-- fig.code: R/geom-bagplot.R -->
+
+
+**`fig-peng-ggdensity`** (line 1341) 
+
+<!-- fig.code: R/penguin/peng-ggplot.R -->
 
 **`fig-peng-ggplot-out`** (line 1720) — *no match for token `peng`*
 
@@ -95,31 +104,36 @@ To add a comment, insert it in the `.qmd` file immediately before the opening ` 
 
 **`fig-crime-factominer`** (line 1287) — *no match for token `crime`*
 
-**`fig-diabetes-ggbiplot`** (line 1405) — *no match for token `diabetes`*
+<!-- fig.code: R/crime/factominer.R -->
 
-**`fig-diabetes-stress`** (line 1523) — *no match for token `diabetes`*
+**`fig-diabetes-ggbiplot`** (line 1405) 
 
-**`fig-diabetes-mds`** (line 1558) — *no match for token `diabetes`*
+<!-- fig.code: R/diabetes/diabetes-ggbiplot.R -->
+
+**`fig-diabetes-stress`** (line 1523) 
+
+**`fig-diabetes-mds`** (line 1558) 
+
+<!-- fig.code: R/diabetes/diabetes-mds.R -->
 
 **`fig-diabetes-pca-tsne-anim`** (line 1741) — *no match for token `diabetes`*
 
-**`fig-mtcars-corrplot-varorder`** (line 1817) — *ambiguous* (token: `mtcars`)
+**`fig-mtcars-corrplot-varorder`** (line 1817) 
 - `<!-- fig.code: R/mtcars-corrplot.R -->`
-- `<!-- fig.code: R/mtcars-corrplot0.R -->`
 
-**`fig-mtcars-biplot`** (line 1863) — *ambiguous* (token: `mtcars`)
-- `<!-- fig.code: R/mtcars-corrplot.R -->`
-- `<!-- fig.code: R/mtcars-corrplot0.R -->`
 
-**`fig-mtcars-corrplot-pcaorder`** (line 1887) — *ambiguous* (token: `mtcars`)
+**`fig-mtcars-biplot`** (line 1863) 
 - `<!-- fig.code: R/mtcars-corrplot.R -->`
-- `<!-- fig.code: R/mtcars-corrplot0.R -->`
+
+
+**`fig-mtcars-corrplot-pcaorder`** (line 1887)
+- `<!-- fig.code: R/mtcars-corrplot.R -->`
 
 ---
 
 ## Chapter 6: Overview of Linear models (`06-linear_models.qmd`)
 
-**`fig-workers-fits`** (line 266) — *ambiguous* (token: `workers`)
+**`fig-workers-fits`** (line 266)  Need both
 - `<!-- fig.code: R/workers-pca.R -->`
 - `<!-- fig.code: R/workers-reg.R -->`
 
@@ -132,16 +146,6 @@ To add a comment, insert it in the `.qmd` file immediately before the opening ` 
 **`fig-plot-prestige-mod`** (line 360) — *ambiguous* (token: `plot`)
 - `<!-- fig.code: R/avplot-interp.R -->`
 - `<!-- fig.code: R/correlplot-ex.R -->`
-- `<!-- fig.code: R/geom-bagplot-test.R -->`
-- `<!-- fig.code: R/geom-bagplot.R -->`
-- `<!-- fig.code: R/longley-plots.R -->`
-- `<!-- fig.code: R/mtcars-corrplot.R -->`
-- `<!-- fig.code: R/mtcars-corrplot0.R -->`
-- `<!-- fig.code: R/NeuroCog-biplot.R -->`
-- `<!-- fig.code: R/NeuroCog-plots.R -->`
-- `<!-- fig.code: R/pvPlot.R -->`
-- `<!-- fig.code: R/Salaries-scatterplots.R -->`
-- `<!-- fig.code: R/schooldata-plots.R -->`
 
 **`fig-modelplot2`** (line 508) — *no match for token `modelplot2`*
 
@@ -160,22 +164,18 @@ To add a comment, insert it in the `.qmd` file immediately before the opening ` 
 **`fig-levdemo`** (line 1389)
 → `<!-- fig.code: R/levdemo.R -->`
 
-**`fig-hatvalues-demo2`** (line 1579)
+**`fig-hatvalues-demo2`** (line 1579) - duplicate
 → `<!-- fig.code: R/hatvalues-demo.R -->`
 
 ---
 
 ## Chapter 9: Collinearity & Ridge Regression (`09-collinearity-ridge.qmd`)
 
-**`fig-cars-check-collin`** (line 493) — *ambiguous* (token: `cars`)
+**`fig-cars-check-collin`** (line 493)  Already included
 - `<!-- fig.code: R/cars-colldiag.R -->`
-- `<!-- fig.code: R/mtcars-corrplot.R -->`
-- `<!-- fig.code: R/mtcars-corrplot0.R -->`
 
-**`fig-cars-collin-biplot`** (line 699) — *ambiguous* (token: `cars`)
+**`fig-cars-collin-biplot`** (line 699) 
 - `<!-- fig.code: R/cars-colldiag.R -->`
-- `<!-- fig.code: R/mtcars-corrplot.R -->`
-- `<!-- fig.code: R/mtcars-corrplot0.R -->`
 
 **`fig-collin-centering`** (line 852) — *ambiguous* (token: `collin`)
 - `<!-- fig.code: R/collin-centering.R -->`

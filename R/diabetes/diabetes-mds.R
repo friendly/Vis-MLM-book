@@ -1,3 +1,6 @@
+#' ---
+#' title: Diabetes data, multidimensional scaling (MDS)
+#' ---
 
 library(MASS)
 library(ggpubr)

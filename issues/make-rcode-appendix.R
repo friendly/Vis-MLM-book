@@ -100,6 +100,62 @@ get_r_title <- function(rfile) {
   trimws(sub("^#'\\s*title:\\s*", "", hit))
 }
 
+# Utility files sourced within an R script, normalised to "R/..." paths.
+# Handles:
+#   source("R/foo.R")                             — simple relative path
+#   source(here::here("R/foo.R"))                 — here(), single-string form
+#   source(here::here("R", "foo.R"))              — here(), two-arg form
+#   source(here::here("R", "util", "foo.R"))      — here(), three-or-more-arg form
+# Skips commented-out lines and absolute/external paths.
+get_sourced_files <- function(rfile) {
+  if (!file.exists(rfile)) return(character(0))
+  lines <- readLines(rfile, warn = FALSE)
+  # Remove full-line comments
+  lines <- lines[!grepl("^\\s*#", lines)]
+  text  <- paste(lines, collapse = "\n")
+
+  found <- character(0)
+
+  # Pattern 1: source("R/foo.R") — simple relative path starting with R/
+  m1 <- gregexpr('source\\s*\\(\\s*["\']([^"\']+\\.R)["\']', text, perl = TRUE)
+  hits1 <- regmatches(text, m1)[[1]]
+  if (length(hits1)) {
+    paths <- sub('.*["\']([^"\']+\\.R)["\'].*', "\\1", hits1)
+    found <- c(found, paths[grepl("^R/", paths)])
+  }
+
+  # Pattern 2: source(here[::here]("R/path/foo.R")) — single-string form
+  # Must start with "R/" to avoid matching non-project paths
+  m2 <- gregexpr('source\\s*\\(\\s*here(?:::here)?\\s*\\(\\s*["\']([^"\']+\\.R)["\']',
+                 text, perl = TRUE)
+  hits2 <- regmatches(text, m2)[[1]]
+  if (length(hits2)) {
+    paths <- sub('.*["\']([^"\']+\\.R)["\'].*', "\\1", hits2)
+    found <- c(found, paths[grepl("^R/", paths)])
+  }
+
+  # Pattern 3: source(here[::here]("R", "sub", ..., "foo.R")) — multi-arg form.
+  # Extract the full argument list, pull out all quoted strings, and join with /.
+  # First arg must be "R" for the result to be an R/ path.
+  m3 <- gregexpr('source\\s*\\(\\s*here(?:::here)?\\s*\\(([^)]+)\\)',
+                 text, perl = TRUE)
+  hits3 <- regmatches(text, m3)[[1]]
+  if (length(hits3)) {
+    for (h in hits3) {
+      # Extract the content inside here(...)
+      inner <- sub('.*here(?:::here)?\\s*\\(([^)]+)\\).*', "\\1", h, perl = TRUE)
+      # Pull out all quoted strings in order
+      parts <- regmatches(inner, gregexpr('["\'][^"\']+["\']', inner))[[1]]
+      parts <- gsub('["\']', "", parts)
+      if (length(parts) >= 2 && parts[1] == "R") {
+        found <- c(found, paste(parts, collapse = "/"))
+      }
+    }
+  }
+
+  unique(found)
+}
+
 # ------------------------------------------------------------------
 # 3. Collect data per chapter
 # ------------------------------------------------------------------
@@ -129,6 +185,22 @@ for (qmd in chapter_files) {
 }
 
 # ------------------------------------------------------------------
+# 3.5 Collect utility files sourced by the cited R scripts
+# ------------------------------------------------------------------
+cited_paths <- unique(unlist(lapply(chapter_data, function(ch)
+  sapply(ch$entries, `[[`, "path"))))
+
+utility_paths <- unique(unlist(lapply(cited_paths, get_sourced_files)))
+# Remove any path that is already a cited chapter-figure script
+utility_paths <- setdiff(utility_paths, cited_paths)
+
+utility_entries <- lapply(utility_paths, function(path) {
+  list(path   = path,
+       title  = get_r_title(path),
+       exists = file.exists(path))
+})
+
+# ------------------------------------------------------------------
 # 4. Write Rcode.qmd
 # ------------------------------------------------------------------
 n_chapters <- length(chapter_data)
@@ -140,8 +212,13 @@ cat('---
 title: "R Code for Figures and Analyses"
 ---
 
-This appendix lists the R source files used to produce some of the figures and
-analyses in each chapter, with links to the source code on GitHub.
+This online appendix lists the R source files used to produce some of the figures and analyses in each chapter, with links to the source code on GitHub.
+
+This is included here because it may be useful to readers to see the complete context in which many examples were developed, beyond the code displayed in the text. And also because you may want to use or adapt the code for your own work or to develop related examples using the same ideas with different datasets.
+
+It is incomplete because it was consctructed by scanning the chapter source files for special comments,
+of the form `<!-- fig.code: R/Davis-reg.R -->` that were manually embedded in the chapter `.qmd` files as I wrote this, but not always.
+Making this less incomplete proved to be a challenge because it involved scanning the text to find the corresponding R code files that had been included that had been included in chunks.
 
 Files marked &#9888; do not yet have a descriptive title in their header.
 
@@ -165,5 +242,29 @@ for (ch in chapter_data) {
   cat("\n", file = con)
 }
 
+if (length(utility_entries)) {
+  cat('## Utilities
+
+These R files are `source()`d by one or more of the scripts above.
+They define custom functions and helpers used across multiple chapters.
+
+', file = con)
+
+  for (e in utility_entries) {
+    url   <- paste0(GITHUB_BASE, e$path)
+    fname <- basename(e$path)
+
+    if (!e$exists) {
+      cat(sprintf("- &#9888; `%s` &mdash; *file not found*\n", e$path), file = con)
+    } else if (is.na(e$title)) {
+      cat(sprintf("- &#9888; [%s](%s) &mdash; *no title*\n", fname, url), file = con)
+    } else {
+      cat(sprintf("- [%s](%s) &mdash; %s\n", fname, url, e$title), file = con)
+    }
+  }
+  cat("\n", file = con)
+}
+
 close(con)
-message(sprintf("Written: Rcode.qmd  (%d chapters, %d R files)", n_chapters, n_files))
+message(sprintf("Written: Rcode.qmd  (%d chapters, %d R files, %d utilities)",
+                n_chapters, n_files, length(utility_entries)))

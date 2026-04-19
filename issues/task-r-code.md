@@ -98,6 +98,17 @@ but it would be useful to:
 
 * make an easy way for me to decide to include them in the chapters by adding those `<!-- fig.code: R/filename.R -->` comments
 
+**Status**: I'm working through these, but it is tedious
+
+### Step 5: Add **Utiilities* section
+
+There are a bunch of custom functions I use for various scripts that are not yet in packages. After the sections for all chapters
+and Appendices in `Rcode.qmd` add a section that lists these.
+
+* Find instances of `source("R/...")` or `source(here::here())` in any of the R scripts already cited
+* Normalize that path to something that can be listed.
+* Write a list of the unique R files with links to their GH sources
+
 ---
 
 ## GitHub base URL for links

@@ -1,5 +1,5 @@
 #' ---
-#' title: Penguins data, scatterplot matrix & data ellipses
+#' title: Penguins data, scatterplot matrix, data ellipses and 2D density plots
 #' ---
 
 if(!require("ggdensity")) install.packages("ggdensity")

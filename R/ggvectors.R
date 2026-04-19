@@ -1,3 +1,7 @@
+#' ---
+#' title: Draw labeled vectors in a ggplot scene
+#' ---
+
 #' Draw labeled vectors in a ggplot scene
 #'
 #' @param x,y      coordinates of vector ends
