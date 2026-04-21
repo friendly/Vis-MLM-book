@@ -1,3 +1,7 @@
+#' ---
+#' title: pollen data-- zooming in
+#' ---
+#' 
 library(animation)
 data(pollen, package = "animation")
 oopt = ani.options(interval = 0.05)
