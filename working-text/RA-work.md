@@ -4,7 +4,7 @@
 
 * Become familiar with the repo file structure
 
-  * Chapter files: 00-Author.qmd ... 95-references.qmd + Rcode.md
+  * Chapter files: `00-Author.qmd` ... `95-references.qmd` + `Rcode.qmd` (just added)
   
   * Main folders:
 
@@ -29,6 +29,7 @@
 ├── working-text  notes, in-progress work, ...
 ├── _extensions Quarto extensions
 ```
+
 
 * Branches: Do **all** your work on a branch, not master. Let me know when 
 you have something to submit as a PR. You'll have to sync your branch with master.
