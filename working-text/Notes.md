@@ -1,4 +1,4 @@
-# Notes on stuff that might me mentioned
+# Notes on stuff that might be mentioned
 
 * Model formulas cheat sheet -- https://www.econometrics.blog/post/the-r-formula-cheatsheet/
 
