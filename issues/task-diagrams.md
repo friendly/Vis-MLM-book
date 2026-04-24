@@ -162,58 +162,237 @@ minimal chunk first.
 
 ## 3. smartdiagram
 
-The `smartdiagram` LaTeX package provides canned diagram styles (flow, cycle,
-bubble, priority, constellation, connected) with minimal code. Works only in
-PDF natively; same knitr tikz/LaTeX-engine workaround applies for HTML.
+The `smartdiagram` LaTeX package provides canned diagram styles from a list of
+items. Via the knitr `tikz` engine (with `\usepackage{smartdiagram}` in
+`extra.preamble`) it renders as PNG for HTML and as a native PDF graphic for PDF,
+so **no conditional blocks are needed** — the tikz engine handles both formats.
 
-### Usage in Quarto
+Source: Fiandrino (2016), https://texdoc.org/serve/smartdiagram/0
 
-The safest approach is a raw LaTeX block for PDF + static PNG fallback for HTML
-(same conditional pattern as Mermaid above).
+### 3.1 Diagram types (10 total)
 
-````markdown
-::: {.content-visible when-format="pdf"}
-```{=latex}
-\usepackage{smartdiagram}   % or put in preamble.tex
-\begin{center}
-\smartdiagram[flow diagram:horizontal]{
-  Multivariate data,
-  Explore (PCA),
-  Model (MLM),
-  Visualize (HE plots),
-  Interpret
+All invoked as `\smartdiagram[<type>]{item1, item2, ...}`.
+
+| Type | Description | Good for |
+|------|-------------|----------|
+| `circular diagram` | Items around a circle, counter-clockwise | Iterative cycles |
+| `circular diagram:clockwise` | Same, clockwise (no space before `:`) | Workflows (Kottwitz example) |
+| `flow diagram` | Vertical pipeline with back-arrow | Analysis steps |
+| `flow diagram:horizontal` | Horizontal pipeline with back-arrow | Chapter progression |
+| `descriptive diagram` | Term + description pairs (circle + rounded box) | Method glossary |
+| `priority descriptive diagram` | Items stacked on a vertical priority arrow | Method ranking by complexity |
+| `bubble diagram` | **First item = large center bubble; rest overlap it** | Part + its chapters |
+| `constellation diagram` | Center "planet" + "satellite" nodes, arrows from center out | Package ecosystem |
+| `connected constellation diagram` | Like constellation but satellites also ring-connected | Method relationships |
+| `sequence diagram` | Chevron-shaped items in a row | Layered dependencies |
+
+**Note on bubble vs. constellation:** `bubble diagram` has the satellite bubbles
+*overlapping* the center (translucent); `constellation diagram` keeps them
+separate with connecting arrows. For showing chapters in a part, constellation
+is usually cleaner. For a package ecosystem where overlap emphasises membership,
+bubble works well.
+
+**Descriptive diagram syntax** differs: items are `{Title, {Description text}}`:
+```latex
+\smartdiagram[descriptive diagram]{
+  {EDA,   {Explore structure with plots and PCA}},
+  {Model, {Fit a multivariate linear model}},
+  {Infer, {Test hypotheses with MANOVA / HE plots}},
 }
-\end{center}
 ```
-:::
-````
 
-Or use the `tikz` chunk engine with `\usepackage{smartdiagram}` in the preamble.
+### 3.2 Setting options — `\smartdiagramset{...}`
 
-### smartdiagram styles relevant to this book
+Options are set globally before `\smartdiagram[...]`. Analogue of `\tikzset`.
 
-| Style | Book use |
-|-------|----------|
-| `flow diagram` | Analysis pipeline steps |
-| `circular diagram` | Iterative modelling cycle |
-| `bubble diagram` | Package ecosystem (heplots, candisc, …) |
-| `priority descriptive diagram` | Parts of the book / reading order |
-| `constellation diagram` | Relationships among methods |
+#### General options (all diagram types)
 
-### Example: circular analysis cycle
+| Option | Default | Notes |
+|--------|---------|-------|
+| `set color list={c1,c2,...}` | — | Custom color cycle |
+| `uniform color list=color for N items` | — | One color for all N modules |
+| `use predefined color list` | — | Reuse colors from a prior diagram |
+| `insert decoration=style` | none | Decorate module borders (e.g. zigzag) |
+| `arrow line width` | `0.1cm` | Connection arrow width |
+| `arrow tip` | `stealth` | Arrow tip shape |
+| `arrow style` | `<->` | Full arrow style string |
+| `uniform arrow color` | `false` | Force one color for all arrows |
+| `arrow color` | `gray` | Color when `uniform arrow color=true` |
 
-````markdown
-```{=latex}
-\smartdiagram[circular diagram:clockwise]{
-  Data collection,
-  EDA \& plots,
-  Model fitting,
-  Diagnostics,
-  Visualization,
+#### Options for circular and flow diagrams
+
+| Option | Default | Notes |
+|--------|---------|-------|
+| `module minimum width` | `2cm` | |
+| `module minimum height` | `1cm` | |
+| `module shape` | `rectangle,rounded corners` | Change to `diamond`, `ellipse`, etc. (load `shapes.geometric`) |
+| `module x sep` | `2.75` | Horizontal distance factor (flow:horizontal) |
+| `module y sep` | `1.65` | Vertical distance factor (flow) |
+| `text width` | `1.75cm` | Text area inside each module |
+| `font` | `\small` | Module label font |
+| `border color` | `gray` | |
+| `text color` | `black` | |
+| `circular distance` | `2.75cm` | Radius of the circle |
+| `back arrow disabled` | `false` | Set `true` to remove the return arrow |
+| `back arrow distance` | `0.5` | Distance of back arrow from modules |
+| `circular final arrow disabled` | `false` | Set `true` to break the cycle |
+
+#### Options for bubble / constellation diagrams
+
+| Option | Default | Notes |
+|--------|---------|-------|
+| `bubble center node size` | `4cm` | Center bubble minimum size |
+| `bubble center node font` | `\large` | |
+| `bubble center node color` | `lightgray!60` | |
+| `distance center/other bubbles` | `0.8cm` | Gap between center and satellites |
+| `bubble fill opacity` | `0.5` | Satellite translucency (bubble only) |
+| `bubble node size` | `2.5cm` | Satellite bubble size |
+| `bubble node font` | `\normalfont` | |
+| `bubble text opacity` | `0.8` | |
+| `planet size` | `2.5cm` | Center node (constellation only) |
+| `planet color` | `lightgray!60` | |
+| `planet font` | `\large` | |
+| `satellite size` | `1.75cm` | |
+| `satellite fill opacity` | `0.5` | |
+| `distance planet-satellite` | `3.5cm` | Gap from center to satellites |
+| `connection line width` | `0.1cm` | Arrow line width |
+| `uniform connection color` | `false` | Constellation/connected only |
+| `connection color` | `gray` | When uniform enabled |
+
+#### Options for sequence diagram
+
+| Option | Default | Notes |
+|--------|---------|-------|
+| `sequence item height` | `1cm` | |
+| `sequence item width` | `2cm` | |
+| `sequence item border color` | `gray` | |
+| `sequence item font size` | `\normalfont` | |
+| `sequence item text color` | `black` | |
+| `uniform sequence color` | `false` | |
+| `sequence item uniform color` | `gray!60!black` | Color when uniform enabled |
+
+### 3.3 Book-specific diagram ideas and code
+
+#### Bubble diagram: chapters in one book part
+
+The first item is the center. Use `\\` for line breaks inside item names.
+Works best with 4–6 satellites; more than 6 gets crowded.
+
+```latex
+% Part III: Univariate Linear Models (4 chapters — good bubble count)
+\smartdiagramset{
+  bubble center node size=3.5cm,
+  bubble node size=2.2cm,
+  uniform color list=teal!50 for 5 items,
+  bubble fill opacity=0.4,
+  bubble text opacity=0.9,
+  font=\small,
+}
+\smartdiagram[bubble diagram]{
+  Univariate\\ Linear\\ Models,
+  Ch 6\\ Linear\\ Models,
+  Ch 7\\ Model\\ Plots,
+  Ch 8\\ LM Topics,
+  Ch 9\\ Collinearity
+}
+```
+
+#### Constellation diagram: chapters in a part (cleaner alternative)
+
+Satellites are separate from the center — better when chapter names are longer.
+
+```latex
+% Part IV: Multivariate Linear Models (6 chapters)
+\smartdiagramset{
+  planet size=3cm,
+  satellite size=2cm,
+  distance planet-satellite=4cm,
+  planet color=blue!30,
+  uniform color list=blue!20 for 7 items,
+  font=\small,
+  planet font=\normalfont,
+}
+\smartdiagram[constellation diagram]{
+  Multivariate\\ Linear Models,
+  Ch 10\\ Hotelling,
+  Ch 11\\ MLM Review,
+  Ch 12\\ MLM Viz,
+  Ch 13\\ Equal Cov,
+  Ch 14\\ Influence,
+  Ch 15\\ Case Studies
+}
+```
+
+#### Connected constellation: method relationships
+
+```latex
+% heplots as hub connecting related packages
+\smartdiagramset{
+  planet color=orange!60,
+  planet size=3cm,
+  satellite size=2cm,
+  distance planet-satellite=3.5cm,
+  uniform color list=orange!30 for 6 items,
+  font=\small,
+}
+\smartdiagram[connected constellation diagram]{
+  heplots,
+  car,
+  candisc,
+  ggplot2,
+  MASS,
+  broom
+}
+```
+
+#### Sequence diagram: conceptual hierarchy
+
+```latex
+% Layered abstraction from data to insight
+\smartdiagramset{
+  uniform sequence color=true,
+  sequence item uniform color=teal!60!black,
+  sequence item border color=black,
+  sequence item font size=\small,
+  sequence item text color=white,
+  sequence item width=2.5cm,
+}
+\smartdiagram[sequence diagram]{
+  Raw data,
+  EDA,
+  LM / MLM,
+  HE plots,
   Inference
 }
 ```
-````
+
+#### Descriptive diagram: book parts with summaries
+
+```latex
+\smartdiagramset{
+  set color list={blue!40, teal!40, green!40, orange!40},
+  description title width=2.5cm,
+  description title text width=2cm,
+  description text width=6cm,
+  font=\small,
+}
+\smartdiagram[descriptive diagram]{
+  {Part I,   {Orienting ideas: data ellipses, visualisation principles}},
+  {Part II,  {Exploratory: PCA, biplots, multivariate plots}},
+  {Part III, {Univariate LM: model plots, collinearity, ridge}},
+  {Part IV,  {Multivariate LM: MANOVA, HE plots, influence}},
+}
+```
+
+### 3.4 Color tips
+
+- Default color cycle is pastel (blue, red, orange, green, …) — fine for slides,
+  may be too bright for a book. Use `uniform color list` for a monochromatic scheme.
+- CRC books are typically printed in black-and-white internally; use high-contrast
+  colors or patterns, or accept that diagrams appear as grayscale in print.
+- Predefined colors can be reused across diagrams with `use predefined color list`.
+- `bubble fill opacity=0.4` and `satellite fill opacity=0.4` lighten backgrounds
+  so labels stay readable.
 
 ---
 

@@ -80,6 +80,17 @@ See `issues/Tasks-Issues.md` for the full prioritized list. Top items:
 6. **Reviewer comments** — see `issues/reviewer-MichaelT-*.Rmd` and `reviews/*.pdf`
 7. **Content additions** — see `issues/content-todos.md`
 
+## Blog posts
+
+Some work done on this book may be worth writing up as posts on Michael's blog
+at https://friendly.github.io/ (source: `C:\R\projects\friendly.github.io`).
+
+Candidates so far:
+- **Diagrams in Quarto with Mermaid, TikZ, and smartdiagram** — the examples in
+  `test/test-diagrams.qmd` showed all three toolchains working together; the
+  `%|` vs `#|` chunk-option gotcha and the `extra.preamble` nesting bug are both
+  worth documenting for other Quarto/knitr users.
+
 ## Claude Memory
 
 Session context and persistent notes live in `memory/` at the project root (git-tracked).

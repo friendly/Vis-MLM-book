@@ -1,0 +1,430 @@
+---
+title: "Diagram Examples: Mermaid, TikZ, smartdiagram"
+date: today
+format:
+  html:
+    toc: true
+    embed-resources: true
+    code-fold: true
+  pdf:
+    documentclass: article
+    keep-tex: false
+    toc: false
+---
+
+```{r}
+#| label: setup
+#| include: false
+library(knitr)
+# Global options for the knitr tikz engine.
+# extra.preamble is injected into the standalone LaTeX document before \begin{document}.
+# knitr compiles the tikz chunk → PDF → PNG (HTML) or embeds PDF directly (PDF output).
+opts_chunk$set(
+  engine.opts = list(
+    extra.preamble = c(
+      "\\usepackage{amsmath}",
+      "\\usetikzlibrary{arrows.meta, positioning, shapes.geometric, fit, decorations.pathreplacing}",
+      "\\usepackage{smartdiagram}"
+    )
+  )
+)
+```
+
+---
+
+## 1. Mermaid
+
+Quarto renders Mermaid to SVG natively in HTML. For PDF, Quarto uses its bundled
+mermaid-js renderer (no Chromium required in Quarto ≥ 1.4). Both formats are
+supported automatically — no conditional blocks needed.
+
+### Method-selection flowchart
+
+```{mermaid}
+%%| label: fig-method-flow
+%%| fig-cap: "Choosing a visualization / analysis method based on number of responses and goal."
+%%| fig-align: center
+flowchart TD
+  A([Start]) --> B{How many\nresponse variables?}
+  B -->|one| C[Linear model\nCh 6–9]
+  B -->|many| D{Goal?}
+  D -->|inference| E[MANOVA / MLM\nCh 10–14]
+  D -->|exploration| F{Structure?}
+  F -->|relationships| G[PCA / Biplot\nCh 5]
+  F -->|grouping| H[LDA / Discriminant\nCh 21]
+```
+
+### Analysis pipeline (left-to-right)
+
+```{mermaid}
+%%| label: fig-pipeline
+%%| fig-cap: "Iterative analysis workflow."
+%%| fig-align: center
+flowchart LR
+  A[Multivariate\ndata] --> B[EDA & plots]
+  B --> C[Model fitting]
+  C --> D[Diagnostics]
+  D --> E[HE plots &\nVisualization]
+  E --> F[Inference &\nReport]
+  F -.->|revise model| C
+```
+
+### HE-plot concept (node diagram)
+
+```{mermaid}
+%%| label: fig-he-nodes
+%%| fig-cap: "HE plot: the H ellipse represents the hypothesis (effect); E represents error (within-group variation)."
+%%| fig-align: center
+flowchart LR
+  M[Fit MLM] --> H["H matrix\n(between groups)"]
+  M --> E["E matrix\n(within groups)"]
+  H --> HE["HE plot"]
+  E --> HE
+  HE --> D{"H extends\nbeyond E?"}
+  D -->|yes| S[Significant\neffect]
+  D -->|no| NS[Non-significant]
+```
+
+---
+
+## 2. TikZ
+
+The knitr `tikz` chunk engine compiles a standalone LaTeX document containing the
+chunk body, then converts the output to PNG (HTML) or embeds the PDF graphic
+directly (PDF output). **Both formats get the same diagram.** Libraries and packages
+listed in `extra.preamble` (set in the setup chunk above) are available in every
+tikz chunk.
+
+Note: tikz chunk options use `%|` (LaTeX comment character), not `#|`.
+
+### HE plot geometry
+
+```{tikz}
+%| label: fig-he-geom
+%| fig-cap: "HE plot geometry: the H ellipse (blue) represents hypothesis variation; the E ellipse (dashed) represents error variation. When H extends beyond E the effect is significant."
+%| fig-align: center
+%| out-width: 75%
+%| echo: true
+\usetikzlibrary{arrows.meta}
+\begin{tikzpicture}[>=Latex, font=\small]
+  % axes
+  \draw[->] (-5,0) -- (5,0) node[right] {$y_1$};
+  \draw[->] (0,-2.5) -- (0,2.5) node[above] {$y_2$};
+  % E ellipse (error / within-group variation)
+  \draw[thick, dashed] (0,0) ellipse (2cm and 1.8cm);
+  \node[above right=0.05cm and 0.1cm] at (1.8,1.6) {$\mathbf{E}$ (error)};
+  % H ellipse (hypothesis / between-group variation)
+  \draw[thick, blue!70!black, fill=blue!8, fill opacity=0.5]
+        (0,0) ellipse (4.5cm and 0.9cm);
+  \node[above right=0.05cm and 0.1cm] at (3.8, 0.75)
+        {\textcolor{blue!70!black}{$\mathbf{H}$ (hypothesis)}};
+  % interpretation arrow
+  \draw[->, red!70!black, thick] (1.5, -2.2) -- (3.2, -0.5)
+        node[midway, right=0.05cm, align=left]
+        {\textcolor{red!70!black}{\small $\mathbf{H}$ extends beyond $\mathbf{E}$}\\
+         \textcolor{red!70!black}{\small $\Rightarrow$ significant effect}};
+\end{tikzpicture}
+```
+
+### MLM matrix equation
+
+```{tikz}
+%| label: fig-mlm-eq
+%| fig-cap: "The multivariate linear model as a matrix equation."
+%| fig-align: center
+%| out-width: 70%
+%| echo: true
+\usetikzlibrary{positioning}
+\begin{tikzpicture}[node distance=0.5cm and 0.3cm, font=\Large]
+  \node (Y)  {$\underset{n \times p}{\mathbf{Y}}$};
+  \node[right=of Y]  (eq) {$=$};
+  \node[right=of eq] (X)  {$\underset{n \times q}{\mathbf{X}}$};
+  \node[right=0.15cm of X] (B) {$\underset{q \times p}{\mathbf{B}}$};
+  \node[right=0.4cm of B]  (pl) {$+$};
+  \node[right=of pl] (E)  {$\underset{n \times p}{\mathbf{E}}$};
+  % sub-labels
+  \node[below=0.8cm of Y,  font=\small] {responses};
+  \node[below=0.5cm of X,  font=\small, xshift=5pt] {design};
+  \node[below=0.5cm of B,  font=\small, xshift=-5pt] {coefs};
+  \node[below=0.8cm of E,  font=\small] {errors};
+  % decorative braces
+  \draw[decorate, decoration={brace, amplitude=5pt, mirror}]
+    ([yshift=-4pt]X.south west) -- ([yshift=-4pt]B.south east)
+    node[midway, below=8pt, font=\small] {effect};
+\end{tikzpicture}
+```
+
+### Variable-relationship DAG
+
+```{tikz}
+%| label: fig-dag
+%| fig-cap: "A simple DAG: predictor X and covariate Z both influence response Y."
+%| fig-align: center
+%| out-width: 55%
+%| echo: true
+\usetikzlibrary{positioning, shapes.geometric}
+\begin{tikzpicture}[
+    >=Latex,
+    node/.style = {circle, draw, thick, minimum size=1cm, font=\large},
+    lbl/.style  = {font=\small}
+  ]
+  \node[node] (X) at (0,0)   {$X$};
+  \node[node] (Z) at (2,1.5) {$Z$};
+  \node[node] (Y) at (4,0)   {$Y$};
+  \draw[->, thick] (X) -- node[lbl, below] {direct} (Y);
+  \draw[->, thick] (Z) -- node[lbl, above left]  {confound} (X);
+  \draw[->, thick] (Z) -- node[lbl, above right] {confound} (Y);
+\end{tikzpicture}
+```
+
+---
+
+## 3. smartdiagram
+
+`smartdiagram` provides 10 canned styles (see `issues/task-diagrams.md` §3 for
+the full option reference). Loaded via `extra.preamble` in the setup chunk, it
+is available in every `{tikz}` chunk. No conditional blocks needed — the knitr
+engine renders PNG for HTML and a native PDF graphic for PDF output.
+
+Options are set with `\smartdiagramset{...}` before each diagram (or once
+globally). Colors can be set per-item via `set color list={...}` or uniformly
+with `uniform color list=color for N items`.
+
+There are some great examples on TeX stackExchange:
+
+* [Hex bubble diagram](https://tex.stackexchange.com/questions/138653/how-to-make-hexagon-diagram-from-smart-diagram-package)
+* [Text above arrows](https://tex.stackexchange.com/questions/469473/how-to-add-text-above-some-arrows)
+
+### Analysis cycle — circular:clockwise
+
+```{tikz}
+%| label: fig-smart-cycle
+%| fig-cap: "Statistical analysis cycle."
+%| fig-align: center
+%| out-width: 65%
+%| echo: true
+\smartdiagramset{
+  circular distance=3cm,
+  font=\small,
+  module minimum width=1.8cm,
+  module minimum height=1cm,
+  text width=1.6cm,
+}
+\smartdiagram[circular diagram:clockwise]{
+  Explore data,
+  Fit model,
+  Check diagnostics,
+  Visualize effects,
+  Report \& interpret
+}
+```
+
+### TeX workflow (Kottwitz) — default styling
+
+```{tikz}
+%| label: fig-tex-workflow
+%| fig-cap: "TeX document workflow (Kottwitz). See also the standalone file `test/smartdiagram-workflow.tex`."
+%| fig-align: center
+%| out-width: 65%
+%| echo: true
+\smartdiagram[circular diagram:clockwise]{Edit,
+  pdf\LaTeX, Bib\TeX/ biber, make\-index, pdf\LaTeX}
+```
+
+### Book parts — horizontal flow, back arrow disabled
+
+`back arrow disabled=true` removes the wrap-around return arrow.
+
+```{tikz}
+%| label: fig-book-flow
+%| fig-cap: "Book parts as a linear progression."
+%| fig-align: center
+%| out-width: 95%
+%| echo: true
+\smartdiagramset{
+  back arrow disabled=true,
+  module minimum width=2cm,
+  module minimum height=1.2cm,
+  text width=1.8cm,
+  module x sep=3,
+  font=\small,
+  uniform color list=teal!50 for 5 items,
+}
+\smartdiagram[flow diagram:horizontal]{
+  Orienting\\ Ideas,
+  Exploratory\\ Methods,
+  Univariate\\ LM,
+  Multivariate\\ LM,
+  Case\\ Studies
+}
+```
+
+### Chapters in a part — bubble diagram
+
+**First item = large center bubble**; the rest orbit it as smaller overlapping
+bubbles.  Works best with 4–6 satellites; more gets crowded.  Here: Part III.
+
+```{tikz}
+%| label: fig-part3-bubble
+%| fig-cap: "Part III chapters as a bubble diagram. Center = part name; satellites = chapters."
+%| fig-align: center
+%| out-width: 70%
+%| echo: true
+\smartdiagramset{
+  bubble center node size=3.5cm,
+  bubble center node font=\small,
+  bubble node size=2.2cm,
+  bubble node font=\scriptsize,
+  bubble fill opacity=0.45,
+  bubble text opacity=0.9,
+  uniform color list=teal!50 for 5 items,
+  distance center/other bubbles=0.6cm,
+}
+\smartdiagram[bubble diagram]{
+  Univariate\\ Linear\\ Models,
+  Ch 6\\ Linear\\ Models,
+  Ch 7\\ Model\\ Plots,
+  Ch 8\\ LM\\ Topics,
+  Ch 9\\ Collinearity
+}
+```
+
+### Chapters in a part — constellation diagram (cleaner alternative)
+
+Satellites are *separate* from the center with outward arrows — better when
+there are many chapters or longer names.  Here: Part IV (6 chapters).
+
+```{tikz}
+%| label: fig-part4-constellation
+%| fig-cap: "Part IV chapters as a constellation diagram."
+%| fig-align: center
+%| out-width: 75%
+%| echo: true
+\smartdiagramset{
+  planet size=3cm,
+  planet color=blue!25,
+  planet font=\small,
+  satellite size=1.9cm,
+  satellite fill opacity=0.5,
+  distance planet-satellite=3.8cm,
+  font=\scriptsize,
+  uniform color list=blue!20 for 7 items,
+}
+\smartdiagram[constellation diagram]{
+  Multivariate\\ Linear Models,
+  Ch 10\\ Hotelling,
+  Ch 11\\ MLM Review,
+  Ch 12\\ MLM Viz,
+  Ch 13\\ Equal Cov,
+  Ch 14\\ Influence,
+  Ch 15\\ Case Studies
+}
+```
+
+### Package ecosystem — connected constellation
+
+Satellites are ring-connected too: useful to show that packages interoperate,
+not just that they depend on a single hub.
+
+```{tikz}
+%| label: fig-pkg-ecosystem
+%| fig-cap: "Key R packages centred on heplots, with interoperating packages as connected satellites."
+%| fig-align: center
+%| out-width: 65%
+%| echo: true
+\smartdiagramset{
+  planet color=orange!60,
+  planet size=2.8cm,
+  planet font=\small,
+  satellite size=1.8cm,
+  distance planet-satellite=3.5cm,
+  font=\scriptsize,
+  uniform color list=orange!30 for 6 items,
+  connection line width=0.08cm,
+}
+\smartdiagram[connected constellation diagram]{
+  heplots,
+  car,
+  candisc,
+  ggplot2,
+  MASS,
+  broom
+}
+```
+
+### Book parts — descriptive diagram with summaries
+
+Each item is `{Title, {Description text}}`.
+
+```{tikz}
+%| label: fig-book-descriptive
+%| fig-cap: "Book parts with brief descriptions."
+%| fig-align: center
+%| out-width: 85%
+%| echo: true
+\smartdiagramset{
+  set color list={blue!35, teal!40, green!35, orange!40},
+  description title width=2.2cm,
+  description title text width=1.8cm,
+  description text width=6.5cm,
+  description width=6.5cm,
+  font=\small,
+}
+\smartdiagram[descriptive diagram]{
+  {Part I,   {Orienting ideas: data ellipses and visualisation principles}},
+  {Part II,  {Exploratory: PCA, biplots, and multivariate plots}},
+  {Part III, {Univariate LM: model plots, collinearity, ridge regression}},
+  {Part IV,  {Multivariate LM: MANOVA, HE plots, influence, robustness}},
+}
+```
+
+### Sequence diagram — layered abstraction (chevron style)
+
+`uniform sequence color` with white text gives a clean dark-band appearance.
+
+```{tikz}
+%| label: fig-sequence
+%| fig-cap: "Conceptual sequence from raw data to inference."
+%| fig-align: center
+%| out-width: 90%
+%| echo: true
+\smartdiagramset{
+  uniform sequence color=true,
+  sequence item uniform color=teal!70!black,
+  sequence item border color=black,
+  sequence item font size=\small,
+  sequence item text color=white,
+  sequence item width=2.4cm,
+  sequence item height=1.1cm,
+  sequence item text width=2cm,
+}
+\smartdiagram[sequence diagram]{
+  Raw data,
+  EDA,
+  LM / MLM,
+  HE plots,
+  Inference
+}
+```
+
+---
+
+## Notes on rendering
+
+| Chunk type | HTML | PDF | Dependencies |
+|------------|------|-----|--------------|
+| `{mermaid}` | SVG (native) | PNG via Quarto renderer | none |
+| `{tikz}` | PNG via knitr | PDF graphic (native) | pdflatex, pdfcrop, ghostscript/ImageMagick |
+| `{=latex}` raw block | ignored | verbatim LaTeX | n/a |
+
+Chunk option prefix by engine: `#|` for R, `%%|` for Mermaid, `%|` for TikZ.
+
+**PDF conversion for tikz:** knitr calls `pdfcrop` (trims whitespace) then
+ghostscript or ImageMagick `convert` to produce the PNG for HTML.  On Windows
+check that these are on `PATH`:
+
+```{r}
+#| label: check-path
+#| eval: false
+Sys.which(c("pdfcrop", "gs", "convert"))   # ghostscript and ImageMagick
+```
