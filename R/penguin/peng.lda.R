@@ -1,3 +1,6 @@
+#' ---
+#' title: Penguin data-- lda plots
+#' ---
 if(!require(ggord)) {
   options(repos = c(
       fawda123 = 'https://fawda123.r-universe.dev',

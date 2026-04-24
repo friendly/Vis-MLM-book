@@ -1,5 +1,5 @@
 #' ---
-#' title: Davis data
+#' title: Davis data-- Models and plots
 #' ---
 #'
 

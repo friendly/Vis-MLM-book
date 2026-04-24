@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # build.sh — Build HTML and/or PDF for Vis-MLM-book
+# Run from a terminal (not RStudio Build button) for reliable results.
 #
 # Usage:
 #   ./build.sh [OPTIONS]
@@ -27,6 +28,8 @@
 # Notes:
 #   - Close index.pdf in Acrobat before building PDF (Windows locks the file)
 #   - Full build takes ~18 min; freeze cache makes partial rebuilds faster
+#   - Running from a terminal (this script) is more reliable than RStudio's
+#     Build button, which uses a slightly different execution path
 #   - After a successful PDF build, Quarto renames index.tex → Vis-MLM.tex
 #     and copies index.pdf → docs/Vis-MLM.pdf
 #   - index.{log,ind,idx,ain,...} remain at the project root
@@ -128,11 +131,32 @@ fi
 # ---------------------------------------------------------------------------
 # Step 2: Build
 # ---------------------------------------------------------------------------
-echo "--> Running quarto render (--no-watch-inputs)..."
+echo "--> Running quarto render..."
 case "$FORMAT" in
-  pdf)  run quarto render --to pdf  --no-watch-inputs ;;
-  html) run quarto render --to html --no-watch-inputs ;;
-  all)  run quarto render            --no-watch-inputs ;;
+  pdf)  run quarto render --to pdf  ;;
+  html)
+    # Two HTML passes: index.qmd is rendered first (before other chapters'
+    # xref data exists), so cross-refs in index.html to later chapters show
+    # section titles instead of numbers on the first pass. The second pass
+    # finds the complete xref database and resolves them correctly.
+    echo "    Pass 1/2: HTML (builds xref database)"
+    run quarto render --to html
+    echo "    Pass 2/2: HTML (resolves cross-refs in index.html)"
+    run quarto render --to html
+    ;;
+  all)
+    # Render formats sequentially, not combined.
+    # quarto render (all at once) fails on books: it tries to readfile
+    # '04-xxx.html' at the project root during PDF cross-ref resolution,
+    # but HTML output goes to docs/.  Separate renders avoid this.
+    # Two HTML passes needed so index.html cross-refs resolve (see --html note).
+    echo "    Step 1/3: HTML pass 1 (builds xref database)"
+    run quarto render --to html
+    echo "    Step 2/3: HTML pass 2 (resolves cross-refs in index.html)"
+    run quarto render --to html
+    echo "    Step 3/3: PDF"
+    run quarto render --to pdf
+    ;;
 esac
 echo ""
 

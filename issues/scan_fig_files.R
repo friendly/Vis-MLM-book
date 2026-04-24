@@ -1,5 +1,8 @@
-# process figure files
-# 
+#' ---
+#' title: scan and process figure files
+#' --- 
+ 
+
 library(fs)
 library(dplyr)
 library(lubridate)

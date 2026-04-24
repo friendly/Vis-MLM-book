@@ -1,4 +1,6 @@
-# test gggda::geom_bagplot
+#' ---
+#' title: geom_bagplot-- penguin data
+#' ---
 
 library(gggda)
 source(here::here("R", "penguin", "penguin-colors.R"))

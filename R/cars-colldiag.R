@@ -1,5 +1,6 @@
-# cars data - collinearity diagnostics examples
-
+#' ---
+#' title: cars data - collinearity diagnostics examples
+#' ---
 
 library(VisCollin)
 library(car)         # for vif

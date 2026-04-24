@@ -1,3 +1,6 @@
+#' ---
+#' title: Add text to a plot at normalized device coordinates
+#' ---
 #' from: https://stackoverflow.com/questions/25450719/plotting-text-in-r-at-absolute-position
 
 #' Add text to a plot at normalized device coordinates

@@ -1,5 +1,8 @@
-# toy example for multivariate influence
-# from: Barrett (2003)
+#' ---
+#' title: toy example for multivariate influence
+#' ---
+#' 
+# data from: Barrett (2003)
 
 library(tibble)
 library(ggplot2)

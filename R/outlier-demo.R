@@ -1,3 +1,8 @@
+#' ---
+#' title: Demonstrate correlated data with 2 outliers
+#' ---
+
+
 # correlated bivariate data with 2 outliers
 library(car)
 library(ggplot2)
@@ -62,8 +67,7 @@ arrows(scores[101:102,1], scores[101:102,2],
 par(op)
 
 
-#source("c:/R/functions/interpPlot.R")
-library(heplots)
+library(heplots)    # for interPlot()
 
 #	lims <- apply(rbind(XY, scores),2,range)
 	alpha <- seq(0,1,.1)

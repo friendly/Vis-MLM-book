@@ -1,3 +1,7 @@
+#' ---
+#' title: Salaries data: scatterplots
+#' ---
+
 library(ggplot2)
 library(car)
 library(dplyr)

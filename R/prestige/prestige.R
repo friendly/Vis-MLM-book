@@ -1,3 +1,7 @@
+#' ---
+#' title: Prestige data plots
+#' ---
+#' 
 #library(car) # for the example data
 # data(Duncan) # example data
 # m1 = lm(prestige ~ income + education + type, data=Duncan)
