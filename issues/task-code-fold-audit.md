@@ -61,16 +61,20 @@ For chunks that already have `#| code-fold: false`, change that to `true`.
 | `fig-davis-reg2` | `03-getting_started.qmd` | 328 | no code-fold | Consistency with `fig-Salaries-lm` (already folded in ch4) |
 | `fig-Prestige-scatterplot-educ1` | `04-multivariate_plots.qmd` | 937 | no code-fold | Only change from previous figure is the predictor variable |
 | `fig-crime-spm` | `04-multivariate_plots.qmd` | 2001 | no code-fold | Main differences from prior `scatterplotMatrix()` calls described in text |
-| `my-panel` | `04-multivariate_plots.qmd` | 2375 | no code-fold | Gavin called this `ggally-smooth-fns`; label renamed. Functions mentioned in-text |
-| `my-panel1` | `04-multivariate_plots.qmd` | 2390 | no code-fold | Same — second panel function, same reasoning |
+| `ggally-smooth-fns` | `04-multivariate_plots.qmd` | 2360 | no code-fold | Old-style label (`` ```{r ggally-smooth-fns} ``). Lists GGally smooth fns; functions mentioned in-text |
 | `fig-crime-biplot3` | `05-pca-biplot.qmd` | 1098 | no code-fold | Only addition over biplot2 is `choices` argument, described in text |
 | `fig-modelplot3` | `07-linear_models-plots.qmd` | 559 | no code-fold | Same code as modelplot2 with minor model/title changes |
 | `fig-collin-centering` | `09-collinearity-ridge.qmd` | 852 | no code-fold | Narrative describes the figure; reader unlikely to reproduce it |
 | `fig-longley-pca-dim56` | `09-collinearity-ridge.qmd` | 1535 | no code-fold | By this point reader knows how to make such a plot; code adds nothing |
 
-**Note on `ggally-smooth-fns`:** This label does not exist in `master`. The equivalent
-chunks are `my-panel` and `my-panel1` (section 4.9, defining custom panel functions for
-`GGally`). Both should be treated as flagged.
+**Note on `ggally-smooth-fns`:** Uses old-style knitr syntax `` ```{r ggally-smooth-fns} ``
+rather than `#| label:`. Scanning must search both forms. The chunk is a 2-line exploratory
+listing (`ls(getNamespace("GGally")) |> str_subset("^ggally_smooth_")`), not a figure.
+The adjacent `my-panel` / `my-panel1` chunks were NOT flagged by Gavin.
+
+**Scanning rule:** to find all chunk labels, search for both:
+- `#| label: <name>` (YAML-style, current Quarto convention)
+- `` ```{r <name>} `` (old knitr inline style, still valid)
 
 ### Scope of Gavin's review
 
