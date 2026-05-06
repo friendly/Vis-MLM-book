@@ -243,28 +243,90 @@ Two changes to `latex/preamble.tex`:
   (would cause the same "Extra }" deadlock).
 - The pre-built `index.ain` (from 2026-04-05) is still used for typesetting.
   It will become stale as chapters change.
-- To regenerate the author index: re-enable the `\@citex` patch, do a
-  **TeXStudio** build (not Quarto — Quarto can't resume after first-pass errors),
-  run `bash make-authorindex.sh`, then **disable the patch again** before the
-  next Quarto build.
 
-#### Alternative fix if author index needs updating frequently
+---
 
-Instead of patching `\@citex`, patch `\citeproc` directly — call `\@aicitey`
-**before** `\begingroup`, avoiding the group interaction:
+### Fix attempt 1 (2026-05-04): Call `\@aicitey` from `\citeproc` — FAILED
+
+**Change applied:**
 
 ```latex
-\AtBeginDocument{%
-  \let\@ai@orig@citeproc\citeproc
-  \RenewDocumentCommand\citeproc{mm}{%
-    \@aicitey{#1}%
-    \@ai@orig@citeproc{#1}{#2}%
-  }%
-}
+\def\citeproc#1#2{\@aicitey{#1}#2}
 ```
 
-This hasn't been tested yet. The risk is that `\@aicitey{key}` expects keys in
-`ref-...` Pandoc format; needs verification against the Perl script's key-stripping logic.
+**New error:**
+
+```
+! Undefined control sequence.
+\@citeb ->\@nil 
+l.1420 (\citeproc{ref-Abbott:1884}{1884})}
+```
+
+**Root cause:** `\@aicitey` uses LaTeX's `\@for` loop internally, which sets the
+loop variable `\@citeb` to `\@nil` as its end-of-list sentinel. In this call
+context (from within our `\citeproc` redefinition), `\@nil` is not usable and
+causes "Undefined control sequence". The colon in `ref-Abbott:1884` may also
+interact badly with `\@for`'s `:=` delimiter syntax.
+
+Calling `\@aicitey` directly from `\citeproc` is not safe.
+
+---
+
+### Fix attempt 2 (2026-05-04): Write `\citationpage` directly to `.aux`
+
+Instead of calling `\@aicitey` (which relies on `\@for` loop internals),
+write the `\citationpage` entry to `.aux` directly using standard LaTeX
+primitives — exactly what `\@aicitey` does internally, without the fragile
+machinery:
+
+```latex
+\def\citeproc#1#2{%
+  \if@filesw\immediate\write\@auxout{\string\citationpage{#1}{\thepage}}\fi
+  #2}
+```
+
+- `\if@filesw` — true during normal compilation when `.aux` is being written
+- `\immediate\write\@auxout` — writes synchronously to the `.aux` file
+- `\string\citationpage` — writes the literal token (prevents expansion)
+- `\thepage` — current page number
+- `#2` — pandoc's pre-formatted citation text, output as before
+
+No `\@for`, no `\@citeb`, no `\@nil`. No group imbalance possible (no
+`\begingroup`). Safe inside `\footnote{}`. The Perl script already strips
+the `ref-` prefix from keys.
+
+#### Status (2026-05-04): SOLVED ✓
+
+- [x] `\def\citeproc#1#2{...}` writing directly to `.aux` in `latex/preamble.tex`
+- [x] Quarto Build → All Formats — no errors; `index.aux` contains `\citationpage` entries
+- [x] `bash make-authorindex.sh` — regenerated `index.ain` (expected BibTeX "Repeated entry"
+  warnings from overlapping `.bib` files; these are harmless)
+- [x] Recompiled in TeXStudio — author index appears correctly
+- [ ] Spot-check a few author entries against the bibliography
+
+---
+
+## Standard workflow (ongoing)
+
+**Normal build** (no significant citation changes):
+
+- Quarto Build → All Formats — done. Quarto's LaTeX pass reads the existing
+  `index.ain` and includes the author index automatically. No extra steps needed.
+
+**When citations change substantially** (new chapters, major additions):
+
+1. Quarto Build → All Formats (generates fresh `index.aux` with `\citationpage` entries)
+2. `bash make-authorindex.sh` (regenerates `index.ain`)
+3. Quarto Build → All Formats again, **or** compile `Vis-MLM.tex` in TeXStudio
+
+**Note on PDF location:** TeXStudio outputs `./Vis-MLM.pdf` (project root); Quarto
+outputs to `docs/Vis-MLM.pdf`. The canonical PDF for distribution is the Quarto one.
+Use TeXStudio only for debugging LaTeX errors; do a final Quarto build before publishing.
+
+**Note on scope:** The author index reflects only the chapters in the PDF build.
+If online-only chapters are excluded from the PDF via Quarto profiles (see
+`issues/task-online-only.md`), their citations are automatically absent from
+`index.aux` and therefore from `index.ain`. No special handling needed.
 
 ---
 
@@ -301,6 +363,6 @@ and may conflict with the CRC `krantz` class requirements.
 - `latex/authorindex` — the original Perl script (unmodified)
 - `latex/authorindex_debug` — modified copy with CRLF fix and `ref-` key stripping
 - `make-authorindex.sh` — shell script to invoke with correct env vars
-- `latex/preamble.tex` — loads `authorindex` package; contains the `\@citex` patch
-- `latex/after-body.tex` — `\printauthorindex` call (still commented out)
+- `latex/preamble.tex` — loads `authorindex` package; contains the `\citeproc` patch
+- `latex/after-body.tex` — `\printauthorindex` call (active)
 - `issues/build-problems/authorindex.md` — original problem note + TeX.SE link

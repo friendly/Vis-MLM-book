@@ -69,7 +69,7 @@ the online version, ask yourself: should this code be displayed? (HTML / PDF)
   
 * **Online-only content**: Ch 15 and what appears as Appendix A are most likely only to appear in the HTML version
   (with some reference to them in the printed PDF). An approach to doing this is described in `issues/online-only.md`,
-  which involves Quarto process groups, with different `_quarto.yml` files.
+  which involves Quarto process groups, with different `_quarto.yml` files. [21-discrim.qmd now in book; 15-case-studies.qmd in Appendix]
 
 * **Reviews**: Michael Truong worked through the book and made comments as he went along. See 
   `reviews/reviewer-MichaelT-*.md` for the style he used to make comments, which you should
