@@ -223,10 +223,15 @@ The default setting in ``ggplot2::geom_smooth()` calculates pointwise intervals
 (using `stats::predict.lm(..., interval="confidence")` at a confidence level $1-\alpha$ for the predicted response at _each value_ $x_i$ of a predictor, and have the frequentist interpretation that over repeated sampling only $100\;\alpha$ of the predictions at $x_i$ will be outside that interval. 
     In contrast, simultaneous intervals are calculated so that $1 - \alpha$ is the probability that _all of them_ cover their corresponding true values simultaneously. These are necessarily wider than pointwise intervals. Commonly used methods for constructing simultaneous confidence bands in regression are the Bonferroni and Scheffé methods, which control the family-wise error rate over all values of $x_i$. See [](https://en.wikipedia.org/wiki/Confidence_and_prediction_bands) for precise definitions of these terms.
     These are different from a _prediction band_, which is used to represent the uncertainty about the value of a **new** data-point on the curve, but subject to the additional variance reflected in one observation.
+\ix{confidence!interval}
+\ix{confidence!band}
+\ix{confidence!pointwise}
 
 
 #### Non-parametric smoothers {.unnumbered}
 \ix{smoother!non-parametric}
+\ix{loess}
+\ix{lowess}
 
 The most generally useful idea is a smoother that tracks an average
 value, $\mathbb{E} (y | x)$, of $y$ as $x$ varies across its range
@@ -291,18 +296,21 @@ Very often, we have a main relationship of interest, but various groups
 in the data are identified by discrete factors (like faculty `rank` and
 `sex`, their type of `discipline` here), or there are quantitative
 predictors for which the main relation might vary. In the language of
-statistical models such effects are *interaction* terms, as in
-`y ~ group + x + group:x`, where the term `group:x` fits a different
+statistical models such effects are *interaction* terms, represented by `:` in a model term, as in
+`y ~ group + x + group:x`. The term `group:x` fits a different
 slope for each group and the grouping variable is often called a
-*moderator* variable. Common moderator variables are ethnicity, health
+*moderator* variable, because it  alters the strength or direction of the relationship of `x` to `y`.
+Common moderator variables are ethnicity, health
 status, social class and level of education. Moderators can also be
-continuous variables as in `y ~ x1 + x2 + x1:x2`.
+continuous variables as in `y ~ x1 + x2 + x1:x2`. You can read this to
+say that the slope for `x1` varies with the value of `x2`.
 
-I call these *stratifiers*, recognizing that we should consider breaking
-down the overall relation to see whether and how it changes over such
+In plots, I call these *stratifiers*, suggesting that we should consider how
+the overall relation changes over such
 "other" variables. Such variables are most often factors, but we can cut
-a continuous variable into ranges (*shingles*) and do the same
+a continuous variable into possibly overlapping ranges (*shingles*) and do the same
 graphically. There are two general graphical techniques for stratifying:
+\ix{shingle}
 
 -   **Grouping**: Identify subgroups in the data by assigning different
     visual attributes, such as color, shape, line style, etc. within a
@@ -318,22 +326,40 @@ graphically. There are two general graphical techniques for stratifying:
     variables jointly. But visual comparison is more difficult because
     the eye must scan from one panel to another.
 
-::: {.callout-note title="History Corner: Coplots and faceting"}
+::: {.callout-note title="History Corner: Model Syntax---Coplots and faceting"}
 The syntax you use in specifying a plot plays an important role
 in visual thinking. Ideally, you want the shortest path between
 having a graphic idea in your head and specifying that in code to see the result rendered on your screen.
+In the same way, you should appreciate the conceptual simplicity of the syntax to specifying a model in R.
+
+The @WilkinsonRogers1973 model notation, `y ~ x1 + x2 + ...` was a computational equivalent to the 
+analogous statistical model, $y = \beta_0 + \beta_1 x_1 +  \beta_2 x_2 + \dots$. For factors, the notation,
+`y ~ A + B + A*B + ...`, was a totally natural way to say: "Fit a two-way ANOVA to factors A and B,
+allowing for a possible interaction." 
+
+Importantly, this notation provided the impetus and 
+conceptual ideas that lead to implementation in the GLIM program (@Nelder1974glim), which
+simultaneously extended model thinking by incorporating the ideas and theory of generalized linear models
+(@NelderWedderburn1972GLM) as natural extensions of the classical OLS linear model to encompass
+non-normal error models (logistic regression, Poisson count data models), using a single
+algorithm (Iteratively Reweighted Least Squares) to fit various models.
 \ix{visual thinking}
 
-Recognition of the roles of visual grouping by factors within a panel
-and conditioning in multi-panel displays was an important advance in the
+In plotting data and models, the
+recognition of the roles of visual grouping by factors within a panel
+and conditioning in multi-panel displays was a similarly important advance in the
 development of modern statistical graphics software. It began at A.T.& T. Bell
 Labs in Murray Hill, NJ in conjunction with the **S** language, the
-mother of R.
+mother of R. 
+
+The "S Book" (@ChambersHastie1991) laid out the framework for fitting models with `lm()`
+and `glm()`, the notion of model objects and methods like `plot()` and `coef()` for working with them,
+and the basic ideas of base-R graphics, such as adding `text()`, `lines()` and `points() to a plot.
 
 Conditioning displays (originally called *coplots*
 [@ChambersHastie1991]) are simply a collection of 1D, 2D or 3D plots
-separate panels for subsets of the data broken down by one or more
-factors, or, for quantitative variables, subdivided into a factor with
+separate panels, for subsets of the data broken down by one or more
+factors; or, for quantitative variables, subdivided into a factor with
 several overlapping intervals (*shingles*). The first implementation was
 in *Trellis* plots [@Becker:1996:VDC;@Cleveland:85].
 \ix{trellis plots}
@@ -342,21 +368,42 @@ Trellis displays were extended in the `r package("lattice", cite=TRUE)`,
 which offered:
 
 -   A **graphing syntax** similar to that used in statistical model
-    formulas: `y ~ x | g` conditions the data by the levels of `g`, with
-    `|` read as "given"; two or more conditioning are specified as
-    `y ~ x | g1 + g2 + ...`, with `+` read as "and".
+    formulas: `y ~ x | g` conditions the data by the levels of `g`, with the
+    `"|"` operation read as "given"; two or more conditioning variables are specified as
+    `y ~ x | g1 + g2 + ...`, with `+` read as "and". 
 -   **Panel functions** define what is plotted in a given panel.
     `panel.xyplot()` is the default for scatterplots, plotting points,
     but you can add `panel.lmline()` for regression lines,
     `latticeExtra::panel.smoother()` for loess smooths and a wide
-    variety of others.
+    variety of others. Panel functions represent a different way of thinking about how to produce a graph.
 
-The `r package("car", cite=TRUE)` supports this graphing syntax in many of
-its functions. `r pkg("ggplot2")` does not; it uses aesthetics (`aes()`), which
-map variables in the data to visual characteristics in displays.
+The `r package("car", cite=TRUE)` supports this graphing syntax, `y ~ x | g`, in many of
+its functions. 
+However `r pkg("ggplot2")` does not; instead, it uses aesthetics (`aes()`), which
+map variables in the data to visual characteristics in displays for visual grouping,
+and "faceting" for conditioning a single plot into separate panel, motivated by the 
+_Grammar of Graphics_ (@Wilkinson:99).
+
+The `y ~ x | g` notation is now widely used in model formulas for a variety of cases where this notation makes
+sense and eases model thinking:
+`
+- Mixed-effect models: `(1 | group)` for a random intercept, fit by `r pkg("lme4")`, which provide linear (`lmer`) and generalized linear (`glmer`) mixed models; 
+- Nonlinear mixed-effect models: `r pkg("nlme")` uses a similar syntax, `random = ~1 | group` to specify the random effects explicitly.
+- Bayesian mixed models: `(1 | group)`, fit by `r pkg("brms")`
+\ix{mixed models}
+
+This extended formula notation has been generalized in the `r package("Formula", cite=TRUE)`.
+This notation accommodates instrumental variables models, like `y ~ x1 + x2 | z1 + z2 + z3`
+(fit with `r pkg("ivreg")`), hurdle and zero-inflated count data models,
+like `y ~ x1 + x2 | x1 + x3`, where there is one model for the positive counts and a separate model for
+the zero counts (fit with `r pkg("pscl")`) and models with multiple outcome variables,
+like `y1 + y2 ~ x1 + x2 + x3`. It is a shame that this notation is not yet implemented for MLMs,
+so we are stuck with `cbind(y1, y2) ~ x1 + x2 + x3`.
+
 :::
 
-**Using grouping**
+### Using grouping
+
 For the `Salaries` data, the most obvious variable that affects academic salary is `rank`,
 because faculty typically get an increase in salary with a promotion
 that carries through in their future salary. What can we see if we group
