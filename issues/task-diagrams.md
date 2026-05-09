@@ -370,7 +370,7 @@ Satellites are separate from the center — better when chapter names are longer
 
 ```latex
 \smartdiagramset{
-  set color list={blue!40, teal!40, green!40, orange!40},
+  set color list={blue!40, teal!40, green!40, orange!40},  % NB: "set color list", not "color list"
   description title width=2.5cm,
   description title text width=2cm,
   description text width=6cm,

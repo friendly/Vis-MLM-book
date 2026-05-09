@@ -1,6 +1,15 @@
 ```{r include=FALSE}
 source("R/common.R")
 clean_pkgs()
+# Make \usepackage{smartdiagram} available for the {tikz} book-parts diagram below.
+knitr::opts_chunk$set(
+  engine.opts = list(
+    extra.preamble = c(
+      "\\usetikzlibrary{arrows.meta, positioning}",
+      "\\usepackage{smartdiagram}"
+    )
+  )
+)
 ```
 
 ::: {.content-visible when-format="html"}
@@ -27,25 +36,66 @@ to our knowledge of the general phenomenon.
 
 For example, if academic achievement can be measured for adolescents by reading, mathematics, science and history scores, how do predictors such as parental encouragement, school environment and socioeconomic status affect all these outcomes? In a similar way? In different ways? In such cases, much more can be understood from a multivariate approach that considers the correlations among the outcomes. Yet, sadly, researchers typically examine the outcomes one by one which often only tells part of the data story.
 
-
+<!--
 However, to convey the statistical and graphic methods to do these things, I begin with some warm-up exercises
 in multivariate thinking, with a grand scheme for statistics and data visualization, a parable, and an example of multivariate discovery.
-
-**TODO**: Include an overview of the parts and chapters somewhere here
-
-<!-- {r child="child/00-one-two-many.qmd"} -->
-
-<!--
-::: {.callout-warning}
-The material in the following subsections are meant to provide motivation for the book and some perspectives that inform it.
-These will be moved to a following front-matter chapter, **Preludes**.
-:::
 -->
 
+## Overview
 
-<!-- {r child="child/00-flatland.qmd"} -->
+**TODO**: Expand this into a narrative overview of the parts and chapters.
 
-<!-- {r child="child/00-eureka.qmd"} -->
+The book is organized into four parts that build progressively from orienting ideas and exploratory methods through increasingly sophisticated multivariate models:
+
+```{tikz}
+%| label: fig-book-parts-code
+%| eval: false
+%| echo: false
+\smartdiagramset{
+  back arrow disabled=true,
+  module minimum width=2cm,
+  module minimum height=1.2cm,
+  text width=1.8cm,
+  module x sep=3,
+  font=\small,
+  set color list={blue!35, teal!40, green!35, orange!40},
+}
+\smartdiagram[flow diagram:horizontal]{
+  Orienting\\ Ideas,
+  Exploratory\\ Methods,
+  Univariate\\ Models,
+  Multivariate\\ Models
+}
+```
+
+```{r}
+#| label: fig-book-parts
+#| fig-cap: "The four parts of the book as a linear progression."
+#| fig-align: center
+#| out-width: 95%
+#| echo: false
+knitr::include_graphics("images/fig-book-parts.png")
+```
+
+* **Part 1: Orienting ideas**: Sets the stage for the book. To motivate the statistical and graphic methods described here, I begin with some warm-up exercises (@sec-prelude)
+in multivariate thinking, with a grand scheme for statistics and data visualization, a parable, and an example of multivariate discovery. @sec-introduction describes the conceptual and statistical advantages of using a multivariate design to study how two or more outcome variables are related. @sec-getting_started uses a few small examples to
+illustrate the often crucial role that visualization plays in understanding relations among variables.
+
+* **Part 2: Exploratory methods**: Before fitting formal models, it is essential to view
+multivariate data in various ways to try to understand the rich complexity---to see patterns, trends and
+noteworthy features.
+@sec-multivariate_plots covers graphical displays for seeing structure among many variables---scatterplot matrices, parallel coordinates, and related tools, where perception can be enhanced by adding visual summaries.
+@sec-pca-biplot turns to dimension reduction via principal components analysis (PCA) and biplots, which project high-dimensional data onto low-dimensional views that reveal the dominant patterns.
+
+* **Part 3: Univariate methods**: Univariate linear models, fit with `lm()`, provide a comprehensive framework for understanding how a single response depends on one or more predictors. @sec-linear-models reviews the overall framework; @sec-linear-models-plots surveys graphical methods for fitting and diagnosing these models---effect displays, added-variable plots, and influence diagnostics; @sec-lin-mod-topics addresses specialized topics in linear models; and @sec-collin closes with the problem of collinearity and its visualization through ridge regression.
+
+* **Part 4: Multivariate methods**: The heart of the book. @sec-Hotelling introduces Hotelling's $T^2$---the multivariate analog of the $t$-test---as a gateway to the world of multivariate 
+@sec-mlm-review develops the general multivariate linear model (MLM); 
+@sec-vis-mlm visualizes these models through HE plots and related displays; 
+@sec-eqcov addresses equality of covariance matrices; @sec-influence-robust covers multivariate influence diagnostics and robust alternatives; and @sec-case-studies presents extended case studies that bring these threads together.
+
+
+
 
 
 ## Features
@@ -95,9 +145,9 @@ the symbol $\mathbf{X}$ can represent an entire data table, with, say $n$ observ
 like height, body mass index, diet components, and so forth.
 Then, the notation $\mathbf{y} = \mathbf{X} \boldsymbol{\beta}$
 represents an entire linear model to relate weight to these other variables.
-I'm using this math notation to express ideas, and all you will need is a reading-level of understanding.
+I'm using this math notation to express ideas, and all you will need is a _reading-level_ of understanding.
 
-For this, the first chapter of @Fox2021, _A Mathematical Primer for Social Statistics_, is excellent,
+For this, the first chapter of @Fox2021, _A Mathematical Primer for Social Statistics_, is an excellent overview,
 and the rest is well worth reading.
 If you want to learn something of using matrix algebra for data analysis and statistics in R, I recommend
 our package `r pkg("matlib", cite=TRUE)`.
@@ -189,18 +239,24 @@ Similarly, I use both base R graphics and plots based on the "ggverse" of `r pkg
 Gina Reynolds and Teun van den Brand, who aim to facilitate thinking about further growth of `ggplot` ideas
 and implementations.
 
-How and why it is this way should be explained to the reader.  The material below is a start, but needs a bit of fleshing out
+**TODO**: How and why it is this way should be explained to the reader.  The material below is a start, but needs a bit of fleshing out
 or editing down.
 
-<!-- Standing on the shoulders of several giants ... -->
+<!-- Notation is all important ... -->
 :::
 
 Like natural language and the graphic methods used in this book,
 R syntax and the programming style for graphics has evolved considerably since R
 was first introduced by Ross Ihaka and Robert Gentleman in 1992. It was originally based on the
 S programming language [@Becker-etal:88] and designed as a _functional_ language.
-This means that programs are constructed by applying and composing functions, like
-`log(x)`, `exp(x)`, which return a value.  ...
+
+This means that programs are constructed by applying and composing functions. For example:
+`log(x)`, `exp(x)` return a value which can be assigned to an object name, `y <- log(x)`,
+or be passed to another function, as in `diff(log(x))` to get differences of adjacent values, $\log{(x_i)} - log{(x_{i-1})}$
+or further, `exp(diff(log(x)))` to return those differences to the original scale of $x$.
+
+But that functional syntax gets messy: it's hard to read and also to write your intentions in code.
+ 
 
 * pipes
 * tidyverse
