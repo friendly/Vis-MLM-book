@@ -587,16 +587,16 @@ Salaries |>
 The _data ellipse_ [@Monette:90], or _concentration ellipse_ [@Dempster:69] is a
 remarkably simple and effective display for viewing and understanding
 bivariate relationships in multivariate data.
-The data ellipse is typically used to add a visual summary to a scatterplot,
-that shows all together the means, standard deviations, correlation,
+The data ellipse is typically used to add a visual summary to a scatterplot---one
+that shows _all together_ the means, standard deviations, correlation,
 and slope of the regression line for
 two variables, perhaps stratified by another variable.
 
 Under the classical assumption that the data are bivariate normally distributed,
 the data ellipse is also a **sufficient** visual summary, in the sense that
 it captures **all** relevant features of the data.
-See @Friendly-etal:ellipses:2013 for a complete discussion of the role of
-ellipsoids in statistical data visualization.
+See @Friendly-etal:ellipses:2013 for a complete discussion of the lovely role of
+ellipsoids in statistical data visualization and thinking.
 
 The data ellipse is based on the idea that in a bivariate normal distribution, the contours
 of equal probability form a series of concentric ellipses. If the variables were
@@ -612,7 +612,7 @@ into account.
 #| echo: false
 #| fig-align: center
 #| out-width: "50%"
-#| fig-cap: "2D data with curves of constant distance from the centroid. The blue solid ellipse shows a contour of constant Mahalanobis distance, taking the correlation into account; the dashed red circle is a contour of equal Euclidean distance. Given the data points,  which of the points **A** and **B** is further from the mean (X)? _Source_: Re-drawn from [Ou Zhang](https://ouzhang.rbind.io/2020/11/16/outliers-part4/)"
+#| fig-cap: "Which of the points **A** and **B** is further from the mean (X)? The plot shows 2D data points with curves of constant 'distance' from the centroid. The blue solid ellipse shows a contour of constant Mahalanobis distance, taking the correlation into account; the dashed red circle is a contour of equal Euclidean distance. Given the data points,   _Source_: Re-drawn from [Ou Zhang](https://ouzhang.rbind.io/2020/11/16/outliers-part4/)"
 knitr::include_graphics("images/mahalanobis.png")
 ```
 
@@ -625,31 +625,30 @@ This doesn't work
 -->
 
 To illustrate, @fig-mahalanobis shows a scatterplot with labels for two points, "A" and "B".
-Which is further from the mean, "X"? 
-A contour of constant Euclidean distance, shown by the `r colorize("red")` dashed circle,
-ignores the apparent negative correlation, so point "A" is further.
+Which is further from the mean, "X"? Assuming the data to be uncorrelated,
+the `r colorize("red")` dashed circle shows a contour of constant Euclidean distance.
+This ignores the apparent negative correlation, so point "A" is much further by this metric.
 The `r colorize("blue")` ellipse for Mahalanobis distance 
 takes the correlation into account, so point "B" has a greater distance from the mean.
 
-Mathematically, Euclidean (squared) distance ($D_E^2(y)$) for $p$ variables, $j = 1, 2, \dots , p$,
+Mathematically, Euclidean (squared) distance ($D_E^2(y)$) for $p$ variables, $y_j = y_1, y_2, \dots , y_p$,
 is just a generalization of
 the square of a univariate standardized ($z$) score, $z^2 = [(y - \bar{y}) / s]^2$,
 
 $$
 D_E^2 (\mathbf{y}) = \sum_j^p z_j^2 = \mathbf{z}^\textsf{T}  \mathbf{z} = (\mathbf{y} - \bar{\mathbf{y}})^\textsf{T} \operatorname{diag}(\mathbf{S})^{-1} (\mathbf{y} - \bar{\mathbf{y}}) \; ,
 $$
-where $\mathbf{S}$ is the sample variance-covariance matrix,
-$\mathbf{S} = ({n-1})^{-1} \sum_{i=1}^n (\mathbf{y}_i - \bar{\mathbf{y}})^\textsf{T} (\mathbf{y}_i - \bar{\mathbf{y}})$.
+where $\mathbf{S} = ({n-1})^{-1} \sum_{i=1}^n (\mathbf{y}_i - \bar{\mathbf{y}})^\textsf{T} (\mathbf{y}_i - \bar{\mathbf{y}})$ is the sample variance-covariance matrix.
 
 Mahalanobis distance takes the correlations into account simply by using the covariances
-as well as the variances,
+as well as the variances, 
 
 $$
 D_M^2 (\mathbf{y}) = (\mathbf{y} - \bar{\mathbf{y}})^\mathsf{T} S^{-1} (\mathbf{y} - \bar{\mathbf{y}}) \; .
 $$ {#eq-Dsq}
 
 In @eq-Dsq, the inverse $S^{-1}$ serves to "divide" the matrix $(\mathbf{y} - \bar{\mathbf{y}})^\mathsf{T} (\mathbf{y} - \bar{\mathbf{y}})$ of squared distances 
-by the variances (and covariances) of the variables, as in the univariate case.
+by the variances **and covariances** of the variables, generalizing the univariate case.
 
 For $p$ variables, the data _ellipsoid_ $\mathcal{E}_c$ of
 size $c$ is a $p$-dimensional ellipse,
@@ -689,8 +688,13 @@ $$
 \mathcal{E}_c (\bar{\mathbf{y}}, \mathbf{S}) = \bar{\mathbf{y}} \; \oplus \; c\, \sqrt{\mathbf{S}} \period
 $$ {#eq-ellE}
 
+Inhabitants of Spaceland would recognize the algorithm immediately: Take that Unit Sphere, squeeze her through
+the Cholesky machine, then expand or shrink to cover a certain percentage of the data points
+as, and then just shift her center to the means.
+
 **Contour levels ($c$)**
 
+There is an easy way to callibrate the size or scale factor, $c$ of the data ellipse. 
 When $\mathbf{y}$ is (at least approximately) bivariate normal,
 $D_M^2(\mathbf{y})$ has a large-sample $\chi^2_2$ distribution
 ($\chi^2$ with 2 df),
