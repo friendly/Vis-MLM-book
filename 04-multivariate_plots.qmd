@@ -1444,10 +1444,10 @@ more detail, and an intriguing suggestion of two peaks for our Chinstrap penguin
 Because it provides a visual representation of means, variances, and correlations,
 the data ellipse is ideally suited as a tool for illustrating and
 explicating various phenomena that occur in the analysis of linear models.
-One class of simple, but important, examples concerns the difference between the _marginal relationship_ between variables, ignoring some important factor or covariate, and the _conditional_ relationship, adjusting (controlling) for that variable.
+One class of simple, but important, examples concerns the difference between the _marginal_ relationship between variables, ignoring some important factor or covariate, and the _conditional_ relationship, adjusting (controlling) for that variable.
 
-An important example is **Simpson's paradox** [@Simpson:51] which occurs when the marginal and
-conditional relationships differ in direction. That is, the overall correlation
+An important example of this is **Simpson's paradox** [@Simpson:51] which occurs when the marginal and
+conditional relationships differ in _direction_. That is, the overall correlation
 in a model `y ~ x` might be negative, while the within-group correlations
 in separate models for each group `y[g] ~ x[g]` might be positive, or vice versa.
 For Flatlanders in 2D space, this is a puzzlement.
@@ -1474,31 +1474,20 @@ are those for the model `lm(bill_depth ~ bill_length * species)` which
 allows a different slope and intercept for each species.
 
 A correct analysis of the (conditional) relationship between these variables, controlling or adjusting for mean
-differences among species, is based on the pooled within-sample covariance matrix,
-a weighted average of the individual within-group $\mat{S}_i$,
-
-$$
-\mat{S}_{\textrm{within}}  =
-\sum_{i=1}^g
-(n_i - 1) \mat{S}_i \, / \, (N - g)
-\comma
-$$
-
-where $N = \sum n_i$. The result is shown in
-panel (c) of @fig-peng-simpsons.
-
+differences among species, is shown in panel (c) of @fig-peng-simpsons.
 In this graph, the data for each species were first transformed to deviations from the species means on both variables and then translated back to the grand means.
 You can also see here that the shapes and sizes of the individual data ellipses are roughly comparable, but perhaps not identical. This visual idea of centering groups to a common mean will become
 important in @sec-eqcov when we want to test the assumption of equality of
 error covariances in multivariate models.
 
+
+<!-- **TODO** This panel tabset looks fine in HTML but is awkward in PDF -->
+
+:::: {.content-visible when-format="html"}
+
 The `ggplot2` code for the panels in this figure are shown below. Note that for components that will be the same across panels, you can define elements
 (e.g., `labels`, `r func("theme_penguins()")`) once, and then re-use
 these across several graphs.
-
-**TODO** This panel tabset looks fine in HTML but is awkward in PDF
-
-:::: {.content-visible when-format="html"}
 
 ::: {.panel-tabset}
 
@@ -1585,8 +1574,11 @@ plt3
 
 :::: {.content-visible when-format="pdf"}
 
-**TODO**: Decide how to handle the other plots
-**(a) Ignoring species**
+<!-- **TODO**: Decide how to handle the other plots: just mention them, don't show code -->
+
+The `ggplot2` code for panel (a), ignoring species, is shown below. The by-species plot (b)
+simply maps aesthetics for color, fill and shape to `species`. The within-species plot (c)
+centers the data for each group at the grand means.
 
 ```{r}
 #| eval: false
@@ -1619,10 +1611,14 @@ plt1
 
 ## Multivariate normality and outliers {#sec-multivar-normality}
 
-The relation of the data ellipsoid for $p$ variables to the $\chi^2_p$ distribution with
+\ixon{multivariate normality}
+\ixon{outliers}
+
+The relation of the data ellipsoid for $p$ variables to the $\chi^2_p$ distribution of Mahalanobis $D^2_M (\mathbf{y})$
+with
 $p$ degrees of freedom described in @sec-data-ellipse is based on the assumption that
 the data in $\mathbf{y}$ is a sample from a multivariate normal distribution (MVN),
-with a mean vector $\boldsymbol{\mu}$ and variance-covariance matrix $\boldsymbol{\Sigma}$, so each one implies the other:
+with a mean vector $\boldsymbol{\mu}$ and variance-covariance matrix $\boldsymbol{\Sigma}$. So each one implies the other:
 
 $$
 \mathbf{y}_{p \times 1} \sim \mathcal{N}(\boldsymbol{\mu}, \boldsymbol{\Sigma}) \Longleftrightarrow D^2_M (\mathbf{y}) \sim \chi^2_p\; .
@@ -1633,6 +1629,7 @@ MVN distribution by plotting the _quantiles_[^quantile] of the _sorted_ sample M
 (denoted $D^2_{(i)}$) calculated from @eq-Dsq
 against the corresponding $\chi^2_p$ quantiles found from `qchisq(df = p)`. This is called
 a $\chi^2$ QQ plot.
+\ix{$\chi^2$ QQ plot}
 
 The essential idea is that the plotted points should then approximately fall along a 45$^o$ line of  slope = 1 when the data are MVN (and axes are scaled equally).
 This also provides a simple method to identify potential outliers as those points which are furthest from the centroid; that is those  for which
@@ -1662,10 +1659,14 @@ Mahalanobis $D^2$ values are calculated by `r func("heplots::Mahalanobis()")`.
 I illustrate finding the largest $D^2_{(i)}$ for the
 `Galton` data as shown below. I've used $\alpha = 0.01$, giving $\chi^2_p (0.99) = 9.21$
 as an outlier cutoff, just for the sake of this example.  With 928 cases, we would expect
-about 1% or 9 to have larger squared distances than this cutoff. (Normally, allowing for
-the fact that we are looking at the largest values in a sample of size $n$, we would use
-a much smaller individual significance level, say $\alpha = 0.001$ or smaller still.)
-Three cases are identified here.
+about 1% or 9 to have larger squared distances than this cutoff.[^adjusted] 
+
+[^adjusted]: Often in outlier-detection problems, allowing for
+the fact that we are looking at the _largest_ values in a sample of size $n$, we would use
+a much smaller individual significance level, say $\alpha = 0.001$ or something like
+a Bonferroni correction, $\alpha / n$.
+
+Only three cases are identified here:
 
 ```{r galton-dsq}
 data(Galton, package = "HistData")
@@ -1687,8 +1688,8 @@ along with the upper-tail $p$-value.
 ```{r}
 #| label: fig-galton-cqplot
 #| out-width: "70%"
-#| fig-cap: "Chi-square QQ plot of Galton's data on heights of parents and their offspring, with a 95%
-#|     pointwise confidence envelope"
+#| fig-cap: "**Chi-square QQ plot** of Galton's data on heights of parents and their offspring, with a 95%
+#|     pointwise confidence envelope. The three largest $D^2$ values are identified with their observation labels."
 out <- cqplot(Galton, id.n = 3)
 out
 ```
@@ -1696,18 +1697,19 @@ out
 In the typical use of QQ plots, it essential to have something in the nature of a confidence band
 around the points to be able to appreciate whether, and to what degree the observed data points
 differ from the reference distribution. For `cqplot()`, this helps to assess whether the
-data are reasonably distributed as multivariate normal and also to flag potential outliers.
+data are reasonably distributed as multivariate normal and also to flag potential outliers, which would appear outside the shaded
+confidence region
 
-The pointwise 95% confidence envelope is calculated as $D^2_{(i)} \pm 1.96 \times \text{se} ( D^2_{(i)} )$ where the standard error is calculated [@Chambers-etal:83, Sec. 8.6] as
+The _pointwise_ 95% confidence envelope is calculated as $D^2_{(i)} \pm 1.96 \times \text{se} ( D^2_{(i)} )$ where the standard error is calculated [@Chambers-etal:83, Sec. 8.6] as
 
 $$
  \text{se} ( D^2_{(i)} ) = \frac{\hat{b}}{d ( q_i)} \times \sqrt{  p_i (1-p_i) / n }  \period
 $$
 Here, $\hat{b}$ is an estimate of the _actual_ slope of
-the reference line obtained from the ratio of the interquartile range of the
+the reference line, obtained from the ratio of the interquartile range of the
 $D^2$ values to that of the corresponding $\chi^2_p$ distribution.
-$d(q_i)$ is the density of the chi square distribution at the quantile $q_i$ and $p_i$ is
-the corresponding percentile.
+$d(q_i)$ is the density of the chi square distribution at the quantile $q_i$. $p_i$ is
+the corresponding $\chi^2$ percentile, so the square-root term is like a standard error for a binomial probability.
 
 So, in @fig-galton-cqplot, you can see the same three points, with largest $D^2$ identified earlier.
 The confidence band shows that uncertainty increases a points get further from the mean, but
@@ -1743,8 +1745,8 @@ with(GaltonD,{
 )
 ```
 
-It is clear from this plot that case 897 is for an exceptionally tall child of quite short parents, while case 1 and 13 are from very short children of tall parents; you could call
-them poster children for regression toward the mean.
+It is clear from this plot that case 897 is for an exceptionally tall child of quite short parents, while case 1 and 13 are from very short children of tall parents. You could call
+them poster children for the idea of regression toward the mean.
 
 ### Penguin data {#sec-multnorm-penguin}
 
@@ -1774,7 +1776,7 @@ One point (case 283) stands out as an extreme multivariate outlier. The other tw
 
 
 To relate this to the data, we can plot the data, as was done
-in @fig-peng-ggplot1, and label the points identified as noteworthy. It is a bit tricky to label points selectively in `ggplot2` when the criterion for which points
+in @fig-peng-ggplot1, and label the points identified as noteworthy. It is a bit tricky to label points selectively in `ggplot2`, when the criterion for which points
 to label is complex, or involves variables outside the data frame.
 Here, I create a logical variable `note`, which is `TRUE` for the noteworthy ones.
 This is then used to subset the data for `r func("geom_text()")` that writes the case id numbers.
@@ -1807,7 +1809,7 @@ ggplot(peng_plot,
   legend_inside(c(0.85, 0.15)) 
 ```
 
-Two cases (10, 283) appear to be very unusual in this plot, in relation to other members of their species. But only case 283 is a true multivariate outlier, as shown in the cqplot
+Two cases (10, 283) appear to be very unusual in this plot, in relation to other members of their species. But only case 283 is a true multivariate outlier, as we saw in the cqplot example,
 @fig-peng-cqplot. We could call this long-billed penguin "Cyrano".[^cyrano] 
 I'll call case 10, with a very short and curved bill, "Hook Nose". 
 
@@ -1821,8 +1823,8 @@ It turns out that multivariate outliers can most often
 be easily seen as unusual observations in a projection of the data into the space of the _smallest_
 principal components. I return to this example in @sec-outlier-detection.
 
-It bears noting that for linear models, multivariate normality is **not required** for the response variables
-or predictors, but rather is an assumption for the _residuals_ from a model. As well, multivariate
+It bears noting that for linear models, multivariate normality is **not required** for the _response_ variables
+or _predictors_. Rather, this is just an assumption for the _residuals_ from a model. Multivariate
 outliers in the responses may not turn out to be unusual when the predictor variables are taken into
 account. In this example, a multivariate model would include the effect of `species`,
 
@@ -1831,9 +1833,13 @@ peng.mod <- lm(cbind(bill_length, bill_depth, flipper_length, body_mass) ~ speci
                data = peng)
 ```
 and there would be cause for concern if the residuals from this model, `residuals(peng.mod)`
-were highly non-normal or showed outliers.
+were highly non-normal or showed outliers. `heplots::cqplot(peng.mod)` naturally gives the
+$chi^2$ QQ plot of the residuals from this model.
 
 <!--
+
+**TODO**: Make this into an exercise
+
 This example also illustrates why outlier detection requires a multivariate rather than univariate approach
 and why it is necessary to take the correlations among variables into account with Malahanobis squared distance.
 In the code below, I find the observations with the three largest $D^2_{(i)}$ and convert the numeric variables
@@ -1856,6 +1862,9 @@ peng |>
 ```
 -->
 
+\ixoff{multivariate normality}
+\ixoff{outliers}
+
 ## Scatterplot matrices {#sec-scatmat}
 
 \ixon{scatterplot matrix}
@@ -1873,7 +1882,7 @@ addition to income and education, we also have a measure of % women in
 each occupational category.
 
 Plotting these together gives @fig-prestige-pairs. In such plots, the
-diagonal cells give labels for the variables, but they are also a guide
+diagonal cells give labels for the variables, which serve as a guide
 to interpreting what is shown. In each row, say row 2 for `income`,
 income is the vertical $y$ variable in plots against other variables. In
 each column, say column 3 for `education`, education is the horizontal
@@ -1899,20 +1908,6 @@ version is provided by `r func("car::scatterplotMatrix()")` which can add the
 regression lines, loess smooths and data ellipses for each pair, as
 shown in @fig-prestige-spm1.
 
-The diagonal panels show density curves for the distribution of each
-variable; for example, `education` appears to be
-multi-modal and that of `women` shows that most of the occupations have
-a low percentage of women.
-
-The combination of the regression line with the loess smoothed curve,
-but without their confidence envelopes, provides about the right amount
-of detail to take in at a glance where the relations are non-linear.
-We've already seen (@fig-Prestige-scatterplot-income1) the non-linear
-relation between prestige and income (row 1, column 2) when occupational
-type is ignored. But all relations with income in column 2 are
-non-linear, reinforcing our idea (@sec-log-scale) that effects of income
-should be assessed on a log scale.
-
 ```{r}
 #| label: fig-prestige-spm1
 #| fig-width: 7
@@ -1926,6 +1921,20 @@ scatterplotMatrix(~ prestige + income + education + women,
               lty.smooth=1, lwd.smooth=3, col.smooth="red"),
   ellipse=list(levels=0.68, fill.alpha=0.1))
 ```
+
+The diagonal panels show density curves for the distribution of each
+variable; for example, `education` appears to be
+multi-modal and that of `women` shows that most of the occupations have
+a low percentage of women.
+
+The combination of the regression line with the loess smoothed curve,
+but without their confidence envelopes, provides about the right amount
+of detail to take in at a glance where the relations are non-linear.
+We've already seen (@fig-Prestige-scatterplot-income1) the non-linear
+relation between prestige and income (row 1, column 2) when occupational
+type is ignored. But all relations with income in column 2 are
+non-linear, reinforcing our idea (@sec-log-scale) that effects of income
+should be assessed on a log scale.
 
 `scatterplotMatrix()` can also label points using the `id =` argument
 (though this can get messy) and can stratify the observations by a
