@@ -10,11 +10,22 @@ There is an example of this at: https://github.com/mcanouil/quarto-issues-experi
 
 My book, [_Visualizing Multivariate Data and Models in R](https://friendly.github.io/Vis-MLM-book/)
 book has grown long enough that some chapters will be **online-only** (HTML)
-and excluded from the printed PDF:
+and excluded from the printed PDF.
 
-- `21-discrim.qmd` — Appendix on discriminant analysis (already listed as an
-  appendix in `_quarto.yml`)
-- `15-case-studies.qmd` — possibly; decision pending on length budget. This could be moved to Appendices if necessary.
+### Chapter decisions (updated 2026-05-05)
+
+- `21-discrim.qmd` — **DECIDED: full chapter in both PDF and HTML.**
+  Listed as a chapter under "Multivariate Linear Models" in `_quarto.yml`.
+
+- `15-case-studies.qmd` — **DECIDED: online-only appendix (HTML only, absent from PDF).**
+
+- `Rcode.qmd` — **DECIDED: online-only appendix (HTML only, absent from PDF).**
+
+**Implementation (2026-05-05):** Profiles implemented.
+- `_quarto.yml` `appendices:` section is now empty (both appendices removed/commented out).
+- `_quarto-online.yml` adds both `15-case-studies.qmd` and `Rcode.qmd` under `appendices:`.
+- The old `_quarto-online.yml` (which duplicated the full chapter list) has been
+  replaced with a minimal file containing only the additions.
 
 The current `_quarto.yml` lists all chapters under `chapters:` and `appendices:`,
 so both formats always receive all chapters. There does not seem to be any built-in Quarto mechanism
@@ -114,7 +125,7 @@ This paragraph appears only in the online (HTML) build.
 ```
 This is an alternative to `when-format="html"` and is useful for content that is profile-specific rather than format-specific (e.g., a note saying "see the online appendix" in the PDF version).
 
-**Status: Confirmed working approach. Ready to implement once online-only chapter list is decided.**
+**Status: IMPLEMENTED (2026-05-05).** See Solution section below.
 
 ### Option 5: Post-process the PDF
 
@@ -126,25 +137,40 @@ and manual.
 
 ---
 
-## Solution: Quarto profiles (Option 4, confirmed)
+## Solution: Quarto profiles (Option 4, implemented 2026-05-05)
 
-### Implementation steps
+### What was done
 
-1. Remove online-only chapters from `_quarto.yml` (the base config used for PDF). Currently `21-discrim.qmd` is under `appendices:`; remove it (and `15-case-studies.qmd` if that is also decided).
+**`_quarto.yml`** — `appendices:` section cleared; both online-only appendices removed
+(commented out). The base config now represents the PDF build exactly.
 
-2. Create `_quarto-online.yml` with only the additions:
-   ```yaml
-   book:
-     appendices:
-       - 21-discrim.qmd
-   ```
-   Quarto merges arrays, so this appends rather than replaces the base list.
+**`_quarto-online.yml`** — rewritten to be minimal (additions only):
+```yaml
+book:
+  appendices:
+    - 15-case-studies.qmd
+    - Rcode.qmd
+```
+The old version duplicated the full chapter list (wrong — would cause duplicates
+due to array merging). The new version only adds what the base config omits.
+All `format:` settings were already in `_quarto.yml` and have been removed from
+the profile to avoid duplication.
 
-3. Audit and guard cross-references (see section below).
+### Build commands
 
-4. Update `build.sh` (see section below).
+```bash
+# HTML build — all chapters + both online-only appendices
+quarto render --to html --profile online
 
-### `build.sh` changes
+# PDF build — base config only; appendices excluded
+quarto render --to pdf
+
+# Both (e.g. via RStudio Build → All Formats):
+# Run HTML with --profile online first, then PDF without profile.
+# Build → All Formats in RStudio does NOT apply the profile — use build.sh instead.
+```
+
+### `build.sh` changes still needed
 
 The `--html` and `--all` cases need `--profile online` added to the HTML render commands:
 
@@ -154,11 +180,15 @@ quarto render --to html --profile online
 
 # All formats
 quarto render --to html --profile online   # pass 1 (builds xref database)
-quarto render --to html --profile online   # pass 2 (resolves index.html cross-refs)
+quarto render --to html --profile online   # pass 2 (resolves xrefs)
 quarto render --to pdf                     # no profile — base config only
 ```
 
-The `--profile` flag should also be exposed as a `build.sh` option if fine-grained control is needed, but the defaults above (always use `online` profile for HTML) are probably right since we always want all chapters in the HTML output.
+### Author index interaction
+
+The PDF build (no profile) naturally excludes online-only appendices from `index.aux`,
+so `make-authorindex.sh` produces an `index.ain` scoped to PDF chapters only.
+No special handling needed.
 
 ---
 
@@ -180,10 +210,13 @@ Options for guarding cross-refs from PDF chapters to online-only chapters:
   ```
 - **Lua filter approach (mcanouil):** A filter (`offpage-crosslinks.lua`) can rewrite relative cross-page links to absolute URLs pointing to the live HTML site, so PDF readers can follow a hyperlink to the online chapter. This is the most elegant option if there are many such references.
 
-Steps before implementation:
-1. Search all `.qmd` files for references to online-only chapter sections (e.g., `@sec-discrim`, any section labels defined in `21-discrim.qmd` or `15-case-studies.qmd`).
+Steps still needed:
+1. Search all `.qmd` files for cross-references into `15-case-studies.qmd` and `Rcode.qmd`
+   (e.g., `@sec-case-studies`, any section labels defined in those files).
 2. Decide per-reference: remove, wrap conditionally, or rely on a Lua filter.
 3. Implement the Lua filter if the number of references is large.
+
+Note: `21-discrim.qmd` is now a full chapter in both formats; no cross-ref guarding needed for it.
 
 ---
 
@@ -204,9 +237,12 @@ Docs: https://quarto.org/docs/projects/profiles.html
 
 ## Status
 
-- [ ] Decide which chapters are online-only (confirm `21-discrim.qmd`; assess `15-case-studies.qmd`)
-- [ ] Remove online-only chapters from `_quarto.yml` appendices/chapters
-- [ ] Create `_quarto-online.yml` with the additions
-- [ ] Audit cross-references to online-only chapters in all remaining `.qmd` files
+- [x] Decide which chapters are online-only (`15-case-studies.qmd` and `Rcode.qmd`
+  are appendices/HTML-only; `21-discrim.qmd` is a full chapter in both formats)
+- [x] Remove online-only appendices from `_quarto.yml`
+- [x] Create minimal `_quarto-online.yml` with only the additions
+- [ ] Verify: HTML build with `--profile online` includes both appendices correctly
+- [ ] Verify: PDF build without profile excludes both appendices correctly
+- [ ] Audit cross-references to `15-case-studies.qmd` and `Rcode.qmd` in all `.qmd` files
 - [ ] Handle each cross-ref: remove, wrap conditionally, or implement Lua filter
-- [ ] Update `build.sh`: add `--profile online` to all HTML render calls
+- [ ] Update `build.sh`: add `--profile online` to all HTML render commands

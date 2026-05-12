@@ -1,8 +1,21 @@
-% Wrapper to produce a letter-sized cover PDF from the A4 source image.
-% The source (cover-peng.pdf) is A4 (8.27" x 11.69"); the book is letterpaper
-% (8.5" x 11"). Scaling to fit by height leaves ~0.36" equal side margins.
+% Wrapper to produce a correctly-positioned cover PDF for inclusion in the book.
+%
+% Source: cover-peng.pdf — A4 page (8.27" x 11.69") containing the cover art.
+% Target: letterpaper (8.5" x 11") with the cover art placed at the 6" x 9"
+%   trim area (krantz2 trim size), centered on the letter page.
+%
+% Positioning is calibrated from measurements on the compiled PDF (see comments
+% near \vspace / \hspace below). Re-measure and adjust if the source changes.
+%
+% keepaspectratio=false: forces the art to exactly 6" x 9". The A4 page is
+% just the PDF carrier; the cover content was designed for the 6" x 9" trim.
+% Change to keepaspectratio=true if the source image should not be stretched.
+%
 % Compile from project root with:
 %   xelatex -output-directory=images/cover latex/make-cover-scaled.tex
+%   mv images/cover/make-cover-scaled.pdf images/cover/cover-peng-scaled.pdf
+%
+% Rerun whenever cover-peng.pdf changes.
 \documentclass{article}
 \usepackage[
   paperwidth=8.5in,
@@ -13,8 +26,15 @@
 \usepackage{graphicx}
 \pagestyle{empty}
 \begin{document}
-\noindent\makebox[\paperwidth][c]{%
-  \includegraphics[height=\paperheight,keepaspectratio]%
-    {images/cover/cover-peng.pdf}%
-}%
+% Positioning calibrated from measurements on the compiled PDF:
+%   artwork measured 4.875" x 6.375"; trim area is 6" x 9"
+%   to center artwork in trim:
+%     horizontal offset from trim left: (6 - 4.875) / 2 = 0.5625"
+%     vertical offset from trim top:    (9 - 6.375) / 2 = 1.3125"
+%   calibrated wrapper coordinates (hspace adjusted empirically to 1.875in):
+%     vspace = 1.3125in,  hspace = 1.875in
+\vspace*{1.3125in}%
+\noindent\hspace*{1.875in}%
+\includegraphics[width=6in, height=9in, keepaspectratio=false]%
+  {images/cover/cover-peng.pdf}%
 \end{document}

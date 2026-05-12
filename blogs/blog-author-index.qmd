@@ -1,0 +1,315 @@
+---
+title: "Making an Author Index with Quarto"
+subtitle: "From a seamless LaTeX workflow to a pandoc citeproc obstacle course"
+author: "Michael Friendly"
+date: "2026-05-04"
+categories: [Quarto, LaTeX, publishing]
+format:
+  html:
+    toc: true
+    toc-depth: 3
+---
+
+<!-- DRAFT / SKETCH — fill in details, add code output examples, verify Perl snippets -->
+
+A technical book in statistics or data science typically cites hundreds of papers
+and books — methods developed by Tukey, visualizations introduced by Wilkinson,
+models named after their inventors.
+Readers who have encountered a method in the wild and want to find where it is
+discussed in the book benefit enormously from an **author index**: a back-of-book
+list of cited authors with the pages on which they are cited.
+Most style guides for academic monographs recommend one; CRC Press / Chapman & Hall
+require it.
+
+This post describes how to generate an author index for a Quarto book — specifically,
+what makes it trivial in a traditional LaTeX workflow and surprisingly hard in a
+Quarto / pandoc workflow, and how I eventually solved it for
+*Visualizing Multivariate Data and Models in R* (CRC Press, in preparation).
+
+A companion post covers the [subject index](blog-quarto-indexes.qmd) — R helper
+functions, LaTeX macros, and the underscore problem.
+
+## How it works in a LaTeX-centric workflow
+
+In my previous book,
+[*Discrete Data Analysis with R*](https://www.taylorfrancis.com/books/mono/10.1201/b19022/discrete-data-analysis-michael-friendly-david-meyer)
+(CRC Press, 2016), chapters were written in `.Rnw` format — essentially LaTeX with
+embedded R code chunks processed by `knitr`. The full compilation pipeline was:
+
+```
+.Rnw → knitr → .tex → LaTeX → BibTeX → LaTeX (×2) → authorindex Perl → LaTeX
+```
+
+The author index in that workflow is handled by two cooperating tools:
+
+**The `authorindex` LaTeX package** (by Harris, 2006) provides a macro `\aicite{key}`
+that you use instead of `\cite{key}` anywhere you want the cited author(s) indexed.
+When LaTeX processes `\aicite{key}`, it writes a `\citationpage{key}{page}` entry
+to the `.aux` file, in addition to producing the usual citation text.
+
+**The `authorindex` Perl script** reads the `.aux` file to find all
+`\citationpage{key}{page}` entries, then calls BibTeX to look up the author lists
+for each key in your `.bib` files. For each citation it emits one
+`\indexentry{LastName, First}{page}` line per author into an `.ain` file. LaTeX
+then typesets this exactly like a regular index via `\printauthorindex`.
+
+The `.bib` workflow makes everything available: `\bibdata{...}` in the `.aux`
+tells the Perl script which databases to pass to BibTeX, and `\bibcite{key}{...}`
+entries written by BibTeX map keys to formatted references. In `.Rnw` chapters
+you use `\aicite{key}` wherever you would normally write `\cite{key}`, and
+the author index builds automatically with no extra bookkeeping.
+
+The result is a well-formatted two-column author index like this:
+
+```
+Blishen, B. R., 74, 88
+Cleveland, W. S., 12, 45, 91–97
+Friendly, M., 3, 7, 22, 44
+...
+```
+
+## Why Quarto breaks all of this
+
+Quarto uses **pandoc** and its built-in citation processor **citeproc** — a
+fundamentally different pipeline:
+
+```
+.qmd → knitr → .md → pandoc (citeproc) → .tex → LaTeX (no BibTeX) → PDF
+```
+
+Every step of the `authorindex` workflow breaks:
+
+### 1. No `\cite{}` commands in the generated `.tex`
+
+Pandoc resolves all citations *before* LaTeX ever runs. Instead of emitting
+`\cite{Friendly2013}`, it emits:
+
+```latex
+\citeproc{ref-Friendly2013}{Friendly (2013)}
+```
+
+The formatted text is already baked in. LaTeX just has to typeset it.
+The `authorindex` package patches `\aicite` but has no hook into `\citeproc`.
+
+### 2. No BibTeX step — no `.aux` infrastructure
+
+Because pandoc reads the `.bib` files itself and writes the formatted
+bibliography directly into the `.tex` file as a `thebibliography` environment,
+LaTeX never calls BibTeX. So:
+
+- `\bibdata{...}` is never written to `.aux` — the Perl script can't find the databases.
+- `\bibcite{key}{...}` entries are never written — the Perl script can't map keys to authors.
+
+### 3. Keys are renamed
+
+Pandoc prefixes every citation key with `ref-`: the BibTeX entry `Friendly2013`
+becomes `ref-Friendly2013` in the `.tex` and `.aux`. The `.bib` files still use
+the original keys. The Perl script doesn't know about this prefix.
+
+### 4. Windows CRLF line endings
+
+The `authorindex` Perl script was written for Unix. Its regexes use `$` to match
+end-of-line. On Windows, LaTeX writes `.aux` files with CRLF line endings
+(`\r\n`), so `\r` sits before `\n` and `$` silently fails to match — every regex
+that anchors to end-of-line returns nothing.
+
+The net result: four independent failure modes, each one sufficient to produce
+an empty or broken author index, with no obvious error messages.
+
+## The solution path
+
+### Step 1: Fix the Perl script
+
+Two changes to `latex/authorindex` (working copy saved as `latex/authorindex_debug`):
+
+**Strip CRLF.** At the top of the main input loop, add:
+
+```perl
+s/\r//g;    # strip Windows CR before any regex matching
+```
+
+**Strip the `ref-` prefix.** In the `\citationpage` and `\bibcite` handlers,
+strip pandoc's prefix before downstream processing:
+
+```perl
+# in \citationpage handler:
+my ($key, $page) = ($1, $2);
+$key =~ s/^ref-//;          # pandoc prefixes all keys with ref-
+```
+
+**Soften the BibTeX exit-code check.** The `.bib` files in this project contain
+package references that are duplicated across files. BibTeX warns "Repeated entry"
+and exits non-zero, but still writes a usable `.bbl`. Change the hard `die` to a
+warning when the `.bbl` file was produced anyway.
+
+### Step 2: Write `\bibdata{}` to the `.aux` manually
+
+Since BibTeX never runs, we have to tell the Perl script which `.bib` files to
+use. A hook in `latex/preamble.tex` writes the entry at document start:
+
+```latex
+\AtBeginDocument{%
+  \if@filesw\immediate\write\@auxout{%
+    \string\bibdata{references,R-refs,pkgs,packages,Rpackages-4.5.1}}\fi
+}
+```
+
+After LaTeX runs, `index.aux` contains `\bibdata{...}` and the Perl script
+can call BibTeX with the right databases.
+
+### Step 3: Write `\citationpage{}` entries for every citation
+
+This is the hardest part. The `authorindex` package writes `\citationpage`
+entries when `\aicite` is called — but pandoc never emits `\aicite`. We have
+to intercept `\citeproc` instead.
+
+**First attempt — patch `\@citex`:**
+
+```latex
+\AtBeginDocument{%
+  \let\@ai@orig@citex\@citex
+  \def\@citex[#1]#2{\@ai@orig@citex[#1]{#2}\@aicitey{#2}}%
+}
+```
+
+This worked: `\citationpage` entries appeared in `.aux` and the Perl script
+produced a correct `index.ain`. But it introduced a fatal new problem.
+
+**The "Extra }, or forgotten `\endgroup`" deadlock:**
+
+The original pandoc `\citeproc` wraps `\cite{key}` in `\begingroup...\endgroup`.
+Inside a `\footnote{}`, when a citation is undefined on the first LaTeX pass
+(which is normal — `\bibcite` entries are only written at the end of the document),
+the group interaction causes:
+
+```
+! Extra }, or forgotten \endgroup.
+l.4211 ...citeproc{ref-Blishen-etal-1987}{1987}).}
+```
+
+LaTeX stops mid-document, writing an incomplete `.aux`. The next build also has
+undefined citations (because `\bibcite` entries weren't written on the truncated
+pass) → same error → deadlock. The only escape is to delete the `.aux` file and
+restore a backup.
+
+**Why the patch is at fault:** The `\@citex` patch calls `\@aicitey{key}` from
+inside `\@citex`, which is itself called inside `\citeproc`'s
+`\begingroup...\endgroup`. Inside a `\footnote{}`, the group nesting is:
+
+```
+\footnote{
+  \begingroup          ← from \citeproc
+    \cite{key}
+      \@citex          ← patched: calls \@aicitey here
+                         group imbalance when key undefined
+  \endgroup
+}                      ← "Extra }"
+```
+
+**The fix — patch `\citeproc` directly:**
+
+The group-imbalance only happens because `\@aicitey` is called inside
+`\citeproc`'s `\begingroup`. The solution is to redefine `\citeproc` itself
+so that it has *no* `\begingroup` — and call `\@aicitey` there:
+
+```latex
+% In preamble.tex — replaces pandoc's \citeproc definition:
+\def\citeproc#1#2{\@aicitey{#1}#2}
+```
+
+This definition:
+
+1. Calls `\@aicitey{#1}` to write `\citationpage{ref-key}{page}` to `.aux`.
+2. Outputs `#2` — the pre-formatted citation text that pandoc already computed.
+3. Has **no `\begingroup...\endgroup`** — no group imbalance is possible, even
+   inside `\footnote{}` on the first pass.
+
+Pandoc provides the correctly formatted text in `#2` regardless of whether the
+citation is "defined" in the LaTeX sense, so the output is identical to the
+original — no `\begingroup` is needed for formatting. This can be left enabled
+permanently; no toggling is needed around builds.
+
+Note: `\@aicitey` receives the key in pandoc's `ref-key` format. The Perl script
+(Step 1) already strips the `ref-` prefix before looking up authors in the `.bib`.
+
+### Step 4: Define LaTeX macros used in `.bib` files
+
+My `references.bib` file contained an `@Preamble` directive defining a `\de{}`
+command used in French author names (e.g., `{\de{O}}cagne`). In the `.Rnw`
+workflow, BibTeX emitted preamble content into the `.bbl` file read by LaTeX.
+With pandoc citeproc, `@Preamble` directives are silently discarded — they
+never reach LaTeX — so `\de{}` was undefined when the author index was typeset.
+
+Fix: define the command directly in `preamble.tex`:
+
+```latex
+\providecommand{\de}[1]{d'#1}
+```
+
+## The workflow
+
+After all fixes are in place, generating the author index is a three-step process:
+
+```bash
+# 1. Build the PDF (TeXStudio or Quarto) — populates index.aux with
+#    \citationpage entries and \bibdata
+
+# 2. Generate index.ain
+bash make-authorindex.sh
+
+# 3. Rebuild the PDF — \printauthorindex typesets from index.ain
+```
+
+`make-authorindex.sh` sets `BIBINPUTS` and `BSTINPUTS` to point at the project's
+`.bib` directory and the TinyTeX BST path, then runs `perl latex/authorindex -d index`.
+
+`latex/after-body.tex` prints the index in a two-column, single-spaced layout:
+
+```latex
+\renewenvironment{theauthorindex}{%
+  \linespread{1}\selectfont%
+  \setlength{\parskip}{0pt}%
+  \raggedright%
+  \setlength{\leftskip}{1em}%
+  \setlength{\parindent}{-1em}%
+  \def\item[##1]{\par\hspace{0mm}\ainame{##1}}%
+  \aisize}{\par}
+\addcontentsline{toc}{chapter}{Author Index}
+\chapter*{Author Index}
+\begin{multicols}{2}
+\printauthorindex
+\end{multicols}
+```
+
+## Lessons learned
+
+1. **Pandoc citeproc is a black box to LaTeX.** The entire BibTeX/bibcite
+   infrastructure that indexing tools rely on simply doesn't exist in the
+   pandoc pipeline. Any tool that depends on `.aux` entries from BibTeX needs
+   a workaround.
+
+2. **Patch the highest-level macro you control.** Patching `\@citex` (a LaTeX
+   internal) dragged in group-balance constraints that caused deadlocks. Patching
+   `\citeproc` (a pandoc-generated macro that we were already redefining) was
+   simpler and had no dangerous interactions.
+
+3. **Group imbalance in footnotes is a deadlock, not just an error.** The first
+   failed build truncates `.aux`; the next build then fails for a different reason
+   (stale citations); the cycle continues until the `.aux` is manually deleted.
+   Always test citation-patching code with a footnote citation before committing.
+
+4. **Windows line endings break Unix Perl scripts silently.** Every regex that
+   anchored to `$` returned nothing. The fix (`s/\r//g`) is one line but costs
+   hours to diagnose.
+
+5. **`@Preamble` in `.bib` files doesn't reach LaTeX via citeproc.** Any LaTeX
+   macros defined there must be moved to `preamble.tex`.
+
+---
+
+*Files discussed in this post:*
+
+- `latex/preamble.tex` — `authorindex` package setup and `\citeproc` redefinition
+- `latex/authorindex` — the Perl script (original + CRLF / `ref-` fixes)
+- `latex/after-body.tex` — `\printauthorindex` call and environment redefinition
+- `make-authorindex.sh` — shell script with correct `BIBINPUTS`/`BSTINPUTS`

@@ -42,7 +42,7 @@
 
 
 % block quotes
-\definecolor{quotecolor}{RGB}{0,0,100} % Example: blue
+\definecolor{quotecolor}{cmyk}{1, 1, 0, 0.61} % RGB(0,0,100) — dark blue
 \renewenvironment{quote}
 {%
   \list{}{\rightmargin=\leftmargin}%
@@ -111,9 +111,6 @@
 \setlength{\hbadness}{1000pt}
 \setlength{\vbadness}{1000pt}
 
-% Define needed colors for xcolor
-\definecolor{darkgreen}{RGB}{1,50,32}
-
 % shut up overfull boxes
 
 \hfuzz=5.002pt
@@ -166,7 +163,13 @@
 % in modern LaTeX (xparse internal dispatch). Use \def at the TeX primitive level.
 % Pandoc provides the correctly formatted text in #2 — \cite{#1} is redundant
 % for Pandoc citeproc documents (no BibTeX step; bibliography is already in .tex).
-\def\citeproc#1#2{#2}
+%
+% Write \citationpage{key}{page} to .aux for the authorindex Perl script.
+% Calling \@aicitey directly causes "Undefined control sequence \@citeb->\@nil"
+% due to \@for loop internals; writing to .aux directly avoids this entirely.
+\def\citeproc#1#2{%
+  \if@filesw\immediate\write\@auxout{\string\citationpage{#1}{\thepage}}\fi
+  #2}
 
 \newcommand{\IX}[1]{\index{#1}#1}
 \newcommand{\ix}[1]{\index{#1}}
