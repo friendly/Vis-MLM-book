@@ -243,6 +243,9 @@ Docs: https://quarto.org/docs/projects/profiles.html
 - [x] Create minimal `_quarto-online.yml` with only the additions
 - [ ] Verify: HTML build with `--profile online` includes both appendices correctly
 - [ ] Verify: PDF build without profile excludes both appendices correctly
-- [ ] Audit cross-references to `15-case-studies.qmd` and `Rcode.qmd` in all `.qmd` files
-- [ ] Handle each cross-ref: remove, wrap conditionally, or implement Lua filter
+- [x] Audit cross-references to `15-case-studies.qmd` and `Rcode.qmd` in all `.qmd` files
+- [x] Handle each cross-ref: remove, wrap conditionally, or implement Lua filter
+  - Only one external reference found: `@sec-case-studies` in `index.qmd` line 84.
+    Wrapped with inline conditional spans: HTML gets the live cross-ref; PDF gets
+    "an online appendix presents some extended case studies...".
 - [ ] Update `build.sh`: add `--profile online` to all HTML render commands

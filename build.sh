@@ -6,9 +6,9 @@
 #   ./build.sh [OPTIONS]
 #
 # Options:
-#   --pdf             Build PDF only
-#   --html            Build HTML only
-#   --all             Build both formats (default)
+#   --pdf             Build PDF only (base config; online-only chapters excluded)
+#   --html            Build HTML only (uses --profile online; all chapters included)
+#   --all             Build both formats (default; HTML uses --profile online)
 #   --clean-cache     Delete all tex.json freeze caches before building.
 #                     REQUIRED after editing latex/latex-commands.qmd or any
 #                     other {{< include >}}'d file — Quarto does not track
@@ -139,10 +139,11 @@ case "$FORMAT" in
     # xref data exists), so cross-refs in index.html to later chapters show
     # section titles instead of numbers on the first pass. The second pass
     # finds the complete xref database and resolves them correctly.
+    # --profile online adds 15-case-studies.qmd and Rcode.qmd as appendices.
     echo "    Pass 1/2: HTML (builds xref database)"
-    run quarto render --to html
+    run quarto render --to html --profile online
     echo "    Pass 2/2: HTML (resolves cross-refs in index.html)"
-    run quarto render --to html
+    run quarto render --to html --profile online
     ;;
   all)
     # Render formats sequentially, not combined.
@@ -150,11 +151,12 @@ case "$FORMAT" in
     # '04-xxx.html' at the project root during PDF cross-ref resolution,
     # but HTML output goes to docs/.  Separate renders avoid this.
     # Two HTML passes needed so index.html cross-refs resolve (see --html note).
+    # --profile online adds online-only appendices to HTML; PDF uses base config only.
     echo "    Step 1/3: HTML pass 1 (builds xref database)"
-    run quarto render --to html
+    run quarto render --to html --profile online
     echo "    Step 2/3: HTML pass 2 (resolves cross-refs in index.html)"
-    run quarto render --to html
-    echo "    Step 3/3: PDF"
+    run quarto render --to html --profile online
+    echo "    Step 3/3: PDF (base config only — no online-only appendices)"
     run quarto render --to pdf
     ;;
 esac
