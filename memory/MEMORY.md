@@ -8,3 +8,6 @@
 - [No hard line wrapping](feedback_line_wrapping.md) — don't wrap prose lines at fixed width in .md/.Rmd files (breaks forum posts)
 - [Scripts in issues/](feedback_script_location.md) — one-off diagnostic/generation scripts go in issues/, not R/ (R/ is for book production code only)
 - [Quarto LLM docs](reference_quarto_llms.md) — https://quarto.org/llms.txt for authoritative Quarto documentation lookup
+- [Quarto skills collection](reference_quarto_skills.md) — posit-dev/skills on GitHub: Claude skills/knowledge for Quarto authoring
+- [DeepWiki Quarto CLI](reference_deepwiki_quarto.md) — internal architecture docs; useful for diagnosing *why* Quarto behaves a certain way, not for authoring
+- [git pull --rebase](feedback_git_pull_rebase.md) — use --rebase not plain pull when push is rejected; avoids cluttering history with merge commits
