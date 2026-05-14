@@ -479,9 +479,9 @@
 \newcommand*\listoflistings{\listof{codelisting}{List of Listings}}
 \usepackage{amsthm}
 \theoremstyle{definition}
-\newtheorem{example}{Example}[chapter]
-\theoremstyle{definition}
 \newtheorem{exercise}{Exercise}[chapter]
+\theoremstyle{definition}
+\newtheorem{example}{Example}[chapter]
 \theoremstyle{remark}
 \AtBeginDocument{\renewcommand*{\proofname}{Proof}}
 \newtheorem*{remark}{Remark}
@@ -530,7 +530,7 @@
 \makeatother
 \subtitle{A Romance in Many Dimensions}
 \author{Michael Friendly}
-\date{2026-05-12}
+\date{2026-05-14}
 \begin{document}
 \maketitle
 
@@ -5088,18 +5088,18 @@ Because it provides a visual representation of means, variances, and
 correlations, the data ellipse is ideally suited as a tool for
 illustrating and explicating various phenomena that occur in the
 analysis of linear models. One class of simple, but important, examples
-concerns the difference between the \emph{marginal relationship} between
+concerns the difference between the \emph{marginal} relationship between
 variables, ignoring some important factor or covariate, and the
 \emph{conditional} relationship, adjusting (controlling) for that
 variable.
 
-An important example is \textbf{Simpson's paradox}
+An important example of this is \textbf{Simpson's paradox}
 (\citeproc{ref-Simpson:51}{Simpson, 1951}) which occurs when the
-marginal and conditional relationships differ in direction. That is, the
-overall correlation in a model \texttt{y\ \textasciitilde{}\ x} might be
-negative, while the within-group correlations in separate models for
-each group \texttt{y{[}g{]}\ \textasciitilde{}\ x{[}g{]}} might be
-positive, or vice versa. For Flatlanders in 2D space, this is a
+marginal and conditional relationships differ in \emph{direction}. That
+is, the overall correlation in a model \texttt{y\ \textasciitilde{}\ x}
+might be negative, while the within-group correlations in separate
+models for each group \texttt{y{[}g{]}\ \textasciitilde{}\ x{[}g{]}}
+might be positive, or vice versa. For Flatlanders in 2D space, this is a
 puzzlement.
 
 We can see this paradox in the plots of bill length against bill depth
@@ -5134,37 +5134,19 @@ which allows a different slope and intercept for each species.
 
 A correct analysis of the (conditional) relationship between these
 variables, controlling or adjusting for mean differences among species,
-is based on the pooled within-sample covariance matrix, a weighted
-average of the individual within-group \(\mathbf{S}_i\),
+is shown in panel (c) of Figure~\ref{fig-peng-simpsons}. In this graph,
+the data for each species were first transformed to deviations from the
+species means on both variables and then translated back to the grand
+means. You can also see here that the shapes and sizes of the individual
+data ellipses are roughly comparable, but perhaps not identical. This
+visual idea of centering groups to a common mean will become important
+in Chapter~\ref{sec-eqcov} when we want to test the assumption of
+equality of error covariances in multivariate models.
 
-\[
-\mathbf{S}_{\textrm{within}}  =
-\sum_{i=1}^g
-(n_i - 1) \mathbf{S}_i \, / \, (N - g)
-\:\: ,
-\]
-
-where \(N = \sum n_i\). The result is shown in panel (c) of
-Figure~\ref{fig-peng-simpsons}.
-
-In this graph, the data for each species were first transformed to
-deviations from the species means on both variables and then translated
-back to the grand means. You can also see here that the shapes and sizes
-of the individual data ellipses are roughly comparable, but perhaps not
-identical. This visual idea of centering groups to a common mean will
-become important in Chapter~\ref{sec-eqcov} when we want to test the
-assumption of equality of error covariances in multivariate models.
-
-The \texttt{ggplot2} code for the panels in this figure are shown below.
-Note that for components that will be the same across panels, you can
-define elements (e.g., \texttt{labels},
-\texttt{theme\_penguins()}\index{theme_penguins()@\texttt{theme\_penguins()}})
-once, and then re-use these across several graphs.
-
-\textbf{TODO} This panel tabset looks fine in HTML but is awkward in PDF
-
-\textbf{TODO}: Decide how to handle the other plots \textbf{(a) Ignoring
-species}
+The \texttt{ggplot2} code for panel (a), ignoring species, is shown
+below. The by-species plot (b) simply maps aesthetics for color, fill
+and shape to \texttt{species}. The within-species plot (c) centers the
+data for each group at the grand means.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -5198,12 +5180,16 @@ species}
 \section{Multivariate normality and
 outliers}\label{sec-multivar-normality}
 
+\index{multivariate normality|(}
+\index{outliers|(}
+
 The relation of the data ellipsoid for \(p\) variables to the
-\(\chi^2_p\) distribution with \(p\) degrees of freedom described in
-Section~\ref{sec-data-ellipse} is based on the assumption that the data
-in \(\mathbf{y}\) is a sample from a multivariate normal distribution
-(MVN), with a mean vector \(\boldsymbol{\mu}\) and variance-covariance
-matrix \(\boldsymbol{\Sigma}\), so each one implies the other:
+\(\chi^2_p\) distribution of Mahalanobis \(D^2_M (\mathbf{y})\) with
+\(p\) degrees of freedom described in Section~\ref{sec-data-ellipse} is
+based on the assumption that the data in \(\mathbf{y}\) is a sample from
+a multivariate normal distribution (MVN), with a mean vector
+\(\boldsymbol{\mu}\) and variance-covariance matrix
+\(\boldsymbol{\Sigma}\). So each one implies the other:
 
 \[
 \mathbf{y}_{p \times 1} \sim \mathcal{N}(\boldsymbol{\mu}, \boldsymbol{\Sigma}) \Longleftrightarrow D^2_M (\mathbf{y}) \sim \chi^2_p\; .
@@ -5219,7 +5205,7 @@ does indeed follow a MVN distribution by plotting the
 \(D^2\) values (denoted \(D^2_{(i)}\)) calculated from
 Equation~\ref{eq-Dsq} against the corresponding \(\chi^2_p\) quantiles
 found from \texttt{qchisq(df\ =\ p)}. This is called a \(\chi^2\) QQ
-plot.
+plot. \index{$\chi^2$ QQ plot}
 
 The essential idea is that the plotted points should then approximately
 fall along a 45\(^o\) line of slope = 1 when the data are MVN (and axes
@@ -5249,10 +5235,13 @@ I illustrate finding the largest \(D^2_{(i)}\) for the \texttt{Galton}
 data as shown below. I've used \(\alpha = 0.01\), giving
 \(\chi^2_p (0.99) = 9.21\) as an outlier cutoff, just for the sake of
 this example. With 928 cases, we would expect about 1\% or 9 to have
-larger squared distances than this cutoff. (Normally, allowing for the
-fact that we are looking at the largest values in a sample of size
-\(n\), we would use a much smaller individual significance level, say
-\(\alpha = 0.001\) or smaller still.) Three cases are identified here.
+larger squared distances than this cutoff.\footnote{Often in
+  outlier-detection problems, allowing for the fact that we are looking
+  at the \emph{largest} values in a sample of size \(n\), we would use a
+  much smaller individual significance level, say \(\alpha = 0.001\) or
+  something like a Bonferroni correction, \(\alpha / n\).}
+
+Only three cases are identified here:
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -5302,9 +5291,10 @@ corresponding \(\chi^2_2\) quantile along with the upper-tail
 
 }
 
-\caption{\label{fig-galton-cqplot}Chi-square QQ plot of Galton's data on
-heights of parents and their offspring, with a 95\% pointwise confidence
-envelope}
+\caption{\label{fig-galton-cqplot}\textbf{Chi-square QQ plot} of
+Galton's data on heights of parents and their offspring, with a 95\%
+pointwise confidence envelope. The three largest \(D^2\) values are
+identified with their observation labels.}
 
 \end{figure}%
 
@@ -5313,9 +5303,10 @@ nature of a confidence band around the points to be able to appreciate
 whether, and to what degree the observed data points differ from the
 reference distribution. For \texttt{cqplot()}, this helps to assess
 whether the data are reasonably distributed as multivariate normal and
-also to flag potential outliers.
+also to flag potential outliers, which would appear outside the shaded
+confidence region
 
-The pointwise 95\% confidence envelope is calculated as
+The \emph{pointwise} 95\% confidence envelope is calculated as
 \(D^2_{(i)} \pm 1.96 \times \text{se} ( D^2_{(i)} )\) where the standard
 error is calculated (\citeproc{ref-Chambers-etal:83}{Chambers et al.,
 1983, sec. 8.6}) as
@@ -5323,10 +5314,12 @@ error is calculated (\citeproc{ref-Chambers-etal:83}{Chambers et al.,
 \[
  \text{se} ( D^2_{(i)} ) = \frac{\hat{b}}{d ( q_i)} \times \sqrt{  p_i (1-p_i) / n }  \:\: .
 \] Here, \(\hat{b}\) is an estimate of the \emph{actual} slope of the
-reference line obtained from the ratio of the interquartile range of the
-\(D^2\) values to that of the corresponding \(\chi^2_p\) distribution.
-\(d(q_i)\) is the density of the chi square distribution at the quantile
-\(q_i\) and \(p_i\) is the corresponding percentile.
+reference line, obtained from the ratio of the interquartile range of
+the \(D^2\) values to that of the corresponding \(\chi^2_p\)
+distribution. \(d(q_i)\) is the density of the chi square distribution
+at the quantile \(q_i\). \(p_i\) is the corresponding \(\chi^2\)
+percentile, so the square-root term is like a standard error for a
+binomial probability.
 
 So, in Figure~\ref{fig-galton-cqplot}, you can see the same three
 points, with largest \(D^2\) identified earlier. The confidence band
@@ -5382,8 +5375,8 @@ and shape.}
 
 It is clear from this plot that case 897 is for an exceptionally tall
 child of quite short parents, while case 1 and 13 are from very short
-children of tall parents; you could call them poster children for
-regression toward the mean.
+children of tall parents. You could call them poster children for the
+idea of regression toward the mean.
 
 \subsection{Penguin data}\label{sec-multnorm-penguin}
 
@@ -5433,7 +5426,7 @@ other two (10, 35) are well within the confidence envelope.
 To relate this to the data, we can plot the data, as was done in
 Figure~\ref{fig-peng-ggplot1}, and label the points identified as
 noteworthy. It is a bit tricky to label points selectively in
-\texttt{ggplot2} when the criterion for which points to label is
+\texttt{ggplot2}, when the criterion for which points to label is
 complex, or involves variables outside the data frame. Here, I create a
 logical variable \texttt{note}, which is \texttt{TRUE} for the
 noteworthy ones. This is then used to subset the data for
@@ -5483,7 +5476,7 @@ multivariate outlier.}
 
 Two cases (10, 283) appear to be very unusual in this plot, in relation
 to other members of their species. But only case 283 is a true
-multivariate outlier, as shown in the cqplot
+multivariate outlier, as we saw in the cqplot example,
 Figure~\ref{fig-peng-cqplot}. We could call this long-billed penguin
 ``Cyrano''.\footnote{After the long-nosed Cyrano de Bergerac from Edmund
   Rostand's play. Actually, bird 283 is a female. But, it would be a
@@ -5500,11 +5493,12 @@ components. I return to this example in
 Section~\ref{sec-outlier-detection}.
 
 It bears noting that for linear models, multivariate normality is
-\textbf{not required} for the response variables or predictors, but
-rather is an assumption for the \emph{residuals} from a model. As well,
-multivariate outliers in the responses may not turn out to be unusual
-when the predictor variables are taken into account. In this example, a
-multivariate model would include the effect of \texttt{species},
+\textbf{not required} for the \emph{response} variables or
+\emph{predictors}. Rather, this is just an assumption for the
+\emph{residuals} from a model. Multivariate outliers in the responses
+may not turn out to be unusual when the predictor variables are taken
+into account. In this example, a multivariate model would include the
+effect of \texttt{species},
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -5515,6 +5509,11 @@ multivariate model would include the effect of \texttt{species},
 
 and there would be cause for concern if the residuals from this model,
 \texttt{residuals(peng.mod)} were highly non-normal or showed outliers.
+\texttt{heplots::cqplot(peng.mod)} naturally gives the \(chi^2\) QQ plot
+of the residuals from this model.
+
+\index{multivariate normality|)}
+\index{outliers|)}
 
 \section{Scatterplot matrices}\label{sec-scatmat}
 
@@ -5535,8 +5534,8 @@ helpful to put this in the first row and column. For the
 have a measure of \% women in each occupational category.
 
 Plotting these together gives Figure~\ref{fig-prestige-pairs}. In such
-plots, the diagonal cells give labels for the variables, but they are
-also a guide to interpreting what is shown. In each row, say row 2 for
+plots, the diagonal cells give labels for the variables, which serve as
+a guide to interpreting what is shown. In each row, say row 2 for
 \texttt{income}, income is the vertical \(y\) variable in plots against
 other variables. In each column, say column 3 for \texttt{education},
 education is the horizontal \(x\) variable.
@@ -5572,20 +5571,6 @@ feature-rich version is provided by
 which can add the regression lines, loess smooths and data ellipses for
 each pair, as shown in Figure~\ref{fig-prestige-spm1}.
 
-The diagonal panels show density curves for the distribution of each
-variable; for example, \texttt{education} appears to be multi-modal and
-that of \texttt{women} shows that most of the occupations have a low
-percentage of women.
-
-The combination of the regression line with the loess smoothed curve,
-but without their confidence envelopes, provides about the right amount
-of detail to take in at a glance where the relations are non-linear.
-We've already seen (Figure~\ref{fig-Prestige-scatterplot-income1}) the
-non-linear relation between prestige and income (row 1, column 2) when
-occupational type is ignored. But all relations with income in column 2
-are non-linear, reinforcing our idea (Section~\ref{sec-log-scale}) that
-effects of income should be assessed on a log scale.
-
 \begin{Shaded}
 \begin{Highlighting}[]
 \FunctionTok{scatterplotMatrix}\NormalTok{(}\SpecialCharTok{\textasciitilde{}}\NormalTok{ prestige }\SpecialCharTok{+}\NormalTok{ income }\SpecialCharTok{+}\NormalTok{ education }\SpecialCharTok{+}\NormalTok{ women,}
@@ -5609,6 +5594,20 @@ effects of income should be assessed on a log scale.
 the Prestige dataset from \texttt{car::scatterplotMatrix()}.}
 
 \end{figure}%
+
+The diagonal panels show density curves for the distribution of each
+variable; for example, \texttt{education} appears to be multi-modal and
+that of \texttt{women} shows that most of the occupations have a low
+percentage of women.
+
+The combination of the regression line with the loess smoothed curve,
+but without their confidence envelopes, provides about the right amount
+of detail to take in at a glance where the relations are non-linear.
+We've already seen (Figure~\ref{fig-Prestige-scatterplot-income1}) the
+non-linear relation between prestige and income (row 1, column 2) when
+occupational type is ignored. But all relations with income in column 2
+are non-linear, reinforcing our idea (Section~\ref{sec-log-scale}) that
+effects of income should be assessed on a log scale.
 
 \texttt{scatterplotMatrix()} can also label points using the
 \texttt{id\ =} argument (though this can get messy) and can stratify the
@@ -5859,7 +5858,8 @@ related variables together as described in Chapter~\ref{sec-pca-biplot}.
 
 \caption{\label{fig-corrgram-renderings}\textbf{Corrgrams}: Some
 renderings for the value of a correlation in a corrgram display,
-conveying sign and magnitude in different ways.}
+conveying sign and magnitude in different ways, each encoded with
+aspects of shape and color.}
 
 \end{figure}%
 
@@ -17041,7 +17041,7 @@ is often difficult to know what numbers to pay attention to.
 \begin{Highlighting}[]
 \NormalTok{(cd }\OtherTok{\textless{}{-}} \FunctionTok{colldiag}\NormalTok{(cars.mod, }\AttributeTok{center=}\ConstantTok{TRUE}\NormalTok{))}
 \CommentTok{\# Condition}
-\CommentTok{\# Index   {-}{-} Variance Decomposition Proportions {-}{-}}
+\CommentTok{\# Index Variance Decomposition Proportions}
 \CommentTok{\#           cylinder engine horse weight accel year }
 \CommentTok{\# 1   1.000 0.005    0.003  0.005 0.004  0.009 0.010}
 \CommentTok{\# 2   2.252 0.004    0.002  0.000 0.007  0.022 0.787}
@@ -17064,14 +17064,14 @@ puts the rows with the largest condition indices at the top.
 \begin{Highlighting}[]
 \FunctionTok{print}\NormalTok{(cd, }\AttributeTok{fuzz =} \FloatTok{0.5}\NormalTok{, }\AttributeTok{descending =} \ConstantTok{TRUE}\NormalTok{)}
 \CommentTok{\# Condition}
-\CommentTok{\# Index   {-}{-} Variance Decomposition Proportions {-}{-}}
+\CommentTok{\# Index Variance Decomposition Proportions}
 \CommentTok{\#           cylinder engine horse weight accel year }
-\CommentTok{\# 6  10.818 0.563    0.981   .     .      .     .   }
-\CommentTok{\# 5   8.342  .        .     0.654 0.715   .     .   }
-\CommentTok{\# 4   5.660  .        .      .     .      .     .   }
-\CommentTok{\# 3   2.515  .        .      .     .      .     .   }
+\CommentTok{\# 1   1.000  .        .      .     .      .     .   }
 \CommentTok{\# 2   2.252  .        .      .     .      .    0.787}
-\CommentTok{\# 1   1.000  .        .      .     .      .     .}
+\CommentTok{\# 3   2.515  .        .      .     .      .     .   }
+\CommentTok{\# 4   5.660  .        .      .     .      .     .   }
+\CommentTok{\# 5   8.342  .        .     0.654 0.715   .     .   }
+\CommentTok{\# 6  10.818 0.563    0.981   .     .      .     .}
 \end{Highlighting}
 \end{Shaded}
 
@@ -29396,7 +29396,7 @@ Figure~\ref{fig-peng-covEllipse-pairs}).
 \markboth{Colophon}{Colophon}
 
 This book was produced using \href{https://cran.r-project.org/}{R
-version 4.5.1 (2025-06-13 ucrt)}. Fundamental to this was the framework
+version 4.5.2 (2025-10-31 ucrt)}. Fundamental to this was the framework
 for reproducible documents provided by Yihui Xie's
 \href{https://cran.r-project.org/web/packages/knitr/index.html}{knitr
 package}.
@@ -29430,9 +29430,9 @@ Quarto 1.9.36
       Source: Windows Registry
 [>] Checking basic markdown render....OK
 [>] Checking R installation...........OK
-      Version: 4.5.1
+      Version: 4.5.2
       LibPaths:
-        - C:/R/R-4.5.1/library
+        - C:/R/R-4.5.2/library
       knitr: 1.51
       rmarkdown: 2.31
 [>] Checking Knitr engine render......OK
@@ -29460,10 +29460,10 @@ column.
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1553}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.0777}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1068}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.6602}}@{}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1468}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.0826}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1009}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.6697}}@{}}
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
 package
@@ -29478,58 +29478,58 @@ source
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-bayestestR & 0.17.0 & 2025-08-29 & CRAN \\
+bayestestR & 0.17.0.2 & 2026-03-02 & https://easystats.r-universe.dev \\
 broom & 1.0.12 & 2026-01-27 & CRAN \\
-candisc & 1.1.0 & 2025-11-19 & local \\
+candisc & 1.1.0 & 2025-11-25 & CRAN \\
 car & 3.1-5 & 2026-02-03 & CRAN \\
 carData & 3.0-6 & 2026-01-30 & CRAN \\
 corpcor & 1.6.10 & 2021-09-16 & CRAN \\
-correlation & 0.8.8 & 2025-07-08 & CRAN \\
+correlation & 0.8.8.1 & 2026-02-23 & https://easystats.r-universe.dev \\
 corrgram & 1.14 & 2021-04-29 & CRAN \\
 corrplot & 0.95 & 2024-10-14 & CRAN \\
-datawizard & 1.3.0 & 2025-10-11 & CRAN \\
-dplyr & 1.2.0 & 2026-02-03 & CRAN \\
-easystats & 0.7.5 & 2025-07-11 & CRAN \\
+datawizard & 1.3.1 & 2026-04-26 & CRAN \\
+dplyr & 1.2.1 & 2026-04-03 & CRAN \\
+easystats & 0.7.6 & 2026-03-02 & https://easystats.r-universe.dev \\
 effects & 4.2-5 & 2026-02-17 & CRAN \\
 effectsize & 1.0.2 & 2026-03-11 & CRAN \\
 factoextra & 2.0.0 & 2026-03-03 & CRAN \\
-FactoMineR & 2.13 & 2026-01-12 & CRAN \\
+FactoMineR & 2.14 & 2026-04-08 & CRAN \\
 forcats & 1.0.1 & 2025-09-25 & CRAN \\
 genridge & 0.8.0 & 2024-12-02 & CRAN \\
 GGally & 2.4.0 & 2025-08-23 & CRAN \\
 gganimate & 1.0.11 & 2025-09-04 & CRAN \\
 ggbiplot & 0.6.2 & 2024-01-08 & CRAN \\
 ggdensity & 1.0.1 & 2026-02-26 & CRAN \\
-ggeffects & 2.3.2 & 2025-12-16 & CRAN \\
-gggda & 0.1.1 & 2025-07-28 & Github
-(corybrunson/gggda@b1b3b56ce66aa98e4d447c4bfe97f05fd44a3418) \\
+ggeffects & 2.3.2.1 & 2026-03-04 & Github
+(strengejacke/ggeffects@dd7ffdc954d46e36d1c9edd2337b0c4aea193738) \\
+gggda & 0.1.1 & 2025-07-19 & CRAN \\
 ggpcp & 0.2.0 & 2022-11-28 & CRAN \\
-ggplot2 & 4.0.2 & 2026-02-03 & CRAN \\
+ggplot2 & 4.0.3 & 2026-04-22 & CRAN \\
 ggpubr & 0.6.3 & 2026-02-24 & CRAN \\
 ggrepel & 0.9.8 & 2026-03-17 & CRAN \\
 ggstats & 0.13.0 & 2026-03-06 & CRAN \\
 heplots & 1.8.1 & 2025-12-07 & CRAN \\
 Hotelling & 1.0-8 & 2021-09-09 & CRAN \\
 imager & 1.0.8 & 2025-12-23 & CRAN \\
-insight & 1.4.6 & 2026-02-04 & CRAN \\
+insight & 1.5.0 & 2026-04-14 & CRAN \\
 knitr & 1.51 & 2025-12-20 & CRAN \\
 lubridate & 1.9.5 & 2026-02-04 & CRAN \\
-magrittr & 2.0.4 & 2025-09-12 & CRAN \\
+magrittr & 2.0.5 & 2026-04-04 & CRAN \\
 marginaleffects & 0.32.0 & 2026-02-14 & CRAN \\
 MASS & 7.3-65 & 2025-02-28 & CRAN \\
-matlib & 1.0.1 & 2025-08-28 & local \\
-modelbased & 0.14.0 & 2026-02-17 & CRAN \\
+matlib & 1.0.1 & 2025-10-09 & CRAN \\
+modelbased & 0.14.0.2 & 2026-03-02 & https://easystats.r-universe.dev \\
 modelsummary & 2.6.0 & 2026-02-13 & CRAN \\
 mvinfluence & 0.9.2 & 2025-07-23 & CRAN \\
 MVN & 6.3 & 2026-01-13 & CRAN \\
-nestedLogit & 0.4.1 & 2026-03-23 & local \\
-parameters & 0.28.3 & 2025-11-25 & CRAN \\
+nestedLogit & 0.4.2 & 2026-03-24 & local \\
+parameters & 0.28.3.7 & 2026-03-05 & https://easystats.r-universe.dev \\
 patchwork & 1.3.2 & 2025-08-25 & CRAN \\
 performance & 0.16.0 & 2026-02-04 & CRAN \\
-purrr & 1.2.1 & 2026-01-09 & CRAN \\
+purrr & 1.2.2 & 2026-04-10 & CRAN \\
 qgraph & 1.9.8 & 2023-11-03 & CRAN \\
 readr & 2.2.0 & 2026-02-19 & CRAN \\
-report & 0.6.3 & 2026-01-08 & CRAN \\
+report & 0.6.4 & 2026-05-04 & CRAN \\
 Rtsne & 0.17 & 2023-12-07 & CRAN \\
 see & 0.13.0 & 2026-01-30 & CRAN \\
 stringr & 1.6.0 & 2025-11-04 & CRAN \\
@@ -29538,7 +29538,7 @@ tidyr & 1.3.2 & 2025-12-19 & CRAN \\
 tidyverse & 2.0.0 & 2023-02-22 & CRAN \\
 tourr & 1.2.6 & 2025-07-13 & CRAN \\
 vcd & 1.4-13 & 2024-09-16 & CRAN \\
-VisCollin & 0.1.4 & 2025-12-20 & local \\
+VisCollin & 0.1.2 & 2023-09-05 & CRAN \\
 \end{longtable}
 }
 
