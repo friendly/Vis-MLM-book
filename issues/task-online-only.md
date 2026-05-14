@@ -248,4 +248,110 @@ Docs: https://quarto.org/docs/projects/profiles.html
   - Only one external reference found: `@sec-case-studies` in `index.qmd` line 84.
     Wrapped with inline conditional spans: HTML gets the live cross-ref; PDF gets
     "an online appendix presents some extended case studies...".
-- [ ] Update `build.sh`: add `--profile online` to all HTML render commands
+- [x] Update `build.sh`: add `--profile online` to all HTML render commands (done in commit 025c4e7f)
+
+---
+
+## Quarto Discussion reply — notes (2026-05-12)
+
+Reply from ImMike at https://github.com/orgs/quarto-dev/discussions/14507#discussioncomment-16895594.
+
+Two independent suggestions: (1) eliminate the second HTML pass via freeze cache, and
+(2) either change `output-dir` or use `--use-freeze` for PDF to fix the root-vs-`docs/` path
+issue that currently forces separate renders.
+
+---
+
+### Suggestion A: Commit `_freeze/` to drop HTML pass 2
+
+**What it involves:**
+
+- Add `execute: freeze: auto` to `_quarto.yml` (may already be set; verify).
+- Run a full HTML build once to populate `_freeze/`.
+- `git add _freeze/ && git commit` — freeze cache now travels with the repo.
+- Remove HTML pass 2 from `build.sh` (or keep it as a cheap idempotent safety net —
+  ImMike says it takes ~10 s once the xref database is warm).
+
+**Savings:** ~5–8 min per build.
+
+**Risks / concerns:**
+- `_freeze/` can grow large (it caches chunk outputs as JSON). Need to check its current
+  size before committing it; may want `.gitignore` exceptions for heavy chunks.
+- If freeze cache goes stale (e.g. after a package update), the wrong cached output silently
+  persists until someone runs with `--no-cache` or deletes `_freeze/`. Low risk for prose
+  edits, higher risk after R package updates.
+- This is otherwise low-disruption — does not change output-dir, profiles, or Pages setup.
+
+---
+
+### Suggestion B (Option A in reply): Change `output-dir` to `_book`
+
+**What it involves:**
+
+1. **`_quarto.yml`**: change `output-dir: docs` → `output-dir: _book`.
+2. **`.gitignore`**: add `_book/` (or decide to commit it, as we currently commit `docs/`).
+3. **GitHub Pages**: currently set to serve from `docs/` on `master`. Two sub-options:
+   - Add a GitHub Actions workflow (`.github/workflows/publish.yml`) that copies
+     `_book/` → `gh-pages` branch after each push, then switch Pages to serve from
+     `gh-pages`. This is new infrastructure we don't currently have.
+   - Alternatively, keep Pages on `master` but serve from `_book/` — GitHub Pages supports
+     only `/(root)` or `/docs` as the source folder on master; `_book/` is not an option
+     without Actions. So **Actions would be required**.
+4. **`build.sh`**: the `--html` and `--all` cases collapse to a single
+   `quarto render --profile online` (no `--to` flag) for both formats in one pass.
+   The three-step build becomes one step.
+5. **Profile chapter exclusion**: the current `_quarto-online.yml` approach still works —
+   profile merging is independent of output-dir. No change needed there.
+
+**Savings:** ~10–15 min (eliminates one full render pass); also eliminates the
+root-vs-`docs/` cross-ref path bug permanently.
+
+**Risks / concerns:**
+- GitHub Actions setup is non-trivial and new infrastructure for this repo. Needs a
+  workflow YAML, correct permissions (`GITHUB_TOKEN`, Pages write access), and testing.
+- All current repo references to `docs/` (e.g. CLAUDE.md, README, any scripts) would
+  need updating.
+- The `docs/Vis-MLM.pdf` link used by anyone bookmarking the PDF would change to
+  `_book/Vis-MLM.pdf` (or the Actions workflow could copy to a stable location).
+- Worth verifying: does `quarto render --profile online` (no `--to`) actually build
+  both HTML and PDF in one pass with `output-dir: _book`? ImMike says yes, but should
+  test on a small branch first.
+
+---
+
+### Suggestion C (Option B in reply): Keep `output-dir: docs`, use `--use-freeze`
+
+**What it involves:**
+
+- Keep the current `output-dir: docs` and Pages setup unchanged.
+- Change `build.sh` PDF render step from `quarto render --to pdf` to
+  `quarto render --to pdf --use-freeze`.
+- Drop HTML pass 2 (after committing `_freeze/` per Suggestion A above).
+
+**Result:** build sequence becomes:
+```bash
+quarto render --to html --profile online   # pass 1 only (warm xref DB from freeze)
+quarto render --to pdf --use-freeze        # re-uses HTML xref DB
+```
+
+**Savings:** ~5–8 min (no pass 2) + potential speedup on PDF from frozen chunks.
+
+**Risks / concerns:**
+- Need to confirm `--use-freeze` is a valid flag in the installed Quarto version
+  (`quarto --version` and release notes). It may be newer than the current install.
+- Lower-disruption than Option B — no Pages or Actions changes needed.
+
+---
+
+### Recommendation (not yet acted on)
+
+**Easiest win, lowest risk:** implement Suggestion A (commit `_freeze/`) + Suggestion C
+(`--use-freeze` for PDF). This drops HTML pass 2 and fixes the root-vs-`docs/` issue
+without touching Pages infrastructure.
+
+**Bigger win:** Suggestion B (`output-dir: _book` + Actions) is cleaner long-term but
+requires setting up GitHub Actions for Pages deployment. Defer until the build is
+otherwise stable.
+
+**Before doing anything:** verify `--use-freeze` flag exists in the installed Quarto
+version, and check the size/contents of `_freeze/` after a full build.
