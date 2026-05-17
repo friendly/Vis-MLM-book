@@ -991,8 +991,10 @@ on average
 `coef(lm(prestige ~ education, data=Prestige))["education"]` =
 `r coef(lm(prestige ~ education, data=Prestige))["education"]` with each year of education.
 
-```{r echo = -1}
+```{r echo=knitr::is_html_output()}
 #| label: fig-Prestige-scatterplot-educ1
+#| code-fold: true
+#| code-summary: "Show the code"
 #| out-width: "70%"
 #| fig-cap: !expr glue::glue("Scatterplot of prestige vs. education, showing the linear regression line ({red}), the loess smooth with a confidence envelope ({darkgreen}) and a 68% data ellipse.")
 par(mar = c(4,4,1,1)+.1)
@@ -2067,8 +2069,10 @@ To
 make this even more schematic, the axis tick marks and labels are also
 removed using the `par()` settings `xaxt = "n", yaxt = "n"`.
 
-```{r}
+```{r echo=knitr::is_html_output()}
 #| label: fig-crime-spm
+#| code-fold: true
+#| code-summary: "Show the code"
 #| fig-width: 8
 #| fig-height: 8
 #| out-width: "90%"
@@ -2303,12 +2307,14 @@ pairs(peng.table, shade = TRUE,
       upper_panel_args = list(labeling = labeling_values()))
 ```
 
-The shading patterns in cells (1,3) and (3,1) of @fig-peng-mosaic show
-what we've seen before in the table of frequencies: The distribution of
-species varies across island because on each island one or more species
-did not occur. Row 2 and column 2 show that sex is nearly exactly
+The pairwise relations of {species, sex} and {island, sex} are quite balanced.
+Row 2 and column 2 show that sex is nearly exactly
 proportional among species and islands, indicating independence,
-$\text{sex} \perp \{\text{species}, \text{island}\}$. More importantly,
+$\text{sex} \perp \{\text{species}, \text{island}\}$.
+But for {species, island}, the shading patterns in cells (1,3) and (3,1) of @fig-peng-mosaic show
+a strong geographical association: The distribution of
+species varies across island, because on each island one or more species
+did not occur.  More importantly,
 mosaic pairs plots can show, at a glance, all (bivariate) associations
 among multivariate categorical variables.
 
@@ -2335,8 +2341,9 @@ The basic, default plot shows scatterplots for pairs of continuous
 variables in the lower triangle and the values of correlations in the
 upper triangle. A combination of a discrete and continuous variables is
 plotted as histograms in the lower triangle and boxplots in the upper
-triangle. @fig-peng-ggpairs1 includes `sex` to illustrate the
-combinations.
+triangle. @fig-peng-ggpairs1 includes `sex` (but not `island`) to illustrate the
+combinations. Penguin `species` could have been used as another variable, but
+it is more naturally represented within the panels as a stratifier.
 
 <!-- fig.code: R/penguin/peng-ggally.R -->
 
@@ -2371,15 +2378,16 @@ knitr::include_graphics("figs/ch04/fig-peng-ggpairs1-1.png")
 To my eye, printing the values of correlations in the upper triangle is
 often a waste of graphic space. But in this example the correlations show something
 peculiar and interesting if you look closely: In all pairs among the
-penguin size measurements, there are positive correlations within each
+penguin size measurements, there are _positive_ correlations within each
 species, as we can see in @fig-peng-spm. Yet, in three of these panels,
-the overall correlation ignoring species is negative. For example, the
+the overall correlation ignoring species is _negative_. For example, the
 overall correlation between bill depth and flipper length is
 $r = -0.579$ in row 2, column 3; the scatterplot in the diagonally
 opposite cell, row 3, column 2 shows the data. These cases, of differing
 signs for an overall correlation, ignoring a group variable and the
 within group correlations are examples of **Simpson's Paradox**,
 explored later in @sec-marginal-conditional.
+\ix{Simpson's paradox}
 
 The last row and column, for `sex` in @fig-peng-ggpairs1, provides an
 initial glance at the issue of sex differences among penguin species
@@ -2389,7 +2397,7 @@ understand how to display exactly what we want for each pairwise plot.
 
 `ggpairs()` is extremely general in that for each of the `lower`,
 `upper` and `diag` sections you can assign any of a large number of
-built-in functions (of the form `ggally_NAME`), or your own custom
+built-in functions (of the form `ggally_NAME`), or use your own custom
 function for what is plotted, depending on the types of variables in
 each plot.
 
@@ -2424,13 +2432,8 @@ See the vignette,
 [ggally_plots](https://ggobi.github.io/ggally/articles/ggally_plots.html)
 for an illustrated list of available high-level plots. For our purpose
 here, which is to illustrate enhanced displays, note that for
-scatterplots of continuous variables, there are two functions which plot
-the points and also add a smoother, `_lm` or `_loess`.
-
-```{r ggally-smooth-fns}
-ls(getNamespace("GGally")) |> 
-  stringr::str_subset("^ggally_smooth_")
-```
+scatterplots of continuous variables, there are two method functions which plot
+the points and also add a smoother: `ggally_smooth_lm()` and `ggally_smooth_loess()`.
 
 A customized display for scatterplots of continuous variables can be any
 function that takes `data` and `mapping` arguments and returns a
@@ -2438,7 +2441,7 @@ function that takes `data` and `mapping` arguments and returns a
 `aes(color=species, alpha=0.5)`, but only if you wish to override what
 is supplied in the `ggpairs()` call.
 
-Here is a function, `r func("my_panel()")` that plots the data points,
+To illustrate what is possible, Here is a `GGally` panel function, `my_panel()`, that plots the data points,
 regression line and loess smooth:
 
 ```{r}
@@ -2453,8 +2456,8 @@ my_panel <- function(data, mapping, ...){
 ```
 
 For this example, I want only simple summaries for the scatterplots, so
-I don't want to plot the data points, but do want to add the regression
-line and a data ellipse.
+I don't want to plot the data points. I do want to add the regression
+line and a data ellipse. A revised panel funcion which does this is `my_panel()`.
 
 ```{r}
 #| label: my-panel1
@@ -2583,7 +2586,8 @@ without knowing their earlier history as parallel coordinate plots.
 Parallel coordinate plots present a challenge for graphic developers, in
 that they require a different way to think about plot construction for
 multiple variables, which can be quantitative, as in the original idea,
-or categorical factors, all to be shown along parallel axes.
+or categorical factors, all to be shown along parallel axes. Standard
+`ggplot2`-thinking and 2D `geom`s don't work in this wider context.
 
 Here, I use the `r package("ggpcp", cite=TRUE)`, best described in
 @VanderPlas2023, who also review the modern history.[^other-pcp] This takes some
@@ -2594,10 +2598,10 @@ getting used to, because they develop `pcp_*()` extensions of the
 `r func("MASS::parcoord()")`, `r func("GGally::ggparcoord()")` and `r func("PairViz::pcp()")`.
 The **ggpcp** version used here is the most general.
 
--   `r func("pcp_select()")`: selections of the variables to be plotted and their
-    horizontal order on parallel axes,
--   `r func("pcp_scale()")`: methods for scaling of the variables to each axis,
--   `r func("pcp_arrange()")`: methods for breaking ties in factor variables to
+-   `r func("pcp_select()")`: _selections_ of the variables to be plotted and their
+    horizontal _order_ on parallel axes,
+-   `r func("pcp_scale()")`: methods for _scaling_ of the variables to each axis,
+-   `r func("pcp_arrange()")`: methods for _breaking ties_ in factor variables to
     space them out.
 
 Then, it provides `geom_pcp_*()` functions to control the display of
