@@ -245,13 +245,14 @@ that are half of that for $\mathbf{x}_3$ in absolute value.
 
 `
 #### Vector lengths
+
 In @fig-proj-vectors, the **lengths** of the $\mathbf{x}$ vectors reflect the relative degree to which each variable is represented in the space of the projection, and this is important for interpretation.
 For the $\mathbf{P}_1$ projection, $\mathbf{x}_3$ is of length 0, while $\mathbf{x}_1$ and $\mathbf{x}_2$ fill the unit circle. In the projection given by $\mathbf{P}_2$, all three $\mathbf{x}$ are approximately
 the same length. 
 
 In algebra, the length of a vector $\mathbf{x}$ is 
 $||\mathbf{x}|| = (\mathbf{x}^\mathsf{T} \mathbf{x})^{1/2} = \sqrt{\Sigma x_i^2}$, the Euclidean distance of the tip of the vector from the origin.
-In R, we calculate the lengths of row vectors in a projection matrix by transposing and using `r func("matlib::len()")`.
+In R, we calculate the lengths of _row_ vectors in a projection matrix by transposing and using `r func("matlib::len()")`.
 
 ```{r}
 P1 |> t() |> matlib::len()
@@ -260,11 +261,12 @@ P2 |> t() |> matlib::len()
 
 
 #### Joint-views
-To interpret such projections, we want to see **both** the projected data and the signposts that tell us where we are
+
+To interpret such projections, we want to see **both** the projected data and the signposts (old axes) that tell us where we are
 in relation to the original variables.
 To do this, we can overlay the variable vectors represented by the rows of the projection matrix $\mathbf{P}$
-onto plots like @fig-proj-combined (b)
-and @fig-proj-combined (c) to see how the axes in a projection relate to those in the data. 
+onto plots, like @fig-proj-combined (b & c),
+to see how the axes in a projection relate to those in the data. 
 To place these together on the same plot, we can either center the columns of $\mathbf{Y}$ at their means or shift the 
 the columns of $\mathbf{P}$ to `colMeans(Y)`. It is only the directions of the vectors that matters, so we are free
 to scale their lengths by any convenient factor.
@@ -296,16 +298,17 @@ To check your understanding, try to see if you can relate what is shown in this 
 knitr::include_graphics("images/proj-P2-vec.png")
 ```
 
-The idea of viewing low-dimensional projections of data together with vectors representing the contributions of the
+This clever idea of viewing low-dimensional projections of data _together with_ vectors representing the contributions of the
 original variables to the dimensions shown in a display is also the basis of **biplot** techniques (@sec-biplot)
-we will use in relation to principal components analysis.
+we will use in relation to principal components analysis and **canonical discriminant** plots (@sec-candisc)
+for MLMs like MANOVA.
 
 \ix{biplot}
 \ixoff{projection}
 
 
 ### Touring methods
-The trick of statistical touring methods is to generate a smooth sequence of interpolated projections $\mathbf{P}_{(t)}$
+The trick of statistical touring methods is to generate a smooth sequence of _interpolated_ projections $\mathbf{P}_{(t)}$
 indexed by time $t$, $\mathbf{P}_{(1)}, \mathbf{P}_{(2)}, \mathbf{P}_{(3)}, \dots, \mathbf{P}_{(T)}$.
 This gives a path of views $\mathbf{Y}_{(t)} = \mathbf{X} \mathbf{P}_{(t)}$, that can be animated in successive frames, as
 shown schematically in @fig-peng-tourr-diagram.
@@ -322,12 +325,13 @@ knitr::include_graphics("images/peng-tourr-diagram.png")
 
 Asimov's [-@Asimov:85] original idea of the grand tour was that of a random path, picking orthogonal projections $\mathbf{P}_{(i)}$ at random.
 Given enough time, the grand tour gives a space-filling path and would eventually show every possible projection of the data. But it does so smoothly, by interpolating from one projection to the next.
+The grand tour algorithm is described
+in detail by @Buja-etal-2005 and @Cook-etal-2008.
+
 In the travel analogy, the path by road from London to Paris might go smoothly through Kent to Dover,
 thence via Amiens and Beauvais before reaching Paris. By air, the tour would follow a
 smoother _geodesic_ path, and this is what the grand tour does. The sense in watching an animation of a statistical grand tour
 is that of continuous motion.
-The grand tour algorithm is described
-in detail by @Buja-etal-2005 and @Cook-etal-2008.
 \ix{grand tour}
 
 <!-- Projection pursuit @Cook-etal-1995 -> guided tour -->
@@ -402,13 +406,16 @@ Mahalanobis distances from the centroid.
 
 Penguins are a traveling species. They make yearly travels inland to breeding sites in early spring, repeating the patterns of their ancestors. Near the beginning of summer, adult penguins and their chicks return to the sea and spend the rest of the summer feeding there, but they have different strategies to survive the polar winter [@Black-etal-2018]. The data scientists among them might wonder about the relations among among their cousins of different species on various islands and take a data-centric tour of their 4D measurements of body size with trusty R tools.
 
-<!-- Cite: Black et al Time-lapse imagery of Ade´lie penguins, https://doi.org/10.1371/journal.pone.0193532 -->
+<!-- Cite: Black et al Time-lapse imagery of Ade´lie penguins, https://doi.org/10.1371/journal.pone.0193532 DONE -->
 
 
 For example, using the Penguins dataset, the following calls produce grand tours in 2, 3, and 4 dimensions.
 The 2D tour is displayed as a scatterplot, the 3D tour using simulated depth as shown by variation in point size and transparency, and the 4D tour is shown using a parallel coordinate plot.
 
 <!-- **TODO**: ~~This doesn't render well in @fig-peng-tour-demo ~~ -->
+
+<!-- fig.code: R/penguin/peng-tourr.R -->
+
 
 ```{r}
 #| label: peng-tour-demo
@@ -442,12 +449,15 @@ knitr::include_graphics("images/tours/peng-tour-demo2.png")
 knitr::include_graphics("images/tours/peng-tour-demo3.png")
 -->
 
-To illustrate, I'll start with a grand tour designed to explore this 4D space of penguins.
+To illustrate better, I'll start with a grand tour designed to explore this 4D space of penguins.
 I'll abbreviate the variables to two characters,
 "BL" = `bill_length`, "BD" = `bill_depth`, "FL" = `flipper_length`, and "BM" = `body_mass`
 and identify the penguin species using point shape (`pch`) and color (`col`).
+A nice feature of `tourr:display_xy()` allows points to be selectively labeled.
+I use the three miscreants identified as `noteworthy` in @fig-peng-ggplot-out.
 
 As you watch this pay attention to the separation of the species and any other interesting features. What do you see? 
+Watch as Cyrano (case 283) dances around the periphery, never sure of which species to align with.
 
 ```{r}
 #| eval: false
@@ -463,6 +473,7 @@ animate(peng_scaled,
         tour_path = grand_tour(d=2),
         display_xy(col = peng$species,
                    palette = peng.colors("dark"),
+                   obs_labels = noteworthy,
                    pch = pch, cex = cex,
                    axis.col = "black", 
                    axis.text.col = "black", 
@@ -490,6 +501,8 @@ are widely separated, with bill depth distinguishing Gentoo from the others.
 In frame (c) the three species are largely mixed, but two points stand out as
 outliers, with exceptionally long bills compared to the rest.
 
+<!-- Run peng-tourr.R code again to get labeled points -->
+
 ```{r}
 #| label: fig-peng-tour-grand-frames
 #| layout-ncol: 3
@@ -500,9 +513,9 @@ outliers, with exceptionally long bills compared to the rest.
 #|  - "Initial frame"
 #|  - "Clusters"
 #|  - "Outliers"
-knitr::include_graphics("images/tours/peng-grand-tour1.png")
-knitr::include_graphics("images/tours/peng-grand-tour2.png")
-knitr::include_graphics("images/tours/peng-grand-tour3.png")
+knitr::include_graphics("images/tours/peng-tour-grand-lbls-split/frame_00.png")
+knitr::include_graphics("images/tours/peng-tour-grand-lbls-split/frame_10.png")
+knitr::include_graphics("images/tours/peng-tour-grand-lbls-split/frame_26.png")
 ```
 
 
