@@ -26,6 +26,11 @@ lbls[top3] <- as.character(top3)
 # In the text, these are already calculated:
 DSQ <- heplots::Mahalanobis(peng[, 3:6])
 noteworthy <- order(DSQ, decreasing = TRUE)[1:3] |> print()
+# find the one not flagged earlier
+noteworthy6 <- order(DSQ, decreasing = TRUE)[1:6] |> print()
+
+lbls6 <- rep("", nrow(peng_scaled))
+lbls6[noteworthy6] <- as.character(noteworthy6)
 
 
 
@@ -82,12 +87,12 @@ render_gif(peng_scaled,
            tour_path = grand_tour(d=2),
            display_xy(col = peng$species,
                       palette = peng.colors("dark"),
-                      obs_labels = noteworthy,
+                      obs_labels = lbls6,
                       pch = pch, cex = cex,
                       axis.col = "black", 
                       axis.text.col = "black", 
                       axis.lwd = 1.5),
-           gif_file = "images/tours/peng-tourr-grand-lbls.gif")
+           gif_file = "images/tours/peng-tourr-grand-lbls-6.gif")
 
 # making them factors gives legends, but without the species names
 #col <- peng.colors()[peng$species] |> as.factor()
