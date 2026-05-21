@@ -239,14 +239,14 @@ against those $e_j = (x_j - \hat{x}_j)$ for another variable $x_j$.
 
 In this, you can use all the bells and whistles of standard scatterplots
 (regression lines, smooths, data ellipses, ...) to listen more attentively to the 
-story partial association has to tell.
-The function `pvPlot()` calculates the partial residuals and then calls
+story partial association has to tell. The slope of the regression line in such plots is _exactly_ the partial correlation coefficient
+and the shape of the data ellipse gives a visual summary of its strength.
+
+My function `pvPlot()` calculates the partial residuals and then calls
 `r func("car::dataEllipse()")` for display. The five most "unusual"
 observations by Mahalanobis $D^2$ are identified with their abbreviated state labels.
 @fig-crime-pvPlots shows these plots for the variable pairs with the two 
 largest partial correlations.
-
-<!-- **TODO**: I'd like to put these two figures side-by-side and integrate the code chunks, but `car::scatterplot()` doesn't seem to allow this. -->
 
 **TODO**: Put `pvPlot` into `heplots` package or `car`
 
@@ -264,10 +264,12 @@ crime.num <- crime |>
   dplyr::select(where(is.numeric))
 
 pvPlot(crime.num, vars = c("burglary", "larceny"), 
-       id = list(n=5),
+       id = list(n=5, cex = 1.3),
+       ellipse.args = list(col = "red", levels = c(0.68, 0.95)),
        cex.lab = 1.5)
 pvPlot(crime.num, vars = c("robbery", "auto"),
-       id = list(n=5),
+       id = list(n=5, cex = 1.3),
+       ellipse.args = list(col = "red", levels = c(0.68, 0.95)),
        cex.lab = 1.5)
 ```
 
@@ -275,14 +277,15 @@ pvPlot(crime.num, vars = c("robbery", "auto"),
 #| label: fig-crime-pvPlots
 #| echo: false
 #| out-width: "100%"
-#| fig-cap: "Partial variables plots for burglary and larceny (left) and for robbery and auto theft (right) in the network diagram for partial correlations of the crime variables."
+#| fig-cap: "Partial variables plots for burglary and larceny (left) and for robbery and auto theft (right) in the network diagram for partial correlations of the crime variables. 'Unusual' points are labeled with their state labels."
 knitr::include_graphics("images/crime-pvPlot-1-2.png")
 ```
 
+These partial variables plots actually _explain_ the details hidden in the numeric summary of the partial correlation or in the network diagram.
 In the pvPlot for burglary and larceny, you can see that the high partial correlation is largely
 driven by the extreme points at the left and and right sides. Once all other variables are
 taken into account, Arizona (AZ) and Hawaii (HI) have larger incidence of both crimes, while
-Arkansas (AK) are smaller on both. 
+Arkansas (AK) are smaller on both. This is food for thought.
 
 In the pvPlot for robbery and auto theft, New York stands out as an
 influential, high-leverage point (see @sec-leverage); Massachusetts (MA) is noteworthy because
