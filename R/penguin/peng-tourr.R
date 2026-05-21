@@ -1,14 +1,46 @@
 # library(dplyr)
 # library(tidyr)
-# library(ggplot2)
+
+library(heplots)
 library(tourr)
 
-#load(here::here("data", "peng.RData"))
 data(peng, package = "heplots")
 source("R/penguin/penguin-colors.R")
 
 peng_scaled <- scale(peng[,3:6])
 colnames(peng_scaled) <- c("BL", "BD", "FL", "BM")
+
+# get Mahalanobis distances for obs. labels (new in tourr 1.2.7)
+# 
+
+D2 <- heplots::Mahalanobis(peng_scaled)
+top3 <- order(D2, decreasing = TRUE)[1:3]
+
+# use observation numbers for labels
+lbls <- rep("", nrow(peng_scaled))
+lbls[top3] <- as.character(top3)
+
+# > top3
+# [1] 283  10  35
+# 
+# In the text, these are already calculated:
+DSQ <- heplots::Mahalanobis(peng[, 3:6])
+noteworthy <- order(DSQ, decreasing = TRUE)[1:3] |> print()
+# find the one not flagged earlier
+noteworthy6 <- order(DSQ, decreasing = TRUE)[1:6] |> print()
+
+lbls6 <- rep("", nrow(peng_scaled))
+lbls6[noteworthy6] <- as.character(noteworthy6)
+
+
+
+D2_resids <- lm(cbind(BL, BD, FL, BM) ~ peng$species, 
+                data = as.data.frame(peng_scaled)) |>
+  residuals() |> heplots::Mahalanobis()
+top3_resids <- order(D2_resids, decreasing = TRUE)[1:3]
+
+# [1] 283  10  179
+
 
 # illustrating tour dimensions and display methods
 animate(peng_scaled, grand_tour(d = 2), display_xy())
@@ -39,12 +71,13 @@ pch <- c(15, 16, 17)[peng$species]
 cex = 1.2
 
 #' ## Grand tour
-# |- Grand tour ---
+# |- Grand tour --- with outlier labels
 set.seed(1234)
 animate(peng_scaled,
         tour_path = grand_tour(d=2),
         display_xy(col = peng$species,
                    palette = peng.colors("dark"),
+                   obs_labels = noteworthy,
                    pch = pch, cex = cex,
                    axis.col = "black", 
                    axis.text.col = "black", 
@@ -54,11 +87,12 @@ render_gif(peng_scaled,
            tour_path = grand_tour(d=2),
            display_xy(col = peng$species,
                       palette = peng.colors("dark"),
+                      obs_labels = lbls6,
                       pch = pch, cex = cex,
                       axis.col = "black", 
                       axis.text.col = "black", 
                       axis.lwd = 1.5),
-           gif_file = "images/tours/peng-tourr-grand.gif")
+           gif_file = "images/tours/peng-tourr-grand-lbls-6.gif")
 
 # making them factors gives legends, but without the species names
 #col <- peng.colors()[peng$species] |> as.factor()

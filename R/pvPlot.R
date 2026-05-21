@@ -6,17 +6,24 @@
 # see also: stuff relevant to a pairs version
 # https://stackoverflow.com/questions/35591033/plot-scatterplot-matrix-with-partial-correlation-coefficients-in-r
 
-# DONE: make show.partial take a list(loc = c(x,y), cex = )
-# DONE: make id take a list of options
-# DONE: use dataEllipse() instead of scatterplot()
+# ✔️DONE: make show.partial take a list(loc = c(x,y), cex = )
+# ✔️DONE: make id take a list of options
+# ✔️DONE: use dataEllipse() instead of scatterplot()
 
-# TODO: be able to use ellipse = FALSE
+# TODO: be able to use ellipse = FALSE, 
+# TODO: specify/document what `ellipse.args` work (e.g., `fill`, `fill.alpha`) 
 # BUG:  passing either ellipse or cex to dataEllipse() -> error
 #       Error in text.default(x, y, label, pos = pos, xpd = xpd, col = col, ...) : 
 #       formal argument "cex" matched by multiple actual arguments
-#       Trying to pass 
+#       Test various combinations of args.
+# TODO: Add arguments to control the color and line width of the regression line. Would it work
+#       simply to allow `regline` instead to be a list with these attributes? e.g., 
+#       `regline = list(col="red", lwd = 3)` ?
+# TODO: make `others` an argument, so it's not necessary to partial _all_ others
+# TODO: test use of plots for factors
 
-#' Partial variables plot
+#' 
+#' @title Partial Variables Plot
 #' 
 #' @description
 #' A partial variable plot is a visualization of a partial correlation of two variables in the context
@@ -69,6 +76,10 @@
 #' pvPlot(crime.num, vars = c("burglary", "larceny"))
 #' pvPlot(crime.num, vars = c("auto", "robbery"))
 #' 
+#' # test ellipse.args -- dosen't accept `col`
+#' pvPlot(crime.num, vars = c("auto", "robbery"),
+#'        ellipse.args = list(col="red"))
+#' 
 #' # bugged:
 #' pvPlot(crime.num, vars = c("burglary", "larceny"), ellipse=FALSE)
 #' 
@@ -94,7 +105,7 @@ pvPlot <- function(
   # variables, as names, even if vars is numeric
   all <- names(X)
   vars <- if(is.numeric(vars)) names(X)[vars] else vars
-  # TODO: make others an argument, so it's not necessary to partial _all_ others
+  # TODO: make `others` an argument, so it's not necessary to partial _all_ others
   others <- setdiff(all, vars)
 
   # variables for this plot  
