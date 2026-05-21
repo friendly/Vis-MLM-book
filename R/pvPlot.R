@@ -5,20 +5,26 @@
 
 # see also: stuff relevant to a pairs version
 # https://stackoverflow.com/questions/35591033/plot-scatterplot-matrix-with-partial-correlation-coefficients-in-r
+# TODO: Just as there is an avPlots() function to do avPlot() for all Xs, perhaps develop a pvPlots() function to do all pairs.
 
 # ✔️DONE: make show.partial take a list(loc = c(x,y), cex = )
 # ✔️DONE: make id take a list of options
 # ✔️DONE: use dataEllipse() instead of scatterplot()
 
-# TODO: be able to use ellipse = FALSE, 
-# TODO: specify/document what `ellipse.args` work (e.g., `fill`, `fill.alpha`) 
-# BUG:  passing either ellipse or cex to dataEllipse() -> error
-#       Error in text.default(x, y, label, pos = pos, xpd = xpd, col = col, ...) : 
-#       formal argument "cex" matched by multiple actual arguments
-#       Test various combinations of args.
-# TODO: Add arguments to control the color and line width of the regression line. Would it work
-#       simply to allow `regline` instead to be a list with these attributes? e.g., 
-#       `regline = list(col="red", lwd = 3)` ?
+# Source patched car::dataEllipse until fix is accepted upstream (see test/Ellipse.R)
+source(here::here("test/Ellipse.R"))
+applyDefaults <- car:::applyDefaults  # make internal visible to sourced dataEllipse.default
+carPalette <- car:::carPalette
+showLabels <- car:::showLabels
+
+# ✔️DONE: ellipse.args$col now controls ellipse color independently of point col (2026-05-21)
+# ✔️DONE: specify/document what `ellipse.args` work (e.g., `fill`, `fill.alpha`)
+# ✔️DONE: ellipse = FALSE now works via levels = numeric(0) (2026-05-21)
+# ✔️DONE: cex bug fixed -- root cause was in car::dataEllipse.default: when cex was in ...
+#          it was passed to label.ellipse() both via ... and as explicit cex=label.cex,
+#          causing "formal argument 'cex' matched by multiple actual arguments" in text.default().
+#          Fix: added cex as explicit formal to label.ellipse(); see test/Ellipse.R for PR.
+# ✔️DONE: regline now accepts FALSE or list(col, lwd) — same pattern as show.partial (2026-05-21)
 # TODO: make `others` an argument, so it's not necessary to partial _all_ others
 # TODO: test use of plots for factors
 
@@ -31,14 +37,19 @@
 #' it is simply an enhanced scatterplot of the \emph{partial residuals},
 #' \eqn{e_i = (x_i - \hat{x}_i)} from a regression of \eqn{x_i} on all other variables \eqn{Z}
 #' against those \eqn{e_j = (x_j - \hat{x}_j)} for another variable $x_j$.
-#' The basic scatterplot of these residuals can be enhanced by also showing the data ellipse
-#' of these residuals and point labels to identify unusual data.
-#' (These plots are produced by SAS \code{PROC CORR}, with the \code{PARTIAL} and \code{SCATTER}
-#' statements.)
+#' Consequently, it shows directly the net, \emph{conditional relation} between \eqn{x_i, x_j \vert \text{others}} when
+#' all of the others in \eqn{Z} have been controlled/adjusted-for.
 #' 
+#' As implemented here, the basic scatterplot of these residuals can be enhanced by also showing the data ellipse
+#' of these residuals, the linear regression line, which reflects the partial correlation, and point labels to identify unusual data.
+#' 
+#' @details
 #' Partial variable plots are intimately related to an \emph{added-variable plot},
 #' such as produced by \code{\link[car]{avPlots}}. However, that implementation
 #' is designed for a linear model, rather than a data.frame.
+#' 
+#' This function uses \code{\link[car]{dataEllipse}} for drawing, so ...
+#' 
 #' 
 #'
 #' @param X     a data.frame of numeric variables
@@ -46,16 +57,19 @@
 #' @param labels id labels for the points. If not supplied, rownames of the dataset are used.
 #' @param id    controls point identification; if \code{FALSE} (the default), no points are identified; 
 #'              can be a list of named arguments to the \code{\link[car]{showLabels} function
-#' @param ellipse    logical; whether to draw the data ellipse. Not presently used
-#' @param ellipse.args  a list of other arguments for the ellipse
+#' @param ellipse    logical; whether to draw the data ellipse
+#' @param ellipse.args  a list of arguments controlling the ellipse: `levels`, `fill`,
+#'              `fill.alpha`, `robust`, and `col` (ellipse outline/fill color, independent
+#'              of the point `col`). See \code{\link[car]{dataEllipse} for what these mean.
 #' @param draw     logical; if \code{TRUE} produce graphical output; if \code{FALSE}, only invisibly return 
 #'              coordinates of ellipse(s).
-#' @param col   color used for points, ...
-#' @param pch   the plotting character
-#' @param cex   Character expansion for points and labels. Not presently used
+#' @param col   color used for points
+#' @param pch   the plotting character for points
+#' @param cex   Character expansion for points and labels
 #' @param axes  logical; if \code{TRUE} (the default), grey axes lines are drawn at 0 on both coordinates
-#' @param regline logical; if \code{TRUE} (the default), draws the regression line for the partial residuals
-#'        of \code{vars[2]} on those for \code{vars[1]}.
+#' @param regline controls the regression line. \code{FALSE} suppresses it; \code{TRUE} (default)
+#'        draws it with default style; a list with named elements \code{col} and/or \code{lwd}
+#'        draws it with those attributes, e.g. \code{regline = list(col="red", lwd=3)}.
 #' @param show.partial controls whether the partial correlation value is displayed in the plot. If \code{FALSE}
 #'              the value is not shown. Otherwise, can be a list containing the location (\code{loc}) and 
 #'              character size (\code{cex}) of the label. 
@@ -76,15 +90,24 @@
 #' pvPlot(crime.num, vars = c("burglary", "larceny"))
 #' pvPlot(crime.num, vars = c("auto", "robbery"))
 #' 
-#' # test ellipse.args -- dosen't accept `col`
+#' # ellipse color independent of point color
 #' pvPlot(crime.num, vars = c("auto", "robbery"),
 #'        ellipse.args = list(col="red"))
+#'
+#' # styled regression line
+#' pvPlot(crime.num, vars = c("burglary", "larceny"),
+#'        regline = list(col = "red", lwd = 3))
 #' 
-#' # bugged:
+#' # suppress the ellipse
 #' pvPlot(crime.num, vars = c("burglary", "larceny"), ellipse=FALSE)
 #' 
+#' # label some observations
+#' pvPlot(crime.num, vars = c("burglary", "larceny"), 
+#'        id = list(n=5),
+#'        cex.lab = 1.5)
+#' 
 pvPlot <- function(
-   X, 
+   X,
    vars = 1:2,
    labels,
    id = FALSE, 
@@ -98,6 +121,9 @@ pvPlot <- function(
    regline = TRUE,
    show.partial = list(loc = c(0.025, 0.95), cex = 1.2),
    ...) {
+
+  if (!requireNamespace("car", quietly = TRUE))
+    stop("Package 'car' is required by pvPlot().")
 
   nv <- ncol(X)
   nr <- nrow(X)
@@ -122,8 +148,7 @@ pvPlot <- function(
   ylab <- paste(vars[2], "| others")
   labels <- if (missing(labels)) rownames(X) else labels
   
-  applyDefaults <- car:::applyDefaults
-  id <- applyDefaults(id, 
+  id <- car:::applyDefaults(id,
                       defaults=list(method="mahal", 
                                     n=5, cex=1, 
                                     col="black", 
@@ -132,23 +157,28 @@ pvPlot <- function(
   if (draw) {
 
     # handle ellipse args
-    levels <- ellipse.args$levels %||% 0.68
-    fill <-   ellipse.args$fill %||% TRUE
-    fill.alpha <- ellipse.args$alpha %||% 0.05
-    robust <- ellipse.args$robust %||% FALSE
-  
+    levels    <- ellipse.args$levels     %||% 0.68
+    fill      <- ellipse.args$fill       %||% TRUE
+    fill.alpha <- ellipse.args$fill.alpha %||% 0.05
+    robust    <- ellipse.args$robust     %||% FALSE
+    col_ell   <- ellipse.args$col        %||% col   # ellipse color; defaults to point color
+
     dataEllipse(res[, 2] ~ res[, 1], data = res,
                 xlab = xlab, ylab = ylab,
-                pch = pch, col = col,
- #               cex = cex,
- #               ellipse = ellipse, # ellipse.label = "",
-                levels = levels, fill = fill, fill.alpha = fill.alpha, robust=robust,
+                pch = pch, col = c(col, col_ell),   # col[1]=points, col[2]=ellipse
+                cex = cex,
+                levels = if (ellipse) levels else numeric(0),
+                fill = fill, fill.alpha = fill.alpha, robust=robust,
                 grid = FALSE,
                 id = id,
                 ...)
     
     if (axes) abline(h = 0, v = 0, col = "gray")
-    if (regline) abline(lm(res[, 2] ~ res[, 1], data = res), lwd = 2)
+    if (!isFALSE(regline)) {
+      rl.col <- if (is.list(regline)) regline$col %||% "black" else "black"
+      rl.lwd <- if (is.list(regline)) regline$lwd %||% 2       else 2
+      abline(lm(res[, 2] ~ res[, 1], data = res), col = rl.col, lwd = rl.lwd)
+    }
   
     if (!isFALSE(show.partial)) {
         loc <- show.partial$loc %||% c(0.025, 0.95)
