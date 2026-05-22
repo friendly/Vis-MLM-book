@@ -14,7 +14,6 @@ Errors found across chapters during a full-book audit (2026-05-22). Issues alrea
 | **grammar** | Wrong verb form, wrong pronoun, missing or extra word |
 | **fragment** | Incomplete sentence left dangling in the text |
 | **punctuation** | Missing or incorrect punctuation |
-| **editorial** | `**TODO**` / `**FIXME**` marker left in rendered text |
 | **wrong-operator** | Incorrect R operator used in prose (e.g., `:` vs `::`) |
 
 ---
@@ -116,19 +115,7 @@ Delete the spurious "the":
 
 ---
 
-## 8. Visible TODO marker (Ch07, line 1793)
-
-**Tags**: [editorial]
-
-```
-**TODO**: Fix up the code displayed here, from R/Duncan/Duncan-reg.R
-```
-
-This author note appears in the rendered text, just before the `avPlots()` code chunk. It should be removed or converted to a comment (`<!-- … -->`).
-
----
-
-## 9. Dangling sentence fragment after bullet (Ch08, lines 285–287)
+## 8. Dangling sentence fragment after bullet (Ch08, lines 285–287)
 
 **Tags**: [fragment], [grammar]
 
@@ -144,19 +131,7 @@ The sentence "That hypothesis is rejected" is incomplete; it has no continuation
 
 ---
 
-## 10. Visible TODO marker (Ch08, line 323)
-
-**Tags**: [editorial]
-
-```
-**TODO**: Maybe include this code only in the HTML version?
-```
-
-This appears in the rendered prose before the `car::confidenceEllipse()` code block. Should be removed or converted to a comment.
-
----
-
-## 11. Missing period after cross-reference (Ch09, lines 22–23)
+## 9. Missing period after cross-reference (Ch09, lines 22–23)
 
 **Tags**: [punctuation]
 
@@ -175,7 +150,7 @@ It describes diagnostic measures…
 
 ---
 
-## 12. Single colon instead of double colon for package operator (Ch09, line 227)
+## 10. Single colon instead of double colon for package operator (Ch09, line 227)
 
 **Tags**: [typo], [wrong-operator]
 
@@ -187,7 +162,7 @@ The `::` namespace operator is written as a single `:`. Should be:
 
 ---
 
-## 13. Doubled word "the the" before dataset name (Ch09, line 935)
+## 11. Doubled word "the the" before dataset name (Ch09, line 935)
 
 **Tags**: [doubled-word]
 
@@ -199,7 +174,7 @@ Delete one "the":
 
 ---
 
-## 14. Wrong apostrophe — "it's" used as possessive (Ch10, line 118)
+## 12. Wrong apostrophe — "it's" used as possessive (Ch10, line 118)
 
 **Tags**: [typo], [grammar]
 
@@ -211,7 +186,7 @@ Delete one "the":
 
 ---
 
-## 15. Redundant adjectives "different various" (Ch11, line 31)
+## 13. Redundant adjectives "different various" (Ch11, line 31)
 
 **Tags**: [grammar]
 
@@ -223,19 +198,7 @@ Delete one "the":
 
 ---
 
-## 16. Visible TODO marker — notation revision (Ch11, line 115)
-
-**Tags**: [editorial]
-
-```
-**TODO**: Revise notation here, to be explicit and consistent about inclusion of $\boldsymbol{\beta}_0$ and size of $\mathbf{B}$.
-```
-
-Appears in the rendered text between a footnote and the MLM equation. Should be removed or converted to a comment.
-
----
-
-## 17. Doubled word "the the" in ANCOVA example (Ch11, lines 2221–2222)
+## 14. Doubled word "the the" in ANCOVA example (Ch11, lines 2221–2222)
 
 **Tags**: [doubled-word]
 
@@ -247,31 +210,7 @@ Delete one "the":
 
 ---
 
-## 18. Visible TODO marker — coverage note (Ch11, line 2108)
-
-**Tags**: [editorial]
-
-```
-**TODO** Sort out coverage here vs. @sec-influence-robust
-```
-
-Appears in the rendered text at the start of the multivariate influence section. Should be removed or commented out.
-
----
-
-## 19. Visible TODO marker — section placement (Ch11, line 2187)
-
-**Tags**: [editorial]
-
-```
-**TODO**: Consider moving this to @sec-vis-mlm and use much of the heplots MMRA vignette.
-```
-
-Appears at the start of the ANCOVA → MANCOVA section. Should be removed or commented out.
-
----
-
-## 20. Doubled word "the the" in notation bullet (Ch14, line 133)
+## 15. Doubled word "the the" in notation bullet (Ch14, line 133)
 
 **Tags**: [doubled-word]
 
@@ -283,31 +222,7 @@ Delete one "the":
 
 ---
 
-## 21. Visible TODO marker — mvinfluence definition check (Ch14, line 284)
-
-**Tags**: [editorial]
-
-```
-**TODO**: Check how these are defined in mvinfluence
-```
-
-Appears in the rendered text between two figure callouts. Should be removed or commented out.
-
----
-
-## 22. Visible TODO marker — missing "What have we learned?" section (Ch14, line 645)
-
-**Tags**: [editorial]
-
-```
-**TODO**: Add chapter "What have we learned?"
-```
-
-This appears as the very last line of the chapter, indicating the summary section was never written. Should be resolved (either write the section or remove the marker before publication).
-
----
-
-## 23. Misspelling "substantitive" (Ch15, line 70)
+## 16. Misspelling "substantitive" (Ch15, line 70)
 
 **Tags**: [typo]
 
@@ -319,7 +234,7 @@ Should be:
 
 ---
 
-## 24. Missing word "groups" (Ch15, line 76)
+## 17. Missing word "groups" (Ch15, line 76)
 
 **Tags**: [grammar]
 
@@ -331,7 +246,7 @@ The word "groups" (or "them") is missing after "the":
 
 ---
 
-## 25. Missing period between two sentences (Ch15, lines 520–521)
+## 18. Missing period between two sentences (Ch15, lines 520–521)
 
 **Tags**: [punctuation]
 
@@ -349,7 +264,7 @@ Calling this function for the model `SC.mlm` produces @fig-SC-cqplot.
 
 ---
 
-## 26. Subject-verb agreement — "values … is" (Ch21, line 49)
+## 19. Subject-verb agreement — "values … is" (Ch21, line 49)
 
 **Tags**: [grammar]
 
@@ -361,7 +276,7 @@ Calling this function for the model `SC.mlm` produces @fig-SC-cqplot.
 
 ---
 
-## 27. Doubled word "the the" in Acknowledgements (index.qmd, line 363)
+## 20. Doubled word "the the" in Acknowledgements (index.qmd, line 363)
 
 **Tags**: [doubled-word]
 
