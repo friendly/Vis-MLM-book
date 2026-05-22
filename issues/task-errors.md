@@ -55,7 +55,31 @@ or filled (`geom = "polygon"`)
 
 ---
 
-## 3. Doubled word "the the" in PCA math section (Ch05, line 343)
+## 3. Garbled verb phrase "being appearing" (Ch05, line 43)
+
+**Tags**: [grammar]
+
+> "and capable of **being appearing** fatter or slimmer when rotated from different views"
+
+"being appearing" is a doubled participle. Remove "being":
+
+> "and capable of appearing fatter or slimmer when rotated from different views"
+
+---
+
+## 4. Misspelling "lower-dimenional" in figure caption (Ch05, line 75)
+
+**Tags**: [typo]
+
+> "transforms it to a **lower-dimenional** space"
+
+Missing "s" in "dimensional":
+
+> "transforms it to a lower-dimensional space"
+
+---
+
+## 5. Doubled word "the the" in PCA math section (Ch05, line 343)
 
 **Tags**: [doubled-word]
 
@@ -67,7 +91,32 @@ Delete one "the":
 
 ---
 
-## 4. Doubled word "the the" in biplot section (Ch05, line 895)
+## 6. Wrong numbered-item cross-reference "point (5)" (Ch05, line 493)
+
+**Tags**: [typo]
+
+> `The "scores" on the principal components can be calculated (point **(5)** above) as $\mathbf{PC} = \mathbf{X} \mathbf{V}$`
+
+Item 5 in the preceding numbered list (line 343) covers eigenvalues, not scores. The formula
+$\mathbf{PC} = \mathbf{X} \mathbf{V}$ is stated in item 4. The cross-reference should read:
+
+> `(point (4) above)`
+
+---
+
+## 7. Wrong `prcomp()` option name `center.` (Ch05, line 686)
+
+**Tags**: [typo], [wrong-operator]
+
+> "`center` gives the means of the variables when the option `center. = TRUE` (the default)"
+
+Only `scale.` carries a trailing dot in `prcomp()`; `center` does not. Should be:
+
+> "when the option `center = TRUE` (the default)"
+
+---
+
+## 8. Doubled word "the the" in biplot section (Ch05, line 895)
 
 **Tags**: [doubled-word]
 
@@ -79,7 +128,67 @@ Delete one "the":
 
 ---
 
-## 5. Misspelling of "collinearity" (Ch07, line 34)
+## 9. Misspelling "datsets" (Ch05, line 1217)
+
+**Tags**: [typo]
+
+> "in the dataset `datsets::state.x77`"
+
+"datsets" should be "datasets":
+
+> "in the dataset `datasets::state.x77`"
+
+---
+
+## 10. Garbled article "as a the" (Ch05, line 1256)
+
+**Tags**: [grammar], [typo]
+
+> "These can be calculated directly **as a the** coefficients of a multivariate regression"
+
+One of the two articles must be removed:
+
+> "These can be calculated directly as the coefficients of a multivariate regression"
+
+---
+
+## 11. Spurious unmatched closing parenthesis in inline math (Ch05, line 2155)
+
+**Tags**: [punctuation]
+
+> "the original $640 \times 955$**)**  image"
+
+A stray `)` appears outside the math delimiters. Remove it:
+
+> "the original $640 \times 955$ image"
+
+---
+
+## 12. Doubled preposition "to from" (Ch05, line 2183)
+
+**Tags**: [grammar]
+
+> "The transformation **to from** data space to principal components space"
+
+Delete the first "to":
+
+> "The transformation from data space to principal components space"
+
+---
+
+## 13. Doubled word "the the" before "largest" (Ch05, line 2223)
+
+**Tags**: [doubled-word]
+
+> "I find the noteworthy points with the three **the** largest $D^2$ values"
+
+Delete one "the":
+
+> "I find the noteworthy points with the three largest $D^2$ values"
+
+---
+
+## 14. Misspelling of "collinearity" (Ch07, line 34)
 
 **Tags**: [typo]
 
@@ -91,7 +200,7 @@ Should be:
 
 ---
 
-## 6. Wrong possessive "Cooks's distance" (Ch07, line 90)
+## 15. Wrong possessive "Cooks's distance" (Ch07, line 90)
 
 **Tags**: [typo]
 
@@ -103,7 +212,7 @@ Should be:
 
 ---
 
-## 7. Spurious "the" before "how" (Ch07, line 1779)
+## 16. Spurious "the" before "how" (Ch07, line 1779)
 
 **Tags**: [typo], [grammar]
 
@@ -115,7 +224,7 @@ Delete the spurious "the":
 
 ---
 
-## 8. Dangling sentence fragment after bullet (Ch08, lines 285–287)
+## 17. Dangling sentence fragment after bullet (Ch08, lines 285–287)
 
 **Tags**: [fragment], [grammar]
 
@@ -131,7 +240,7 @@ The sentence "That hypothesis is rejected" is incomplete; it has no continuation
 
 ---
 
-## 9. Missing period after cross-reference (Ch09, lines 22–23)
+## 18. Missing period after cross-reference (Ch09, lines 22–23)
 
 **Tags**: [punctuation]
 
@@ -150,7 +259,7 @@ It describes diagnostic measures…
 
 ---
 
-## 10. Single colon instead of double colon for package operator (Ch09, line 227)
+## 19. Single colon instead of double colon for package operator (Ch09, line 227)
 
 **Tags**: [typo], [wrong-operator]
 
@@ -162,7 +271,7 @@ The `::` namespace operator is written as a single `:`. Should be:
 
 ---
 
-## 11. Doubled word "the the" before dataset name (Ch09, line 935)
+## 20. Doubled word "the the" before dataset name (Ch09, line 935)
 
 **Tags**: [doubled-word]
 
@@ -174,7 +283,7 @@ Delete one "the":
 
 ---
 
-## 12. Wrong apostrophe — "it's" used as possessive (Ch10, line 118)
+## 21. Wrong apostrophe — "it's" used as possessive (Ch10, line 118)
 
 **Tags**: [typo], [grammar]
 
@@ -186,7 +295,7 @@ Delete one "the":
 
 ---
 
-## 13. Redundant adjectives "different various" (Ch11, line 31)
+## 22. Redundant adjectives "different various" (Ch11, line 31)
 
 **Tags**: [grammar]
 
@@ -198,7 +307,7 @@ Delete one "the":
 
 ---
 
-## 14. Doubled word "the the" in ANCOVA example (Ch11, lines 2221–2222)
+## 23. Doubled word "the the" in ANCOVA example (Ch11, lines 2221–2222)
 
 **Tags**: [doubled-word]
 
@@ -210,7 +319,7 @@ Delete one "the":
 
 ---
 
-## 15. Doubled word "the the" in notation bullet (Ch14, line 133)
+## 24. Doubled word "the the" in notation bullet (Ch14, line 133)
 
 **Tags**: [doubled-word]
 
@@ -222,7 +331,7 @@ Delete one "the":
 
 ---
 
-## 16. Misspelling "substantitive" (Ch15, line 70)
+## 25. Misspelling "substantitive" (Ch15, line 70)
 
 **Tags**: [typo]
 
@@ -234,7 +343,7 @@ Should be:
 
 ---
 
-## 17. Missing word "groups" (Ch15, line 76)
+## 26. Missing word "groups" (Ch15, line 76)
 
 **Tags**: [grammar]
 
@@ -246,7 +355,7 @@ The word "groups" (or "them") is missing after "the":
 
 ---
 
-## 18. Missing period between two sentences (Ch15, lines 520–521)
+## 27. Missing period between two sentences (Ch15, lines 520–521)
 
 **Tags**: [punctuation]
 
@@ -264,7 +373,7 @@ Calling this function for the model `SC.mlm` produces @fig-SC-cqplot.
 
 ---
 
-## 19. Subject-verb agreement — "values … is" (Ch21, line 49)
+## 28. Subject-verb agreement — "values … is" (Ch21, line 49)
 
 **Tags**: [grammar]
 
@@ -276,7 +385,7 @@ Calling this function for the model `SC.mlm` produces @fig-SC-cqplot.
 
 ---
 
-## 20. Doubled word "the the" in Acknowledgements (index.qmd, line 363)
+## 29. Doubled word "the the" in Acknowledgements (index.qmd, line 363)
 
 **Tags**: [doubled-word]
 
