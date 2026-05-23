@@ -72,14 +72,23 @@ make_chapter_heading <- function(qmd, title) {
   else                       title             # colophon, references, etc.
 }
 
-# Child .qmd files included via {{< include child/... >}}
+# Child .qmd files included via {{< include child/... >}} or {r child="child/..."}
 get_child_files <- function(qmd) {
   lines <- readLines(qmd, warn = FALSE)
-  hits  <- regmatches(lines,
+
+  # Quarto shortcode: {{< include child/foo.qmd >}}
+  hits1 <- regmatches(lines,
              gregexpr("\\{\\{<\\s*include\\s+(child/\\S+\\.qmd)\\s*>\\}\\}", lines))
-  paths <- unlist(hits)
-  if (!length(paths)) return(character(0))
-  sub(".*include\\s+(child/\\S+\\.qmd).*", "\\1", paths)
+  paths1 <- unlist(hits1)
+  paths1 <- sub(".*include\\s+(child/\\S+\\.qmd).*", "\\1", paths1[nchar(paths1) > 0])
+
+  # knitr chunk option: ```{r child="child/foo.qmd"} or child='child/foo.qmd'
+  hits2 <- regmatches(lines,
+             gregexpr("child\\s*=\\s*[\"'](child/[^\"']+\\.qmd)[\"']", lines))
+  paths2 <- unlist(hits2)
+  paths2 <- sub(".*child\\s*=\\s*[\"'](child/[^\"']+\\.qmd)[\"'].*", "\\1", paths2[nchar(paths2) > 0])
+
+  unique(c(paths1, paths2))
 }
 
 # fig.code paths from one file (unique, preserving order)
