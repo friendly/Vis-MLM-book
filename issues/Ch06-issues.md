@@ -2,9 +2,11 @@
 
 Errors found in `06-linear_models.qmd` during review (2026-05-21).
 
+MF: [DONE]
+
 ---
 
-## 1. Interaction formula — wrong algebraic expansion (line 340–342)
+## 1. Interaction formula — wrong algebraic expansion (line 340–342) [FIXED]
 
 The expansion of `y ~ x1 * x2` is written as:
 
@@ -24,7 +26,7 @@ The conclusion ("slope for x₁ changes with x₂") is correct, but the derivati
 
 ---
 
-## 2. Typo in design matrix column labels (line 555)
+## 2. Typo in design matrix column labels (line 555) [FIXED]
 
 The design matrix is labeled:
 
@@ -36,7 +38,7 @@ The last column should be `x_d`, not a second `x_c`.
 
 ---
 
-## 3. Wrong model name in prose (line 296)
+## 3. Wrong model name in prose (line 296) [FIXED]
 
 > "The problem is that x = `Experience` in model `workers.mod` is represented not by the raw values…"
 
@@ -44,7 +46,7 @@ Should refer to `workers.mod2` (the quadratic `poly()` model), not `workers.mod`
 
 ---
 
-## 4. Quadratic coefficient interpretation inconsistency (lines 306–309)
+## 4. Quadratic coefficient interpretation inconsistency (lines 306–309) [WRONG]
 
 The hardcoded equation shows:
 
@@ -52,9 +54,11 @@ $$\widehat{\text{Income}} = 23.07 + 2.3(\text{Experience}) - 0.03(\text{Experien
 
 The prose then says the yearly increase "decreases by $330." With Income in thousands, the quadratic term implies a decrease of about $60 per year, not $330. The displayed equation coefficients and the prose interpretation do not reconcile. Either the equation is truncated/rounded incorrectly, or the prose is wrong.
 
+MF: Original is correct
+
 ---
 
-## 5. Dangling sentence fragment (lines 680–681)
+## 5. Dangling sentence fragment (lines 680–681) [FIXED]
 
 The deviation coding section contains:
 
@@ -62,3 +66,5 @@ The deviation coding section contains:
 > With this coding, the intercept is…"
 
 The first sentence introduces a list that never appears and is immediately replaced by a new sentence. The fragment "The parameters estimated with this coding are:" should be removed.
+
+MF: No-- it should be: ""The parameters estimated with this coding are shown below."

@@ -71,7 +71,7 @@ Some of these are old/stale/solved; review these & move to solved/ those no long
   - Reference model: https://github.com/bgreenwell/quarto-crc (Quarto-CRC starter)
 
 * **Author index**: `authorindex` Perl script fails. Tracked in `build-problems/authorindex.md`. If this cannot be made
-  to run, I wonder if it would be possible to re-write what this does in R. [DONE: See `task-authorindex.md`]
+  to run, I wonder if it would be possible to re-write what this does in R. [**DONE**: See `task-authorindex.md`]
 
 * **Cover page**: `images/cover/cover-peng.jpg` cannot be included via Quarto front matter;
   currently added manually in Adobe Acrobat post-compile. [DONE: Now using `\includepdf{}` in `preamble.tex`]

@@ -44,10 +44,17 @@ pvPlot(crime.num, vars = c("burglary", "larceny"),
 pvPlot(crime.num, vars = c("burglary", "larceny"),
        ellipse.args = list(robust = TRUE, col = "darkgreen"))
 
-# ── 7. ellipse = FALSE ────────────────────────────────────────────────────────
+# ── 7. others: partial out a subset only ─────────────────────────────────────
+pvPlot(crime.num, vars = c("burglary", "larceny"),
+       others = c("murder", "rape"))          # compare with default (all others)
+
+pvPlot(crime.num, vars = c("burglary", "larceny"),
+       others = c("murder", "rape", "assault"))
+
+# ── 8. ellipse = FALSE ────────────────────────────────────────────────────────
 pvPlot(crime.num, vars = c("burglary", "larceny"), ellipse = FALSE)
 
-# ── 8. id: label n most unusual points ───────────────────────────────────────
+# ── 9. id: label n most unusual points ───────────────────────────────────────
 pvPlot(crime.num, vars = c("burglary", "larceny"),
        id = list(n = 5, cex=1.5))
 
