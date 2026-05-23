@@ -29,9 +29,19 @@ showLabels <- car:::showLabels
 #          Fix: added cex as explicit formal to label.ellipse(); see test/Ellipse.R for PR.
 # ✔️DONE: regline now accepts FALSE or list(col, lwd) — same pattern as show.partial (2026-05-21)
 # ✔️DONE: others argument added — defaults to all non-vars columns (2026-05-23)
-# TODO: test use of plots for factors; implies a different dataset -- use `mtcars`, with `cyl` or `am` as factors?
+# TODO: factor support — see test/pvPlot-test.R §14 for results (2026-05-23):
+#   - Binary/ordinal vars in `vars`: jittering NOT needed — lsfit() partial residuals are
+#     already continuous, de-discretizing the binary input. No special treatment required.
+#   - Factor column in `others`: lsfit() errors on a true R factor. Would need
+#     model.matrix() conversion. Deferred; document that X must be all-numeric.
+#   - Colouring by group (col = vector): does not work — dataEllipse uses only one colour.
+#     A pvPlots()-level wrapper would need to handle group colouring differently.
+#   Verdict: pvPlot() works fine for numeric-coded binary/ordinal vars; document the
+#   all-numeric requirement; group-colour support is future work.
 # TODO: Extend this to a `pvPlots()` function that would produce a scatterplot matrix form of the collection of pvPlot() for all pairs of variables.
 #       How this is done in car::avPlots(), C:\Dropbox\R\packages\car\R\avPlots.R, might be useful here.
+# TODO: Add a formula interface, presumably a one-sided formula,  `~ x1 + x2` with a `data=` arg. This would entail an
+#       S3 generic, with default and formula methods. `others` could be specified as  `~ x1 + x2 | x3 + x4`
 
 #' 
 #' @title Partial Variables Plot
@@ -53,7 +63,9 @@ showLabels <- car:::showLabels
 #' such as produced by \code{\link[car]{avPlots}}. However, that implementation
 #' is designed for a linear model, rather than a data.frame.
 #' 
-#' This function uses \code{\link[car]{dataEllipse}} for drawing, so ...
+#' The present version assumes that all variables passed are numeric.
+#' 
+#' This function uses \code{\link[car]{dataEllipse}} for drawing, so further documentation of arguments passed there should be consulted.
 #' 
 #' 
 #'
