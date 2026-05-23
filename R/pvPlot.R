@@ -27,6 +27,8 @@ showLabels <- car:::showLabels
 # ✔️DONE: regline now accepts FALSE or list(col, lwd) — same pattern as show.partial (2026-05-21)
 # TODO: make `others` an argument, so it's not necessary to partial _all_ others
 # TODO: test use of plots for factors
+# TODO: Extend this to a `pvPlots()` function that would produce a scatterplot matrix form of the collection of pvPlot() for all pairs of variables.
+#       How this is done in car::avPlots(), C:\Dropbox\R\packages\car\R\avPlots.R, might be useful here.
 
 #' 
 #' @title Partial Variables Plot
