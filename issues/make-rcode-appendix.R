@@ -10,7 +10,7 @@
 #' Missing files or missing titles are flagged with a warning symbol.
 #'
 #' Usage (from project root):
-#'   source("R/make-rcode-appendix.R")
+#'   source("issues/make-rcode-appendix.R")
 
 library(yaml)
 
@@ -186,11 +186,26 @@ for (qmd in chapter_files) {
 
 # ------------------------------------------------------------------
 # 3.5 Collect utility files sourced by the cited R scripts
+#     AND sourced directly in chapter/child .qmd files
 # ------------------------------------------------------------------
+
+# Infrastructure files sourced in every chapter — omit from utilities listing.
+SKIP_UTILS <- c("R/common.R")
+
 cited_paths <- unique(unlist(lapply(chapter_data, function(ch)
   sapply(ch$entries, `[[`, "path"))))
 
-utility_paths <- unique(unlist(lapply(cited_paths, get_sourced_files)))
+# Source() calls found inside the cited R scripts
+utility_from_rscripts <- unique(unlist(lapply(cited_paths, get_sourced_files)))
+
+# Source() calls found directly inside chapter and child .qmd files.
+# get_sourced_files() works on any text file; .qmd R code chunks are plain R.
+all_qmd_files <- unique(c(chapter_files,
+                           unlist(lapply(chapter_files, get_child_files))))
+utility_from_qmds <- unique(unlist(lapply(all_qmd_files, get_sourced_files)))
+utility_from_qmds <- setdiff(utility_from_qmds, SKIP_UTILS)
+
+utility_paths <- unique(c(utility_from_rscripts, utility_from_qmds))
 # Remove any path that is already a cited chapter-figure script
 utility_paths <- setdiff(utility_paths, cited_paths)
 
@@ -245,8 +260,8 @@ for (ch in chapter_data) {
 if (length(utility_entries)) {
   cat('## Utilities {.unnumbered}
 
-These R files are `source()`d by one or more of the scripts above.
-They define custom functions and helpers used across multiple chapters.
+These R files are `source()`d by one or more of the scripts above or used directly in a chapter.
+They define custom functions and helpers, some used across multiple chapters.
 
 ', file = con)
 
