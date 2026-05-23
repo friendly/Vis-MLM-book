@@ -218,7 +218,7 @@
 \def\HeadingsChapterSection{%
   \def\chaptermark##1{%
     \markboth{%
-      \thechapter. ##1}{}}%
+      ##1}{}}%
   \def\sectionmark##1{%
     \markright{%
       \thesection: ##1}}}
@@ -479,9 +479,9 @@
 \newcommand*\listoflistings{\listof{codelisting}{List of Listings}}
 \usepackage{amsthm}
 \theoremstyle{definition}
-\newtheorem{example}{Example}[chapter]
-\theoremstyle{definition}
 \newtheorem{exercise}{Exercise}[chapter]
+\theoremstyle{definition}
+\newtheorem{example}{Example}[chapter]
 \theoremstyle{remark}
 \AtBeginDocument{\renewcommand*{\proofname}{Proof}}
 \newtheorem*{remark}{Remark}
@@ -530,7 +530,7 @@
 \makeatother
 \subtitle{A Romance in Many Dimensions}
 \author{Michael Friendly}
-\date{2026-05-18}
+\date{2026-05-23}
 \begin{document}
 \maketitle
 
@@ -685,7 +685,7 @@ progression.}
   extended case studies that bring these threads together}.
 \end{itemize}
 
-Appendix~\ref{sec-Rcode} in the
+\textbf{?@sec-Rcode} in the
 \href{https://friendly.github.io/Vis-MLM-book/Rcode.html}{online
 version} lists the R scripts used for most analyses and figures in the
 book.
@@ -7662,8 +7662,13 @@ another variable \(x_j\).
 
 In this, you can use all the bells and whistles of standard scatterplots
 (regression lines, smooths, data ellipses, \ldots) to listen more
-attentively to the story partial association has to tell. The function
-\texttt{pvPlot()} calculates the partial residuals and then calls
+attentively to the story partial association has to tell. The slope of
+the regression line in such plots is \emph{exactly} the partial
+correlation coefficient and the shape of the data ellipse gives a visual
+summary of its strength.
+
+My function \texttt{pvPlot()} calculates the partial residuals and then
+calls
 \texttt{car::dataEllipse()}\index{dataEllipse()@\texttt{dataEllipse()}}
 for display. The five most ``unusual'' observations by Mahalanobis
 \(D^2\) are identified with their abbreviated state labels.
@@ -7682,10 +7687,12 @@ with the two largest partial correlations.
 \NormalTok{  dplyr}\SpecialCharTok{::}\FunctionTok{select}\NormalTok{(}\FunctionTok{where}\NormalTok{(is.numeric))}
 
 \FunctionTok{pvPlot}\NormalTok{(crime.num, }\AttributeTok{vars =} \FunctionTok{c}\NormalTok{(}\StringTok{"burglary"}\NormalTok{, }\StringTok{"larceny"}\NormalTok{), }
-       \AttributeTok{id =} \FunctionTok{list}\NormalTok{(}\AttributeTok{n=}\DecValTok{5}\NormalTok{),}
+       \AttributeTok{id =} \FunctionTok{list}\NormalTok{(}\AttributeTok{n=}\DecValTok{5}\NormalTok{, }\AttributeTok{cex =} \FloatTok{1.3}\NormalTok{),}
+       \AttributeTok{ellipse.args =} \FunctionTok{list}\NormalTok{(}\AttributeTok{col =} \StringTok{"red"}\NormalTok{, }\AttributeTok{levels =} \FunctionTok{c}\NormalTok{(}\FloatTok{0.68}\NormalTok{, }\FloatTok{0.95}\NormalTok{)),}
        \AttributeTok{cex.lab =} \FloatTok{1.5}\NormalTok{)}
 \FunctionTok{pvPlot}\NormalTok{(crime.num, }\AttributeTok{vars =} \FunctionTok{c}\NormalTok{(}\StringTok{"robbery"}\NormalTok{, }\StringTok{"auto"}\NormalTok{),}
-       \AttributeTok{id =} \FunctionTok{list}\NormalTok{(}\AttributeTok{n=}\DecValTok{5}\NormalTok{),}
+       \AttributeTok{id =} \FunctionTok{list}\NormalTok{(}\AttributeTok{n=}\DecValTok{5}\NormalTok{, }\AttributeTok{cex =} \FloatTok{1.3}\NormalTok{),}
+       \AttributeTok{ellipse.args =} \FunctionTok{list}\NormalTok{(}\AttributeTok{col =} \StringTok{"red"}\NormalTok{, }\AttributeTok{levels =} \FunctionTok{c}\NormalTok{(}\FloatTok{0.68}\NormalTok{, }\FloatTok{0.95}\NormalTok{)),}
        \AttributeTok{cex.lab =} \FloatTok{1.5}\NormalTok{)}
 \end{Highlighting}
 \end{Shaded}
@@ -7700,15 +7707,19 @@ with the two largest partial correlations.
 
 \caption{\label{fig-crime-pvPlots}Partial variables plots for burglary
 and larceny (left) and for robbery and auto theft (right) in the network
-diagram for partial correlations of the crime variables.}
+diagram for partial correlations of the crime variables. `Unusual'
+points are labeled with their state labels.}
 
 \end{figure}%
 
-In the pvPlot for burglary and larceny, you can see that the high
-partial correlation is largely driven by the extreme points at the left
-and and right sides. Once all other variables are taken into account,
-Arizona (AZ) and Hawaii (HI) have larger incidence of both crimes, while
-Arkansas (AK) are smaller on both.
+These partial variables plots actually \emph{explain} the details hidden
+in the numeric summary of the partial correlation or in the network
+diagram. In the pvPlot for burglary and larceny, you can see that the
+high partial correlation is largely driven by the extreme points at the
+left and and right sides. Once all other variables are taken into
+account, Arizona (AZ) and Hawaii (HI) have larger incidence of both
+crimes, while Arkansas (AK) are smaller on both. This is food for
+thought.
 
 In the pvPlot for robbery and auto theft, New York stands out as an
 influential, high-leverage point (see Section~\ref{sec-leverage});
@@ -11696,10 +11707,10 @@ plugging in the coefficients for \texttt{workers.mod2} gives
 \end{equation}
 
 The problem is that \(x\) = \texttt{Experience} in model
-\texttt{workers.mod} is represented not by the raw values, but rather by
-values of \(x\) and \(x^2\) that have been made to be uncorrelated. If
-you really want to interpret the coefficient values in terms of years of
-experience, use the option \texttt{raw\ =\ TRUE} in
+\texttt{workers.mod2} is represented not by the raw values, but rather
+by values of \(x\) and \(x^2\) that have been made to be uncorrelated.
+If you really want to interpret the coefficient values in terms of years
+of experience, use the option \texttt{raw\ =\ TRUE} in
 \texttt{poly()}\index{poly()@\texttt{poly()}}:
 
 \begin{Shaded}
@@ -11762,13 +11773,13 @@ In algebraic notation (omitting the error term) this works out to the
 model,
 
 \begin{eqnarray*}
-y & = & \beta_0 + \beta_1 x_1 +  \beta_2 x_2 +  \beta_1 x_1 *  \beta_2 x_2 \\
-  & = & \beta_0 + (\beta_1 + \beta_2 x_2) x_1 + \beta_2 x_2 \:\: ,\\
+y & = & \beta_0 + \beta_1 x_1 +  \beta_2 x_2 +  \beta_3 x_1 * x_2 \\
+  & = & \beta_0 + (\beta_1 + \beta_3 x_2) x_1 + \beta_2 x_2 \:\: ,\\
 \end{eqnarray*}
 
 which means that the coefficient for \(x_1\) in the model is not
 constant for all values of \(x_2\), but rather changes with the value of
-\(x_2\). If \(\beta_2 > 0\), the slope for \(x_1\) increases with
+\(x_2\). If \(\beta_3 > 0\), the slope for \(x_1\) increases with
 \(x_2\) and vice-versa.
 
 The formula \texttt{y\ \textasciitilde{}\ A\ *\ B} for factors is
@@ -12104,7 +12115,7 @@ X_d =
 \]
 
 The design matrix
-\(\mathbf{X}_{(4 \times 4)} = [\mathbf{1}, \mathbf{C}] = [\mathbf{1}, \mathbf{x}_b, \mathbf{x}_c, \mathbf{x}_c]\)
+\(\mathbf{X}_{(4 \times 4)} = [\mathbf{1}, \mathbf{C}] = [\mathbf{1}, \mathbf{x}_b, \mathbf{x}_c, \mathbf{x}_d]\)
 includes the constant column \(\mathbf{1}\) representing the intercept,
 which averages over the factor levels when there are other terms in the
 model.
@@ -12240,9 +12251,9 @@ property that the parameters are constrained to sum to zero,
 \end{Highlighting}
 \end{Shaded}
 
-The parameters estimated with this coding are: With this coding, the
-intercept is \(\beta_0 = \bar{\mu}\), the grand mean across all levels
-and the parameters are the deviations from that,
+The parameters estimated with this coding are shown below. With this
+coding, the intercept is \(\beta_0 = \bar{\mu}\), the grand mean across
+all levels and the parameters are the deviations from that,
 
 \begin{itemize}
 \tightlist
@@ -31891,8 +31902,6 @@ This canonical HE plot has a very simple description:
 \chapter{R Code for Figures and
 Analyses}\label{r-code-for-figures-and-analyses}
 
-\chapter{R Code for Figures and Analyses}\label{sec-Rcode}
-
 This online appendix lists the R source files used to produce some of
 the figures and analyses in each chapter, with links to the source code
 on GitHub.
@@ -31903,7 +31912,7 @@ displayed in the text. And also because you may want to use or adapt the
 code for your own work or to develop related examples using the same
 ideas with different datasets.
 
-It is incomplete because it was consctructed by scanning the chapter
+It is incomplete because it was constructed by scanning the chapter
 source files for special comments, of the form
 \texttt{\textless{}!-\/-\ fig.code:\ R/Davis-reg.R\ -\/-\textgreater{}}
 that were manually embedded in the chapter \texttt{.qmd} files as I
@@ -31912,7 +31921,21 @@ challenge because it involved scanning the text to find the
 corresponding R code files that had been included that had been included
 in chunks.
 
-Files marked ⚠ do not yet have a descriptive title in their header.
+Files marked ⚠ (if any) do not yet have a descriptive title in their
+header.
+
+\section*{Chapter 1: Warm-up
+Exercises}\label{chapter-1-warm-up-exercises}
+\addcontentsline{toc}{section}{Chapter 1: Warm-up Exercises}
+
+\markright{Chapter 1: Warm-up Exercises}
+
+\begin{itemize}
+\tightlist
+\item
+  \href{https://github.com/friendly/vis-MLM-book/blob/master/R/pollen-animation.R}{pollen-animation.R}
+  --- pollen data-- zooming in
+\end{itemize}
 
 \section*{Chapter 3: Getting Started}\label{chapter-3-getting-started}
 \addcontentsline{toc}{section}{Chapter 3: Getting Started}
@@ -31959,6 +31982,16 @@ Data}\label{chapter-4-plots-of-multivariate-data}
 \item
   \href{https://github.com/friendly/vis-MLM-book/blob/master/R/penguin/peng-ggpcp.R}{peng-ggpcp.R}
   --- Penguin data, parallel coordinate plots
+\item
+  \href{https://github.com/friendly/vis-MLM-book/blob/master/R/projections.R}{projections.R}
+  --- projections
+\item
+  ⚠
+  \href{https://github.com/friendly/vis-MLM-book/blob/master/R/penguin/peng-tourr.R}{peng-tourr.R}
+  --- \emph{no title}
+\item
+  \href{https://github.com/friendly/vis-MLM-book/blob/master/R/crime/crime-network.R}{crime-network.R}
+  --- network diagram of correlations \& partial correlations
 \end{itemize}
 
 \section*{Chapter 5: Dimension
@@ -32159,21 +32192,31 @@ analysis}\label{appendix-discriminant-analysis}
 
 \markright{Utilities}
 
-These R files are \texttt{source()}d by one or more of the scripts
-above. They define custom functions and helpers used across multiple
-chapters.
+These R files are \texttt{source()}d by one or more of the scripts above
+or used directly in a chapter. They define custom functions and helpers,
+some used across multiple chapters.
 
 \begin{itemize}
 \tightlist
 \item
   \href{https://github.com/friendly/vis-MLM-book/blob/master/R/penguin/penguin-colors.R}{penguin-colors.R}
-  --- penguin colors
+  --- Define penguin colors and themes
+\item
+  \href{https://github.com/friendly/vis-MLM-book/blob/master/R/matrix2latex.R}{matrix2latex.R}
+  --- convert matrix to latex
 \item
   \href{https://github.com/friendly/vis-MLM-book/blob/master/R/ggvectors.R}{ggvectors.R}
   --- Draw labeled vectors in a ggplot scene
 \item
   \href{https://github.com/friendly/vis-MLM-book/blob/master/R/util/text.usr.R}{text.usr.R}
   --- Add text to a plot at normalized device coordinates
+\item
+  \href{https://github.com/friendly/vis-MLM-book/blob/master/R/util/text_usr.R}{text\_usr.R}
+  --- Add text to a plot at normalized device coordinates
+\item
+  ⚠
+  \href{https://github.com/friendly/vis-MLM-book/blob/master/R/pvPlot.R}{pvPlot.R}
+  --- \emph{no title}
 \end{itemize}
 
 \end{example}

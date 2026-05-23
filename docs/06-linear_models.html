@@ -668,7 +668,7 @@ Figure&nbsp;6.2: Workers data with fitted linear and quadratic models for years 
 \operatorname{\widehat{Income}} = 46.5 + 39.111(\operatorname{Experience}) - 11.16(\operatorname{Experience^2})
 \]</span></p>
 </div>
-<p>The problem is that <span class="math inline">\(x\)</span> = <code>Experience</code> in model <code>workers.mod</code> is represented not by the raw values, but rather by values of <span class="math inline">\(x\)</span> and <span class="math inline">\(x^2\)</span> that have been made to be uncorrelated. If you really want to interpret the coefficient values in terms of years of experience, use the option <code>raw = TRUE</code> in <code><a href="https://rdrr.io/r/stats/poly.html">poly()</a></code>:</p>
+<p>The problem is that <span class="math inline">\(x\)</span> = <code>Experience</code> in model <code>workers.mod2</code> is represented not by the raw values, but rather by values of <span class="math inline">\(x\)</span> and <span class="math inline">\(x^2\)</span> that have been made to be uncorrelated. If you really want to interpret the coefficient values in terms of years of experience, use the option <code>raw = TRUE</code> in <code><a href="https://rdrr.io/r/stats/poly.html">poly()</a></code>:</p>
 <div class="cell" data-layout-align="center">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">workers.mod2b</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">Income</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/poly.html">poly</a></span><span class="op">(</span><span class="va">Experience</span>, <span class="fl">2</span>, raw <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, </span>
 <span>                    data<span class="op">=</span><span class="va">workers</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -701,10 +701,10 @@ Figure&nbsp;6.2: Workers data with fitted linear and quadratic models for years 
 </section><section id="crossing" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="crossing">Crossing</h4>
 <p>The <code>*</code> operator has special meaning used to specify the crossing of variables and factors and <code>:</code> specifies interactions (products of variables). So, the model <code>y ~ x1 * x2</code> is expanded to give <code>y ~ x1 + x2 + x1:x2</code> and the interaction term <code>x1:x2</code> is calculated as <span class="math inline">\(x_1 \times x_2\)</span>. In algebraic notation (omitting the error term) this works out to the model,</p>
 <p><span class="math display">\[\begin{eqnarray*}
-y &amp; = &amp; \beta_0 + \beta_1 x_1 +  \beta_2 x_2 +  \beta_1 x_1 *  \beta_2 x_2 \\
-  &amp; = &amp; \beta_0 + (\beta_1 + \beta_2 x_2) x_1 + \beta_2 x_2 \:\: ,\\
+y &amp; = &amp; \beta_0 + \beta_1 x_1 +  \beta_2 x_2 +  \beta_3 x_1 * x_2 \\
+  &amp; = &amp; \beta_0 + (\beta_1 + \beta_3 x_2) x_1 + \beta_2 x_2 \:\: ,\\
 \end{eqnarray*}\]</span></p>
-<p>which means that the coefficient for <span class="math inline">\(x_1\)</span> in the model is not constant for all values of <span class="math inline">\(x_2\)</span>, but rather changes with the value of <span class="math inline">\(x_2\)</span>. If <span class="math inline">\(\beta_2 &gt; 0\)</span>, the slope for <span class="math inline">\(x_1\)</span> increases with <span class="math inline">\(x_2\)</span> and vice-versa.</p>
+<p>which means that the coefficient for <span class="math inline">\(x_1\)</span> in the model is not constant for all values of <span class="math inline">\(x_2\)</span>, but rather changes with the value of <span class="math inline">\(x_2\)</span>. If <span class="math inline">\(\beta_3 &gt; 0\)</span>, the slope for <span class="math inline">\(x_1\)</span> increases with <span class="math inline">\(x_2\)</span> and vice-versa.</p>
 <p>The formula <code>y ~ A * B</code> for factors is similar, expanding to <code>y ~ A + B + A:B</code>, but the columns in the model matrix represent contrasts among the factor levels as described in detail below (<a href="#sec-contrasts" class="quarto-xref"><span>Section 6.1.3</span></a>). The main effects, <code>A</code> and <code>B</code> come from contrasts among the means of their factor levels and the interaction term <code>A:B</code> reflects <em>differences</em> among means of <code>A</code> across the levels of <code>B</code> (and vice-versa).</p>
 <p>The model formula <code>y ~ x + A</code> specifies an ANCOVA model with different intercepts for the levels of <code>A</code>, but with a common slope for <code>x</code>. Adding an interaction of <code>x:A</code> in the model <code>y ~ x * A</code> allow separate slopes and intercepts for the groups.</p>
 </section><section id="powers" class="level4 unnumbered"><h4 class="unnumbered anchored" data-anchor-id="powers">Powers</h4>
@@ -838,7 +838,7 @@ X_d =
 0 &amp; \! \text{otherwise}
 \end{cases}
 \]</span> <!-- \end{equation*} --></p>
-<p>The design matrix <span class="math inline">\(\mathbf{X}_{(4 \times 4)} = [\mathbf{1}, \mathbf{C}] = [\mathbf{1}, \mathbf{x}_b, \mathbf{x}_c, \mathbf{x}_c]\)</span> includes the constant column <span class="math inline">\(\mathbf{1}\)</span> representing the intercept, which averages over the factor levels when there are other terms in the model.</p>
+<p>The design matrix <span class="math inline">\(\mathbf{X}_{(4 \times 4)} = [\mathbf{1}, \mathbf{C}] = [\mathbf{1}, \mathbf{x}_b, \mathbf{x}_c, \mathbf{x}_d]\)</span> includes the constant column <span class="math inline">\(\mathbf{1}\)</span> representing the intercept, which averages over the factor levels when there are other terms in the model.</p>
 <p><span class="math display">\[
 \mathbf{X} =
 \begin{pmatrix}
@@ -948,7 +948,7 @@ From this you can see how the coefficients are interpreted:
 <span><span class="co"># c    0    0    1</span></span>
 <span><span class="co"># d   -1   -1   -1</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>The parameters estimated with this coding are: With this coding, the intercept is <span class="math inline">\(\beta_0 = \bar{\mu}\)</span>, the grand mean across all levels and the parameters are the deviations from that,</p>
+<p>The parameters estimated with this coding are shown below. With this coding, the intercept is <span class="math inline">\(\beta_0 = \bar{\mu}\)</span>, the grand mean across all levels and the parameters are the deviations from that,</p>
 <ul>
 <li><span class="math inline">\(\beta_1 = \mu_a - \bar{\mu}\)</span></li>
 <li><span class="math inline">\(\beta_2 = \mu_b - \bar{\mu}\)</span></li>
