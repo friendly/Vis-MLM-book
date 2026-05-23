@@ -231,11 +231,11 @@ This online appendix lists the R source files used to produce some of the figure
 
 This is included here because it may be useful to readers to see the complete context in which many examples were developed, beyond the code displayed in the text. And also because you may want to use or adapt the code for your own work or to develop related examples using the same ideas with different datasets.
 
-It is incomplete because it was consctructed by scanning the chapter source files for special comments,
+It is incomplete because it was constructed by scanning the chapter source files for special comments,
 of the form `<!-- fig.code: R/Davis-reg.R -->` that were manually embedded in the chapter `.qmd` files as I wrote this, but not always.
 Making this less incomplete proved to be a challenge because it involved scanning the text to find the corresponding R code files that had been included that had been included in chunks.
 
-Files marked &#9888; do not yet have a descriptive title in their header.
+Files marked &#9888; (if any) do not yet have a descriptive title in their header.
 
 ', file = con)
 
