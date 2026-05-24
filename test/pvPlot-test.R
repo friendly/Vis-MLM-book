@@ -85,3 +85,58 @@ pvPlot(crime.num, vars = c("burglary", "larceny"),
        cex = 1.2,
        cex.lab = 1.3,
        show.partial = list(loc = c(0.02, 0.97), cex = 1.2))
+
+# ── 14. Factor variables: mtcars ──────────────────────────────────────────────
+# Goal: see whether factor/binary variables in `vars` or `others` need special
+# treatment (jittering for vars; model.matrix expansion for others).
+#
+# mtcars structure: all columns stored as numeric.
+#   cyl:  4/6/8  — ordinal, 3 levels
+#   am:   0/1    — binary (automatic / manual)
+#   vs:   0/1    — binary (V / straight engine)
+#
+# mtcars is all-numeric so lsfit() handles it without conversion.
+# The interesting question is what happens visually when a binary/count
+# variable appears in `vars`.
+
+# 14a. Both vars numeric, binary variable in others: should work fine
+pvPlot(mtcars, vars = c("mpg", "hp"),
+       others = c("am", "cyl"),
+       id = list(n = 3))
+
+# 14b. One of vars is binary (am = 0/1): points collapse onto two horizontal
+# bands — jittering would help legibility
+# RESULT: CHECK calculations here: the values of am | others are not discrete!
+pvPlot(mtcars, vars = c("am", "mpg"),
+       id = list(n = 3))
+
+# 14c. Same with jitter applied manually before calling pvPlot():
+# Build a version of mtcars with am jittered, then pass it in.
+# RESULT: CHECK calculations here: the values of am | others are not discrete!
+mtcars_j <- mtcars
+mtcars_j$am_j <- jitter(mtcars$am, amount = 0.05)
+pvPlot(mtcars_j, vars = c("am_j", "mpg"),
+       id = list(n = 3))
+
+# 14d. cyl (3-level ordinal) as one of vars: points collapse onto three bands
+# 
+pvPlot(mtcars, vars = c("cyl", "mpg"))
+
+# 14e. Color points by a factor level — pass a colour vector derived from am
+# RESUlT: Does not work as expected. All points are 'tomato'
+pvPlot(mtcars, vars = c("mpg", "hp"),
+       col = c("steelblue", "tomato")[mtcars$am + 1L],
+       ellipse = FALSE,
+       id = list(n = 3))
+
+# 14f. Explicit factor column in X: does lsfit() error on a true factor?
+# Convert am to a proper factor first:
+# RESULT: Fails as expected.
+mtcars_f <- mtcars
+mtcars_f$am <- factor(mtcars$am, labels = c("auto", "manual"))
+# This is expected to FAIL — lsfit() cannot handle a factor column.
+# If so, we need model.matrix() conversion in pvPlot() for the others.
+tryCatch(
+  pvPlot(mtcars_f, vars = c("mpg", "hp")),
+  error = function(e) message("Expected error with factor in others: ", conditionMessage(e))
+)
