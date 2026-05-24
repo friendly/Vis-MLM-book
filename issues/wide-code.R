@@ -5,6 +5,10 @@
 #   With \small (9pt) the limit rises to ~71 chars.
 #   R's default options(width=80) exceeds both — hence the overflows.
 #
+# LaTeX fix: preamble.tex loads fvextra and sets breaklines=true,breakanywhere=true
+#   on the Highlighting environment so lines wrap automatically.
+#   This script is useful for finding lines to reformat manually if wrap looks poor.
+#
 # Scans source code lines only (not rendered output).
 # Output lines (str(), print(), etc.) must be controlled via options(width=N)
 # in the chunk or in R/common.R.
