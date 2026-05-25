@@ -74,30 +74,39 @@ Gavin should edit the `.qmd` files directly and submit a PR.
 - §11.3.1: round both numbers to same digits [GK: DONE]; add units if known
 - §11.4: "highly difference" → "large difference" [GK: DONE]; reword "however" sentence [GK: DONE]; "ANOVAS" → "ANOVAs" [GK: DONE]
 - §11.4.3: missing closing `$` around $R^2$ [GK: DONE]; "at" → "as" [GK: DONE]
-- §11.6: "the the" → "in the" [GK: DONE; changed to just "the"]; "at" → "as" [GK: DONE]; sentence-after-comma fix (§11.6.1)
-- §11.8: comma fixes (§§11.8, 11.8.1)
-- §11.9: comma + missing "they" fix
+- §11.6: "the the" → "in the" [GK: DONE; changed to just "the"]; "at" → "as" [GK: DONE]; sentence-after-comma fix (§11.6.1) [GK: DONE]
+- §11.8: comma fixes (§§11.8 [GK: DONE], 11.8.1 [GK: DONE])
+- §11.9: comma + missing "they" fix [GK: DONE]
 
 **Ch 12:**
 - §12.9: comma before "but"; "parent's" → "parental" or "parents'"; "students" → "students'";
-  remove first "and" in the list
+  remove first "and" in the list [GK: DONE]
 
 **Ch 13:**
-- §13.4: comma after "otherwise"
-- §13.5: quotation mark style: ` ``why?'' ` → `"why?"`
+- §13.4: comma after "otherwise" [MF: DONE]
+- §13.5: quotation mark style: ` ``why?'' ` → `"why?"` [MF: DONE]
 
 **Ch 14:**
-- §14.2.1: missing closing backtick: `` `type = "stres" `` → `` `type = "stres"` ``
-- §14.4: "if of course" → "is of course"
+- §14.2.1: missing closing backtick: `` `type = "stres" `` → `` `type = "stres"` `` [GK: DONE]
+- §14.4: "if of course" → "is of course" [GK: DONE]
 
 **Ch 21:**
-- §21.2: `mda` → `` `r pkg("mda")` `` in text (§21.2)
+- §21.2: `mda` → `` `r pkg("mda")` `` in text (§21.2) [GK: DONE]
 - §21.6: move paragraph ("You can see that Betsy and Dave…") to after the figure
-- §21.7.1: remove "and" from "All the Chinstraps appear mixed in with the Adélies and, giving…"
-- §21.9: "In the table printed" → "In the printed table"
+- §21.7.1: remove "and" from "All the Chinstraps appear mixed in with the Adélies and, giving…" [GK: DONE]
+- §21.9: "In the table printed" → "In the printed table" [GK: DONE]
 
 **Case Studies:**
-- Canonical-space paragraph: add comma after "variables"
+- Canonical-space paragraph: add comma after "variables" [GK: DONE; worked better if I removed initial comma, see `reviews/reviewer-GavinK-comments.Rmd`]
+
+**GK --- Tasks from above that I was not able to complete:**
+- §11.3.1: add units if known
+
+    - Units unknown
+
+- §21.6: move paragraph ("You can see that Betsy and Dave…") to after the figure
+
+    - This paragraph is already *after* the figure. There is a comment in `reviews/reviewer-GavinK-comments.Rmd` that asks if this paragraph should be moved to be *before* the figure. Is this what was meant?
 
 ---
 
