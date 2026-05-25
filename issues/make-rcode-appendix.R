@@ -225,12 +225,12 @@ utility_entries <- lapply(utility_paths, function(path) {
 })
 
 # ------------------------------------------------------------------
-# 4. Write Rcode.qmd
+# 4. Write 30-Rcode.qmd
 # ------------------------------------------------------------------
 n_chapters <- length(chapter_data)
 n_files    <- sum(sapply(chapter_data, function(x) length(x$entries)))
 
-con <- file("Rcode.qmd", "w")
+con <- file("30-Rcode.qmd", "w")
 
 cat('---
 title: "R Code for Figures and Analyses"
@@ -290,5 +290,5 @@ They define custom functions and helpers, some used across multiple chapters.
 }
 
 close(con)
-message(sprintf("Written: Rcode.qmd  (%d chapters, %d R files, %d utilities)",
+message(sprintf("Written: 30-Rcode.qmd  (%d chapters, %d R files, %d utilities)",
                 n_chapters, n_files, length(utility_entries)))
