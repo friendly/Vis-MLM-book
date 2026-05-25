@@ -19,21 +19,13 @@ Struck-through items (~~...~~) in the source have been omitted as already done.
 
 ---
 
-## Ch 03 — Getting Started (`03-getting_started.qmd`)
-
-| Line | Status | Note |
-|------|--------|------|
-| 633 | **visible** | Reduce or eliminate material in the section below |
-| 678 | **visible** | "Principles of graphical display" — move to separate chapter, supplement, or cut |
-
----
 
 ## Ch 04 — Multivariate Plots (`04-multivariate_plots.qmd`)
 
 | Line | Status | Note |
 |------|--------|------|
-| 1435 | **visible** | Panel tabset looks fine in HTML but is awkward in PDF — decide how to handle |
-| 1524 | **visible** | Decide how to handle the other plots in the PDF version of this section |
+| 1435 | hidden | Panel tabset looks fine in HTML but is awkward in PDF — decide how to handle |
+| 1524 | hidden | Decide how to handle the other plots in the PDF version of this section |
 | 1553 | **visible** | Add material on 3D scatterplots; start is in `child/03-3D-scat.qmd` and `R/penguin/peng-3D-rgl.R` |
 | 2025 | **visible** | Consider splitting the chapter at the Corrgrams section |
 | 2636 | **visible** | Chapter summary is just initial notes — expand to full summary |

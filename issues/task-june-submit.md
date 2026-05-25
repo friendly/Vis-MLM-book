@@ -34,7 +34,8 @@ a cover email. This needs to mention the current page length, perhaps with some 
 
 Items requiring author judgement, R/LaTeX knowledge, or a decision:
 
-- [ ] **Ch 6** "The General Linear Model" heading — all initial caps is correct here (§6.1)
+- [X] **Ch 6** "The General Linear Model" heading — all initial caps is correct here (§6.1)
+- [ ] Resolve remaining visible **TODO** items which appear in the text
 - [ ] **Ch 7** `spida2` not in Packages list — never on CRAN; decide how to handle (§7)
 - [ ] **Ch 11** blurry figures `fig-visualizing-SSP` and `fig-manova-diagram` — recreate or leave
 - [ ] **Ch 13** `$\mathcal{M}$` fix (§13.4 — LaTeX); reword ", here," sentence (§13.5)
