@@ -14,8 +14,8 @@ a cover email. This needs to mention the current page length, perhaps with some 
   (see `issues/task-r-code.md` for the separate HTML/PDF build plan; for now, simplest
   fix is to comment out appendix includes in `_quarto.yml` before the submission build)
 - [ ] Author index re-run against that build (Perl `authorindex` script; see `issues/authorindex.md`)
-- [ ] Cover page inserted manually in Acrobat (as before)
-- [ ] Confirm page count and header fix hold (double-chapter-number bug fixed 2026-05-23)
+- [X] Cover page inserted manually in Acrobat (as before)
+- [X] Confirm page count and header fix hold (double-chapter-number bug fixed 2026-05-23)
 
 ---
 
@@ -125,3 +125,24 @@ Items noted in the review but not targeted for this submission:
 - Appendix B labelling inconsistency — acceptable (will be removed from PDF anyway)
 - Example heading format consistency (§§11.5) — deferred
 - `pvPlot()` / `dataEllipse` PR to **car** — separate task, not submission-blocking
+
+## 6. Submission notes
+
+* The previous chapter, **Case studies* has been moved to an online-only, Appendix A
+
+* The previous Appendix A, **Discriminant analysis** has become Chapter 15, in print & online. The content here is integral to representing the methods for multivariate data discussed here, and nicely rounds out Part IV
+
+* Exercises, once thought to be important to appear in print for teaching purposes, have been moved to an online-only Appendix C. This will allow them to
+be developed further, over time.
+
+* **TODO** items, sprinkled throughout the text have all been resolved [Confirm when done]
+
+* An **R Code appendix** (online-only, Appendix B) has been added, listing all figure and analysis scripts with links to the GitHub source. This gives readers direct access to the complete, reproducible code for nearly every example in the book.
+
+* **Style consistency** has been improved throughout: section headings now follow "Sentence case"", and other typographic conventions have been applied uniformly across chapters.
+
+* **Reviewer corrections** from a detailed chapter-by-chapter review (Chapters 5–14 and 21) have been incorporated: prose edits, typographic fixes, cross-reference repairs, and code-formatting consistency.
+
+* **Code display** in the PDF has been improved: long code lines now wrap automatically within their shaded box, eliminating the margin overflows noted in the review.
+
+
