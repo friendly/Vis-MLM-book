@@ -1,5 +1,5 @@
 #' ---
-#' title: leverage and the data ellipse
+#' title: Leverage and the data ellipse
 #' ---
 
 #library(MASS)

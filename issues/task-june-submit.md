@@ -50,30 +50,30 @@ Simple text/prose fixes with "MF: Fix this" or "MF: Yes" sign-off in the review.
 Gavin should edit the `.qmd` files directly and submit a PR.
 
 **Ch 5:**
-- §5.4: "variable" → "variables" (one word)
+- §5.4: "variable" → "variables" (one word) [GK: DONE]
 
 **Ch 6:**
 - §6.1.1: add commas to dollar amounts: `$29162` → `$29,162`; `$1119` → `$1,119`;
-  `$23,068` already correct; `$2295` → `$2,295`
+  `$23,068` already correct; `$2295` → `$2,295` [GK: DONE]
 
 **Ch 7:**
-- §7.1.1: `confidenceEllipse(...)` → `car::confidenceEllipse(...)` in text and/or code
+- §7.1.1: `confidenceEllipse(...)` → `car::confidenceEllipse(...)` in text and/or code [GK: DONE]
 
 **Ch 8:**
-- §8.1.2: "Stress" and "Coffee" → `` `Stress` `` and `` `Coffee` `` in the two prose passages
+- §8.1.2: "Stress" and "Coffee" → `` `Stress` `` and `` `Coffee` `` in the two prose passages [GK: DONE]
 
 **Ch 9:**
-- §9.6: "generalized cross validation, bootstrap methods" → "..., or bootstrap methods"
+- §9.6: "generalized cross validation, bootstrap methods" → "..., or bootstrap methods" [GK: DONE]
 
 **Ch 10:**
-- §10.8: all plain *F* and *t* in prose → `$F$` and `$t$` (systematic pass through chapter)
+- §10.8: all plain *F* and *t* in prose → `$F$` and `$t$` (systematic pass through chapter) [GK: DONE; see `issues/F-and-t-Ch10-pass.md`]
 
 **Ch 11 prose fixes:**
-- §11.2.1: decide if `formula` needs code formatting
-- §11.3.1: round both numbers to same digits; add units if known
-- §11.4: "highly difference" → "large difference"; reword "however" sentence; "ANOVAS" → "ANOVAs"
-- §11.4.3: missing closing `$` around $R^2$; "at" → "as"
-- §11.6: "the the" → "in the"; "at" → "as"; sentence-after-comma fix (§11.6.1)
+- §11.2.1: decide if `formula` needs code formatting [GK: DONE]
+- §11.3.1: round both numbers to same digits [GK: DONE]; add units if known
+- §11.4: "highly difference" → "large difference" [GK: DONE]; reword "however" sentence [GK: DONE]; "ANOVAS" → "ANOVAs" [GK: DONE]
+- §11.4.3: missing closing `$` around $R^2$ [GK: DONE]; "at" → "as" [GK: DONE]
+- §11.6: "the the" → "in the" [GK: DONE; changed to just "the"]; "at" → "as" [GK: DONE]; sentence-after-comma fix (§11.6.1)
 - §11.8: comma fixes (§§11.8, 11.8.1)
 - §11.9: comma + missing "they" fix
 
