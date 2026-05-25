@@ -38,9 +38,9 @@ Items requiring author judgement, R/LaTeX knowledge, or a decision:
 - [ ] Resolve remaining visible **TODO** items which appear in the text
 - [ ] **Ch 7** `spida2` not in Packages list — never on CRAN; decide how to handle (§7)
 - [ ] **Ch 11** blurry figures `fig-visualizing-SSP` and `fig-manova-diagram` — recreate or leave
-- [ ] **Ch 13** `$\mathcal{M}$` fix (§13.4 — LaTeX); reword ", here," sentence (§13.5)
-- [ ] **Ch 21** `EnisGeisser1974` BibTeX error in `references.bib` (§21.2)
-- [ ] **Heading capitalisation** policy pass — sentence case; cap after ":" only for proper terms
+- [X] **Ch 13** `$\mathcal{M}$` fix (§13.4 — LaTeX); reword ", here," sentence (§13.5)
+- [X] **Ch 21** `EnisGeisser1974` BibTeX error in `references.bib` (§21.2)
+- [X] **Heading capitalisation** policy pass — sentence case; cap after ":" only for proper terms
       (e.g., "4.2.4 --- Handling nonlinearity: Plotting on a log scale" → "Plotting" stays capped)
 
 ---
