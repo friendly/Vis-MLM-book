@@ -42,6 +42,8 @@ Items requiring author judgement, R/LaTeX knowledge, or a decision:
 - [X] **Ch 21** `EnisGeisser1974` BibTeX error in `references.bib` (§21.2)
 - [X] **Heading capitalisation** policy pass — sentence case; cap after ":" only for proper terms
       (e.g., "4.2.4 --- Handling nonlinearity: Plotting on a log scale" → "Plotting" stays capped)
+- [ ] **Exercises appendix** (`31-exercises.qmd`) — online-only; Ch 4 exercises moved there;
+      add exercises for other chapters as written
 
 ---
 
