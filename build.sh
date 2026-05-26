@@ -190,19 +190,16 @@ else
   fi
 
   if ${_do_authorindex:-false}; then
-    if command -v authorindex &>/dev/null; then
-      run authorindex -i "$AUX"
-      echo "    Generated: $AIN"
+    if [[ -f "make-authorindex.sh" ]]; then
+      run bash make-authorindex.sh
       if [[ -f "$AIN" ]]; then
         run cp "$AIN" Vis-MLM.ain
         echo "    Copied:    $AIN → Vis-MLM.ain"
       fi
       save_fingerprint
     else
-      echo "    WARNING: 'authorindex' not found on PATH."
-      echo "    Typical MiKTeX location:"
-      echo "      C:/Program Files/MiKTeX/scripts/authorindex/authorindex.pl"
-      echo "    Run manually:  perl <path>/authorindex.pl -i $AUX"
+      echo "    WARNING: make-authorindex.sh not found."
+      echo "    Run manually: bash make-authorindex.sh"
     fi
   fi
 fi
