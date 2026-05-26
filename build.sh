@@ -133,7 +133,7 @@ fi
 # ---------------------------------------------------------------------------
 echo "--> Running quarto render..."
 case "$FORMAT" in
-  pdf)  run quarto render --to pdf  ;;
+  pdf)  run quarto render --profile print --to pdf  ;;
   html)
     # Two HTML passes: index.qmd is rendered first (before other chapters'
     # xref data exists), so cross-refs in index.html to later chapters show
@@ -156,8 +156,8 @@ case "$FORMAT" in
     run quarto render --to html --profile online
     echo "    Step 2/3: HTML pass 2 (resolves cross-refs in index.html)"
     run quarto render --to html --profile online
-    echo "    Step 3/3: PDF (base config only — no online-only appendices)"
-    run quarto render --to pdf
+    echo "    Step 3/3: PDF (print profile — no online-only appendices)"
+    run quarto render --profile print --to pdf
     ;;
 esac
 echo ""
@@ -208,13 +208,27 @@ else
 fi
 
 # ---------------------------------------------------------------------------
+# Step 4: Archive PDF build artifacts to pdf/
+# ---------------------------------------------------------------------------
+if [[ "$FORMAT" != "html" ]]; then
+  echo "--> Archiving PDF build artifacts to pdf/..."
+  [[ -f "docs/Vis-MLM.pdf" ]] && run cp "docs/Vis-MLM.pdf" "pdf/Vis-MLM.pdf"
+  [[ -f "Vis-MLM.tex"      ]] && run cp "Vis-MLM.tex"      "pdf/index.tex"
+  for f in index.aux index.ain index.idx index.ilg index.ind index.log index.toc; do
+    [[ -f "$f" ]] && run cp "$f" "pdf/$f"
+  done
+  echo "    Done."
+  echo ""
+fi
+
+# ---------------------------------------------------------------------------
 # Done
 # ---------------------------------------------------------------------------
 echo ""
 echo "============================================================"
 echo " Done."
 if [[ "$FORMAT" != "html" ]]; then
-  [[ -f "docs/Vis-MLM.pdf" ]] && echo " PDF  → docs/Vis-MLM.pdf"
+  [[ -f "docs/Vis-MLM.pdf" ]] && echo " PDF  → docs/Vis-MLM.pdf  (archived to pdf/)"
 fi
 if [[ "$FORMAT" != "pdf" ]]; then
   [[ -f "docs/index.html" ]] && echo " HTML → docs/index.html"
