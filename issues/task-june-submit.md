@@ -44,6 +44,10 @@ Items requiring author judgement, R/LaTeX knowledge, or a decision:
       (e.g., "4.2.4 --- Handling nonlinearity: Plotting on a log scale" → "Plotting" stays capped)
 - [ ] **Exercises appendix** (`31-exercises.qmd`) — online-only; Ch 4 exercises moved there;
       add exercises for other chapters as written
+- [ ] **Ch 9 "What have we learned?" summary** (`summary/Ch09-summary.qmd`) — current prose
+      needs rewriting as bullet-point take-aways before embedding in `09-collinearity-ridge.qmd`
+- [ ] **Ch 2 (Introduction) "What have we learned?" summary** — no summary file exists and none
+      is embedded in `02-intro.qmd`; decide whether to write one
 
 ---
 

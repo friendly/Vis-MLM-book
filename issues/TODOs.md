@@ -12,7 +12,6 @@ Struck-through items (~~...~~) in the source have been omitted as already done.
 
 | Line | Status | Note |
 |------|--------|------|
-| 34 | **visible** | Include overview of parts and chapters somewhere in preface |
 | 20 | hidden | Make preface a more general introduction |
 | 86 | hidden | Complete the "required background" section |
 | 178 | hidden | Add more on general books about graphics |
@@ -26,8 +25,8 @@ Struck-through items (~~...~~) in the source have been omitted as already done.
 |------|--------|------|
 | 1435 | hidden | Panel tabset looks fine in HTML but is awkward in PDF — decide how to handle |
 | 1524 | hidden | Decide how to handle the other plots in the PDF version of this section |
-| 1553 | **visible** | Add material on 3D scatterplots; start is in `child/03-3D-scat.qmd` and `R/penguin/peng-3D-rgl.R` |
-| 2025 | **visible** | Consider splitting the chapter at the Corrgrams section |
+| 1553 | hidden | Add material on 3D scatterplots; start is in `child/03-3D-scat.qmd` and `R/penguin/peng-3D-rgl.R` |
+| 2025 | hidden | Consider splitting the chapter at the Corrgrams section |
 | 2636 | **visible** | Chapter summary is just initial notes — expand to full summary |
 | 2495 | hidden | Revise the History section of Wikipedia's Parallel coordinates article |
 
