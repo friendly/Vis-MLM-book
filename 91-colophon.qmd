@@ -6,37 +6,37 @@ source("R/common.R")
 
 This book was produced using [`r R.version.string`](https://cran.r-project.org/). Fundamental to this was the framework for reproducible documents provided by Yihui Xie's [knitr package](https://cran.r-project.org/web/packages/knitr/index.html).
 
-[Quarto](https://quarto.org/) was used to compile and render the book in HTML and PDF formats.
-[** Don't really need all this**]
+The book was entirely written within the [RStudio](https://posit.co/download/rstudio-desktop) IDE environment, which made it easy to develop the analyses
+and graphs, and then write about them, inserting code chunks, figures, cross-references, and so forth.
+[Quarto](https://quarto.org/) was used to compile and render the book in HTML and PDF formats, with the helpers
+of 
+
+* [knitr](https://cran.r-project.org/web/packages/knitr/index.html) to run code chunks and incorporate into document;
+* [pandoc](https://pandoc.org/) to convert among various outputs;
+* [TinyTeX](https://yihui.org/tinytex/) to provide a coherent set of LaTeX tools for PDF output
+
 
 ```{r}
 #| label: quarto-info
 #| echo: false
-#| comment: ""
 
-# this from: https://raw.githubusercontent.com/aml4td/website/main/index.qmd
-quarto_info <- function(){
-  file_out <- tempfile("temp-quarto.txt")
-  system2(command = "quarto", args = "check", stderr = file_out)
-  res <- readLines(file_out)
-  res <- purrr::map_chr(res, cli::ansi_strip)
-  rms <- c("(|)", "(/)", "(\\)", "(/)", "(-)", "/Users", "Path:", "Install with")
-  for (pat in rms) {
-    res <- res[!grepl(pat, res, fixed = TRUE)]
-  }
-  res <- res[res != ""]
-  invisible(res)
-}
+tinytex_ver <- tryCatch({
+  v <- system2("tlmgr", "--version", stdout = TRUE, stderr = FALSE)[1]
+  m <- regmatches(v, regexpr("[0-9]{4}", v))
+  if (length(m)) m else "?"
+}, error = function(e) "?")
 
-quarto_res <- quarto_info()
-req_quarto_version <- "1.4.510"  # in future, use numeric_version()
-
-# if (!any(grepl(req_quarto_version, quarto_res))) {
-#   cli::cli_abort("Version {req_quarto_version} of Quarto is required. 
-#                   See {.url https://quarto.org/docs/download/}")
-# }
-
-cat(quarto_res, sep = "\n")
+data.frame(
+  Tool    = c("Quarto", "Pandoc", "R", "knitr", "rmarkdown", "TinyTeX"),
+  Version = c(
+    system2("quarto", "--version", stdout = TRUE)[1],
+    as.character(rmarkdown::pandoc_version()),
+    paste(R.version$major, R.version$minor, sep = "."),
+    as.character(packageVersion("knitr")),
+    as.character(packageVersion("rmarkdown")),
+    tinytex_ver
+  )
+) |> knitr::kable(row.names = FALSE, align = c("l", "r"))
 ```
 
 ## Package versions
@@ -47,7 +47,7 @@ from all `library()` commands in the text, and scripts which also updated
 the references to packages.
 
 At the time of writing, most of these were current on [CRAN](http://cran.us.r-project.org/)
-repositories but some development versions are indicated as "local" in the `source` column. 
+repositories, but some development versions are listed with their download repo, or indicated as "local" in the `source` column. 
 
 ```{r}
 #| label: package-info
@@ -55,16 +55,29 @@ repositories but some development versions are indicated as "local" in the `sour
 #| results: asis
 library(dplyr)
 
-packages <- read_pkgs()
-pkg_info <- sessioninfo:::package_info(packages, dependencies = FALSE) 
-# clean up unwanted
-pkg_info$source <- sub(" \\(R.*\\)", "", pkg_info$source)
-#pkg_info <- pkg_info[,-2]
-pkg_info |>
-  select(package, ondiskversion, date, source) |>
-  rename(version = ondiskversion) |>
-  knitr::kable(row.names = FALSE)
+make_source_link <- function(pkg, source) {
+  if (grepl("^CRAN", source)) {
+    url <- paste0("https://cran.r-project.org/package=", pkg)
+    paste0("[CRAN](", url, ")")
+  } else if (grepl("r-universe", source, ignore.case = TRUE)) {
+    base <- sub("/$", "", source)  # strip trailing slash if present
+    paste0("[R-universe](", base, "/", pkg, ")")
+  } else if (grepl("^Github", source)) {
+    repo <- sub("^Github \\(([^)]+)\\).*", "\\1", source)
+    paste0("[", repo, "](https://github.com/", repo, ")")
+  } else {
+    source
+  }
+}
 
-#print(pkg_info)
+packages <- read_pkgs()
+pkg_info <- sessioninfo:::package_info(packages, dependencies = FALSE)
+pkg_info$source <- sub(" \\(R.*\\)", "", pkg_info$source)
+pkg_info$source <- sub("@[0-9a-f]{7,}", "", pkg_info$source)
+pkg_info |>
+  select(package, ondiskversion, source) |>
+  rename(version = ondiskversion) |>
+  mutate(source = mapply(make_source_link, package, source)) |>
+  knitr::kable(format = "pipe", row.names = FALSE, align = c("l", "r", "l"))
 ```
 

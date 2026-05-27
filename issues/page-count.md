@@ -7,6 +7,7 @@ and plan submission length.
 
 | Version | PDF | TOC source | Date |
 |---------|-----|------------|------|
+| Review  | `/pdf/index-review.pdf" | NA | Nov 2 2025 |
 | Previous | `pdf/Vis-MLM.pdf` | `Vis-MLM.toc` (project root) | May 4 / May 12 2026 |
 | Current  | `docs/Vis-MLM.pdf` | `index.toc` (project root)   | May 16 2026 |
 
