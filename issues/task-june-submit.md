@@ -10,10 +10,11 @@ a cover email. This needs to mention the current page length, perhaps with some 
 
 ## 1. Build requirements
 
-- [ ] PDF containing only the 15 chapters + front/end matter — no Appendices A, B, C
-  (see `issues/task-r-code.md` for the separate HTML/PDF build plan; for now, simplest
-  fix is to comment out appendix includes in `_quarto.yml` before the submission build)
-- [ ] Author index re-run against that build (Perl `authorindex` script; see `issues/authorindex.md`)
+- [X] PDF containing only the 15 chapters + front/end matter — no Appendices A, B, C
+  Fixed: appendices moved out of `_quarto.yml` into `_quarto-online.yml` only;
+  `_quarto-print.yml` profile used for PDF; command: `./build.sh --pdf --authorindex`
+- [X] Author index re-run against that build — `build.sh` now calls `make-authorindex.sh`
+  (sets BIBINPUTS/BSTINPUTS, runs `perl latex/authorindex -d index`); 529 pages [2026-05-26]
 - [X] Cover page inserted manually in Acrobat (as before)
 - [X] Confirm page count and header fix hold (double-chapter-number bug fixed 2026-05-23)
 
@@ -44,6 +45,10 @@ Items requiring author judgement, R/LaTeX knowledge, or a decision:
       (e.g., "4.2.4 --- Handling nonlinearity: Plotting on a log scale" → "Plotting" stays capped)
 - [ ] **Exercises appendix** (`31-exercises.qmd`) — online-only; Ch 4 exercises moved there;
       add exercises for other chapters as written
+- [ ] **Ch 9 "What have we learned?" summary** (`summary/Ch09-summary.qmd`) — current prose
+      needs rewriting as bullet-point take-aways before embedding in `09-collinearity-ridge.qmd`
+- [ ] **Ch 2 (Introduction) "What have we learned?" summary** — no summary file exists and none
+      is embedded in `02-intro.qmd`; decide whether to write one
 
 ---
 
