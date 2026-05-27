@@ -60,7 +60,7 @@ Struck-through items (~~...~~) in the source have been omitted as already done.
 
 | Line | Status | Note |
 |------|--------|------|
-| 1789 | **visible** | Fix up the code displayed here; source is `R/Duncan/Duncan-reg.R` |
+| 1789 | ~~done~~ | Fix up the code displayed here; source is `R/Duncan/Duncan-reg.R` → `R/Duncan/duncan-av-influence.R` |
 | 310 | hidden | Prestige example already introduced in @exm-prestige — pair down and integrate |
 
 ---
