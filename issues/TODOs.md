@@ -27,7 +27,6 @@ Struck-through items (~~...~~) in the source have been omitted as already done.
 | 1524 | hidden | Decide how to handle the other plots in the PDF version of this section |
 | 1553 | hidden | Add material on 3D scatterplots; start is in `child/03-3D-scat.qmd` and `R/penguin/peng-3D-rgl.R` |
 | 2025 | hidden | Consider splitting the chapter at the Corrgrams section |
-| 2636 | **visible** | Chapter summary is just initial notes — expand to full summary |
 | 2495 | hidden | Revise the History section of Wikipedia's Parallel coordinates article |
 
 ---
@@ -36,8 +35,8 @@ Struck-through items (~~...~~) in the source have been omitted as already done.
 
 | Line | Status | Note |
 |------|--------|------|
-| 1006 | **visible** | Explain the biplot scaling parameter α (0, ½, 1) better |
-| 1325 | **visible** | 3D plots should be introduced earlier, in Ch 3, before @sec-scatmat |
+| 1006 | ~~done~~ | Explain the biplot scaling parameter α (0, ½, 1) better |
+| 132  | hidden  | 3D plots should be introduced earlier, in Ch 3, before @sec-scatmat |
 | 46 | hidden | Mention the `gellipsoid` package |
 | 815 | hidden | Should the `rownames` callout be `callout-warning` or a footnote? |
 | 1856 | hidden | Make a diagram illustrating vector angle interpretation |
