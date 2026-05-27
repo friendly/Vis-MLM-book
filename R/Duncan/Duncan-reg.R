@@ -58,18 +58,20 @@ qqPlot(duncan.mod, id = list(n=3), simulate = TRUE)
 
 # avPlots
 
+#' ## show the leverage of the unusual points
+#' Figure 7.27
+# delete minister, conductor
+duncan.mod2 <- update(duncan.mod, 
+                      subset = - whichNames(c("minister", "conductor"), Duncan))
+
+duncan.mod2 <- update(duncan.mod, subset = -c(6, 16))
+
+
 avPlots(duncan.mod,
         ellipse = list(levels = 0.68, fill = TRUE, fill.alpha = 0.1),
         id = list(method = "mahal", n=3),
         pch = 16, cex = 0.9,
         cex.lab = 1.5)
-
-# > Duncan[c(6, 9, 16, 27),]
-# type income education prestige
-# minister    prof     21        84       87
-# reporter      wc     67        87       52
-# conductor     wc     76        34       38
-# RR.engineer   bc     81        28       67
 
 
 avPlots(duncan.mod2,
@@ -80,13 +82,6 @@ avPlots(duncan.mod2,
 
 
 
-#' ## show the leverage of the unusual points
-#' Figure 6.27
-# delete minister, conductor
-duncan.mod2 <- update(duncan.mod, 
-                      subset = - whichNames(c("minister", "conductor"), Duncan))
-
-duncan.mod2 <- update(duncan.mod, subset = -c(6, 16))
 
 par(mar = c(4, 5, 4, 1)+.1,
     mfrow = c(1,2))
