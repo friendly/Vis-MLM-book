@@ -129,7 +129,7 @@ No TODOs found.
 | Line | Status | Note |
 |------|--------|------|
 | 282 | **visible** | Check how studentized residuals are defined in `mvinfluence` |
-| 643 | **visible** | Add "What have we learned?" chapter summary |
+| 643 | ~~done~~ | Add "What have we learned?" chapter summary |
 
 ---
 
