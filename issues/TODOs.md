@@ -94,15 +94,15 @@ No active visible TODOs. One commented item (combining with a summary file) appe
 
 | Line | Status | Note |
 |------|--------|------|
-| 115 | **visible** | Revise notation: be explicit and consistent about inclusion of β₀ and size of **B** |
-| 2089 | **visible** | Sort out coverage overlap here vs. @sec-influence-robust |
-| 2168 | **visible** | Consider moving MANCOVA section to @sec-vis-mlm; draw on heplots MMRA vignette |
 | 46 | hidden | Offer defense against @Huang2019; cite @Huberty-Morris1989 — or maybe not |
 | 72 | hidden | Use `\Epsilon` macro for residuals throughout |
+| 115 | **visible** | Revise notation: be explicit and consistent about inclusion of β₀ and size of **B** |
 | 719 | hidden | Contrasts material was copied to @sec-contrasts — delete the duplicate here |
 | 760 | hidden | Use ½ for contrast so that L₁ is the mean difference |
 | 1381 | hidden | Move initial part of Plastic film 2×2 example (@exm-plastic2) here |
 | 1720 | hidden | Using `log2(income)` gives less dramatic HE plots in Ch 11 — consider `income` instead |
+| 2089 | **visible** | Sort out coverage overlap here vs. @sec-influence-robust |
+| 2168 | **visible** | Consider moving MANCOVA section to @sec-vis-mlm; draw on heplots MMRA vignette |
 
 ---
 
@@ -110,10 +110,10 @@ No active visible TODOs. One commented item (combining with a summary file) appe
 
 | Line | Status | Note |
 |------|--------|------|
+| 762 | hidden | `var.labels` is not a graphical parameter — fix |
 | 1077 | **visible** | Use `heplots::Hernior` (herniorrhaphy) as an exercise — see HE_mmra vignette |
 | 1408 | **visible** | Check signs of structure coefficients from `cancor()`; reflect vectors for `Ycan1` |
 | 1576 | **visible** | Insert chapter summary (section header exists but is empty) |
-| 762 | hidden | `var.labels` is not a graphical parameter — fix |
 | 1311 | hidden | Fill in details of canonical correlations |
 
 ---

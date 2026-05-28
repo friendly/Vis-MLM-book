@@ -43,12 +43,12 @@ Items requiring author judgement, R/LaTeX knowledge, or a decision:
 - [X] **Ch 21** `EnisGeisser1974` BibTeX error in `references.bib` (§21.2)
 - [X] **Heading capitalisation** policy pass — sentence case; cap after ":" only for proper terms
       (e.g., "4.2.4 --- Handling nonlinearity: Plotting on a log scale" → "Plotting" stays capped)
-- [ ] **Exercises appendix** (`31-exercises.qmd`) — online-only; Ch 4 exercises moved there;
+- [X] **Exercises appendix** (`31-exercises.qmd`) — online-only; Ch 4 exercises moved there;
       add exercises for other chapters as written
-- [ ] **Ch 9 "What have we learned?" summary** (`summary/Ch09-summary.qmd`) — current prose
+- [X] **Ch 9 "What have we learned?" summary** (`summary/Ch09-summary.qmd`) — current prose
       needs rewriting as bullet-point take-aways before embedding in `09-collinearity-ridge.qmd`
-- [ ] **Ch 2 (Introduction) "What have we learned?" summary** — no summary file exists and none
-      is embedded in `02-intro.qmd`; decide whether to write one
+- [X] **Ch 2 (Introduction) "What have we learned?" summary** — no summary file exists and none
+      is embedded in `02-intro.qmd`; decide whether to write one [MF: Don't need one here]
 
 ---
 
@@ -131,16 +131,17 @@ Items noted in the review but not targeted for this submission:
 - Example heading format consistency (§§11.5) — deferred
 - `pvPlot()` / `dataEllipse` PR to **car** — separate task, not submission-blocking
 
-## 6. Submission notes
+## 6. Submission note
+
+The main text of the PDF copy is now 474 pages. There are 14 pages of references, plus subject & author indexes of 28 pages
 
 * The previous chapter, **Case studies* has been moved to an online-only, Appendix A
 
 * The previous Appendix A, **Discriminant analysis** has become Chapter 15, in print & online. The content here is integral to representing the methods for multivariate data discussed here, and nicely rounds out Part IV
 
-* Exercises, once thought to be important to appear in print for teaching purposes, have been moved to an online-only Appendix C. This will allow them to
-be developed further, over time.
+* **Exercises**, once thought to be important to appear in print for teaching purposes, have been moved to an online-only Appendix C. This will allow them to be developed further, over time and not hold up review/production.
 
-* **TODO** items, sprinkled throughout the text have all been resolved [Confirm when done]
+* **TODO** items, Visibly sprinkled throughout the text have all been resolved [Confirm when done]
 
 * An **R Code appendix** (online-only, Appendix B) has been added, listing all figure and analysis scripts with links to the GitHub source. This gives readers direct access to the complete, reproducible code for nearly every example in the book.
 
@@ -149,5 +150,7 @@ be developed further, over time.
 * **Reviewer corrections** from a detailed chapter-by-chapter review (Chapters 5–14 and 21) have been incorporated: prose edits, typographic fixes, cross-reference repairs, and code-formatting consistency.
 
 * **Code display** in the PDF has been improved: long code lines now wrap automatically within their shaded box, eliminating the margin overflows noted in the review.
+
+* **CMYK encoding for printing** is now used for all figures generated in the text. There are still images included directly that may need re-encoding, but that would be a final step.
 
 
