@@ -35,10 +35,10 @@ Struck-through items (~~...~~) in the source have been omitted as already done.
 
 | Line | Status | Note |
 |------|--------|------|
-| 1006 | ~~done~~ | Explain the biplot scaling parameter α (0, ½, 1) better |
-| 132  | hidden  | 3D plots should be introduced earlier, in Ch 3, before @sec-scatmat |
 | 46 | hidden | Mention the `gellipsoid` package |
+| 132  | hidden  | 3D plots should be introduced earlier, in Ch 3, before @sec-scatmat |
 | 815 | hidden | Should the `rownames` callout be `callout-warning` or a footnote? |
+| 1006 | ~~done~~ | Explain the biplot scaling parameter α (0, ½, 1) better |
 | 1856 | hidden | Make a diagram illustrating vector angle interpretation |
 | 1958 | hidden | Web links like this should be footnotes for PDF |
 | 1971 | hidden | Show necessary parts of the MonaLisa example including screeplot |
@@ -49,10 +49,10 @@ Struck-through items (~~...~~) in the source have been omitted as already done.
 
 | Line | Status | Note |
 |------|--------|------|
-| 915 | **visible** | Move initial ANCOVA discussion from @sec-ANCOVA-MANCOVA here with generic example |
 | 35 | hidden | The model overview should be a table (not currently working) |
 | 487 | hidden | Move contrasts material from Ch 10 (§10.3.1) to here |
 | 800 | hidden | Make a figure for the two interaction examples |
+| 915 | hidden | Move initial ANCOVA discussion from @sec-ANCOVA-MANCOVA here with generic example |
 
 ---
 
@@ -60,8 +60,8 @@ Struck-through items (~~...~~) in the source have been omitted as already done.
 
 | Line | Status | Note |
 |------|--------|------|
-| 1789 | ~~done~~ | Fix up the code displayed here; source is `R/Duncan/Duncan-reg.R` → `R/Duncan/duncan-av-influence.R` |
 | 310 | hidden | Prestige example already introduced in @exm-prestige — pair down and integrate |
+| 1789 | ~~done~~ | Fix up the code displayed here; source is `R/Duncan/Duncan-reg.R` → `R/Duncan/duncan-av-influence.R` |
 
 ---
 
@@ -69,7 +69,7 @@ Struck-through items (~~...~~) in the source have been omitted as already done.
 
 | Line | Status | Note |
 |------|--------|------|
-| 323 | **visible** | Consider including this code only in the HTML version (conditional block) |
+| 323 | hidden | Consider including this code only in the HTML version (conditional block) |
 
 ---
 
