@@ -1,4 +1,4 @@
-# Annotate reviewer-GavinK-CodeAudit.Rmd with fold_status from chunks.RData
+# Annotate GavinK-CodeAudit.Rmd with fold_status from chunks.RData
 # Run from project root.
 
 load("data/chunks.RData")
@@ -6,7 +6,7 @@ load("data/chunks.RData")
 # Build lookup: label -> fold_status (take first match if duplicated)
 lookup <- with(chunks, setNames(fold_status, label))
 
-audit_file <- "reviews/reviewer-GavinK-CodeAudit.Rmd"
+audit_file <- "reviews/GavinK-CodeAudit.Rmd"
 lines <- readLines(audit_file, warn = FALSE)
 
 pat <- "^(\\*\\*\\*Label: ([^*]+)\\*\\*\\*)(.*)"

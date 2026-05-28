@@ -1,7 +1,7 @@
 # Content Errors Audit
 
 Errors found across chapters during a full-book audit (2026-05-22). Issues already listed in
-`reviews/reviewer-GavinK-comments.Rmd` or `issues/Ch06-issues.md` are excluded.
+`reviews/GavinK-comments.Rmd` or `issues/Ch06-issues.md` are excluded.
 
 ---
 

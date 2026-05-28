@@ -72,7 +72,7 @@ the online version, ask yourself: should this code be displayed? (HTML / PDF)
   which involves Quarto process groups, with different `_quarto.yml` files. [21-discrim.qmd now in book; 15-case-studies.qmd in Appendix]
 
 * **Reviews**: Michael Truong worked through the book and made comments as he went along. See 
-  `reviews/reviewer-MichaelT-*.md` for the style he used to make comments, which you should
+  `reviews/MichaelT-*.Rmd` for the style he used to make comments, which you should
   try to follow. As I went through these, I often marked them as [DONE] or [FIXED] to keep track.
   
 * **CRC reviewers**: `reviews/Reviewer {1,2}.pdf` are the main ones I want to work on now. I'll make

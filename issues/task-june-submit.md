@@ -104,7 +104,7 @@ Gavin should edit the `.qmd` files directly and submit a PR.
 - §21.9: "In the table printed" → "In the printed table" [GK: DONE]
 
 **Case Studies:**
-- Canonical-space paragraph: add comma after "variables" [GK: DONE; worked better if I removed initial comma, see `reviews/reviewer-GavinK-comments.Rmd`]
+- Canonical-space paragraph: add comma after "variables" [GK: DONE; worked better if I removed initial comma, see `reviews/GavinK-comments.Rmd`]
 
 **GK --- Tasks from above that I was not able to complete:**
 - §11.3.1: add units if known
@@ -113,7 +113,7 @@ Gavin should edit the `.qmd` files directly and submit a PR.
 
 - §21.6: move paragraph ("You can see that Betsy and Dave…") to after the figure
 
-    - This paragraph is already *after* the figure. There is a comment in `reviews/reviewer-GavinK-comments.Rmd` that asks if this paragraph should be moved to be *before* the figure. Is this what was meant?
+    - This paragraph is already *after* the figure. There is a comment in `reviews/GavinK-comments.Rmd` that asks if this paragraph should be moved to be *before* the figure. Is this what was meant?
 
 ---
 
