@@ -1,3 +1,7 @@
+#' ---
+#' title: dogfood data, various examples
+#' ---
+
 library(car)
 library(ggplot2)
 library(tidyr)

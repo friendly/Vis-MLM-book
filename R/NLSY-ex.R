@@ -1,3 +1,6 @@
+#' ---
+#' title: NLSY data plots and models
+#' ---
 
 library(heplots)
 library(car)

@@ -42,7 +42,9 @@ appendix_files <- if (!is.null(cfg$book$appendices)) {
   app[grepl("\\.qmd$", app)]
 } else character(0)
 
+OUT_FILE  <- "30-Rcode.qmd"   # the file we are writing — exclude from scan
 all_files <- c(chapter_files, appendix_files)
+all_files <- all_files[all_files != OUT_FILE]
 
 # Build actual chapter-number lookup from position in the ordered chapter list.
 # Preamble (index.qmd, 00-Author.qmd) and end-matter (91-*, 95-*) get no number.
@@ -239,7 +241,7 @@ utility_entries <- lapply(utility_paths, function(path) {
 n_chapters <- length(chapter_data)
 n_files    <- sum(sapply(chapter_data, function(x) length(x$entries)))
 
-con <- file("30-Rcode.qmd", "w")
+con <- file(OUT_FILE, "w")
 
 cat('# R Code for Figures and Analyses {#sec-Rcode}
 
