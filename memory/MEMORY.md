@@ -12,3 +12,4 @@
 - [DeepWiki Quarto CLI](reference_deepwiki_quarto.md) — internal architecture docs; useful for diagnosing *why* Quarto behaves a certain way, not for authoring
 - [git pull --rebase](feedback_git_pull_rebase.md) — use --rebase not plain pull when push is rejected; avoids cluttering history with merge commits
 - [PDF build task](project_pdf_build_task.md) — build final Vis-MLM.pdf (print config only), then archive outputs to pdf/ folder; see issues/quarto-pdf-help.md
+- [Dual-build cleanup plan](project_dual_build.md) — Weekend task: fix conflicting HTML/PDF build config; full plan in issues/dual-build-plan.md
