@@ -1,0 +1,19 @@
+## What have we learned?
+
+Linear discriminant analysis is MANOVA with its emphasis flipped: rather than testing whether groups differ on a set of response variables, you ask how to classify an observation into the most likely group. Both methods share the same mathematical engine---eigenvalues of $\mathbf{H}\mathbf{E}^{-1}$---but lead to different visualizations and different questions.
+
+* **LDA reverses the MANOVA formula**: In MANOVA, the group factor predicts the $\mathbf{y}$ variables; in LDA, the $\mathbf{y}$ variables predict group membership. The same decomposition into between-group ($\mathbf{H}$) and within-group ($\mathbf{E}$) matrices underlies both, but the goal shifts from significance testing to classification.
+
+* **Discriminant dimensions reduce a $p$-dimensional classification problem to a small number of scores**: With $g$ groups, there are at most $s = \min(p, g-1)$ discriminant dimensions. The first, $\text{LD}_1$, captures the greatest between-group separation relative to within-group variation; the second captures the next most, and so on. For the penguin data, two dimensions account for the entire 4D classification problem, and a single 2D plot tells the full story.
+
+* **Prior probabilities shift the decision boundary**: When groups differ in prevalence or when misclassification errors carry unequal costs, prior probabilities adjust where the boundary falls. A higher prior for one group pulls the boundary toward its competitors, increasing the fraction of observations assigned to it.
+
+* **Classification accuracy is read from the confusion table**: Comparing actual to predicted class memberships reveals where the classifier succeeds and where it confuses groups. For the penguin data, only Adélie and Chinstrap were confused---four birds out of 333---a pattern that becomes visually clear in the discriminant plots.
+
+* **Visualization in data space shows the geometry of individual decisions**: Plotting new observations alongside the training data, with 95% data ellipses, lets you see at a glance why a penguin on island Z was classified as Gentoo. The limitation is that with $p$ variables there are $\binom{p}{2}$ pairwise plots to examine; none tells the whole story by itself.
+
+* **Visualization in discriminant space gives the complete picture in one plot**: Because the discriminant scores capture all the classification-relevant variation, a single plot of $\text{LD}_1$ vs. $\text{LD}_2$ shows how all groups separate. Adding prediction regions---colored tiles showing which group would be assigned at any point in this space---makes the decision boundaries explicit. Overlaying variable vectors (an LDA biplot, analogous to a PCA biplot) shows which measured variables drive each dimension.
+
+* **`candisc()` bridges LDA and MANOVA**: Running `candisc()` on the same `"mlm"` object used for MANOVA provides significance tests for each discriminant dimension, a canonical discriminant plot with properly scaled structure-coefficient vectors, and a canonical HE plot that shows the between-group hypothesis ellipse against the within-group error ellipse in the discriminant space. This makes explicit the connection between visual hypothesis testing and classification.
+
+* **Quadratic discriminant analysis handles unequal covariance matrices**: When the within-group covariance matrices $\mathbf{S}_k$ differ substantially across groups, the linear decision boundaries of LDA are no longer appropriate and QDA replaces them with curved boundaries. Swapping `qda()` for `lda()` in the visualization routines shown here---`plot_discrim()`, the grid-prediction approach---produces the quadratic versions with no further changes to the plotting code.
