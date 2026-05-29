@@ -6,6 +6,8 @@ The book cover (`images/cover/cover-peng.pdf`) must appear as page 1 of the
 compiled PDF, before Quarto's generated title page, correctly sized and positioned
 within the 6 × 9 inch trim area (krantz2, letterpaper).
 
+**Status**: DONE
+
 ---
 
 ## Approaches tried and rejected

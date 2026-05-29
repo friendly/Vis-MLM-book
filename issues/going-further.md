@@ -10,6 +10,9 @@ machine learning, etc.
 A recurring infobox titled **"Going further"** at the end of selected chapters
 (or major sections) provides these pointers without disrupting the main narrative.
 
+**Status**: This seemed like a good idea at one time, but the PDF book is already overly long.
+Only consider doing this in the online HTML version.
+
 ---
 
 ## Existing usage

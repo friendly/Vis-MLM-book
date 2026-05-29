@@ -4,6 +4,8 @@ Audit of `ggplot` / `ggplot2` usage across all `.qmd` files.
 Searched for: bare `` `ggplot` `` (missing the 2), plain `` `ggplot2` `` backticks,
 and `**ggplot2**` bold — compared against the correct `r pkg("ggplot2")` form.
 
+**Status**: DONE
+
 ---
 
 ## Group 1 — `ggplot` instead of `ggplot2` (FIXED)
