@@ -87,6 +87,15 @@ Some of these are old/stale/solved; review these & move to solved/ those no long
 * **Rendering**: I use the `Build -> Render Book` button to render in either PDF or HTML. It creates a background job via the command, e.g.,
   `quarto preview --render pdf --no-watch-inputs --no-browse`, and takes ~ 10 min to render. 
 
+### R Code Appendix: Ch 13 fig.code gaps
+
+* **Ch 13 (`13-eqcov.qmd`) has no `fig.code` links** — the R code appendix (`30-Rcode.qmd`)
+  currently has no entry for "Chapter 13: Visualizing Equality of Covariance Matrices".
+  Seven figures are uncovered (all show "no match" in the audit):
+  `fig-peng-boxplots`, `fig-peng-devplots`, `fig-peng-iris-boxm-plots`,
+  `fig-peng-iris-boxm-plots2`, `fig-peng-boxm-plots`, `fig-iris-dev-pairs`, `fig-iris-dev-can`.
+  Full details in `issues/figcode-gaps.md`. **Not high priority for June submission** — defer.
+
 ### Priority 2: HTML/PDF Conditional Content
 
 * Links (`[]()` markdown) should render as footnotes in PDF — need conditional handling throughout.
