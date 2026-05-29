@@ -1,4 +1,6 @@
-# Partial variables plot
+#' ---
+#' Partial variables plot
+#' ---
 
 # To understand the partial correlations, make scatterplots of the residuals from the
 # models where each x_i, x_j are predicted by all others. 
@@ -7,16 +9,17 @@
 # https://stackoverflow.com/questions/35591033/plot-scatterplot-matrix-with-partial-correlation-coefficients-in-r
 # TODO: Just as there is an avPlots() function to do avPlot() for all Xs, perhaps develop a pvPlots() function to do all pairs.
 
-# ✔️DONE: make show.partial take a list(loc = c(x,y), cex = )
-# ✔️DONE: make id take a list of options
-# ✔️DONE: use dataEllipse() instead of scatterplot()
-
+# Usage note: in Vis-MLM, need to use my patched version of `dataEllipse`
 # Source patched car::dataEllipse until fix is accepted upstream (see test/Ellipse.R)
 source(here::here("test/Ellipse.R"))
 applyDefaults <- car:::applyDefaults  # make internal visible to sourced dataEllipse.default
 carPalette <- car:::carPalette
 showLabels <- car:::showLabels
 
+# ✔️DONE: make show.partial take a list(loc = c(x,y), cex = )
+# ✔️DONE: make id take a list of options
+# ✔️DONE: use dataEllipse() instead of scatterplot()
+# 
 # ✔️DONE: ellipse.args$col now controls ellipse color independently of point col (2026-05-21)
 # ✔️DONE: specify/document what `ellipse.args` work (e.g., `fill`, `fill.alpha`)
 # ✔️DONE: ellipse = FALSE now works via levels = numeric(0) (2026-05-21)
@@ -25,8 +28,20 @@ showLabels <- car:::showLabels
 #          causing "formal argument 'cex' matched by multiple actual arguments" in text.default().
 #          Fix: added cex as explicit formal to label.ellipse(); see test/Ellipse.R for PR.
 # ✔️DONE: regline now accepts FALSE or list(col, lwd) — same pattern as show.partial (2026-05-21)
-# TODO: make `others` an argument, so it's not necessary to partial _all_ others
-# TODO: test use of plots for factors
+# ✔️DONE: others argument added — defaults to all non-vars columns (2026-05-23)
+# TODO: factor support — see test/pvPlot-test.R §14 for results (2026-05-23):
+#   - Binary/ordinal vars in `vars`: jittering NOT needed — lsfit() partial residuals are
+#     already continuous, de-discretizing the binary input. No special treatment required.
+#   - Factor column in `others`: lsfit() errors on a true R factor. Would need
+#     model.matrix() conversion. Deferred; document that X must be all-numeric.
+#   - Colouring by group (col = vector): does not work — dataEllipse uses only one colour.
+#     A pvPlots()-level wrapper would need to handle group colouring differently.
+#   Verdict: pvPlot() works fine for numeric-coded binary/ordinal vars; document the
+#   all-numeric requirement; group-colour support is future work.
+# TODO: Extend this to a `pvPlots()` function that would produce a scatterplot matrix form of the collection of pvPlot() for all pairs of variables.
+#       How this is done in car::avPlots(), C:\Dropbox\R\packages\car\R\avPlots.R, might be useful here.
+# TODO: Add a formula interface, presumably a one-sided formula,  `~ x1 + x2` with a `data=` arg. This would entail an
+#       S3 generic, with default and formula methods. `others` could be specified as  `~ x1 + x2 | x3 + x4`
 
 #' 
 #' @title Partial Variables Plot
@@ -48,12 +63,16 @@ showLabels <- car:::showLabels
 #' such as produced by \code{\link[car]{avPlots}}. However, that implementation
 #' is designed for a linear model, rather than a data.frame.
 #' 
-#' This function uses \code{\link[car]{dataEllipse}} for drawing, so ...
+#' The present version assumes that all variables passed are numeric.
+#' 
+#' This function uses \code{\link[car]{dataEllipse}} for drawing, so further documentation of arguments passed there should be consulted.
 #' 
 #' 
 #'
 #' @param X     a data.frame of numeric variables
 #' @param vars  either the character names of two variables in \code{X} or their indices
+#' @param others character names or indices of the variables to partial out. If \code{NULL}
+#'              (the default), all variables in \code{X} other than \code{vars} are used.
 #' @param labels id labels for the points. If not supplied, rownames of the dataset are used.
 #' @param id    controls point identification; if \code{FALSE} (the default), no points are identified; 
 #'              can be a list of named arguments to the \code{\link[car]{showLabels} function
@@ -98,6 +117,10 @@ showLabels <- car:::showLabels
 #' pvPlot(crime.num, vars = c("burglary", "larceny"),
 #'        regline = list(col = "red", lwd = 3))
 #' 
+#' # partial out only a subset of the other variables
+#' pvPlot(crime.num, vars = c("burglary", "larceny"),
+#'        others = c("murder", "rape"))
+#'
 #' # suppress the ellipse
 #' pvPlot(crime.num, vars = c("burglary", "larceny"), ellipse=FALSE)
 #' 
@@ -109,6 +132,7 @@ showLabels <- car:::showLabels
 pvPlot <- function(
    X,
    vars = 1:2,
+   others = NULL,
    labels,
    id = FALSE, 
    ellipse=TRUE,
@@ -131,8 +155,16 @@ pvPlot <- function(
   # variables, as names, even if vars is numeric
   all <- names(X)
   vars <- if(is.numeric(vars)) names(X)[vars] else vars
-  # TODO: make `others` an argument, so it's not necessary to partial _all_ others
-  others <- setdiff(all, vars)
+  if (is.null(others)) {
+    others <- setdiff(all, vars)
+  } else {
+    others <- if(is.numeric(others)) names(X)[others] else others
+    invalid <- setdiff(others, setdiff(all, vars))
+    if (length(invalid))
+      warning("'others' contains variables not in X or already in vars: ",
+              paste(invalid, collapse=", "))
+    others <- intersect(others, setdiff(all, vars))
+  }
 
   # variables for this plot  
   v1 <- vars[1]

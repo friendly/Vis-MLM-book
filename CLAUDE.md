@@ -77,7 +77,7 @@ See `issues/Tasks-Issues.md` for the full prioritized list. Top items:
 3. **Cover page** — can't include via Quarto; currently added manually in Acrobat
 4. **Conditional content** — links as footnotes in PDF; GIFs only in HTML
 5. **pkg() formatting** — needs `\index{}` for PDF, different style for HTML vs PDF
-6. **Reviewer comments** — see `issues/reviewer-MichaelT-*.Rmd` and `reviews/*.pdf`
+6. **Reviewer comments** — see `reviews/MichaelT-*.Rmd` and `reviews/*.pdf`
 7. **Content additions** — see `issues/content-todos.md`
 
 ## Blog posts

@@ -186,6 +186,9 @@ covariance matrix $\mathbf{S}_X$ and the corresponding confidence ellipse for th
 based on $\mathbf{S}_X^{-1}$. This is shown in @fig-coffee-data-beta-both for the data space
 relation between the predictors coffee and stress, and the $\beta$ space of the confidence ellipse
 for their coefficients.
+Confidence ellipses are drawn using `r func("car::confidenceEllipse()")`.
+[Click the button to show the code.]{.content-visible when-format="html"}
+
 
 ```{r}
 #| label: fig-coffee-data-beta-both
@@ -195,6 +198,45 @@ for their coefficients.
 #| hypothesis that both coefficients equal zero."
 knitr::include_graphics("images/coffee-data-beta-both.png")
 ```
+
+<!-- **TODO**: Maybe include this code only in the HTML version? DONE -->
+
+
+```{r echo=knitr::is_html_output()}
+#| eval: false
+#| code-fold: true
+#| code-summary: "Code for confidence ellipses"
+confidenceEllipse(coffee.mod, 
+    grid = FALSE,
+    xlim = c(-2, 1), ylim = c(-0.5, 2.5),
+    xlab = expression(paste("Coffee coefficient,  ", beta["Coffee"])),
+    ylab = expression(paste("Stress coefficient,  ", beta["Stress"])),
+    cex.lab = 1.5)
+confidenceEllipse(coffee.mod, add=TRUE, draw = TRUE,
+    col = "red", fill = TRUE, fill.alpha = 0.1,
+    dfn = 1)
+abline(h = 0, v = 0, lwd = 2)
+
+# confidence intervals
+beta <- coef( coffee.mod )[-1]
+CI <- confint(coffee.mod)
+lines( y = c(0,0), x = CI["Coffee",] , lwd = 6, col = 'red')
+lines( x = c(0,0), y = CI["Stress",] , lwd = 6, col = 'red')
+points( diag( beta ), col = 'black', pch = 16, cex=1.8)
+
+abline(v = CI["Coffee",], col = "red", lty = 2)
+abline(h = CI["Stress",], col = "red", lty = 2)
+
+text(-2.1, 2.35, "Beta space", cex=2, pos = 4)
+arrows(beta[1], beta[2], beta[1], 0, angle=8, len=0.2)
+arrows(beta[1], beta[2], 0, beta[2], angle=8, len=0.2)
+
+text( -1.5, 1.85, "df = 2", col = 'blue', adj = 0, cex=1.2)
+text( 0.2, .85, "df = 1", col = 'red', adj = 0, cex=1.2)
+
+heplots::mark.H0(col = "darkgreen", pch = "+", lty = 0, pos = 4, cex = 3)
+```
+
 
 <!--
 Consider the dataset `coffee`, giving measures of `Heart` ($y$), an index of cardiac damage, 
@@ -301,12 +343,12 @@ corresponding individual 95% confidence intervals, which are
 equivalent to the (partial, Type III) $t$-tests for each coefficient given in the
 standard multiple regression output shown above.
 
-Thus, controlling for Stress, the confidence interval for the slope for Coffee includes 0,
+Thus, controlling for `Stress`, the confidence interval for the slope for `Coffee` includes 0,
 so we cannot reject the hypothesis that $\beta_{\mathrm{Coffee}}=0$
 in the multiple regression model, as we saw above in the numerical output.
-On the other hand, the interval for the slope for Stress excludes the origin,
+On the other hand, the interval for the slope for `Stress` excludes the origin,
 so we reject the null hypothesis that $\beta_{\mathrm{Stress}}=0$,
-controlling for Coffee consumption.
+controlling for `Coffee` consumption.
 
 Finally, consider the relationship between the data ellipse and the
 confidence ellipse.
@@ -315,49 +357,10 @@ These have exactly the same shape, but
 the confidence ellipse
 is exactly a $90^o$ rotation and rescaling of the data ellipse.  In directions in
 data space where the slice of the data ellipse is wide---where we have more information
-about the relationship between Coffee and Stress---the projection of the confidence ellipse is
+about the relationship between `Coffee` and `Stress`---the projection of the confidence ellipse is
 narrow, reflecting greater precision of the estimates of coefficients.
 Conversely, where the slice of the data ellipse is narrow (less information), the projection of the
 confidence ellipse is wide (less precision).
-
-**TODO**: Maybe include this code only in the HTML version?
-
-Confidence ellipses are drawn using `r func("car::confidenceEllipse()")`.
-Click the button to show the code.
-```{r}
-#| eval: false
-#| code-fold: true
-#| code-summary: "Code for confidence ellipses"
-confidenceEllipse(coffee.mod, 
-    grid = FALSE,
-    xlim = c(-2, 1), ylim = c(-0.5, 2.5),
-    xlab = expression(paste("Coffee coefficient,  ", beta["Coffee"])),
-    ylab = expression(paste("Stress coefficient,  ", beta["Stress"])),
-    cex.lab = 1.5)
-confidenceEllipse(coffee.mod, add=TRUE, draw = TRUE,
-    col = "red", fill = TRUE, fill.alpha = 0.1,
-    dfn = 1)
-abline(h = 0, v = 0, lwd = 2)
-
-# confidence intervals
-beta <- coef( coffee.mod )[-1]
-CI <- confint(coffee.mod)
-lines( y = c(0,0), x = CI["Coffee",] , lwd = 6, col = 'red')
-lines( x = c(0,0), y = CI["Stress",] , lwd = 6, col = 'red')
-points( diag( beta ), col = 'black', pch = 16, cex=1.8)
-
-abline(v = CI["Coffee",], col = "red", lty = 2)
-abline(h = CI["Stress",], col = "red", lty = 2)
-
-text(-2.1, 2.35, "Beta space", cex=2, pos = 4)
-arrows(beta[1], beta[2], beta[1], 0, angle=8, len=0.2)
-arrows(beta[1], beta[2], 0, beta[2], angle=8, len=0.2)
-
-text( -1.5, 1.85, "df = 2", col = 'blue', adj = 0, cex=1.2)
-text( 0.2, .85, "df = 1", col = 'red', adj = 0, cex=1.2)
-
-heplots::mark.H0(col = "darkgreen", pch = "+", lty = 0, pos = 4, cex = 3)
-```
 
 \ixoff{data space}
 \ixoff{$\beta$ space}
@@ -628,7 +631,7 @@ knitr::include_graphics("images/coffee-measerr.png")
 
 \ixoff{measurement error}
 
-```{r child="summary/Ch07-summary.qmd"}
+```{r child="summary/Ch08-summary.qmd"}
 ```
 
 

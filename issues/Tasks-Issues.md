@@ -38,9 +38,9 @@ Some of these are old/stale/solved; review these & move to solved/ those no long
 | `quarto-pdf-help.md` | PDF build / LaTeX / Quarto problems writeup (also a draft job post) |
 | `exercises-format.md` | Template/prompt for generating chapter exercises |
 | `content-dominance-analysis.txt` | Potential addition: dominance weight visualization |
-| `reviewer-MichaelT-comments.Rmd` | Chapter-by-chapter reviewer comments (Michael T.) |
-| `reviewer-MichaelT-discrim.Rmd` | Reviewer comments on discriminant analysis appendix |
-| `reviewer-MichaelT-submit.Rmd` | Additional reviewer line-edit comments (Michael T.) |
+| `MichaelT-comments.Rmd` | Chapter-by-chapter reviewer comments (Michael T.) |
+| `MichaelT-discrim.Rmd` | Reviewer comments on discriminant analysis appendix |
+| `MichaelT-submit.Rmd` | Additional reviewer line-edit comments (Michael T.) |
 
 ---
 
@@ -71,7 +71,7 @@ Some of these are old/stale/solved; review these & move to solved/ those no long
   - Reference model: https://github.com/bgreenwell/quarto-crc (Quarto-CRC starter)
 
 * **Author index**: `authorindex` Perl script fails. Tracked in `build-problems/authorindex.md`. If this cannot be made
-  to run, I wonder if it would be possible to re-write what this does in R. [DONE: See `task-authorindex.md`]
+  to run, I wonder if it would be possible to re-write what this does in R. [**DONE**: See `task-authorindex.md`]
 
 * **Cover page**: `images/cover/cover-peng.jpg` cannot be included via Quarto front matter;
   currently added manually in Adobe Acrobat post-compile. [DONE: Now using `\includepdf{}` in `preamble.tex`]
@@ -120,9 +120,9 @@ See `content-todos.md` for full list. Highlights:
 
 ### Priority 5: Reviewer Comments
 
-* Work through `reviewer-MichaelT-comments.Rmd` — chapter-by-chapter items, some marked DONE.
-* Work through `reviewer-MichaelT-discrim.Rmd` — comments on discriminant analysis appendix.
-* Work through `reviewer-MichaelT-submit.Rmd` — line edits and broken refs.
+* Work through `MichaelT-comments.Rmd` — chapter-by-chapter items, some marked DONE.
+* Work through `MichaelT-discrim.Rmd` — comments on discriminant analysis appendix.
+* Work through `MichaelT-submit.Rmd` — line edits and broken refs.
 * Review PDFs in `reviews/` (Reviewer 1.pdf, Reviewer 2.pdf).
 
 ### Priority 6: Exercises

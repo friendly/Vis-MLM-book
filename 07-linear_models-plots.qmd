@@ -56,6 +56,7 @@ library(marginaleffects)
 library(modelsummary)
 library(performance)
 library(tidyr)
+requireNamespace("spida2", quietly = TRUE)  # GitHub only; used via spida2:: to avoid masking ggplot2::labs()
 ```
 
 ```{r bib-pkgs}
@@ -194,7 +195,7 @@ in slopes.
 #| fig-height: 7
 #| fig-cap: "Joint 95% confidence ellipse for $(\\beta_{\\text{Inc}}, \\beta_{\\text{Educ}})$, together with their 1D shadows, which give 95% confidence intervals for the separate coefficients and the linear hypothesis that the coefficients are equal. Projecting the confidence ellipse along the line with unit slope gives a confidence interval for the difference between coefficients, shown by the dark red line."
 op <- par(mar = c(4,4, 1, 0)+ .3)
-confidenceEllipse(duncan.mod, col = "blue",
+car::confidenceEllipse(duncan.mod, col = "blue",
   levels = 0.95, dfn = 1,
   fill = TRUE, fill.alpha = 0.2,
   xlim = c(-.4, 1),
@@ -370,7 +371,7 @@ par(op)
 \ixoff{Canadian occupational prestige}
 
 <!--
-## Other Model plots
+## Other model plots
 
 **TODO**: What goes here?
 -->
@@ -946,7 +947,7 @@ However, this use of AV plots to diagnose nonlinearity or suggest transformation
 but unless the predictors are uncorrelated, they cannot determine the form of a possible
 transformation of the predictors.
 
-### Component + Residual plots
+### Component + residual plots
 
 \ix{component + residual plots}
 
@@ -1780,28 +1781,17 @@ can see directly the how individual cases become individually or jointly influen
 
 The Duncan data provides a particularly instructive example of this. @fig-duncan-av-influence
 shows the AV plots for both income and education in the model `duncan.mod`, with some annotations
-added. I want to focus here on the _joint_ influence of the occupations minister and conductor
+added. I want to focus here on the _joint_ influence of the occupations "minister" and "conductor",
 which were seen to be the most influential in @fig-duncan-infl. The `r colorize("green")`
 vertical lines show their residuals in each panel and the `r colorize("red")` lines show the regressions
 when these two observations are deleted.
 
-The basic AV plots are produced using the call to `avPlots()` below. 
+These customized AV plots are produced using calls to `avPlot()` below. 
 To avoid clutter, I use the argument `id = list(method = "mahal", n=3)` so that
 only the three points with the greatest Mahalanobis distances from the centroid in each plot
 are labeled. These are the cases with the largest leverage seen in @fig-duncan-infl.
 
-**TODO**: Fix up the code displayed here, from R/Duncan/Duncan-reg.R
-
-```{r}
-#| label: duncan-av-infl
-#| eval: false
-avPlots(duncan.mod,
-  ellipse = list(levels = 0.68, fill = TRUE, fill.alpha = 0.1),
-  id = list(method = "mahal", n=3),
-  pch = 16, cex = 0.9,
-  cex.lab = 1.5)
-```
-
+<!-- fig.code: R/Duncan/duncan-av-influence.R -->
 
 ```{r}
 #| label: fig-duncan-av-influence
@@ -1814,37 +1804,55 @@ knitr::include_graphics("images/duncan-av-influence.png")
 The two cases---minister and conductor---are the most highly influential, but as we can see in 
 @fig-duncan-av-influence their influence combines because they are at opposite sides of the horizontal axis and their residuals are of opposite signs. They act together to decrease the slope for income and increase that for education.
 
-```{r}
+```{r echo=knitr::is_html_output()}
 #| label: duncan-av-infl-code
 #| eval: false
 #| code-fold: true
-#| code-summary: Code for income AV plot
+#| code-summary: "Code for @fig-duncan-av-influence"
+op <- par(mar = c(4, 5, 4, 1) + .1, mfrow = c(1, 2))
+
+# income panel
 res <- avPlot(duncan.mod, "income",
               ellipse = list(levels = 0.68),
-              id = list(method = "mahal", n=3),
-              pch = 16,
-              cex.lab = 1.5) |>
+              id = list(method = "mahal", n = 3, cex = 1.2),
+              pch = 16, cex.lab = 1.5) |>
   as.data.frame()
-fit <- lm(prestige ~ income, data = res)
-info <- cbind(res, fitted = fitted(fit), 
-             resids = residuals(fit),
-             hat = hatvalues(fit),
-             cookd = cooks.distance(fit))
-
-# noteworthy points in this plot
-big <- which(info$cookd > .20)
+fit  <- lm(prestige ~ income, data = res)
+info <- cbind(res, fitted = fitted(fit),
+              resids = residuals(fit),
+              hat = hatvalues(fit),
+              cookd = cooks.distance(fit))
+big <- which(info$cookd > 0.20)
 with(info, {
-  arrows(income[big], fitted[big], income[big], prestige[big], 
-         angle = 12, length = .18, lwd = 2, col = "darkgreen")
-  })
-
-# line w/o the unusual points
-duncan.mod2 <- update(duncan.mod, subset = -c(6, 16))
+  arrows(income[big], fitted[big], income[big], prestige[big],
+         angle = 12, length = 0.18, lwd = 3, col = "darkgreen")
+})
 bs <- coef(duncan.mod2)["income"]
-abline(a=0, b=bs, col = "red", lwd=2)
+abline(a = 0, b = bs, col = "red", lwd = 2)
+
+# education panel
+res <- avPlot(duncan.mod, "education",
+              ellipse = list(levels = 0.68),
+              id = list(method = "mahal", n = 3, cex = 1.2),
+              pch = 16, cex.lab = 1.5) |>
+  as.data.frame()
+fit  <- lm(prestige ~ education, data = res)
+info <- cbind(res, fitted = fitted(fit),
+              resids = residuals(fit),
+              hat = hatvalues(fit),
+              cookd = cooks.distance(fit))
+big <- which(info$cookd > 0.2)
+with(info, {
+  arrows(education[big], fitted[big], education[big], prestige[big],
+         angle = 12, length = 0.18, lwd = 3, col = "darkgreen")
+})
+bs <- coef(duncan.mod2)["education"]
+abline(a = 0, b = bs, col = "red", lwd = 2)
+
+par(op)
 ```
 
-Duncan's hypothesis that the slopes for income and education were equal thus fails when these
+Duncan's hypothesis that the slopes for income and education were **equal** thus fails when these
 two observations are deleted. The slope for income then becomes 2.6 times that of education.
 
 ```{r}
@@ -1855,7 +1863,7 @@ coef(duncan.mod2)
 
 \ixoff{added-variable plots!influence}
 
-```{r child = "summary/Ch06-summary.qmd"}
+```{r child = "summary/Ch07-summary.qmd"}
 ```
 
 <!--

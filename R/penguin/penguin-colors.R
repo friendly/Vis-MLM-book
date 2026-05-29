@@ -1,5 +1,5 @@
 #' ---
-#' title: penguin colors
+#' title: Define penguin colors and themes
 #' author: Michael Friendly
 #' ---
 

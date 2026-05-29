@@ -12,7 +12,7 @@ These are the most recognizable AI signatures — cut wherever they appear:
 
 1. **"Here are the essential takeaways/insights..."** boilerplate sentence before the bullet list — Ch05, Ch06, Ch09, Ch12. Delete; the bullets stand alone.
 
-2. **Direct address** ("you can literally see...", "your best friends...") — Ch03, Ch06, Ch08, Ch11, Ch12. Academic prose uses "one" or passive voice, not "you."
+2. **Direct address** ("you can literally see...", "your best friends...") — Ch03, Ch06, Ch08, Ch11, Ch12. Academic prose uses "one" or passive voice, not "you." [MF: NO, I want to keep an active, personal voice]
 
 3. **Simile closers** — final sentence recaps the chapter theme as a metaphor: "like navigating without a compass" (Ch06), "visual stories waiting to be told" (Ch12). These read as AI winding down rather than a real conclusion.
 
