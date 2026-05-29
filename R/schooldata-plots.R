@@ -1,3 +1,7 @@
+#' ---
+#' title: Plots to visualize aspects of the `schooldata` dataset
+#' ---
+#' 
 library(car)
 library(corrgram)
 library(tidyr)

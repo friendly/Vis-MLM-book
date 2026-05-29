@@ -37,10 +37,21 @@ flatten_chapters <- function(items) {
 
 chapter_files <- flatten_chapters(cfg$book$chapters)
 
-if (!is.null(cfg$book$appendices)) {
+appendix_files <- if (!is.null(cfg$book$appendices)) {
   app <- unlist(cfg$book$appendices)
-  chapter_files <- c(chapter_files, app[grepl("\\.qmd$", app)])
-}
+  app[grepl("\\.qmd$", app)]
+} else character(0)
+
+all_files <- c(chapter_files, appendix_files)
+
+# Build actual chapter-number lookup from position in the ordered chapter list.
+# Preamble (index.qmd, 00-Author.qmd) and end-matter (91-*, 95-*) get no number.
+preamble_rx  <- "^(index\\.qmd|00-.*\\.qmd)"
+endmatter_rx <- "^(9[0-9]-.*\\.qmd)"
+numbered_chapters <- chapter_files[
+  !grepl(preamble_rx, chapter_files) & !grepl(endmatter_rx, chapter_files)
+]
+ch_num_lookup <- setNames(seq_along(numbered_chapters), numbered_chapters)
 
 # ------------------------------------------------------------------
 # 2. Helper functions
@@ -61,15 +72,13 @@ get_chapter_title <- function(qmd) {
 }
 
 # Section heading: "Chapter N: Title", "Appendix: Title", or plain title.
-# Uses the numeric prefix of the filename (01–15 → Chapter N; 21 → Appendix).
-make_chapter_heading <- function(qmd, title) {
-  base    <- tools::file_path_sans_ext(basename(qmd))
-  num_str <- sub("^(\\d+)-.*", "\\1", base)
-  if (num_str == base) return(title)          # no numeric prefix (index.qmd)
-  num <- as.integer(num_str)
-  if (num >= 1 && num <= 15) sprintf("Chapter %d: %s", num, title)
-  else if (num == 21)        sprintf("Appendix: %s",   title)
-  else                       title             # colophon, references, etc.
+# Uses actual position in book.chapters (not filename prefix) for chapter number,
+# and the book.appendices membership for the "Appendix" label.
+make_chapter_heading <- function(qmd, title, ch_num_lookup, appendix_files) {
+  if (qmd %in% appendix_files) return(sprintf("Appendix: %s", title))
+  num <- ch_num_lookup[qmd]
+  if (!is.na(num)) return(sprintf("Chapter %d: %s", num, title))
+  title   # preamble / end-matter (index.qmd, colophon, references)
 }
 
 # Child .qmd files included via {{< include child/... >}} or {r child="child/..."}
@@ -170,7 +179,7 @@ get_sourced_files <- function(rfile) {
 # ------------------------------------------------------------------
 chapter_data <- list()
 
-for (qmd in chapter_files) {
+for (qmd in all_files) {
   if (!file.exists(qmd)) {
     warning("chapter file not found: ", qmd)
     next
@@ -188,7 +197,7 @@ for (qmd in chapter_files) {
 
   ch_title <- get_chapter_title(qmd)
   chapter_data[[qmd]] <- list(
-    heading = make_chapter_heading(qmd, ch_title),
+    heading = make_chapter_heading(qmd, ch_title, ch_num_lookup, appendix_files),
     entries = entries
   )
 }
@@ -209,8 +218,8 @@ utility_from_rscripts <- unique(unlist(lapply(cited_paths, get_sourced_files)))
 
 # Source() calls found directly inside chapter and child .qmd files.
 # get_sourced_files() works on any text file; .qmd R code chunks are plain R.
-all_qmd_files <- unique(c(chapter_files,
-                           unlist(lapply(chapter_files, get_child_files))))
+all_qmd_files <- unique(c(all_files,
+                           unlist(lapply(all_files, get_child_files))))
 utility_from_qmds <- unique(unlist(lapply(all_qmd_files, get_sourced_files)))
 utility_from_qmds <- setdiff(utility_from_qmds, SKIP_UTILS)
 
@@ -232,9 +241,7 @@ n_files    <- sum(sapply(chapter_data, function(x) length(x$entries)))
 
 con <- file("30-Rcode.qmd", "w")
 
-cat('---
-title: "R Code for Figures and Analyses"
----
+cat('# R Code for Figures and Analyses {#sec-Rcode}
 
 This online appendix lists the R source files used to produce some of the figures and analyses in each chapter, with links to the source code on GitHub.
 

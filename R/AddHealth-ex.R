@@ -1,3 +1,7 @@
+#' ---
+#' title: Plots and analyses for the `AddHealth` dataset
+#' ---
+
 library(car)
 library(ggplot2)
 library(dplyr)

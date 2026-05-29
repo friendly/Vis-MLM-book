@@ -1,3 +1,8 @@
+#' ---
+#' title: Models and plots for the schooldata dataset
+#' ---
+#' 
+
 library(car)
 library(tidyr)
 library(dplyr)

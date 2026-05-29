@@ -1,7 +1,7 @@
 #' ---
-#' Partial variables plot
+#' title: Partial variables plots to visualize partial correlation
 #' ---
-
++
 # To understand the partial correlations, make scatterplots of the residuals from the
 # models where each x_i, x_j are predicted by all others. 
 
