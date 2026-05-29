@@ -58,7 +58,7 @@ peng.qda <- qda(species ~ bill_length + bill_depth + flipper_length + body_mass,
 
 means <- peng |>
   group_by(species) |>
-  summarise(across(c(bill_length, bill_depth), mean ))
+  summarise(across(where(is.numeric), mean, na.rm = TRUE))
 
 p1 <- plot_discrim(peng.qda, bill_depth ~ bill_length,
              ellipse = TRUE,
@@ -69,9 +69,9 @@ p1 <- plot_discrim(peng.qda, bill_depth ~ bill_length,
   theme_minimal(base_size = 16) +
   theme(legend.position = "none")
 
-means <- peng |>
-  group_by(species) |>
-  summarise(across(c(flipper_length, body_mass), mean))
+# means <- peng |>
+#   group_by(species) |>
+#   summarise(across(c(flipper_length, body_mass), mean))
 
 p2 <- plot_discrim(peng.qda, body_mass ~ flipper_length,
              ellipse = TRUE,
