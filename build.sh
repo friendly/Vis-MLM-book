@@ -45,6 +45,7 @@ FORMAT="all"
 CLEAN_CACHE=false
 RUN_AUTHORINDEX=false
 DRY_RUN=false
+AUTHORINDEX_REGENERATED=false
 
 FINGERPRINT_FILE=".authorindex-fingerprint"
 AUX="index.aux"
@@ -217,6 +218,7 @@ post_pdf_authorindex() {
         echo "    Copied:    $AIN → Vis-MLM.ain"
       fi
       save_fingerprint
+      AUTHORINDEX_REGENERATED=true
     else
       echo "    WARNING: make-authorindex.sh not found."
       echo "    Run manually: bash make-authorindex.sh"
@@ -300,6 +302,12 @@ case "$FORMAT" in
     check_pdf_no_appendices
     echo ""
     post_pdf_authorindex
+    if $AUTHORINDEX_REGENERATED; then
+      echo "--> Re-rendering PDF to include regenerated author index..."
+      render_pdf
+      check_pdf_no_appendices
+      echo ""
+    fi
     archive_pdf_artifacts
     echo "    Step 2/4: HTML pass 1 (builds xref database)"
     run quarto render --to html --profile online
@@ -319,6 +327,12 @@ if [[ "$FORMAT" == "html" ]]; then
   echo "--> HTML-only build: skipping authorindex."
 elif [[ "$FORMAT" == "pdf" ]]; then
   post_pdf_authorindex
+  if $AUTHORINDEX_REGENERATED; then
+    echo "--> Re-rendering PDF to include regenerated author index..."
+    render_pdf
+    check_pdf_no_appendices
+    echo ""
+  fi
 fi
 
 # ---------------------------------------------------------------------------
