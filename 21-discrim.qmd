@@ -299,6 +299,7 @@ c(accuracy = acc, error = err)
 
 That's pretty good! Only 4 penguins are misclassified, giving an error rate of 1.2%. You can identify the
 errors by joining the data with the predicted class and filtering those that don't match.
+The only confusions are between Adélie and Chinstraps. We'll see why this is the case in plots developed below.
 
 ```{r}
 data.frame(id = row.names(peng),
@@ -308,7 +309,15 @@ data.frame(id = row.names(peng),
   relocate(predicted, .after = species)
 ```
 
-The only confusions are between Adélie and Chinstraps. We'll see why this is the case in plots developed below.
+A more sensitive assessment of accuracy is leave-one-out **cross validation**,
+obtained using `CV = TRUE` in `MASS::lda()`. With this computer-intensive method, the function systematically holds out one observation, fits the model on the remaining $n$ cases and predicts the class of the excluded observation. The overall error rate can be calculated as:
+
+```{r}
+error_rate <- mean(peng.lda$class != peng$species)
+```
+
+
+\ix{cross validatation}
 
 ## Classifying new penguins
 
@@ -961,7 +970,7 @@ $$
 $${#eq-qda-fun}
 
 and again the observation $\mathbf{x}$ is assigned to the class $k$ that has the largest discriminant score.
-The method gets its name because the resulting decision boundaries are quadratic (curved) rather than straight lines.
+QDA gets its name because the resulting decision boundaries are quadratic (curved) rather than straight lines.
 
 Happily, with these developments, all the methods for analysis and visualization work just the same, if
 you substitute `r func("MASS::qda()")` for `r func("MASS::lda()")` in the material above.
@@ -1018,10 +1027,28 @@ QDA uses its' additional covariance parameters to construct more highly curved r
 isolate the smaller differences between the Adélie and Chinstraps. The difference between these two species
 appears more clearly in the low-rank canonical discriminant space of @fig-peng-candisc.
 
+Was the QDA analysis worth the extra complexity? A simple way to find out is to re-run the LDA and QDA
+analyses using cross validation (`CV = TRUE`) to assess the classification accuracy of each
+
+```{r}
+peng.lda <- lda(species ~ bill_length + bill_depth + flipper_length + body_mass, 
+                data = peng, CV = TRUE)
+peng.qda <- qda(species ~ bill_length + bill_depth + flipper_length + body_mass, 
+                data = peng, CV = TRUE)
+
+# Calculate LOO CV accuracy
+lda_accuracy <- mean(peng.lda$class == peng$species) 
+qda_accuracy <- mean(peng.qda$class == peng$species)
+accuracy <- c(LDA = lda_accuracy, 
+              QDA = qda_accuracy, 
+              diff = qda_accuracy - lda_accuracy) |> print()
+```
+
+
 :::
 
 
-**TODO**: Mention recursive partition methods as another topic, not covered here.
+<!-- **TODO**: Mention recursive partition methods as another topic, not covered here. -->
 
 <!--
 ## Recursive partition methods

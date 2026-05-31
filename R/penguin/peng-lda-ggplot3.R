@@ -92,10 +92,11 @@ peng.lda <- lda(species ~ bill_length + bill_depth + flipper_length + body_mass,
 peng.qda <- qda(species ~ bill_length + bill_depth + flipper_length + body_mass, 
                 data = peng, CV = TRUE)
 
-# Calculate cross-validated accuracy
+# Calculate LOO CV accuracy
 lda_accuracy <- mean(peng.lda$class == peng$species) 
 qda_accuracy <- mean(peng.qda$class == peng$species)
+accuracy <- c(LDA = lda_accuracy, 
+              QDA = qda_accuracy, 
+              diff = qda_accuracy - lda_accuracy) |> print()
 
-# Print comparative accuracy
-cat("LDA Accuracy:", lda_accuracy, "\n")
-cat("QDA Accuracy:", qda_accuracy, "\n")
+

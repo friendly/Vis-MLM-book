@@ -226,7 +226,43 @@
 % Fix for modelsummary problem with \num{}
 \renewcommand*{\num}[1]{#1}
 
+% Fix TOC bug 1: prevent duplicate entries for unnumbered chapters.
+% krantz \@schapter auto-adds \addcontentsline{toc}{fm}{} for every \chapter*;
+% Quarto also emits \addcontentsline{toc}{chapter}{} for .unnumbered chapters.
+% Removing the fm call here leaves only Quarto's {chapter} entry.
+%
+% Fix TOC bug 2: part headers drawn in wrong position.
+% krantz \l@part defers rendering via \toc@draw: each part header is only
+% drawn when the *next* \l@part fires, placing it after its own chapters.
+% Adding \toc@draw at the top of \l@chapter flushes the pending header
+% before the first chapter of each part, putting it in the right place.
+\makeatletter
+\def\@schapter#1{\if@twocolumn
+                   \@topnewpage[\@makeschapterhead{#1}]%
+                 \else
+                   \@makeschapterhead{#1}%
+                   \markboth{#1}{#1}%
+                   \@afterheading
+                 \fi}
 
+\renewcommand*\l@chapter[2]{%
+  \toc@draw
+  \ifnum \c@tocdepth >\m@ne
+    \addpenalty{-\@highpenalty}%
+    \vskip 1.0em \@plus\p@
+    \setlength\@tempdima{1.5em}%
+    \begingroup
+      \parindent \z@ \rightskip \@pnumwidth
+      \parfillskip -\@pnumwidth
+      \leavevmode \bfseries
+      \advance\leftskip\@tempdima
+      \hskip -\leftskip
+      #1\nobreak\hfil \nobreak\hb@xt@\@pnumwidth{\hss #2}\par
+          {\it\draw@authors}%
+      \penalty\@highpenalty
+    \endgroup
+  \fi}
+\makeatother
 
 % This doesn't work
 % l.300 \includegraphics
