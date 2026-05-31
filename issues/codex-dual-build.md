@@ -44,6 +44,14 @@ Script:
 
 However, `quarto inspect --profile print` also reports the three appendices in the effective `book.appendices` and `book.render` list. That directly contradicts the plan's assumption that redefining `book.chapters` in `_quarto-print.yml` suppresses base appendices.
 
+Render attempt on 2026-05-31:
+
+- Command: `bash build.sh --full`.
+- The render hung in the first HTML pass after processing `index.qmd`, `00-Author.qmd`, and `01-Prelude.qmd`.
+- The process tree showed `bash build.sh --full`, `quarto render --to html --profile online`, Quarto's `deno` process, and an R process that had been running for about six minutes.
+- The render had already emptied `docs/` and started writing HTML output at the project root (`index.html`, `00-Author.html`, `01-Prelude.html`, `site_libs/`) before it was terminated.
+- The tracked `docs/` files and one modified figure were restored from git after the interrupted render; the root-level partial HTML files were removed.
+
 Generated artifacts show a mixed history:
 
 - `pdf/index.toc` is clean and has no `Case Studies`, `R Code`, or `Exercises` appendix chapters.
@@ -141,6 +149,64 @@ I would handle this in two phases: first make the build topology unambiguous, th
 5. Keep TOC/bookmark fixes separate:
    - Verify the `\l@chapter`/`\toc@draw` patch in a clean print PDF.
    - Then address duplicate index TOC/bookmark entries by simplifying index TOC insertion.
+
+## Implemented on `GK-work4`
+
+Implemented 2026-05-31:
+
+- Restored the safer profile model: `_quarto.yml` is chapters-only; `_quarto-online.yml` owns the three HTML-only appendices.
+- Made `build.sh` executable.
+- Added `-full` as an alias for `--full`.
+- Changed `build.sh --all` / `--full` order to build PDF first, run/refresh author index and archive PDF artifacts, then render HTML last and restore `pdf/Vis-MLM.pdf` into `docs/Vis-MLM.pdf`.
+- Added dry-run-safe author-index fingerprint handling. The previous dry run still wrote `.authorindex-fingerprint`.
+- Added post-render checks:
+  - PDF artifacts are checked for excluded appendix chapters.
+  - HTML output is checked for all expected chapter and appendix HTML files.
+- Added project `.Rprofile` settings to force headless `rgl` during non-interactive renders:
+  ```r
+  options(rgl.useNULL = TRUE)
+  Sys.setenv(RGL_USE_NULL = "TRUE")
+  ```
+
+Verification performed:
+
+- `bash -n build.sh` passed.
+- `./build.sh --full --dry-run` passed and shows the intended PDF-first / HTML-last sequence.
+- `./build.sh -full --dry-run` passed.
+- `quarto inspect --profile print | rg 'appendices|15-case-studies|30-Rcode|31-exercises|Appendices'` returned no matches.
+- `quarto inspect --profile online | rg 'appendices|15-case-studies|30-Rcode|31-exercises|Appendices'` confirmed the three appendices are present in the online profile.
+- The local HTML render hang was sampled and traced to R blocking in `rgl_init()` while trying to `XOpenDisplay`. With the project `.Rprofile`, `R --no-echo --no-restore -e 'library(rgl)'` completes locally.
+- `./build.sh --full` completed successfully on 2026-05-31 after installing missing local render dependencies:
+  - CRAN: `qgraph`, `broom.helpers`, `mclust`
+  - GitHub: `gmonette/spida2`, `gmonette/spida`
+  - TinyTeX filled missing TeX packages on demand, including `pdfpages`, `fvextra`, `tabularray`, `ulem`, `siunitx`, `tikzfill`, `pdfcol`, `fontawesome5`, and `makeindex`.
+- The completed full build produced:
+  - `docs/index.html`
+  - `docs/Vis-MLM.pdf`
+  - `pdf/Vis-MLM.pdf`
+- The build script's final HTML output check passed.
+
+Warnings from the completed full build scan:
+
+- The command exited successfully and the warnings found were non-fatal PDF/log quality issues, not dual-build failures.
+- `pdf/index.log` contains 4 LaTeX/package/font warnings:
+  - `caption`: unknown document class, so default caption settings were used.
+  - `\thesubtable` already defined.
+  - `hyperref`: suppressing an empty link around generated TeX line 3432.
+  - `\large` invalid in math mode around generated TeX line 11501.
+- `pdf/index.log` contains layout warnings:
+  - 214 `Overfull \hbox` entries.
+  - 2 `Underfull \hbox` entries.
+  - Most large `395.75pt` overfull warnings appear structural/repeated from the book layout/class.
+  - Smaller content-level overfulls appear around generated TeX lines 13450--13451 and 26574--26584.
+- `pdf/index.log` contains missing-character warnings:
+  - 4 occurrences for Unicode mathematical beta `𝛽`.
+  - 8 occurrences for check mark `✓` in monospaced font.
+- The captured render output also included non-fatal runtime noise:
+  - TinyTeX installed missing TeX packages during the run.
+  - Author-index BibTeX reported missing database entries / no database file during `_autidx_` generation, but the script continued and wrote `index.ain`.
+  - R printed package/S3 overwrite messages and one font substitution warning for `≥`.
+- Remaining cleanup targets are PDF polish: Unicode glyphs, the empty hyperlink, the math sizing command, author-index BibTeX noise, and overfull boxes.
 
 ## Suggested target workflow
 
