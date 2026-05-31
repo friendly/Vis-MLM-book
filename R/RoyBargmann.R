@@ -2,12 +2,16 @@
 #' title: Roy-Bargmann tests
 #' ---
 
-# The Roy-Bargmann procedure is typically used as a post hoc or follow-up analysis to a significant MANOVA. It evaluates the specific contribution of each dependent variable (DV) based on an a priori order of importance
+# The Roy-Bargmann procedure is typically used as a post hoc or follow-up analysis to a significant MANOVA. It evaluates the specific contribution of each dependent variable (DV) based on an a priori order of importance. It was touted for a while as one way
+# to make MANOVA more understandable & interpretable.
+# 
 # * This idea is similar in spirit to Helmert contrasts for factors.
 # * Hey, its the Fritz-Lowell-?? theorem in relation to the responses, rather than predictors.
 # * This would make a great research paper!
 # 
-# Not mentioned so far in the book, except that this is the basis for step-down tests in candisc.
+# Not mentioned so far in the book, except that this is the basis for step-down tests in candisc, though the tests there
+# are formulated as reverse cumulative tests: H0: The canonical correlations in the  current row and all that follow are zero.
+# 
 # For possible use in `heplots` as an alternative / addition to Anova, where we would get
 # a series of Sequential overall tests for the univariate models: y1 ~ x; y2|y1 ~ x; y3|y1 y2, ...
 

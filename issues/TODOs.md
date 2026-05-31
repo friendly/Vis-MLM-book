@@ -113,7 +113,7 @@ No active visible TODOs. One commented item (combining with a summary file) appe
 | 762 | hidden | `var.labels` is not a graphical parameter — fix |
 | 1077 | **visible** | Use `heplots::Hernior` (herniorrhaphy) as an exercise — see HE_mmra vignette |
 | 1408 | **visible** | Check signs of structure coefficients from `cancor()`; reflect vectors for `Ycan1` |
-| 1576 | **visible** | Insert chapter summary (section header exists but is empty) |
+| 1576 | ~~done~~ | Insert chapter summary (section header exists but is empty) |
 | 1311 | hidden | Fill in details of canonical correlations |
 
 ---
@@ -144,8 +144,8 @@ No TODOs found.
 | Line | Status | Note |
 |------|--------|------|
 | 355 | **visible** | Re-write sections below to use `scores.lda()` and new methods in `candisc` |
-| 738 | **visible** | `posterior` now defaults to `FALSE` in `predict()` — update code accordingly |
-| 757 | **visible** | Flip sign of LD1 in the plot (also appears in `child/10-discrim.qmd:565`) |
+| 738 | hidden | `posterior` now defaults to `FALSE` in `predict()` — update code accordingly |
+| 757 | hidden | Flip sign of LD1 in the plot (also appears in `child/10-discrim.qmd:565`) |
 | 187 | hidden | Add History Corner on development of LDA: Fisher (1936) → Rao (1948) → Bayesian |
 
 ---
@@ -156,7 +156,7 @@ No TODOs found.
 
 | Line | Status | Note |
 |------|--------|------|
-| 265 | **visible** | Move `pvPlot()` function into `heplots` or `car` package |
+| 265 | hidden | Move `pvPlot()` function into `heplots` or `car` package |
 | 263 | hidden | Two figures side-by-side — `car::scatterplot()` may not allow `layout-ncol` |
 
 ### `child/04-grand-tour.qmd`

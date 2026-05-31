@@ -38,7 +38,7 @@ Items requiring author judgement, R/LaTeX knowledge, or a decision:
 - [X] **Ch 6** "The General Linear Model" heading — all initial caps is correct here (§6.1)
 - [ ] Resolve remaining visible **TODO** items which appear in the text
 - [X] **Ch 7** `spida2` not in Packages list — fixed by adding missing `library(spida2)` call (§7)
-- [ ] **Ch 11** blurry figures `fig-visualizing-SSP` and `fig-manova-diagram` — recreate or leave
+- [X] **Ch 11** blurry figures `fig-visualizing-SSP` and `fig-manova-diagram` — leave as is
 - [X] **Ch 13** `$\mathcal{M}$` fix (§13.4 — LaTeX); reword ", here," sentence (§13.5)
 - [X] **Ch 21** `EnisGeisser1974` BibTeX error in `references.bib` (§21.2)
 - [X] **Heading capitalisation** policy pass — sentence case; cap after ":" only for proper terms
@@ -111,7 +111,7 @@ Gavin should edit the `.qmd` files directly and submit a PR.
 
     - Units unknown
 
-- §21.6: move paragraph ("You can see that Betsy and Dave…") to after the figure
+- §21.6: move paragraph ("You can see that Betsy and Dave…") to after the figure [MF: OK as is]
 
     - This paragraph is already *after* the figure. There is a comment in `reviews/GavinK-comments.Rmd` that asks if this paragraph should be moved to be *before* the figure. Is this what was meant?
 
