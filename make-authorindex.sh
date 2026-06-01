@@ -1,13 +1,20 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # make-authorindex.sh
 # Run after PDF compilation to generate the author index (.ain file).
 # Usage: bash make-authorindex.sh
 # Then recompile the PDF to incorporate the author index.
 
-export BIBINPUTS="C:/R/Projects/Vis-MLM-book/bib"
-export BSTINPUTS="C:/Users/friendly/AppData/Roaming/TinyTeX/texmf-dist/bibtex/bst"
+set -u
 
-cd "C:/R/Projects/Vis-MLM-book"
+cd "$(dirname "$0")"
+ROOT="$(pwd -P)"
+
+# Make BibTeX search the repo bibliography directory first, then fall back to
+# the TeX distribution's normal search path.  The trailing ":" preserves the
+# default kpathsea paths and keeps this portable across macOS, Linux, and Git
+# Bash on Windows.
+export BIBINPUTS="${ROOT}/bib:"
+export BSTINPUTS="${BSTINPUTS:-}:"
 
 echo "Running authorindex on index.aux ..."
 perl latex/authorindex -d index

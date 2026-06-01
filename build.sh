@@ -8,14 +8,14 @@
 # Options:
 #   --pdf             Build PDF only (base config; online-only chapters excluded)
 #   --html            Build HTML only (uses --profile online; all chapters included)
-#   --all             Build both formats (default; HTML uses --profile online)
+#   --all             Build both formats (default; PDF first, HTML last)
 #   --clean-cache     Delete all tex.json freeze caches before building.
 #                     REQUIRED after editing latex/latex-commands.qmd or any
 #                     other {{< include >}}'d file — Quarto does not track
 #                     included-file changes for cache invalidation.
 #   --authorindex     Re-run the authorindex Perl script after PDF build,
 #                     regardless of whether citations appear to have changed.
-#   --full            Equivalent to: --all --clean-cache --authorindex
+#   --full, -full     Equivalent to: --all --clean-cache --authorindex
 #   -n, --dry-run     Show what would be done without doing it
 #   -h, --help        Show this help
 #
@@ -30,8 +30,8 @@
 #   - Full build takes ~18 min; freeze cache makes partial rebuilds faster
 #   - Running from a terminal (this script) is more reliable than RStudio's
 #     Build button, which uses a slightly different execution path
-#   - After a successful PDF build, Quarto renames index.tex → Vis-MLM.tex
-#     and copies index.pdf → docs/Vis-MLM.pdf
+#   - Combined builds render PDF first, archive it, render HTML last, then copy
+#     pdf/Vis-MLM.pdf back to docs/Vis-MLM.pdf so docs/ remains deployable.
 #   - index.{log,ind,idx,ain,...} remain at the project root
 #   - Vis-MLM.ain is kept in sync with index.ain for manual TeXStudio builds
 
@@ -45,6 +45,7 @@ FORMAT="all"
 CLEAN_CACHE=false
 RUN_AUTHORINDEX=false
 DRY_RUN=false
+AUTHORINDEX_REGENERATED=false
 
 FINGERPRINT_FILE=".authorindex-fingerprint"
 AUX="index.aux"
@@ -60,7 +61,7 @@ while [[ $# -gt 0 ]]; do
     --all)          FORMAT="all";  shift ;;
     --clean-cache)  CLEAN_CACHE=true; shift ;;
     --authorindex)  RUN_AUTHORINDEX=true; shift ;;
-    --full)         FORMAT="all"; CLEAN_CACHE=true; RUN_AUTHORINDEX=true; shift ;;
+    --full|-full)   FORMAT="all"; CLEAN_CACHE=true; RUN_AUTHORINDEX=true; shift ;;
     -n|--dry-run)   DRY_RUN=true; shift ;;
     -h|--help)      sed -n 's/^# \{0,1\}//p' "$0" | head -40; exit 0 ;;
     *) echo "Unknown option: $1.  Use --help for usage."; exit 1 ;;
@@ -93,8 +94,156 @@ citations_changed() {
 }
 
 save_fingerprint() {
-  compute_fingerprint > "$FINGERPRINT_FILE"
+  if $DRY_RUN; then
+    echo "  [dry-run] compute_fingerprint > $FINGERPRINT_FILE"
+  else
+    compute_fingerprint > "$FINGERPRINT_FILE"
+  fi
   echo "    Fingerprint saved to $FINGERPRINT_FILE"
+}
+
+render_html() {
+  # Two HTML passes: index.qmd is rendered first (before other chapters'
+  # xref data exists), so cross-refs in index.html to later chapters show
+  # section titles instead of numbers on the first pass. The second pass
+  # finds the complete xref database and resolves them correctly.
+  # --profile online adds HTML-only appendices.
+  echo "    HTML pass 1/2: builds xref database"
+  run quarto render --to html --profile online
+  echo "    HTML pass 2/2: resolves cross-refs in index.html"
+  run quarto render --to html --profile online
+}
+
+render_pdf() {
+  run quarto render --profile print --to pdf
+}
+
+check_pdf_no_appendices() {
+  if $DRY_RUN; then
+    echo "  [dry-run] check PDF artifacts for excluded appendices"
+    return 0
+  fi
+
+  local pattern='\\chapter\{Case Studies\}|\\chapter\{R Code for Figures and Analyses\}|\\chapter\{Exercises\}|\\contentsline \{chapter\}\{\\numberline \{A\}Case Studies|\\contentsline \{chapter\}\{\\numberline \{B\}R Code for Figures and Analyses|\\contentsline \{chapter\}\{\\numberline \{C\}Exercises'
+  local files=()
+  [[ -f "index.toc" ]] && files+=("index.toc")
+  [[ -f "Vis-MLM.tex" ]] && files+=("Vis-MLM.tex")
+
+  if [[ ${#files[@]} -eq 0 ]]; then
+    echo "    WARNING: no PDF artifacts found to check for appendices."
+    return 1
+  fi
+
+  if rg -n "$pattern" "${files[@]}" >/tmp/vis-mlm-pdf-appendix-check.txt; then
+    echo "    ERROR: PDF artifacts include online-only appendices:"
+    cat /tmp/vis-mlm-pdf-appendix-check.txt
+    return 1
+  fi
+
+  echo "    PDF appendix check passed."
+}
+
+check_html_outputs() {
+  if $DRY_RUN; then
+    echo "  [dry-run] check expected HTML outputs in docs/"
+    return 0
+  fi
+
+  local missing=()
+  local expected=(
+    docs/index.html
+    docs/00-Author.html
+    docs/01-Prelude.html
+    docs/02-intro.html
+    docs/03-getting_started.html
+    docs/04-multivariate_plots.html
+    docs/05-pca-biplot.html
+    docs/06-linear_models.html
+    docs/07-linear_models-plots.html
+    docs/08-lin-mod-topics.html
+    docs/09-collinearity-ridge.html
+    docs/10-hotelling.html
+    docs/11-mlm-review.html
+    docs/12-mlm-viz.html
+    docs/13-eqcov.html
+    docs/14-infl-robust.html
+    docs/21-discrim.html
+    docs/91-colophon.html
+    docs/95-references.html
+    docs/15-case-studies.html
+    docs/30-Rcode.html
+    docs/31-exercises.html
+  )
+
+  for f in "${expected[@]}"; do
+    [[ -f "$f" ]] || missing+=("$f")
+  done
+
+  if [[ ${#missing[@]} -gt 0 ]]; then
+    echo "    ERROR: missing expected HTML output(s):"
+    printf '      %s\n' "${missing[@]}"
+    return 1
+  fi
+
+  echo "    HTML output check passed."
+}
+
+post_pdf_authorindex() {
+  # Keep Vis-MLM.ain in sync with index.ain for TeXStudio
+  if [[ -f "$AIN" ]]; then
+    run cp "$AIN" Vis-MLM.ain
+    echo "--> Copied $AIN → Vis-MLM.ain  (for TeXStudio manual compilation)"
+  fi
+
+  echo ""
+
+  if $RUN_AUTHORINDEX; then
+    echo "--> Running authorindex (--authorindex requested)..."
+    _do_authorindex=true
+  elif citations_changed; then
+    echo "NOTE: Citation fingerprint has changed — new or removed @keys detected."
+    echo "      The author index may be out of date."
+    echo "      Re-run with --authorindex (or --full) to regenerate index.ain."
+    _do_authorindex=false
+  else
+    echo "--> Citations unchanged since last authorindex run. Skipping."
+    _do_authorindex=false
+  fi
+
+  if ${_do_authorindex:-false}; then
+    if [[ -f "make-authorindex.sh" ]]; then
+      run bash make-authorindex.sh
+      if [[ -f "$AIN" ]]; then
+        run cp "$AIN" Vis-MLM.ain
+        echo "    Copied:    $AIN → Vis-MLM.ain"
+      fi
+      save_fingerprint
+      AUTHORINDEX_REGENERATED=true
+    else
+      echo "    WARNING: make-authorindex.sh not found."
+      echo "    Run manually: bash make-authorindex.sh"
+    fi
+  fi
+}
+
+archive_pdf_artifacts() {
+  echo "--> Archiving PDF build artifacts to pdf/..."
+  [[ -f "docs/Vis-MLM.pdf" ]] && run cp "docs/Vis-MLM.pdf" "pdf/Vis-MLM.pdf"
+  [[ -f "Vis-MLM.tex"      ]] && run cp "Vis-MLM.tex"      "pdf/index.tex"
+  for f in index.aux index.ain index.idx index.ilg index.ind index.log index.toc; do
+    [[ -f "$f" ]] && run cp "$f" "pdf/$f"
+  done
+  echo "    Done."
+  echo ""
+}
+
+restore_archived_pdf_to_docs() {
+  if [[ -f "pdf/Vis-MLM.pdf" ]]; then
+    run cp "pdf/Vis-MLM.pdf" "docs/Vis-MLM.pdf"
+    echo "--> Restored pdf/Vis-MLM.pdf → docs/Vis-MLM.pdf"
+  else
+    echo "    WARNING: pdf/Vis-MLM.pdf not found; docs/ will not include downloadable PDF."
+  fi
 }
 
 # ---------------------------------------------------------------------------
@@ -133,31 +282,40 @@ fi
 # ---------------------------------------------------------------------------
 echo "--> Running quarto render..."
 case "$FORMAT" in
-  pdf)  run quarto render --profile print --to pdf  ;;
+  pdf)
+    render_pdf
+    check_pdf_no_appendices
+    ;;
   html)
-    # Two HTML passes: index.qmd is rendered first (before other chapters'
-    # xref data exists), so cross-refs in index.html to later chapters show
-    # section titles instead of numbers on the first pass. The second pass
-    # finds the complete xref database and resolves them correctly.
-    # --profile online adds 15-case-studies.qmd and Rcode.qmd as appendices.
-    echo "    Pass 1/2: HTML (builds xref database)"
-    run quarto render --to html --profile online
-    echo "    Pass 2/2: HTML (resolves cross-refs in index.html)"
-    run quarto render --to html --profile online
+    render_html
+    check_html_outputs
     ;;
   all)
     # Render formats sequentially, not combined.
     # quarto render (all at once) fails on books: it tries to readfile
     # '04-xxx.html' at the project root during PDF cross-ref resolution,
     # but HTML output goes to docs/.  Separate renders avoid this.
-    # Two HTML passes needed so index.html cross-refs resolve (see --html note).
-    # --profile online adds online-only appendices to HTML; PDF uses base config only.
-    echo "    Step 1/3: HTML pass 1 (builds xref database)"
+    # Build PDF first because the later HTML render should own docs/.
+    # After HTML, copy the archived PDF back into docs/ for site downloads.
+    echo "    Step 1/4: PDF (print profile — no online-only appendices)"
+    render_pdf
+    check_pdf_no_appendices
+    echo ""
+    post_pdf_authorindex
+    if $AUTHORINDEX_REGENERATED; then
+      echo "--> Re-rendering PDF to include regenerated author index..."
+      render_pdf
+      check_pdf_no_appendices
+      echo ""
+    fi
+    archive_pdf_artifacts
+    echo "    Step 2/4: HTML pass 1 (builds xref database)"
     run quarto render --to html --profile online
-    echo "    Step 2/3: HTML pass 2 (resolves cross-refs in index.html)"
+    echo "    Step 3/4: HTML pass 2 (resolves cross-refs in index.html)"
     run quarto render --to html --profile online
-    echo "    Step 3/3: PDF (print profile — no online-only appendices)"
-    run quarto render --profile print --to pdf
+    echo "    Step 4/4: Restore downloadable PDF into docs/"
+    restore_archived_pdf_to_docs
+    check_html_outputs
     ;;
 esac
 echo ""
@@ -167,55 +325,21 @@ echo ""
 # ---------------------------------------------------------------------------
 if [[ "$FORMAT" == "html" ]]; then
   echo "--> HTML-only build: skipping authorindex."
-else
-  # Keep Vis-MLM.ain in sync with index.ain for TeXStudio
-  if [[ -f "$AIN" ]]; then
-    run cp "$AIN" Vis-MLM.ain
-    echo "--> Copied $AIN → Vis-MLM.ain  (for TeXStudio manual compilation)"
-  fi
-
-  echo ""
-
-  if $RUN_AUTHORINDEX; then
-    echo "--> Running authorindex (--authorindex requested)..."
-    _do_authorindex=true
-  elif citations_changed; then
-    echo "NOTE: Citation fingerprint has changed — new or removed @keys detected."
-    echo "      The author index may be out of date."
-    echo "      Re-run with --authorindex (or --full) to regenerate index.ain."
-    _do_authorindex=false
-  else
-    echo "--> Citations unchanged since last authorindex run. Skipping."
-    _do_authorindex=false
-  fi
-
-  if ${_do_authorindex:-false}; then
-    if [[ -f "make-authorindex.sh" ]]; then
-      run bash make-authorindex.sh
-      if [[ -f "$AIN" ]]; then
-        run cp "$AIN" Vis-MLM.ain
-        echo "    Copied:    $AIN → Vis-MLM.ain"
-      fi
-      save_fingerprint
-    else
-      echo "    WARNING: make-authorindex.sh not found."
-      echo "    Run manually: bash make-authorindex.sh"
-    fi
+elif [[ "$FORMAT" == "pdf" ]]; then
+  post_pdf_authorindex
+  if $AUTHORINDEX_REGENERATED; then
+    echo "--> Re-rendering PDF to include regenerated author index..."
+    render_pdf
+    check_pdf_no_appendices
+    echo ""
   fi
 fi
 
 # ---------------------------------------------------------------------------
 # Step 4: Archive PDF build artifacts to pdf/
 # ---------------------------------------------------------------------------
-if [[ "$FORMAT" != "html" ]]; then
-  echo "--> Archiving PDF build artifacts to pdf/..."
-  [[ -f "docs/Vis-MLM.pdf" ]] && run cp "docs/Vis-MLM.pdf" "pdf/Vis-MLM.pdf"
-  [[ -f "Vis-MLM.tex"      ]] && run cp "Vis-MLM.tex"      "pdf/index.tex"
-  for f in index.aux index.ain index.idx index.ilg index.ind index.log index.toc; do
-    [[ -f "$f" ]] && run cp "$f" "pdf/$f"
-  done
-  echo "    Done."
-  echo ""
+if [[ "$FORMAT" == "pdf" ]]; then
+  archive_pdf_artifacts
 fi
 
 # ---------------------------------------------------------------------------

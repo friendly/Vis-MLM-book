@@ -236,6 +236,8 @@
 % drawn when the *next* \l@part fires, placing it after its own chapters.
 % Adding \toc@draw at the top of \l@chapter flushes the pending header
 % before the first chapter of each part, putting it in the right place.
+% The reset immediately after \toc@draw is required: without it, the same
+% pending part header is printed again before every later chapter in that part.
 \makeatletter
 \def\@schapter#1{\if@twocolumn
                    \@topnewpage[\@makeschapterhead{#1}]%
@@ -247,6 +249,7 @@
 
 \renewcommand*\l@chapter[2]{%
   \toc@draw
+  \let\toc@draw\relax
   \ifnum \c@tocdepth >\m@ne
     \addpenalty{-\@highpenalty}%
     \vskip 1.0em \@plus\p@
@@ -262,6 +265,13 @@
       \penalty\@highpenalty
     \endgroup
   \fi}
+
+% krantz's 2.3em section number box is too narrow for labels such as 12.10.
+% Keep the title argument (#1) intact so \emph{}, math, and other heading
+% formatting emitted by Quarto survive in section and subsection TOC entries.
+\renewcommand*\l@section{\@dottedtocline{1}{1.5em}{3.0em}}
+\renewcommand*\l@subsection{\@dottedtocline{2}{4.5em}{3.8em}}
+\renewcommand*\l@subsubsection{\@dottedtocline{3}{8.3em}{4.6em}}
 \makeatother
 
 % This doesn't work
