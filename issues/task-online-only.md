@@ -241,8 +241,10 @@ Docs: https://quarto.org/docs/projects/profiles.html
   are appendices/HTML-only; `21-discrim.qmd` is a full chapter in both formats)
 - [x] Remove online-only appendices from `_quarto.yml`
 - [x] Create minimal `_quarto-online.yml` with only the additions
-- [ ] Verify: HTML build with `--profile online` includes both appendices correctly
-- [ ] Verify: PDF build without profile excludes both appendices correctly
+- [x] Verify: HTML build with `--profile online` includes both appendices correctly
+  (confirmed 2026-06-01: `./build.sh --html` passed HTML output check, all 22 chapters + 3 appendices in `docs/`)
+- [x] Verify: PDF build without profile excludes both appendices correctly
+  (confirmed 2026-06-01: `./build.sh --pdf --authorindex` passed PDF appendix check)
 - [x] Audit cross-references to `15-case-studies.qmd` and `Rcode.qmd` in all `.qmd` files
 - [x] Handle each cross-ref: remove, wrap conditionally, or implement Lua filter
   - Only one external reference found: `@sec-case-studies` in `index.qmd` line 84.

@@ -1,12 +1,44 @@
 # Dual-Build Cleanup Plan: HTML + PDF
 
-**Context:** After a session (2026-05-29) that restored appendices to `_quarto.yml` to make
-`Build -> HTML` work without `--profile online`, the three config files are now in a conflicting
-state. This document records the diagnosis and the planned cleanup.
+**Status: RESOLVED 2026-06-01** by the GK-work4 merge.
+The resolution went in the opposite direction from the plan below: appendices were removed
+from `_quarto.yml` (base) rather than from `_quarto-online.yml`, restoring the correct
+separation. All four planned steps are now complete. See "Actual resolution" section below.
 
 ---
 
-## Current config state (as of 2026-05-29)
+**Original context (2026-05-29):** After a session that restored appendices to `_quarto.yml`
+to make `Build -> HTML` work without `--profile online`, the three config files were in a
+conflicting state. This document recorded the diagnosis and the planned cleanup.
+
+---
+
+## Actual resolution (2026-06-01)
+
+Gavin's `GK-work4` branch (developed independently with Codex) removed the `appendices:`
+key from `_quarto.yml` entirely, keeping appendices only in `_quarto-online.yml`. This is
+the correct design.
+
+**Config state after merge:**
+
+| File | Appendices? | Notes |
+|------|-------------|-------|
+| `_quarto.yml` (base) | **No** | Base represents PDF chapter list only |
+| `_quarto-online.yml` | **Yes** — 3 appendices | HTML-only; appended by `--profile online` |
+| `_quarto-print.yml` | No | Comment is accurate: "base has none; appendices in online profile" |
+
+**Verified 2026-06-01** via `./build.sh --all --authorindex`:
+- PDF appendix check passed (no appendices in `Vis-MLM.tex` / `.toc`)
+- HTML output check passed (all 22 chapters + 3 appendices in `docs/`)
+- Author index generated and re-render completed
+- Result: `pdf/Vis-MLM.pdf` with author index; `docs/` HTML with appendices
+
+**Step 2 from the plan (drop `--profile online`) is NOT correct:** appendices remain only in
+`_quarto-online.yml`, so `--profile online` is still required for the HTML build.
+
+---
+
+## Config state (as of 2026-05-29, now historical)
 
 | File | Appendices? | Notes |
 |------|-------------|-------|

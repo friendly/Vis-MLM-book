@@ -1,19 +1,21 @@
 ---
 name: Dual-build cleanup plan
-description: Weekend task to fix conflicting HTML/PDF build config; full plan in issues/dual-build-plan.md
-type: project
+description: RESOLVED 2026-06-01 — dual build (HTML + PDF) working correctly; see issues/dual-build-plan.md
+metadata:
+  type: project
 ---
 
-Appendices (`15-case-studies.qmd`, `30-Rcode.qmd`, `31-exercises.qmd`) were restored to
-`_quarto.yml` on 2026-05-29 so that RStudio's `Build -> HTML` button works without needing
-`--profile online`. This created a conflict: `_quarto-online.yml` still lists the same 3
-appendices, causing duplication when `./build.sh --html` (which uses `--profile online`) runs.
+**RESOLVED 2026-06-01.** The GK-work4 merge (Gavin's branch) fixed the conflicting config state
+by removing `appendices:` from `_quarto.yml` (base) entirely and keeping them only in
+`_quarto-online.yml`. This is the correct design.
 
-**How to apply:** See `issues/dual-build-plan.md` for the full step-by-step plan. The three steps are:
+**Current working config:**
+- `_quarto.yml`: base config, chapters only, no appendices
+- `_quarto-online.yml`: adds 3 appendices for `--profile online` HTML builds
+- `_quarto-print.yml`: PDF profile, chapters only, no appendices
 
-1. **Remove appendices from `_quarto-online.yml`** (now duplicated from base config)
-2. **Drop `--profile online` from `build.sh`** — both the `html` and `all` cases (~lines 144/146 and 156/158)
-3. **Verify PDF TOC has no appendices**; if they appear, add `book.appendices: []` to `_quarto-print.yml`
+**Verified 2026-06-01** via `./build.sh --all --authorindex`: both PDF appendix check and
+HTML output check passed. `pdf/Vis-MLM.pdf` has author index; `docs/` HTML includes appendices.
 
-Current state (2026-05-29): PDF via `./build.sh --pdf` is OK; HTML via `Build -> HTML` is OK.
-The `./build.sh --html` path is untested/risky due to potential appendix duplication.
+**Why:** The GK-work4 branch resolved the conflict the right way — cleaner than the original plan.
+**How to apply:** No further action needed. Build with `./build.sh --all --authorindex` for full build.
