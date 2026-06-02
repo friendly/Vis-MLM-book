@@ -77,8 +77,8 @@ Struck-through items (~~...~~) in the source have been omitted as already done.
 
 | Line | Status | Note |
 |------|--------|------|
-| 373 | **visible** | Complete footnote thought about VIF and added-variable plots |
-| 1583 | **visible** | Consider replacing the "What have we learned?" prose with bullet-point take-aways |
+| 373 | ~~visible~~ done | Complete footnote thought about VIF and added-variable plots |
+| 1583 | ~~visible~~ done | Consider replacing the "What have we learned?" prose with bullet-point take-aways |
 | 405 | hidden | Use `performance::check_collinearity()` and its `plot()` method for the Cars example |
 | 1408 | hidden | Redo precision figure using `plot.precision()` method |
 
@@ -96,13 +96,15 @@ No active visible TODOs. One commented item (combining with a summary file) appe
 |------|--------|------|
 | 46 | hidden | Offer defense against @Huang2019; cite @Huberty-Morris1989 — or maybe not |
 | 72 | hidden | Use `\Epsilon` macro for residuals throughout |
-| 115 | **visible** | Revise notation: be explicit and consistent about inclusion of β₀ and size of **B** |
+| 115 | ~~visible~~ hidden | Revise notation: be explicit and consistent about inclusion of β₀ and size of **B** |
 | 719 | hidden | Contrasts material was copied to @sec-contrasts — delete the duplicate here |
 | 760 | hidden | Use ½ for contrast so that L₁ is the mean difference |
 | 1381 | hidden | Move initial part of Plastic film 2×2 example (@exm-plastic2) here |
 | 1720 | hidden | Using `log2(income)` gives less dramatic HE plots in Ch 11 — consider `income` instead |
-| 2089 | **visible** | Sort out coverage overlap here vs. @sec-influence-robust |
-| 2168 | **visible** | Consider moving MANCOVA section to @sec-vis-mlm; draw on heplots MMRA vignette |
+| 2115 | ~~visible~~ hidden | Sort out coverage overlap here vs. @sec-influence-robust — done: forward ref added |
+| 2194 | ~~visible~~ hidden | Consider moving MANCOVA section to @sec-vis-mlm — deferred/ignored |
+| 2373 | hidden | For interpretation, know how many items per PA task — ignored: item counts unavailable |
+| 2400 | hidden | Do this with a CI for the effects — deferred: make an exercise |
 
 ---
 
@@ -111,8 +113,8 @@ No active visible TODOs. One commented item (combining with a summary file) appe
 | Line | Status | Note |
 |------|--------|------|
 | 762 | hidden | `var.labels` is not a graphical parameter — fix |
-| 1077 | **visible** | Use `heplots::Hernior` (herniorrhaphy) as an exercise — see HE_mmra vignette |
-| 1408 | **visible** | Check signs of structure coefficients from `cancor()`; reflect vectors for `Ycan1` |
+| 1077 | ~~visible~~ hidden | Use `heplots::Hernior` (herniorrhaphy) as an exercise — deferred |
+| 1408 | ~~visible~~ hidden | Check signs of structure coefficients from `cancor()`; reflect vectors for `Ycan1` — deferred |
 | 1576 | ~~done~~ | Insert chapter summary (section header exists but is empty) |
 | 1311 | hidden | Fill in details of canonical correlations |
 
@@ -128,7 +130,7 @@ No TODOs found.
 
 | Line | Status | Note |
 |------|--------|------|
-| 282 | **visible** | Check how studentized residuals are defined in `mvinfluence` |
+| 282 | ~~visible~~ hidden | Check how studentized residuals are defined in `mvinfluence` — deferred |
 | 643 | ~~done~~ | Add "What have we learned?" chapter summary |
 
 ---
@@ -184,10 +186,10 @@ No TODOs found.
 | Ch 06 | 1 | 3 | 4 |
 | Ch 07 | 1 | 1 | 2 |
 | Ch 08 | 1 | 0 | 1 |
-| Ch 09 | 2 | 2 | 4 |
-| Ch 11 | 3 | 6 | 9 |
-| Ch 12 | 3 | 2 | 5 |
-| Ch 14 | 2 | 0 | 2 |
+| Ch 09 | 0 | 2 | 2 |
+| Ch 11 | 0 | 11 | 11 |
+| Ch 12 | 0 | 4 | 4 |
+| Ch 14 | 0 | 1 | 1 |
 | 21-discrim | 3 | 1 | 4 |
 | child/ | 2 | 2 | 4 |
-| **Total** | **28** | **26** | **54** |
+| **Total** | **20** | **33** | **53** |
