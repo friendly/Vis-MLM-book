@@ -425,6 +425,68 @@ window.Quarto = {
 </div>
 </section><section id="chapter-11-multivariate-linear-models" class="level2 unnumbered"><h2 class="unnumbered anchored" data-anchor-id="chapter-11-multivariate-linear-models">Chapter 11: Multivariate Linear Models</h2>
 </section><section id="chapter-12-visualizing-multivariate-models" class="level2 unnumbered"><h2 class="unnumbered anchored" data-anchor-id="chapter-12-visualizing-multivariate-models">Chapter 12: Visualizing Multivariate Models</h2>
+<div id="exr-hernior" class="theorem exercise">
+<p><span class="theorem-title"><strong>Exercise C.4</strong></span> The dataset <code>heplots::hernior</code> contains data on measures of post-operative recovery of 32 patients undergoing an elective herniorrhaphy operation, in relation to pre-operative measures.</p>
+<p>The outcome measures are:</p>
+<ul>
+<li>
+<code>leave</code>, the patient’s condition upon leaving the recovery room (a 1-4 scale, 1=best),</li>
+<li>
+<code>nurse</code>, level of nursing required one week after operation (a 1-5 scale, 1=worst) and</li>
+<li>
+<code>los</code>, length of stay in hospital after operation (in days)</li>
+</ul>
+<p>The predictor variables are:</p>
+<ul>
+<li>patient <code>age</code>, <code>sex</code>,</li>
+<li>
+<code>pstat</code>, physical status (a 1-5 scale, with 1=perfect health, …, 5=very poor health),</li>
+<li>
+<code>build</code>, body build (a 1-5 scale, with 1=emaciated, …, 5=obese), and</li>
+<li>preoperative complications with (<code>cardiac</code>) heart and respiration (<code>resp</code>), 1-4 scales, 1=none, …, 4=severe.</li>
+</ul>
+<ol type="a">
+<li>Fit the multivariate regression model and test the contributions of the predictors using <code><a href="https://rdrr.io/pkg/car/man/Anova.html">car::Anova()</a></code>. What do you conclude?</li>
+</ol>
+<div class="cell" data-layout-align="center">
+<details class="code-fold"><summary>Show the code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">Hernior</span>, package <span class="op">=</span> <span class="st">"heplots"</span><span class="op">)</span></span>
+<span><span class="va">Hern.mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span><span class="op">(</span><span class="va">leave</span>, <span class="va">nurse</span>, <span class="va">los</span><span class="op">)</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">sex</span> <span class="op">+</span> <span class="va">pstat</span> <span class="op">+</span> <span class="va">build</span> <span class="op">+</span> <span class="va">cardiac</span> <span class="op">+</span> <span class="va">resp</span>,</span>
+<span>               data <span class="op">=</span> <span class="va">Hernior</span><span class="op">)</span></span>
+<span><span class="fu">car</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/car/man/Anova.html">Anova</a></span><span class="op">(</span><span class="va">Hern.mod</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<ol start="2" type="a">
+<li><p>Extract the R² for each response separately using <code>summary(Hern.mod)</code>, and compare with the overall multivariate test from (a). Does the multivariate test reveal anything that the univariate R² values miss? The function <code>heplots::glance.mlm(Hern.mod)</code> gives a compact one-line-per-response summary.</p></li>
+<li><p>Test the joint hypothesis that all predictors simultaneously have zero effect, using <code><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">car::linearHypothesis()</a></code>. Compare the four multivariate test statistics (Pillai, Wilks, Hotelling-Lawley, Roy) with the individual predictor p-values from (a). What does this suggest about the collective vs.&nbsp;individual predictive power of the pre-operative measures?</p></li>
+</ol>
+<div class="cell" data-layout-align="center">
+<details class="code-fold"><summary>Show the code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">predictors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">Hern.mod</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span><span class="op">]</span></span>
+<span><span class="fu">car</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/car/man/linearHypothesis.html">linearHypothesis</a></span><span class="op">(</span><span class="va">Hern.mod</span>, <span class="va">predictors</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<ol start="4" type="a">
+<li>Construct an HE pairs plot for the model, adding the overall regression as a joint hypothesis ellipse. Use different colors for each predictor term.</li>
+</ol>
+<div class="cell" data-layout-align="center">
+<details class="code-fold"><summary>Show the code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">clr</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"red"</span>, <span class="st">"darkgray"</span>, <span class="st">"blue"</span>, <span class="st">"darkgreen"</span>, <span class="st">"magenta"</span>, <span class="st">"brown"</span>, <span class="st">"black"</span><span class="op">)</span></span>
+<span><span class="va">vlab</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"LeaveCondition\n(leave)"</span>, <span class="st">"NursingCare\n(nurse)"</span>, <span class="st">"LengthOfStay\n(los)"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/pairs.html">pairs</a></span><span class="op">(</span><span class="va">Hern.mod</span>,</span>
+<span>      hypotheses <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="st">"Regr"</span> <span class="op">=</span> <span class="va">predictors</span><span class="op">)</span>,</span>
+<span>      col <span class="op">=</span> <span class="va">clr</span>, var.labels <span class="op">=</span> <span class="va">vlab</span>,</span>
+<span>      fill <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="cn">TRUE</span>, <span class="cn">FALSE</span><span class="op">)</span>, fill.alpha <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p>Which predictor shows the largest multivariate effect? Are any predictors associated with better outcomes on one response but worse on another?</p>
+<ol start="5" type="a">
+<li>Use <code>candiscList()</code> to examine predictor effects in canonical space and plot the results for <code>pstat</code> and <code>build</code>. What do the structure coefficient arrows tell you about which recovery outcomes each predictor most strongly influences?</li>
+</ol>
+<div class="cell" data-layout-align="center">
+<details class="code-fold"><summary>Show the code</summary><div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5" data-source-line-numbers="nil" data-code-line-numbers="nil"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">Hern.canL</span> <span class="op">&lt;-</span> <span class="fu">candiscList</span><span class="op">(</span><span class="va">Hern.mod</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">Hern.canL</span>, term <span class="op">=</span> <span class="st">"pstat"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">Hern.canL</span>, term <span class="op">=</span> <span class="st">"build"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</div>
 </section><section id="chapter-13-visualizing-equality-of-covariance-matrices" class="level2 unnumbered"><h2 class="unnumbered anchored" data-anchor-id="chapter-13-visualizing-equality-of-covariance-matrices">Chapter 13: Visualizing Equality of Covariance Matrices</h2>
 </section><section id="chapter-14-multivariate-influence-and-robust-estimation" class="level2 unnumbered"><h2 class="unnumbered anchored" data-anchor-id="chapter-14-multivariate-influence-and-robust-estimation">Chapter 14: Multivariate Influence and Robust Estimation</h2>
 </section><section id="chapter-15-appendix-discriminant-analysis" class="level2 unnumbered"><h2 class="unnumbered anchored" data-anchor-id="chapter-15-appendix-discriminant-analysis">Chapter 15 (Appendix): Discriminant Analysis</h2>

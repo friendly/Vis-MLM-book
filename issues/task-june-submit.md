@@ -39,12 +39,11 @@ Items requiring author judgement, R/LaTeX knowledge, or a decision:
 - [X] **Ch 12 Hernior exercise** (`exercises/Ch12-exercises.qmd`) — MMRA exercise on `heplots::Hernior`
       data added: parts (a)–(e) covering `Anova()`, R², `linearHypothesis()`, HE pairs plot,
       `candiscList()`; code chunks foldable (`code-fold: true`) with labels `hernior1`–`hernior4`
-- [ ] Resolve remaining visible **TODO** items in **print** chapters:
-      - `index.qmd` line 239: prose stub about ggplot2 notation — needs fleshing out or cutting
-      - All other visible TODOs in Ch 06, Ch 07, Ch 11, Ch 12, Ch 14 are now hidden/resolved
-      - `21-discrim.qmd` line 361: **print-blocking** — "re-write below to use new candisc methods";
-        but `predict_discrim()` is already used at line 371, so the rewrite may be largely done;
-        `scores.lda()` and `cor_lda()` are listed but not yet used in code — verify and comment out or narrow
+- [X] Resolve remaining visible **TODO** items in **print** chapters:
+      - `index.qmd` line 239: prose rewritten [DONE]
+      - `12-mlm-viz.qmd` line 1078: Hernior exercise — exercise created, marker commented out [DONE]
+      - `21-discrim.qmd` line 361: changed to comment [DONE]
+      - All other visible TODOs in Ch 06, Ch 07, Ch 09, Ch 11, Ch 12, Ch 14 resolved or hidden
       - `child/10-discrim.qmd` deleted (was superseded by `21-discrim.qmd`)
 - [X] **Ch 7** `spida2` not in Packages list — fixed by adding missing `library(spida2)` call (§7)
 - [X] **Ch 11** blurry figures `fig-visualizing-SSP` and `fig-manova-diagram` — leave as is
@@ -142,7 +141,7 @@ Items noted in the review but not targeted for this submission:
 
 ## 6. Submission note
 
-The main text of the PDF copy is now 479 pages. There are 14 pages of references, plus subject & author indexes of 28 pages
+The main text of the PDF copy is now 479 pages. There are 14 pages of references, plus subject & author indexes of 39 pages; total 532 pages [build: 2026-06-03]
 
 * The previous chapter, **Case studies* has been moved to an online-only, Appendix A
 
