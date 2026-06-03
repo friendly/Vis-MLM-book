@@ -205,10 +205,11 @@ text(-3, 3, paste("Can R =", round(school.can2$cancor[2], 3)),
      cex = 1.4, pos = 4)
 par(op)
 
-# would be better to reflect dim 1
+# would be better to reflect dim 1 [FIXED]
 heplot(school.can2,
        fill = TRUE, fill.alpha = 0.2,
-       var.col = "red", 
+       var.col = "red",
+       rev.axes = c(TRUE, FALSE),
        asp = NA, scale = 0.25,
        cex.lab = 1.5, cex = 1.25,
        prefix="Y canonical dimension ")

@@ -141,14 +141,17 @@ No TODOs found.
 
 ---
 
-## Appendix — Discriminant Analysis (`21-discrim.qmd`)
+## Ch 15 — Discriminant Analysis (`21-discrim.qmd`) — **in print PDF**
 
 | Line | Status | Note |
 |------|--------|------|
-| 355 | **visible** | Re-write sections below to use `scores.lda()` and new methods in `candisc` |
-| 738 | hidden | `posterior` now defaults to `FALSE` in `predict()` — update code accordingly |
-| 757 | hidden | Flip sign of LD1 in the plot (also appears in `child/10-discrim.qmd:565`) |
+| 361 | **visible** | Re-write below to use `scores.lda()` / `cor_lda()` — but `predict_discrim()` already used at line 371; may just need narrowing or removal |
+| 747 | hidden | `posterior` now defaults to `FALSE` in `predict()` — update code accordingly |
+| 770 | hidden | Flip sign of LD1 in the plot |
+| 1057 | hidden | Mention recursive partition methods as another topic |
 | 187 | hidden | Add History Corner on development of LDA: Fisher (1936) → Rao (1948) → Bayesian |
+
+`child/10-discrim.qmd` — **deleted** (superseded by `21-discrim.qmd`; remove from any remaining references)
 
 ---
 
@@ -190,6 +193,6 @@ No TODOs found.
 | Ch 11 | 0 | 11 | 11 |
 | Ch 12 | 0 | 4 | 4 |
 | Ch 14 | 0 | 1 | 1 |
-| 21-discrim | 3 | 1 | 4 |
-| child/ | 2 | 2 | 4 |
-| **Total** | **20** | **33** | **53** |
+| Ch 15 (21-discrim) | 1 | 4 | 5 |
+| child/ | 0 | 2 | 2 |
+| **Total** | **18** | **33** | **51** |

@@ -36,7 +36,16 @@ a cover email. This needs to mention the current page length, perhaps with some 
 Items requiring author judgement, R/LaTeX knowledge, or a decision:
 
 - [X] **Ch 6** "The General Linear Model" heading — all initial caps is correct here (§6.1)
-- [ ] Resolve remaining visible **TODO** items which appear in the text
+- [X] **Ch 12 Hernior exercise** (`exercises/Ch12-exercises.qmd`) — MMRA exercise on `heplots::Hernior`
+      data added: parts (a)–(e) covering `Anova()`, R², `linearHypothesis()`, HE pairs plot,
+      `candiscList()`; code chunks foldable (`code-fold: true`) with labels `hernior1`–`hernior4`
+- [ ] Resolve remaining visible **TODO** items in **print** chapters:
+      - `index.qmd` line 239: prose stub about ggplot2 notation — needs fleshing out or cutting
+      - All other visible TODOs in Ch 06, Ch 07, Ch 11, Ch 12, Ch 14 are now hidden/resolved
+      - `21-discrim.qmd` line 361: **print-blocking** — "re-write below to use new candisc methods";
+        but `predict_discrim()` is already used at line 371, so the rewrite may be largely done;
+        `scores.lda()` and `cor_lda()` are listed but not yet used in code — verify and comment out or narrow
+      - `child/10-discrim.qmd` deleted (was superseded by `21-discrim.qmd`)
 - [X] **Ch 7** `spida2` not in Packages list — fixed by adding missing `library(spida2)` call (§7)
 - [X] **Ch 11** blurry figures `fig-visualizing-SSP` and `fig-manova-diagram` — leave as is
 - [X] **Ch 13** `$\mathcal{M}$` fix (§13.4 — LaTeX); reword ", here," sentence (§13.5)

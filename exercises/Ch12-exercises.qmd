@@ -1,0 +1,69 @@
+::: {#exr-hernior}
+
+The dataset `heplots::hernior` contains data on measures of post-operative recovery of 32 patients undergoing an elective herniorrhaphy operation, in relation to pre-operative measures.
+
+The outcome measures are:
+
+* `leave`, the patient's condition upon leaving the recovery room (a 1-4 scale, 1=best),
+* `nurse`, level of nursing required one week after operation (a 1-5 scale, 1=worst) and 
+* `los`, length of stay in hospital after operation (in days)
+
+The predictor variables are: 
+
+* patient `age`, `sex`,
+* `pstat`, physical status (a 1-5 scale, with 1=perfect health, ..., 5=very poor health),
+* `build`, body build (a 1-5 scale, with 1=emaciated, ..., 5=obese), and
+* preoperative complications with (`cardiac`) heart and respiration (`resp`), 1-4 scales, 1=none, ..., 4=severe.
+
+(a) Fit the multivariate regression model and test the contributions of the predictors using `car::Anova()`. What do you conclude?
+
+```{r}
+#| label: hernior1
+#| code-fold: true
+#| code-summary: "Show the code"
+Hern.mod <- lm(cbind(leave, nurse, los) ~ age + sex + pstat + build + cardiac + resp,
+               data = Hernior)
+car::Anova(Hern.mod)
+```
+
+(b) Extract the R² for each response separately using `summary(Hern.mod)`, and compare with the overall multivariate test from (a). Does the multivariate test reveal anything that the univariate R² values miss? The function `heplots::glance.mlm(Hern.mod)` gives a compact one-line-per-response summary.
+
+(c) Test the joint hypothesis that all predictors simultaneously have zero effect, using `car::linearHypothesis()`. Compare the four multivariate test statistics (Pillai, Wilks, Hotelling-Lawley, Roy) with the individual predictor p-values from (a). What does this suggest about the collective vs. individual predictive power of the pre-operative measures?
+
+```{r}
+#| label: hernior2
+#| code-fold: true
+#| code-summary: "Show the code"
+predictors <- rownames(coef(Hern.mod))[-1]
+car::linearHypothesis(Hern.mod, predictors)
+```
+
+(d) Construct an HE pairs plot for the model, adding the overall regression as a joint hypothesis ellipse. Use different colors for each predictor term.
+
+```{r}
+#| label: hernior3
+#| code-fold: true
+#| code-summary: "Show the code"
+clr <- c("red", "darkgray", "blue", "darkgreen", "magenta", "brown", "black")
+vlab <- c("LeaveCondition\n(leave)", "NursingCare\n(nurse)", "LengthOfStay\n(los)")
+pairs(Hern.mod,
+      hypotheses = list("Regr" = predictors),
+      col = clr, var.labels = vlab,
+      fill = c(TRUE, FALSE), fill.alpha = 0.1)
+```
+
+Which predictor shows the largest multivariate effect? Are any predictors associated with better outcomes on one response but worse on another?
+
+(e) Use `candiscList()` to examine predictor effects in canonical space and plot the results for `pstat` and `build`. What do the structure coefficient arrows tell you about which recovery outcomes each predictor most strongly influences?
+
+```{r}
+#| label: hernior4
+#| code-fold: true
+#| code-summary: "Show the code"
+Hern.canL <- candiscList(Hern.mod)
+plot(Hern.canL, term = "pstat")
+plot(Hern.canL, term = "build")
+```
+
+:::
+
