@@ -436,6 +436,7 @@ func <- function(name, package=NULL, test=FALSE) {
   "vegan",
   "glmnet",
   "penalized",
+  "spida2",
   "adegraphics",
   "olsrr",
   "HLMdiag",
