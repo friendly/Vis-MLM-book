@@ -1,7 +1,19 @@
 # Exercise Ideas by Chapter
 
-Notes on potential exercises: (E) = extending a chapter example; (D) = different dataset.
-Model exercise file: `exercises/Ch12-exercises.qmd` (Hernior MMRA).
+Notes on potential exercises: 
+* (E) = Extend a chapter example, e.g., do some related analysis or graph, fit a different model, ...
+* (D) = Different dataset. Use a different dataset from {heplots}, {candisc}, {car}, to use methods of the chapter
+
+Model exercise file: `exercises/Ch12-exercises.qmd` (Hernior MMRA). Note the use of divs, like:
+
+```
+::: {#exr-hotel1}
+The value of Hotelling's $T^2$ found by `hotelling.test()` is 64.17. The value of
+the equivalent $F$ statistic found by `Anova()` is 28.9. Verify that @eq-Fstat gives this result.
+:::
+```
+
+It is not strictly necessary to include code hints for exercises, but doing so:
 All exercise code chunks must use `eval: false`, `code-fold: true`, `code-summary: "Show the code"`.
 Include `data(Dataset, package = "pkg")` in the first chunk.
 
