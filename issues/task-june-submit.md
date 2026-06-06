@@ -141,7 +141,7 @@ Items noted in the review but not targeted for this submission:
 
 ## 6. Submission note
 
-The main text of the PDF copy is now 479 pages. There are 14 pages of references, plus subject & author indexes of 39 pages; total 532 pages [build: 2026-06-03]
+The main text of the PDF copy is now 479 pages. There are 14 pages of references, plus subject & author indexes of 42 pages; total 535 pages [build: 2026-06-04]
 
 * The previous chapter, **Case studies* has been moved to an online-only, Appendix A
 
