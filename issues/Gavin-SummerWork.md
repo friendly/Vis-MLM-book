@@ -6,6 +6,8 @@ Extend the coverage of excercises  across chapters, in Appendix C, `31-exercises
 
 See the notes in `working-text/exercise-ideas.md`
 
+**GK: Find my exercise ideas in the mentioned file under "GK:" in each chapter (** `working-text/exercise-ideas.md`**).**
+
 ## R code appendix
 
 Add comments indicating the source file for analyses / graphs like `<!-- fig.code: R/Davis-reg.R -->`

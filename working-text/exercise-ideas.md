@@ -33,6 +33,10 @@ Include `data(Dataset, package = "pkg")` in the first chunk.
   approach (monthly means + smoother) to a different time-indexed process of your choice
   to check for systematic patterns.
 
+**GK:**
+
+- (E) This chapter contained a linear model of `Rank` predicted by `Day` in the USA 1970 Draft Lottery Data, `vcdExtra::Draft1970`. Construct diagnostic plots for this model.
+
 ---
 
 ## Ch 04 — Multivariate Plots
