@@ -1,3 +1,8 @@
+#' ---
+#' title: Anscombe's Quartet
+#' ---
+#'
+
 library(ggplot2)
 library(patchwork)
 library(datasets)
