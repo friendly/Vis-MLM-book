@@ -36,6 +36,7 @@ Include `data(Dataset, package = "pkg")` in the first chunk.
 **GK:**
 
 - (E) This chapter contained a linear model of `Rank` predicted by `Day` in the USA 1970 Draft Lottery Data, `vcdExtra::Draft1970`. Construct diagnostic plots for this model.
+- (E) Using code from the chapter, construct a randomized draft for the current year. What rank would you be? Construct a plot to see if the selection process was fair.
 
 ---
 
