@@ -1,0 +1,150 @@
+---
+title: "Part Color Theme Test"
+format:
+  pdf:
+    documentclass: book
+    keep-tex: true
+    toc: false
+    include-in-header:
+      text: |
+        \usepackage{etoolbox}
+        \usepackage{xcolor}
+        \usepackage{booktabs}
+        \usepackage{array}
+        \usepackage{colortbl}
+        \usepackage{mdframed}
+
+        % Part accent colors
+        \colorlet{partI}  {blue}
+        \colorlet{partII} {teal}
+        \definecolor{partIII}{HTML}{267342}
+        \colorlet{partIV} {orange}
+
+        % Active part color + tints (default to Part I)
+        \colorlet{partcol}  {partI}
+        \colorlet{partcol80}{partcol!80}
+        \colorlet{partcol50}{partcol!50}
+        \colorlet{partcol20}{partcol!20}
+
+        % Switch partcol at each \part
+        \newcounter{partnum}
+        \pretocmd{\part}{%
+          \stepcounter{partnum}%
+          \ifcase\value{partnum}
+            \or \colorlet{partcol}{partI}%
+            \or \colorlet{partcol}{partII}%
+            \or \colorlet{partcol}{partIII}%
+            \or \colorlet{partcol}{partIV}%
+          \fi
+          \colorlet{partcol80}{partcol!80}%
+          \colorlet{partcol50}{partcol!50}%
+          \colorlet{partcol20}{partcol!20}%
+        }{}{}
+
+        % Section headings in partcol (mirrors krantz SectionHeadFont)
+        \usepackage{titlesec}
+        \titleformat{\section}  {\color{partcol}\large\bfseries\sffamily}{}{0em}{}
+        \titleformat{\subsection}{\color{partcol}\normalsize\bfseries\sffamily}{}{0em}{}
+        \titleformat{\subsubsection}{\color{partcol}\normalsize\itshape\sffamily}{}{0em}{}
+
+        % Colored rule helper
+        \newcommand{\partrule}{%
+          \textcolor{partcol}{\rule{\linewidth}{0.8pt}}}
+
+        % "Key Point" box using mdframed
+        \mdfdefinestyle{keypointbox}{%
+          linecolor=partcol,
+          linewidth=1.5pt,
+          backgroundcolor=partcol20,
+          innertopmargin=6pt,
+          innerbottommargin=6pt,
+          innerleftmargin=8pt,
+          innerrightmargin=8pt,
+          skipabove=8pt,
+          skipbelow=4pt}
+        \newenvironment{keypoint}{%
+          \begin{mdframed}[style=keypointbox]%
+          \textcolor{partcol}{\textbf{Key Point:}}\space
+        }{\end{mdframed}}
+---
+
+## Color swatches
+
+\medskip
+\colorbox{partI!20}{\textcolor{partI}{\textbf{Part I — blue}}}
+\colorbox{partII!20}{\textcolor{partII}{\textbf{Part II — teal}}}
+\colorbox{partIII!20}{\textcolor{partIII}{\textbf{Part III — green}}}
+\colorbox{partIV!20}{\textcolor{partIV}{\textbf{Part IV — orange}}}
+
+\part{Part I — Orienting Ideas}
+
+# Chapter 1 heading (not colored by titlesec — chapter level)
+
+## Section heading (partcol)
+
+### Subsection heading (partcol)
+
+#### Subsubsection heading (partcol)
+
+**Colored rule** separating content areas:
+
+\partrule
+
+**Highlighted inline text** using tints:
+\colorbox{partcol20}{20\% tint background},
+\textcolor{partcol}{\textbf{full color text}},
+\colorbox{partcol50}{50\% tint background}.
+
+**Key Point box:**
+
+\begin{keypoint}
+This is a key insight from the chapter. The border and background
+use the current part color. The label "Key Point" is in full part color.
+\end{keypoint}
+
+**Colored table header row:**
+
+\medskip
+\begin{tabular}{>{\columncolor{partcol20}}l r r}
+\toprule
+\rowcolor{partcol}
+\textcolor{white}{\textbf{Method}} &
+\textcolor{white}{\textbf{Value 1}} &
+\textcolor{white}{\textbf{Value 2}} \\
+\midrule
+Row one   & 1.23 & 4.56 \\
+Row two   & 7.89 & 0.12 \\
+Row three & 3.45 & 6.78 \\
+\bottomrule
+\end{tabular}
+
+\part{Part II — Exploratory Methods}
+
+## Section heading should now be teal
+
+\partrule
+
+\begin{keypoint}
+The box border, background, label, rule, and heading are all teal now —
+driven by the single \texttt{partcol} switch.
+\end{keypoint}
+
+\part{Part III — Univariate Linear Models}
+
+## Section heading should be green
+
+\partrule
+
+\begin{keypoint}
+Green key point box.
+\end{keypoint}
+
+\part{Part IV — Multivariate Linear Models}
+
+## Section heading should be orange
+
+\partrule
+
+\begin{keypoint}
+Orange key point box.
+\end{keypoint}
