@@ -10,8 +10,8 @@ This document contains issues initially written in emails to MF on June 10 and 1
 
 - Do you want to colour “Package” headings at the beginning of each chapter? [MF: no]
 
-- Headings specified with bold face (e.g., "Multivariate tests” on line 1411 of `11-mlm-review.qmd`) are not coloured. 
-There are a few such headings in Ch11
+- Headings specified with bold face (e.g., “Multivariate tests” on line 1411 of `11-mlm-review.qmd`) are not coloured. 
+There are a few such headings in Ch11 [MF: FIXED — converted to `#### Heading {.unnumbered}` at lines 1411, 1435, 1633]
 
 - The “End Matter” retains the orange colouration from Part IV [MF: FIXED by adding case 5 (black) to `\ifcase` in `latex/preamble.tex`]
 
