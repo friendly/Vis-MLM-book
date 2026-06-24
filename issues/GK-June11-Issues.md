@@ -4,7 +4,7 @@ This document contains issues initially written in emails to MF on June 10 and 1
 
 ## June 11 email
 
-- Even numbered pages have uncoloured page numbers (while odd #s are coloured) [MF: try to fix]
+- Even numbered pages have uncoloured page numbers (while odd #s are coloured) [MF: FIXED by adding \color{partcol} to \PageNumFont in `latex/preamble.tex`; also fixed off-by-one color at part boundaries by patching `\@part` instead of `\part`]
 
 - Do you want to colour div headings for examples (just checking; not sure this is necessary)? [MF: no]
 
@@ -17,7 +17,7 @@ There are a few such headings in Ch11
 
 - I am wondering if the orange colour (Part IV) might be a bit too light [MF: FIXED using burnt orange]
 
-- Should the author index have headings for each letter (like the subject index)?
+- Should the author index have headings for each letter (like the subject index)? [MF: would be nice, but don't know how. Is there a .sty file for authorindex as there is for the main index?]
 - Some figures in Ch04 (in `child/04-grand-tour.qmd`) have a bold “title” of sorts after “**Figure x.y**”
   + E.g., "**Figure 4.44: Variable vectors:**"
 - Stray tick mark was on line 246 of `child/04-grand-tour.qmd` [*GK: FIXED*]

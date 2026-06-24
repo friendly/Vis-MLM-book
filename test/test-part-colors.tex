@@ -4,7 +4,8 @@
 \PassOptionsToPackage{hyphens}{url}
 %
 \documentclass[
-]{book}
+  twoside,
+  10pt]{book}
 \usepackage{xcolor}
 \usepackage{amsmath,amssymb}
 \setcounter{secnumdepth}{-\maxdimen} % remove section numbering
@@ -110,39 +111,63 @@
 \usepackage{array}
 \usepackage{colortbl}
 \usepackage{mdframed}
+\usepackage{lipsum}
 
-% Part accent colors
+% Part accent colors (mirrors preamble.tex)
 \colorlet{partI}  {blue}
 \colorlet{partII} {teal}
 \definecolor{partIII}{HTML}{267342}
-\colorlet{partIV} {orange}
+\definecolor{partIV}{HTML}{CC6600}    % burnt orange — darker than xcolor's orange
 
-% Active part color + tints (default to Part I)
+% Active part color + tints (defaults to Part I before any \part fires)
 \colorlet{partcol}  {partI}
 \colorlet{partcol80}{partcol!80}
 \colorlet{partcol50}{partcol!50}
 \colorlet{partcol20}{partcol!20}
 
-% Switch partcol at each \part
+% Switch partcol at each \part boundary.
+% Patch \@part (not \part) so the color change fires AFTER \cleardoublepage
+% has flushed pending pages — otherwise the last pages of the previous part
+% are output with the new part's color already set.
 \newcounter{partnum}
-\pretocmd{\part}{%
+\makeatletter
+\pretocmd{\@part}{%
   \stepcounter{partnum}%
   \ifcase\value{partnum}
     \or \colorlet{partcol}{partI}%
     \or \colorlet{partcol}{partII}%
     \or \colorlet{partcol}{partIII}%
     \or \colorlet{partcol}{partIV}%
+    \or \colorlet{partcol}{black}%
   \fi
   \colorlet{partcol80}{partcol!80}%
   \colorlet{partcol50}{partcol!50}%
   \colorlet{partcol20}{partcol!20}%
 }{}{}
+\makeatother
 
 % Section headings in partcol (mirrors krantz SectionHeadFont)
 \usepackage{titlesec}
 \titleformat{\section}  {\color{partcol}\large\bfseries\sffamily}{}{0em}{}
 \titleformat{\subsection}{\color{partcol}\normalsize\bfseries\sffamily}{}{0em}{}
 \titleformat{\subsubsection}{\color{partcol}\normalsize\itshape\sffamily}{}{0em}{}
+
+% Mirror krantz's PageNumFont, RunningHeadFont, and even/odd head layout.
+% even page: [page#]  chapter title ----
+% odd page:  ---- section title  [page#]
+% The key fix: \PageNumFont now sets \color{partcol} so even-page numbers
+% are colored even though \@the@page fires before \RunningHeadFont.
+\makeatletter
+\newcommand\PageNumFont{\reset@font\color{partcol}\fontsize{10}{12}\selectfont}
+\newcommand\RunningHeadFont{\color{partcol}\fontsize{10}{12}\itshape\selectfont}
+\def\@the@page{{\PageNumFont\thepage}}
+\def\ps@colorheadings{%
+  \let\@oddfoot\@empty\let\@evenfoot\@empty
+  \def\@evenhead{{\@the@page\RunningHeadFont\hfill\leftmark}}%
+  \def\@oddhead{\RunningHeadFont\rightmark\hfill\PageNumFont\thepage}%
+}
+\AtBeginDocument{\pagestyle{colorheadings}}
+\makeatother
 
 % Colored rule helper
 \newcommand{\partrule}{%
@@ -229,35 +254,92 @@
 \colorbox{partI!20}{\textcolor{partI}{\textbf{Part I — blue}}}
 \colorbox{partII!20}{\textcolor{partII}{\textbf{Part II — teal}}}
 \colorbox{partIII!20}{\textcolor{partIII}{\textbf{Part III — green}}}
-\colorbox{partIV!20}{\textcolor{partIV}{\textbf{Part IV — orange}}}
+\colorbox{partIV!20}{\textcolor{partIV}{\textbf{Part IV — burnt orange}}}
+\colorbox{black!10}{\textcolor{black}{\textbf{End Matter — black}}}
 
 \part{Part I — Orienting Ideas}
 
-\chapter{Chapter 1 heading (not colored by titlesec --- chapter
-level)}\label{chapter-1-heading-not-colored-by-titlesec-chapter-level}
+\chapter{Chapter 1}\label{chapter-1}
 
-\section{Section heading (partcol)}\label{section-heading-partcol}
-
-\subsection{Subsection heading
-(partcol)}\label{subsection-heading-partcol}
-
-\subsubsection{Subsubsection heading
-(partcol)}\label{subsubsection-heading-partcol}
-
-\textbf{Colored rule} separating content areas:
+\section{Section heading (blue)}\label{section-heading-blue}
 
 \partrule
 
-\textbf{Highlighted inline text} using tints:
-\colorbox{partcol20}{20\% tint background},
-\textcolor{partcol}{\textbf{full color text}},
-\colorbox{partcol50}{50\% tint background}.
+\lipsum[1-4]
 
-\textbf{Key Point box:}
+\section{Second section --- check even
+page}\label{second-section-check-even-page}
+
+\textbf{$\leftarrow$ The page number on the left (even page) should be blue.}
+
+\lipsum[5-6]
 
 \begin{keypoint}
-This is a key insight from the chapter. The border and background
-use the current part color. The label "Key Point" is in full part color.
+Blue key point box. The border, background, and label use Part I blue.
+\end{keypoint}
+
+\part{Part II — Exploratory Methods}
+
+\chapter{Chapter 2}\label{chapter-2}
+
+\section{Section heading (teal)}\label{section-heading-teal}
+
+\partrule
+
+\lipsum[1-4]
+
+\section{Second section --- check even
+page}\label{second-section-check-even-page-1}
+
+\textbf{$\leftarrow$ The page number on the left (even page) should be teal.}
+
+\lipsum[5-6]
+
+\begin{keypoint}
+Teal key point box.
+\end{keypoint}
+
+\part{Part III — Univariate Linear Models}
+
+\chapter{Chapter 3}\label{chapter-3}
+
+\section{Section heading (green)}\label{section-heading-green}
+
+\partrule
+
+\lipsum[1-4]
+
+\section{Second section --- check even
+page}\label{second-section-check-even-page-2}
+
+\textbf{$\leftarrow$ The page number on the left (even page) should be green.}
+
+\lipsum[5-6]
+
+\begin{keypoint}
+Green key point box.
+\end{keypoint}
+
+\part{Part IV — Multivariate Linear Models}
+
+\chapter{Chapter 4}\label{chapter-4}
+
+\section{Section heading (burnt
+orange)}\label{section-heading-burnt-orange}
+
+\partrule
+
+\lipsum[1-4]
+
+\section{Second section --- check even
+page}\label{second-section-check-even-page-3}
+
+\textbf{$\leftarrow$ The page number on the left (even page) should be burnt orange (\#CC6600), visibly darker than xcolor's plain orange.}
+
+\lipsum[5-6]
+
+\begin{keypoint}
+Burnt orange key point box.
 \end{keypoint}
 
 \textbf{Colored table header row:}
@@ -276,39 +358,22 @@ Row three & 3.45 & 6.78 \\
 \bottomrule
 \end{tabular}
 
-\part{Part II — Exploratory Methods}
+\part{End Matter}
 
-\section{Section heading should now be
-teal}\label{section-heading-should-now-be-teal}
+\chapter{Colophon}\label{colophon}
 
-\partrule
-
-\begin{keypoint}
-The box border, background, label, rule, and heading are all teal now —
-driven by the single \texttt{partcol} switch.
-\end{keypoint}
-
-\part{Part III — Univariate Linear Models}
-
-\section{Section heading should be
-green}\label{section-heading-should-be-green}
+\section{Section heading (black)}\label{section-heading-black}
 
 \partrule
 
-\begin{keypoint}
-Green key point box.
-\end{keypoint}
+\lipsum[1-4]
 
-\part{Part IV — Multivariate Linear Models}
+\section{Second section --- check even
+page}\label{second-section-check-even-page-4}
 
-\section{Section heading should be
-orange}\label{section-heading-should-be-orange}
+\textbf{$\leftarrow$ Page number and running heads should be BLACK here, not orange. This verifies the End Matter fix.}
 
-\partrule
-
-\begin{keypoint}
-Orange key point box.
-\end{keypoint}
+\lipsum[5-6]
 
 
 \backmatter
