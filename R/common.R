@@ -21,6 +21,12 @@ options(
 # Ensure CMYK for PDF (issue #32)
 grDevices::pdf.options(colormodel = "cmyk")
 
+# knitr 1.51 (R 4.6.1) added a Windows PATH check for pdfcrop that calls
+# tlmgr_version() inside the render subprocess where tlmgr may not be on
+# PATH, returning NA and crashing has_crop_tools().  TeX Live 2026 has GS
+# bundled, so setting this env var bypasses the year check correctly.
+Sys.setenv(TEXLIVE_WINDOWS_EXTERNAL_GS = "1")
+
 # --------------
 # knitr related
 # --------------
