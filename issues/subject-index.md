@@ -146,3 +146,123 @@ Use it as a checklist rather than copying verbatim.
 - Use `\ixmain{}` for the primary defining occurrence of a term.
 - Sub-entries (`!` in makeindex) are worth adding for terms with many references:
   `\ix{smoother!loess}`, `\ix{smoother!spline}` etc.
+
+---
+
+## Work log
+
+### Ch 10 — Hotelling's T² (2026-06-30)
+
+Added 30 new entries; chapter went from 1 `\ix{}` call to 39 total entries.
+
+Existing `\ixon{}`/`\ixoff{}` ranges (already in place):
+- `Hotelling $T^2$` (full chapter intro through T² properties)
+- `HE plot` (§10.3)
+- `discriminant analysis` (§10.4)
+- `biplot` (§10.5.1)
+- `$\eta^2$` (single `\ix{}`, §10.6)
+
+New entries added by section:
+
+| Section | Entries added |
+|---------|--------------|
+| §10.1 T² as generalized t-test | `variance-covariance matrix`, `Mahalanobis distance` (`\ixmain`) |
+| §10.2 T² properties | `linear combination`, `eigenvalue`, `Wilks lambda`, `Pillai trace`, `Roy maximum root test`, `eigenvector`, `discriminant analysis!coefficients`, `exact test`, `invariance!linear transformation`, `pooled covariance matrix` |
+| §10.2.1 Mathscore example | `data ellipse`, `discriminant analysis!axis` |
+| §10.3 HE plot | `hypothesis matrix`, `sum of squares and products`, `error matrix`, `visual test of significance` |
+| §10.4 Discriminant analysis | `prior probabilities`, `discriminant analysis!linear`, `discriminant analysis!scores`, `violin plot` |
+| §10.5 Banknote / testing | `multivariate test statistics`, `Pillai trace` (2nd), `Wilks lambda` (2nd) |
+| §10.6 Variance accounted for | `coefficient of determination`, `effect size`, `canonical discriminant analysis` |
+| §10.7 Grand scheme | `HE framework`, `canonical space` |
+
+Four discriminant-related sub-entries (`!coefficients`, `!axis`, `!linear`, `!scores`) roll up under "discriminant analysis" in the index.
+
+Several entries here (`Mahalanobis distance`, `data ellipse`, `eigenvalue`, `discriminant axis`, `Pillai trace`, `Wilks lambda`, `pooled covariance matrix`) appear in multiple chapters — adding them to remaining chapters will build up multi-page index entries for these key terms.
+
+**Next chapters to index** (priority order): Ch 13, Ch 14, Ch 08.
+
+---
+
+### Ch 12 — Visualizing Multivariate Models (2026-06-30)
+
+Added 33 new entries (plus 1 upgrade); chapter went from 5 to 38 total entries.
+
+Existing entries (carried forward):
+- `\ix{HE plot}` at intro bullet → **upgraded to `\ixmain{HE plot}`** (Ch 12 is the principal reference)
+- `\ix{contrasts}`, `\ix{canonical discriminant analysis}` (intro bullets)
+- `\ixd{dogfood}`, `\ix{quartets!dogfood}` (auto/manual)
+
+New `\ixon{}`/`\ixoff{}` ranges added:
+
+| Range | Section |
+|-------|---------|
+| `significance scaling` | §12.4 Significance scaling vs. effect scaling |
+| `canonical discriminant analysis` | §12.7 Low-D views: Canonical analysis |
+| `factorial MANOVA` | §12.8 Factorial MANOVA |
+| `multivariate multiple regression` | §12.9 Quantitative predictors: MMRA |
+| `canonical correlation analysis` | §12.10 Canonical correlation analysis |
+| `MANCOVA` | §12.11 MANCOVA models |
+
+New single entries by section:
+
+| Section | Entries added |
+|---------|--------------|
+| §12.1 HE plot framework | `data space`, `canonical space`, `sum of squares and products` |
+| §12.2 HE plot construction | `effect size scaling`, `significance scaling` (first mention) |
+| §12.4 Significance scaling | `visual test of significance`, `Roy maximum root test` |
+| §12.5 Contrasts | `linear hypothesis`, `orthogonal contrasts`, `conjugate axes` |
+| §12.6 HE plot matrices | `HE plot!matrix` |
+| §12.7 Canonical analysis | `Wilks lambda`, `canonical correlation`, `canonical structure coefficients`, `canonical scores` |
+| §12.8 Factorial MANOVA | `MANOVA!factorial`, `interaction` |
+| §12.9 MMRA | `joint linear hypothesis` |
+| §12.10 CCA | `canonical variates`, `eigenvalue!generalized` |
+| §12.11 MANCOVA | `homogeneity of regression`, `heterogeneous regression` |
+
+Sub-entries: `HE plot!matrix`, `MANOVA!factorial`, `eigenvalue!generalized`.
+
+Terms shared with Ch 10 (building multi-page entries): `sum of squares and products`, `visual test of significance`, `Roy maximum root test`, `Wilks lambda`, `canonical discriminant analysis`, `canonical space`, `effect size scaling`.
+
+**Next chapters to index** (priority order): Ch 13, Ch 14, Ch 08.
+
+---
+
+### Ch 13 — Equality of Covariance Matrices (2026-06-30)
+
+Added 23 new entries; chapter went from 1 conceptual `\ix{}` call (dataset only) to 34 total entries.
+
+Existing entries (carried forward):
+- `\ixon{peng data}` / `\ixoff{peng data}`, `\ixon{datasets!peng}` / `\ixoff{datasets!peng}` — dataset ranges
+
+New `\ixmain{}` entries:
+- `\ixmain{covariance matrices!equality}` — at formal definition (§13.3)
+- `\ixmain{Box's M test}` — at §Box's M section heading
+
+New `\ixon{}`/`\ixoff{}` ranges:
+
+| Range | Section |
+|-------|---------|
+| `covariance matrices!equality` | whole chapter |
+| `covariance matrices!heterogeneity` | whole chapter |
+| `Box's M test` | §Box M through §other measures |
+| `Levene's test` | §13.1 univariate through §visualizing Levene |
+| `Levene's test!multivariate` | §13.7 multivariate Levene analog |
+| `canonical discriminant analysis` | §13.7.1 candisc subsection |
+
+New single entries by section:
+
+| Section | Entries added |
+|---------|--------------|
+| §intro | `discriminant analysis!quadratic` (LDA vs QDA choice) |
+| §13.1 Homogeneity of variance | `homogeneity of variance`, `Brown-Forsythe test` |
+| §13.3 MANOVA setting | `data ellipse`, `centered ellipses`, `pooled covariance matrix` |
+| §Box M section | `likelihood-ratio test`, `log determinant` |
+| §13.5 Low-rank views | `principal components` |
+| §13.6 Other measures | `generalized variance`, `precision matrix`, `eigenvalue!maximum` |
+| §13.7 Multivariate Levene | `MANOVA`, `HE plot` |
+| §13.7.1 Canonical DA | `canonical structure coefficients` |
+
+Sub-entries: `covariance matrices!equality`, `covariance matrices!heterogeneity`, `discriminant analysis!quadratic`, `Levene's test!multivariate`, `eigenvalue!maximum`.
+
+Terms shared with Ch 10/12 (building multi-page entries): `data ellipse`, `pooled covariance matrix`, `canonical discriminant analysis`, `HE plot`, `MANOVA`, `eigenvalue!maximum`.
+
+**Next chapters to index** (priority order): Ch 14, Ch 08.
