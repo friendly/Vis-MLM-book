@@ -31,6 +31,8 @@ perl latex/authorindex -d index
 
 if [ $? -eq 0 ]; then
     echo "Success: index.ain written."
+    perl latex/add-letter-headings.pl index.ain
+    echo "    Letter headings inserted into index.ain."
     echo "Recompile the PDF to incorporate the author index."
 else
     echo "authorindex failed. Check output above."

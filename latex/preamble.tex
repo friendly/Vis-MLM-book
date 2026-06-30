@@ -22,28 +22,34 @@
 \colorlet{partI}  {blue}
 \colorlet{partII} {teal}
 \definecolor{partIII}{cmyk}{0.67, 0, 0.43, 0.55}  % #267342
-\colorlet{partIV} {orange}
+\definecolor{partIV}{cmyk}{0, 0.50, 1.0, 0.20}  % #CC6600 — burnt orange, darker than xcolor's orange
 % Active part color + tints (defaults to Part I before any \part fires)
 \colorlet{partcol}  {partI}
 \colorlet{partcol80}{partcol!80}
 \colorlet{partcol50}{partcol!50}
 \colorlet{partcol20}{partcol!20}
 
-% Switch partcol at each \part boundary
+% Switch partcol at each \part boundary.
+% Patch \@part (not \part) so the color change fires AFTER \cleardoublepage
+% has flushed pending pages — otherwise the last pages of the previous part
+% are output with the new part's color already set.
 \usepackage{etoolbox}
 \newcounter{partnum}
-\pretocmd{\part}{%
+\makeatletter
+\pretocmd{\@part}{%
   \stepcounter{partnum}%
   \ifcase\value{partnum}
     \or \colorlet{partcol}{partI}%
     \or \colorlet{partcol}{partII}%
     \or \colorlet{partcol}{partIII}%
     \or \colorlet{partcol}{partIV}%
+    \or \colorlet{partcol}{black}%   % End Matter
   \fi
   \colorlet{partcol80}{partcol!80}%
   \colorlet{partcol50}{partcol!50}%
   \colorlet{partcol20}{partcol!20}%
 }{}{}
+\makeatother
 
 %%%% section headings %%%%
 
@@ -57,6 +63,7 @@
 \renewcommand\ChapNumFont{\reset@font\color{partcol}\fontsize{24}{24}\bfseries\selectfont}
 \renewcommand\ChapTitleFont{\reset@font\color{partcol}\fontsize{18}{20}\slshape\selectfont}
 \renewcommand\RunningHeadFont{\color{partcol}\fontsize{10}{12}\itshape\selectfont}
+\renewcommand\PageNumFont{\reset@font\color{partcol}\fontsize{10}{12}\selectfont}
 \makeatother
 
 

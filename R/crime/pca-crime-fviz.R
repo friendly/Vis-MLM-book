@@ -12,10 +12,23 @@ crime.pca <- crime2 |>
   select(where(is.numeric)) |>
   PCA(graph = FALSE)
   
-fviz_pca_biplot(crime.pca, label = c("var", "id"), 
+fviz_pca_biplot(crime.pca, label = c("var", "ind"), 
+                col.var = "black",
                 habillage=crime2$region,
                 addEllipses=TRUE, ellipse.level=0.68,
                 ggtheme = theme_minimal()) 
+
+# from https://github.com/kassambara/factoextra/issues/165
+# fviz_pca_biplot(res, geom.ind = c("point", "text"), label = "all", repel = TRUE)
+
+fviz_pca_biplot(crime.pca, 
+                habillage=crime2$region,
+                addEllipses=TRUE, ellipse.level=0.68,
+                geom.ind = c("point", "text"), label = "ind", repel = TRUE,
+                ggtheme = theme_minimal()) 
+
+
+
 
 fviz_screeplot(crime.pca, addlabels = TRUE, barfill="lightblue")
 

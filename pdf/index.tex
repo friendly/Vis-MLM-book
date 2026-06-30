@@ -206,28 +206,34 @@
 \colorlet{partI}  {blue}
 \colorlet{partII} {teal}
 \definecolor{partIII}{cmyk}{0.67, 0, 0.43, 0.55}  % #267342
-\colorlet{partIV} {orange}
+\definecolor{partIV}{cmyk}{0, 0.50, 1.0, 0.20}  % #CC6600 — burnt orange, darker than xcolor's orange
 % Active part color + tints (defaults to Part I before any \part fires)
 \colorlet{partcol}  {partI}
 \colorlet{partcol80}{partcol!80}
 \colorlet{partcol50}{partcol!50}
 \colorlet{partcol20}{partcol!20}
 
-% Switch partcol at each \part boundary
+% Switch partcol at each \part boundary.
+% Patch \@part (not \part) so the color change fires AFTER \cleardoublepage
+% has flushed pending pages — otherwise the last pages of the previous part
+% are output with the new part's color already set.
 \usepackage{etoolbox}
 \newcounter{partnum}
-\pretocmd{\part}{%
+\makeatletter
+\pretocmd{\@part}{%
   \stepcounter{partnum}%
   \ifcase\value{partnum}
     \or \colorlet{partcol}{partI}%
     \or \colorlet{partcol}{partII}%
     \or \colorlet{partcol}{partIII}%
     \or \colorlet{partcol}{partIV}%
+    \or \colorlet{partcol}{black}%   % End Matter
   \fi
   \colorlet{partcol80}{partcol!80}%
   \colorlet{partcol50}{partcol!50}%
   \colorlet{partcol20}{partcol!20}%
 }{}{}
+\makeatother
 
 %%%% section headings %%%%
 
@@ -241,6 +247,7 @@
 \renewcommand\ChapNumFont{\reset@font\color{partcol}\fontsize{24}{24}\bfseries\selectfont}
 \renewcommand\ChapTitleFont{\reset@font\color{partcol}\fontsize{18}{20}\slshape\selectfont}
 \renewcommand\RunningHeadFont{\color{partcol}\fontsize{10}{12}\itshape\selectfont}
+\renewcommand\PageNumFont{\reset@font\color{partcol}\fontsize{10}{12}\selectfont}
 \makeatother
 
 
@@ -614,7 +621,7 @@
 \makeatother
 \subtitle{A Romance in Many Dimensions}
 \author{Michael Friendly}
-\date{2026-06-10}
+\date{2026-06-28}
 \begin{document}
 \maketitle
 
@@ -1863,7 +1870,8 @@ behavioral sciences. Theoretical constructs such as ``depression'',
 ``perfectionism'' can often be measured by different scales, or have
 been identified to have more than one aspect or context worthy of study.
 
-\textbf{Conceptual advantages}
+\subsubsection*{Conceptual advantages}\label{conceptual-advantages}
+\addcontentsline{toc}{subsubsection}{Conceptual advantages}
 
 Analyzing these together from a multivariate approach can reveal
 relationships completely missed or ignored by simpler univariate
@@ -1954,7 +1962,8 @@ the observed variables used in a SEM, but in a data-centric way.
 
 \end{tcolorbox}
 
-\textbf{Statistical advantages}
+\subsubsection*{Statistical advantages}\label{statistical-advantages}
+\addcontentsline{toc}{subsubsection}{Statistical advantages}
 
 A second important point is that a multivariate modeling approach can
 offer statistical advantages:
@@ -4129,7 +4138,9 @@ machine giving \(\sqrt{\mathbf{S}}\), then expand or shrink to cover a
 certain percentage of the data points as, and then just shift her center
 to the means.
 
-\textbf{Contour levels (\(c\))}
+\subsubsection*{\texorpdfstring{Contour levels
+(\(c\))}{Contour levels (c)}}\label{contour-levels-c}
+\addcontentsline{toc}{subsubsection}{Contour levels (\(c\))}
 
 There is an easy way to callibrate the size or scale factor, \(c\) of
 the data ellipse to cover a given fraction of the data points. When
@@ -6929,7 +6940,7 @@ aligned with \(\mathbf{x}_3\); \(\mathbf{x}_1\) and \(\mathbf{x}_2\)
 have vertical components that are half of that for \(\mathbf{x}_3\) in
 absolute value.
 
-` \#\#\#\# Vector lengths
+\subsubsection{Vector lengths}\label{vector-lengths}
 
 In Figure~\ref{fig-proj-vectors}, the \textbf{lengths} of the
 \(\mathbf{x}\) vectors reflect the relative degree to which each
@@ -10200,14 +10211,14 @@ you can specify the number of dimensions (\texttt{k}) desired, with
 \NormalTok{mds }\OtherTok{\textless{}{-}} \FunctionTok{bind\_cols}\NormalTok{(mds, }\AttributeTok{group =}\NormalTok{ Diabetes}\SpecialCharTok{$}\NormalTok{group)}
 \NormalTok{mds }\SpecialCharTok{|\textgreater{}} \FunctionTok{sample\_n}\NormalTok{(}\DecValTok{6}\NormalTok{)}
 \CommentTok{\# \# A tibble: 6 x 3}
-\CommentTok{\#     Dim1   Dim2 group            }
-\CommentTok{\#    \textless{}dbl\textgreater{}  \textless{}dbl\textgreater{} \textless{}fct\textgreater{}            }
-\CommentTok{\# 1 {-}213.  {-}42.1  Normal           }
-\CommentTok{\# 2  191.   47.3  Overt\_Diabetic   }
-\CommentTok{\# 3   12.0 {-}63.2  Overt\_Diabetic   }
-\CommentTok{\# 4   25.0 {-}38.1  Chemical\_Diabetic}
-\CommentTok{\# 5  774.    9.44 Overt\_Diabetic   }
-\CommentTok{\# 6   79.0 136.   Overt\_Diabetic}
+\CommentTok{\#    Dim1   Dim2 group            }
+\CommentTok{\#   \textless{}dbl\textgreater{}  \textless{}dbl\textgreater{} \textless{}fct\textgreater{}            }
+\CommentTok{\# 1 {-}259. {-}57.9  Normal           }
+\CommentTok{\# 2 {-}174. {-}49.6  Normal           }
+\CommentTok{\# 3  616.  {-}9.42 Overt\_Diabetic   }
+\CommentTok{\# 4 {-}184. {-}25.2  Normal           }
+\CommentTok{\# 5  979. {-}68.6  Overt\_Diabetic   }
+\CommentTok{\# 6 {-}104.  19.5  Chemical\_Diabetic}
 \end{Highlighting}
 \end{Shaded}
 
@@ -13927,7 +13938,9 @@ residuals \texttt{resids} have two columns, one for
 \(x_i \,\vert\, \text{others}\) and one for
 \(y \,\vert\, \text{others}\).
 
-\textbf{The \texttt{avPlot()} function}
+\subsubsection*{\texorpdfstring{The \texttt{avPlot()}
+function}{The avPlot() function}}\label{the-avplot-function}
+\addcontentsline{toc}{subsubsection}{The \texttt{avPlot()} function}
 
 Added-variable plots are produced using
 \texttt{car::avPlot()}\index{avPlot()@\texttt{avPlot()}} for one
@@ -17486,7 +17499,8 @@ centered \((x - \bar{x}\).}
 
 \end{figure}%
 
-\textbf{Interpretation}
+\subsubsection*{Interpretation}\label{interpretation}
+\addcontentsline{toc}{subsubsection}{Interpretation}
 
 Centering of predictors has an added benefit: the fitted coefficients
 are \textbf{easier to interpret}*, particularly the intercept in this
@@ -17698,7 +17712,8 @@ variance. In many cases, analytical or computationally intensive methods
 have been developed to choose an optimal value of the tuning parameter,
 for example using generalized cross validation or bootstrap methods.
 
-\textbf{Visualization}
+\subsubsection*{Visualization}\label{visualization}
+\addcontentsline{toc}{subsubsection}{Visualization}
 
 A common means to visualize the effects of shrinkage in these problems
 is to make what are called \emph{univariate ridge trace plots}
@@ -17785,7 +17800,10 @@ coefficients,
 squared length
 \(\boldsymbol{\beta}^\mathsf{T}\boldsymbol{\beta} = \Sigma \beta_i \le t(k)\).
 
-\textbf{Geometry} The geometry of ridge regession is illustrated in
+\subsubsection*{Geometry}\label{geometry}
+\addcontentsline{toc}{subsubsection}{Geometry}
+
+The geometry of ridge regession is illustrated in
 Figure~\ref{fig-ridge-demo} for two coefficients
 \(\boldsymbol{\beta} = (\beta_1, \beta_2)\). The
 \textcolor{blue}{blue circles} at the origin, having radii
@@ -18399,7 +18417,8 @@ successively greatest variance.
 \end{Highlighting}
 \end{Shaded}
 
-\textbf{Traceplot}
+\subsubsection*{Traceplot}\label{traceplot}
+\addcontentsline{toc}{subsubsection}{Traceplot}
 
 Then, a \texttt{traceplot()} of the resulting \texttt{"pcaridge"} object
 shows how the dimensions are affected by shrinkage, shown on the scale
@@ -18432,7 +18451,8 @@ ridge tuning. Rather, the effect of shrinkage is seen only on the
 \emph{last two dimensions}. But those also are the directions that
 contribute most to collinearity as we saw earlier.
 
-\textbf{pairs() plot}
+\subsubsection*{pairs() plot}\label{pairs-plot}
+\addcontentsline{toc}{subsubsection}{pairs() plot}
 
 A \texttt{pairs()} plot gives a dramatic representation bivariate
 effects of shrinkage in PCA space: the principal components of X are
@@ -21848,7 +21868,8 @@ dataset \texttt{heplots::Plastic} comes from Johnson \& Wichern
 \end{Highlighting}
 \end{Shaded}
 
-\textbf{Multivariate tests}
+\subsubsection*{Multivariate tests}\label{multivariate-tests}
+\addcontentsline{toc}{subsubsection}{Multivariate tests}
 
 The MANOVA model \texttt{plastic.mod} fits the main effects of
 \texttt{rate} and \texttt{additive} and the interaction
@@ -21899,7 +21920,10 @@ model term. \texttt{uniStats()} shows only the overall statistics for
 each response variable, combining the effects of all terms, and testing
 against the null model that none of them contribute to that response.
 
-\textbf{Plotting main effects and interactions}
+\subsubsection*{Plotting main effects and
+interactions}\label{plotting-main-effects-and-interactions}
+\addcontentsline{toc}{subsubsection}{Plotting main effects and
+interactions}
 
 To understand main effects and interactions in a simple two-way MANOVA
 design, the simplest thing to do is to plot the cell means and error
@@ -22167,13 +22191,16 @@ the outcome variables collectively. You can eliminate predictors that
 are unimportant, but the mechanics are geared toward removing them from
 the models for \emph{all} responses.
 
-\textbf{Overall tests} In a one-way ANOVA, to control for multiple
-testing, it is common practice to carry out an overall \(F\)-test to see
-if the group means differ collectively before testing comparison between
-specific groups. Similarly, in univariate multiple regression,
-researchers sometimes report an overall \(F\)-test or test of the
-\(R^2\) so they can reject the hypothesis that \emph{all} predictors
-have no effect, before considering them individually.
+\subsubsection*{Overall tests}\label{overall-tests}
+\addcontentsline{toc}{subsubsection}{Overall tests}
+
+In a one-way ANOVA, to control for multiple testing, it is common
+practice to carry out an overall \(F\)-test to see if the group means
+differ collectively before testing comparison between specific groups.
+Similarly, in univariate multiple regression, researchers sometimes
+report an overall \(F\)-test or test of the \(R^2\) so they can reject
+the hypothesis that \emph{all} predictors have no effect, before
+considering them individually.
 
 Similarly, the case of multivariate linear models, some consider it
 necessary to reject the multivariate null hypothesis for a predictor
@@ -29487,7 +29514,7 @@ Pandoc & 3.8.3 \\
 R & 4.5.2 \\
 knitr & 1.51 \\
 rmarkdown & 2.31 \\
-TinyTeX & 7830 \\
+TinyTeX & 7861 \\
 \end{longtable}
 }
 
@@ -29528,7 +29555,7 @@ bayestestR & 0.18.1 &
 \href{https://cran.r-project.org/package=bayestestR}{CRAN} \\
 broom & 1.0.13 &
 \href{https://cran.r-project.org/package=broom}{CRAN} \\
-candisc & 1.1.0 &
+candisc & 1.1.1 &
 \href{https://cran.r-project.org/package=candisc}{CRAN} \\
 car & 3.1-5 & \href{https://cran.r-project.org/package=car}{CRAN} \\
 carData & 3.0-6 &
@@ -29552,7 +29579,7 @@ effectsize & 1.0.2 &
 \href{https://cran.r-project.org/package=effectsize}{CRAN} \\
 factoextra & 2.0.0 &
 \href{https://cran.r-project.org/package=factoextra}{CRAN} \\
-FactoMineR & 2.14 &
+FactoMineR & 2.15 &
 \href{https://cran.r-project.org/package=FactoMineR}{CRAN} \\
 forcats & 1.0.1 &
 \href{https://cran.r-project.org/package=forcats}{CRAN} \\
@@ -31204,6 +31231,10 @@ Statistical Association}, \emph{87}(418), 425--429.
 
 %% Author index
 % Generated by: bash make-authorindex.sh  (after PDF compile)
+% Letter heading inserted by make-authorindex.sh into index.ain;
+% style matches the subject index (bold sans-serif boxed letter + rule).
+\newcommand{\ailetterheading}[1]{%
+  \par{\bfseries\sffamily\fbox{ #1 }\hrulefill}\nopagebreak}
 % Redefine theauthorindex for single spacing (per authorindex docs)
 \renewenvironment{theauthorindex}{%
   \linespread{1}\selectfont%
