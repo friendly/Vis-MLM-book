@@ -57,20 +57,21 @@ parse_spec <- function(spec) {
 # ---------------------------------------------------------------------------
 
 # Match lines of the exact form \indexentry{SPEC}{PAGE}
-pat   <- "^\\\\indexentry\\{(.+)\\}\\{([0-9]+)\\}$"
+# Page numbers may be Arabic (123) or lowercase Roman (xvi) for front matter.
+pat   <- "^\\\\indexentry\\{(.+)\\}\\{([0-9ivxlcdm]+)\\}$"
 valid <- grepl(pat, lines, perl = TRUE)
 lines <- lines[valid]
 
 if (length(lines) == 0L) stop("No \\indexentry lines found in '", idx_file, "'")
 
 raw_specs <- sub(pat, "\\1", lines, perl = TRUE)
-pages     <- as.integer(sub(pat, "\\2", lines, perl = TRUE))
+pages     <- sub(pat, "\\2", lines, perl = TRUE)   # character: "xvi" or "223"
 specs     <- strip_encap(raw_specs)
 parsed    <- lapply(specs, parse_spec)
 
 df <- data.frame(
   term      = vapply(parsed, `[[`, character(1), "term"),
-  page      = pages,
+  page      = pages,                                  # character: "xvi" or "223"
   formatted = vapply(parsed, `[[`, character(1), "formatted"),
   stringsAsFactors = FALSE
 )
