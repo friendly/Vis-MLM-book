@@ -266,3 +266,43 @@ Sub-entries: `covariance matrices!equality`, `covariance matrices!heterogeneity`
 Terms shared with Ch 10/12 (building multi-page entries): `data ellipse`, `pooled covariance matrix`, `canonical discriminant analysis`, `HE plot`, `MANOVA`, `eigenvalue!maximum`.
 
 **Next chapters to index** (priority order): Ch 14, Ch 08.
+
+---
+
+### Ch 14 — Multivariate Influence and Robust Estimation (2026-07-01)
+
+Added 18 new entries; chapter went from 3 entries (robust estimation range + M-estimators) to 21 total.
+
+Existing entries (carried forward):
+- `\ixon{robust estimation}` / `\ixoff{robust estimation}` — already present
+- `\ix{M-estimators}` — already present
+
+New `\ixmain{}` entries:
+- `\ixmain{influential observations}` — at §multivariate influence section heading
+- `\ixmain{Cook's distance!multivariate}` — at multivariate extension definition
+
+New `\ixon{}`/`\ixoff{}` ranges:
+
+| Range | Section |
+|-------|---------|
+| `influential observations` | §14.1–§14.4 (whole influence section) |
+| `Cook's distance` | §14.1.3 Cook's distance through toy example |
+
+New single entries by section:
+
+| Section | Entries added |
+|---------|--------------|
+| §intro | `outliers` |
+| §14.1 Multivariate influence | `case deletion` |
+| §14.1.2 Hat values | `hat matrix`, `leverage` |
+| §14.1.3 Cook's distance | `Cook's distance`, `Cook's distance!multivariate` (ixmain) |
+| §14.1.4 Leverage/residual | `studentized residuals` |
+| §14.2 Toy example | `influence plot` |
+| §14.2.2 DFBETAS | `DFBETAS` |
+| §robust estimation | `weighted least squares`, `robust estimation!S-estimator`, `robust estimation!MM-estimator`, `biweight function`, `iteratively reweighted least squares` |
+
+Sub-entries: `Cook's distance!multivariate`, `robust estimation!S-estimator`, `robust estimation!MM-estimator`.
+
+Terms shared with other chapters (building multi-page entries): `outliers`, `leverage`, `studentized residuals`, `Cook's distance`.
+
+**Next chapters to index** (priority order): Ch 08.
