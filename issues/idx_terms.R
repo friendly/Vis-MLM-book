@@ -8,19 +8,12 @@
 #
 # Quotes in the CSV catch trailing/leading spaces in index terms.
 #
-# Usage (from project root):
-#   Rscript issues/idx_terms.R [input.idx [output.csv]]
-#
-# Defaults:
-#   input  : index.idx   (built at project root by quarto render)
-#   output : issues/index-terms.csv
-#
-# To analyse the archived PDF index use:
-#   Rscript issues/idx_terms.R pdf/index.idx issues/index-terms.csv
+# Usage: source this file from the project root, or set either variable
+# before sourcing to override the default:
+#   idx_file <- "pdf/index.idx"; source("issues/idx_terms.R")
 
-args     <- commandArgs(trailingOnly = TRUE)
-idx_file <- if (length(args) >= 1) args[1] else "index.idx"
-out_file <- if (length(args) >= 2) args[2] else "issues/index-terms.csv"
+if (!exists("idx_file")) idx_file <- "index.idx"          # built at project root by quarto render
+if (!exists("out_file")) out_file <- "issues/index-terms.csv"
 
 lines <- readLines(idx_file, warn = FALSE, encoding = "latin1")
 
