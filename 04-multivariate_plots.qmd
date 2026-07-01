@@ -2703,11 +2703,908 @@ by plotting `-bill_depth`.
 \index{ordering!variables}
 \ixoff{parallel coordinate plots}
 
-```{r child="child/04-grand-tour.qmd"}
+## Animated tours {#sec-animated-tours}
+
+In the mid 17$^{th}$  to early 19$^{th}$-century the **Grand Tour**
+became a coming-of-age custom for wealthy young Europeans 
+(mainly British nobility and landed gentry)
+of sufficient rank and means to undertake a journey to the principal sites of Europe
+(Paris, Geneva, Rome, Athens, ...) to complete their education by learning something of
+the cultural legacies in history, art, and music from antiquity to the Renaissance.
+Thereby, they could gain a wider appreciation of history and be prepared to play
+a role in polite society or in their chosen endeavors.
+
+Travels in high-dimensional data space might be less thrilling than a journey
+from London through Paris and Millan to Rome. Yet, in both cases it is useful to
+think of the path taken, and what might be seen along the way.
+But there are different kinds of tours. We might simply take a meandering tour,
+exploring all the way, or want to plan a tour to see the most interesting 
+sites in travel or have a tour guided by an expert.
+Similarly in data space, we might travel randomly to see what we can find
+or be guided to find interesting features such as clusters, outliers or non-linear relations in data.
+\ix{outliers}
+\ix{clusters}
+
+Following the demonstration in PRIM-9 (@sec-discoveries) of exploring multidimensional
+data space by rotation, @Asimov:85 developed the idea of the data _grand tour_,
+a computer method for viewing multivariate statistical data via orthogonal projections onto an animated
+sequence of low-dimensional subspaces, like in a movie.
+In contrast to a scatterplot matrix which shows a static view of a data cloud projected onto
+all pairwise variable axes, a statistical tour is like the view of an eye moving smoothly in high-dimensional
+space, capturing what it sees from a given location onto the 2D plane of the computer screen.
+
+\ix{PRIM-9}
+\ix{grand tour}
+
+More generally, statistical tours are a type of dynamic projections onto orthogonal axes (called a _basis_)
+that embed data in a _smaller_
+$p$-dimensional space into a $d$-dimensional viewing subspace with $d < p$. Typically, $d=2$, where
+the result can displayed as scatterplots, together with vectors representing the projections of the data variables in this space.
+But the projected data can be rendered in 1D as densities or histograms, or in more dimensions ($d > 2$) as glyphs,
+or even as parallel coordinate plots.
+The essential idea is that we can define, and animate, a _tour path_ as a smooth sequence of such projections
+over small changes to the projection basis, which gives the orientation of the data in the viewing space.
+
+### Projections {#sec-projections}
+
+\ixon{projection}
+
+The idea of a projection is fundamental to touring methods and other visualizations of high-D data, so it is useful to understand
+what a projection is. Quite simply, you can think of a projection as the shadow of an object or cloud of points. 
+
+This is nicely illustrated by the cover image (@fig-cover-GBE2) used for Douglas Hofstadter's [-@Hofstadter1979] _Gödel, Bach and Escher_
+which shows two 3D solid shapes illuminated by light sources so their shadows form the letters G, B and E projected onto the planes
+formed by pairs of the three coordinate axes. The set of three 2D views is essentially the same that we see in a scatterplot matrix,
+where a 3D dataset is portrayed by the set of _shadows_ of the points on planes formed by pairs of coordinate axes. But the full 3D image is richer.
+
+```{r}
+#| label: fig-cover-GBE2
+#| echo: false
+#| out-width: "40%"
+#| fig-cap: "The cover image from @Hofstadter1979 illustrates how projections are shadows of an object cast by a light from a given direction."
+knitr::include_graphics("images/Cover-GBE.png")
 ```
 
-```{r child="child/04-network.qmd"}
+
+In the simplest case, a data point $\mathbf{x} = (x_1, x_2)$ in two dimensions can be represented geometrically as a vector from the
+origin as shown in @fig-projection. This point can be projected on any one-dimensional axis $\mathbf{p}$ by dropping a line
+perpendicular to $\mathbf{p}$, which is the idea of a shadow. Mathematically, this is calculated as the inner product 
+$\mathbf{x}^\mathsf{T} \mathbf{p} = x_1 p_1 + x_2 p_2$ and suitably normalized to give the correct length.
+
+```{r}
+#| label: fig-projection
+#| echo: false
+#| out-width: "40%"
+#| fig-cap: "Projection of a point **x** onto a direction or axis **p**."
+knitr::include_graphics("images/projection.png")
 ```
+
+
+
+More generally, a projection of an $(n \times p)$ data matrix $\mathbf{X}$, representing $n$ observations in $p$
+dimensions onto a $d$-dimensional viewing space, $\mathbf{Y}_{n \times d}$ is represented by a $p \times d$ projection matrix $\mathbf{P}$
+as $\mathbf{Y} = \mathbf{X} \mathbf{P}$, where the columns of $\mathbf{P}$ are orthogonal and of unit length,i.e., 
+$\mathbf{P}^\mathsf{T} \mathbf{P} = \mathbf{I}_{(d \times d)}$.
+
+For example, to project a data matrix $\mathbf{X}$ in three dimensions onto a 2D plane, we would multiply it by a $(3 \times 2)$ orthonormal
+matrix $\mathbf{P}$. The matrix $\mathbf{P}_1$ below simply selects the first two columns of $\mathbf{X}$.[^ref-Cook]
+
+[^ref-Cook]: This example was modified from one used by @Cook-etal-2008.
+
+$$
+\mathbf{X} =
+\begin{bmatrix} 
+    0 & 0 & 0 \\ 
+    0 & 0 & 10 \\ 
+    0 & 10 & 0 \\ 
+    0 & 10 & 10 \\ 
+    10 & 0 & 0 \\ 
+    10 & 0 & 10 \\ 
+    10 & 10 & 0 \\ 
+    10 & 10 & 10 \\ 
+ \end{bmatrix}_{8 \times 3}
+ ;\;
+ \mathbf{P_1} =
+ \begin{bmatrix} 
+    1 & 0 \\ 
+    0 & 1 \\ 
+    0 & 0 \\ 
+ \end{bmatrix}_{3 \times 2} 
+ \;\Rightarrow\quad
+ \mathbf{Y} = \mathbf{X} \; \mathbf{P_1} =
+ \begin{bmatrix} 
+    0 & 0 \\ 
+    0 & 0 \\ 
+    0 & 10 \\ 
+    0 & 10 \\ 
+    10 & 0 \\ 
+    10 & 0 \\ 
+    10 & 10 \\ 
+    10 & 10 \\ 
+ \end{bmatrix}_{8 \times 2} 
+$$
+An oblique projection using all three dimensions is given by $\mathbf{P_2}$ below. This produces a new 2D view in $\mathbf{Y}$:
+
+$$
+ \mathbf{P_2} =
+\begin{bmatrix} 
+    0.71 & -0.42 \\ 
+    0.71 & 0.42 \\ 
+    0 & 0.84 \\ 
+ \end{bmatrix}_{3 \times 2}
+ \quad\Rightarrow\quad
+ \mathbf{Y} = \mathbf{X} \; \mathbf{P_2} =
+\begin{bmatrix} 
+    0 & 0 \\ 
+    0 & 8.4 \\ 
+    7.1 & 4.2 \\ 
+    7.1 & 12.6 \\ 
+    7.1 & -4.2 \\ 
+    7.1 & 4.2 \\ 
+    14.2 & 0 \\ 
+    14.2 & 8.4 \\ 
+ \end{bmatrix} 
+$$
+
+The columns in $\mathbf{Y}$ are simply the linear combinations of those of $\mathbf{X}$ using the weights in each column of $\mathbf{P_2}$
+
+
+\begin{eqnarray*}
+\mathbf{y}_1 & = & 0.71 \mathbf{x}_1 + 0.71 \mathbf{x}_2 + 0 \mathbf{x}_3\\
+\mathbf{y}_2 & = & -0.42 \mathbf{x}_1 + 0.42 \mathbf{x}_2 + 0.84 \mathbf{x}_3 \\
+\end{eqnarray*}
+
+
+```{r}
+#| code-fold: true
+vals <- c(0, 10)
+X <- expand.grid(x1 = vals, x2=vals, x3=vals) |> as.matrix()
+
+# project on just x1, x2 plane
+P1 <- rbind(diag(2), c(0,0))
+Y1 <- X %*% P1
+
+# oblique projection
+P2 <- matrix(c(0.71, 0.71, 0, -0.42, .42, 0.84), ncol=2)
+Y2 <- X %*% P2
+```
+
+<!-- fig.code: R/projections.R -->
+
+In this example, the matrix $\mathbf{X}$ consists of 8 points at the vertices of a cube of size 10, as shown in @fig-proj-combined (a).
+The projections $\mathbf{Y}_1 = \mathbf{P}_1 \mathbf{X}$ and $\mathbf{Y}_2 = \mathbf{P}_2 \mathbf{X}$ are shown in panels (b) and (c).
+To make it easier to relate the points in different views, shapes and colors are assigned so that each point has a unique combination of these attributes.<!-- [^pch] -->
+
+<!--
+The unicode characters cause problems in LaTeX with `pdflatex`; they seem to work with `xelatex`.
+[^pch]: Plot shapes given by `pch = 15:18` correspond to: 
+■ (&#25F9;) filled square (15);
+● (&#25CF;) filled circle (16); 
+▲ (&#25B2;) filled triangle point-up (17);
+◆ (&#25C8;) filled diamond (18).
+-->
+
+```{r pch-col}
+pch <- rep(15:18, times = 2)
+colors <- c("red", "blue", "darkgreen", "brown")
+col <- rep(colors, each = 2)
+data.frame(X, pch, col)
+```
+
+
+```{r}
+#| label: fig-proj-combined
+#| echo: false
+#| out-width: "100%"
+#| fig-cap: "**Projection example**: (a) The 8 points in **X** form a cube of size 10; (b) the projection by **P1** is the view ignoring **x3** (two points coincide at each vertex); (c) the projection by **P2** is an oblique view."
+knitr::include_graphics("images/proj-combined.png")
+```
+
+But, if we are traveling in the projection space of $\mathbf{Y}$, we need some signposts to tell us how the new dimensions relate to those
+of $\mathbf{X}$. The answer is provided simply by plotting the rows of $\mathbf{P}$ as vectors, as shown in @fig-proj-vectors.
+In these plots, each row of $\mathbf{P}_1$ and $\mathbf{P}_2$ appears as a vector from the origin. It's direction shows the contribution each of 
+$\mathbf{x}_1, \mathbf{x}_2, \mathbf{x}_3$ make to the new coordinates $\mathbf{y}_1$ and $\mathbf{y}_2$.
+
+```{r echo=-1}
+#| label: proj-vectors
+#| code-fold: true
+#| code-summary: "Show the code"
+#| eval: false
+#| fig-show: hide
+#| layout-ncol: 2
+op <- par(mar=c(4, 5, 1, 1)+.1)
+library(matlib)     # circle(), vectors()
+xlim <- ylim <- c(-1.1, 1.1)
+axes.x <- c(-1, 1, NA, 0, 0)
+axes.y <- c(0, 0, NA, -1, 1)
+labs <- c(expression(x[1]), expression(x[2]), expression(x[3]))
+
+plot(xlim, ylim, type = "n", asp=1,
+     xlab = expression(y[1]), ylab = expression(y[2]),
+     cex.lab = 1.8)
+circle(0, 0, 1, col = adjustcolor("skyblue", alpha = 0.2))
+lines(axes.x, axes.y, col = "grey")
+vectors(P1, labels = labs, cex.lab = 1.8, lwd = 3, pos.lab = c(4, 2, 1))
+
+plot(xlim, ylim, type = "n", asp=1,
+     xlab = expression(y[1]), ylab = expression(y[2]),
+     cex.lab = 1.8)
+circle(0, 0, 1, col = adjustcolor("skyblue", alpha = 0.2))
+lines(axes.x, axes.y, col = "grey")
+vectors(P2, labels = labs, cex.lab = 1.8, lwd = 3)
+```
+
+```{r}
+#| label: fig-proj-vectors
+#| echo: false
+#| out-width: "100%"
+#| fig-cap: "**Variable vectors**: Data variables viewed as vectors in the space of their projections. The angles of the **x** vectors with respect to the **y** coordinate axes show their relative contributions to each. The lengths of the **x** vectors show the relative degree to which they are represented in the space of **y**s. Left: the **P1** projection; right: the **P2** projection."
+knitr::include_graphics("images/proj-vectors-labels.png")
+```
+
+In $\mathbf{P}_1$, the projected variable $\mathbf{y}_1$ is related only to $\mathbf{x}_1$, while $\mathbf{y}_2$ is related only to $\mathbf{x}_2$.
+$\mathbf{x}_3$ makes no contribution, and appears at the origin. However in the projection given by $\mathbf{P}_2$, $\mathbf{x}_1$ and $\mathbf{x}_2$ make the same contribution
+to $\mathbf{y}_1$, while $\mathbf{x}_3$ has no contribution to that horizontal axis.
+The vertical axis, $\mathbf{y}_2$ here is completely aligned with $\mathbf{x}_3$; $\mathbf{x}_1$ and $\mathbf{x}_2$ have vertical components
+that are half of that for $\mathbf{x}_3$ in absolute value. 
+
+
+#### Vector lengths
+
+In @fig-proj-vectors, the **lengths** of the $\mathbf{x}$ vectors reflect the relative degree to which each variable is represented in the space of the projection, and this is important for interpretation.
+For the $\mathbf{P}_1$ projection, $\mathbf{x}_3$ is of length 0, while $\mathbf{x}_1$ and $\mathbf{x}_2$ fill the unit circle. In the projection given by $\mathbf{P}_2$, all three $\mathbf{x}$ are approximately
+the same length. 
+
+In algebra, the length of a vector $\mathbf{x}$ is 
+$||\mathbf{x}|| = (\mathbf{x}^\mathsf{T} \mathbf{x})^{1/2} = \sqrt{\Sigma x_i^2}$, the Euclidean distance of the tip of the vector from the origin.
+In R, we calculate the lengths of _row_ vectors in a projection matrix by transposing and using `r func("matlib::len()")`.
+
+```{r}
+P1 |> t() |> matlib::len()
+P2 |> t() |> matlib::len()
+```
+
+
+#### Joint-views
+
+To interpret such projections, we want to see **both** the projected data and the signposts (old axes) that tell us where we are
+in relation to the original variables.
+To do this, we can overlay the variable vectors represented by the rows of the projection matrix $\mathbf{P}$
+onto plots, like @fig-proj-combined (b & c),
+to see how the axes in a projection relate to those in the data. 
+To place these together on the same plot, we can either center the columns of $\mathbf{Y}$ at their means or shift the 
+the columns of $\mathbf{P}$ to `colMeans(Y)`. It is only the directions of the vectors that matters, so we are free
+to scale their lengths by any convenient factor.
+
+```{r}
+#| label: proj-P2-vec
+#| eval: false
+#| code-fold: true
+Y2s <- scale(Y2, scale=FALSE)       # center Y2
+plot(Y2s, cex = 3, 
+     asp = 1,
+     pch = pch, col = col,
+     xlab = expression(y[1]), ylab = expression(y[2]),
+     xlim = c(-10, 10), ylim = c(-10, 10), cex.lab = 1.8)
+r <- 7
+vecs <- (r*diag(3) %*% P2)
+vectors(vecs, labels = labs, cex.lab = 1.8, lwd = 2)
+vectors(-vecs, labels = NULL, lty = 1, angle = 1, col = "gray")
+```
+
+The plot in @fig-proj-P2-vec illustrates this, centering $\mathbf{Y}$, and multiplying the vectors in $\mathbf{P}$ by 7.
+To check your understanding, try to see if you can relate what is shown in this plot to the 3D plot in @fig-proj-combined (a).
+
+```{r}
+#| label: fig-proj-P2-vec
+#| echo: false
+#| out-width: "50%"
+#| fig-cap: "The **P2** projection of the data showing vectors for the original variables in the space of **Y**."
+knitr::include_graphics("images/proj-P2-vec.png")
+```
+
+This clever idea of viewing low-dimensional projections of data _together with_ vectors representing the contributions of the
+original variables to the dimensions shown in a display is also the basis of **biplot** techniques (@sec-biplot)
+we will use in relation to principal components analysis and **canonical discriminant** plots (@sec-candisc)
+for MLMs like MANOVA.
+
+\ix{biplot}
+\ixoff{projection}
+
+
+### Touring methods
+The trick of statistical touring methods is to generate a smooth sequence of _interpolated_ projections $\mathbf{P}_{(t)}$
+indexed by time $t$, $\mathbf{P}_{(1)}, \mathbf{P}_{(2)}, \mathbf{P}_{(3)}, \dots, \mathbf{P}_{(T)}$.
+This gives a path of views $\mathbf{Y}_{(t)} = \mathbf{X} \mathbf{P}_{(t)}$, that can be animated in successive frames, as
+shown schematically in @fig-peng-tourr-diagram.
+
+```{r}
+#| label: fig-peng-tourr-diagram
+#| echo: false
+#| out-width: "80%"
+#| fig-cap: "**Interpolations**: Illustration of a grand tour of interpolations of projection planes showing 2D scatterplots of the Penguin dataset. The seqeunce of views moves smoothly from an initial frame **P(1)** to a final frame **P(T)** where the penguin species are widely separated."
+knitr::include_graphics("images/peng-tourr-diagram.png")
+```
+
+
+
+Asimov's [-@Asimov:85] original idea of the grand tour was that of a random path, picking orthogonal projections $\mathbf{P}_{(i)}$ at random.
+Given enough time, the grand tour gives a space-filling path and would eventually show every possible projection of the data. But it does so smoothly, by interpolating from one projection to the next.
+The grand tour algorithm is described
+in detail by @Buja-etal-2005 and @Cook-etal-2008.
+
+In the travel analogy, the path by road from London to Paris might go smoothly through Kent to Dover,
+thence via Amiens and Beauvais before reaching Paris. By air, the tour would follow a
+smoother _geodesic_ path, and this is what the grand tour does. The sense in watching an animation of a statistical grand tour
+is that of continuous motion.
+\ix{grand tour}
+
+<!-- Projection pursuit @Cook-etal-1995 -> guided tour -->
+
+#### Guided tours
+
+\ixon{guided tour}
+
+The next big idea was that rather than traveling randomly in projection space one could take a _guided tour_, following
+a path that leads to "interesting projections", such as those that reveal clusters, gaps in data space or outliers.
+This idea, called _projection pursuit_ [@Cook-etal-1995],
+\ix{projection pursuit}
+works by defining a measure of interestingness of a data projection.
+In a guided tour, the next projection is chosen to increase that index, so over time the projection moves toward one
+that is maximizes that index.
+
+In the time since @Asimov:85, there have been many implementations of touring visualization methods.
+XGobi [@Swayne-etal-1998] for X-Windows displays on Linux systems provided a test-bed for dynamic, interactive graphic
+methods; it's successor, GGobi [@Swayne-etal-2003; @CookSwayne:2007] extended the range of touring methods
+to include a wider variety of projection pursuit indices.
+
+#### `tourr` package
+The current state of art is best captured in the `r pkg("tourr")` package for R [@Wickham-etal-2011; @R-tourr]. 
+It defines a tour to consist of three components:
+
+* **data**: An $(n \times p)$ numerical data matrix to be viewed.
+* **path**: A tour path function that produces a smoothed sequence of projection matrices $\mathbf{P}_{(p \times d)}$ in $d$. dimensions, for example `grand_tour(d = 2)` or `guided_tour(index = holes)`.
+* **display**: A function that renders the projected data, for example `display_xy()` for a scatterplot, `display_depth()` for a 3D plot with simulated depth, or `display_pcp()` for a parallel coordinates plots
+
+This very nicely separates the aspects of a tour, and allows one to think of and define new tour path methods and display methods.
+The package defines two general tour functions: `animate()` produces a real-time animation on a display device and 
+`render()` saves image frames to disk, such as a `.gif` file.
+
+```{r}
+#| label: tour-functions
+#| eval: false
+animate(data, tour_path, display_method)
+render(data, tour_path, display_method)
+```
+
+The `r pkg("tourr")` package provides a wide range of tour path methods and display methods:
+
+```{r}
+#| label:  tour-methods
+# tour path methods
+grep("_tour$", lsf.str("package:tourr"), value = TRUE)
+
+# display methods
+grep("display_", lsf.str("package:tourr"), value = TRUE)
+```
+
+Tour path methods take a variety of optional arguments to specify the detailed behavior of the method.
+For example, most allow you to specify the number of dimension (`d =`) of the projections.
+The `guided_tour()` is of particular interest here.
+
+```{r tour-args}
+args(guided_tour)
+```
+
+In this, `index_f` specifies a function that the method tries to optimize on its path and package defines four indices:
+
+* Holes (`holes()`): This is sensitive to projections with separated clusters of points, with few points near the origin
+* Central mass (`cmass()`): Sensitive to projections with lots of points in the center, but perhaps with some outliers
+* Linear discriminant analysis (`lda_pp()`): For data with a grouping factor, optimizes a measure of separation of the group means as in MANOVA or linear discriminant analysis.
+* PDA analysis (`pda_pp()`): A penalized version of `lda_pp()` for cases of large $p$ relative to sample size $n$ [@LeeCook-2009].
+
+In addition, there is now a `guided_anomaly_tour()`  that looks for the best projection of
+observations that are outside the data ellipsoid, finding a view showing observations with large
+Mahalanobis distances from the centroid.
+\ix{Mahalanobis distance}
+
+\ixoff{guided tour}
+
+#### Penguin tours {.unnumbered}
+
+Penguins are a traveling species. They make yearly travels inland to breeding sites in early spring, repeating the patterns of their ancestors. Near the beginning of summer, adult penguins and their chicks return to the sea and spend the rest of the summer feeding there, but they have different strategies to survive the polar winter [@Black-etal-2018]. The data scientists among them might wonder about the relations among among their cousins of different species on various islands and take a data-centric tour of their 4D measurements of body size with trusty R tools.
+
+<!-- Cite: Black et al Time-lapse imagery of Ade´lie penguins, https://doi.org/10.1371/journal.pone.0193532 DONE -->
+
+
+For example, using the Penguins dataset, the following calls produce grand tours in 2, 3, and 4 dimensions.
+The 2D tour is displayed as a scatterplot, the 3D tour using simulated depth as shown by variation in point size and transparency, and the 4D tour is shown using a parallel coordinate plot.
+
+<!-- **TODO**: ~~This doesn't render well in @fig-peng-tour-demo ~~ -->
+
+<!-- fig.code: R/penguin/peng-tourr.R -->
+
+
+```{r}
+#| label: peng-tour-demo
+#| eval: false
+data(peng, package = "heplots")
+peng_scaled <- scale(peng[,3:6])
+colnames(peng_scaled) <- c("BL", "BD", "FL", "BM")
+
+animate(peng_scaled, grand_tour(d = 2), display_xy())
+animate(peng_scaled, grand_tour(d = 3), display_depth())
+animate(peng_scaled, grand_tour(d = 4), display_pcp())
+```
+
+```{r}
+#| label: fig-peng-tour-demo
+#| echo: false
+#| out-width: "100%"
+#| fig-cap: "Snapshops of grand tours of the penguin dataset in 2, 3, and 4 dimensions using different `display_*()` methods."
+knitr::include_graphics("images/tours/peng-tour-demo-all.png")
+```
+
+<!-- 
+#| layout-ncol: 3
+#| out-width: "33%"
+#| fig-subcap: 
+#|  - "2D, scatterplot"
+#|  - "3D, simulated depth"
+#|  - "4D, parallel coordinates plot"
+knitr::include_graphics("images/tours/peng-tour-demo1.png")
+knitr::include_graphics("images/tours/peng-tour-demo2.png")
+knitr::include_graphics("images/tours/peng-tour-demo3.png")
+-->
+
+To illustrate better, I'll start with a grand tour designed to explore this 4D space of penguins.
+I'll abbreviate the variables to two characters,
+"BL" = `bill_length`, "BD" = `bill_depth`, "FL" = `flipper_length`, and "BM" = `body_mass`
+and identify the penguin species using point shape (`pch`) and color (`col`).
+A nice feature of `tourr:display_xy()` allows points to be selectively labeled.
+I use the three miscreants identified as `noteworthy` in @fig-peng-ggplot-out.
+
+As you watch this pay attention to the separation of the species and any other interesting features. What do you see? 
+Watch as Cyrano (case 283) dances around the periphery, never sure of which species to align with.
+
+```{r}
+#| eval: false
+data(peng, package = "heplots")
+peng_scaled <- scale(peng[,3:6])
+colnames(peng_scaled) <- c("BL", "BD", "FL", "BM")
+labs <- rep("", nrow(peng))
+labs[noteworthy] <- as.character(noteworthy)
+
+pch <- c(15, 16, 17)[peng$species] 
+cex = 1.2
+
+set.seed(1234)
+animate(peng_scaled,
+        tour_path = grand_tour(d=2),
+        display_xy(col = peng$species,
+                   palette = peng.colors("dark"),
+                   obs_labels = labs,
+                   pch = pch, cex = cex,
+                   axis.col = "black", 
+                   axis.text.col = "black", 
+                   axis.lwd = 1.5))
+```
+
+
+::: {.content-visible when-format="html"}
+```{r}
+#| label: fig-peng-tour-grand
+#| out-width: "75%"
+#| echo: false
+#| fig-cap: "Animation of a grand tour of the Penguin data."
+knitr::include_graphics("images/tours/peng-tourr-grand.gif")
+```
+:::
+
+\ix{animation!grand tour}
+
+@fig-peng-tour-grand-frames shows three frames from this movie.
+The first (a) is the initial frame that shows the projection in the plane of
+bill depth and bill length. The variable vectors indicate that bill length
+differentiates Adélie penguins from the others. In frame (b), the three species
+are widely separated, with bill depth distinguishing Gentoo from the others.
+In frame (c) the three species are largely mixed, but two points stand out as
+outliers, with exceptionally long bills compared to the rest.
+
+<!-- Run peng-tourr.R code again to get labeled points -->
+
+```{r}
+#| label: fig-peng-tour-grand-frames
+#| layout-ncol: 3
+#| echo: false
+#| out-width: "100%"
+#| fig-cap: "Three frames from the grand tour of the Penguin data. (a) The initial frame is the projection showing only BD and BL, where bill length conveniently separates Adélie from the other two species. (b) A frame that shows the three species more widely separated. (c) A frame that shows two outliers with very large bills."
+#| fig-subcap: 
+#|  - "Initial frame"
+#|  - "Clusters"
+#|  - "Outliers"
+knitr::include_graphics("images/tours/peng-tour-grand-lbls-split/frame_00.png")
+knitr::include_graphics("images/tours/peng-tour-grand-lbls-split/frame_10.png")
+knitr::include_graphics("images/tours/peng-tour-grand-lbls-split/frame_26.png")
+```
+
+
+<!-- ::: {#fig-peng-tour-grand-frames layout-ncol=3} -->
+
+<!-- ![Initial frame](images/tours/peng-grand-tour1.png){#fig-peng-grand-tour1 width=140} -->
+
+<!-- ![Clusters](images/tours/peng-grand-tour2.png){#fig-peng-grand-tour2 width=140} -->
+<!-- ![Outliers](images/tours/peng-grand-tour3.png){#fig-peng-grand-tour3 width=140} -->
+
+<!-- Three frames from the grand tour of the Penguin data. (a) The initial frame is the projection showing only -->
+<!-- BD and BL, where bill length conveniently separates Adelie from the other two species. -->
+<!-- (b) A frame that shows the three species more widely separated. (c) A frame that shows two outliers. -->
+<!-- ::: -->
+
+
+Let's take the penguins on a _guided tour_, trying to find views that show the greatest separations among their
+species; that is, a guided tour, optimizing the `lda_pp()` index of group separation.
+
+```{r}
+#| eval: false
+set.seed(1234)
+animate(peng_scaled, 
+        guided_tour(lda_pp(peng$species)),
+        display_xy(col = peng$species,
+                   palette = peng.colors("dark"),
+                   pch = pch,
+                   cex = cex)
+)
+```
+
+
+::: {.content-visible when-format="html"}
+```{r}
+#| label: fig-peng-tour-lda
+#| out-width: "75%"
+#| echo: false
+#| fig-cap: "Animation of a guided tour of the Penguin data, using a tour criterion designed to find an optimal separation among the penguin species. The animation shows three loops of the sequence of projections and stops when the LDA criterion cannot be improved."
+knitr::include_graphics("images/tours/peng-tourr-lda.gif")
+```
+:::
+
+<!--
+**TODO**: ~~I'm trying to balance what will/can be shown in the HTML version vs. the printed PDF.
+Needs text here specifically for the PDF version.~~
+-->
+
+```{r}
+#| label: fig-peng-tour-guided
+#| layout-ncol: 2
+#| echo: false
+#| out-width: "100%"
+#| fig-cap: "**Guided tours**: These figures show the final frame in the animations of guided tours designed to find the projection that optimize an index. (a) The `lda_pp()` criterion optimizes the separation of the means for species relative to within-group variation. (b) The `anomalies_index()` optimizes the average Mahalanobis distance of points from the centroid"
+#| fig-subcap: 
+#|  - "Optimizing `lda_pp()`"
+#|  - "Optimizing `anomaly_index()`"
+knitr::include_graphics("images/tours/peng-tour-lda-final.png")
+knitr::include_graphics("images/tours/peng-tour-anomalies-final.png")
+```
+
+
+These examples are intended to highlight what is possible with dynamic graphics for exploring high-dimensional data visually. 
+@CookLaa-mulgar extend the discussion of these methods from @CookSwayne:2007 (which used `Ggobi`)
+to the `r pkg("tourr")`  package. They illustrate dimension reduction, various cluster analysis methods,
+trees and random forests and some machine-learning techniques.
+
+<!-- **TODO**: Clean up these package references. I'm linking to the pkgdown sites, b/c I don't have them installed and can't easily get a `citation()`.  -->
+
+Ideally, we should be able interact with a tour, 
+
+* pausing when we see something interesting and saving the view for later analysis; 
+* selecting or highlighting unusual points, 
+* changing tour methods or variables displayed on the fly, and so forth.
+
+Some packages that provide these capabilities are: 
+[**detourr**](https://casperhart.github.io/detourr/index.html)[@R-detourr]
+[**langevitour**](https://logarithmic.net/langevitour/index.html)[@R-langevitour;@Harrison2023] and
+`r pkg("liminal", cite = TRUE)` 
+<!-- [**liminal**](https://sa-lee.github.io/liminal/)[@R-liminal] -->
+The `r package("loon", cite=TRUE)`
+is a general toolkit that enables highly interactive data visualization.
+It provides a **loon.tour** package [@R-loon-tour] for using touring methods within the `loon` environment.
+
+## Network diagrams {#sec-network}
+
+\ixon{network diagram}
+
+A major theme throughout this chapter has been to understand how to extend data visualization from
+simple bivariate scatterplots to increasingly more complex situations with larger datasets.
+With a moderate number of variables, techniques such as smoothing, summarizing with
+data ellipses and fitted curves, and visual thinning can be used to tame "big $N$" datasets
+with thousands of cases. 
+
+However "big $p$" datasets, with more than a moderate number ($p$) of variables
+still remain a challenge. It is hard to see how the more advanced methods
+(corrgrams, parallel coordinate) described earlier could cope with $p = 20, 50, 100, 500, \dots$ variables.
+At some point, each of these begins to break down for the purpose of visualizing associations
+among many variables. We are forced to thin the information presented in graphs
+more and more as the number of variables increases.
+
+It turns out that there is a way to increase the number of variables displayed dramatically,
+if we are mainly interested in the pairwise correlations for reasonably
+normally distributed data. A graphical **network diagram** portrays variables by _nodes_ (vertices),
+connected by (weighted) _edges_ whose properties reflect the strength of connections between
+pairs, such as a correlation. Such diagrams can reveal properties not readily seen by other means.
+
+As an example consider @fig-big5-qgraph-rodrigues, which portrays the correlations
+among 25 self-report items reflecting 5 factors (the "Big Five")
+considered in personality psychology to represent the dominant aspects of
+_all of personality_. These factors are easily remembered by the acronym
+**OCEAN**: **O**penness, **C**onscientiousness, **E**xtraversion, **A**greeableness and **N**euroticism.
+The dataset, `r dataset("psych::bfi")`, contains data from an online sample of $n=2800$ with 5 items for each scale.
+
+In this figure (taken from [Rodrigues (2021)](https://bit.ly/3A6kvq5)),
+the item nodes are labeled according to the OCEAN factor they are assumed to measure.
+For 25 items, there are $25 \times 24 / 2 = 300$ correlations, way too much to see.
+A clearer picture arises when we reduce the number of edges shown according to some
+criterion. Here,
+edges are drawn _only_ between nodes where the correlation is considered important
+by a method ("glasso" = graphical LASSO) designed to make the graph optimally sparse.
+\ix{graphical LASSO}
+
+<!-- Actually, the psych::bfi data is:
+25 personality self report items taken from the International Personality Item Pool (ipip.ori.org) were included as part of the Synthetic Aperture Personality Assessment (SAPA) web based personality assessment project. The data from 2800 subjects are included here as a demonstration set for scale construction, factor analysis, and Item Response Theory analysis. Three additional demographic variables (sex, education, and age) are also included.
+-->
+
+
+```{r}
+#| label: fig-big5-qgraph-rodrigues
+#| echo: false
+#| out-width: "90%"
+#| fig-cap: "Network diagram of the correlations among 25 items from a Big-Five personality scale, 5 items for each scale. The magnitude of a correlation is shown by the thickness and transparency of the edge between two item nodes. The sign of a correlation is shown by edge color and style: solid blue for positive and dashed red for negative. _Source_: [Rodrigues (2021)](https://bit.ly/3A6kvq5)"
+knitr::include_graphics("images/big5-qgraph-rodrigues.png")
+```
+
+The edges shown in @fig-big5-qgraph-rodrigues reflect the Pearson correlation between a given pair of items by the visual attributes of color and line style: magnitude is shown by both the thickness and transparency of the edge; the sign of the correlation is shown by color and line type:
+solid `r blue` for positive correlations and dashed `r red` for negative ones.
+
+According to some theories, the five personality factors should be largely non-overlapping,
+so there should not be many edges connecting items of one factor with those of another.
+Yet, there are quite a few cross-factor connections in @fig-big5-qgraph-rodrigues,
+so perhaps the theory is wrong, or, more likely, the 25 items are not good representatives of
+these underlying dimensions. The network diagram shown here is a visual tool for thought
+and refinement. See @Costantini2015 for a tutorial on network analysis of personality data in R.
+
+Network diagrams stem from mathematical graph theory [@BondyMurty2008; @West2001] of the abstract properties of nodes and edges used to represent pairwise relationships.
+These can be used to model many types of relations and processes in physical, biological, social and other sciences, where such properties as connectedness, centrality, cliques of connected nodes and so forth
+provide a vocabulary used to understand and explain complex systems.
+
+For one example, @Grandjean2016 used network analysis to study the connections among 2500 Twitter
+users (nodes) who identified as belonging to a "digital humanities" community
+from the relations (edges) of who follows whom.
+Grandjean also used these methods to study the relationships among [characters in Shakespeare's tragedies](http://www.martingrandjean.ch/network-visualization-shakespeare/) in terms of 
+the characters (nodes) and edges representing how often they appeared in the same scene.
+
+The wide applicability of these ideas has led to what is now called _network science_ [@Barabasi2016network]
+encompassing computer networks, biological networks, cognitive and semantic networks, and social networks.
+Recent developments in psychology led to a framework of _network psychometrics_ [@IsvoranuEpskamp2022],
+where, for example, symptoms of psychopathology (phobias, anxiety, substance abuse) can be
+conceptualized as an interconnected network of clusters and studied for possible causal relations [@Robinaugh2019].
+
+Because a network diagram can potentially reflect hundreds of variables,
+various [graph layout algorithms](https://en.wikipedia.org/wiki/Graph_drawing) have been developed to automatically
+position the nodes so as to generate aesthetically pleasing network visualizations that emphasize important structural properties, like clusters and central nodes, while minimizing visual clutter (many crossing lines) to promote understandability and usability.
+
+
+There are quite a few R packages for constructing network diagrams, both static and dynamic / interactive,
+and these differ considerably in how the information required for a graph is structured as
+R objects, and the flexibility to produce attractive graphs.
+Among these, `r pkg("igraph", cite=TRUE)` structures the data as a dataset of vertices and edges with properties
+and serves as infrastructure for other packages with better graphics. `r pkg("ggraph", cite=TRUE)`
+works within the familiar `ggplot2` framework, allowing you to build layered network visualizations using the grammar of graphics. 
+The `r package("qgraph")` [@Epskamp-etal-2012] is designed specifically for visualizing statistical models, such as those based on
+correlations, partial correlations and other measures of relationship among variables.
+
+
+### Crime data
+
+For the present purposes, let's see what network diagrams can tell us about the crime data
+analyzed earlier. Here, I first reorder the variables as in @fig-crime-corrplot-AOE.
+In the call to `qgraph()`, the argument `minimum = "sig"` says to show only the edges
+for significant correlations (at $\alpha = 0.01$ here).
+In @fig-crime-cor, the variable nodes are positioned around a circle
+(`layout = "circle"`), which is the default.
+
+<!-- fig.code: R/crime/crime-network.R -->
+
+```{r}
+#| label: fig-crime-cor
+#| out-width: "60%"
+#| fig-width: 7
+#| fig-height: 7
+#| fig-cap: "Network diagram depicting the correlations among the crime variables. Only edges for correlations that are significant at the $\\alpha = 0.01$ level are displayed."
+library(qgraph)
+ord <- corrMatOrder(crime.cor, order = "AOE")
+rownames(crime.cor)[ord]
+crime.cor <- crime.cor[ord, ord]
+
+# "association graph": network of correlations
+qgraph(crime.cor, 
+  title = "Crime data:\ncorrelations", title.cex = 1.5,
+  graph = "cor",
+  layout = "circle",
+  minimum = "sig", sampleSize = nrow(crime), alpha = 0.01,
+  color = grey(.9), vsize = 12,
+  labels = rownames(crime.cor),
+  posCol = "blue")
+```
+
+<!--
+```{r}
+#| label: fig-crime-cor-image
+#| out-width: "80%"
+#| fig-cap: "Network diagram depicting the correlations among the crime variables."
+knitr::include_graphics("images/crime-cor.png")
+```
+-->
+
+In this figure, you can see the group of property crimes (auto theft, larceny, burglary) at the left
+separated from the violent crimes against persons at the right.
+
+\ixoff{network diagram}
+
+### Partial correlations {#sec-partial-cor}
+
+\ixon{partial correlation}
+
+Among the more important statistical applications of network graph theory is the idea that you can also use them to study the the _partial_ (conditional)
+associations among variables---with the contributions of all other variables
+removed---in what are called **Graphical Gaussian Models** (GGMs)
+[@Lauritzen1996; @Hojsgaard2012graphical]. In a network diagram of these
+partial associations,
+\ix{graphical gaussian model}
+\ix{conditional independence}
+
+* The edges between nodes represent the _partial correlations_ between those variables.
+
+* The absence of an edge between two nodes indicates their variables are _conditionally independent_, given the other variables.
+
+So, whereas a network diagram of correlations shows _marginal associations_
+ignoring other variables, one of partial correlations allows you to visualize the _direct_ relationship between each pair of variables, removing the indirect effects that might be mediated through all other variables. Added-variable plots [@sec-avplots] do something similar for linear models.
+
+For a set of variables $X = \{x_1, x_2, \dots, x_p \}$, the partial correlation
+between $x_i$ and $x_j$, controlling for all other variables
+$Z = X \setminus \{x_i, x_j\} = x_\text{others}$ is equivalent to the correlation between the _residuals_ of the linear regressions of $x_i$ on all other $\mathbf{Z}$ and $x_j$ on $\mathbf{Z}$.
+(The notation $X \setminus \{x_i, x_j\}$ is read as "$X$ without the set $\{x_i, x_j\}$").
+
+Mathematically, let $\hat{x}_i$ and $\hat{x}_j$ be the predicted values from the linear regressions of $x_i$ on $\mathbf{Z}$ and of $x_j$ on $\mathbf{Z}$, respectively. The partial correlation $p_{ij}$ between $x_i$ and $x_j$ controlling for $\mathbf{Z}$ is given by:
+
+$$
+p_{x_i,x_j|\mathbf{Z}} = r( x_i, x_j \mid \text{others}) = \text{cor}[ (x_i - \hat{x}_i),\; (x_j - \hat{x}_j)]
+$$ {#eq-parcor}
+
+But, rather than running all these linear regressions, they can all be computed
+from the inverse of the correlation matrix [@Whittaker1990, Ch. 5],
+a relation first noted by @Dempster1972.
+Let $\mathbf{R}$ be the correlation matrix of the variables.
+Then, the matrix $\mathbf{P}$ of partial correlations
+can be obtained from the negative inverse, $-\mathbf{R}^{-1}$,
+\ix{precision matrix}
+standardized to a correlation matrix by dividing by the square root of
+product of its diagonal elements,
+
+$$
+P_{ij} = - \frac{R^{-1}_{ij}}{\sqrt{(R^{-1}_{ii} \cdot R^{-1}_{jj})}} \period
+$$
+
+
+
+The practical implications of this are:
+
+* If a partial correlation is close to zero, it suggests the relationship between two variables is primarily _mediated_ through other variables.
+
+* Non-zero partial correlations indicate a direct relationship that persists after controlling for other variables.
+
+@fig-crime-partial-spring shows the partial correlation network for the
+crime data, using the `qgraph()` argument `graph = "pcor"`
+To provide a more interpretable result, the argument `layout = "spring"`
+positions the nodes using a force-embedded algorithm where
+edges act like springs, pulling connected nodes together
+and unconnected nodes repel each other, pushing them apart.
+
+```{r}
+#| label: fig-crime-partial-spring
+#| out-width: "60%"
+#| fig-width: 7
+#| fig-height: 7
+#| fig-cap: "Network diagram of partial correlations among the crime variables, controlling for all others. Variable nodes have been positioned by a \"spring\" layout method ... "
+qgraph(crime.cor, 
+       title = "Crime data:\npartial correlations", title.cex = 1.5,
+       graph = "pcor",
+       layout = "spring", repulsion = 1.2,
+       minimum = "sig", sampleSize = nrow(crime), alpha = 0.05,
+       color = grey(.9), vsize = 14,
+       labels = rownames(crime.cor),
+       edge.labels = TRUE, edge.label.cex = 1.7,
+       posCol = "blue")
+```
+
+@fig-crime-partial-spring shows that, once all other crime variables are controlled
+for each pair, there remain only a few partial correlations at the $\alpha = 0.05$ level.
+Of these, only the largest three in absolute value
+are significant at $\alpha = 0.01$.
+
+Thus, once all other variables are taken into account, what remains is mainly
+a strong positive association between burglary and larceny and a moderate one
+between auto theft and robbery.
+There also remains a moderate negative correlation between murder and larceny.
+The spring layout makes it clear that, with suppression of 
+weak edges, auto theft and robbery form a cluster separated from the other variables.
+
+
+### Visualizing partial correlations {#sec-pvPlot}
+
+\ix{partial correlation!visualization}
+\ixon{partial variables plot}
+
+Just as you can visualize _marginal_ association between variables in a scatterplot,
+you can also visualize _conditional_ association.
+A **partial variables plot** is simply a scatterplot of the partial residuals
+$e_i = (x_i - \hat{x}_i)$ from a regression of $x_i$ on the other variables $Z$
+against those $e_j = (x_j - \hat{x}_j)$ for another variable $x_j$.
+
+In this, you can use all the bells and whistles of standard scatterplots
+(regression lines, smooths, data ellipses, ...) to listen more attentively to the 
+story partial association has to tell. The slope of the regression line in such plots is _exactly_ the partial correlation coefficient
+and the shape of the data ellipse gives a visual summary of its strength.
+
+My function `pvPlot()` calculates the partial residuals and then calls
+`r func("car::dataEllipse()")` for display. The five most "unusual"
+observations by Mahalanobis $D^2$ are identified with their abbreviated state labels.
+@fig-crime-pvPlots shows these plots for the variable pairs with the two 
+largest partial correlations.
+
+<!-- **TODO**: Put `pvPlot` into `heplots` package or `car`. Leave as is for now -->
+
+```{r}
+#| label: fig-crime-pvPlots-code
+#| eval: false
+#| fig-height: 6
+#| fig-width: 6
+#| out-width: "80%"
+#| fig-cap: "Partial variables plot for burglary and larceny in the network diagram for partial correlations of the crime variables."
+source("R/pvPlot.R")
+# select numeric, make `st` into rownames
+crime.num <- crime |>
+  tibble::column_to_rownames("st") |>
+  dplyr::select(where(is.numeric))
+
+pvPlot(crime.num, vars = c("burglary", "larceny"), 
+       id = list(n=5, cex = 1.3),
+       ellipse.args = list(col = "red", levels = c(0.68, 0.95)),
+       cex.lab = 1.5)
+pvPlot(crime.num, vars = c("robbery", "auto"),
+       id = list(n=5, cex = 1.3),
+       ellipse.args = list(col = "red", levels = c(0.68, 0.95)),
+       cex.lab = 1.5)
+```
+
+```{r}
+#| label: fig-crime-pvPlots
+#| echo: false
+#| out-width: "100%"
+#| fig-cap: "Partial variables plots for burglary and larceny (left) and for robbery and auto theft (right) in the network diagram for partial correlations of the crime variables. 'Unusual' points are labeled with their state labels."
+knitr::include_graphics("images/crime-pvPlot-1-2.png")
+```
+
+These partial variables plots actually _explain_ the details hidden in the numeric summary of the partial correlation or in the network diagram.
+In the pvPlot for burglary and larceny, you can see that the high partial correlation is largely
+driven by the extreme points at the left and and right sides. Once all other variables are
+taken into account, Arizona (AZ) and Hawaii (HI) have larger incidence of both crimes, while
+Arkansas (AK) are smaller on both. This is food for thought.
+
+In the pvPlot for robbery and auto theft, New York stands out as an
+influential, high-leverage point (see @sec-leverage); Massachusetts (MA) is noteworthy because
+auto theft in that state is considerably higher than what would be predicted from all other variables.
+
+\ixoff{partial variables plot}
+\ixoff{partial correlation}
 
 <!---
 ## Multivariate thinking and visualization

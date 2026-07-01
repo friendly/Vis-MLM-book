@@ -8,6 +8,7 @@ knitr::opts_chunk$set(fig.path = "figs/ch14/")
 :::
   
 # Multivariate Influence and Robust Estimation {#sec-influence-robust}
+\ixon{influential observations}
 
 <!--
 ::: {.callout-note}
@@ -24,7 +25,7 @@ least squares. In the analysis of the dataset `heplots::schooldata` (@sec-multiv
 we found a collection of cases that exerted undue influence on the fitted model
 and its interpretation. In this chapter, I extend the earlier discussion of multivariate
 influence and introduce some methods of robust estimation to deal with unruly observations.
-
+\ix{outliers}
 
 Univariate influence diagnostics have
 been well-established since the pioneering work of @Cook:77 and others
@@ -84,7 +85,6 @@ library(patchwork)
 ```
 
 ## Multivariate influence {#sec-multivariate-influence}
-
 An elegant extension of the ideas behind leverage, studentized residuals and measures of
 influence to the case of multivariate response data is due to @BarrettLing:92, and illustrated
 in @Barrett:2003. These methods have been implemented in the `r package("mvinfluence", cite=TRUE)`
@@ -96,6 +96,7 @@ case $i$ is deleted. The Barrett-Ling approach generalized this to the case of d
 $m \ge 1$ cases. This can be useful because some cases can "mask" the influence of others
 in the sense that when one is deleted, others become much more influential. However, in most
 cases the default of deleting individual observations ($m=1$) is sufficient.
+\ix{case deletion}
 
 ### Notation
 
@@ -123,7 +124,9 @@ The corresponding residuals are expressed as
 $\mathbf{E}_{(-I)} = \mathbf{Y}_{(-I)} - \mathbf{X}_{(-I)} \mathbf{B}_{(-I)}$.
  
 ### Hat values and residuals
- 
+\ix{hat matrix}
+\ix{leverage}
+
 The influence measures defined by @BarrettLing:92 are functions of two matrices $\mathbf{H}_I$ and $\mathbf{Q}_I$
 corresponding to hat values and residuals, 
 defined as follows:
@@ -140,7 +143,9 @@ Based on these quantitites,  Barrett and Ling [-@BarrettLing:92] defined multiva
 nearly all univariate measures suggested in the literature. I only consider their Cook's D measure here.
 
 ### Cook's distance
- 
+\ix{Cook's distance}
+\ixon{Cook's distance}
+
 Multivariate analogs of all the usual influence diagnostics (Cook's D, CovRatio, ...) can be defined in terms of
 $\mathbf{H}$ and $\mathbf{Q}$. For instance,
 Cook's distance is defined for a univariate response by
@@ -162,7 +167,7 @@ D_I = \frac{1}{p} \; [\mathrm{vec} (\mathbf{B} - \mathbf{B}_{(-I)})]^T \; (S^{-1
 $$
 where $\otimes$ is the Kronecker (direct) product and
 $\mathbf{S} = \mathbf{E}^T \mathbf{E} / (n-p)$ is the covariance matrix of the residuals.
-
+\ixmain{Cook's distance!multivariate}
 
 ### Leverage and residual components
 
@@ -179,8 +184,9 @@ $$
 L_i = \frac{h_{ii}}{1 - h_{ii}} \quad\quad R_i = \frac{q_{ii}}{1 - h_{ii}} \;.
 $$
 
-$R_i$ is the studentized residual here. Thus $D_i \propto L_i \times R_i$. This idea is used to 
+$R_i$ is the studentized residual here. Thus $D_i \propto L_i \times R_i$. This idea is used to
 define a new version of influence plot, as illustrated in the following (@sec-cookd-multivar).
+\ix{studentized residuals}
 
 In the general, multivariate case there are analogous matrix expressions for $\mathbf{L}$ and $\mathbf{R}$.
 When $m > 1$, the quantities $\mathbf{H}_I$, $\mathbf{Q}_I$, $\mathbf{L}_I$, and
@@ -284,6 +290,7 @@ ip2 <- car::influencePlot(Toy.lm2,
 <!-- **TODO**: Check how these are defined in mvinfluence -->
 
 Contrast these results with what we get for the model for `y1` and `y2` jointly (@fig-toy-inflplot-mlm-stres).
+\ix{influence plot}
 In the multivariate version, `r func("mvinfluence::influencePlot.mlm()")` plots the squared studentized residual (denoted `R` in the output) against the hat value; this is referred to as a `type = "stres"` plot.[^cutoffs] 
 Case 9 stands out in @fig-toy-inflplot-mlm-stres as wildly influential on the joint regression model. But there's more: The cases in @fig-toy-inflplots with large Cook's D (bubble size)
 have only tiny influence in the multivariate model.
@@ -335,6 +342,7 @@ influencePlot(Toy.mlm, type="LR",
 ```
 
 ### DFBETAS
+\ix{DFBETAS}
 
 The DFBETAS statistics give the estimated change in the regression coefficients when each case is deleted in turn.
 We can gain some insight as to why case 9 is unremarkable in the univariate regressions by plotting these, shown in
@@ -380,6 +388,8 @@ Mysterious Case 9_.
 
 
 
+
+\ixoff{Cook's distance}
 
 ## Example: NLSY data
 
@@ -507,6 +517,8 @@ text(loc$logL, -2, loc$species, xpd=TRUE)
 ```
 -->
 
+\ixoff{influential observations}
+
 ## Robust estimation {#sec-robust-estimation}
 
 \ixon{robust estimation}
@@ -519,11 +531,16 @@ achieved by increased computation lies at the heart of modern statistical method
 Efron & Hastie [-@Efron2021] trace this thread in a wide variety ranging from classics in frequentist and Bayesian, through
 early computer-age topics to the most recent twenty-first century methods.
 
-Robust regression is a compromise between excluding "bad" data points entirely from  analysis vs. including all the data and treating them equally in classical OLS regression. The essential idea of robust regression is to weight the observations differently based on how well behaved these observations are. Roughly speaking, it is a form of _weighted_ 
-least squares regression. But because the weights are derived from the data, this must be done
+Robust regression is a compromise between excluding "bad" data points entirely from  analysis vs. including all the data and treating them equally in classical OLS regression. The essential idea of robust regression is to weight the observations differently based on how well behaved these observations are. Roughly speaking, it is a form of _weighted_
+least squares regression.
+\ix{weighted least squares}
+But because the weights are derived from the data, this must be done
 iteratively, requiring more computation.
 
-Several general approaches have been developed for robust multivariate regression. These include M-estimators, S-estimators [@Rousseeuw1984], and MM-estimators [@Yohai1987]. Each approach offers different trade-offs between robustness properties, computational efficiency, and statistical efficiency under ideal conditions. See the [CRAN Task View: Robust Statistical Methods](https://cran.r-project.org/web/views/Robust.html) for an extensive list of
+Several general approaches have been developed for robust multivariate regression. These include M-estimators, S-estimators [@Rousseeuw1984], and MM-estimators [@Yohai1987]. Each approach offers different trade-offs between robustness properties, computational efficiency, and statistical efficiency under ideal conditions.
+\ix{robust estimation!S-estimator}
+\ix{robust estimation!MM-estimator}
+See the [CRAN Task View: Robust Statistical Methods](https://cran.r-project.org/web/views/Robust.html) for an extensive list of
 robust methods in R and the [vignette](https://cran.r-project.org/web/packages/rrcov/vignettes/rrcov.pdf) for the [rrcov package](https://cran.r-project.org/package=rrcov) for a general overview of multivariate robust methods.
 \ix{M-estimators}
 
@@ -535,6 +552,7 @@ The key idea is to relax the least squares criterion of minimizing $Q(\mathbf{e}
 * $L_1$ estimation uses $\rho(e_i) = \vert e_i \vert$, the least absolute values
 * A bit more complicated, the **biweight** function uses a squared measure of error up to some value $c$ and then
 levels off thereafter,
+\ix{biweight function}
 
 $$
 \rho(e_i) =
@@ -563,6 +581,7 @@ weights are _known in advance_, for instance, when data points have unequal vari
 The solution, called _iteratively reweighted least squares_ (IRLS),
 is to substitute computation for theory, and iterate between estimating the
 coefficients (with given weights) and determining weights for the observations in the next iteration.
+\ix{iteratively reweighted least squares}
 This is implemented in `r func("heplots::robmlm()")`, which generalizes the methods used in `r func("MASS::rlm()")`. ...
 
 ## Example: Penguin data {#sec-peng-robust}
