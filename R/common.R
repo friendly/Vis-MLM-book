@@ -267,8 +267,6 @@ pkg <- function(package, cite=FALSE) {
   if (cite) ref <- paste0(ref, " [@R-", package, "]")
   # create index entry
   if (knitr::is_latex_output()) {
-    # ref <- paste0(ref, "\n\\index{", tt(package), " package}",
-    #                     "\n\\index{packages!", tt(package), "}\n")
     # use \ixp{} latex macro to simplify that
     # NO \n before/after: multi-line inline output causes pandoc to add % at line breaks,
     # which can comment out .\footnote{} that follows in the .qmd source.
@@ -311,10 +309,7 @@ package <- function(package, cite=FALSE) {
   if (!is.null(pkgname_color)) ref <- paste(colorize(pkgname, pkgname_color), "package")
   if (cite) ref <- paste0(ref, " [@R-", package, "]")
   if (knitr::is_latex_output()) {
-    # ref <- paste0(ref, "\n\\index{", tt(package), " package}",
-    #               "\n\\index{packages!", tt(package), "}\n")
-    # use \ixp{} latex macro to simplify that
-    # NO \n: see pkg() comment above.
+    # use \ixp{} latex macro; NO \n: see pkg() comment above.
     ref <- paste0(ref, "\\ixp{", package, "}")
   }
   ref
