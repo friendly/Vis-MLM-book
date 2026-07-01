@@ -306,3 +306,35 @@ Sub-entries: `Cook's distance!multivariate`, `robust estimation!S-estimator`, `r
 Terms shared with other chapters (building multi-page entries): `outliers`, `leverage`, `studentized residuals`, `Cook's distance`.
 
 **Next chapters to index** (priority order): Ch 08.
+
+---
+
+### Ch 08 — Topics in Linear Models (2026-07-01)
+
+Added 11 new entries; chapter went from 8 to 19 total entries.
+
+Existing entries (carried forward):
+- `\ixon{data space}` / `\ixoff{data space}`, `\ixon{$\beta$ space}` / `\ixoff{$\beta$ space}` — whole §betaspace section
+- `\ixon{measurement error}` / `\ixoff{measurement error}` — whole §measurement error section
+- `\ix{measurement error quartet}`, `\ix{quartet!measurement error}` — at the quartet example
+
+New `\ixon{}`/`\ixoff{}` ranges:
+
+| Range | Section |
+|-------|---------|
+| `confidence ellipse` | §Data ellipse and confidence ellipse through end of §betaspace |
+
+New single entries by section:
+
+| Section | Entries added |
+|---------|--------------|
+| §betaspace intro | `data ellipse`, `ordinary least squares` |
+| §Dual and inverse spaces | `duality` |
+| §Data ellipse/confidence ellipse | `simultaneous inference`, `Scheffé confidence intervals`, `Bonferroni correction` |
+| §measurement error intro | `Gauss-Markov theorem`, `ordinary least squares!BLUE` |
+| §Errors in predictors | `errors-in-variables` |
+| §Measurement Error Quartet | `attenuation bias` |
+
+Sub-entries: `ordinary least squares!BLUE`.
+
+Terms shared with other chapters (building multi-page entries): `data ellipse`, `ordinary least squares`, `simultaneous inference`.
