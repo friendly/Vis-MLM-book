@@ -13,6 +13,12 @@
 #                     REQUIRED after editing latex/latex-commands.qmd or any
 #                     other {{< include >}}'d file — Quarto does not track
 #                     included-file changes for cache invalidation.
+#   --fix-index       After the PDF build, normalize index.idx (collapse the
+#                     two-space \texttt  {name} artifact that LaTeX's deferred
+#                     write produces for footnote index entries), then re-run
+#                     makeindex and one final xelatex pass (with --no-shell-escape
+#                     so imakeidx cannot overwrite the normalized index.ind).
+#                     Use whenever duplicate index entries are suspected.
 #   --authorindex     Re-run the authorindex Perl script after PDF build,
 #                     regardless of whether citations appear to have changed.
 #   --full, -full     Equivalent to: --all --clean-cache --authorindex
@@ -43,6 +49,7 @@ cd "$(dirname "$0")"   # always run from project root
 # ---------------------------------------------------------------------------
 FORMAT="all"
 CLEAN_CACHE=false
+FIX_INDEX=false
 RUN_AUTHORINDEX=false
 DRY_RUN=false
 AUTHORINDEX_REGENERATED=false
@@ -60,6 +67,7 @@ while [[ $# -gt 0 ]]; do
     --html)         FORMAT="html"; shift ;;
     --all)          FORMAT="all";  shift ;;
     --clean-cache)  CLEAN_CACHE=true; shift ;;
+    --fix-index)    FIX_INDEX=true; shift ;;
     --authorindex)  RUN_AUTHORINDEX=true; shift ;;
     --full|-full)   FORMAT="all"; CLEAN_CACHE=true; RUN_AUTHORINDEX=true; shift ;;
     -n|--dry-run)   DRY_RUN=true; shift ;;
@@ -121,6 +129,48 @@ render_html() {
 
 render_pdf() {
   run quarto render --profile print --to pdf
+}
+
+fix_index() {
+  # Quarto's internal xelatex pipeline uses deferred \write for footnote index
+  # entries, which expands \texttt{name} to \texttt  {name} (two spaces) in
+  # index.idx.  makeindex treats these as different display strings and creates
+  # duplicate entries.  Fix: normalize the .idx, re-run makeindex, then run one
+  # xelatex pass with --no-shell-escape so imakeidx cannot re-invoke makeindex
+  # and overwrite the normalized index.ind before \printindex reads it.
+  echo "--> Fixing duplicate index entries (--fix-index)..."
+
+  if [[ ! -f "index.idx" ]]; then
+    echo "    ERROR: index.idx not found — run a PDF build first."; return 1
+  fi
+  if [[ ! -f "Vis-MLM.tex" ]]; then
+    echo "    ERROR: Vis-MLM.tex not found — run a PDF build first."; return 1
+  fi
+
+  echo "    Normalizing index.idx (collapsing two-space \\texttt  { artifacts)..."
+  run sed -i \
+    -e 's/\\texttt  {/\\texttt{/g' \
+    -e 's/\\emph  {/\\emph{/g' \
+    -e 's/\\idxtt  {/\\idxtt{/g' \
+    index.idx
+
+  echo "    Running makeindex on normalized index.idx..."
+  run makeindex -s latex/book.ist index.idx
+
+  echo "    Running xelatex (--no-shell-escape keeps imakeidx from overwriting index.ind)..."
+  run xelatex -no-shell-escape -interaction=nonstopmode -jobname=index Vis-MLM.tex
+
+  if [[ ! -f "index.pdf" ]]; then
+    echo "    ERROR: xelatex did not produce index.pdf"; return 1
+  fi
+
+  run cp index.pdf docs/Vis-MLM.pdf
+  # archive the normalized artifacts
+  for f in index.idx index.ilg index.ind; do
+    [[ -f "$f" ]] && run cp "$f" "pdf/$f"
+  done
+  echo "    Done. Fixed PDF → docs/Vis-MLM.pdf"
+  echo ""
 }
 
 check_pdf_no_appendices() {
@@ -233,7 +283,11 @@ post_pdf_authorindex() {
 
 archive_pdf_artifacts() {
   echo "--> Archiving PDF build artifacts to pdf/..."
-  [[ -f "docs/Vis-MLM.pdf" ]] && run cp "docs/Vis-MLM.pdf" "pdf/Vis-MLM.pdf"
+  if [[ -f "docs/Vis-MLM.pdf" ]]; then
+    [[ -f "pdf/Vis-MLM.pdf" ]] && run mv "pdf/Vis-MLM.pdf" "pdf/Vis-MLM-old.pdf"
+    run cp "docs/Vis-MLM.pdf" "pdf/Vis-MLM.pdf"
+    run rm -f "pdf/Vis-MLM-old.pdf"
+  fi
   [[ -f "Vis-MLM.tex"      ]] && run cp "Vis-MLM.tex"      "pdf/index.tex"
   for f in index.aux index.ain index.idx index.ilg index.ind index.log index.toc; do
     [[ -f "$f" ]] && run cp "$f" "pdf/$f"
@@ -290,6 +344,7 @@ case "$FORMAT" in
   pdf)
     render_pdf
     check_pdf_no_appendices
+    $FIX_INDEX && fix_index
     ;;
   html)
     render_html
@@ -313,6 +368,7 @@ case "$FORMAT" in
       check_pdf_no_appendices
       echo ""
     fi
+    $FIX_INDEX && fix_index
     archive_pdf_artifacts
     echo "    Step 2/4: HTML pass 1 (builds xref database)"
     run quarto render --to html --profile online
