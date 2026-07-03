@@ -6,6 +6,8 @@ metadata:
 ---
 
 Part accent colors added to `latex/preamble.tex` (2026-06-10). Single place to retheme the whole book.
+UPDATE 2026-07-02: color definitions moved to `latex/part-colors.tex` (\input by preamble.tex),
+shared with the part-page/chapter-opener diagrams — see [[part-chapter-diagrams]].
 
 **Current colors:**
 - `partI` = blue (Part I: Orienting Ideas)

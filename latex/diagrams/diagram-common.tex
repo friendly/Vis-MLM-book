@@ -1,0 +1,47 @@
+% diagram-common.tex — shared setup for the part-page and chapter-opener
+% bubble diagrams (DDAR style). \input by every part*.tex and chap*.tex in
+% this directory. Rebuild all diagrams with ./make-diagrams.sh
+%
+% Center bubble: strong part accent color (latex/part-colors.tex) with a
+% gentle top-lit gradient, white bold sans text, and a thin divider rule
+% under the number. Satellites: light tint gradient of the same color,
+% black text. All bubbles cast a soft blur shadow. Connections are tapered
+% bands shaded dark -> light, drawn as a single path each (the TikZ mindmap
+% library's connection bars leave hairline seams between fill segments, so
+% we draw our own).
+\usepackage[cmyk]{xcolor}   % CRC wants CMYK — same as latex/preamble.tex
+\usepackage{amsmath}        % \boldsymbol etc. in section labels
+\input{../part-colors.tex}
+\usepackage{tikz}
+\usetikzlibrary{calc, shadows.blur}
+
+% \band{color}{angle}{distance}: tapered connection band from the center
+% bubble out to (angle:distance), shaded color -> light tint. Bands are
+% drawn before the bubbles, so both ends tuck underneath them.
+\newlength\bandroot \setlength\bandroot{0.50cm}  % half-width at the center
+\newlength\bandmid  \setlength\bandmid {0.16cm}  % half-width at the waist
+\newlength\bandtip  \setlength\bandtip {0.28cm}  % half-width at the satellite
+\newcommand\band[3]{%
+  \path[shading=axis, bottom color=#1, top color=#1!35, shading angle={#2-90}]
+    (#2+90:\bandroot)
+      .. controls ($(#2:0.5*#3)+(#2+90:\bandmid)$) .. ($(#2:#3)+(#2+90:\bandtip)$)
+    -- ($(#2:#3)+(#2-90:\bandtip)$)
+      .. controls ($(#2:0.5*#3)+(#2-90:\bandmid)$) .. (#2-90:\bandroot)
+    -- cycle;}
+
+% \bubbletitle{number}{title}: stacked number + divider rule + title for the
+% center bubble.
+\newcommand\bubbletitle[2]{%
+  {\LARGE #1}\\[3.5pt]{\rule{1.05cm}{0.45pt}}\\[5.5pt]#2}
+
+\tikzset{
+  softshadow/.style={blur shadow={shadow blur steps=6,
+    shadow xshift=0.5mm, shadow yshift=-0.8mm}},
+  rootbubble/.style={circle, top color=#1!88!white, bottom color=#1!90!black,
+    text=white, align=center, inner sep=1pt,
+    font=\sffamily\bfseries, softshadow,
+    execute at begin node={\hyphenpenalty=10000 }},
+  satbubble/.style={circle, top color=#1!22, bottom color=#1!42,
+    text=black, align=center, inner sep=1pt, softshadow,
+    execute at begin node={\hyphenpenalty=10000 }},
+}
