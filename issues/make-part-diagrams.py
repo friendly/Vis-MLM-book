@@ -123,7 +123,7 @@ CHAPTERS = {
         "13.6 Visualizing Box's $\\mathcal{M}$",
         "13.7 Low-rank views",
         "13.8 Other measures",
-        "13.9 Multivariate Levene test",
+        "13.9 Multivariate Levene's test",
     ], 90, 40, 3.8),
     14: ("partIV", "Multivariate Influence \\& Robust Estimation", (3.5, 3.1, r"\small"), [
         "14.1 Multivariate influence",
