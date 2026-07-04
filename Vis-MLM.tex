@@ -109,7 +109,6 @@
 \newcommand{\WarningTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{\textit{#1}}}
 
 \usepackage{longtable,booktabs,array}
-\newcounter{none} % for unnumbered tables
 \usepackage{calc} % for calculating minipage widths
 % Correct order of tables after \paragraph or \subparagraph
 \usepackage{etoolbox}
@@ -202,11 +201,10 @@
 \definecolor{darkgreen}{cmyk}{0.98, 0, 0.36, 0.80}  % RGB(1,50,32)
 \definecolor{mygreen}  {cmyk}{0.80, 0, 0.60, 0.50}  % RGB(26,127,51) ≈ #1A7F33
 
-% Part accent colors — change here to retheme the whole book
-\colorlet{partI}  {blue}
-\colorlet{partII} {teal}
-\definecolor{partIII}{cmyk}{0.67, 0, 0.43, 0.55}  % #267342
-\definecolor{partIV}{cmyk}{0, 0.50, 1.0, 0.20}  % #CC6600 — burnt orange, darker than xcolor's orange
+% Part accent colors — defined in latex/part-colors.tex, shared with the
+% part-page / chapter-opener mindmap diagrams (latex/diagrams/*.tex).
+% After changing a color there, re-run latex/diagrams/make-diagrams.sh.
+\input{latex/part-colors.tex}
 % Active part color + tints (defaults to Part I before any \part fires)
 \colorlet{partcol}  {partI}
 \colorlet{partcol80}{partcol!80}
@@ -232,6 +230,36 @@
   \colorlet{partcol80}{partcol!80}%
   \colorlet{partcol50}{partcol!50}%
   \colorlet{partcol20}{partcol!20}%
+}{}{}
+
+% Part-page and chapter-opener mindmap diagrams (DDAR style).
+% Pre-built PDFs live in figs/diagrams/; sources in latex/diagrams/, rebuilt
+% with latex/diagrams/make-diagrams.sh. The \IfFileExists guards mean any part
+% or chapter without a diagram (End Matter, front matter) is typeset unchanged.
+%
+% Part pages: insert the part diagram below the part title, before the
+% \vfil\newpage of \@endpart. Uses the partnum counter stepped above; there is
+% no part5.pdf, so the End Matter part page stays plain.
+\pretocmd{\@endpart}{%
+  \IfFileExists{figs/diagrams/part\arabic{partnum}.pdf}{%
+    \par\vskip 36\p@
+    {\centering
+     \includegraphics[width=.9\textwidth,height=.62\textheight,keepaspectratio]%
+       {figs/diagrams/part\arabic{partnum}.pdf}\par}%
+    \vskip 0\p@ plus 1fil
+  }{}%
+}{}{}
+
+% Chapter openers: place the chapter diagram at the top right of the chapter
+% opening page, above the number + title head (as in DDAR chapter pages).
+\pretocmd{\@makechapterhead}{%
+  \IfFileExists{figs/diagrams/chap\thechapter.pdf}{%
+    {\parindent\z@
+     \hbox to \textwidth{\hfil
+       \includegraphics[width=.66\textwidth,height=.38\textheight,keepaspectratio]%
+         {figs/diagrams/chap\thechapter.pdf}}%
+     \par\vskip 12\p@}%
+  }{}%
 }{}{}
 \makeatother
 
@@ -596,7 +624,7 @@
 \@ifundefined{codebgcolor}{\definecolor{codebgcolor}{HTML}{e4f0ef}}{}
 \makeatother
 \makeatletter
-\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[boxrule=0pt, breakable, colback={codebgcolor}, enhanced, frame hidden, sharp corners]}{\end{tcolorbox}}\fi
+\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[colback={codebgcolor}, frame hidden, enhanced, breakable, boxrule=0pt, sharp corners]}{\end{tcolorbox}}\fi
 \makeatother
 \usepackage{bookmark}
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
@@ -668,6 +696,7 @@ Rest of the stuff, ISBN, ... goes here
 
 \renewcommand*\contentsname{Table of contents}
 {
+\hypersetup{linkcolor=}
 \setcounter{tocdepth}{2}
 \tableofcontents
 }
@@ -1677,45 +1706,17 @@ figure which shows four successive magnifications of the data
 
 \begin{figure}[htb!]
 
-\begin{minipage}[t]{0.50\linewidth}
-
-\raisebox{-\height}{
-
-\pandocbounded{\includegraphics[keepaspectratio]{images/pollen-eureka1.png}}
-
-}
-
-\end{minipage}%
+\begin{minipage}{0.50\linewidth}
+\pandocbounded{\includegraphics[keepaspectratio]{images/pollen-eureka1.png}}\end{minipage}%
 %
-\begin{minipage}[t]{0.50\linewidth}
-
-\raisebox{-\height}{
-
-\pandocbounded{\includegraphics[keepaspectratio]{images/pollen-eureka2.png}}
-
-}
-
-\end{minipage}%
+\begin{minipage}{0.50\linewidth}
+\pandocbounded{\includegraphics[keepaspectratio]{images/pollen-eureka2.png}}\end{minipage}%
 \newline
-\begin{minipage}[t]{0.50\linewidth}
-
-\raisebox{-\height}{
-
-\pandocbounded{\includegraphics[keepaspectratio]{images/pollen-eureka4.png}}
-
-}
-
-\end{minipage}%
+\begin{minipage}{0.50\linewidth}
+\pandocbounded{\includegraphics[keepaspectratio]{images/pollen-eureka4.png}}\end{minipage}%
 %
-\begin{minipage}[t]{0.50\linewidth}
-
-\raisebox{-\height}{
-
-\pandocbounded{\includegraphics[keepaspectratio]{images/pollen-eureka3.png}}
-
-}
-
-\end{minipage}%
+\begin{minipage}{0.50\linewidth}
+\pandocbounded{\includegraphics[keepaspectratio]{images/pollen-eureka3.png}}\end{minipage}%
 
 \caption{\label{fig-pollen-eureka}Four views of the \texttt{pollen}
 data, zooming in, clockwise from the upper left to discover the word
@@ -1951,7 +1952,7 @@ importantly, are questions of how the response variables are predicted
 \emph{jointly} considering their correlations, which a multivariate
 approach can reveal.
 
-\begin{tcolorbox}[enhanced jigsaw, arc=.35mm, bottomrule=.15mm, bottomtitle=1mm, breakable, colback=white, colbacktitle=quarto-callout-note-color!10!white, colframe=quarto-callout-note-color-frame, coltitle=black, left=2mm, leftrule=.75mm, opacityback=0, opacitybacktitle=0.6, rightrule=.15mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{What about SEM?}, titlerule=0mm, toprule=.15mm, toptitle=1mm]
+\begin{tcolorbox}[enhanced jigsaw, bottomrule=.15mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{What about SEM?}, opacityback=0, arc=.35mm, colframe=quarto-callout-note-color-frame, opacitybacktitle=0.6, colbacktitle=quarto-callout-note-color!10!white, bottomtitle=1mm, colback=white, toptitle=1mm, leftrule=.75mm, titlerule=0mm, breakable, left=2mm, rightrule=.15mm, coltitle=black, toprule=.15mm]
 
 Structural equation modeling (SEM) offers another route to explore and
 analyze the relationships among multiple predictors and multiple
@@ -2501,7 +2502,7 @@ pulls the line toward discrepant points to minimize the sum of squared
 residuals.}
 \end{quote}
 
-\begin{tcolorbox}[enhanced jigsaw, arc=.35mm, bottomrule=.15mm, bottomtitle=1mm, breakable, colback=white, colbacktitle=quarto-callout-note-color!10!white, colframe=quarto-callout-note-color-frame, coltitle=black, left=2mm, leftrule=.75mm, opacityback=0, opacitybacktitle=0.6, rightrule=.15mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Datasaurus Dozen}, titlerule=0mm, toprule=.15mm, toptitle=1mm]
+\begin{tcolorbox}[enhanced jigsaw, bottomrule=.15mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Datasaurus Dozen}, opacityback=0, arc=.35mm, colframe=quarto-callout-note-color-frame, opacitybacktitle=0.6, colbacktitle=quarto-callout-note-color!10!white, bottomtitle=1mm, colback=white, toptitle=1mm, leftrule=.75mm, titlerule=0mm, breakable, left=2mm, rightrule=.15mm, coltitle=black, toprule=.15mm]
 
 The method Anscombe used to compose his quartet is unknown, but it turns
 out that there is a method to construct a wider collection of datasets
@@ -2554,7 +2555,7 @@ Korkmaz on X}}
 
 \end{figure}%
 
-\begin{tcolorbox}[enhanced jigsaw, arc=.35mm, bottomrule=.15mm, bottomtitle=1mm, breakable, colback=white, colbacktitle=quarto-callout-note-color!10!white, colframe=quarto-callout-note-color-frame, coltitle=black, left=2mm, leftrule=.75mm, opacityback=0, opacitybacktitle=0.6, rightrule=.15mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Quartets}, titlerule=0mm, toprule=.15mm, toptitle=1mm]
+\begin{tcolorbox}[enhanced jigsaw, bottomrule=.15mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Quartets}, opacityback=0, arc=.35mm, colframe=quarto-callout-note-color-frame, opacitybacktitle=0.6, colbacktitle=quarto-callout-note-color!10!white, bottomtitle=1mm, colback=white, toptitle=1mm, leftrule=.75mm, titlerule=0mm, breakable, left=2mm, rightrule=.15mm, coltitle=black, toprule=.15mm]
 
 The essential idea of a statistical ``quartet'' is to illustrate four
 quite different datasets or circumstances that seem superficially the
@@ -3662,7 +3663,7 @@ stratifying: \index{shingle}
   to another.
 \end{itemize}
 
-\begin{tcolorbox}[enhanced jigsaw, arc=.35mm, bottomrule=.15mm, bottomtitle=1mm, breakable, colback=white, colbacktitle=quarto-callout-note-color!10!white, colframe=quarto-callout-note-color-frame, coltitle=black, left=2mm, leftrule=.75mm, opacityback=0, opacitybacktitle=0.6, rightrule=.15mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{History Corner: Model Syntax---Coplots and faceting}, titlerule=0mm, toprule=.15mm, toptitle=1mm]
+\begin{tcolorbox}[enhanced jigsaw, bottomrule=.15mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{History Corner: Model Syntax---Coplots and faceting}, opacityback=0, arc=.35mm, colframe=quarto-callout-note-color-frame, opacitybacktitle=0.6, colbacktitle=quarto-callout-note-color!10!white, bottomtitle=1mm, colback=white, toptitle=1mm, leftrule=.75mm, titlerule=0mm, breakable, left=2mm, rightrule=.15mm, coltitle=black, toprule=.15mm]
 
 The syntax you use in specifying a plot plays an important role in
 visual thinking. Ideally, you want the shortest path between having a
@@ -4102,7 +4103,7 @@ is the sample variance-covariance matrix.
 Mahalanobis distance takes the correlations into account simply by using
 the covariances as well as the variances,
 
-\begin{equation}\protect\phantomsection\label{eq-Dsq}{
+\begin{equation}\phantomsection\label{eq-Dsq}{
 D_M^2 (\mathbf{y}) = (\mathbf{y} - \bar{\mathbf{y}})^\mathsf{T} S^{-1} (\mathbf{y} - \bar{\mathbf{y}}) \; .
 }\end{equation}
 
@@ -4147,7 +4148,7 @@ Slightly abusing notation and taking the unit sphere \(\mathcal{P}\)
 like an identity matrix \(\mathbf{I}\) that vanishes in multiplication,
 we can write the data ellipsoid as simply:
 
-\begin{equation}\protect\phantomsection\label{eq-ellE}{
+\begin{equation}\phantomsection\label{eq-ellE}{
 \mathcal{E}_c (\bar{\mathbf{y}}, \mathbf{S}) = \bar{\mathbf{y}} \; \oplus \; c\, \sqrt{\mathbf{S}} \:\: .
 }\end{equation}
 
@@ -5823,7 +5824,7 @@ smaller bill depth, but longer flippers and are heavier than
 \colorbox[HTML]{A020F0}{\textcolor[HTML]{FFFFFF}{Chinstrap}} and
 \colorbox[HTML]{FFA500}{\textcolor[HTML]{000000}{Adelie}} penguins.
 
-\begin{tcolorbox}[enhanced jigsaw, arc=.35mm, bottomrule=.15mm, bottomtitle=1mm, breakable, colback=white, colbacktitle=quarto-callout-note-color!10!white, colframe=quarto-callout-note-color-frame, coltitle=black, left=2mm, leftrule=.75mm, opacityback=0, opacitybacktitle=0.6, rightrule=.15mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Looking ahead}, titlerule=0mm, toprule=.15mm, toptitle=1mm]
+\begin{tcolorbox}[enhanced jigsaw, bottomrule=.15mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Looking ahead}, opacityback=0, arc=.35mm, colframe=quarto-callout-note-color-frame, opacitybacktitle=0.6, colbacktitle=quarto-callout-note-color!10!white, bottomtitle=1mm, colback=white, toptitle=1mm, leftrule=.75mm, titlerule=0mm, breakable, left=2mm, rightrule=.15mm, coltitle=black, toprule=.15mm]
 
 Figure~\ref{fig-peng-spm} provides a reasonably complete visual summary
 of the data in relation to multivariate models that ask ``do the species
@@ -6476,7 +6477,7 @@ intersect in a point in projective space. What this does is to map
 \(n\)-dimensional relations into 2D patterns we can see in a parallel
 coordinates plot.
 
-\begin{tcolorbox}[enhanced jigsaw, arc=.35mm, bottomrule=.15mm, bottomtitle=1mm, breakable, colback=white, colbacktitle=quarto-callout-note-color!10!white, colframe=quarto-callout-note-color-frame, coltitle=black, left=2mm, leftrule=.75mm, opacityback=0, opacitybacktitle=0.6, rightrule=.15mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{History Corner: Who invented parallel coordinates?}, titlerule=0mm, toprule=.15mm, toptitle=1mm]
+\begin{tcolorbox}[enhanced jigsaw, bottomrule=.15mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{History Corner: Who invented parallel coordinates?}, opacityback=0, arc=.35mm, colframe=quarto-callout-note-color-frame, opacitybacktitle=0.6, colbacktitle=quarto-callout-note-color!10!white, bottomtitle=1mm, colback=white, toptitle=1mm, leftrule=.75mm, titlerule=0mm, breakable, left=2mm, rightrule=.15mm, coltitle=black, toprule=.15mm]
 
 \begin{quote}
 \emph{Those who don't know history are doomed to plagiarize it} ---The
@@ -7314,7 +7315,7 @@ exceptionally long bills compared to the rest.
 
 \begin{figure}[htb!]
 
-\begin{minipage}[t]{0.33\linewidth}
+\begin{minipage}{0.33\linewidth}
 
 \centering{
 
@@ -7326,7 +7327,7 @@ exceptionally long bills compared to the rest.
 
 \end{minipage}%
 %
-\begin{minipage}[t]{0.33\linewidth}
+\begin{minipage}{0.33\linewidth}
 
 \centering{
 
@@ -7338,7 +7339,7 @@ exceptionally long bills compared to the rest.
 
 \end{minipage}%
 %
-\begin{minipage}[t]{0.33\linewidth}
+\begin{minipage}{0.33\linewidth}
 
 \centering{
 
@@ -7379,7 +7380,7 @@ separation.
 
 \begin{figure}[htb!]
 
-\begin{minipage}[t]{0.50\linewidth}
+\begin{minipage}{0.50\linewidth}
 
 \centering{
 
@@ -7391,7 +7392,7 @@ separation.
 
 \end{minipage}%
 %
-\begin{minipage}[t]{0.50\linewidth}
+\begin{minipage}{0.50\linewidth}
 
 \centering{
 
@@ -7688,7 +7689,7 @@ values from the linear regressions of \(x_i\) on \(\mathbf{Z}\) and of
 \(p_{ij}\) between \(x_i\) and \(x_j\) controlling for \(\mathbf{Z}\) is
 given by:
 
-\begin{equation}\protect\phantomsection\label{eq-parcor}{
+\begin{equation}\phantomsection\label{eq-parcor}{
 p_{x_i,x_j|\mathbf{Z}} = r( x_i, x_j \mid \text{others}) = \text{cor}[ (x_i - \hat{x}_i),\; (x_j - \hat{x}_j)]
 }\end{equation}
 
@@ -8055,7 +8056,7 @@ dimensions into the 2D space of principal components and
 space. For exploratory analysis to get an initial, incisive view of a
 multivariate dataset, a biplot is often my first choice. \index{biplot}
 
-\begin{tcolorbox}[enhanced jigsaw, arc=.35mm, bottomrule=.15mm, bottomtitle=1mm, breakable, colback=white, colbacktitle=quarto-callout-note-color!10!white, colframe=quarto-callout-note-color-frame, coltitle=black, left=2mm, leftrule=.75mm, opacityback=0, opacitybacktitle=0.6, rightrule=.15mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Looking ahead}, titlerule=0mm, toprule=.15mm, toptitle=1mm]
+\begin{tcolorbox}[enhanced jigsaw, bottomrule=.15mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Looking ahead}, opacityback=0, arc=.35mm, colframe=quarto-callout-note-color-frame, opacitybacktitle=0.6, colbacktitle=quarto-callout-note-color!10!white, bottomtitle=1mm, colback=white, toptitle=1mm, leftrule=.75mm, titlerule=0mm, breakable, left=2mm, rightrule=.15mm, coltitle=black, toprule=.15mm]
 
 I'm using the term \emph{multivariate juicer} here to refer to the wider
 class of \textbf{dimension reduction} techniques, used for various
@@ -8325,7 +8326,7 @@ are the corresponding \emph{eigenvalues}.
 
 To explain this, it is helpful to use a bit of matrix math:
 
-\begin{equation}\protect\phantomsection\label{eq-S-eigen}{
+\begin{equation}\phantomsection\label{eq-S-eigen}{
 \begin{aligned}
 \mathbf{S}_{p \times p} & = \mathbf{V}_{p \times p} \phantom{0000000000} 
                             \boldsymbol{\Lambda}_{p \times p} \phantom{00000000000000}
@@ -9116,7 +9117,7 @@ necessary to do a bit of processing, including making the
 \texttt{row.names()} into an explicit variable for the purpose of
 labeling.
 
-\begin{tcolorbox}[enhanced jigsaw, arc=.35mm, bottomrule=.15mm, bottomtitle=1mm, breakable, colback=white, colbacktitle=quarto-callout-warning-color!10!white, colframe=quarto-callout-warning-color-frame, coltitle=black, left=2mm, leftrule=.75mm, opacityback=0, opacitybacktitle=0.6, rightrule=.15mm, title=\textcolor{quarto-callout-warning-color}{\faExclamationTriangle}\hspace{0.5em}{\texttt{rownames} in R}, titlerule=0mm, toprule=.15mm, toptitle=1mm]
+\begin{tcolorbox}[enhanced jigsaw, bottomrule=.15mm, title=\textcolor{quarto-callout-warning-color}{\faExclamationTriangle}\hspace{0.5em}{\texttt{rownames} in R}, opacityback=0, arc=.35mm, colframe=quarto-callout-warning-color-frame, opacitybacktitle=0.6, colbacktitle=quarto-callout-warning-color!10!white, bottomtitle=1mm, colback=white, toptitle=1mm, leftrule=.75mm, titlerule=0mm, breakable, left=2mm, rightrule=.15mm, coltitle=black, toprule=.15mm]
 
 R software evolved over many years, particularly in conventions for
 labeling cases in printed output and graphics. In base-R, the convention
@@ -9340,7 +9341,7 @@ and a matrix \textbf{V} of variable weights.}
 Using the SVD, the matrix \(\mathbf{X}\), of rank \(r \le p\) can be
 expressed \emph{exactly} as:
 
-\begin{equation}\protect\phantomsection\label{eq-svd1}{
+\begin{equation}\phantomsection\label{eq-svd1}{
 \mathbf{X} = \mathbf{U} \boldsymbol{\Lambda} \mathbf{V}'
                  = \sum_i^r \lambda_i \mathbf{u}_i \mathbf{v}_i' \; ,
 }\end{equation}
@@ -9407,7 +9408,7 @@ the points approximates their Mahalanobis distances. \(\alpha = 0\)
 gives a distance interpretation to the column display. \(\alpha = 1/2\)
 gives a symmetrically scaled biplot.
 
-\begin{tcolorbox}[enhanced jigsaw, arc=.35mm, bottomrule=.15mm, bottomtitle=1mm, breakable, colback=white, colbacktitle=quarto-callout-note-color!10!white, colframe=quarto-callout-note-color-frame, coltitle=black, left=2mm, leftrule=.75mm, opacityback=0, opacitybacktitle=0.6, rightrule=.15mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Biplot scaling}, titlerule=0mm, toprule=.15mm, toptitle=1mm]
+\begin{tcolorbox}[enhanced jigsaw, bottomrule=.15mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Biplot scaling}, opacityback=0, arc=.35mm, colframe=quarto-callout-note-color-frame, opacitybacktitle=0.6, colbacktitle=quarto-callout-note-color!10!white, bottomtitle=1mm, colback=white, toptitle=1mm, leftrule=.75mm, titlerule=0mm, breakable, left=2mm, rightrule=.15mm, coltitle=black, toprule=.15mm]
 
 The choice of \(\alpha\) apportions the singular values between the row
 scores (\(\mathbf{A} = \mathbf{U}\boldsymbol{\Lambda}^\alpha\)) and the
@@ -10060,10 +10061,10 @@ Figure~\ref{fig-diabetes-3d} nearly captured all available information.
   \FunctionTok{prcomp}\NormalTok{(}\AttributeTok{scale. =} \ConstantTok{TRUE}\NormalTok{)}
 \FunctionTok{summary}\NormalTok{(diab.pca)}
 \CommentTok{\# Importance of components:}
-\CommentTok{\#                          PC1   PC2   PC3    PC4     PC5}
-\CommentTok{\# Standard deviation     1.662 1.177 0.818 0.3934 0.17589}
-\CommentTok{\# Proportion of Variance 0.552 0.277 0.134 0.0309 0.00619}
-\CommentTok{\# Cumulative Proportion  0.552 0.829 0.963 0.9938 1.00000}
+\CommentTok{\#                          PC1   PC2   PC3   PC4     PC5}
+\CommentTok{\# Standard deviation     1.662 1.177 0.818 0.393 0.17589}
+\CommentTok{\# Proportion of Variance 0.552 0.277 0.134 0.031 0.00619}
+\CommentTok{\# Cumulative Proportion  0.552 0.829 0.963 0.994 1.00000}
 \end{Highlighting}
 \end{Shaded}
 
@@ -10700,7 +10701,7 @@ first two eigenvectors, \(\mathbf{v}_1, \mathbf{v}_2\) around the unit
 circle. These values are calculated going counter-clockwise from the
 12:00 position as:
 
-\begin{equation}\protect\phantomsection\label{eq-angle-AOE}{
+\begin{equation}\phantomsection\label{eq-angle-AOE}{
 a_i = 
   \begin{cases}
     \tan^{-1} (v_{i2}/v_{i1}), & \text{if $v_{i1}>0$;}
@@ -10815,7 +10816,7 @@ use for visualization for multivariate data covered here, that rely on
 its ability as a \textbf{dimension reduction} technique, that is, to
 find a low-dimensional approximation to a high-dimensional dataset.
 
-\begin{tcolorbox}[enhanced jigsaw, arc=.35mm, bottomrule=.15mm, bottomtitle=1mm, breakable, colback=white, colbacktitle=quarto-callout-note-color!10!white, colframe=quarto-callout-note-color-frame, coltitle=black, left=2mm, leftrule=.75mm, opacityback=0, opacitybacktitle=0.6, rightrule=.15mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Machine learning uses}, titlerule=0mm, toprule=.15mm, toptitle=1mm]
+\begin{tcolorbox}[enhanced jigsaw, bottomrule=.15mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Machine learning uses}, opacityback=0, arc=.35mm, colframe=quarto-callout-note-color-frame, opacitybacktitle=0.6, colbacktitle=quarto-callout-note-color!10!white, bottomtitle=1mm, colback=white, toptitle=1mm, leftrule=.75mm, titlerule=0mm, breakable, left=2mm, rightrule=.15mm, coltitle=black, toprule=.15mm]
 
 In machine learning, for example, PCA is a method used to reduce model
 complexity and avoid overfitting by \emph{feature extraction}, which
@@ -11487,7 +11488,7 @@ gender or level of education, methods like the simple \(t\)-test,
 one-way ANOVA and factorial ANOVA with \(q=1\) outcome measures all have
 simple extensions to the case of \(q>1\) outcomes.
 
-\begin{tcolorbox}[enhanced jigsaw, arc=.35mm, bottomrule=.15mm, bottomtitle=1mm, breakable, colback=white, colbacktitle=quarto-callout-note-color!10!white, colframe=quarto-callout-note-color-frame, coltitle=black, left=2mm, leftrule=.75mm, opacityback=0, opacitybacktitle=0.6, rightrule=.15mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{History Corner: Twins Reared Apart}, titlerule=0mm, toprule=.15mm, toptitle=1mm]
+\begin{tcolorbox}[enhanced jigsaw, bottomrule=.15mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{History Corner: Twins Reared Apart}, opacityback=0, arc=.35mm, colframe=quarto-callout-note-color-frame, opacitybacktitle=0.6, colbacktitle=quarto-callout-note-color!10!white, bottomtitle=1mm, colback=white, toptitle=1mm, leftrule=.75mm, titlerule=0mm, breakable, left=2mm, rightrule=.15mm, coltitle=black, toprule=.15mm]
 
 Why are there so many different names for regression vs.~ANOVA concepts,
 statistics and techniques? In regression, we use notation like
@@ -11588,7 +11589,7 @@ observations, as a sum of terms involving \(p\) \emph{regressors},
 \(\mathbf{x}_1, \mathbf{x}_2, \dots , \mathbf{x}_p\), each of length
 \(n\).
 
-\begin{equation}\protect\phantomsection\label{eq-glm}{
+\begin{equation}\phantomsection\label{eq-glm}{
 \begin{aligned}
 \mathbf{y} & = \beta_0 + \beta_1 \mathbf{x}_1 + \beta_2 \mathbf{x}_2 + \cdots + \beta_p \mathbf{x}_p + \boldsymbol{\epsilon} \\
            & = \left[ \mathbf{1},\; \mathbf{x}_1,\; \mathbf{x}_2,\; \dots ,\; \mathbf{x}_p \right] \; \boldsymbol{\beta} + \boldsymbol{\epsilon} \\
@@ -12153,7 +12154,7 @@ of one subset of groups against the mean of another subset. This is
 specified as a weighted sum, \(L\) of the means \(\boldsymbol{\mu}\)
 with weights \(\mathbf{c}\) that sum to zero,
 
-\begin{equation}\protect\phantomsection\label{eq-contrast-def}{
+\begin{equation}\phantomsection\label{eq-contrast-def}{
 L = \mathbf{c}^\mathsf{T} \boldsymbol{\mu} = \sum_i^k c_i \mu_i \quad\text{such that}\quad \Sigma c_i = 0 \; .
 }\end{equation}
 
@@ -14959,7 +14960,7 @@ Here, \(h_i \equiv h_{ii}\) are the diagonal elements of the Hat matrix
 \(\mathbf{H}\). In simple regression, hat values are proportional to the
 squared distance of the observation \(x_i\) from the mean,
 \(h_i \propto (x_i - \bar{x})^2\),
-\begin{equation}\protect\phantomsection\label{eq-hat-univar}{
+\begin{equation}\phantomsection\label{eq-hat-univar}{
 h_i = \frac{1}{n} + \frac{(x_i - \bar{x})^2}{\Sigma_i (x_i - \bar{x})^2} \; ,
 }\end{equation}
 
@@ -14978,7 +14979,7 @@ squared distance of \(\mathbf{x}\) from the centroid
 
 The generalized version of Equation~\ref{eq-hat-univar} is
 
-\begin{equation}\protect\phantomsection\label{eq-hat-multivar}{
+\begin{equation}\phantomsection\label{eq-hat-multivar}{
 h_i = \frac{1}{n} + \frac{1}{n-1} D^2 (\mathbf{x} - \bar{\mathbf{x}}) \; ,
 }\end{equation}
 
@@ -15137,7 +15138,7 @@ remaining \(n-1\) observations, \[
 e_{(-i)} = y_i - \hat{y}_{(-i)} \; .
 \] The (externally) \emph{studentized residual} is then obtained by
 dividing \(e_{(-i)}\) by its estimated standard error, giving
-\begin{equation}\protect\phantomsection\label{eq-studentized-residual}{
+\begin{equation}\phantomsection\label{eq-studentized-residual}{
 e^\star_{(-i)} = \frac{e_{(-i)}}{\text{sd}(e_{(-i)})} = \frac{e_i}{\sqrt{\text{MSE}_{(-i)}\; (1 - h_i)}} \; .
 }\end{equation}
 
@@ -15171,7 +15172,7 @@ The simplest such measure, called DFFITS, compares the predicted value
 for case \(i\) with what would be obtained when that observation is
 excluded.
 
-\begin{equation}\protect\phantomsection\label{eq-DFFITS}{
+\begin{equation}\phantomsection\label{eq-DFFITS}{
 \begin{aligned}
 \text{DFFITS}_i & = & \frac{\hat{y}_i - \hat{y}_{(-i)}}{\sqrt{\text{MSE}_{(-i)}\; h_i}} \\
    & = & e^\star_{(-i)} \times \sqrt{\frac{h_i}{1-h_i}} \;\; .
@@ -15198,7 +15199,7 @@ D_i = \mathbf{d}^\mathsf{T}\, (\mathbf{X}^\mathsf{T}\mathbf{X}) \,\mathbf{d} / (
 \] This can be re-expressed in terms of the components of residual and
 leverage
 
-\begin{equation}\protect\phantomsection\label{eq-cooksd}{
+\begin{equation}\phantomsection\label{eq-cooksd}{
 D_i = \frac{e^{\star 2}_{(-i)}}{p+1} \times \frac{h_i}{(1- h_i)}
 }\end{equation}
 
@@ -16894,7 +16895,7 @@ get the generalized GVIF:
 \index{variance inflation factor|)}
 \index{VIF|)}
 
-\begin{tcolorbox}[enhanced jigsaw, arc=.35mm, bottomrule=.15mm, bottomtitle=1mm, breakable, colback=white, colbacktitle=quarto-callout-tip-color!10!white, colframe=quarto-callout-tip-color-frame, coltitle=black, left=2mm, leftrule=.75mm, opacityback=0, opacitybacktitle=0.6, rightrule=.15mm, title=\textcolor{quarto-callout-tip-color}{\faLightbulb}\hspace{0.5em}{Connection with inverse of correlation matrix}, titlerule=0mm, toprule=.15mm, toptitle=1mm]
+\begin{tcolorbox}[enhanced jigsaw, bottomrule=.15mm, title=\textcolor{quarto-callout-tip-color}{\faLightbulb}\hspace{0.5em}{Connection with inverse of correlation matrix}, opacityback=0, arc=.35mm, colframe=quarto-callout-tip-color-frame, opacitybacktitle=0.6, colbacktitle=quarto-callout-tip-color!10!white, bottomtitle=1mm, colback=white, toptitle=1mm, leftrule=.75mm, titlerule=0mm, breakable, left=2mm, rightrule=.15mm, coltitle=black, toprule=.15mm]
 
 In the linear regression model with standardized predictors, the
 covariance matrix of the estimated intercept-excluded parameter vector
@@ -16999,7 +17000,7 @@ the corresponding eigenvectors in the columns of
 By elementary matrix algebra, the eigen decomposition of
 \(\mathbf{R}_{XX}^{-1}\) is then
 
-\begin{equation}\protect\phantomsection\label{eq-rxinv-eigen}{
+\begin{equation}\phantomsection\label{eq-rxinv-eigen}{
 \mathbf{R}_{X}^{-1} = \mathbf{V} \boldsymbol{\Lambda}^{-1} \mathbf{V}^\mathsf{T} \; ,
 }\end{equation}
 
@@ -17008,7 +17009,7 @@ eigenvectors, and the eigenvalues of \(\mathbf{R}_{X}^{-1}\) are just
 \(\lambda_i^{-1}\). Using Equation~\ref{eq-rxinv-eigen}, the variance
 inflation factors may be expressed as
 
-\begin{equation}\protect\phantomsection\label{eq-VIF-sum}{
+\begin{equation}\phantomsection\label{eq-VIF-sum}{
 \text{VIF}_j = \sum_{k=1}^p \frac{V^2_{jk}}{\lambda_k} \; .
 }\end{equation}
 
@@ -17778,7 +17779,7 @@ standardize the columns of \(\mathbf{X}\) to unit length, so that
 The ordinary least squares estimates of coefficients and their estimated
 variance covariance matrix take the (hopefully now) familiar form
 
-\begin{equation}\protect\phantomsection\label{eq-OLS-beta-var}{
+\begin{equation}\phantomsection\label{eq-OLS-beta-var}{
 \begin{aligned}
 \widehat{\boldsymbol{\beta}}^{\mathrm{OLS}} = & 
     (\mathbf{X}^\mathsf{T}\mathbf{X})^{-1} \mathbf{X}^\mathsf{T}\mathbf{y} \:\: ,\\
@@ -17802,7 +17803,7 @@ a constant, \(k\) to the diagonal elements, thus replacing
 Equation~\ref{eq-OLS-beta-var}. This drives the determinant away from
 zero as \(k\) increases. The ridge regression estimates then become,
 
-\begin{equation}\protect\phantomsection\label{eq-ridge-beta-var}{
+\begin{equation}\phantomsection\label{eq-ridge-beta-var}{
 \begin{aligned}
 \widehat{\boldsymbol{\beta}}^{\mathrm{RR}}_k = &
     (\mathbf{X}^\mathsf{T}\mathbf{X} + k \mathbf{I})^{-1} \mathbf{X}^\mathsf{T}\mathbf{y}  \\
@@ -17824,7 +17825,7 @@ can be formulated as least squares regression, minimizing a residual sum
 of squares, \(\text{RSS}(k)\), which adds a penalty for large
 coefficients,
 
-\begin{equation}\protect\phantomsection\label{eq-ridgeRSS}{
+\begin{equation}\phantomsection\label{eq-ridgeRSS}{
 \text{RSS}(k) = (\mathbf{y}-\mathbf{X} \boldsymbol{\beta}) ^\mathsf{T}(\mathbf{y}-\mathbf{X} \boldsymbol{\beta}) + k \boldsymbol{\beta}^\mathsf{T}\boldsymbol{\beta} \quad\quad (k \ge 0)
  \:\: ,
 }\end{equation} where the penalty restrict the coefficients to some
@@ -17930,7 +17931,7 @@ corresponding to the \(p\) parameters, the effective degrees of freedom
 for ridge regression (\citeproc{ref-Hastie-etal-2009}{Hastie et al.,
 2009}) is
 
-\begin{equation}\protect\phantomsection\label{eq-dfk}{
+\begin{equation}\phantomsection\label{eq-dfk}{
 \begin{aligned}
  \text{df}_k 
     = & \text{tr}[\mathbf{X} (\mathbf{X}^\mathsf{T}\mathbf{X} + k \mathbf{I})^{-1} \mathbf{X}^\mathsf{T}] \\
@@ -18727,7 +18728,7 @@ t = \frac{(\bar{x} - \mu_0)}{s / \sqrt{N}} = \frac{(\bar{x} - \mu_0)\sqrt{N}}{s}
 
 Squaring this gives:
 
-\begin{equation}\protect\phantomsection\label{eq-t2}{
+\begin{equation}\phantomsection\label{eq-t2}{
 t^2 = \frac{N (\bar{x} - \mu_0)^2}{s^2} = N (\bar{x} - \mu_0)(s^2)^{-1} (\bar{x} - \mu_0)
 }\end{equation}
 
@@ -18753,7 +18754,7 @@ variance-covariance matrix \(\mathbf{S}\) of the scores on (BM, WP)
 replacing the variance of a single score.
 \index{variance-covariance matrix}
 
-\begin{equation}\protect\phantomsection\label{eq-T2}{
+\begin{equation}\phantomsection\label{eq-T2}{
 \begin{aligned}
 T^2 &= N (\bar{\mathbf{x}} - \boldsymbol{\mu}_0)^\mathsf{T} \; \mathbf{S}^{-1} \; (\bar{\mathbf{x}} - \boldsymbol{\mu}_0) \\
     &= N D^2_M (\bar{\mathbf{x}}, \boldsymbol{\mu}_0)
@@ -18820,7 +18821,7 @@ variables contribute to significance: larger absolute values
   \(\mathbf{a}\) that solve the equation,
 \end{itemize}
 
-\begin{equation}\protect\phantomsection\label{eq-eigen}{
+\begin{equation}\phantomsection\label{eq-eigen}{
 (\mathbf{Q}_H - \lambda \mathbf{Q}_E) \; \mathbf{a} \; = \; 0 \:\: .
 }\end{equation}
 
@@ -18855,7 +18856,7 @@ Section~\ref{sec-multivar-tests}. \index{eigenvalue}
     the use of any assumptions.} \index{exact test}
 \end{itemize}
 
-\begin{equation}\protect\phantomsection\label{eq-Fstat}{
+\begin{equation}\phantomsection\label{eq-Fstat}{
 F^* = \frac{N - p}{p (N-1)} T^2 \; \sim \; F (p, N - p) \:\: .
 }\end{equation}
 
@@ -18887,7 +18888,7 @@ centimeters or inches. The same is true for all MANOVA tests.
   \(\mathcal{H}_0 : \boldsymbol{\mu}_1 = \boldsymbol{\mu}_2\).
 \end{itemize}
 
-\begin{equation}\protect\phantomsection\label{eq-T2-two-sample}{
+\begin{equation}\phantomsection\label{eq-T2-two-sample}{
 T^2 = N (\bar{\mathbf{x}}_1 - \bar{\mathbf{x}}_2)^\mathsf{T} \; \mathbf{S}_p^{-1} \; (\bar{\mathbf{x}}_1 - \bar{\mathbf{x}}_2) \; ,
 }\end{equation}
 
@@ -19542,7 +19543,7 @@ of how these variables are related to one another.
 
 \end{example}
 
-\begin{tcolorbox}[enhanced jigsaw, arc=.35mm, bottomrule=.15mm, bottomtitle=1mm, breakable, colback=white, colbacktitle=quarto-callout-note-color!10!white, colframe=quarto-callout-note-color-frame, coltitle=black, left=2mm, leftrule=.75mm, opacityback=0, opacitybacktitle=0.6, rightrule=.15mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{\textbf{Graph craft}: Layers and transparency}, titlerule=0mm, toprule=.15mm, toptitle=1mm]
+\begin{tcolorbox}[enhanced jigsaw, bottomrule=.15mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{\textbf{Graph craft}: Layers and transparency}, opacityback=0, arc=.35mm, colframe=quarto-callout-note-color-frame, opacitybacktitle=0.6, colbacktitle=quarto-callout-note-color!10!white, bottomtitle=1mm, colback=white, toptitle=1mm, leftrule=.75mm, titlerule=0mm, breakable, left=2mm, rightrule=.15mm, coltitle=black, toprule=.15mm]
 
 Figure~\ref{fig-banknote-violin} is somewhat complex, so it is useful to
 understand the steps needed to make this figure show what I wanted. The
@@ -19985,7 +19986,7 @@ easily appreciated as the collection of \(p\) linear models, one for
 each response. We have \(p\) outcomes, so why not just consider a
 separate model for each?
 
-\begin{equation}\protect\phantomsection\label{eq-mlm-models}{
+\begin{equation}\phantomsection\label{eq-mlm-models}{
 \begin{aligned}
 \mathbf{y}_1 =& \mathbf{X}\boldsymbol{\beta}_1 + \boldsymbol{\epsilon}_1 \\
 \mathbf{y}_2 =& \mathbf{X}\boldsymbol{\beta}_2 + \boldsymbol{\epsilon}_2 \\
@@ -20041,7 +20042,7 @@ columns in a matrix \(\mathbf{B}\).\footnote{A slight hiccup in notation
 
 The MLM then becomes:
 
-\begin{equation}\protect\phantomsection\label{eq-mlm}{
+\begin{equation}\phantomsection\label{eq-mlm}{
 \mathord{\mathop{\mathbf{Y}}\limits_{n \times p}} = 
 \mathord{\mathop{\mathbf{X}}\limits_{n \times (q+1)}} \, \mathord{\mathop{\mathbf{B}}\limits_{(q+1) \times p}} + \mathord{\mathop{\mathbf{\boldsymbol{\Large\varepsilon}}}\limits_{n \times p}} \:\: ,
 }\end{equation}
@@ -20391,7 +20392,7 @@ sums of squares for the \(p\) responses on the diagonal and sums of
 cross products in the off-diagonal. elements. For the MLM this is
 expressed as:
 
-\begin{equation}\protect\phantomsection\label{eq-SSP}{
+\begin{equation}\phantomsection\label{eq-SSP}{
 \begin{aligned}
 \underset{(p\times p)}{\mathbf{SSP}_{T}}
 & =  \mathbf{Y}^{\top} \mathbf{Y} - n \overline{\mathbf{y}}\,\overline{\mathbf{y}}^{\top} \\
@@ -20424,7 +20425,7 @@ of \(p\) responses for subject \(j\) in group \(i, i=1,\dots g\) for
 \(j = 1, \dots n_i\). Then, using ``\(.\)'' to represent a subscript
 averaged over, Equation~\ref{eq-SSP} comes from the identity
 
-\begin{equation}\protect\phantomsection\label{eq-THE-dev}{
+\begin{equation}\phantomsection\label{eq-THE-dev}{
 \underbrace{(\mathbf{y}_{ij} - \mathbf{y}_{\cdot \cdot})}_T = 
 \underbrace{(\overline{\mathbf{y}}_{i \cdot} - \mathbf{y}_{\cdot \cdot})}_H + 
 \underbrace{(\mathbf{y}_{ij} - \overline{\mathbf{y}}_{i \cdot})}_E
@@ -20474,17 +20475,17 @@ The formulas for these sum of squares and products matrices can be shown
 explicitly as follows, where the notation \(\mathbf{z} \mathbf{z}^\top\)
 generates the \(p \times p\) outer product of a vector \(\mathbf{z}\),
 giving \(z_k \times z_\ell\) for all pairs of elements.
-\begin{equation}\protect\phantomsection\label{eq-SSP-T}{
+\begin{equation}\phantomsection\label{eq-SSP-T}{
 \mathbf{SSP}_T =
 \sum_{i=1}^{g} \sum_{j=1}^{n_{i}}\left(\mathbf{y}_{ij}-\overline{\mathbf{y}}_{\cdot \cdot}\right)\left(\mathbf{y}_{ij}-\overline{\mathbf{y}}_{\cdot \cdot}\right)^{\top}
 }\end{equation}
 
-\begin{equation}\protect\phantomsection\label{eq-SSP-H}{
+\begin{equation}\phantomsection\label{eq-SSP-H}{
 \mathbf{SSP}_H = 
 \sum_{i=1}^{g} \mathbf{n}_{i}\left(\overline{\mathbf{y}}_{i \cdot}-\overline{\mathbf{y}}_{\cdot \cdot}\right)\left(\overline{\mathbf{y}}_{i \cdot}-\overline{\mathbf{y}}_{\cdot \cdot}\right)^{\top}
 }\end{equation}
 
-\begin{equation}\protect\phantomsection\label{eq-SSP-E}{
+\begin{equation}\phantomsection\label{eq-SSP-E}{
 \mathbf{SSP}_E = 
 \sum_{i=1}^{g} \sum_{j=1}^{n_{i}} \left(\mathbf{y}_{ij}-\overline{\mathbf{y}}_{i \cdot}\right) \left(\mathbf{y}_{ij}-\overline{\mathbf{y}}_{i \cdot}\right)^{\top}
 }\end{equation}
@@ -20510,8 +20511,8 @@ as an element in a named list \texttt{SSP} and the error
 
 \NormalTok{SSP\_E }\OtherTok{\textless{}{-}}\NormalTok{ dogfood.aov}\SpecialCharTok{$}\NormalTok{SSPE }\SpecialCharTok{|\textgreater{}} \FunctionTok{print}\NormalTok{()}
 \CommentTok{\#        start amount}
-\CommentTok{\# start   25.8   11.8}
-\CommentTok{\# amount  11.8  390.3}
+\CommentTok{\# start   25.8   11.7}
+\CommentTok{\# amount  11.7  390.3}
 \end{Highlighting}
 \end{Shaded}
 
@@ -20539,8 +20540,8 @@ by its transpose.
 \NormalTok{residuals }\OtherTok{\textless{}{-}} \FunctionTok{residuals}\NormalTok{(dogfood.mod)}
 \NormalTok{SSP\_E }\OtherTok{\textless{}{-}} \FunctionTok{crossprod}\NormalTok{(residuals) }\SpecialCharTok{|\textgreater{}} \FunctionTok{print}\NormalTok{()}
 \CommentTok{\#        start amount}
-\CommentTok{\# start   25.8   11.8}
-\CommentTok{\# amount  11.8  390.3}
+\CommentTok{\# start   25.8   11.7}
+\CommentTok{\# amount  11.7  390.3}
 \end{Highlighting}
 \end{Shaded}
 
@@ -20580,7 +20581,7 @@ right?
 In a univariate response model, \(SS_H\) and \(SS_E\) are both scalar
 numbers and the univariate \(F\) test statistic,
 
-\begin{equation}\protect\phantomsection\label{eq-F-statistic}{F = \frac{\text{SS}_H/\text{df}_h}{\text{SS}_E/\text{df}_e} = \frac{\mathsf{Var}(H)}{\mathsf{Var}(E)} \:\: ,
+\begin{equation}\phantomsection\label{eq-F-statistic}{F = \frac{\text{SS}_H/\text{df}_h}{\text{SS}_E/\text{df}_e} = \frac{\mathsf{Var}(H)}{\mathsf{Var}(E)} \:\: ,
 }\end{equation}
 
 assesses ``how big'' \(\text{SS}_H\) is, relative to \(\text{SS}_E\),
@@ -20604,14 +20605,14 @@ the determinant equation
 The solution gives also the vectors \(\mathbf{v}_i\) as the
 corresponding eigenvectors, which satisfy
 
-\begin{equation}\protect\phantomsection\label{eq-he-eigen}{
+\begin{equation}\phantomsection\label{eq-he-eigen}{
 \mathbf{H}\mathbf{E}^{-1} \; \lambda_i = \lambda_i \mathbf{v}_i \:\: .
 }\end{equation}
 
 This can also be expressed in terms of the size of \(\mathbf{H}\)
 relative to total variation \((\mathbf{T} =\mathbf{H}+ \mathbf{E})\) as
 
-\begin{equation}\protect\phantomsection\label{eq-he-eigen2}{
+\begin{equation}\phantomsection\label{eq-he-eigen2}{
 \mathbf{H}(\mathbf{H}+\mathbf{E})^{-1} \; \rho_i = \rho_i \mathbf{v}_i \:\: ,
 }\end{equation}
 
@@ -20744,7 +20745,7 @@ null hypothesis. But conveniently they can all be converted to \(F\)
 statistics. These conversions are \emph{exact} when the hypothesis has
 \(s \le 2\) degrees of freedom, and approximations otherwise.
 
-\begin{tcolorbox}[enhanced jigsaw, arc=.35mm, bottomrule=.15mm, bottomtitle=1mm, breakable, colback=white, colbacktitle=quarto-callout-tip-color!10!white, colframe=quarto-callout-tip-color-frame, coltitle=black, left=2mm, leftrule=.75mm, opacityback=0, opacitybacktitle=0.6, rightrule=.15mm, title=\textcolor{quarto-callout-tip-color}{\faLightbulb}\hspace{0.5em}{Which multivariate test statistic is ``best''?}, titlerule=0mm, toprule=.15mm, toptitle=1mm]
+\begin{tcolorbox}[enhanced jigsaw, bottomrule=.15mm, title=\textcolor{quarto-callout-tip-color}{\faLightbulb}\hspace{0.5em}{Which multivariate test statistic is ``best''?}, opacityback=0, arc=.35mm, colframe=quarto-callout-tip-color-frame, opacitybacktitle=0.6, colbacktitle=quarto-callout-tip-color!10!white, bottomtitle=1mm, colback=white, toptitle=1mm, leftrule=.75mm, titlerule=0mm, breakable, left=2mm, rightrule=.15mm, coltitle=black, toprule=.15mm]
 
 The answer is that it depends on the structure of the size of dimensions
 of an effect reflected in the eigenvalues \(\lambda_i\) and what
@@ -20811,7 +20812,7 @@ degree-of-freedom hypothesis.
 
 In this case, the SSP matrix for the hypothesis has the form
 
-\begin{equation}\protect\phantomsection\label{eq-hmat}{
+\begin{equation}\phantomsection\label{eq-hmat}{
 \mathbf{H}  =
  (\mathbf{C} \widehat{\mathbf{B}})^\mathsf{T}\,
  [\mathbf{C} (\mathbf{X}^\mathsf{T}\mathbf{X} )^{-1} \mathbf{C}^\mathsf{T}]^{-1} \,
@@ -20957,7 +20958,7 @@ is necessary to refit the model.
 \CommentTok{\# (Intercept)  1.688  85.56}
 \CommentTok{\# formulac1   {-}1.375  10.88}
 \CommentTok{\# formulac2   {-}0.500   3.25}
-\CommentTok{\# formulac3    0.125   1.88}
+\CommentTok{\# formulac3    0.125   1.87}
 \end{Highlighting}
 \end{Shaded}
 
@@ -20971,7 +20972,7 @@ can be broken down into \(g-1\) separate 1 df tests. This gives rise to
 a set of \(\text{df}_h\) rank 1 \(\mathbf{H}\) matrices that additively
 decompose the overall hypothesis SSCP matrix,
 
-\begin{equation}\protect\phantomsection\label{eq-H-contrasts}{
+\begin{equation}\phantomsection\label{eq-H-contrasts}{
 \mathbf{H} = \mathbf{H}_1 + \mathbf{H}_2 + \cdots + \mathbf{H}_{\text{df}_h} \:\: ,
 }\end{equation}
 
@@ -21471,7 +21472,7 @@ easily from the object using
 \NormalTok{  purrr}\SpecialCharTok{::}\FunctionTok{pluck}\NormalTok{(}\StringTok{"multivariate.tests"}\NormalTok{, }\StringTok{"group"}\NormalTok{, }\StringTok{"SSPE"}\NormalTok{) }\SpecialCharTok{|\textgreater{}} 
   \FunctionTok{print}\NormalTok{()}
 \CommentTok{\#         caring  play emotion}
-\CommentTok{\# caring   199.8 {-}45.8    35.2}
+\CommentTok{\# caring   199.7 {-}45.8    35.2}
 \CommentTok{\# play     {-}45.8 182.7    80.6}
 \CommentTok{\# emotion   35.2  80.6   408.0}
 \end{Highlighting}
@@ -21625,7 +21626,7 @@ However the second question is more interesting because it considers the
 two responses together and takes their correlation into account. This
 would be fit as the MLM:
 
-\begin{equation}\protect\phantomsection\label{eq-AH-mod}{
+\begin{equation}\phantomsection\label{eq-AH-mod}{
 \mathbf{y} = \boldsymbol{\beta}_0 + \boldsymbol{\beta}_1 x + \boldsymbol{\beta}_2 x^2 + \cdots \boldsymbol{\beta}_5 x^5
 }\end{equation}
 
@@ -22929,7 +22930,7 @@ other evidence, this doesn't seem particularly troubling.
 \FunctionTok{summary}\NormalTok{(school.mvn, }\AttributeTok{select =} \StringTok{"mvn"}\NormalTok{)}
 \CommentTok{\#              Test Statistic p.value     Method      MVN}
 \CommentTok{\# 1 Mardia Skewness      1.92   0.750 asymptotic ✓ Normal}
-\CommentTok{\# 2 Mardia Kurtosis     {-}1.16   0.244 asymptotic ✓ Normal}
+\CommentTok{\# 2 Mardia Kurtosis     {-}1.17   0.244 asymptotic ✓ Normal}
 \FunctionTok{summary}\NormalTok{(school.mvn, }\AttributeTok{select =} \StringTok{"univariate"}\NormalTok{)}
 \CommentTok{\#               Test Variable Statistic p.value Normality}
 \CommentTok{\# 1 Anderson{-}Darling    start     0.307   0.524  ✓ Normal}
@@ -23799,7 +23800,7 @@ MANOVA design with the model formula
 sizes in the groups, the total sum of squares accounted for by the model
 is the sum of their separate effects,
 
-\begin{equation}\protect\phantomsection\label{eq-HE-model}{
+\begin{equation}\phantomsection\label{eq-HE-model}{
 \begin{aligned}
 \mathbf{SSP}_{\text{Model}} & = \mathbf{SSP}_{A} + \mathbf{SSP}_{B} + \mathbf{SSP}_{AB} \\
                             & = \mathbf{H}_A + \mathbf{H}_B + \mathbf{H}_{AB} \:\: .
@@ -23831,7 +23832,7 @@ show the means for factor levels on the same scale, facilitating
 interpretation. In the notation of Equation~\ref{eq-ellE}, the error
 ellipsoid \(\mathcal{E}_c\) of size \(c\) is given by
 
-\begin{equation}\protect\phantomsection\label{eq-Ec}{
+\begin{equation}\phantomsection\label{eq-Ec}{
 \mathcal{E}_c (\bar{\mathbf{y}}, \mathbf{E}) = \bar{\mathbf{y}} \; \oplus \; c\,\mathbf{E}^{1/2} \:\: ,
 }\end{equation} where \(c = \chi^2_2 (0.68)\) for 2D plots and
 \(c = \chi^2_3 (0.68)\) for 3D plots of standard 68\%
@@ -23913,8 +23914,8 @@ positive correlation, 0.12, for dogs fed the same formula.
 \begin{Highlighting}[]
 \NormalTok{SSP\_E }\OtherTok{\textless{}{-}}\NormalTok{ dogfood.aov}\SpecialCharTok{$}\NormalTok{SSPE }\SpecialCharTok{|\textgreater{}} \FunctionTok{print}\NormalTok{()}
 \CommentTok{\#        start amount}
-\CommentTok{\# start   25.8   11.8}
-\CommentTok{\# amount  11.8  390.3}
+\CommentTok{\# start   25.8   11.7}
+\CommentTok{\# amount  11.7  390.3}
 \end{Highlighting}
 \end{Shaded}
 
@@ -23937,7 +23938,7 @@ best discriminate among existing groups. Unwin \& Kleinman
 (\citeproc{ref-UnwinKleinman2021}{2021}) recount the history behind this
 dataset.
 
-\begin{tcolorbox}[enhanced jigsaw, arc=.35mm, bottomrule=.15mm, bottomtitle=1mm, breakable, colback=white, colbacktitle=quarto-callout-note-color!10!white, colframe=quarto-callout-note-color-frame, coltitle=black, left=2mm, leftrule=.75mm, opacityback=0, opacitybacktitle=0.6, rightrule=.15mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{History corner: Is the iris data racist?}, titlerule=0mm, toprule=.15mm, toptitle=1mm]
+\begin{tcolorbox}[enhanced jigsaw, bottomrule=.15mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{History corner: Is the iris data racist?}, opacityback=0, arc=.35mm, colframe=quarto-callout-note-color-frame, opacitybacktitle=0.6, colbacktitle=quarto-callout-note-color!10!white, bottomtitle=1mm, colback=white, toptitle=1mm, leftrule=.75mm, titlerule=0mm, breakable, left=2mm, rightrule=.15mm, coltitle=black, toprule=.15mm]
 
 I said ``infamous'' above because Fisher published in the \emph{Annals
 of Eugenics}. He was an ardent eugenicist himself, and the work of
@@ -24262,7 +24263,7 @@ matrices are additive. \index{orthogonal contrasts} They fully decompose
 the general question of differences among the groups into two
 independent questions regarding the contrasts.
 
-\begin{equation}\protect\phantomsection\label{eq-H-Species}{
+\begin{equation}\phantomsection\label{eq-H-Species}{
 \mathbf{H}_\text{Species} = \mathbf{H}_\text{Species1} + \mathbf{H}_\text{Species2}
 }\end{equation}
 
@@ -24471,7 +24472,7 @@ Thus, CDA amounts to a transformation of the \(p\) responses,
 \(\mathbf{Y}_{n \times p}\) into scores \(\mathbf{Z}\) in the canonical
 space,
 
-\begin{equation}\protect\phantomsection\label{eq-canZ}{
+\begin{equation}\phantomsection\label{eq-canZ}{
 \mathbf{Z}_{n \times s} = \mathbf{Y} \; \mathbf{E}^{-1/2} \; \mathbf{V} \;,
 }\end{equation}
 
@@ -24520,7 +24521,7 @@ variance in the discriminant functions that is accounted for by group
 membership. The \(\rho_i^2\) are related to the eigenvalues
 \(\lambda_i\) as \index{canonical correlation}
 
-\begin{equation}\protect\phantomsection\label{eq-rho-lambda}{
+\begin{equation}\phantomsection\label{eq-rho-lambda}{
 \rho_i^2 = \frac{\lambda_i}{1 + \lambda_i} \quad\quad\quad
 \lambda_i = \frac{\rho_i^2}{1 - \rho_i^2} \; .
 }\end{equation}
@@ -26418,7 +26419,7 @@ hypothesis of equal covariance matrices. It uses the log of the
 determinant \(\vert \mathbf{S}_i \vert\) as the measure of size.
 \index{likelihood-ratio test} \index{log determinant}
 
-\begin{equation}\protect\phantomsection\label{eq-boxm}{
+\begin{equation}\phantomsection\label{eq-boxm}{
 \mathcal{M} = (N -g) \; \ln \vert \mathbf{S}_p \vert - \sum_{i=1}^g (n_i -1) \; \ln \vert \mathbf{S}_i \vert \; ,
 }\end{equation}
 
@@ -27418,7 +27419,7 @@ large values of the squared studentized residual.}
 
 \end{figure}%
 
-\begin{tcolorbox}[enhanced jigsaw, arc=.35mm, bottomrule=.15mm, bottomtitle=1mm, breakable, colback=white, colbacktitle=quarto-callout-note-color!10!white, colframe=quarto-callout-note-color-frame, coltitle=black, left=2mm, leftrule=.75mm, opacityback=0, opacitybacktitle=0.6, rightrule=.15mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Theory into Practice}, titlerule=0mm, toprule=.15mm, toptitle=1mm]
+\begin{tcolorbox}[enhanced jigsaw, bottomrule=.15mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{Theory into Practice}, opacityback=0, arc=.35mm, colframe=quarto-callout-note-color-frame, opacitybacktitle=0.6, colbacktitle=quarto-callout-note-color!10!white, bottomtitle=1mm, colback=white, toptitle=1mm, leftrule=.75mm, titlerule=0mm, breakable, left=2mm, rightrule=.15mm, coltitle=black, toprule=.15mm]
 
 Chairman Mao said, ``Theory into practice'', but Tukey
 (\citeproc{ref-Tukey:59}{1959}) said that, ``The practical power of a
@@ -28195,7 +28196,7 @@ in its favor.\footnote{You can choose prior probabilities for
 This is expressed in the formula for the discriminant function
 \(\delta(\mathbf{x})\) for a new data point \(\mathbf{x}\),
 
-\begin{equation}\protect\phantomsection\label{eq-lda-fun}{
+\begin{equation}\phantomsection\label{eq-lda-fun}{
 \delta_k(\mathbf{x})=x^\top \, \boldsymbol{\Sigma}^{-1} \, \bar{\mathbf{x}}_k - \frac{1}{2} \bar{\mathbf{x}}_k^\top \, \boldsymbol{\Sigma}^{-1} \,\bar{\mathbf{x}}_k+\log \left(\pi_k\right) \; ,
 }\end{equation}
 
@@ -28208,7 +28209,7 @@ probability of group ``A'' was greater than that of group ``B'', the
 line for the discriminant boundary would be shifted away from group
 ``A'', resulting in more observations being classified in that group.
 
-\begin{tcolorbox}[enhanced jigsaw, arc=.35mm, bottomrule=.15mm, bottomtitle=1mm, breakable, colback=white, colbacktitle=quarto-callout-note-color!10!white, colframe=quarto-callout-note-color-frame, coltitle=black, left=2mm, leftrule=.75mm, opacityback=0, opacitybacktitle=0.6, rightrule=.15mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{History Corner: Origins of discriminant analysis}, titlerule=0mm, toprule=.15mm, toptitle=1mm]
+\begin{tcolorbox}[enhanced jigsaw, bottomrule=.15mm, title=\textcolor{quarto-callout-note-color}{\faInfo}\hspace{0.5em}{History Corner: Origins of discriminant analysis}, opacityback=0, arc=.35mm, colframe=quarto-callout-note-color-frame, opacitybacktitle=0.6, colbacktitle=quarto-callout-note-color!10!white, bottomtitle=1mm, colback=white, toptitle=1mm, leftrule=.75mm, titlerule=0mm, breakable, left=2mm, rightrule=.15mm, coltitle=black, toprule=.15mm]
 
 The idea of classification based on multiple measurements has a long
 history in medicine (\emph{nosology}: classifying diseases, based on
@@ -29418,7 +29419,7 @@ When the covariance matrices \(\mathbf{S}_k\) differ across the groups,
 the discriminant function Equation~\ref{eq-lda-fun} becomes (Rao
 (\citeproc{ref-Rao1948}{1948}))
 
-\begin{equation}\protect\phantomsection\label{eq-qda-fun}{
+\begin{equation}\phantomsection\label{eq-qda-fun}{
 \delta_k(x) = -\frac{1}{2}\ln|\mathbf{S}_k| - \frac{1}{2}(x-\bar{\mathbf{x}}_k)^\top\mathbf{S}_k^{-1}(x-\bar{\mathbf{x}}_k) + \ln(\pi_k) \; ,
 }\end{equation}
 
@@ -29593,8 +29594,8 @@ different questions.
 \markboth{Colophon}{Colophon}
 
 This book was produced using \href{https://cran.r-project.org/}{R
-version 4.5.2 (2025-10-31 ucrt)}. Fundamental to this was the framework
-for reproducible documents provided by Yihui Xie's
+version 4.6.1 (2026-06-24)}. Fundamental to this was the framework for
+reproducible documents provided by Yihui Xie's
 \href{https://cran.r-project.org/web/packages/knitr/index.html}{knitr
 package}.
 
@@ -29617,7 +29618,6 @@ render the book in HTML and PDF formats, with the helpers of
   of LaTeX tools for PDF output
 \end{itemize}
 
-{\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}lr@{}}
 \toprule\noalign{}
 Tool & Version \\
@@ -29625,14 +29625,13 @@ Tool & Version \\
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-Quarto & 1.9.36 \\
-Pandoc & 3.8.3 \\
-R & 4.5.2 \\
+Quarto & 1.8.27 \\
+Pandoc & 3.10 \\
+R & 4.6.1 \\
 knitr & 1.51 \\
 rmarkdown & 2.31 \\
-TinyTeX & 7861 \\
+TinyTeX & 7949 \\
 \end{longtable}
-}
 
 \section*{Package versions}\label{package-versions}
 \addcontentsline{toc}{section}{Package versions}
@@ -29650,7 +29649,6 @@ At the time of writing, most of these were current on
 development versions are listed with their download repo, or indicated
 as ``local'' in the \texttt{source} column.
 
-{\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3721}}
   >{\raggedleft\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2558}}
@@ -29693,7 +29691,7 @@ effects & 4.2-5 &
 \href{https://cran.r-project.org/package=effects}{CRAN} \\
 effectsize & 1.0.2 &
 \href{https://cran.r-project.org/package=effectsize}{CRAN} \\
-factoextra & 2.0.0 &
+factoextra & 2.1.0 &
 \href{https://cran.r-project.org/package=factoextra}{CRAN} \\
 FactoMineR & 2.15 &
 \href{https://cran.r-project.org/package=FactoMineR}{CRAN} \\
@@ -29727,7 +29725,7 @@ Hotelling & 1.0-8 &
 \href{https://cran.r-project.org/package=Hotelling}{CRAN} \\
 imager & 1.0.8 &
 \href{https://cran.r-project.org/package=imager}{CRAN} \\
-insight & 1.5.1 &
+insight & 1.5.2 &
 \href{https://cran.r-project.org/package=insight}{CRAN} \\
 knitr & 1.51 & \href{https://cran.r-project.org/package=knitr}{CRAN} \\
 lubridate & 1.9.5 &
@@ -29748,7 +29746,7 @@ mvinfluence & 0.9.2 &
 MVN & 6.3 & \href{https://cran.r-project.org/package=MVN}{CRAN} \\
 nestedLogit & 0.4.2 &
 \href{https://cran.r-project.org/package=nestedLogit}{CRAN} \\
-parameters & 0.29.1 &
+parameters & 0.29.2 &
 \href{https://cran.r-project.org/package=parameters}{CRAN} \\
 patchwork & 1.3.2 &
 \href{https://cran.r-project.org/package=patchwork}{CRAN} \\
@@ -29761,7 +29759,7 @@ readr & 2.2.0 & \href{https://cran.r-project.org/package=readr}{CRAN} \\
 report & 0.6.4 &
 \href{https://cran.r-project.org/package=report}{CRAN} \\
 Rtsne & 0.17 & \href{https://cran.r-project.org/package=Rtsne}{CRAN} \\
-see & 0.14.0 & \href{https://cran.r-project.org/package=see}{CRAN} \\
+see & 0.14.1 & \href{https://cran.r-project.org/package=see}{CRAN} \\
 spida2 & 0.2.3.9008 &
 \href{https://github.com/gmonette/spida2}{gmonette/spida2} \\
 stringr & 1.6.0 &
@@ -29776,14 +29774,13 @@ vcd & 1.4-13 & \href{https://cran.r-project.org/package=vcd}{CRAN} \\
 VisCollin & 0.1.2 &
 \href{https://cran.r-project.org/package=VisCollin}{CRAN} \\
 \end{longtable}
-}
 
 \chapter*{References}\label{references}
 \addcontentsline{toc}{chapter}{References}
 
 \markboth{References}{References}
 
-\protect\phantomsection\label{refs}
+\phantomsection\label{refs}
 \begin{CSLReferences}{1}{0}
 \bibitem[\citeproctext]{ref-Abbott:1884}
 Abbott, E. A. (1884). \emph{Flatland: A romance of many dimensions}.
@@ -29972,9 +29969,9 @@ CR Rao EJ Wegman (Ed.), \emph{Handbook of statistics} (pp. 391--413).
 Elsevier. \url{https://doi.org/10.1016/s0169-7161(04)24014-7}
 
 \bibitem[\citeproctext]{ref-Ocagne:1885}
-{cagne, M.} (1885). \emph{Coordonn{é}es parall{è}les et axiales:
-M{é}thode de transformation g{é}om{é}trique et proc{é}d{é} nouveau de
-calcul graphique d{é}duits de la consid{é}ration des coordonn{é}es
+cagne, M. (1885). \emph{Coordonn{é}es parall{è}les et axiales: M{é}thode
+de transformation g{é}om{é}trique et proc{é}d{é} nouveau de calcul
+graphique d{é}duits de la consid{é}ration des coordonn{é}es
 parall{è}lles}. Gauthier-Villars.
 \url{http://historical.library.cornell.edu/cgi-bin/cul.math/docviewer?did=00620001&seq=3}
 

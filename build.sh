@@ -44,6 +44,17 @@
 set -euo pipefail
 cd "$(dirname "$0")"   # always run from project root
 
+# Ensure TeX binaries (makeindex, xelatex) are on PATH — TinyTeX installs
+# outside the default PATH on macOS, and non-interactive shells miss it.
+if ! command -v makeindex >/dev/null 2>&1; then
+  for _texbin in "$HOME/Library/TinyTeX/bin/universal-darwin" /Library/TeX/texbin; do
+    if [[ -d "$_texbin" ]]; then
+      export PATH="$PATH:$_texbin"
+      break
+    fi
+  done
+fi
+
 # ---------------------------------------------------------------------------
 # Defaults
 # ---------------------------------------------------------------------------
@@ -148,11 +159,13 @@ fix_index() {
   fi
 
   echo "    Normalizing index.idx (collapsing two-space \\texttt  { artifacts)..."
-  run sed -i \
+  # -i.bak (no space) works with both GNU sed and macOS BSD sed
+  run sed -i.bak \
     -e 's/\\texttt  {/\\texttt{/g' \
     -e 's/\\emph  {/\\emph{/g' \
     -e 's/\\idxtt  {/\\idxtt{/g' \
     index.idx
+  run rm -f index.idx.bak
 
   echo "    Running makeindex on normalized index.idx..."
   run makeindex -s latex/book.ist index.idx
