@@ -18,11 +18,10 @@
 \definecolor{darkgreen}{cmyk}{0.98, 0, 0.36, 0.80}  % RGB(1,50,32)
 \definecolor{mygreen}  {cmyk}{0.80, 0, 0.60, 0.50}  % RGB(26,127,51) ≈ #1A7F33
 
-% Part accent colors — change here to retheme the whole book
-\colorlet{partI}  {blue}
-\colorlet{partII} {teal}
-\definecolor{partIII}{cmyk}{0.67, 0, 0.43, 0.55}  % #267342
-\definecolor{partIV}{cmyk}{0, 0.50, 1.0, 0.20}  % #CC6600 — burnt orange, darker than xcolor's orange
+% Part accent colors — defined in latex/part-colors.tex, shared with the
+% part-page / chapter-opener mindmap diagrams (latex/diagrams/*.tex).
+% After changing a color there, re-run latex/diagrams/make-diagrams.sh.
+\input{latex/part-colors.tex}
 % Active part color + tints (defaults to Part I before any \part fires)
 \colorlet{partcol}  {partI}
 \colorlet{partcol80}{partcol!80}
@@ -48,6 +47,36 @@
   \colorlet{partcol80}{partcol!80}%
   \colorlet{partcol50}{partcol!50}%
   \colorlet{partcol20}{partcol!20}%
+}{}{}
+
+% Part-page and chapter-opener mindmap diagrams (DDAR style).
+% Pre-built PDFs live in figs/diagrams/; sources in latex/diagrams/, rebuilt
+% with latex/diagrams/make-diagrams.sh. The \IfFileExists guards mean any part
+% or chapter without a diagram (End Matter, front matter) is typeset unchanged.
+%
+% Part pages: insert the part diagram below the part title, before the
+% \vfil\newpage of \@endpart. Uses the partnum counter stepped above; there is
+% no part5.pdf, so the End Matter part page stays plain.
+\pretocmd{\@endpart}{%
+  \IfFileExists{figs/diagrams/part\arabic{partnum}.pdf}{%
+    \par\vskip 36\p@
+    {\centering
+     \includegraphics[width=.9\textwidth,height=.62\textheight,keepaspectratio]%
+       {figs/diagrams/part\arabic{partnum}.pdf}\par}%
+    \vskip 0\p@ plus 1fil
+  }{}%
+}{}{}
+
+% Chapter openers: place the chapter diagram at the top right of the chapter
+% opening page, above the number + title head (as in DDAR chapter pages).
+\pretocmd{\@makechapterhead}{%
+  \IfFileExists{figs/diagrams/chap\thechapter.pdf}{%
+    {\parindent\z@
+     \hbox to \textwidth{\hfil
+       \includegraphics[width=.66\textwidth,height=.38\textheight,keepaspectratio]%
+         {figs/diagrams/chap\thechapter.pdf}}%
+     \par\vskip 12\p@}%
+  }{}%
 }{}{}
 \makeatother
 

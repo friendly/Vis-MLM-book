@@ -14,3 +14,4 @@
 - [PDF build task](project_pdf_build_task.md) — build final Vis-MLM.pdf (print config only), then archive outputs to pdf/ folder; see issues/quarto-pdf-help.md
 - [Dual-build cleanup plan](project_dual_build.md) — RESOLVED 2026-06-01: base config has no appendices; online profile adds them; both PDF and HTML verified working
 - [Part color themes](project_part_colors.md) — PDF part colors in preamble.tex; partIII (green) too light, needs darkening; smartdiagram + HTML side still todo
+- [Part & chapter diagrams](project_part_diagrams.md) — DDAR-style bubble diagrams on PDF part pages & chapter openers; sources latex/diagrams/, rebuilt via make-diagrams.sh
