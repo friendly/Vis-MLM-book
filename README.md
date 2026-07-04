@@ -27,7 +27,7 @@ can amplify what we can understand from another.
 ## R packages
 
 [<img src='https://raw.githubusercontent.com/friendly/heplots/master/man/figures/logo.png' height="60">](https://github.com/friendly/heplots)
-[<img src='https://raw.githubusercontent.com/friendly/candisc/master/candisc-logo.png' height="60">](https://github.com/friendly/candisc)
+[<img src='https://raw.githubusercontent.com/friendly/candisc/master/man/figures/logo.png' height="60">](https://github.com/friendly/candisc)
 [<img src='https://raw.githubusercontent.com/friendly/mvinfluence/master/man/figures/logo.png' height="60">](https://github.com/friendly/mvinfluence)
 [<img src='https://raw.githubusercontent.com/friendly/VisCollin/master/man/figures/logo.png' height="60">](https://github.com/friendly/VisCollin)
 [<img src='https://raw.githubusercontent.com/friendly/genridge/master/man/figures/logo.png' height="60">](https://github.com/friendly/genridge)
