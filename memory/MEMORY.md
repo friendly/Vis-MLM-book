@@ -15,3 +15,4 @@
 - [Dual-build cleanup plan](project_dual_build.md) — RESOLVED 2026-06-01: base config has no appendices; online profile adds them; both PDF and HTML verified working
 - [Part color themes](project_part_colors.md) — PDF part colors in preamble.tex; partIII (green) too light, needs darkening; smartdiagram + HTML side still todo
 - [Part & chapter diagrams](project_part_diagrams.md) — DDAR-style bubble diagrams on PDF part pages & chapter openers; sources latex/diagrams/, rebuilt via make-diagrams.sh
+- [Chapter reorder](project_chapter_reorder.md) — 21-discrim is now Ch. 15, 15-case-studies is now the Appendix; file prefixes & CLAUDE.md table are stale
