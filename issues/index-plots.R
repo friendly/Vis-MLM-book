@@ -216,4 +216,29 @@ p6 <- ggplot(pkg_ch, aes(x = fct_reorder(ch_label, chapter), y = n, fill = part_
 
 save_plot(p6, "06-packages-per-chapter", w = 11, h = 5)
 
+# ── Plot 7: Rug plot of indexed pages ─────────────────────────────────────────
+# One tick per page having at least one index entry; white gaps = un-indexed pages.
+idx_pages <- idx |>
+  filter(!is.na(page_num), page_num > 0) |>
+  distinct(page_num, part_label)
+
+p7 <- ggplot(idx_pages, aes(x = page_num, color = part_label)) +
+  geom_rug(sides = "b", length = unit(0.85, "npc"),
+           linewidth = 0.35, alpha = 0.8) +
+  geom_vline(data = ch_starts, aes(xintercept = start),
+             color = "black", linewidth = 0.4, linetype = "dashed", alpha = 0.6) +
+  geom_text(data = ch_starts,
+            aes(x = start, y = 1, label = chapter),
+            inherit.aes = FALSE, vjust = 1.2, hjust = -0.3, size = 2.8) +
+  scale_color_manual(values = part_colors, name = "Part") +
+  scale_y_continuous(limits = c(0, 1), breaks = NULL, expand = expansion(0)) +
+  guides(color = guide_legend(override.aes = list(linewidth = 2))) +
+  labs(title = "Pages with at least one index entry",
+       subtitle = "Each tick = one indexed page; white gaps = pages with no index entries.\nDashed lines = chapter starts",
+       x = "Page number", y = NULL) +
+  theme_book +
+  theme(legend.position = "bottom")
+
+save_plot(p7, "07-page-rug", w = 9, h = 5)
+
 message("\nAll plots saved to ", outdir)
