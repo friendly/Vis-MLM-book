@@ -27,7 +27,8 @@ Which units get abstracts? Proposed: the 15 numbered chapters — `01-Prelude.qm
 For each chapter `.qmd`, have Claude read and distill:
 
 - Chapter title and all section/subsection headings (the skeleton of what's covered).
-- The chapter's opening paragraphs and any "What you will learn" / summary / "packages used" blocks.
+- The chapter's opening paragraphs and any "What you will learn" / "packages used" blocks.
+- **Exclude the chapter summary files** (`summary/ChNN-summary.qmd`, included as children at the end of each chapter): abstracts must be drafted from the chapter content itself, not from the "What have we learned?" summaries.
 - Datasets used by name (e.g., `iris`, `peng`/Palmer penguins, `crime`, `NLSY`) — dataset names are search terms.
 - R packages featured (e.g., **ggplot2**, **car**, **heplots**, **candisc**, **ggbiplot**, **matlib**) — package names are high-value search terms because R users search for them directly.
 - Statistical methods and named techniques (e.g., HE plots, canonical discriminant analysis, Hotelling's T², ridge regression, biplots, data ellipses, MANOVA).
