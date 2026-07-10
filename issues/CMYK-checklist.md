@@ -20,8 +20,8 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 
 | Done | Image | Pixels | Eff. DPI | Printed at | Px needed @300 | Max `out-width` @300 | Action | Notes |
 |------|-------|--------|----------|------------|----------------|----------------------|--------|-------|
-| [ ] | [`icons/books.jpg`](../images/icons/books.jpg) | 1187×369 | 217 | 100% (5.5″) | 1644 px | 72% |  |  |
-| [ ] | [`fig-book-parts.png`](../images/fig-book-parts.png) | 1307×145 | 251 | 95% (5.2″) | 1562 px | 79% |  |  |
+| [X] | [`icons/books.jpg`](../images/icons/books.jpg) | 1187×369 | 217 | 100% (5.5″) | 1644 px | 72% | REPLACE | Used source `.pptx`, converted -> `.pdf`, used `magick` to create high-res `.png`, cropped `.png` and saved as `.jpg` |
+| [X] | [`fig-book-parts.png`](../images/fig-book-parts.png) | 1307×145 | 251 | 95% (5.2″) | 1562 px | 79% | REPLACE | 2026-07-10: was a frozen raster of a smartdiagram; source recreated as `latex/diagrams/fig-book-parts.tex` (build instructions inside). Print now uses a **vector CMYK PDF** (`images/fig-book-parts.pdf` — no DPI limit, no RGB→CMYK raster conversion needed); PNG re-rendered at 600 dpi for HTML (2729×323 px, eff. 524 dpi). `index.qmd` picks PDF for LaTeX, PNG for HTML. |
 
 ## About the Author (`00-Author.qmd`) — 1 image
 
