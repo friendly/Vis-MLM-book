@@ -163,7 +163,7 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 
 | Done | Image | Pixels | Eff. DPI | Printed at | Px needed @300 | Max `out-width` @300 | Action | Notes |
 |------|-------|--------|----------|------------|----------------|----------------------|--------|-------|
-| [ ] | [`discrim-demo-both.jpg`](../images/discrim-demo-both.jpg) | 684×689 | 178 | 70% (3.8″) | 1151 px | 41% |  |  |
+| [X] | [`discrim-demo-both.jpg`](../images/discrim-demo-both.jpg) | 684×689 | 178 | 70% (3.8″) | 1151 px | 41% | REPLACE | Used source `.pptx`, converted -> `.pdf`, used `magick` to create high-res `.png`, cropped `.png` and saved as `.jpg` |
 
 ## Progress
 
