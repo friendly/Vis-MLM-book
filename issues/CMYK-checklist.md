@@ -70,7 +70,7 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 | [ ] | [`crime-cor.png`](../images/crime-cor.png) | 540×540 | 123 | 80% (4.4″) | 1316 px | 32% |  |  |
 | [ ] | [`corrgram-renderings.png`](../images/corrgram-renderings.png) | 656×245 | 150 | 80% (4.4″) | 1316 px | 39% |  |  |
 | [ ] | [`projection.png`](../images/projection.png) | 336×247 | 153 | 40% (2.2″) | 658 px | 20% |  |  |
-| [ ] | [`tours/peng-tour-demo-all.png`](../images/tours/peng-tour-demo-all.png) | 992×356 | 181 | 100% (5.5″) | 1644 px | 60% |  |  |
+| [X] | [`tours/peng-tour-demo-all.png`](../images/tours/peng-tour-demo-all.png) | 992×356 | 181 | 100% (5.5″) | 1644 px | 60% | REPLACE | Used source `.pptx`, converted -> `.pdf`, used `magick` to create high-res `.png`, cropped `.png` and saved as `.jpg` |
 | [ ] | [`crime-pvPlot-1-2.png`](../images/crime-pvPlot-1-2.png) | 1000×500 | 182 | 100% (5.5″) | 1644 px | 60% |  |  |
 | [ ] | [`big5-qgraph-rodrigues.png`](../images/big5-qgraph-rodrigues.png) | 910×627 | 184 | 90% (4.9″) | 1480 px | 55% |  |  |
 | [ ] | [`galton-corr.jpg`](../images/galton-corr.jpg) | 745×631 | 194 | 70% (3.8″) | 1151 px | 45% |  |  |
