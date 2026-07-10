@@ -95,7 +95,7 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 | [ ] | [`pca4ds-figure-2-11.png`](../images/pca4ds-figure-2-11.png) | 880×416 | 178 | 90% (4.9″) | 1480 px | 53% |  |  |
 | [ ] | [`MV-juicer.png`](../images/MV-juicer.png) | 836×427 | 191 | 80% (4.4″) | 1316 px | 50% |  |  |
 | [ ] | [`pca-animation-combined.jpg`](../images/pca-animation-combined.jpg) | 1078×365 | 197 | 100% (5.5″) | 1644 px | 65% |  |  |
-| [ ] | [`diabetes-3d-both.png`](../images/diabetes-3d-both.png) | 1143×497 | 209 | 100% (5.5″) | 1644 px | 69% |  |  |
+| [X] | [`diabetes-3d-both.png`](../images/diabetes-3d-both.png) | 1143×497 | 209 | 100% (5.5″) | 1644 px | 69% | REPLACE | Used source `.pptx`, converted -> `.pdf`, used `magick` to create high-res `.png`, cropped `.png` and saved as `.jpg` |
 | [ ] | [`pca-rotation.png`](../images/pca-rotation.png) | 884×357 | 230 | 70% (3.8″) | 1151 px | 53% |  |  |
 | [ ] | [`pca-springs-frames.jpg`](../images/pca-springs-frames.jpg) | 1349×411 | 246 | 100% (5.5″) | 1644 px | 82% |  |  |
 
