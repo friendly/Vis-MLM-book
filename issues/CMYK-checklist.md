@@ -35,7 +35,7 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 |------|-------|--------|----------|------------|----------------|----------------------|--------|-------|
 | [X] | [`1D-4D.png`](../images/1D-4D.png) | 482×305 | 98 | 90% (4.9″) | 1480 px | 29% | REPLACE | 2026-07-10: was an unattributed web graphic (circulating online since ≥2015; no hi-res original found). Redrawn as an exact author TikZ replica, source `latex/diagrams/fig-1D-4D.tex` (geometry traced programmatically from the raster). Print uses **vector CMYK PDF** (`images/1D-4D.pdf`); PNG re-rendered at 600 dpi for HTML (2846×1801 px, eff. 577 dpi). `01-Prelude.qmd` picks PDF for LaTeX, PNG for HTML. Also resolves the permission question in `fig-permission-list.md`. |
 | [ ] | [`flatland-spheres.jpg`](../images/flatland-spheres.jpg) | 660×208 | 134 | 90% (4.9″) | 1480 px | 40% |  |  |
-| [ ] | [`history/discoveries.jpg`](../images/history/discoveries.jpg) | 1007×367 | 184 | 100% (5.5″) | 1644 px | 61% |  |  |
+| [X] | [`history/discoveries.jpg`](../images/history/discoveries.jpg) | 1007×367 | 184 | 100% (5.5″) | 1644 px | 61% | REPLACE | Used source `.pptx`, converted -> `.pdf`, used `magick` to create high-res `.png`, cropped `.png` and saved as `.jpg` |
 | [ ] | [`ReavenMiller-3d-annotated.png`](../images/ReavenMiller-3d-annotated.png) | 833×667 | 217 | 70% (3.8″) | 1151 px | 50% |  |  |
 | [ ] | [`tesseract-frames.png`](../images/tesseract-frames.png) | 1280×256 | 234 | 100% (5.5″) | 1644 px | 77% |  |  |
 
