@@ -33,7 +33,7 @@ Decision column, on a dedicated branch).
 | # | File:line | Current source (snippet) | Proposed fix | Cat. | Decision |
 |---|-----------|--------------------------|--------------|------|----------|
 | 1 | `index.qmd:362` | `previous books (@FriendlyMeyer:2016:DDAR).` | `previous books [@FriendlyMeyer:2016:DDAR].` | A | OK |
-| 2 | `01-Prelude.qmd:52` | `textbooks (e.g., @Peddle:1910; @Haskell:1919)` | `textbooks [e.g., @Peddle:1910; @Haskell:1919]` | B |  |
+| 2 | `01-Prelude.qmd:52` | `textbooks (e.g., @Peddle:1910; @Haskell:1919)` | `textbooks [e.g., @Peddle:1910; @Haskell:1919]` | B | OK |
 | 3 | `01-Prelude.qmd:52` | `college courses (@Costelloe:1915).` | `college courses [@Costelloe:1915].` | A | OK |
 | 4 | `03-getting_started.qmd:26` | `"sparklines" (@Tufte:83), tiny versions` — in footnote `[^tables]` | `"sparklines" [@Tufte:83], tiny versions` | A | OK |
 | 5 | `04-multivariate_plots.qmd:341` | `the GLIM program (@Nelder1974glim), which` | `the GLIM program [@Nelder1974glim], which` | A | OK |
@@ -41,20 +41,20 @@ Decision column, on a dedicated branch).
 | 7 | `04-multivariate_plots.qmd:355` | `The "S Book" (@ChambersHastie1991) laid out` | `The "S Book" [@ChambersHastie1991] laid out` | A | OK |
 | 8 | `04-multivariate_plots.qmd:385` | `_Grammar of Graphics_ (@Wilkinson:99).` | `_Grammar of Graphics_ [@Wilkinson:99].` | A | OK |
 | 9 | `04-multivariate_plots.qmd:938` | `(the @PineoPorter2008 prestige score for an occupational category, derived from a social survey)` | **Leave as is** — citation used as a noun ("the Pineo & Porter (2008) prestige score") inside a parenthetical remark; narrative form is intended | E | skip |
-| 10 | `04-multivariate_plots.qmd:2652` | `(following @VanderPlas2023), we reorder` | `[following @VanderPlas2023], we reorder` | B | |
-| 11 | `04-multivariate_plots.qmd:3342` | `In this figure (taken from [Rodrigues (2021)](https://bit.ly/3A6kvq5)),` — hand-written link, not a `@` citation | `In this figure (taken from [Rodrigues, 2021](https://bit.ly/3A6kvq5)),` | D | |
+| 10 | `04-multivariate_plots.qmd:2652` | `(following @VanderPlas2023), we reorder` | `[following @VanderPlas2023], we reorder` | B | OK |
+| 11 | `04-multivariate_plots.qmd:3342` | `In this figure (taken from [Rodrigues (2021)](https://bit.ly/3A6kvq5)),` — hand-written link, not a `@` citation | `In this figure (taken from [Rodrigues, 2021](https://bit.ly/3A6kvq5)),` | D | skip |
 | 12 | `05-pca-biplot.qmd:1835` | `_effect ordering_ (@FriendlyKwan:03:effect) for variables` | `_effect ordering_ [@FriendlyKwan:03:effect] for variables` | A | OK |
 | 13 | `05-pca-biplot.qmd:1980` | `**eigenfaces** (@Turk1991),` | `**eigenfaces** [@Turk1991],` | A | OK |
 | 14 | `06-linear_models.qmd:91` | `IBM Yorkdown Heights (@IBM1965)` | `IBM Yorkdown Heights [@IBM1965]` | A | OK |
 | 15 | `06-linear_models.qmd:91` | `University of Georgia (@BradshawFindley1967)` | `University of Georgia [@BradshawFindley1967]` | A | OK |
-| 16 | `07-linear_models-plots.qmd:733` | `the _added-variable_ plot ("AV plot", also called _partial regression_ plot, @MostellerTukey-1977).` | `the _added-variable_ plot ["AV plot", also called _partial regression_ plot; @MostellerTukey-1977].` → renders ("AV plot", also called partial regression plot; Mosteller & Tukey, 1977) | D | |
-| 17 | `07-linear_models-plots.qmd:954` | `("C+R plot", also called _partial residual plot_, @LarsenMcCleary:72; @Cook:93) gives a` | `["C+R plot", also called _partial residual plot_; @LarsenMcCleary:72; @Cook:93] gives a` | D | |
-| 18 | `09-collinearity-ridge.qmd:60` | `(e.g, @Graybill1961; @Hocking2013)` — note existing typo "e.g," | `[e.g., @Graybill1961; @Hocking2013]` (also fixes the typo) | B | |
-| 19 | `09-collinearity-ridge.qmd:824` | `Bayesian regression (e.g., @Pesaran2019) can reduce` | `Bayesian regression [e.g., @Pesaran2019] can reduce` | B | |
-| 20 | `11-mlm-review.qmd:22` | `` The `r package("VGAM")` (@Yee2015, @R-VGAM) handles `` | `` The `r package("VGAM")` [@Yee2015; @R-VGAM] handles `` — comma between keys must become `;` or Pandoc mis-parses | C | |
-| 21 | `11-mlm-review.qmd:2071` | `screening plot (suggested by @Rousseeuw2004) is a plot` | `screening plot [suggested by @Rousseeuw2004] is a plot` | B | |
-| 22 | `12-mlm-viz.qmd:674` | `It is well-known (e.g., @Gittins:85)` | `It is well-known [e.g., @Gittins:85]` | B | |
-| 23 | `21-discrim.qmd:209` | `Bayesian approaches (e.g., @EnisGeisser1974)` | `Bayesian approaches [e.g., @EnisGeisser1974]` | B | |
+| 16 | `07-linear_models-plots.qmd:733` | `the _added-variable_ plot ("AV plot", also called _partial regression_ plot, @MostellerTukey-1977).` | `the _added-variable_ plot ["AV plot", also called _partial regression_ plot, @MostellerTukey-1977].` → renders ("AV plot," also called partial regression plot, Mosteller & Tukey, 1977) — comma before the key **must stay a comma**; a `;` there breaks the citation (verified with pandoc + apa.csl: semicolons only separate `@key` items, so a prose-only segment invalidates the group and it renders as literal brackets) | D | OK |
+| 17 | `07-linear_models-plots.qmd:954` | `("C+R plot", also called _partial residual plot_, @LarsenMcCleary:72; @Cook:93) gives a` | `["C+R plot", also called _partial residual plot_, @LarsenMcCleary:72; @Cook:93] gives a` → renders ("C+R plot," also called partial residual plot, Larsen & McCleary, 1972; Cook, 1993) — same as row 16: comma before the first key, `;` only between the two keys (verified) | D | OK |
+| 18 | `09-collinearity-ridge.qmd:60` | `(e.g, @Graybill1961; @Hocking2013)` — note existing typo "e.g," | `[e.g., @Graybill1961; @Hocking2013]` (also fixes the typo) | B | OK |
+| 19 | `09-collinearity-ridge.qmd:824` | `Bayesian regression (e.g., @Pesaran2019) can reduce` | `Bayesian regression [e.g., @Pesaran2019] can reduce` | B | OK |
+| 20 | `11-mlm-review.qmd:22` | `` The `r package("VGAM")` (@Yee2015, @R-VGAM) handles `` | `` The `r package("VGAM")` [@Yee2015; @R-VGAM] handles `` — comma between keys must become `;` or Pandoc mis-parses | C | OK |
+| 21 | `11-mlm-review.qmd:2071` | `screening plot (suggested by @Rousseeuw2004) is a plot` | `screening plot [suggested by @Rousseeuw2004] is a plot` | B | OK |
+| 22 | `12-mlm-viz.qmd:674` | `It is well-known (e.g., @Gittins:85)` | `It is well-known [e.g., @Gittins:85]` | B | OK |
+| 23 | `21-discrim.qmd:209` | `Bayesian approaches (e.g., @EnisGeisser1974)` | `Bayesian approaches [e.g., @EnisGeisser1974]` | B | OK |
 | 24 | `21-discrim.qmd:882` | `**step-down tests** (@Roy1957), which test` | `**step-down tests** [@Roy1957], which test` | A | OK |
 | 25 | `21-discrim.qmd:970` | `(@Rao1948)` — on its own line, before the displayed equation | `[@Rao1948]` | A | OK |
 
