@@ -39,3 +39,18 @@ York University
 ---
 
 *Drafted 2026-07-04. Waiting for reply before doing any bulk RGB→CMYK conversion.*
+
+---
+
+## Reply received (2026-07-10)
+
+From Shashi (CRC Press production):
+
+> * Which ICC profile should I use for the RGB→CMYK conversion? — **US Web
+>   Coated SWOP**
+> * Is there a preferred raster format for submission — e.g., TIFF rather
+>   than PNG? — **png, jpg**
+> * Is there a minimum DPI requirement? — **300dpi**
+
+All three questions answered — no TIFF conversion needed, format stays
+PNG/JPG. See `issues/cmyk-conversion-plan.md` for the implementation plan.
