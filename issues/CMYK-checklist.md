@@ -70,7 +70,7 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 | [ ] | [`crime-cor.png`](../images/crime-cor.png) | 540×540 | 123 | 80% (4.4″) | 1316 px | 32% |  |  |
 | [ ] | [`corrgram-renderings.png`](../images/corrgram-renderings.png) | 656×245 | 150 | 80% (4.4″) | 1316 px | 39% |  |  |
 | [ ] | [`projection.png`](../images/projection.png) | 336×247 | 153 | 40% (2.2″) | 658 px | 20% |  |  |
-| [X] | [`tours/peng-tour-demo-all.png`](../images/tours/peng-tour-demo-all.png) | 992×356 | 181 | 100% (5.5″) | 1644 px | 60% | REPLACE | Used source `.pptx`, converted -> `.pdf`, used `magick` to create high-res `.png`, cropped `.png` and saved as `.jpg` |
+| [X] | [`tours/peng-tour-demo-all.png`](../images/tours/peng-tour-demo-all.png) | 992×356 | 181 | 100% (5.5″) | 1644 px | 60% | REPLACE | Used source `.pptx`, converted -> `.pdf`, used `magick` to create high-res `.png`; cropped `.png` |
 | [ ] | [`crime-pvPlot-1-2.png`](../images/crime-pvPlot-1-2.png) | 1000×500 | 182 | 100% (5.5″) | 1644 px | 60% |  |  |
 | [ ] | [`big5-qgraph-rodrigues.png`](../images/big5-qgraph-rodrigues.png) | 910×627 | 184 | 90% (4.9″) | 1480 px | 55% |  |  |
 | [ ] | [`galton-corr.jpg`](../images/galton-corr.jpg) | 745×631 | 194 | 70% (3.8″) | 1151 px | 45% |  |  |
@@ -95,7 +95,7 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 | [ ] | [`pca4ds-figure-2-11.png`](../images/pca4ds-figure-2-11.png) | 880×416 | 178 | 90% (4.9″) | 1480 px | 53% |  |  |
 | [ ] | [`MV-juicer.png`](../images/MV-juicer.png) | 836×427 | 191 | 80% (4.4″) | 1316 px | 50% |  |  |
 | [ ] | [`pca-animation-combined.jpg`](../images/pca-animation-combined.jpg) | 1078×365 | 197 | 100% (5.5″) | 1644 px | 65% |  |  |
-| [X] | [`diabetes-3d-both.png`](../images/diabetes-3d-both.png) | 1143×497 | 209 | 100% (5.5″) | 1644 px | 69% | REPLACE | Used source `.pptx`, converted -> `.pdf`, used `magick` to create high-res `.png`, cropped `.png` and saved as `.jpg` |
+| [X] | [`diabetes-3d-both.png`](../images/diabetes-3d-both.png) | 1143×497 | 209 | 100% (5.5″) | 1644 px | 69% | REPLACE | Used source `.pptx`, converted -> `.pdf`, used `magick` to create high-res `.png`; cropped `.png` |
 | [ ] | [`pca-rotation.png`](../images/pca-rotation.png) | 884×357 | 230 | 70% (3.8″) | 1151 px | 53% |  |  |
 | [ ] | [`pca-springs-frames.jpg`](../images/pca-springs-frames.jpg) | 1349×411 | 246 | 100% (5.5″) | 1644 px | 82% |  |  |
 
@@ -125,7 +125,7 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 
 | Done | Image | Pixels | Eff. DPI | Printed at | Px needed @300 | Max `out-width` @300 | Action | Notes |
 |------|-------|--------|----------|------------|----------------|----------------------|--------|-------|
-| [X] | [`coffee-data-beta-both.png`](../images/coffee-data-beta-both.png) | 917×439 | 186 | 90% (4.9″) | 1480 px | 55% | REPLACE | Used source `.pptx`, converted -> `.pdf`, used `magick` to create high-res `.png`, cropped `.png` and saved as `.jpg` |
+| [X] | [`coffee-data-beta-both.png`](../images/coffee-data-beta-both.png) | 917×439 | 186 | 90% (4.9″) | 1480 px | 55% | REPLACE | Used source `.pptx`, converted -> `.pdf`, used `magick` to create high-res `.png`; cropped `.png` |
 | [ ] | [`dual-points-lines.png`](../images/dual-points-lines.png) | 965×520 | 196 | 90% (4.9″) | 1480 px | 58% |  |  |
 
 ## Ch. 9: Collinearity & Ridge (`09-collinearity-ridge.qmd`) — 3 images
@@ -133,7 +133,7 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 | Done | Image | Pixels | Eff. DPI | Printed at | Px needed @300 | Max `out-width` @300 | Action | Notes |
 |------|-------|--------|----------|------------|----------------|----------------------|--------|-------|
 | [ ] | [`collinearity-diagnostics-SPSS.png`](../images/collinearity-diagnostics-SPSS.png) | 927×257 | 169 | 100% (5.5″) | 1644 px | 56% |  |  |
-| [X] | [`collin-demo.png`](../images/collin-demo.png) | 1190×422 | 217 | 100% (5.5″) | 1644 px | 72% | REPLACE | Used source `.pptx`, converted -> `.pdf`, used `magick` to create high-res `.png`, cropped `.png` and saved as `.jpg` |
+| [X] | [`collin-demo.png`](../images/collin-demo.png) | 1190×422 | 217 | 100% (5.5″) | 1644 px | 72% | REPLACE | Used source `.pptx`, converted -> `.pdf`, used `magick` to create high-res `.png`; cropped `.png` |
 | [ ] | [`wheres-waldo.png`](../images/wheres-waldo.png) | 1474×569 | 299 | 90% (4.9″) | 1480 px | 89% |  |  |
 
 ## Ch. 10: Hotelling's T² (`10-hotelling.qmd`) — 1 image
