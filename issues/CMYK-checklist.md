@@ -125,7 +125,7 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 
 | Done | Image | Pixels | Eff. DPI | Printed at | Px needed @300 | Max `out-width` @300 | Action | Notes |
 |------|-------|--------|----------|------------|----------------|----------------------|--------|-------|
-| [ ] | [`coffee-data-beta-both.png`](../images/coffee-data-beta-both.png) | 917×439 | 186 | 90% (4.9″) | 1480 px | 55% |  |  |
+| [X] | [`coffee-data-beta-both.png`](../images/coffee-data-beta-both.png) | 917×439 | 186 | 90% (4.9″) | 1480 px | 55% | REPLACE | Used source `.pptx`, converted -> `.pdf`, used `magick` to create high-res `.png`, cropped `.png` and saved as `.jpg` |
 | [ ] | [`dual-points-lines.png`](../images/dual-points-lines.png) | 965×520 | 196 | 90% (4.9″) | 1480 px | 58% |  |  |
 
 ## Ch. 9: Collinearity & Ridge (`09-collinearity-ridge.qmd`) — 3 images
