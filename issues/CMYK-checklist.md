@@ -133,7 +133,7 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 | Done | Image | Pixels | Eff. DPI | Printed at | Px needed @300 | Max `out-width` @300 | Action | Notes |
 |------|-------|--------|----------|------------|----------------|----------------------|--------|-------|
 | [ ] | [`collinearity-diagnostics-SPSS.png`](../images/collinearity-diagnostics-SPSS.png) | 927×257 | 169 | 100% (5.5″) | 1644 px | 56% |  |  |
-| [ ] | [`collin-demo.png`](../images/collin-demo.png) | 1190×422 | 217 | 100% (5.5″) | 1644 px | 72% |  |  |
+| [X] | [`collin-demo.png`](../images/collin-demo.png) | 1190×422 | 217 | 100% (5.5″) | 1644 px | 72% | REPLACE | Used source `.pptx`, converted -> `.pdf`, used `magick` to create high-res `.png`, cropped `.png` and saved as `.jpg` |
 | [ ] | [`wheres-waldo.png`](../images/wheres-waldo.png) | 1474×569 | 299 | 90% (4.9″) | 1480 px | 89% |  |  |
 
 ## Ch. 10: Hotelling's T² (`10-hotelling.qmd`) — 1 image
