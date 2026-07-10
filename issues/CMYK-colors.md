@@ -14,7 +14,7 @@ workflow for the final pre-submission check.
 | LaTeX named colors (TikZ, smartdiagram, headings) | **Done** | `\usepackage[cmyk]{xcolor}` in `latex/preamble.tex` |
 | Explicit `\definecolor` calls in `preamble.tex` | **Done** | Converted to `cmyk` |
 | `\usepackage{color}` in `preamble.tex` | **Done** | Commented out; `shadecolor` redefined in cmyk |
-| Static images in `images/` | **Not done** | Need scan + convert before submission |
+| Static images in `images/` | **Not done** | Unblocked — CRC replied 2026-07-10; see `issues/cmyk-conversion-plan.md` |
 | Animated GIFs / WebP in `images/` | **Exempt** | HTML-only; never embedded in PDF |
 
 ---
@@ -45,50 +45,19 @@ colors (`blue`, `teal`, `orange`, etc.). This covers:
 
 ---
 
-## Issues still to fix in `preamble.tex`
-
-### 1. `\usepackage{color}` loaded before xcolor
-
-```latex
-\usepackage{color}                           % line 10
-\definecolor{shadecolor}{RGB}{248,248,248}   % line 11
-\usepackage[cmyk]{xcolor}                    % line 12
-```
-
-**Problem:** `color` is a legacy package; `xcolor` supersedes it entirely.
-Loading `color` first means `shadecolor` is registered in the `color` package
-(RGB model) before xcolor takes over. The question mark comment suggests this
-is already suspected to be unnecessary.
-
-**Fix:** Remove `\usepackage{color}` and redefine `shadecolor` via xcolor in CMYK:
-
-```latex
-% shadecolor: RGB(248,248,248) ≈ very light gray → CMYK(0,0,0,0.03)
-\definecolor{shadecolor}{cmyk}{0, 0, 0, 0.03}
-```
-
-### 2. Explicit RGB `\definecolor` calls
-
-These are stored in RGB even though xcolor is loaded with `[cmyk]`:
-
-```latex
-\definecolor{darkgreen}{RGB}{1,50,32}         % should be cmyk
-\definecolor{mygreen}{rgb}{0.1, 0.5, 0.2}     % should be cmyk
-```
-
-CMYK equivalents (approximate):
-
-```latex
-\definecolor{darkgreen}{cmyk}{0.98, 0, 0.36, 0.80}
-\definecolor{mygreen}  {cmyk}{0.80, 0, 0.60, 0.50}
-```
-
-Use a CMYK converter (e.g. https://www.rapidtables.com/convert/color/rgb-to-cmyk.html
-or Inkscape color picker) to derive precise values from the desired RGB if needed.
-
----
-
 ## Static images in `images/` — pre-submission workflow
+
+**CRC Press reply received 2026-07-10** (see `issues/email-CRC-cmyk.md`):
+ICC profile is **US Web Coated SWOP**, format stays **PNG/JPG** (no TIFF
+needed), minimum resolution is **300 dpi**. Full implementation plan is in
+`issues/cmyk-conversion-plan.md` — summary below.
+
+Local tool/profile locations confirmed on this machine:
+- ImageMagick: `magick` on PATH
+- Ghostscript 10.07.1: `C:\Program Files\gs\gs10.07.1\bin` (added to PATH) —
+  used for **verification only**, not conversion
+- SWOP ICC profile: `C:\Program Files\Common Files\Adobe\Color\Profiles\Recommended\USWebCoatedSWOP.icc`
+- sRGB source profile: `C:\Windows\System32\spool\drivers\color\sRGB Color Space Profile.icm`
 
 ### Which images are at risk
 
@@ -102,94 +71,38 @@ Exempt from conversion:
 Files to scan: **all `*.png`, `*.jpg` in `images/`** that appear in a
 `\includegraphics` or `knitr::include_graphics()` call in any `.qmd` file.
 
-### Step 1 — find which images are actually used in the book
+### Approach
 
-```r
-# Run from project root in R console
-qmd_files <- list.files(".", pattern = "\\.qmd$", recursive = TRUE)
-lines <- unlist(lapply(qmd_files, readLines, warn = FALSE))
-# extract filenames from include_graphics() calls
-used <- grep("include_graphics|includegraphics", lines, value = TRUE)
-cat(used, sep = "\n")
-```
-
-### Step 2 — check color model of used images
-
-With ImageMagick installed:
-
-```r
-library(magick)
-imgs <- list.files("images", pattern = "\\.(png|jpg|jpeg)$",
-                   full.names = TRUE, recursive = TRUE)
-info <- lapply(imgs, function(f) {
-  i <- magick::image_info(magick::image_read(f))
-  data.frame(file = f, colorspace = i$colorspace)
-})
-do.call(rbind, info)
-```
-
-Or from the shell with ImageMagick:
-```bash
-magick identify -format "%f: %[colorspace]\n" images/*.png images/*.jpg
-```
-
-Images reporting `sRGB` or `Gray` need conversion; `CMYK` is ready.
-
-### Step 3 — convert RGB images to CMYK
-
-**PNG → TIFF (recommended for print):**
-
-CMYK PNG is technically valid but poorly supported. Publishers typically
-prefer TIFF for CMYK raster images.
+Images are converted **individually** (not via a whole-PDF Ghostscript
+recolor pass) into a parallel `images-cmyk/` directory, keeping the same
+filenames and PNG/JPG format:
 
 ```bash
-# Single file
-magick input.png -colorspace CMYK input-cmyk.tif
-
-# Batch (bash)
-for f in images/*.png; do
-  magick "$f" -colorspace CMYK "${f%.png}-cmyk.tif"
-done
+magick "$src" -profile "C:/Windows/System32/spool/drivers/color/sRGB Color Space Profile.icm" \
+              -profile "C:/Program Files/Common Files/Adobe/Color/Profiles/Recommended/USWebCoatedSWOP.icc" \
+              -colorspace CMYK "$dst"
 ```
 
-**JPG (lossy — convert carefully):**
+A small `img_path()` helper in `R/common.R` resolves each
+`include_graphics()` call to `images-cmyk/` for PDF output
+(`knitr::is_latex_output()`) and `images/` otherwise, so HTML always gets
+the RGB original and PDF automatically picks up the CMYK version once
+converted — no build.sh flag or file-swapping needed. See
+`issues/cmyk-conversion-plan.md` for the full step-by-step (audit script,
+low-DPI review, conversion script, call-site rewrite).
+
+### Verification
+
+Ghostscript ink-coverage check on the final PDF (each page reports
+`C M Y K`; mixed non-zero values confirm CMYK, all-RGB objects show up as
+an anomalous pattern):
 
 ```bash
-magick photo.jpg -colorspace CMYK photo-cmyk.tif
+gswin64c -dBATCH -dNOPAUSE -sDEVICE=inkcov pdf/Vis-MLM.pdf
 ```
 
-After converting, update the `include_graphics()` calls in `.qmd` files to
-reference the new `-cmyk.tif` filenames.
-
-**Ghostscript (alternative, for converting an assembled PDF):**
-
-If converting the whole final PDF at once is easier than converting
-individual images, Ghostscript can convert a complete RGB PDF to CMYK:
-
-```bash
-gswin64c -dBATCH -dNOPAUSE -sDEVICE=pdfwrite \
-  -sProcessColorModel=DeviceCMYK \
-  -sColorConversionStrategy=CMYK \
-  -sOutputFile=Vis-MLM-CMYK.pdf Vis-MLM.pdf
-```
-
-This is a reasonable final-pass option if some obscure RGB slips through.
-
-### Step 4 — verify the final PDF
-
-In Acrobat Pro: Tools → Print Production → Output Preview → check "Show overprint"
-and select "CMYK" in the separations panel — all page objects should show only
-C/M/Y/K plates, no RGB.
-
-Free alternative: Ghostscript can list color spaces used:
-
-```bash
-gswin64c -dBATCH -dNOPAUSE -sDEVICE=inkcov Vis-MLM.pdf
-```
-
-Each page shows ink coverage as `C M Y K`. If K values are very high and
-C/M/Y are zero, the page is probably grayscale. Mixed non-zero C/M/Y/K is
-correct CMYK. Pages with suspicious patterns may still have RGB objects.
+Cross-check in Acrobat Pro: Tools → Print Production → Output Preview →
+Separations panel — all page objects should show only C/M/Y/K plates.
 
 ---
 
@@ -211,5 +124,6 @@ Commonly used book colors and their CMYK equivalents:
 ## Related files
 
 - `R/common.R` — `pdf.options(colormodel = "cmyk")` at line ~22
-- `latex/preamble.tex` — `\usepackage[cmyk]{xcolor}` at line 12; RGB `\definecolor` at lines 11, 14, 27
+- `latex/preamble.tex` — `\usepackage[cmyk]{xcolor}` at line 15; all `\definecolor` calls already in `cmyk`
+- `issues/cmyk-conversion-plan.md` — static-image conversion plan (audit, conversion script, `img_path()` helper)
 - `issues/task-color-themes.md` — part accent color definitions (also need CMYK versions)

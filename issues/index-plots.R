@@ -17,6 +17,38 @@ if (!dir.exists(outdir)) dir.create(outdir)
 
 idx <- read.csv("issues/index-terms-ch.csv", stringsAsFactors = FALSE)
 
+# ── Chapter page lengths from index.toc ───────────────────────────────────────
+toc_raw <- readLines("pdf/index.toc")
+
+# All chapter-level entries with arabic page numbers (numbered and unnumbered)
+# — used to determine correct end pages, including for the last numbered chapter
+all_ch_toc <- toc_raw[grepl("\\contentsline {chapter}", toc_raw, fixed = TRUE)]
+all_pages  <- as.integer(regmatches(all_ch_toc,
+                regexec("\\}\\{(\\d+)\\}\\{", all_ch_toc)) |>
+                sapply(\(x) x[2]))
+all_pages  <- sort(unique(all_pages[!is.na(all_pages)]))  # arabic pages only
+
+# Numbered chapters only
+ch_toc  <- all_ch_toc[grepl("\\numberline", all_ch_toc, fixed = TRUE)]
+nums    <- as.integer(regmatches(ch_toc,
+             regexec("\\\\numberline \\{(\\d+)\\}", ch_toc)) |>
+             sapply(\(x) x[2]))
+pages   <- as.integer(regmatches(ch_toc,
+             regexec("\\}\\{(\\d+)\\}\\{", ch_toc)) |>
+             sapply(\(x) x[2]))
+
+ch_pages <- data.frame(chapter = nums, start_page = pages) |>
+  filter(!is.na(chapter)) |>
+  arrange(chapter) |>
+  mutate(
+    # end page = next arabic chapter-level entry in TOC (numbered or not)
+    end_page = sapply(start_page, \(p) {
+      nxt <- all_pages[all_pages > p]
+      if (length(nxt) == 0) p + 1L else nxt[1]
+    }),
+    n_pages = end_page - start_page
+  )
+
 # ── Part membership (for consistent coloring) ─────────────────────────────────
 part_map <- tribble(
   ~part, ~label,               ~chapters,          ~color,
@@ -57,46 +89,66 @@ theme_book <- theme_minimal(base_size = 12) +
 
 part_colors <- setNames(part_map$color, part_map$label)
 
-# ── Plot 1: Index entries per chapter (bar, colored by part) ──────────────────
+# ── Plot 1: Index entries per chapter, raw and normalized by chapter length ────
 ch_counts <- idx |>
   filter(!is.na(chapter), chapter > 0) |>
-  count(chapter, ch_label, part_label, part_color) |>
+  count(chapter, ch_label, ch_title, part_label, part_color) |>
   arrange(chapter) |>
-  mutate(ch_label = fct_inorder(ch_label))
+  left_join(ch_pages[, c("chapter", "n_pages")], by = "chapter") |>
+  mutate(
+    ch_label    = fct_inorder(ch_label),
+    ch_label_h  = factor(sprintf("%d: %s", chapter, ch_title), # horizontal plot
+                         levels = rev(sprintf("%d: %s", chapter, ch_title))),
+    entries_pp  = n / n_pages
+  )
 
-p1 <- ggplot(ch_counts, aes(x = ch_label, y = n, fill = part_label)) +
+# 1a: raw counts
+p1a <- ggplot(ch_counts, aes(x = ch_label, y = n, fill = part_label)) +
   geom_col(width = 0.75) +
   geom_text(aes(label = n), vjust = -0.4, size = 3.2) +
   scale_fill_manual(values = part_colors, name = "Part") +
   labs(title = "Index entries per chapter",
        x = NULL, y = "Number of index entries") +
   theme_book +
-  theme(axis.text.x = element_text(size = 7.5),
-        legend.position = "bottom")
+  theme(axis.text.x = element_text(size = 7.5), legend.position = "bottom")
 
-save_plot(p1, "01-entries-per-chapter", w = 11, h = 5.5)
+save_plot(p1a, "01a-entries-per-chapter", w = 11, h = 5.5)
+
+# 1b: normalized by chapter length — horizontal bars, chapters on y-axis
+p1b <- ggplot(ch_counts, aes(y = ch_label_h, x = entries_pp, fill = part_label)) +
+  geom_col(width = 0.75) +
+  geom_text(aes(label = sprintf("%.1f", entries_pp)), hjust = -0.2, size = 3.2) +
+  scale_fill_manual(values = part_colors, name = "Part") +
+  scale_x_continuous(expand = expansion(mult = c(0, 0.15))) +
+  labs(title = "Index entries per page by chapter",
+       subtitle = "Normalized by chapter length (pages)",
+       x = "Index entries per page", y = NULL) +
+  theme_book +
+  theme(legend.position = "bottom")
+
+save_plot(p1b, "01b-entries-per-chapter-normalized", w = 11, h = 5.5)
 
 # -- Plot 1a: Index entries normalized by chapter length -----------------------
 # Made by GK; adapted from Plot 1
-ch_pages <- c( 13 -   3,  21 -  13,  38 -  21, 
-              119 -  41, 176 - 119, 197 - 179, 
-              243 - 197, 257 - 243, 295 - 257,
-              319 - 297, 377 - 319, 417 - 377,
-              437 - 417, 455 - 437, 482 - 437)
-ch_counts$ch_pages <- ch_pages
-ch_counts$n_norm <- ch_counts$n / ch_counts$ch_pages
-
-p1a <- ggplot(ch_counts, aes(x = ch_label, y = n_norm, fill = part_label)) +
-  geom_col(width = 0.75) +
-  geom_text(aes(label = round(n_norm,1)), vjust = -0.4, size = 3.2) +
-  scale_fill_manual(values = part_colors, name = "Part") +
-  labs(title = "Index entries normalized by chapter length (pages)",
-       x = NULL, y = "Average number of entries per page") +
-  theme_book +
-  theme(axis.text.x = element_text(size = 7.5),
-        legend.position = "bottom")
-
-save_plot(p1a, "01a-entries-normed-by-chapter-length", w = 11, h = 5.5)
+#ch_pages <- c( 13 -   3,  21 -  13,  38 -  21, 
+#              119 -  41, 176 - 119, 197 - 179, 
+#              243 - 197, 257 - 243, 295 - 257,
+#              319 - 297, 377 - 319, 417 - 377,
+#              437 - 417, 455 - 437, 482 - 437)
+#ch_counts$ch_pages <- ch_pages
+#ch_counts$n_norm <- ch_counts$n / ch_counts$ch_pages
+#
+#p1a <- ggplot(ch_counts, aes(x = ch_label, y = n_norm, fill = part_label)) +
+#  geom_col(width = 0.75) +
+#  geom_text(aes(label = round(n_norm,1)), vjust = -0.4, size = 3.2) +
+#  scale_fill_manual(values = part_colors, name = "Part") +
+#  labs(title = "Index entries normalized by chapter length (pages)",
+#       x = NULL, y = "Average number of entries per page") +
+#  theme_book +
+#  theme(axis.text.x = element_text(size = 7.5),
+#        legend.position = "bottom")
+#
+#save_plot(p1a, "01a-entries-normed-by-chapter-length", w = 11, h = 5.5)
 
 # ── Plot 2: Page density histogram (arabic pages only) ────────────────────────
 # Mark chapter start pages as vertical lines
@@ -229,7 +281,7 @@ p7 <- ggplot(idx_pages, aes(x = page_num, color = part_label)) +
              color = "black", linewidth = 0.4, linetype = "dashed", alpha = 0.6) +
   geom_text(data = ch_starts,
             aes(x = start, y = 1, label = chapter),
-            inherit.aes = FALSE, vjust = 1.2, hjust = -0.3, size = 2.8) +
+            inherit.aes = FALSE, vjust = 1.2, hjust = -0.3, size = 3.8) +
   scale_color_manual(values = part_colors, name = "Part") +
   scale_y_continuous(limits = c(0, 1), breaks = NULL, expand = expansion(0)) +
   guides(color = guide_legend(override.aes = list(linewidth = 2))) +
@@ -239,6 +291,6 @@ p7 <- ggplot(idx_pages, aes(x = page_num, color = part_label)) +
   theme_book +
   theme(legend.position = "bottom")
 
-save_plot(p7, "07-page-rug", w = 9, h = 5)
+save_plot(p7, "07-page-rug", w = 11, h = 3.85)
 
 message("\nAll plots saved to ", outdir)

@@ -4,7 +4,7 @@
 
 This document contains issues I noticed in the indices:
 
-## Subject index
+## Subject index [FIXED]
 
 - At least one author ("Tukey, John") is listed in the subject index
   + This particular example corresponds to the opening quote of Ch04
