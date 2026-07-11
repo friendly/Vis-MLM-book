@@ -103,7 +103,7 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 
 | Done | Image | Pixels | Eff. DPI | Printed at | Px needed @300 | Max `out-width` @300 | Action | Notes |
 |------|-------|--------|----------|------------|----------------|----------------------|--------|-------|
-| [ ] | [`techniques-table.png`](../images/techniques-table.png) | 981×573 | 224 | 80% (4.4″) | 1316 px | 59% |  |  |
+| [X] | [`techniques-table.png`](../images/techniques-table.png) | 981×573 | 224 | 80% (4.4″) | 1316 px | 59% | REPLACE | Used source `.pptx`, converted -> `.pdf`, used `magick` to create high-res `.png`; cropped `.png` |
 
 ## Ch. 6 child: Linear Combinations (`child/06-linear-combinations.qmd`) — 4 images
 
@@ -168,6 +168,6 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 ## Progress
 
 - Total LOW-DPI images: **69**
-- Resolved (REPLACE): **15** as of July 10th, 2026 (10:18PM EDT; **GK**)
+- Resolved (REPLACE): **16** as of July 10th, 2026 (10:26PM EDT; **GK**)
 - Resolved (SHRINK): 
 - Resolved (ACCEPT / flag to CRC): 
