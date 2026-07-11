@@ -16,7 +16,7 @@
 - In first paragraph, a citation appears as "(Friendly & Sigal (2018))" instead of "(Friendly & Sigal, 2018)"
   + [FIXED 2026-06-03] Changed `(@FriendlySigal:2018:eqcov)` → `[@FriendlySigal:2018:eqcov]` in `13-eqcov.qmd` line 552.
   + [FIXED 2026-06-03] Same pattern in Ch14 para 1: `(@Belsley-etal:80; @CookWeisberg:82)` → `[@...]` in `14-infl-robust.qmd` line 31.
-  + Broader scan found similar `(@...)` patterns in Ch01, 03, 04, 05, 06, 07, 11 — lower-priority cleanup, not yet done.
+  + [FIXED 2026-07-11] Broader scan found similar `(@...)` patterns in Ch01, 03, 04, 05, 06, 07, 11 — full cleanup done on the `citation-fixes` branch per the reviewed inventory in `issues/paren-citations.md` (25 build-file instances; 2 intentional/skip rows left as is).
 
 **What Have We Learned?**
 

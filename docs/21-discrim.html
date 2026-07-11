@@ -2,13 +2,10 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.9.36">
+<meta name="generator" content="quarto-1.8.27">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <title>15&nbsp; Discriminant analysis – Visualizing Multivariate Data and Models in R</title>
 <style>
-/* Default styles provided by pandoc.
-** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
-*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -89,14 +86,15 @@ div.csl-indent {
 <link href="./images/favicon/favicon.ico" rel="icon">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-845c23b38eaddc0f92fda52bfe77a8c8.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-e5f3ea6630f848d5f49a84b9e9640718.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-895b671851bc2628be47e48260b61698.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <link href="site_libs/quarto-contrib/line-highlight-1.0.0/line-highlight.css" rel="stylesheet"><script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -123,7 +121,7 @@ div.csl-indent {
     "search-submit-button-title": "Submit",
     "search-label": "Search"
   }
-}</script><script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script><script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script><script type="text/javascript">
+}</script><script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script><script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script><script type="text/javascript">
 const typesetMath = (el) => {
   if (window.MathJax) {
     // MathJax Typeset
@@ -529,7 +527,7 @@ https://www.sthda.com/english/articles/36-classification-methods-essentials/146-
 <p>The idea of classification based on multiple measurements has a long history in medicine (<em>nosology</em>: classifying diseases, based on symptoms and bodily humours) and biology, taxonomy (classifying organisms to species or varieties, based on morphological measurements). It arose in statistics at a time when statisticians like Karl Pearson and Prasanta Mahalanobis first began to think of multivariate problems like principal components <span class="citation" data-cites="Pearson:1901">(<a href="95-references.html#ref-Pearson:1901" role="doc-biblioref">Pearson, 1901</a>)</span> and multivariate distance <span class="citation" data-cites="Mahalanobis1936">(<a href="95-references.html#ref-Mahalanobis1936" role="doc-biblioref">Mahalanobis, 1936</a>)</span> in geometric terms, with matrix algebra as a muse to express these ideas and handmaid to find solutions.</p>
 <p>Ronald Fisher’s landmark paper <span class="citation" data-cites="Fisher1936">(<a href="95-references.html#ref-Fisher1936" role="doc-biblioref">Fisher, 1936b</a>)</span> introduced the idea of a “discriminant function”, a weighted sum of observed measurements as a means to classifying observations into predefined groups. His perfect test case was the now famous data collected by Edgar Anderson <span class="citation" data-cites="Anderson:35">(<a href="95-references.html#ref-Anderson:35" role="doc-biblioref">Anderson, 1935</a>)</span> on iris flowers of the Gaspé Peninsula. His elegant approach essentially involved the eigenvectors of what I call here <span class="math inline">\(\mathbf{H} \mathbf{E}^{-1}\)</span>, representing between-group relative to within-group variation, as the weights to apply to the observed variables to best discriminate among the iris species. The method quickly found application in crainometry <span class="citation" data-cites="Fisher1936b">(<a href="95-references.html#ref-Fisher1936b" role="doc-biblioref">Fisher, 1936a</a>)</span>, sex classification of Egyptian mandible bones <span class="citation" data-cites="Martin1936">(<a href="95-references.html#ref-Martin1936" role="doc-biblioref">Martin, 1936</a>)</span> …</p>
 <p>C. R. Rao <span class="citation" data-cites="Rao1948">(<a href="95-references.html#ref-Rao1948" role="doc-biblioref">1948</a>)</span> extended Fisher’s framework, introducing what would become known as quadratic discriminant analysis (QDA). He relaxed Fisher’s assumption of equal covariance structure, allowing each group to have its own covariance matrix. This generalization led to quadratic, rather than linear, decision boundaries, providing greater flexibility in modeling how groups differ.</p>
-<p>These methods evolved considerably in subsequent decades. McLachlan’s <span class="citation" data-cites="McLachlan2004">(<a href="95-references.html#ref-McLachlan2004" role="doc-biblioref">2004</a>)</span> comprehensive work unified and extended classical discriminant analysis, incorporating robust methods. Bayesian approaches (e.g., <span class="citation" data-cites="EnisGeisser1974">Enis &amp; Geisser (<a href="95-references.html#ref-EnisGeisser1974" role="doc-biblioref">1974</a>)</span>) have brought new perspectives to discriminant analysis, treating group membership probabilities and model parameters as uncertain quantities to be estimated from data. These methods naturally incorporate prior information and provide full posterior distributions rather than point estimates, offering richer uncertainty quantification <span class="citation" data-cites="Hastie-etal-2009">(<a href="95-references.html#ref-Hastie-etal-2009" role="doc-biblioref">Hastie et al., 2009</a>)</span>.</p>
+<p>These methods evolved considerably in subsequent decades. McLachlan’s <span class="citation" data-cites="McLachlan2004">(<a href="95-references.html#ref-McLachlan2004" role="doc-biblioref">2004</a>)</span> comprehensive work unified and extended classical discriminant analysis, incorporating robust methods. Bayesian approaches <span class="citation" data-cites="EnisGeisser1974">(e.g., <a href="95-references.html#ref-EnisGeisser1974" role="doc-biblioref">Enis &amp; Geisser, 1974</a>)</span> have brought new perspectives to discriminant analysis, treating group membership probabilities and model parameters as uncertain quantities to be estimated from data. These methods naturally incorporate prior information and provide full posterior distributions rather than point estimates, offering richer uncertainty quantification <span class="citation" data-cites="Hastie-etal-2009">(<a href="95-references.html#ref-Hastie-etal-2009" role="doc-biblioref">Hastie et al., 2009</a>)</span>.</p>
 </div>
 </div>
 <div id="exm-penguin-new" class="theorem example">
@@ -1128,7 +1126,7 @@ Figure&nbsp;15.9: Plot of the Penguin data in discriminant space, adding variabl
 <span><span class="co"># ---</span></span>
 <span><span class="co"># Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>In the printed table, the eigenvalues are the <span class="math inline">\(\lambda_i\)</span> of <span class="math inline">\(\mathbf{H}\mathbf{E}^{-1}\)</span> and their percent contributions are the same as what we saw from the discriminant analysis given by <code>lda()</code>. The significance tests printed are a variety called <strong>step-down tests</strong> (<span class="citation" data-cites="Roy1957">Roy (<a href="95-references.html#ref-Roy1957" role="doc-biblioref">1957</a>)</span>), which test the contributions of the current row and all that follow in each line.</p>
+<p>In the printed table, the eigenvalues are the <span class="math inline">\(\lambda_i\)</span> of <span class="math inline">\(\mathbf{H}\mathbf{E}^{-1}\)</span> and their percent contributions are the same as what we saw from the discriminant analysis given by <code>lda()</code>. The significance tests printed are a variety called <strong>step-down tests</strong> <span class="citation" data-cites="Roy1957">(<a href="95-references.html#ref-Roy1957" role="doc-biblioref">Roy, 1957</a>)</span>, which test the contributions of the current row and all that follow in each line.</p>
 <section id="canonical-discriminant-plot" class="level3" data-number="15.9.1"><h3 data-number="15.9.1" class="anchored" data-anchor-id="canonical-discriminant-plot">
 <span class="header-section-number">15.9.1</span> Canonical discriminant plot</h3>
 <p>The <code><a href="https://rdrr.io/r/graphics/plot.default.html">plot()</a></code> method for a <code>"candisc"</code> object gives something similar to what we saw in <a href="#fig-peng-LD-biplot" class="quarto-xref">Figure&nbsp;<span>15.9</span></a>, but with more sensible scaling of the variable vectors. In the code, <code>ellipse = TRUE</code> adds 68% data ellipses for the discriminant scores for each species, and <code>rev.axes</code> is used to reflect the directon of the horizontal axis to make it similar to <a href="#fig-peng-LD-biplot" class="quarto-xref">Figure&nbsp;<span>15.9</span></a>. The result is shown in <a href="#fig-peng-candisc" class="quarto-xref">Figure&nbsp;<span>15.10</span></a>.</p>
@@ -1189,7 +1187,7 @@ Figure&nbsp;15.11: Canonical discriminant HE plot of the Penguin data for the MA
 </section></section><section id="sec-QDA" class="level2" data-number="15.10"><h2 data-number="15.10" class="anchored" data-anchor-id="sec-QDA">
 <span class="header-section-number">15.10</span> Quadratic discriminant analysis</h2>
 <p>Linear discriminant analysis breaks down when the covariance matrices for the groups differ substantially. In the context of MANOVA, this issue was addressed in <a href="13-eqcov.html" class="quarto-xref"><span>Chapter 13</span></a> through statistical tests and graphical methods for understanding <strong>how</strong> the group covariance matrices differ.</p>
-<p>When the covariance matrices <span class="math inline">\(\mathbf{S}_k\)</span> differ across the groups, the discriminant function <a href="#eq-lda-fun" class="quarto-xref">Equation&nbsp;<span>15.1</span></a> becomes (<span class="citation" data-cites="Rao1948">Rao (<a href="95-references.html#ref-Rao1948" role="doc-biblioref">1948</a>)</span>)</p>
+<p>When the covariance matrices <span class="math inline">\(\mathbf{S}_k\)</span> differ across the groups, the discriminant function <a href="#eq-lda-fun" class="quarto-xref">Equation&nbsp;<span>15.1</span></a> becomes <span class="citation" data-cites="Rao1948">(<a href="95-references.html#ref-Rao1948" role="doc-biblioref">Rao, 1948</a>)</span></p>
 <p><span id="eq-qda-fun"><span class="math display">\[
 \delta_k(x) = -\frac{1}{2}\ln|\mathbf{S}_k| - \frac{1}{2}(x-\bar{\mathbf{x}}_k)^\top\mathbf{S}_k^{-1}(x-\bar{\mathbf{x}}_k) + \ln(\pi_k) \; ,
 \tag{15.2}\]</span></span></p>
