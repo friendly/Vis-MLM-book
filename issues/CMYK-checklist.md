@@ -52,7 +52,7 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 |------|-------|--------|----------|------------|----------------|----------------------|--------|-------|
 | [ ] | [`datasaurus-dozen.jpg`](../images/datasaurus-dozen.jpg) | 680×425 | 124 | 100% (5.5″) | 1644 px | 41% |  |  |
 | [ ] | [`anscombe1.png`](../images/anscombe1.png) | 650×480 | 132 | 90% (4.9″) | 1480 px | 39% |  |  |
-| [ ] | [`1969_draft_lottery_photo.jpg`](../images/1969_draft_lottery_photo.jpg) | 1024×690 | 234 | 80% (4.4″) | 1316 px | 62% |  |  |
+| [X] | [`1969_draft_lottery_photo.jpg`](../images/1969_draft_lottery_photo.jpg) | 1024×690 | 234 | 80% (4.4″) | 1316 px | 62% | REPLACE | Higher-res version retrieved from https://commons.wikimedia.org/wiki/File:1969_draft_lottery_photo.jpg |
 
 ## Ch. 4: Multivariate Plots (`04-multivariate_plots.qmd`) — 22 images
 
@@ -168,6 +168,6 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 ## Progress
 
 - Total LOW-DPI images: **69**
-- Resolved (REPLACE): **17** as of July 10th, 2026 (11:17PM EDT; **GK**)
+- Resolved (REPLACE): **18** as of July 11th, 2026 (10:31AM EDT; **GK**)
 - Resolved (SHRINK): 
 - Resolved (ACCEPT / flag to CRC): 
