@@ -19,11 +19,15 @@ Quick-start reference for resuming work on this Quarto book project.
 | Orienting Ideas | 01-Prelude, 02-intro, 03-getting_started |
 | Exploratory Methods | 04-multivariate_plots, 05-pca-biplot |
 | Univariate Linear Models | 06-linear_models, 07-linear_models-plots, 08-lin-mod-topics, 09-collinearity-ridge |
-| Multivariate Linear Models | 10-hotelling, 11-mlm-review, 12-mlm-viz, 13-eqcov, 14-infl-robust, 15-case-studies |
+| Multivariate Linear Models | 10-hotelling, 11-mlm-review, 12-mlm-viz, 13-eqcov, 14-infl-robust, 21-discrim (Ch. 15) |
 | End Matter | 91-colophon, 95-references |
-| Appendix | 21-discrim |
+| Appendix (online only) | 15-case-studies, 30-Rcode, 31-exercises |
 
 Front matter: `index.qmd`, `00-Author.qmd`
+
+Note: `.qmd` file-name prefixes no longer match printed chapter numbers (e.g. `21-discrim.qmd`
+is Chapter 15; `15-case-studies.qmd` is the online-only Appendix). Trust chapter order in
+`_quarto.yml` (print) / `_quarto-online.yml` (online extras) over file-name prefixes.
 
 ## Key directories
 
