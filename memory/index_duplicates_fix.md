@@ -1,8 +1,19 @@
 ---
 name: Duplicate Index Entries Fix
-description: Root cause and fix for duplicate package/dataset entries in Subject Index (2026-04-07)
+description: Duplicate index entries — source fix (2026-04-07) is NOT sufficient; every PDF build still needs the fix-index normalization pass
 type: project
 ---
+
+**Verified 2026-07-11 (full clean rebuild):** the 2026-04-07 source-level fix did NOT
+fully eliminate the problem. After `./build.sh --all --authorindex`, `index.idx` still
+contained 10 terms in both `\texttt  {X}` (two-space) and `\texttt{X}` forms (GGally,
+datasets, heplots, lda(), ggpcp, etc.), i.e. duplicate entries in the printed index.
+**The fix-index pass is still required after every PDF build** — either
+`./build.sh --pdf --fix-index` / run its steps manually (sed-normalize index.idx →
+`makeindex -s latex/book.ist index.idx` → one `xelatex -no-shell-escape` pass → copy
+index.pdf to docs/ and pdf/). Note `--full` does NOT include `--fix-index`. Also note:
+the xelatex pass rewrites index.idx with the two-space artifacts again — that is
+harmless; verify the fix in `index.ind`, not `index.idx`.
 
 Duplicate index entries for packages (e.g., `car package` appearing twice) and datasets
 (e.g., `dogfood dataset`) were caused by inconsistent `\texttt` spacing in `index.idx`.
