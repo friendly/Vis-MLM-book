@@ -1,8 +1,13 @@
 # Plan: Fix Parenthesized Narrative Citations `(@key)` → `[@key]`
 
-**Status: STAGE 1 COMPLETE 2026-07-09** — inventory written to `issues/paren-citations.md`
-(27 rows: 25 in build files, 2 in dead files). Awaiting GK/Michael review and go-ahead
-for Stage 2.
+**Status: RESOLVED — STAGE 2 COMPLETE 2026-07-11** — all `OK` rows from the reviewed
+inventory in `issues/paren-citations.md` applied on the `citation-fixes` branch (22 edits;
+row 3 was already fixed in the source). Deviations from the plan, per GK: work done on the
+existing `citation-fixes` branch rather than a fresh one, and no book build was run — the
+render/HTML smoke test should happen at the next `Build -> All Formats`. The detection
+grep was re-run post-fix: only row 9 (Cat. E, intentional) and row 26 (dead file
+`04b-higher.qmd`, no decision) still match. Rows 26–27 (dead files) remain unfixed.
+Cross-referenced in `issues/GK-June3-issues.md`.
 
 ## The problem
 
