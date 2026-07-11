@@ -128,6 +128,28 @@ p1b <- ggplot(ch_counts, aes(y = ch_label_h, x = entries_pp, fill = part_label))
 
 save_plot(p1b, "01b-entries-per-chapter-normalized", w = 11, h = 5.5)
 
+# -- Plot 1a: Index entries normalized by chapter length -----------------------
+# Made by GK; adapted from Plot 1
+#ch_pages <- c( 13 -   3,  21 -  13,  38 -  21, 
+#              119 -  41, 176 - 119, 197 - 179, 
+#              243 - 197, 257 - 243, 295 - 257,
+#              319 - 297, 377 - 319, 417 - 377,
+#              437 - 417, 455 - 437, 482 - 437)
+#ch_counts$ch_pages <- ch_pages
+#ch_counts$n_norm <- ch_counts$n / ch_counts$ch_pages
+#
+#p1a <- ggplot(ch_counts, aes(x = ch_label, y = n_norm, fill = part_label)) +
+#  geom_col(width = 0.75) +
+#  geom_text(aes(label = round(n_norm,1)), vjust = -0.4, size = 3.2) +
+#  scale_fill_manual(values = part_colors, name = "Part") +
+#  labs(title = "Index entries normalized by chapter length (pages)",
+#       x = NULL, y = "Average number of entries per page") +
+#  theme_book +
+#  theme(axis.text.x = element_text(size = 7.5),
+#        legend.position = "bottom")
+#
+#save_plot(p1a, "01a-entries-normed-by-chapter-length", w = 11, h = 5.5)
+
 # ── Plot 2: Page density histogram (arabic pages only) ────────────────────────
 # Mark chapter start pages as vertical lines
 ch_starts <- ch_labels |>
