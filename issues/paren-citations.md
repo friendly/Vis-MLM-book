@@ -5,9 +5,11 @@
 dead-file rows (26–27, no decision given) were left untouched. Row 3 was found already
 fixed in the source before Stage 2 ran. The Stage 1 detection grep was re-run after the
 edits: only rows 9 (Cat. E) and 26 (dead file) still match, as expected. **Build
-verification done 2026-07-11**: full `./build.sh --all --authorindex` rebuild succeeded
-and a symptom grep of the rendered `docs/*.html` found zero doubled "(Author (Year))"
-patterns. See `issues/paren-citations-plan.md` for background and method.
+verification done 2026-07-11**: full `./build.sh --all --authorindex` rebuild succeeded;
+a per-row check of the rendered HTML then found 2 of the 22 fixes broken by apa.csl's
+alphabetical sorting of citation groups (rows 2 and 17 — a prefix attached to a key that
+does not sort first ends up mid-group). Both were corrected by reordering the keys (see
+those rows) and the book rebuilt. See `issues/paren-citations-plan.md` for background.
 
 These are citations written as a bare narrative citation wrapped in literal parentheses,
 which render doubled, e.g. "(Costelloe (1915))" instead of "(Costelloe, 1915)".
@@ -39,7 +41,7 @@ Decision column, on a dedicated branch).
 | # | File:line | Current source (snippet) | Proposed fix | Cat. | Decision |
 |---|-----------|--------------------------|--------------|------|----------|
 | 1 | `index.qmd:362` | `previous books (@FriendlyMeyer:2016:DDAR).` | `previous books [@FriendlyMeyer:2016:DDAR].` | A | FIXED 2026-07-11 |
-| 2 | `01-Prelude.qmd:52` | `textbooks (e.g., @Peddle:1910; @Haskell:1919)` | `textbooks [e.g., @Peddle:1910; @Haskell:1919]` | B | FIXED 2026-07-11 |
+| 2 | `01-Prelude.qmd:52` | `textbooks (e.g., @Peddle:1910; @Haskell:1919)` | `textbooks [e.g., @Haskell:1919; @Peddle:1910]` — keys reordered: apa.csl sorts group members alphabetically by author, and the `e.g.,` prefix travels with its key, so it must be attached to the alphabetically-first key or it lands mid-group ("Haskell, 1919; e.g., Peddle, 1910") | B | FIXED 2026-07-11 |
 | 3 | `01-Prelude.qmd:52` | `college courses (@Costelloe:1915).` | `college courses [@Costelloe:1915].` | A | FIXED 2026-07-11 |
 | 4 | `03-getting_started.qmd:26` | `"sparklines" (@Tufte:83), tiny versions` — in footnote `[^tables]` | `"sparklines" [@Tufte:83], tiny versions` | A | FIXED 2026-07-11 |
 | 5 | `04-multivariate_plots.qmd:341` | `the GLIM program (@Nelder1974glim), which` | `the GLIM program [@Nelder1974glim], which` | A | FIXED 2026-07-11 |
@@ -54,7 +56,7 @@ Decision column, on a dedicated branch).
 | 14 | `06-linear_models.qmd:91` | `IBM Yorkdown Heights (@IBM1965)` | `IBM Yorkdown Heights [@IBM1965]` | A | FIXED 2026-07-11 |
 | 15 | `06-linear_models.qmd:91` | `University of Georgia (@BradshawFindley1967)` | `University of Georgia [@BradshawFindley1967]` | A | FIXED 2026-07-11 |
 | 16 | `07-linear_models-plots.qmd:733` | `the _added-variable_ plot ("AV plot", also called _partial regression_ plot, @MostellerTukey-1977).` | `the _added-variable_ plot ["AV plot", also called _partial regression_ plot, @MostellerTukey-1977].` → renders ("AV plot," also called partial regression plot, Mosteller & Tukey, 1977) — comma before the key **must stay a comma**; a `;` there breaks the citation (verified with pandoc + apa.csl: semicolons only separate `@key` items, so a prose-only segment invalidates the group and it renders as literal brackets) | D | FIXED 2026-07-11 |
-| 17 | `07-linear_models-plots.qmd:954` | `("C+R plot", also called _partial residual plot_, @LarsenMcCleary:72; @Cook:93) gives a` | `["C+R plot", also called _partial residual plot_, @LarsenMcCleary:72; @Cook:93] gives a` → renders ("C+R plot," also called partial residual plot, Larsen & McCleary, 1972; Cook, 1993) — same as row 16: comma before the first key, `;` only between the two keys (verified) | D | FIXED 2026-07-11 |
+| 17 | `07-linear_models-plots.qmd:954` | `("C+R plot", also called _partial residual plot_, @LarsenMcCleary:72; @Cook:93) gives a` | `["C+R plot", also called _partial residual plot_, @Cook:93; @LarsenMcCleary:72] gives a` — keys reordered vs. the original proposal: apa.csl sorts the group alphabetically (Cook first), so the prose prefix must sit on `@Cook:93` or it lands mid-group. Renders ("C+R plot," also called partial residual plot, Cook, 1993; Larsen & McCleary, 1972) | D | FIXED 2026-07-11 |
 | 18 | `09-collinearity-ridge.qmd:60` | `(e.g, @Graybill1961; @Hocking2013)` — note existing typo "e.g," | `[e.g., @Graybill1961; @Hocking2013]` (also fixes the typo) | B | FIXED 2026-07-11 |
 | 19 | `09-collinearity-ridge.qmd:824` | `Bayesian regression (e.g., @Pesaran2019) can reduce` | `Bayesian regression [e.g., @Pesaran2019] can reduce` | B | FIXED 2026-07-11 |
 | 20 | `11-mlm-review.qmd:22` | `` The `r package("VGAM")` (@Yee2015, @R-VGAM) handles `` | `` The `r package("VGAM")` [@Yee2015; @R-VGAM] handles `` — comma between keys must become `;` or Pandoc mis-parses | C | FIXED 2026-07-11 |
