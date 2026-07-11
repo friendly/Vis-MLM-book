@@ -43,7 +43,7 @@ Book covers are publisher-owned artwork (T&F Appendix A lists "Images" and "Grap
 
 ## Chapter 2: Introduction
 
-- `images/Cover-GBE.png` — cover image from Douglas Hofstadter's *Gödel, Escher, Bach* [-@Hofstadter1979] (rightsholder: Basic Books / Hachette)
+- `images/Cover-GEB.png` — cover image from Douglas Hofstadter's *Gödel, Escher, Bach* [-@Hofstadter1979] (rightsholder: Basic Books / Hachette)
 
 ## Chapter 3: Getting Started
 
@@ -60,7 +60,7 @@ Book covers are publisher-owned artwork (T&F Appendix A lists "Images" and "Grap
 
 ### `child/04-grand-tour.qmd`
 
-- `images/Cover-GBE.png` — cover image from Douglas Hofstadter's *Gödel, Escher, Bach* [-@Hofstadter1979], reused here as `fig-cover-GBE2` (already listed under Chapter 2)
+- `images/Cover-GEB.png` — cover image from Douglas Hofstadter's *Gödel, Escher, Bach* [-@Hofstadter1979], reused here as `fig-cover-GEB2` (already listed under Chapter 2)
 
 All other figures in this child doc are author-generated and excluded: `images/projection.png` and the `proj-*.png` series have a source PowerPoint (`images/projections.pptx`) and/or are produced by `R/projections.R` (whose "idea from: Cook, Buja, Lee, Wickham..." comment credits the conceptual source, not a copied image); `images/peng-tourr-diagram.png` has a source PowerPoint (`images/peng-tourr-diagram.pptx`); and the `images/tours/*` snapshots/animations are generated via the `tourr` package on the Penguin dataset (`R/penguin/peng-tourr.R`).
 
@@ -166,7 +166,7 @@ is "avoid third-party material and avoid permissions."
 | 5 | `images/icons/books.jpg` | Preface | — | Montage; covered by items 1–4 |
 | 6 | `images/tesseract.gif` + `images/tesseract-frames.png` | Ch 1 | "ediacura" (YouTube creator) | Contact via YouTube channel; T&F lists YouTube content as copyrighted |
 | 7 | `images/ReavenMiller-3d-annotated.png` | Ch 1 | Springer (*Diabetologia*, 1979) | STM Guidelines route available (CRC & Springer both signatories) |
-| 8 | `images/Cover-GBE.png` | Ch 2 (+ child/04-grand-tour) | Basic Books / Hachette | Book-cover artwork; used twice |
+| 8 | `images/Cover-GEB.png` | Ch 2 (+ child/04-grand-tour) | Basic Books / Hachette | Book-cover artwork; used twice |
 | 9 | `images/DataSaurusDozen.gif` | Ch 3 | Autodesk Research (Matejka & Fitzmaurice) | **Or regenerate** from CC0 `datasauRus` data → NPR |
 | 10 | `images/datasaurus-dozen.jpg` | Ch 3 | X post by Selçuk Korkmaz (underlying art: Autodesk Research) | **Or regenerate** from CC0 `datasauRus` data → NPR |
 | 11 | `images/mahalanobis.png` | Ch 4 | Ou Zhang (blog author) | Redrawn artwork; or document substantial transformation |

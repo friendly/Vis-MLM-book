@@ -43,7 +43,7 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 
 | Done | Image | Pixels | Eff. DPI | Printed at | Px needed @300 | Max `out-width` @300 | Action | Notes |
 |------|-------|--------|----------|------------|----------------|----------------------|--------|-------|
-| [ ] | [`Cover-GBE.png`](../images/Cover-GBE.png) | 456×489 | 139 | 60% (3.3″) | 987 px | 27% |  |  |
+| [X] | [`Cover-GEB.png`](../images/Cover-GEB.png) | 456×489 | 139 | 60% (3.3″) | 987 px | 27% | REPLACE | Book is actually **GEB** (*Gödel, Escher, Bach An Eternal Golden Braid*)! I went ahead fixed all occurrences of the wrong title within the `.qmd` files. This file was also renamed to `Cover-GEB.png`. See [`issues/GBE-to-GEB-switch.md`](./GBE-to-GEB-switch.md). Source retrieved from the Internet Archive https://archive.org/details/godel-escher-bach-an-eternal-golden-braid-1999 as a `.pdf`; used `magick` to create high-res `.png`; cropped `.png` |
 | [ ] | [`heatmap.png`](../images/heatmap.png) | 1065×902 | 278 | 70% (3.8″) | 1151 px | 64% |  |  |
 
 ## Ch. 3: Getting Started (`03-getting_started.qmd`) — 3 images
@@ -168,6 +168,6 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 ## Progress
 
 - Total LOW-DPI images: **69**
-- Resolved (REPLACE): **16** as of July 10th, 2026 (10:26PM EDT; **GK**)
+- Resolved (REPLACE): **17** as of July 10th, 2026 (11:17PM EDT; **GK**)
 - Resolved (SHRINK): 
 - Resolved (ACCEPT / flag to CRC): 
