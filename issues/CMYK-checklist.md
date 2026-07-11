@@ -111,7 +111,7 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 |------|-------|--------|----------|------------|----------------|----------------------|--------|-------|
 | [X] | [`lin-comb-pca.png`](../images/lin-comb-pca.png) | 684×468 | 125 | 100% (5.5″) | 1644 px | 41% | REPLACE | Used source `.pptx`, converted -> `.pdf`, used `magick` to create high-res `.png`; cropped `.png` |
 | [X] | [`lin-comb3.png`](../images/lin-comb3.png) | 301×425 | 137 | 40% (2.2″) | 658 px | 18% | REPLACE | Used source `.pptx`, converted -> `.pdf`, used `magick` to create high-res `.png`; cropped `.png` |
-| [ ] | [`lin-comb4.png`](../images/lin-comb4.png) | 332×489 | 152 | 40% (2.2″) | 658 px | 20% |  |  |
+| [X] | [`lin-comb4.png`](../images/lin-comb4.png) | 332×489 | 152 | 40% (2.2″) | 658 px | 20% | REPLACE | Used source `.pptx`, converted -> `.pdf`, used `magick` to create high-res `.png`; cropped `.png` |
 | [ ] | [`lin-comb-mra.png`](../images/lin-comb-mra.png) | 873×542 | 159 | 100% (5.5″) | 1644 px | 53% |  |  |
 
 ## Ch. 7: Linear Model Plots (`07-linear_models-plots.qmd`) — 2 images
@@ -168,6 +168,6 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 ## Progress
 
 - Total LOW-DPI images: **69**
-- Resolved (REPLACE): **13** as of July 10th, 2026 (10:01PM EDT; **GK**)
+- Resolved (REPLACE): **14** as of July 10th, 2026 (10:12PM EDT; **GK**)
 - Resolved (SHRINK): 
 - Resolved (ACCEPT / flag to CRC): 
