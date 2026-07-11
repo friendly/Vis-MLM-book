@@ -66,9 +66,14 @@ comes back in a form I can act on efficiently:
   please don't apply house style (smart quotes, spacing, capitalization) to these; flag
   a suspected typo rather than correcting it directly, since a wrong correction there
   would break working code.
-- **Numbered footnotes citing a URL are intentional** — web links appear as footnotes
-  in the print edition (they're inline hyperlinks in the online HTML version), not an
-  error.
+- **Numbered footnotes citing a URL are intentional, not an error.** In the online HTML
+  edition, web links are inline clickable hyperlinks; obviously that doesn't work in
+  print, so for the PDF each linked URL currently becomes a numbered footnote showing
+  the address. That's the convention I've seen used in other books, so it's what I've
+  defaulted to — but I'd welcome your guidance if CRC has a house style for this (e.g.
+  URL spelled out in running text instead, a different footnote/endnote format, or
+  something else entirely). Happy to adjust if the current approach isn't what you'd
+  prefer.
 - A few minor figure/layout items were already reviewed and consciously left as-is
   (e.g., some axis-label crowding in a couple of dense multi-panel figures) — if
   something looks like a rough edge rather than an error, it's likely one of these; no
