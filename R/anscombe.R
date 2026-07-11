@@ -84,7 +84,7 @@ anscombe_long |>
 #' Plot all together using facets
 
 desc <- tibble(
-  dataset = 1:4,
+  dataset = as.character(1:4),   # match anscombe_long$dataset (character)
   label = c("Pure error", "Lack of fit", "Outlier", "Influence")
 )
 
@@ -97,10 +97,13 @@ ggplot(anscombe_long, aes(x = x, y = y)) +
   stat_ellipse(level = 0.5, color=col, type="norm") +
   geom_label(data=desc, aes(label = label), x=6, y=12) +
   facet_wrap(~dataset, labeller = label_both) +
-  theme(panel.grid.major = element_blank(), 
+  theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank())
 
-
+# save as images/anscombe1.png, used by the fig-anscombe1 chunk in
+# 03-getting_started.qmd; canvas 650/72 x 480/72 in reproduces the proportions
+# of the original 650x480 screen export (72 px/in), dpi = 400 for print
+ggsave("images/anscombe1.png", width = 650/72, height = 480/72, dpi = 400)
 
 
 # show result omitting each point in turn ??

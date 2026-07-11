@@ -51,7 +51,7 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 | Done | Image | Pixels | Eff. DPI | Printed at | Px needed @300 | Max `out-width` @300 | Action | Notes |
 |------|-------|--------|----------|------------|----------------|----------------------|--------|-------|
 | [ ] | [`datasaurus-dozen.jpg`](../images/datasaurus-dozen.jpg) | 680×425 | 124 | 100% (5.5″) | 1644 px | 41% |  |  |
-| [ ] | [`anscombe1.png`](../images/anscombe1.png) | 650×480 | 132 | 90% (4.9″) | 1480 px | 39% |  |  |
+| [X] | [`anscombe1.png`](../images/anscombe1.png) | 650×480 | 132 | 90% (4.9″) | 1480 px | 39% | REGENERATE | Regenerated at 3611×2666 (400 dpi, eff. ~737 dpi at 4.9″) via `ggsave()` from the faceted plot in `R/anscombe.R` (the `fig-anscombe1` chunk in `03-getting_started.qmd` shows the same code minus the gridline-removing `theme()` line); canvas 650/72 × 480/72 in matches the original export's proportions |
 | [X] | [`1969_draft_lottery_photo.jpg`](../images/1969_draft_lottery_photo.jpg) | 1024×690 | 234 | 80% (4.4″) | 1316 px | 62% | REPLACE | Higher-res version retrieved from https://commons.wikimedia.org/wiki/File:1969_draft_lottery_photo.jpg |
 
 ## Ch. 4: Multivariate Plots (`04-multivariate_plots.qmd`) — 22 images
@@ -165,9 +165,19 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 |------|-------|--------|----------|------------|----------------|----------------------|--------|-------|
 | [X] | [`discrim-demo-both.jpg`](../images/discrim-demo-both.jpg) | 684×689 | 178 | 70% (3.8″) | 1151 px | 41% | REPLACE | Used source `.pptx`, converted -> `.pdf`, used `magick` to create high-res `.png`, cropped `.png` and saved as `.jpg` |
 
+## Comments
+
+### GK
+
+- I cannot find a higher-res `images/MF-gray.jpg`
+- I cannot find a higher-res `images/tesseract.gif` to make a higher-res `images/tesseract-frames.png`
+- Do you have the source for `images/heatmap.png`?
+- I am not sure if a higher-res `images/datasaurus-dozen.jpg` exists
+  + Should we try to recreate this figure?
+
 ## Progress
 
 - Total LOW-DPI images: **69**
-- Resolved (REPLACE): **18** as of July 11th, 2026 (10:31AM EDT; **GK**)
+- Resolved (REPLACE): **19** as of July 11th, 2026 (05:30PM EDT; **GK**)
 - Resolved (SHRINK): 
 - Resolved (ACCEPT / flag to CRC): 
