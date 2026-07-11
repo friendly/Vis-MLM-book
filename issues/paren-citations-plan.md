@@ -3,8 +3,9 @@
 **Status: RESOLVED — STAGE 2 COMPLETE 2026-07-11** — all `OK` rows from the reviewed
 inventory in `issues/paren-citations.md` applied on the `citation-fixes` branch (22 edits;
 row 3 was already fixed in the source). Deviations from the plan, per GK: work done on the
-existing `citation-fixes` branch rather than a fresh one, and no book build was run — the
-render/HTML smoke test should happen at the next `Build -> All Formats`. The detection
+existing `citation-fixes` branch rather than a fresh one. Build verification completed
+2026-07-11: full rebuild (`./build.sh --all --authorindex` + fix-index pass) succeeded and
+the rendered-HTML symptom grep found zero doubled citations. The detection
 grep was re-run post-fix: only row 9 (Cat. E, intentional) and row 26 (dead file
 `04b-higher.qmd`, no decision) still match. Rows 26–27 (dead files) remain unfixed.
 Cross-referenced in `issues/GK-June3-issues.md`.

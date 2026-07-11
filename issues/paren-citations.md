@@ -4,9 +4,10 @@
 `citation-fixes` branch — all rows marked `OK` were changed; `skip` rows and the
 dead-file rows (26–27, no decision given) were left untouched. Row 3 was found already
 fixed in the source before Stage 2 ran. The Stage 1 detection grep was re-run after the
-edits: only rows 9 (Cat. E) and 26 (dead file) still match, as expected. Build
-verification (render + HTML symptom grep) deferred per GK — do at the next
-`Build -> All Formats`. See `issues/paren-citations-plan.md` for background and method.
+edits: only rows 9 (Cat. E) and 26 (dead file) still match, as expected. **Build
+verification done 2026-07-11**: full `./build.sh --all --authorindex` rebuild succeeded
+and a symptom grep of the rendered `docs/*.html` found zero doubled "(Author (Year))"
+patterns. See `issues/paren-citations-plan.md` for background and method.
 
 These are citations written as a bare narrative citation wrapped in literal parentheses,
 which render doubled, e.g. "(Costelloe (1915))" instead of "(Costelloe, 1915)".
