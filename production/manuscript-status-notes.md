@@ -1,7 +1,5 @@
 # Notes for the copyediting team — *Visualizing Multivariate Data and Models in R*
 
-*Draft — 2026-07-10. To be finalized (page count, date) against the actual PDF sent.*
-
 ---
 
 ## What is included here
