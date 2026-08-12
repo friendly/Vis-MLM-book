@@ -1,6 +1,6 @@
 # Scatterplots for the two largest partial correlations in the crime data
 
-source(here::here("R", "pvPlot.R"))
+library(heplots)
 
 data(crime, package = "ggbiplot")
 crime.num <- crime |>
