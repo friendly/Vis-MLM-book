@@ -51,7 +51,7 @@ script casually; if regeneration is needed later, re-merge tracked rows by
 
 | Column | Filled by | Meaning |
 |---|---|---|
-| `chapter`, `fig_label`, `filename`, `qmd_file`, `qmd_line` | script | where the figure lives |
+| `chapter`, `fig_label`, `filename`, `qmd_file`, `qmd_line` | script | where the figure lives — `chapter` is the source `.qmd` filename (sorts by chapter number; note file-name prefixes and printed chapter numbers diverge for Ch. 15 / the online-only appendix, per project `CLAUDE.md`) |
 | `source` | script (best-effort) | attribution text extracted from the caption/alt text |
 | `copyright_status` | script, from `fig-permission-list.md` | `permission_required` or `verify` |
 | `rightsholder_or_route` | script, from `fig-permission-list.md` | likely rightsholder / route, or what to verify |

@@ -93,49 +93,6 @@ qmd_files <- list.files(".", pattern = "\\.qmd$", recursive = TRUE, full.names =
 qmd_files <- qmd_files[!str_detect(qmd_files, "^\\./(docs|test|_freeze)/")]
 qmd_files <- qmd_files[!str_detect(qmd_files, "\\.claude/worktrees")]
 
-get_chapter_title <- function(qmd) {
-  lines <- readLines(qmd, warn = FALSE)
-  if (length(lines) && trimws(lines[1]) == "---") {
-    end <- which(trimws(lines[-1]) == "---")[1] + 1
-    if (!is.na(end)) lines <- lines[seq(end + 1, length(lines))]
-  }
-  hit <- grep("^#\\s+", lines, value = TRUE)[1]
-  if (is.na(hit)) return(tools::file_path_sans_ext(basename(qmd)))
-  trimws(sub("\\s*\\{[^}]*\\}\\s*$", "", sub("^#+\\s+", "", hit)))
-}
-
-make_chapter_heading <- function(qmd, title) {
-  base    <- tools::file_path_sans_ext(basename(qmd))
-  num_str <- sub("^(\\d+)-.*", "\\1", base)
-  if (num_str == base) return(title)
-  num <- as.integer(num_str)
-  if (num >= 1 && num <= 15) sprintf("Chapter %d: %s", num, title)
-  else if (num == 21)        sprintf("Appendix: %s", title)
-  else                       title
-}
-
-chapter_heading_cache <- new.env()
-chapter_heading_for <- function(qmd) {
-  if (!exists(qmd, envir = chapter_heading_cache)) {
-    if (str_detect(qmd, "/child/")) {
-      # Child docs are included into a numbered parent chapter; their own
-      # first "# " heading is a subsection, not the chapter -- borrow the
-      # parent's heading instead (matched on the leading chapter number).
-      num_str <- sub("^(\\d+)-.*", "\\1", tools::file_path_sans_ext(basename(qmd)))
-      parent <- list.files(".", pattern = paste0("^", num_str, "-.*\\.qmd$"), full.names = TRUE)
-      heading <- if (length(parent) == 1) {
-        paste0(make_chapter_heading(parent, get_chapter_title(parent)), " [", basename(qmd), "]")
-      } else {
-        make_chapter_heading(qmd, get_chapter_title(qmd))
-      }
-    } else {
-      heading <- make_chapter_heading(qmd, get_chapter_title(qmd))
-    }
-    assign(qmd, heading, envir = chapter_heading_cache)
-  }
-  get(qmd, envir = chapter_heading_cache)
-}
-
 extract_source <- function(cap) {
   if (is.na(cap)) return(NA_character_)
   m <- str_match(cap, "(?i)_?source_?:?\\s*(.*)$")[, 2]
@@ -208,8 +165,12 @@ scan_qmd <- function(path) {
 
 scanned <- qmd_files |> map(scan_qmd) |> bind_rows()
 
+# `chapter` is just the source filename (e.g. "04-multivariate_plots.qmd") so
+# rows sort into chapter order -- trust _quarto.yml, not this prefix, for the
+# actual printed chapter number (see CLAUDE.md: file-name prefixes and printed
+# chapter numbers diverge for Ch. 15 / the online-only appendix).
 scanned <- scanned |>
-  mutate(chapter = map_chr(file, chapter_heading_for))
+  mutate(chapter = basename(file))
 
 # ------------------------------------------------------------------
 # 3. Join tracked filenames against scanned occurrences (one row per
