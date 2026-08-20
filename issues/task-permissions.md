@@ -23,6 +23,15 @@ Tracks work on clearing third-party figures for CRC/Taylor & Francis submission,
   per-request tracking fields (contact, dates, doc paths). Built
   `issues/build-permissions-csv.R` to turn it into a working dataset,
   `issues/permissions-tracking.csv`, that can carry status through steps 2–6 above.
+- **2026-08-20:** Resolved the `images/corrgram-renderings.png` "verify" row. It isn't
+  from Kevin Wright's **corrgram** package vignette (no match there). The image was
+  added in commit `dcaf1f4f`, the same commit that wrote the @sec-corrgram text citing
+  `@Friendly:02:corrgram` (Friendly 2002, *The American Statistician* 56(4):316–324) —
+  GK confirmed it is in fact a figure from that paper. Per guide rule 6, sole MF
+  authorship doesn't make it NPR; it needs the same journal reuse-rights check as
+  `images/ridge-demo.png` (ASA/T&F, since T&F already publishes *The American
+  Statistician* for ASA). Updated `fig-permission-list.md`'s Ch. 4 entry and "Verify
+  before deciding" table accordingly and regenerated the CSV.
 
 ## What the script does
 
@@ -81,6 +90,9 @@ script casually; if regeneration is needed later, re-merge tracked rows by
 
 - [x] Build `issues/build-permissions-csv.R` and generate `issues/permissions-tracking.csv`
 - [ ] Resolve the 7 `verify` rows (authorship/license) — most likely become NPR
+
+  GK: See `issues/verify-NPR.R` for a small filter/select script
+
 - [ ] Fill in `necessary` (step 2) for every `permission_required` row
 - [ ] Work through step 4 (apply) for rows confirmed necessary
 - [ ] Record evidence (step 5) and submission (step 6) as they land

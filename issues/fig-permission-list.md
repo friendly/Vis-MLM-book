@@ -56,7 +56,7 @@ Book covers are publisher-owned artwork (T&F Appendix A lists "Images" and "Grap
 - `images/mahalanobis.png` — Mahalanobis vs. Euclidean distance diagram; caption: "Re-drawn from [Ou Zhang](https://ouzhang.rbind.io/2020/11/16/outliers-part4/)" (original kept as `images/mahalanobis-orig.png`) — **redrawn artwork is still third-party per the T&F guide** unless substantially transformed; either seek permission from Ou Zhang or document a substantial-transformation claim
 - [NPR] `images/galton-corr.jpg` — Galton's 1886 diagram of parent/child height correlation — *NPR: public domain. Published 1886; Galton d. 1911, so life+70 expired 1982 and US pre-1930.*
 - [NPR] `images/penguins-horst.png` — penguin species cartoon; caption: "Image credit: Allison Horst" — *NPR: licensed. Allison Horst's palmerpenguins art page explicitly grants use ("You are invited to use this accompanying artwork … Please cite with 'Artwork by @allison_horst'"), and her illustrations repository is licensed CC-BY 4.0 (verified 2026-07-08). Required attribution is already in the caption.*
-- `images/corrgram-renderings.png` — "Correlation value (x 100)" demo graphic; Claude thinks this matches the example image from Kevin Wright's **corrgram** R package documentation/vignette (no generating script in `R/`, no in-text source note — added as a binary file directly in commit `dcaf1f4f`) — **verify source**; if it is from the corrgram vignette, the simplest fix is to regenerate it by running the package's example code, making it author-generated
+- `images/corrgram-renderings.png` — "Correlation value (x 100)" demo graphic. Not from Kevin Wright's **corrgram** R package vignette/docs (checked 2026-08-20 — no match there). Added as a binary file in commit `dcaf1f4f`, the same commit that wrote the surrounding @sec-corrgram text citing `@Friendly:02:corrgram` (Friendly, "Corrgrams: Exploratory displays for correlation matrices," *The American Statistician* 56(4), 316–324, 2002 — MF's own paper introducing the corrgram). **Confirmed 2026-08-20 (GK): this is a figure from that paper.** No generating script in `R/`, so it's a reproduction, not code output. Per guide rule 6, sole MF authorship of the source paper does **not** make this NPR — journal copyright was very likely transferred/licensed to the publisher at publication, same situation as `images/ridge-demo.png` below. **Remaining step: reuse-rights check with the journal**, i.e. ASA / Taylor & Francis (T&F already publishes *The American Statistician* for ASA, the same publisher family as CRC Press — may simplify the request, but still needs to be verified and documented, not assumed).
 
 ### `child/04-grand-tour.qmd`
 
@@ -184,7 +184,7 @@ is "avoid third-party material and avoid permissions."
 |--------|---------|----------------|
 | ~~`images/1D-4D.png`~~ | Ch 1 | Resolved 2026-07-10: replaced by author-drawn TikZ redraw (`latex/diagrams/fig-1D-4D.tex`) → NPR |
 | `images/MV-juicer.png` | Ch 5 | Licenses of the individual clipart elements in `MV-juicer.pptx` |
-| `images/corrgram-renderings.png` | Ch 4 | Confirm source; if from the **corrgram** vignette, regenerate via package code → NPR |
+| `images/corrgram-renderings.png` | Ch 4 | Confirmed 2026-08-20 (GK) as a figure from `@Friendly:02:corrgram` (not the corrgram package vignette). Needs ASA/T&F journal reuse-rights check, same as `ridge-demo.png` below — sole MF authorship does not make it NPR (guide rule 6) |
 | `images/techniques-table.png` (`fig-techniques`) | Ch 6 | Confirm MF authorship |
 | `images/ridge-demo.png` | Ch 9 | IMS/*Statistical Science* author-reuse rights for Friendly et al. (2013) figure (own prior work still counts as third-party per guide) |
 | `images/weight-functions.jpg` | Ch 14 | Confirm MF drew the sketch; if so → NPR |
@@ -199,6 +199,9 @@ is "avoid third-party material and avoid permissions."
   animation), or the generating R script in this repo.
 - Add a CC BY-SA license notice for `images/pca-springs-cropped.gif` alongside the
   existing "Amoeba" credit.
-- Consider regenerating items 9, 10, and 15 (and `corrgram-renderings.png`) from data/code
-  to shrink the permission list — per the guide, figures built by MF's own code from raw
-  data need no permission.
+- Consider regenerating items 9, 10, and 15 from data/code to shrink the permission list —
+  per the guide, figures built by MF's own code from raw data need no permission.
+  `corrgram-renderings.png` has the same escape valve (swap in a fresh `corrgram()`/
+  `corrplot()` panel) as a way to sidestep the journal reuse-rights question entirely,
+  since the existing PNG is now confirmed as a reproduction from Friendly (2002) — see
+  the Ch. 4 entry above.
