@@ -157,12 +157,9 @@ No TODOs found.
 
 ## Child documents
 
-### `child/04-network.qmd`
-
-| Line | Status | Note |
-|------|--------|------|
-| 265 | hidden | Move `pvPlot()` function into `heplots` or `car` package |
-| 263 | hidden | Two figures side-by-side — `car::scatterplot()` may not allow `layout-ncol` |
+`child/04-network.qmd` — **deleted** (orphaned duplicate of the "Visualizing partial
+correlations" section already live in `04-multivariate_plots.qmd`; `pvPlot()` move to
+`heplots` is done — see `issues/pvPlot.md`)
 
 ### `child/04-grand-tour.qmd`
 
