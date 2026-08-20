@@ -90,9 +90,6 @@ script casually; if regeneration is needed later, re-merge tracked rows by
 
 - [x] Build `issues/build-permissions-csv.R` and generate `issues/permissions-tracking.csv`
 - [ ] Resolve the 7 `verify` rows (authorship/license) — most likely become NPR
-
-  GK: See `issues/verify-NPR.R` for a small filter/select script
-
 - [ ] Fill in `necessary` (step 2) for every `permission_required` row
 - [ ] Work through step 4 (apply) for rows confirmed necessary
 - [ ] Record evidence (step 5) and submission (step 6) as they land
