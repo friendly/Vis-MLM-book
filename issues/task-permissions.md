@@ -14,15 +14,18 @@ Tracks work on clearing third-party figures for CRC/Taylor & Francis submission,
 
 - **2026-06-30 (GK):** First pass, `issues/fig-permission-list.md` — prose list of
   candidate third-party figures through Ch. 8, by chapter.
+  
 - **2026-07-08 (GK):** Re-assessed every entry against the Permissions guide; tagged
   each as `[NPR]` (no permission required, with a documented basis — public domain,
   CC license, or author-generated-from-data) or left untagged. Added two consolidated
   tables at the end of the file: "Permission required" (18 figures) and "Verify before
   deciding" (8 figures, authorship/license unresolved).
+  
 - **2026-08-20:** `issues/fig-permission-list.md` is prose and doesn't carry
   per-request tracking fields (contact, dates, doc paths). Built
   `issues/build-permissions-csv.R` to turn it into a working dataset,
   `issues/permissions-tracking.csv`, that can carry status through steps 2–6 above.
+  
 - **2026-08-20:** Resolved the `images/corrgram-renderings.png` "verify" row. It isn't
   from Kevin Wright's **corrgram** package vignette (no match there). The image was
   added in commit `dcaf1f4f`, the same commit that wrote the @sec-corrgram text citing
@@ -32,21 +35,25 @@ Tracks work on clearing third-party figures for CRC/Taylor & Francis submission,
   `images/ridge-demo.png` (ASA/T&F, since T&F already publishes *The American
   Statistician* for ASA). Updated `fig-permission-list.md`'s Ch. 4 entry and "Verify
   before deciding" table accordingly and regenerated the CSV.
+  
 - **2026-08-23:** Resolved the `images/weight-functions.jpg` (`fig-weight-fns`, Ch. 14)
   "verify" row — MF confirmed he drew the hand-drawn sketch himself, so it's original
   work with no third-party material. Tagged `[NPR]` in `fig-permission-list.md`'s Ch. 14
   entry, struck the row in the "Verify before deciding" table, and regenerated the CSV
   (drops out entirely — NPR images aren't tracked there). 6 `verify` rows remain.
+  
 - **2026-08-23:** Resolved the `images/techniques-table.png` (`fig-techniques`, Ch. 6)
   "verify" row — MF confirmed he made the table himself. Tagged `[NPR]` in
   `fig-permission-list.md`'s Ch. 6 entry, struck the row in the "Verify before deciding"
   table, and regenerated the CSV. 5 `verify` rows remain.
+  
 - **2026-08-23:** Resolved the `images/history/hertzsprung1-annotated.jpg` (Ch. 1)
   "verify" row — it was already `[NPR]` in the Ch. 1 entry, with the UK/EU life+70
   caveat (Hertzsprung d. 1967, term runs to 2038) fully documented there; the "verify"
   table row was just a leftover reminder to carry that caveat into the T&F permissions
   log, not an unresolved question in this repo. Struck the row and regenerated the CSV.
   4 `verify` rows remain.
+  
 - **2026-08-23:** Resolved the `images/cancor-diagram-udi.png` (`fig-cancor-diagram`,
   Ch. 12) "verify" row — MF decided the substantially-transformed-redraw claim over CC
   BY-SA attribution: Udi Alter's redraw takes only the geometric concept (angle between
@@ -55,6 +62,7 @@ Tracks work on clearing third-party figures for CRC/Taylor & Francis submission,
   author, user 'ttnphns', was already in the caption. Tagged `[NPR]` in
   `fig-permission-list.md`'s Ch. 12 entry, struck the row in the "Verify before
   deciding" table, and regenerated the CSV. 3 `verify` rows remain.
+  
 - **2026-08-23:** Resolved the `images/ridge-demo.png` (Ch. 9) and
   `images/corrgram-renderings.png` (Ch. 4) "verify" rows together — MF verified both
   against their journals' author-reuse policies: ASA/T&F journal authors generally
@@ -67,6 +75,7 @@ Tracks work on clearing third-party figures for CRC/Taylor & Francis submission,
   "Verify before deciding" table (and dropped the now-moot `corrgram-renderings.png`
   regeneration note from "Action items"), and regenerated the CSV. 1 `verify` row
   remains.
+  
 - **2026-08-23:** Resolved the last "verify" row, `images/MV-juicer.png` (`fig-MV-juicer`,
   Ch. 5), but not as NPR or permission-required — MF has no record of the individual
   clipart elements' source, they aren't watermarked, but per guide rule 2 that isn't
@@ -82,6 +91,7 @@ Tracks work on clearing third-party figures for CRC/Taylor & Francis submission,
   to `"flagged for T&F"` instead of `"not started"`), and regenerated the CSV. All 7
   "verify" rows tracked since the CSV was built are now resolved: 6 became `[NPR]`, 1
   became `[TFQ]`. 0 `verify` rows remain.
+  
 - **2026-08-23:** Resolved step 2 (necessary) for the whole tracked set — MF's call:
   every figure reused in the book illustrates a specific point made in the text (none
   are decorative), so none are candidates for dropping on necessity grounds alone;
@@ -89,6 +99,17 @@ Tracks work on clearing third-party figures for CRC/Taylor & Francis submission,
   `necessary` cells that would be wiped on the next regeneration, changed
   `build-permissions-csv.R` to default `necessary = "Y"` for every row. Regenerated the
   CSV to confirm (21/21 rows `Y`).
+
+- **2026-08-23:** Researched step-4 contact routes for all 20 `permission_required` rows
+  (17 distinct rightsholders/routes, since `Cover-GEB.png` and the `datasauRus`-derived
+  pair each fold to shared contacts). Added a `route` column to
+  `build-permissions-csv.R`'s schema (manual, like `contact`) and hand-filled both from
+  the research: publisher permissions systems (CCC/RightsLink, publisher forms) where
+  available, direct contacts (email, LinkedIn, ResearchGate, contact forms) otherwise,
+  `internal-T&F` for CRC Press's own titles, `regenerate-instead` where a CC0 data
+  alternative sidesteps the request entirely, and `manual-followup-needed` where no
+  contact could be found by automated search. Full write-up in "Permission requests"
+  below.
 
 ## What the script does
 
@@ -122,7 +143,8 @@ script casually; if regeneration is needed later, re-merge tracked rows by
 | `copyright_status` | script, from `fig-permission-list.md` | `permission_required`, `verify`, or `TFQ` (question for T&F — diligence done, status unresolvable from this end) |
 | `rightsholder_or_route` | script, from `fig-permission-list.md` | likely rightsholder / route, what to verify, or `"flagged for T&F"` |
 | `necessary` | script, defaults `"Y"` | step 2 — every tracked figure is judged necessary (decided 2026-08-23, MF: each illustrates a specific point in the text); override by hand for a genuine individual exception |
-| `applied_date`, `applied_by`, `contact` | manual | step 4 |
+| `route`, `contact` | manual (from research) | step 4 — `route` is one of `CCC`, `publisher-page`, `direct-contact`, `internal-T&F`, `regenerate-instead`, `manual-followup-needed`; `contact` is the actual email/URL/note. See "Permission requests" below |
+| `applied_date`, `applied_by` | manual | step 4 |
 | `received_date`, `doc_path` | manual | step 5 — `doc_path` should point to the saved permission evidence |
 | `submitted_date` | manual | step 6 |
 | `status` | manual | overall row status; script initializes to `not started` (`flagged for T&F` for `TFQ` rows) |
@@ -132,9 +154,11 @@ script casually; if regeneration is needed later, re-merge tracked rows by
 
 - 5 rows have no `fig_label`: book-cover images embedded as plain `<img>` tags in
   `index.qmd` (Preface — not numbered Quarto figures).
+
 - No `verify` rows remain. 1 `TFQ` row (`images/MV-juicer.png`, Ch. 5) is genuinely
   unresolved and stays that way pending T&F's answer — see the "T&F Submission" section
   below.
+
 - ~~`images/Cover-GEB.png` appears identically in both `04-multivariate_plots.qmd`
   and `child/04-grand-tour.qmd`~~ — resolved 2026-08-20: `child/04-grand-tour.qmd`
   was an orphaned file (its content was fully duplicated into
@@ -147,6 +171,7 @@ script casually; if regeneration is needed later, re-merge tracked rows by
 - [x] Build `issues/build-permissions-csv.R` and generate `issues/permissions-tracking.csv`
 - [x] Resolve the 7 `verify` rows (authorship/license) — 6 became `[NPR]`, 1 became `[TFQ]`
 - [x] Resolve `necessary` (step 2) — every row defaults `Y`; none dropped
+- [x] Research step 4 contact routes for every `permission_required` row — see "Permission requests"
 - [ ] Work through step 4 (apply) for rows confirmed necessary
 - [ ] Record evidence (step 5) and submission (step 6) as they land
 - [ ] Get T&F's ruling on the 1 `TFQ` row (`images/MV-juicer.png`) and resolve it to NPR/permission-required/replace
@@ -180,3 +205,62 @@ separately): figure, chapter, one-line status (cleared/NPR with basis, permissio
 obtained with doc reference, or open TFQ question), and — for the `TFQ` row(s)
 specifically — the explicit question being put to T&F, matching the in-book caption note
 (e.g. `fig-MV-juicer`'s "Source: Author image, using publicly available clipart").
+
+## Permission requests
+
+Step-4 contact research (2026-08-23), one row per rightsholder — full detail lives in
+`permissions-tracking.csv`'s `route`/`contact` columns; this is the actionable summary.
+Fig numbers are from the current HTML build (`docs/*.html`); a few Preface items are
+plain `<img>` tags with no Quarto figure number.
+
+### Ready to apply — publisher permissions systems (CCC/RightsLink or a permissions page)
+
+| Fig | Figure | Rightsholder | Contact |
+|---|---|---|---|
+| 1.7 | `ReavenMiller-3d-annotated.png` | Springer (*Diabetologia*, 1979) | RightsLink via the article's "Reprints and Permissions" link on link.springer.com; CCC support springernaturesupport@copyright.com |
+| 2.3 / 4.41 | `Cover-GEB.png` (used twice) | Basic Books / Hachette | Permission request form (hachettebookgroup.com) → permissions.Generic@hbgusa.com; expect a fee, multi-week turnaround |
+| 9.3 | `collin-demo.png` | SAGE Publications | RightsLink via us.sagepub.com/en-us/nam/books-permissions |
+| — | `Wilke-FundamentalsOfDataVis.png` (Preface) | O'Reilly Media | copyright.com, or +1 (707) 827-7000 |
+| — | `healy-dava-vis-cover-pupress.jpg` (Preface) | Princeton University Press | Online form: press.princeton.edu/resources/permissions (2–4 wk) |
+
+### Ready to apply — direct email/contact confirmed
+
+| Fig | Figure | Rightsholder | Contact |
+|---|---|---|---|
+| 9.1 | `collinearity-diagnostics-SPSS.png` | Arndt Regorz | mail@regorz-statistik.de |
+| 4.8 | `mahalanobis.png` | Ou Zhang | ouzhang.rbind.io/contact, or X/Twitter @zhangou888 |
+| 4.52 | `big5-qgraph-rodrigues.png` | Gabriel R. Rodrigues | Contact form at reisrgabriel.com |
+| 5.30 | `image-compression-SVD.png` | Tomio Kobayashi | LinkedIn (linkedin.com/in/tomio-kobayashi-9869ba30/) — no email found; source Medium post blocked automated fetch |
+| 5.17 | `pca4ds-figure-2-11.png` | Tomàs Aluja-Banet (per MF: contact first author directly) | Professor of Statistics, EIO Dept., UPC BarcelonaTech. No direct email confirmed (`imp.upc.edu` profile 404'd); try LinkedIn (linkedin.com/in/tomas-aluja-b0b24713/) or the EIO department contact page. Site states "© 1998-2020 ... All Rights Reserved" — permission genuinely required |
+| 12.3 | `iris-diagram.jpg` | Gayan De Silva (per MF: track down via the DOI) | DOI `10.13140/RG.2.2.14790.14406` resolves to a **ResearchGate self-upload**, confirming `publisher = Unpublished` — De Silva is the rightsholder directly, no publisher intermediary. Contact via his ResearchGate profile (researchgate.net/profile/Gayan-De-Silva) |
+
+### Internal — raise with T&F editor, no external request
+
+| Fig | Figure | Rightsholder | Note |
+|---|---|---|---|
+| — | `Rennie-cover.png` (Preface) | CRC Press | `bib/references.bib` confirms `publisher = CRC Press` for `Rennie2025` — T&F's own title |
+| — | `Unwin-GmooG.webp` (Preface) | CRC Press / T&F | Same situation — T&F's own title |
+
+### Recommend regenerating instead of requesting
+
+| Fig | Figure | Rightsholder | Note |
+|---|---|---|---|
+| 3.2 | `DataSaurusDozen.gif` | Autodesk Research (Matejka & Fitzmaurice) | No listed contact found. The underlying `datasauRus` R package data is CC0 — regenerating the animation from data avoids the request entirely. Fallback contact: Justin Matejka's LinkedIn |
+| 3.x (PDF only) | `datasaurus-dozen.jpg` | Selçuk Korkmaz (X post; underlying art: Autodesk Research) | Same CC0 regeneration option applies. Fallback direct contact: selcuk.korkmaz@hacettepe.edu.tr |
+
+### Needs manual follow-up — no automated contact found
+
+| Fig | Figure | Rightsholder | Note |
+|---|---|---|---|
+| 1.3 | `tesseract.gif` + `tesseract-frames.png` | "ediacura" (YouTube) | WebFetch can't render YouTube's channel page (JS-heavy); check the video's "About" tab by hand: youtube.com/watch?v=5xN4DxdiFrs |
+
+### High risk — recommend replace/drop rather than request
+
+| Fig | Figure | Rightsholder | Note |
+|---|---|---|---|
+| 9.2 | `wheres-waldo.png` | Martin Handford / Walker Books / Candlewick | Contacts do exist (Candlewick permissions@candlewick.com, Walker Books UK permissions@walker.co.uk) but both are ~6-week, formal-license processes for commercially-owned character art — replacing the figure remains the better call |
+
+### No separate request needed
+
+`images/icons/books.jpg` (Preface montage) is covered by the four individual book-cover
+permissions above (Wilke, Healy, Unwin, Rennie) — no fifth request.
