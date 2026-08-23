@@ -55,6 +55,18 @@ Tracks work on clearing third-party figures for CRC/Taylor & Francis submission,
   author, user 'ttnphns', was already in the caption. Tagged `[NPR]` in
   `fig-permission-list.md`'s Ch. 12 entry, struck the row in the "Verify before
   deciding" table, and regenerated the CSV. 3 `verify` rows remain.
+- **2026-08-23:** Resolved the `images/ridge-demo.png` (Ch. 9) and
+  `images/corrgram-renderings.png` (Ch. 4) "verify" rows together — MF verified both
+  against their journals' author-reuse policies: ASA/T&F journal authors generally
+  retain the right to reuse their own figures/tables in future non-commercial works
+  (including a book they author or edit) without formal permission, given full
+  attribution; IMS/*Statistical Science* authors similarly retain the right to reuse
+  their own figures in subsequent scholarly work with proper citation. Both captions
+  already cite the original publication (`@Friendly:02:corrgram`,
+  `@Friendly-etal:ellipses:2013`). Tagged both `[NPR]`, struck both rows in the
+  "Verify before deciding" table (and dropped the now-moot `corrgram-renderings.png`
+  regeneration note from "Action items"), and regenerated the CSV. 1 `verify` row
+  remains.
 
 ## What the script does
 
@@ -98,9 +110,10 @@ script casually; if regeneration is needed later, re-merge tracked rows by
 
 - 5 rows have no `fig_label`: book-cover images embedded as plain `<img>` tags in
   `index.qmd` (Preface — not numbered Quarto figures).
-- The 3 `verify` rows aren't necessarily third-party at all — resolve authorship/
-  license first (per `fig-permission-list.md`'s "Verify before deciding" notes);
-  most will drop out of the permission-required set entirely once resolved.
+- The 1 remaining `verify` row (`images/MV-juicer.png`, Ch. 5 — clipart licensing in
+  `MV-juicer.pptx`) isn't necessarily third-party at all — resolve it per
+  `fig-permission-list.md`'s "Verify before deciding" note; it may drop out of the
+  permission-required set entirely once resolved.
 - ~~`images/Cover-GEB.png` appears identically in both `04-multivariate_plots.qmd`
   and `child/04-grand-tour.qmd`~~ — resolved 2026-08-20: `child/04-grand-tour.qmd`
   was an orphaned file (its content was fully duplicated into
