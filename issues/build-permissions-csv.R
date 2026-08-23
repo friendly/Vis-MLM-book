@@ -208,7 +208,12 @@ result <- bind_rows(matched, unmatched) |>
     source     = coalesce(source, table_notes),
     copyright_status,
     rightsholder_or_route,
-    necessary        = NA_character_,   # step 2: confirm third-party material is necessary
+    # step 2: confirm third-party material is necessary. Default Y -- decided
+    # 2026-08-23 (MF): every figure reused here illustrates a specific point
+    # in the text, not decoration; none are candidates for dropping on
+    # necessity grounds alone (see task-permissions.md). Override by hand in
+    # the CSV only for a genuine individual exception.
+    necessary        = "Y",
     applied_date      = NA_character_,  # step 4
     applied_by        = NA_character_,  # step 4
     contact           = NA_character_,  # step 4

@@ -82,6 +82,13 @@ Tracks work on clearing third-party figures for CRC/Taylor & Francis submission,
   to `"flagged for T&F"` instead of `"not started"`), and regenerated the CSV. All 7
   "verify" rows tracked since the CSV was built are now resolved: 6 became `[NPR]`, 1
   became `[TFQ]`. 0 `verify` rows remain.
+- **2026-08-23:** Resolved step 2 (necessary) for the whole tracked set — MF's call:
+  every figure reused in the book illustrates a specific point made in the text (none
+  are decorative), so none are candidates for dropping on necessity grounds alone;
+  nothing gets deleted to shrink the permission list. Rather than hand-fill 21 identical
+  `necessary` cells that would be wiped on the next regeneration, changed
+  `build-permissions-csv.R` to default `necessary = "Y"` for every row. Regenerated the
+  CSV to confirm (21/21 rows `Y`).
 
 ## What the script does
 
@@ -114,7 +121,7 @@ script casually; if regeneration is needed later, re-merge tracked rows by
 | `source` | script (best-effort) | attribution text extracted from the caption/alt text |
 | `copyright_status` | script, from `fig-permission-list.md` | `permission_required`, `verify`, or `TFQ` (question for T&F — diligence done, status unresolvable from this end) |
 | `rightsholder_or_route` | script, from `fig-permission-list.md` | likely rightsholder / route, what to verify, or `"flagged for T&F"` |
-| `necessary` | manual | step 2 — is the third-party figure actually needed? |
+| `necessary` | script, defaults `"Y"` | step 2 — every tracked figure is judged necessary (decided 2026-08-23, MF: each illustrates a specific point in the text); override by hand for a genuine individual exception |
 | `applied_date`, `applied_by`, `contact` | manual | step 4 |
 | `received_date`, `doc_path` | manual | step 5 — `doc_path` should point to the saved permission evidence |
 | `submitted_date` | manual | step 6 |
@@ -139,7 +146,7 @@ script casually; if regeneration is needed later, re-merge tracked rows by
 
 - [x] Build `issues/build-permissions-csv.R` and generate `issues/permissions-tracking.csv`
 - [x] Resolve the 7 `verify` rows (authorship/license) — 6 became `[NPR]`, 1 became `[TFQ]`
-- [ ] Fill in `necessary` (step 2) for every `permission_required` row
+- [x] Resolve `necessary` (step 2) — every row defaults `Y`; none dropped
 - [ ] Work through step 4 (apply) for rows confirmed necessary
 - [ ] Record evidence (step 5) and submission (step 6) as they land
 - [ ] Get T&F's ruling on the 1 `TFQ` row (`images/MV-juicer.png`) and resolve it to NPR/permission-required/replace
