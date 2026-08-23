@@ -187,7 +187,7 @@ is "avoid third-party material and avoid permissions."
 | `images/ridge-demo.png` | Ch 9 | IMS/*Statistical Science* author-reuse rights for Friendly et al. (2013) figure (own prior work still counts as third-party per guide) |
 | ~~`images/weight-functions.jpg`~~ | Ch 14 | Resolved 2026-08-23: confirmed MF drew the sketch himself → NPR |
 | `images/cancor-diagram-udi.png` | Ch 12 | Decide claim: CC BY-SA attribution vs. substantially-transformed redraw (see entry) |
-| `images/history/hertzsprung1-annotated.jpg` | Ch 1 | Tagged [NPR] (US public domain, pre-1930), but note UK/EU life+70 term runs to 2038 (Hertzsprung d. 1967) — document in log |
+| ~~`images/history/hertzsprung1-annotated.jpg`~~ | Ch 1 | Resolved 2026-08-23: already `[NPR]` in the Ch. 1 entry above, with the UK/EU life+70 caveat documented there in full — nothing further to verify here. The caveat itself (US PD by publication date vs. UK/EU life+70 running to 2038) still needs to be carried into the T&F permissions log alongside the other [NPR] proofs (see "Action items" below). |
 
 ### Action items for the permissions log
 

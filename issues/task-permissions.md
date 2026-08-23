@@ -41,6 +41,12 @@ Tracks work on clearing third-party figures for CRC/Taylor & Francis submission,
   "verify" row — MF confirmed he made the table himself. Tagged `[NPR]` in
   `fig-permission-list.md`'s Ch. 6 entry, struck the row in the "Verify before deciding"
   table, and regenerated the CSV. 5 `verify` rows remain.
+- **2026-08-23:** Resolved the `images/history/hertzsprung1-annotated.jpg` (Ch. 1)
+  "verify" row — it was already `[NPR]` in the Ch. 1 entry, with the UK/EU life+70
+  caveat (Hertzsprung d. 1967, term runs to 2038) fully documented there; the "verify"
+  table row was just a leftover reminder to carry that caveat into the T&F permissions
+  log, not an unresolved question in this repo. Struck the row and regenerated the CSV.
+  4 `verify` rows remain.
 
 ## What the script does
 
@@ -82,10 +88,9 @@ script casually; if regeneration is needed later, re-merge tracked rows by
 
 ### Known gaps (fill in manually)
 
-- 6 rows have no `fig_label`: 5 book-cover images embedded as plain `<img>` tags in
-  `index.qmd` (Preface — not numbered Quarto figures) and
-  `images/history/hertzsprung1-annotated.jpg` (same, Ch. 1 milestones montage).
-- The 5 `verify` rows aren't necessarily third-party at all — resolve authorship/
+- 5 rows have no `fig_label`: book-cover images embedded as plain `<img>` tags in
+  `index.qmd` (Preface — not numbered Quarto figures).
+- The 4 `verify` rows aren't necessarily third-party at all — resolve authorship/
   license first (per `fig-permission-list.md`'s "Verify before deciding" notes);
   most will drop out of the permission-required set entirely once resolved.
 - ~~`images/Cover-GEB.png` appears identically in both `04-multivariate_plots.qmd`
