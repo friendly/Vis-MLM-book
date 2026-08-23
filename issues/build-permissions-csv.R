@@ -216,9 +216,10 @@ result <- bind_rows(matched, unmatched) |>
     necessary        = "Y",
     # step 4: how to actually reach the rightsholder (CCC/RightsLink,
     # publisher permissions page, direct email/contact, internal-T&F,
-    # regenerate-instead, or manual-followup-needed) -- filled by hand from
-    # research, not derivable from fig-permission-list.md. See "Permission
-    # requests" in task-permissions.md for the write-up.
+    # nearly-ready [a contact exists but isn't a confirmed email/response
+    # channel], or manual-followup-needed) -- filled by hand from research,
+    # not derivable from fig-permission-list.md. See "Permission requests" in
+    # task-permissions.md for the write-up.
     route             = NA_character_,  # step 4
     applied_date      = NA_character_,  # step 4
     applied_by        = NA_character_,  # step 4

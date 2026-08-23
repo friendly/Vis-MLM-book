@@ -111,6 +111,18 @@ Tracks work on clearing third-party figures for CRC/Taylor & Francis submission,
   contact could be found by automated search. Full write-up in "Permission requests"
   below.
 
+- **2026-08-23:** Two calls from MF that change the step-4 plan:
+  (1) not regenerating the Datasaurus Dozen images (`DataSaurusDozen.gif`,
+  `datasaurus-dozen.jpg`) even though the CC0 `datasauRus` data would allow it — pursuing
+  permission instead, so both move out of "regenerate" and into "Ready to apply" /
+  "Nearly ready to apply" depending on how solid their contact is; (2) not dropping
+  `wheres-waldo.png` despite the high-risk flag — proceeding with the request anyway so
+  the diligence is on record either way, even if it's slow or refused. Updated
+  `fig-permission-list.md` (Ch. 3 and Ch. 9 entries + both consolidated-table rows) and
+  `permissions-tracking.csv` (`route`/`contact`) accordingly, and restructured
+  "Permission requests" below to match. MF is handing step 4 execution off to Gavin from
+  here — see "Gavin tasks" at the end of this file.
+
 ## What the script does
 
 `issues/build-permissions-csv.R` does **not** re-derive copyright status — that
@@ -143,7 +155,7 @@ script casually; if regeneration is needed later, re-merge tracked rows by
 | `copyright_status` | script, from `fig-permission-list.md` | `permission_required`, `verify`, or `TFQ` (question for T&F — diligence done, status unresolvable from this end) |
 | `rightsholder_or_route` | script, from `fig-permission-list.md` | likely rightsholder / route, what to verify, or `"flagged for T&F"` |
 | `necessary` | script, defaults `"Y"` | step 2 — every tracked figure is judged necessary (decided 2026-08-23, MF: each illustrates a specific point in the text); override by hand for a genuine individual exception |
-| `route`, `contact` | manual (from research) | step 4 — `route` is one of `CCC`, `publisher-page`, `direct-contact`, `internal-T&F`, `regenerate-instead`, `manual-followup-needed`; `contact` is the actual email/URL/note. See "Permission requests" below |
+| `route`, `contact` | manual (from research) | step 4 — `route` is one of `CCC`, `publisher-page`, `direct-contact`, `internal-T&F`, `nearly-ready` (a contact exists but isn't a confirmed email/response channel), `manual-followup-needed`; `contact` is the actual email/URL/note. See "Permission requests" below |
 | `applied_date`, `applied_by` | manual | step 4 |
 | `received_date`, `doc_path` | manual | step 5 — `doc_path` should point to the saved permission evidence |
 | `submitted_date` | manual | step 6 |
@@ -172,7 +184,8 @@ script casually; if regeneration is needed later, re-merge tracked rows by
 - [x] Resolve the 7 `verify` rows (authorship/license) — 6 became `[NPR]`, 1 became `[TFQ]`
 - [x] Resolve `necessary` (step 2) — every row defaults `Y`; none dropped
 - [x] Research step 4 contact routes for every `permission_required` row — see "Permission requests"
-- [ ] Work through step 4 (apply) for rows confirmed necessary
+- [x] Decide the Datasaurus (no regenerate) and Waldo (request anyway) open questions — MF, 2026-08-23
+- [ ] Handed off to Gavin (2026-08-23) — work through step 4 (apply) per "Gavin tasks"
 - [ ] Record evidence (step 5) and submission (step 6) as they land
 - [ ] Get T&F's ruling on the 1 `TFQ` row (`images/MV-juicer.png`) and resolve it to NPR/permission-required/replace
 - [ ] Compile the Permissions Summary file for CRC/T&F (see "T&F Submission" below)
@@ -233,6 +246,14 @@ plain `<img>` tags with no Quarto figure number.
 | 5.30 | `image-compression-SVD.png` | Tomio Kobayashi | LinkedIn (linkedin.com/in/tomio-kobayashi-9869ba30/) — no email found; source Medium post blocked automated fetch |
 | 5.17 | `pca4ds-figure-2-11.png` | Tomàs Aluja-Banet (per MF: contact first author directly) | Professor of Statistics, EIO Dept., UPC BarcelonaTech. No direct email confirmed (`imp.upc.edu` profile 404'd); try LinkedIn (linkedin.com/in/tomas-aluja-b0b24713/) or the EIO department contact page. Site states "© 1998-2020 ... All Rights Reserved" — permission genuinely required |
 | 12.3 | `iris-diagram.jpg` | Gayan De Silva (per MF: track down via the DOI) | DOI `10.13140/RG.2.2.14790.14406` resolves to a **ResearchGate self-upload**, confirming `publisher = Unpublished` — De Silva is the rightsholder directly, no publisher intermediary. Contact via his ResearchGate profile (researchgate.net/profile/Gayan-De-Silva) |
+| 3.x (PDF only) | `datasaurus-dozen.jpg` | Selçuk Korkmaz (X post; underlying art: Autodesk Research) | selcuk.korkmaz@hacettepe.edu.tr. MF decided 2026-08-23 not to regenerate from the CC0 `datasauRus` data — pursuing permission instead |
+| 9.2 | `wheres-waldo.png` | Martin Handford / Walker Books / Candlewick | Candlewick permissions@candlewick.com; Walker Books UK permissions@walker.co.uk (both ~6-week, formal-license processes). **High risk** — commercially-owned character art, permission may be slow/expensive/refused — but MF decided 2026-08-23 to request anyway rather than drop the figure. Send to both; document whatever comes back either way |
+
+### Nearly ready to apply — contact needs manual completion
+
+| Fig | Figure | Rightsholder | Note |
+|---|---|---|---|
+| 3.2 | `DataSaurusDozen.gif` | Autodesk Research (Matejka & Fitzmaurice) | No confirmed email found for Autodesk Research or Matejka. Best available contact is Justin Matejka's LinkedIn (linkedin.com/in/justinmatejka/) — send a connection/message request there, or keep searching for a direct email before falling back to LinkedIn. MF decided 2026-08-23 not to regenerate from the CC0 `datasauRus` data — pursuing permission instead |
 
 ### Internal — raise with T&F editor, no external request
 
@@ -241,26 +262,61 @@ plain `<img>` tags with no Quarto figure number.
 | — | `Rennie-cover.png` (Preface) | CRC Press | `bib/references.bib` confirms `publisher = CRC Press` for `Rennie2025` — T&F's own title |
 | — | `Unwin-GmooG.webp` (Preface) | CRC Press / T&F | Same situation — T&F's own title |
 
-### Recommend regenerating instead of requesting
-
-| Fig | Figure | Rightsholder | Note |
-|---|---|---|---|
-| 3.2 | `DataSaurusDozen.gif` | Autodesk Research (Matejka & Fitzmaurice) | No listed contact found. The underlying `datasauRus` R package data is CC0 — regenerating the animation from data avoids the request entirely. Fallback contact: Justin Matejka's LinkedIn |
-| 3.x (PDF only) | `datasaurus-dozen.jpg` | Selçuk Korkmaz (X post; underlying art: Autodesk Research) | Same CC0 regeneration option applies. Fallback direct contact: selcuk.korkmaz@hacettepe.edu.tr |
-
 ### Needs manual follow-up — no automated contact found
 
 | Fig | Figure | Rightsholder | Note |
 |---|---|---|---|
 | 1.3 | `tesseract.gif` + `tesseract-frames.png` | "ediacura" (YouTube) | WebFetch can't render YouTube's channel page (JS-heavy); check the video's "About" tab by hand: youtube.com/watch?v=5xN4DxdiFrs |
 
-### High risk — recommend replace/drop rather than request
-
-| Fig | Figure | Rightsholder | Note |
-|---|---|---|---|
-| 9.2 | `wheres-waldo.png` | Martin Handford / Walker Books / Candlewick | Contacts do exist (Candlewick permissions@candlewick.com, Walker Books UK permissions@walker.co.uk) but both are ~6-week, formal-license processes for commercially-owned character art — replacing the figure remains the better call |
-
 ### No separate request needed
 
 `images/icons/books.jpg` (Preface montage) is covered by the four individual book-cover
 permissions above (Wilke, Healy, Unwin, Rennie) — no fifth request.
+
+## Gavin tasks
+
+Handoff point (2026-08-23, MF): the identification, categorization, and contact research
+above is as far as MF is taking this for now. Everything from here is send-the-requests-
+and-track-the-results — over to Gavin.
+
+**For every request sent:** use the guide's permission email template
+(`production/Permissions_guide.pdf`, p. 6) where a direct email applies, always including
+the required rights language — *"commercial, non-exclusive, worldwide English language
+rights in all forms and media, including print and eBook form, for the lifetime of the
+edition."* Afterward, record in `permissions-tracking.csv`: `applied_date`, `applied_by`,
+and confirm/update `contact` with the actual address or route used; set `status` (suggest
+`applied` → `granted` / `denied` / `no response`). When a permission comes back, save the
+evidence (email, signed form, confirmation page) somewhere under `issues/` — a new
+`issues/permissions/` folder would work — record its path in `doc_path`, the
+`received_date`, and `submitted_date` once it goes in with the manuscript. Don't re-run
+`build-permissions-csv.R` once requests are in flight — it regenerates the whole CSV from
+`fig-permission-list.md` and would wipe these columns (see "What the script does" above).
+
+1. Send the 5 rows in "Ready to apply — publisher permissions systems" (Springer,
+   Hachette, SAGE, O'Reilly, Princeton UP) through their respective CCC/RightsLink or
+   permissions-page routes.
+
+2. Send the 8 rows in "Ready to apply — direct email/contact confirmed" (Regorz, Zhang,
+   Rodrigues, Kobayashi, Aluja-Banet, De Silva, Korkmaz, and the two `wheres-waldo.png`
+   contacts) directly. For Waldo specifically: send to both Candlewick and Walker Books,
+   expect ~6 weeks and a real chance of refusal — MF wants it sent anyway, so document
+   whatever comes back rather than substituting a different figure on your own call.
+
+3. `DataSaurusDozen.gif` ("Nearly ready to apply"): try to find a firmer contact than
+   LinkedIn for Autodesk Research/Matejka before falling back to a LinkedIn message.
+
+4. `tesseract.gif` / `tesseract-frames.png` ("Needs manual follow-up"): check the YouTube
+   video's "About" tab for a contact. If truly nothing is findable, the guide's own rule
+   applies — remove the material and find an alternative rather than stalling on it
+   indefinitely.
+
+5. `Rennie-cover.png` and `Unwin-GmooG.webp` (internal): raise with the T&F Editorial
+   Assistant directly — these are T&F's own titles, not an external request; don't email
+   a publisher's general permissions desk for these two.
+
+6. `MV-juicer.png` (`[TFQ]`, Ch. 5) isn't part of the normal apply flow — it's the open
+   question for T&F, going in with the Permissions Summary file (see "T&F Submission"
+   above) rather than a request you'd send yourself.
+
+7. Once every row above has a `status`, revisit "T&F Submission" above and compile the
+   Permissions Summary file for CRC/T&F from the finished CSV.
