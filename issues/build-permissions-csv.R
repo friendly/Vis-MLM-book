@@ -12,14 +12,17 @@
 #'   5. Document permission             -> `received_date`, `doc_path`
 #'   6. Submit permission               -> `submitted_date`
 #'
-#' Source of truth for *which* images need tracking is the two consolidated
-#' tables at the end of issues/fig-permission-list.md ("Permission required"
-#' and "Verify before deciding") -- that file has already been manually
-#' vetted against the Permissions guide. This script does not re-derive
-#' copyright status; it only (a) parses those two tables and (b) cross-
-#' references each filename against the .qmd sources to recover the chapter,
-#' figure label, and caption-derived source/attribution text, so the result
-#' can be tracked as a spreadsheet instead of prose.
+#' Source of truth for *which* images need tracking is the three consolidated
+#' tables at the end of issues/fig-permission-list.md ("Permission required",
+#' "Verify before deciding", and "Flagged for T&F (TFQ)" -- due-diligence
+#' cases that can't be resolved from the author's end and are flagged as a
+#' question for the publisher rather than claimed NPR or chased as a formal
+#' request) -- that file has already been manually vetted against the
+#' Permissions guide. This script does not re-derive copyright status; it
+#' only (a) parses those tables and (b) cross-references each filename
+#' against the .qmd sources to recover the chapter, figure label, and
+#' caption-derived source/attribution text, so the result can be tracked as
+#' a spreadsheet instead of prose.
 #'
 #' Usage (from project root):
 #'   Rscript issues/build-permissions-csv.R
@@ -62,6 +65,7 @@ expand_filenames <- function(cell) str_extract_all(cell, "images/[^`~\\s]+")[[1]
 
 req_header  <- grep("^### Permission required", md_lines)
 ver_header  <- grep("^### Verify before deciding", md_lines)
+tfq_header  <- grep("^### Flagged for T&F", md_lines)
 
 req_rows <- parse_pipe_table(md_lines, req_header)
 required_tbl <- map_dfr(req_rows, function(r) {
@@ -83,7 +87,17 @@ verify_tbl <- map_dfr(ver_rows, function(r) {
          copyright_status = "verify", table_notes = r[3])
 })
 
-tracked <- bind_rows(required_tbl, verify_tbl)
+tfq_rows <- parse_pipe_table(md_lines, tfq_header)
+tfq_tbl <- map_dfr(tfq_rows, function(r) {
+  raw_figure <- r[1]
+  if (str_detect(raw_figure, "^~~")) return(tibble())
+  imgs <- expand_filenames(raw_figure)
+  if (!length(imgs)) return(tibble())
+  tibble(filename = imgs, table_chapter = r[2], rightsholder_or_route = "flagged for T&F",
+         copyright_status = "TFQ", table_notes = r[3])
+})
+
+tracked <- bind_rows(required_tbl, verify_tbl, tfq_tbl)
 
 # ------------------------------------------------------------------
 # 2. Scan .qmd files for chapter / fig label / fig-cap source text
@@ -201,7 +215,7 @@ result <- bind_rows(matched, unmatched) |>
     received_date     = NA_character_,  # step 5
     doc_path          = NA_character_,  # step 5: path to saved permission evidence
     submitted_date    = NA_character_,  # step 6
-    status            = "not started",
+    status            = if_else(copyright_status == "TFQ", "flagged for T&F", "not started"),
     notes             = table_notes,
     qmd_file          = file,
     qmd_line          = line
@@ -210,10 +224,11 @@ result <- bind_rows(matched, unmatched) |>
 
 write_csv(result, OUT_CSV, na = "")
 
-message(sprintf("Written: %s (%d rows: %d permission_required, %d verify)",
+message(sprintf("Written: %s (%d rows: %d permission_required, %d verify, %d TFQ)",
                  OUT_CSV, nrow(result),
                  sum(result$copyright_status == "permission_required"),
-                 sum(result$copyright_status == "verify")))
+                 sum(result$copyright_status == "verify"),
+                 sum(result$copyright_status == "TFQ")))
 
 n_no_label <- sum(is.na(result$fig_label))
 if (n_no_label > 0) {

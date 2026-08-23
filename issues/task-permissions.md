@@ -67,6 +67,21 @@ Tracks work on clearing third-party figures for CRC/Taylor & Francis submission,
   "Verify before deciding" table (and dropped the now-moot `corrgram-renderings.png`
   regeneration note from "Action items"), and regenerated the CSV. 1 `verify` row
   remains.
+- **2026-08-23:** Resolved the last "verify" row, `images/MV-juicer.png` (`fig-MV-juicer`,
+  Ch. 5), but not as NPR or permission-required — MF has no record of the individual
+  clipart elements' source, they aren't watermarked, but per guide rule 2 that isn't
+  proof of public domain, and a reverse image search isn't guaranteed to be conclusive.
+  Rather than claim NPR on an assumption or block indefinitely on an unresolvable
+  search, introduced a third status, **`[TFQ]`** ("question for T&F"): due diligence is
+  recorded, but the copyright call is left to the publisher. Added a caption source note
+  ("Source: Author image, using publicly available clipart") to `fig-MV-juicer` in
+  `05-pca-biplot.qmd` so the flag is visible in the book text too, not just this log.
+  Added a "Flagged for T&F (TFQ)" consolidated table to `fig-permission-list.md`
+  (parallel to "Permission required"/"Verify before deciding"), taught
+  `build-permissions-csv.R` to parse it (`copyright_status = "TFQ"`, `status` initializes
+  to `"flagged for T&F"` instead of `"not started"`), and regenerated the CSV. All 7
+  "verify" rows tracked since the CSV was built are now resolved: 6 became `[NPR]`, 1
+  became `[TFQ]`. 0 `verify` rows remain.
 
 ## What the script does
 
@@ -74,8 +89,8 @@ Tracks work on clearing third-party figures for CRC/Taylor & Francis submission,
 judgment already lives in `issues/fig-permission-list.md` (step 1 + 3, done by GK).
 It only:
 
-- Parses the "Permission required" and "Verify before deciding" tables at the end of
-  that file (skipping the one now-resolved strikethrough entry, `images/1D-4D.png`).
+- Parses the "Permission required", "Verify before deciding", and "Flagged for T&F
+  (TFQ)" tables at the end of that file (skipping resolved/strikethrough entries).
 - Cross-references each filename against every `.qmd` file (`include_graphics()`,
   `here::here("images", "...")`, `<img src=...>`, and pandoc `![...](images/...)`
   syntax, skipping HTML comment blocks) to recover the chapter, the figure's
@@ -97,23 +112,22 @@ script casually; if regeneration is needed later, re-merge tracked rows by
 |---|---|---|
 | `chapter`, `fig_label`, `filename`, `qmd_file`, `qmd_line` | script | where the figure lives — `chapter` is the source `.qmd` filename (sorts by chapter number; note file-name prefixes and printed chapter numbers diverge for Ch. 15 / the online-only appendix, per project `CLAUDE.md`) |
 | `source` | script (best-effort) | attribution text extracted from the caption/alt text |
-| `copyright_status` | script, from `fig-permission-list.md` | `permission_required` or `verify` |
-| `rightsholder_or_route` | script, from `fig-permission-list.md` | likely rightsholder / route, or what to verify |
+| `copyright_status` | script, from `fig-permission-list.md` | `permission_required`, `verify`, or `TFQ` (question for T&F — diligence done, status unresolvable from this end) |
+| `rightsholder_or_route` | script, from `fig-permission-list.md` | likely rightsholder / route, what to verify, or `"flagged for T&F"` |
 | `necessary` | manual | step 2 — is the third-party figure actually needed? |
 | `applied_date`, `applied_by`, `contact` | manual | step 4 |
 | `received_date`, `doc_path` | manual | step 5 — `doc_path` should point to the saved permission evidence |
 | `submitted_date` | manual | step 6 |
-| `status` | manual | overall row status; script initializes every row to `not started` |
+| `status` | manual | overall row status; script initializes to `not started` (`flagged for T&F` for `TFQ` rows) |
 | `notes` | script (from table), then manual | free text |
 
 ### Known gaps (fill in manually)
 
 - 5 rows have no `fig_label`: book-cover images embedded as plain `<img>` tags in
   `index.qmd` (Preface — not numbered Quarto figures).
-- The 1 remaining `verify` row (`images/MV-juicer.png`, Ch. 5 — clipart licensing in
-  `MV-juicer.pptx`) isn't necessarily third-party at all — resolve it per
-  `fig-permission-list.md`'s "Verify before deciding" note; it may drop out of the
-  permission-required set entirely once resolved.
+- No `verify` rows remain. 1 `TFQ` row (`images/MV-juicer.png`, Ch. 5) is genuinely
+  unresolved and stays that way pending T&F's answer — see the "T&F Submission" section
+  below.
 - ~~`images/Cover-GEB.png` appears identically in both `04-multivariate_plots.qmd`
   and `child/04-grand-tour.qmd`~~ — resolved 2026-08-20: `child/04-grand-tour.qmd`
   was an orphaned file (its content was fully duplicated into
@@ -124,7 +138,38 @@ script casually; if regeneration is needed later, re-merge tracked rows by
 ## Status
 
 - [x] Build `issues/build-permissions-csv.R` and generate `issues/permissions-tracking.csv`
-- [ ] Resolve the 7 `verify` rows (authorship/license) — most likely become NPR
+- [x] Resolve the 7 `verify` rows (authorship/license) — 6 became `[NPR]`, 1 became `[TFQ]`
 - [ ] Fill in `necessary` (step 2) for every `permission_required` row
 - [ ] Work through step 4 (apply) for rows confirmed necessary
 - [ ] Record evidence (step 5) and submission (step 6) as they land
+- [ ] Get T&F's ruling on the 1 `TFQ` row (`images/MV-juicer.png`) and resolve it to NPR/permission-required/replace
+- [ ] Compile the Permissions Summary file for CRC/T&F (see "T&F Submission" below)
+
+## T&F Submission
+
+`issues/fig-permission-list.md` and `issues/permissions-tracking.csv` are internal
+working files — the audit trail and the tracking spreadsheet. Neither is meant to go to
+the publisher as-is. Decided 2026-08-23 (MF): a separate **Permissions Summary** file
+will be compiled once the tracking work here is essentially done, and submitted to
+CRC/T&F alongside the manuscript, documenting the permissions status of every
+third-party (and TFQ) image in one place for their review.
+
+**Rationale:** this project's due-diligence process — checking actual license tags
+rather than assuming, distinguishing genuine public domain from "just not watermarked,"
+documenting substantial-transformation claims, verifying journal author-reuse policies
+rather than assuming sole authorship is enough — is already more thorough than what most
+authors submit. But diligence has a limit: some questions (like the untraceable
+`MV-juicer.png` clipart) are legitimately the publisher's call, not something an author
+can resolve alone. The `[TFQ]` status exists for exactly that boundary — flag it clearly,
+with the history, and let T&F decide, rather than the author guessing at NPR or stalling
+indefinitely on an unresolvable search.
+
+**When to compile:** near the end, once the `permission_required` rows have actually
+been applied for (or replaced/dropped) and the `TFQ` row has either been answered by T&F
+or is being submitted *as* the open question.
+
+**Likely contents** (derived from `permissions-tracking.csv`, not hand-maintained
+separately): figure, chapter, one-line status (cleared/NPR with basis, permission
+obtained with doc reference, or open TFQ question), and — for the `TFQ` row(s)
+specifically — the explicit question being put to T&F, matching the in-book caption note
+(e.g. `fig-MV-juicer`'s "Source: Author image, using publicly available clipart").
