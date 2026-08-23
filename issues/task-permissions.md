@@ -37,6 +37,10 @@ Tracks work on clearing third-party figures for CRC/Taylor & Francis submission,
   work with no third-party material. Tagged `[NPR]` in `fig-permission-list.md`'s Ch. 14
   entry, struck the row in the "Verify before deciding" table, and regenerated the CSV
   (drops out entirely — NPR images aren't tracked there). 6 `verify` rows remain.
+- **2026-08-23:** Resolved the `images/techniques-table.png` (`fig-techniques`, Ch. 6)
+  "verify" row — MF confirmed he made the table himself. Tagged `[NPR]` in
+  `fig-permission-list.md`'s Ch. 6 entry, struck the row in the "Verify before deciding"
+  table, and regenerated the CSV. 5 `verify` rows remain.
 
 ## What the script does
 
@@ -81,7 +85,7 @@ script casually; if regeneration is needed later, re-merge tracked rows by
 - 6 rows have no `fig_label`: 5 book-cover images embedded as plain `<img>` tags in
   `index.qmd` (Preface — not numbered Quarto figures) and
   `images/history/hertzsprung1-annotated.jpg` (same, Ch. 1 milestones montage).
-- The 6 `verify` rows aren't necessarily third-party at all — resolve authorship/
+- The 5 `verify` rows aren't necessarily third-party at all — resolve authorship/
   license first (per `fig-permission-list.md`'s "Verify before deciding" notes);
   most will drop out of the permission-required set entirely once resolved.
 - ~~`images/Cover-GEB.png` appears identically in both `04-multivariate_plots.qmd`

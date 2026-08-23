@@ -85,9 +85,7 @@ Excluded as author-generated: `images/pca-rotation.png` (source PowerPoint `imag
 
 ## Chapter 6: Overview of Linear Models
 
-No figures requiring permission. The chapter has three figures: `images/techniques-table.png` (`fig-techniques`), a plain summary table (visually inspected — no clipart or third-party content, added in commit `95af901b` alongside other original chapter diagrams); `fig-workers-fits`, generated inline by `ggplot()` on the `workers` dataset; and `fig-poly`, generated inline by `matplot()` on author-constructed data.
-
-- *Verify that* `fig-techniques` *is made by MF*
+No figures requiring permission. The chapter has three figures: [NPR] `images/techniques-table.png` (`fig-techniques`), a plain summary table (visually inspected — no clipart or third-party content, added in commit `95af901b` alongside other original chapter diagrams) — *NPR: confirmed 2026-08-23 by MF — he made the table himself; original work, no third-party material.*; `fig-workers-fits`, generated inline by `ggplot()` on the `workers` dataset; and `fig-poly`, generated inline by `matplot()` on author-constructed data.
 
 ## Chapter 7: Plots for Univariate Response Models
 
@@ -185,7 +183,7 @@ is "avoid third-party material and avoid permissions."
 | ~~`images/1D-4D.png`~~ | Ch 1 | Resolved 2026-07-10: replaced by author-drawn TikZ redraw (`latex/diagrams/fig-1D-4D.tex`) → NPR |
 | `images/MV-juicer.png` | Ch 5 | Licenses of the individual clipart elements in `MV-juicer.pptx` |
 | `images/corrgram-renderings.png` | Ch 4 | Confirmed 2026-08-20 (GK) as a figure from `@Friendly:02:corrgram` (not the corrgram package vignette). Needs ASA/T&F journal reuse-rights check, same as `ridge-demo.png` below — sole MF authorship does not make it NPR (guide rule 6) |
-| `images/techniques-table.png` (`fig-techniques`) | Ch 6 | Confirm MF authorship |
+| ~~`images/techniques-table.png` (`fig-techniques`)~~ | Ch 6 | Resolved 2026-08-23: confirmed MF made it himself → NPR |
 | `images/ridge-demo.png` | Ch 9 | IMS/*Statistical Science* author-reuse rights for Friendly et al. (2013) figure (own prior work still counts as third-party per guide) |
 | ~~`images/weight-functions.jpg`~~ | Ch 14 | Resolved 2026-08-23: confirmed MF drew the sketch himself → NPR |
 | `images/cancor-diagram-udi.png` | Ch 12 | Decide claim: CC BY-SA attribution vs. substantially-transformed redraw (see entry) |
