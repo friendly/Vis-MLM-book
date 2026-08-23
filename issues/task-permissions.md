@@ -47,6 +47,14 @@ Tracks work on clearing third-party figures for CRC/Taylor & Francis submission,
   table row was just a leftover reminder to carry that caveat into the T&F permissions
   log, not an unresolved question in this repo. Struck the row and regenerated the CSV.
   4 `verify` rows remain.
+- **2026-08-23:** Resolved the `images/cancor-diagram-udi.png` (`fig-cancor-diagram`,
+  Ch. 12) "verify" row — MF decided the substantially-transformed-redraw claim over CC
+  BY-SA attribution: Udi Alter's redraw takes only the geometric concept (angle between
+  variates) from the Cross Validated discussion, not the original's expression, and
+  counts as a new work under the guide's footnote 1. Courtesy credit to the original
+  author, user 'ttnphns', was already in the caption. Tagged `[NPR]` in
+  `fig-permission-list.md`'s Ch. 12 entry, struck the row in the "Verify before
+  deciding" table, and regenerated the CSV. 3 `verify` rows remain.
 
 ## What the script does
 
@@ -90,7 +98,7 @@ script casually; if regeneration is needed later, re-merge tracked rows by
 
 - 5 rows have no `fig_label`: book-cover images embedded as plain `<img>` tags in
   `index.qmd` (Preface — not numbered Quarto figures).
-- The 4 `verify` rows aren't necessarily third-party at all — resolve authorship/
+- The 3 `verify` rows aren't necessarily third-party at all — resolve authorship/
   license first (per `fig-permission-list.md`'s "Verify before deciding" notes);
   most will drop out of the permission-required set entirely once resolved.
 - ~~`images/Cover-GEB.png` appears identically in both `04-multivariate_plots.qmd`
