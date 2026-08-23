@@ -132,7 +132,7 @@ No figures requiring permission. There are no `knitr::include_graphics()` calls 
 
 ## Chapter 14: Multivariate Influence and Robust Estimation
 
-- `images/weight-functions.jpg` (`fig-weight-fns`) — hand-drawn sketch (tablet/whiteboard-style handwriting and freehand curves) comparing the OLS, L1, and biweight objective functions. No generating script or source citation found — **could not confirm authorship either way; verify with MF** (if MF drew it, it becomes [NPR] as original work)
+- [NPR] `images/weight-functions.jpg` (`fig-weight-fns`) — hand-drawn sketch (tablet/whiteboard-style handwriting and freehand curves) comparing the OLS, L1, and biweight objective functions. No generating script (it's a scan/photo of a hand drawing, not code output) — *NPR: confirmed 2026-08-23 by MF — he drew the sketch himself; original work, no third-party material.*
 
 Every other figure in the chapter (scatterplot matrices, influence/LR plots, DFBETAS plots, robust-weight index plots) is generated inline by visible R code on the toy, `NLSY`, and `peng` datasets.
 
@@ -187,7 +187,7 @@ is "avoid third-party material and avoid permissions."
 | `images/corrgram-renderings.png` | Ch 4 | Confirmed 2026-08-20 (GK) as a figure from `@Friendly:02:corrgram` (not the corrgram package vignette). Needs ASA/T&F journal reuse-rights check, same as `ridge-demo.png` below — sole MF authorship does not make it NPR (guide rule 6) |
 | `images/techniques-table.png` (`fig-techniques`) | Ch 6 | Confirm MF authorship |
 | `images/ridge-demo.png` | Ch 9 | IMS/*Statistical Science* author-reuse rights for Friendly et al. (2013) figure (own prior work still counts as third-party per guide) |
-| `images/weight-functions.jpg` | Ch 14 | Confirm MF drew the sketch; if so → NPR |
+| ~~`images/weight-functions.jpg`~~ | Ch 14 | Resolved 2026-08-23: confirmed MF drew the sketch himself → NPR |
 | `images/cancor-diagram-udi.png` | Ch 12 | Decide claim: CC BY-SA attribution vs. substantially-transformed redraw (see entry) |
 | `images/history/hertzsprung1-annotated.jpg` | Ch 1 | Tagged [NPR] (US public domain, pre-1930), but note UK/EU life+70 term runs to 2038 (Hertzsprung d. 1967) — document in log |
 
