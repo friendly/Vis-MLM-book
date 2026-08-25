@@ -89,7 +89,7 @@ update the `child/04-network.qmd` subsection per §2 above.
 
 ### 7. Not affected / no action
 
-- `issues/task-june-submit.md` line 140 — `` `pvPlot()` / `dataEllipse` PR to **car** ``
+- `issues/solved/task-june-submit.md` line 140 — `` `pvPlot()` / `dataEllipse` PR to **car** ``
   is about a separate, still-open item (a `car::dataEllipse()` internal cex-collision
   bug). Per the usage note now at the top of `heplots`'s `R/pvPlot.R`, that bug is only
   reachable via `dataEllipse`'s `ellipse.label` argument, which `pvPlot()` never passes

@@ -9,7 +9,7 @@ verification done 2026-07-11**: full `./build.sh --all --authorindex` rebuild su
 a per-row check of the rendered HTML then found 2 of the 22 fixes broken by apa.csl's
 alphabetical sorting of citation groups (rows 2 and 17 — a prefix attached to a key that
 does not sort first ends up mid-group). Both were corrected by reordering the keys (see
-those rows) and the book rebuilt. See `issues/paren-citations-plan.md` for background.
+those rows) and the book rebuilt. See `issues/solved/paren-citations-plan.md` for background.
 
 These are citations written as a bare narrative citation wrapped in literal parentheses,
 which render doubled, e.g. "(Costelloe (1915))" instead of "(Costelloe, 1915)".

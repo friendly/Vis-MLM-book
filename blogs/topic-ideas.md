@@ -65,8 +65,8 @@ Peddle, 1910)" because Haskell sorts first. Fix: reorder the keys in the
 source to match the alphabetical render order. A good "verify the actual
 rendered output, not just the diff" lesson.
 
-*Source:* `issues/paren-citations.md` (full row-by-row table with categories
-A–E and decisions), `issues/paren-citations-plan.md`, `memory/apa-csl-group-sorting.md`.
+*Source:* `issues/solved/paren-citations.md` (full row-by-row table with categories
+A–E and decisions), `issues/solved/paren-citations-plan.md`, `memory/apa-csl-group-sorting.md`.
 
 ### 3. Auditing RGB vs CMYK for print
 
@@ -99,7 +99,7 @@ the text, alongside the low-res image flag. Both were fixed in the same pass.
 `issues/CMYK-checklist.md`, `issues/cmyk-image-audit.R` +
 `cmyk-image-audit-results.csv`, `issues/email-CRC-cmyk.md` (CRC's actual
 spec reply), `issues/Gavin-SummerWork.md` (Gavin's task framing),
-`issues/GBE-to-GEB-switch.md` (the cover typo).
+`issues/solved/GBE-to-GEB-switch.md` (the cover typo).
 
 ### 4. The mystery of the duplicated index entries
 
