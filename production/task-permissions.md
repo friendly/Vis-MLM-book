@@ -12,7 +12,7 @@ Tracks work on clearing third-party figures for CRC/Taylor & Francis submission,
 
 ## History
 
-- **2026-06-30 (GK):** First pass, `issues/fig-permission-list.md` — prose list of
+- **2026-06-30 (GK):** First pass, `production/fig-permission-list.md` — prose list of
   candidate third-party figures through Ch. 8, by chapter.
   
 - **2026-07-08 (GK):** Re-assessed every entry against the Permissions guide; tagged
@@ -21,10 +21,10 @@ Tracks work on clearing third-party figures for CRC/Taylor & Francis submission,
   tables at the end of the file: "Permission required" (18 figures) and "Verify before
   deciding" (8 figures, authorship/license unresolved).
   
-- **2026-08-20:** `issues/fig-permission-list.md` is prose and doesn't carry
+- **2026-08-20:** `production/fig-permission-list.md` is prose and doesn't carry
   per-request tracking fields (contact, dates, doc paths). Built
-  `issues/build-permissions-csv.R` to turn it into a working dataset,
-  `issues/permissions-tracking.csv`, that can carry status through steps 2–6 above.
+  `production/build-permissions-csv.R` to turn it into a working dataset,
+  `production/permissions-tracking.csv`, that can carry status through steps 2–6 above.
   
 - **2026-08-20:** Resolved the `images/corrgram-renderings.png` "verify" row. It isn't
   from Kevin Wright's **corrgram** package vignette (no match there). The image was
@@ -131,8 +131,8 @@ Tracks work on clearing third-party figures for CRC/Taylor & Francis submission,
 
 ## What the script does
 
-`issues/build-permissions-csv.R` does **not** re-derive copyright status — that
-judgment already lives in `issues/fig-permission-list.md` (step 1 + 3, done by GK).
+`production/build-permissions-csv.R` does **not** re-derive copyright status — that
+judgment already lives in `production/fig-permission-list.md` (step 1 + 3, done by GK).
 It only:
 
 - Parses the "Permission required", "Verify before deciding", and "Flagged for T&F
@@ -143,9 +143,9 @@ It only:
   `fig-*` label, and a source/attribution string pulled from `fig-cap`/alt text.
 - Writes one row per **occurrence** (a filename reused across chapters, e.g.
   `images/Cover-GEB.png` in both Ch. 2 and `child/04-grand-tour.qmd`, gets one row
-  each) to `issues/permissions-tracking.csv`.
+  each) to `production/permissions-tracking.csv`.
 
-Run with `Rscript issues/build-permissions-csv.R`. Safe to re-run after editing
+Run with `Rscript production/build-permissions-csv.R`. Safe to re-run after editing
 `fig-permission-list.md` — it fully regenerates the CSV, so **manual status edits
 made directly in the CSV will be overwritten**. Until there's a need to preserve
 in-progress status across regeneration, do the edits in the CSV and don't re-run the
@@ -186,7 +186,7 @@ script casually; if regeneration is needed later, re-merge tracked rows by
 
 ## Status
 
-- [x] Build `issues/build-permissions-csv.R` and generate `issues/permissions-tracking.csv`
+- [x] Build `production/build-permissions-csv.R` and generate `production/permissions-tracking.csv`
 - [x] Resolve the 7 `verify` rows (authorship/license) — 6 became `[NPR]`, 1 became `[TFQ]`
 - [x] Resolve `necessary` (step 2) — every row defaults `Y`; none dropped
 - [x] Research step 4 contact routes for every `permission_required` row — see "Permission requests"
@@ -198,7 +198,7 @@ script casually; if regeneration is needed later, re-merge tracked rows by
 
 ## T&F Submission
 
-`issues/fig-permission-list.md` and `issues/permissions-tracking.csv` are internal
+`production/fig-permission-list.md` and `production/permissions-tracking.csv` are internal
 working files — the audit trail and the tracking spreadsheet. Neither is meant to go to
 the publisher as-is. Decided 2026-08-23 (MF): a separate **Permissions Summary** file
 will be compiled once the tracking work here is essentially done, and submitted to
@@ -309,11 +309,12 @@ rights in all forms and media, including print and eBook form, for the lifetime 
 edition."* Afterward, record in `permissions-tracking.csv`: `applied_date`, `applied_by`,
 and confirm/update `contact` with the actual address or route used; set `status` (suggest
 `applied` → `granted` / `denied` / `no response`). When a permission comes back, save the
-evidence (email, signed form, confirmation page) somewhere under `issues/` — a new
-`issues/permissions/` folder would work — record its path in `doc_path`, the
-`received_date`, and `submitted_date` once it goes in with the manuscript. Don't re-run
-`build-permissions-csv.R` once requests are in flight — it regenerates the whole CSV from
-`fig-permission-list.md` and would wipe these columns (see "What the script does" above).
+evidence (email, signed form, confirmation page) under `production/permissions/`
+(Gavin's `email-template.Rmd`/`.pdf` are already there) — record its path in `doc_path`,
+the `received_date`, and `submitted_date` once it goes in with the manuscript. Don't
+re-run `build-permissions-csv.R` once requests are in flight — it regenerates the whole
+CSV from `fig-permission-list.md` and would wipe these columns (see "What the script
+does" above).
 
 1. Send the 5 rows in "Ready to apply — publisher permissions systems" (Springer,
    Hachette, SAGE, O'Reilly, Princeton UP) through their respective CCC/RightsLink or

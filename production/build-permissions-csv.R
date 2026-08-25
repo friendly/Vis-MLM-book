@@ -2,9 +2,9 @@
 #' title: Build permissions-tracking CSV
 #' ---
 #'
-#' Builds issues/permissions-tracking.csv, a working dataset for the T&F
+#' Builds production/permissions-tracking.csv, a working dataset for the T&F
 #' permissions process (see production/Permissions_guide.pdf and
-#' issues/task-permissions.md):
+#' production/task-permissions.md):
 #'   1. Identify third-party material   -> pre-filled from fig-permission-list.md
 #'   2. Confirm it is necessary         -> `necessary` (manual)
 #'   3. Determine copyright status      -> `copyright_status`, `rightsholder_or_route`
@@ -13,7 +13,7 @@
 #'   6. Submit permission               -> `submitted_date`
 #'
 #' Source of truth for *which* images need tracking is the three consolidated
-#' tables at the end of issues/fig-permission-list.md ("Permission required",
+#' tables at the end of production/fig-permission-list.md ("Permission required",
 #' "Verify before deciding", and "Flagged for T&F (TFQ)" -- due-diligence
 #' cases that can't be resolved from the author's end and are flagged as a
 #' question for the publisher rather than claimed NPR or chased as a formal
@@ -25,7 +25,7 @@
 #' a spreadsheet instead of prose.
 #'
 #' Usage (from project root):
-#'   Rscript issues/build-permissions-csv.R
+#'   Rscript production/build-permissions-csv.R
 
 library(stringr)
 library(dplyr)
@@ -33,8 +33,8 @@ library(purrr)
 library(readr)
 library(yaml)
 
-PERM_LIST <- "issues/fig-permission-list.md"
-OUT_CSV   <- "issues/permissions-tracking.csv"
+PERM_LIST <- "production/fig-permission-list.md"
+OUT_CSV   <- "production/permissions-tracking.csv"
 
 # ------------------------------------------------------------------
 # 1. Parse the two consolidated tables in fig-permission-list.md
