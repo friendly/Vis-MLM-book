@@ -25,7 +25,8 @@ place to log new items. `Tasks-Issues.md` stays where it is as the original proj
   revisit then, and figure out which of the 5 files are genuinely active vs. which are
   one-off investigation notes that *do* belong in `issues/rcode-appendix/`.
 
-- **Image quality: CMYK conversion + low-DPI images for CRC print submission**
+### Image quality: CMYK conversion + low-DPI images for CRC print submission
+
   (2026-08-25) CRC requires the final PDF in CMYK; static raster images in `images/`
   aren't converted yet, and a chunk of them are below CRC's 300 dpi print minimum.
   Full status, plan, and per-image checklist: `issues/image-quality/CMYK-colors.md`
@@ -50,7 +51,8 @@ place to log new items. `Tasks-Issues.md` stays where it is as the original proj
   - [ ] Final verification pass: Ghostscript ink-coverage check + Acrobat Pro
         Separations panel on the submission-ready PDF (`cmyk-conversion-plan.md` step 7)
 
-- **Permissions: send requests, track responses, resolve the TFQ, submit to CRC**
+### Permissions: send requests, track responses, resolve the TFQ, submit to CRC
+
   (2026-08-25) Full write-up, history, and the step-4 contact research live in
   `production/task-permissions.md`; the working spreadsheet is
   `production/permissions-tracking.csv`; the original audit trail is
@@ -75,3 +77,30 @@ place to log new items. `Tasks-Issues.md` stays where it is as the original proj
         clipart) and resolve it to NPR / permission-required / replace
   - [ ] Compile the final Permissions Summary file for CRC/T&F submission once the
         above is done (see "T&F Submission" in `task-permissions.md`)
+
+### Indexing: subject-index coverage + supporting cleanup
+
+  (2026-08-25) `\index{}` entries have been started but coverage is uneven across
+  chapters (per project `CLAUDE.md`: "being added incrementally; systematic pass still
+  needed"). Work log and per-chapter entry counts: `issues/indexing/subject-index.md`.
+  Also in `issues/indexing/`: `duplicate-index-entries.md` (mixed-mechanism duplicate
+  fix, applied 2026-07-01), `missing-func-scan.md` (bare `` `func()` `` refs not yet
+  converted to `` `r func("func()")` `` so they generate index entries), `authorindex-style.md`,
+  `package-formatting.md` (package-name index macro reference), plus the
+  extraction/plotting tooling (`idx_terms.R`, `index-add-chapters.R`, `index-plots.R`,
+  `index-distribution.R`).
+
+  Work-log status: **5 of ~15 chapters indexed so far** (Ch 08, 10, 12, 13, 14 —
+  2026-06-30/07-01). Ch 15 (case-studies appendix) and Ch 21 (discriminant analysis,
+  printed Ch 15) haven't been started at all; Ch 01, 02, 06, 07, 11 have lighter manual
+  coverage than the recommended workflow targets (see entry-count table in
+  `subject-index.md`).
+
+  - [ ] Index Ch 15 (case-studies appendix) and Ch 21 (discriminant analysis) — currently
+        no manual `\ix{}` entries
+  - [ ] Continue the chapter-by-chapter pass on the lighter chapters (01, 02, 06, 07, 11),
+        following `subject-index.md`'s recommended workflow
+  - [ ] Work through `missing-func-scan.md`'s flagged bare `` `func()` `` references,
+        converting to `` `r func("func()")` `` where appropriate
+  - [ ] Final systematic pass once every chapter has a first index pass (the
+        `Tasks-Issues.md` Priority 7 item this supersedes)
