@@ -1,5 +1,9 @@
 # Tasks and Issues for Revisions of Book
 
+**Note (2026-08-25):** new items go in `issues/TASKS.md` now — this file stays as the
+original project notes (mostly historical/superseded; most items below are `[DONE]` or
+`[FIXED]`).
+
 ## Getting Started (original notes)
 
 Scan the contents of this project to understand the organization of the files for producing

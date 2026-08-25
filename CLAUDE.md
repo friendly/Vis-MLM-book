@@ -74,7 +74,9 @@ together avoids this.
 
 ## Current priorities
 
-See `issues/Tasks-Issues.md` for the full prioritized list. Top items:
+See `issues/Tasks-Issues.md` for the original prioritized list (largely historical now —
+most items are done) and `issues/TASKS.md` for newer/active items. Top items from
+`Tasks-Issues.md`:
 
 1. **PDF build reliability** — make `Render Book` work end-to-end
 2. **Author index** — `authorindex` Perl script fails
