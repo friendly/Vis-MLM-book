@@ -123,6 +123,12 @@ Tracks work on clearing third-party figures for CRC/Taylor & Francis submission,
   "Permission requests" below to match. MF is handing step 4 execution off to Gavin from
   here — see "Gavin tasks" at the end of this file.
 
+- **2026-08-25:** MF asked for a route breakdown for a note to his CRC/T&F editor: of the
+  20 `permission_required` rows, 6 go through a formal publisher system (RightsLink/CCC
+  or a permissions-page form) and 11 require contacting an individual directly, with 2
+  internal (T&F's own titles) and 1 piggyback (`books.jpg`) not fitting either bucket.
+  Added as "Summary by route" at the top of "Permission requests" below.
+
 ## What the script does
 
 `issues/build-permissions-csv.R` does **not** re-derive copyright status — that
@@ -225,6 +231,23 @@ Step-4 contact research (2026-08-23), one row per rightsholder — full detail l
 `permissions-tracking.csv`'s `route`/`contact` columns; this is the actionable summary.
 Fig numbers are from the current HTML build (`docs/*.html`); a few Preface items are
 plain `<img>` tags with no Quarto figure number.
+
+### Summary by route (2026-08-25, for MF's editor correspondence)
+
+Counting the 20 `permission_required` rows (the 1 `[TFQ]` row is a separate question for
+T&F, not a rightsholder request):
+
+| Category | Count | Rightsholders |
+|---|---|---|
+| **Formal publisher system** (RightsLink/CCC, or a publisher's own permissions-page form) | **6** | Springer, SAGE, O'Reilly, Princeton UP, Hachette (Basic Books — used twice, `Cover-GEB.png`, counted once as a rightsholder) |
+| **Direct contact with an individual** (author, blogger, or content creator — email, LinkedIn, contact form, etc.) | **11** | Selçuk Korkmaz, Gabriel Rodrigues, Ou Zhang, Tomio Kobayashi, Tomàs Aluja-Banet, Arndt Regorz, Gayan De Silva, Martin Handford/Walker/Candlewick (Waldo), Autodesk Research/Matejka, "ediacura" (YouTube — used twice, `tesseract.gif`+`tesseract-frames.png`, counted once) |
+| **Internal — T&F's own titles**, not an external request | 2 | Rennie, Unwin covers |
+| **No separate request** | 1 | `books.jpg` montage, piggybacks on the 4 book-cover permissions |
+
+So: **6 go through a formal publisher/RightsLink-style process, 11 require contacting an
+individual directly** (5 distinct rightsholders in the formal-system bucket, 10 distinct
+individuals/parties in the direct-contact bucket, once the two duplicated figures are
+collapsed to one contact each).
 
 ### Ready to apply — publisher permissions systems (CCC/RightsLink or a permissions page)
 
