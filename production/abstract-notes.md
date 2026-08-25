@@ -373,7 +373,7 @@ Numbering verified against `_quarto.yml`: Ch 13 = `13-eqcov.qmd`, Ch 14 = `14-in
 
 ## Appendix — Case Studies (`15-case-studies.qmd`)
 
-Numbering verified against `_quarto.yml`: `15-case-studies.qmd` is commented out of the chapter list and becomes the HTML-only Appendix (via `_quarto-online.yml`). Abstract drafted into `issues/abstract-case-studies.md` (kept separate from `chapter-abstracts.md` per Michael's instruction).
+Numbering verified against `_quarto.yml`: `15-case-studies.qmd` is commented out of the chapter list and becomes the HTML-only Appendix (via `_quarto-online.yml`). Abstract drafted into `production/abstract-case-studies.md` (kept separate from `chapter-abstracts.md` per Michael's instruction).
 
 **Topic:** Complete worked case studies placing the book's methods in a wider research context: a sequence from research questions to exploratory graphics, MANOVA model fitting, HE plots, canonical analysis, and model checking.
 

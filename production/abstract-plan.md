@@ -33,7 +33,7 @@ For each chapter `.qmd`, have Claude read and distill:
 - R packages featured (e.g., **ggplot2**, **car**, **heplots**, **candisc**, **ggbiplot**, **matlib**) — package names are high-value search terms because R users search for them directly.
 - Statistical methods and named techniques (e.g., HE plots, canonical discriminant analysis, Hotelling's T², ridge regression, biplots, data ellipses, MANOVA).
 
-Practical approach: process chapters in batches of 3–5 per Claude session/turn so each chapter gets a careful read rather than a skim. Save the distilled notes to a working file (e.g., `issues/abstract-notes.md`) so drafting is decoupled from extraction and survives context compaction.
+Practical approach: process chapters in batches of 3–5 per Claude session/turn so each chapter gets a careful read rather than a skim. Save the distilled notes to a working file (e.g., `production/abstract-notes.md`) so drafting is decoupled from extraction and survives context compaction.
 
 ### Step 2 — Build a shared keyword strategy
 
