@@ -2,13 +2,13 @@
 
 ## Context
 
-CRC Press (Shashi) replied to the questions drafted in `issues/email-CRC-cmyk.md`:
+CRC Press (Shashi) replied to the questions drafted in `issues/image-quality/email-CRC-cmyk.md`:
 
 - ICC profile: **US Web Coated SWOP**
 - Raster format: **PNG/JPG is fine** — no TIFF conversion needed
 - Minimum resolution: **300 dpi** (current images range 96–300 dpi)
 
-`issues/CMYK-colors.md` already tracks this work and shows R-generated
+`issues/image-quality/CMYK-colors.md` already tracks this work and shows R-generated
 figures and LaTeX vector colors are done (`pdf.options(colormodel="cmyk")`,
 `\usepackage[cmyk]{xcolor}`). The only remaining gap is the ~90 static
 raster images in `images/` that are actually embedded in the PDF (referenced
@@ -74,8 +74,8 @@ conditional needed.
 ## Steps
 
 ### 1. Update tracking docs
-- `issues/email-CRC-cmyk.md`: append CRC's reply, mark as answered.
-- `issues/CMYK-colors.md`: update the "Static images" section — replace the
+- `issues/image-quality/email-CRC-cmyk.md`: append CRC's reply, mark as answered.
+- `issues/image-quality/CMYK-colors.md`: update the "Static images" section — replace the
   TIFF recommendation with the confirmed PNG/JPG + SWOP profile approach;
   record the local ICC profile paths; replace the "Ghostscript whole-PDF"
   conversion option with a "Ghostscript for verification only" note.
@@ -88,7 +88,7 @@ In `latex/preamble.tex`, per "Issues still to fix" in `CMYK-colors.md`:
   `\definecolor{mygreen}...` calls to their `cmyk` equivalents (values
   already computed in the doc).
 
-### 3. Audit script — `issues/cmyk-image-audit.R`
+### 3. Audit script — `issues/image-quality/cmyk-image-audit.R`
 Read-only report, run before any conversion:
 - Grep all `.qmd` files for `knitr::include_graphics("images/...")` /
   `\includegraphics{images/...}`, excluding matches inside
@@ -147,11 +147,11 @@ with CMYK images automatically (via `img_path()`), no separate flag or
 submission-only build path needed.
 
 ## Files touched
-- `issues/email-CRC-cmyk.md`, `issues/CMYK-colors.md` — updated tracking docs
+- `issues/image-quality/email-CRC-cmyk.md`, `issues/image-quality/CMYK-colors.md` — updated tracking docs
 - `latex/preamble.tex` — remove legacy `color` package, fix remaining RGB
   `\definecolor`s, point title-page images at `images-cmyk/`
 - `R/common.R` — add `img_path()` helper
-- `issues/cmyk-image-audit.R` — new, read-only audit/report
+- `issues/image-quality/cmyk-image-audit.R` — new, read-only audit/report
 - `convert-images-cmyk.sh` — new, RGB→CMYK conversion via ImageMagick + SWOP profile
 - `.gitignore` — add `images-cmyk/`
 - ~22 `.qmd`/child files — mechanical `include_graphics()` call-site rewrite

@@ -1,6 +1,6 @@
 # index-add-chapters.R
-# Reads issues/index-terms.csv and pdf/index.toc, assigns a chapter number
-# and short title to each index entry, writes issues/index-terms-ch.csv.
+# Reads issues/indexing/index-terms.csv and pdf/index.toc, assigns a chapter number
+# and short title to each index entry, writes issues/indexing/index-terms-ch.csv.
 
 library(dplyr)
 library(readr)
@@ -52,7 +52,7 @@ from_roman <- function(x) {
 
 # ── 3. Assign chapter to each index entry ─────────────────────────────────────
 
-idx <- read_csv("issues/index-terms.csv", show_col_types = FALSE)
+idx <- read_csv("issues/indexing/index-terms.csv", show_col_types = FALSE)
 
 idx <- idx |>
   mutate(
@@ -86,5 +86,5 @@ idx |>
 # ── 5. Write updated CSV ───────────────────────────────────────────────────────
 
 out <- idx |> select(term, page, page_num, chapter, ch_title, formatted)
-write_csv(out, "issues/index-terms-ch.csv")
-cat("\nWrote", nrow(out), "rows to issues/index-terms-ch.csv\n")
+write_csv(out, "issues/indexing/index-terms-ch.csv")
+cat("\nWrote", nrow(out), "rows to issues/indexing/index-terms-ch.csv\n")

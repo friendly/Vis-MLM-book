@@ -14,7 +14,7 @@ workflow for the final pre-submission check.
 | LaTeX named colors (TikZ, smartdiagram, headings) | **Done** | `\usepackage[cmyk]{xcolor}` in `latex/preamble.tex` |
 | Explicit `\definecolor` calls in `preamble.tex` | **Done** | Converted to `cmyk` |
 | `\usepackage{color}` in `preamble.tex` | **Done** | Commented out; `shadecolor` redefined in cmyk |
-| Static images in `images/` | **Not done** | Unblocked — CRC replied 2026-07-10; see `issues/cmyk-conversion-plan.md` |
+| Static images in `images/` | **Not done** | Unblocked — CRC replied 2026-07-10; see `issues/image-quality/cmyk-conversion-plan.md` |
 | Animated GIFs / WebP in `images/` | **Exempt** | HTML-only; never embedded in PDF |
 
 ---
@@ -47,10 +47,10 @@ colors (`blue`, `teal`, `orange`, etc.). This covers:
 
 ## Static images in `images/` — pre-submission workflow
 
-**CRC Press reply received 2026-07-10** (see `issues/email-CRC-cmyk.md`):
+**CRC Press reply received 2026-07-10** (see `issues/image-quality/email-CRC-cmyk.md`):
 ICC profile is **US Web Coated SWOP**, format stays **PNG/JPG** (no TIFF
 needed), minimum resolution is **300 dpi**. Full implementation plan is in
-`issues/cmyk-conversion-plan.md` — summary below.
+`issues/image-quality/cmyk-conversion-plan.md` — summary below.
 
 Local tool/profile locations confirmed on this machine:
 - ImageMagick: `magick` on PATH
@@ -88,7 +88,7 @@ A small `img_path()` helper in `R/common.R` resolves each
 (`knitr::is_latex_output()`) and `images/` otherwise, so HTML always gets
 the RGB original and PDF automatically picks up the CMYK version once
 converted — no build.sh flag or file-swapping needed. See
-`issues/cmyk-conversion-plan.md` for the full step-by-step (audit script,
+`issues/image-quality/cmyk-conversion-plan.md` for the full step-by-step (audit script,
 low-DPI review, conversion script, call-site rewrite).
 
 ### Verification
@@ -125,5 +125,5 @@ Commonly used book colors and their CMYK equivalents:
 
 - `R/common.R` — `pdf.options(colormodel = "cmyk")` at line ~22
 - `latex/preamble.tex` — `\usepackage[cmyk]{xcolor}` at line 15; all `\definecolor` calls already in `cmyk`
-- `issues/cmyk-conversion-plan.md` — static-image conversion plan (audit, conversion script, `img_path()` helper)
+- `issues/image-quality/cmyk-conversion-plan.md` — static-image conversion plan (audit, conversion script, `img_path()` helper)
 - `issues/task-color-themes.md` — part accent color definitions (also need CMYK versions)
