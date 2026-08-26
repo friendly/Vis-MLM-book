@@ -96,6 +96,11 @@ Candidates so far:
   `test/test-diagrams.qmd` showed all three toolchains working together; the
   `%|` vs `#|` chunk-option gotcha and the `extra.preamble` nesting bug are both
   worth documenting for other Quarto/knitr users.
+- **Getting Permissions Right (or at Least Honest)** — DRAFTED 2026-08-26:
+  `blog/drafts/VisMLM/tracking-permissions/index.qmd` in the blog repo. Field notes
+  on turning the publisher's permissions process into a trackable spreadsheet;
+  built from the work in `production/task-permissions.md`, `production/fig-permission-list.md`,
+  and `production/build-permissions-csv.R`. Needs a further editing pass before publishing.
 
 ## Claude Memory
 

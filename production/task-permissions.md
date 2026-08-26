@@ -129,6 +129,13 @@ Tracks work on clearing third-party figures for CRC/Taylor & Francis submission,
   internal (T&F's own titles) and 1 piggyback (`books.jpg`) not fitting either bucket.
   Added as "Summary by route" at the top of "Permission requests" below.
 
+- **2026-08-26:** MF drafted a blog post based on this work — "Getting Permissions Right
+  (or at Least Honest)", `blog/drafts/VisMLM/tracking-permissions/index.qmd` in the
+  `friendly.github.io` repo. Field notes on the process itself (finding candidate images,
+  classifying against the guide's rules, turning the audit into a trackable spreadsheet),
+  written without naming the individuals contacted or exposing this repo's internal file
+  paths. Draft only — needs a further editing pass before publishing.
+
 ## What the script does
 
 `production/build-permissions-csv.R` does **not** re-derive copyright status — that
