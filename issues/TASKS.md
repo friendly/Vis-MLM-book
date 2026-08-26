@@ -9,7 +9,9 @@ place to log new items. `Tasks-Issues.md` stays where it is as the original proj
 
 ## Open items
 
-- **`issues/` cleanup: `rcode-appendix/` grouping + a top-level `scripts/` folder?**
+### Scripts
+
+ **`issues/` cleanup: `rcode-appendix/` grouping + a top-level `scripts/` folder?**
   (2026-08-25) During the `issues/` reorganization (moving solved items to `solved/`,
   grouping `indexing/` and `image-quality/`, moving CRC-metadata files to `production/`),
   held off on grouping `task-r-code.md`, `figcode-gaps.md`, `find-uncovered-figures.R`,
