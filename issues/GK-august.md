@@ -19,3 +19,11 @@
 **Line 583**
 
 - "... by the its eigenvalue" -> need to remove 'the' or 'its'
+
+**Line 962**
+
+- Should this be mental *dis*ability?
+
+**Line 2055**
+
+- Code output seems to show no violation of normality; however, the text in this line indicates a violation
