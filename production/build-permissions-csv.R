@@ -234,6 +234,55 @@ result <- bind_rows(matched, unmatched) |>
   ) |>
   arrange(chapter, filename)
 
+# ------------------------------------------------------------------
+# 4. Merge-preserve: if OUT_CSV already exists, keep the progress columns
+#    (route, applied/received/submitted dates and contacts, status, notes)
+#    from the existing file for rows that already exist there, instead of
+#    resetting them to fresh defaults. Only genuinely new rows -- first
+#    time this fig_label/filename pairing has ever been tracked -- get the
+#    freshly-computed defaults above.
+#
+#    Match key: (fig_label, filename) together, NOT fig_label alone --
+#    fig_label is not always unique (fig-tesseract covers both
+#    tesseract.gif and tesseract-frames.png), so filename disambiguates.
+#    Verified unique across the current 21 tracked rows; re-verify (the
+#    stopifnot() below will catch it) if that ever stops holding.
+#
+#    This closes the gap task-permissions.md previously documented as a
+#    manual-discipline rule ("don't re-run this while requests are in
+#    flight") -- update_permissions() (see update_permissions.R) and this
+#    script can now both safely touch the same file in either order.
+# ------------------------------------------------------------------
+
+PRESERVE_COLS <- c("necessary", "route", "applied_date", "applied_by", "contact",
+                    "received_date", "doc_path", "submitted_date", "status", "notes")
+
+if (file.exists(OUT_CSV)) {
+  # read every column as character -- otherwise readr's type-guessing turns
+  # a date column into a Date the moment it has real values in it, and the
+  # later element-wise assignment below would silently serialize it as a
+  # raw day-count integer instead of "YYYY-MM-DD"
+  old <- read_csv(OUT_CSV, show_col_types = FALSE, col_types = cols(.default = "c"))
+
+  old_key    <- paste(coalesce(old$fig_label, "NA"), old$filename, sep = "|")
+  result_key <- paste(coalesce(result$fig_label, "NA"), result$filename, sep = "|")
+  stopifnot(
+    "match key is not unique in the existing CSV -- fix before merging" = !anyDuplicated(old_key),
+    "match key is not unique in the freshly-built result -- fix before merging" = !anyDuplicated(result_key)
+  )
+
+  match_idx <- match(result_key, old_key)
+  has_match <- !is.na(match_idx)
+  for (col in PRESERVE_COLS) {
+    result[[col]][has_match] <- old[[col]][match_idx[has_match]]
+  }
+
+  n_preserved <- sum(has_match)
+  n_new       <- sum(!has_match)
+  message(sprintf("Merge-preserve: %d existing row(s) kept their progress, %d new row(s) got fresh defaults.",
+                   n_preserved, n_new))
+}
+
 write_csv(result, OUT_CSV, na = "")
 
 message(sprintf("Written: %s (%d rows: %d permission_required, %d verify, %d TFQ)",

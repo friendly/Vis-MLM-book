@@ -136,6 +136,23 @@ Tracks work on clearing third-party figures for CRC/Taylor & Francis submission,
   written without naming the individuals contacted or exposing this repo's internal file
   paths. Draft only — needs a further editing pass before publishing.
 
+- **2026-08-27:** Closed the gap the blog draft surfaced: there was no defined way to
+  update `permissions-tracking.csv` as requests progress other than hand-editing the CSV
+  and hoping nobody re-ran `build-permissions-csv.R` in the meantime (the old "don't
+  re-run this while requests are in flight" rule, below). Added
+  `production/update_permissions.R` (`update_permissions(fig_label, filename, status,
+  ...)`, identifies a row by `fig_label` and/or `filename`, validates `status` against a
+  fixed vocabulary, auto-stamps `applied_date`/`received_date` on the matching status
+  transition, accumulates `notes` instead of overwriting). Taught
+  `build-permissions-csv.R` to merge-preserve the progress columns (`route` through
+  `notes`) for rows that already exist, matched on `(fig_label, filename)` together —
+  `fig_label` alone isn't unique (`fig-tesseract` covers both `tesseract.gif` and
+  `tesseract-frames.png`). Verified against a scratch copy first (simulated in-progress
+  rows, confirmed both the merge and a deliberately-ambiguous `fig_label`-only lookup
+  behave correctly), then ran the real regeneration and confirmed the output was
+  byte-identical to before (all 21 rows still `not started`/`flagged for T&F`, nothing to
+  preserve yet). The "don't re-run casually" rule below no longer applies.
+
 ## What the script does
 
 `production/build-permissions-csv.R` does **not** re-derive copyright status — that
@@ -151,13 +168,19 @@ It only:
 - Writes one row per **occurrence** (a filename reused across chapters, e.g.
   `images/Cover-GEB.png` in both Ch. 2 and `child/04-grand-tour.qmd`, gets one row
   each) to `production/permissions-tracking.csv`.
+- For rows that already exist there (matched on `fig_label` + `filename` together --
+  `fig_label` alone isn't always unique, e.g. `fig-tesseract` covers two files), keeps
+  the progress columns (`route` through `notes`) as they were instead of resetting them.
+  Only genuinely new rows get fresh defaults.
 
 Run with `Rscript production/build-permissions-csv.R`. Safe to re-run after editing
-`fig-permission-list.md` — it fully regenerates the CSV, so **manual status edits
-made directly in the CSV will be overwritten**. Until there's a need to preserve
-in-progress status across regeneration, do the edits in the CSV and don't re-run the
-script casually; if regeneration is needed later, re-merge tracked rows by
-`filename` first.
+`fig-permission-list.md`, and safe to interleave with `update_permissions()` calls in
+either order (as of 2026-08-27): the script merge-preserves the progress columns
+(`route` through `notes`) for any row that already exists, matched on
+`(fig_label, filename)` together, and only resets those columns to fresh defaults for
+genuinely new rows. Update progress through `production/update_permissions.R`'s
+`update_permissions(fig_label, filename, status, ...)` rather than hand-editing the CSV
+directly — see its own header comment for the full argument list.
 
 ### CSV columns
 
@@ -169,11 +192,11 @@ script casually; if regeneration is needed later, re-merge tracked rows by
 | `rightsholder_or_route` | script, from `fig-permission-list.md` | likely rightsholder / route, what to verify, or `"flagged for T&F"` |
 | `necessary` | script, defaults `"Y"` | step 2 — every tracked figure is judged necessary (decided 2026-08-23, MF: each illustrates a specific point in the text); override by hand for a genuine individual exception |
 | `route`, `contact` | manual (from research) | step 4 — `route` is one of `CCC`, `publisher-page`, `direct-contact`, `internal-T&F`, `nearly-ready` (a contact exists but isn't a confirmed email/response channel), `manual-followup-needed`; `contact` is the actual email/URL/note. See "Permission requests" below |
-| `applied_date`, `applied_by` | manual | step 4 |
-| `received_date`, `doc_path` | manual | step 5 — `doc_path` should point to the saved permission evidence |
-| `submitted_date` | manual | step 6 |
-| `status` | manual | overall row status; script initializes to `not started` (`flagged for T&F` for `TFQ` rows) |
-| `notes` | script (from table), then manual | free text |
+| `applied_date`, `applied_by` | `update_permissions()` | step 4 |
+| `received_date`, `doc_path` | `update_permissions()` | step 5 — `doc_path` should point to the saved permission evidence |
+| `submitted_date` | `update_permissions()` | step 6 |
+| `status` | `update_permissions()` | overall row status; one of `not started`, `applied`, `granted`, `denied`, `no response`, or `flagged for T&F`. Script initializes to `not started` (`flagged for T&F` for `TFQ` rows); `applied`/`granted` auto-stamp `applied_date`/`received_date` unless given explicitly |
+| `notes` | script (from table) on first creation, then `update_permissions()` | free text; new notes are date-stamped and appended, not overwritten |
 
 ### Known gaps (fill in manually)
 
@@ -198,6 +221,8 @@ script casually; if regeneration is needed later, re-merge tracked rows by
 - [x] Resolve `necessary` (step 2) — every row defaults `Y`; none dropped
 - [x] Research step 4 contact routes for every `permission_required` row — see "Permission requests"
 - [x] Decide the Datasaurus (no regenerate) and Waldo (request anyway) open questions — MF, 2026-08-23
+- [x] Build `production/update_permissions.R` so progress can be recorded without
+      hand-editing the CSV or risking it being wiped by a regeneration — 2026-08-27
 - [ ] Handed off to Gavin (2026-08-23) — work through step 4 (apply) per "Gavin tasks"
 - [ ] Record evidence (step 5) and submission (step 6) as they land
 - [ ] Get T&F's ruling on the 1 `TFQ` row (`images/MV-juicer.png`) and resolve it to NPR/permission-required/replace
@@ -313,15 +338,30 @@ and-track-the-results — over to Gavin.
 (`production/Permissions_guide.pdf`, p. 6) where a direct email applies, always including
 the required rights language — *"commercial, non-exclusive, worldwide English language
 rights in all forms and media, including print and eBook form, for the lifetime of the
-edition."* Afterward, record in `permissions-tracking.csv`: `applied_date`, `applied_by`,
-and confirm/update `contact` with the actual address or route used; set `status` (suggest
-`applied` → `granted` / `denied` / `no response`). When a permission comes back, save the
-evidence (email, signed form, confirmation page) under `production/permissions/`
-(Gavin's `email-template.Rmd`/`.pdf` are already there) — record its path in `doc_path`,
-the `received_date`, and `submitted_date` once it goes in with the manuscript. Don't
-re-run `build-permissions-csv.R` once requests are in flight — it regenerates the whole
-CSV from `fig-permission-list.md` and would wipe these columns (see "What the script
-does" above).
+edition."* Afterward, call `update_permissions()` (source `production/update_permissions.R`
+first) rather than hand-editing the CSV, e.g.:
+
+```r
+update_permissions(fig_label = "fig-ReavenMiller-3d", status = "applied",
+                    applied_by = "Gavin", contact = "confirmed via RightsLink form")
+```
+
+`status = "applied"` auto-stamps `applied_date` to today unless you pass one explicitly.
+When a permission comes back, save the evidence (email, signed form, confirmation page)
+under `production/permissions/` (Gavin's `email-template.Rmd`/`.pdf` are already there),
+then:
+
+```r
+update_permissions(fig_label = "fig-ReavenMiller-3d", status = "granted",
+                    doc_path = "production/permissions/reaven-miller-permission.pdf")
+```
+
+(pass both `fig_label` and `filename` if `fig_label` alone is ambiguous — see the CSV
+columns table above). Set `submitted_date` separately once it actually goes in with the
+manuscript, since that can happen well after the permission itself is granted. It's now
+safe to re-run `build-permissions-csv.R` at any point, including while requests are in
+flight — it merge-preserves these columns instead of overwriting them (see "What the
+script does" above).
 
 1. Send the 5 rows in "Ready to apply — publisher permissions systems" (Springer,
    Hachette, SAGE, O'Reilly, Princeton UP) through their respective CCC/RightsLink or
