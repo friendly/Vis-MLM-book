@@ -261,8 +261,10 @@ collapsed to one contact each).
 | Fig | Figure | Rightsholder | Contact |
 |---|---|---|---|
 | 1.7 | `ReavenMiller-3d-annotated.png` | Springer (*Diabetologia*, 1979) | RightsLink via the article's "Reprints and Permissions" link on link.springer.com; CCC support springernaturesupport@copyright.com |
+|  |  |  | **GK:** Covered by the STM Permissions Guidelines, with notification required by Springer. Submit through RightsLink as a publisher, select CRC Press as the publisher, and obtain and save the gratis STM license. |
 | 2.3 / 4.41 | `Cover-GEB.png` (used twice) | Basic Books / Hachette | Permission request form (hachettebookgroup.com) → permissions.Generic@hbgusa.com; expect a fee, multi-week turnaround |
 | 9.3 | `collin-demo.png` | SAGE Publications | RightsLink via us.sagepub.com/en-us/nam/books-permissions |
+|  |  |  | **GK:** Covered by the STM Permissions Guidelines under SAGE's automatic process. Do not send a permission request or use RightsLink. Before relying on the automatic permission, confirm that the original Figure 13.2 has no third-party credit; retain the STM evidence and give full source credit. |
 | — | `Wilke-FundamentalsOfDataVis.png` (Preface) | O'Reilly Media | copyright.com, or +1 (707) 827-7000 |
 | — | `healy-dava-vis-cover-pupress.jpg` (Preface) | Princeton University Press | Online form: press.princeton.edu/resources/permissions (2–4 wk) |
 
