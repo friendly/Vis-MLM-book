@@ -1,7 +1,7 @@
 # Merging GK-work4 (Codex) into master (Claude)
 
 **Date:** 2026-06-01  
-**Context:** Gavin used ChatGPT Codex (transcript in `issues/GK-codex-transcript2.md`) to
+**Context:** Gavin used ChatGPT Codex (transcript in `issues/solved/GK-codex-transcript2.md`) to
 fix (a) the duplicate-TOC-entry problem and (b) dual-build appendix issues, working on his
 `GK-work4` branch. Claude applied its own fixes on `master` in the same session. This note
 records the differences and the safe merge path.
@@ -64,7 +64,7 @@ Section width additions (not in Claude's version):
 - **GK-work4:** appendices removed from `_quarto.yml`; they live only in
   `_quarto-online.yml`.
 
-This is exactly the fix that was planned (task-june-submit.md §1) but never completed on
+This is exactly the fix that was planned (`issues/solved/task-june-submit.md` §1) but never completed on
 master.
 
 **Resolution:** Take GK-work4's `_quarto.yml` (appendices removed).

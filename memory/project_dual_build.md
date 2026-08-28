@@ -1,6 +1,6 @@
 ---
 name: Dual-build cleanup plan
-description: RESOLVED 2026-06-01 — dual build (HTML + PDF) working correctly; see issues/dual-build-plan.md
+description: RESOLVED 2026-06-01 — dual build (HTML + PDF) working correctly; see issues/solved/dual-build-plan.md
 metadata:
   type: project
 ---

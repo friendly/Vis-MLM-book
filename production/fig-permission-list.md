@@ -6,6 +6,11 @@ This document contains a list of figures that are the property of those other th
 Permissions guide (`production/Permissions_guide.pdf`, Taylor & Francis). Tagging:
 
 - **[NPR]** = **no permission required**. The justification is appended to the entry in italics
+- **[TFQ]** = **question for Taylor & Francis** — due diligence was done (source checked,
+  reverse image search tried, etc.) but the copyright status genuinely can't be resolved
+  from this end. Flagged for T&F to rule on, with the history recorded in italics and
+  (where practical) a plain-language source note added to the figure's own caption in the
+  book, so the flag is visible in the text as well as this log.
 - Untagged entries still require permission or verification — see the consolidated
   section **"Figures requiring permission (updated)"** at the end of this document.
 
@@ -47,8 +52,8 @@ Book covers are publisher-owned artwork (T&F Appendix A lists "Images" and "Grap
 
 ## Chapter 3: Getting Started
 
-- `images/DataSaurusDozen.gif` — Datasaurus Dozen animation (HTML version); source: [YouTube](https://youtu.be/It4UA75z_KQ) (creators: Justin Matejka & George Fitzmaurice, Autodesk Research. **Alternative:** the underlying `datasauRus` R package data is CC0 — regenerating the animation with MF's own code would make this author-generated and moot the permission question)
-- `images/datasaurus-dozen.jpg` — Datasaurus Dozen plots (PDF version); source: [Selçuk Korkmaz on X](https://x.com/selcukorkmaz/status/1864583253253927156) (same alternative as above: regenerate from the CC0 `datasauRus` data rather than reproducing a third-party social-media image)
+- `images/DataSaurusDozen.gif` — Datasaurus Dozen animation (HTML version); source: [YouTube](https://youtu.be/It4UA75z_KQ) (creators: Justin Matejka & George Fitzmaurice, Autodesk Research). **Decided 2026-08-23 (MF): not regenerating** — pursuing permission instead. No confirmed contact email for Autodesk Research/Matejka; best available route is Justin Matejka's LinkedIn.
+- `images/datasaurus-dozen.jpg` — Datasaurus Dozen plots (PDF version); source: [Selçuk Korkmaz on X](https://x.com/selcukorkmaz/status/1864583253253927156) (underlying art: Autodesk Research). **Decided 2026-08-23 (MF): not regenerating** — pursuing permission instead, direct to Selçuk Korkmaz (confirmed email: selcuk.korkmaz@hacettepe.edu.tr).
 - [NPR] `images/1969_draft_lottery_photo.jpg` — photo of Congressman Alexander Pirnie drawing the first 1970 draft lottery capsule; source: [Wikipedia](https://bit.ly/45c23sB) — *NPR: public domain, US federal government work. Verified 2026-07-08: the Wikipedia file page tags it PD-USGov — a Selective Service System photo taken by a federal employee in official duties (17 USC §105). US federal government publications are on the T&F guide's own list of permission-free sources.*
 
 ## Chapter 4: Plots of Multivariate Data
@@ -56,7 +61,7 @@ Book covers are publisher-owned artwork (T&F Appendix A lists "Images" and "Grap
 - `images/mahalanobis.png` — Mahalanobis vs. Euclidean distance diagram; caption: "Re-drawn from [Ou Zhang](https://ouzhang.rbind.io/2020/11/16/outliers-part4/)" (original kept as `images/mahalanobis-orig.png`) — **redrawn artwork is still third-party per the T&F guide** unless substantially transformed; either seek permission from Ou Zhang or document a substantial-transformation claim
 - [NPR] `images/galton-corr.jpg` — Galton's 1886 diagram of parent/child height correlation — *NPR: public domain. Published 1886; Galton d. 1911, so life+70 expired 1982 and US pre-1930.*
 - [NPR] `images/penguins-horst.png` — penguin species cartoon; caption: "Image credit: Allison Horst" — *NPR: licensed. Allison Horst's palmerpenguins art page explicitly grants use ("You are invited to use this accompanying artwork … Please cite with 'Artwork by @allison_horst'"), and her illustrations repository is licensed CC-BY 4.0 (verified 2026-07-08). Required attribution is already in the caption.*
-- `images/corrgram-renderings.png` — "Correlation value (x 100)" demo graphic. Not from Kevin Wright's **corrgram** R package vignette/docs (checked 2026-08-20 — no match there). Added as a binary file in commit `dcaf1f4f`, the same commit that wrote the surrounding @sec-corrgram text citing `@Friendly:02:corrgram` (Friendly, "Corrgrams: Exploratory displays for correlation matrices," *The American Statistician* 56(4), 316–324, 2002 — MF's own paper introducing the corrgram). **Confirmed 2026-08-20 (GK): this is a figure from that paper.** No generating script in `R/`, so it's a reproduction, not code output. Per guide rule 6, sole MF authorship of the source paper does **not** make this NPR — journal copyright was very likely transferred/licensed to the publisher at publication, same situation as `images/ridge-demo.png` below. **Remaining step: reuse-rights check with the journal**, i.e. ASA / Taylor & Francis (T&F already publishes *The American Statistician* for ASA, the same publisher family as CRC Press — may simplify the request, but still needs to be verified and documented, not assumed).
+- [NPR] `images/corrgram-renderings.png` — "Correlation value (x 100)" demo graphic. Not from Kevin Wright's **corrgram** R package vignette/docs (checked 2026-08-20 — no match there). Added as a binary file in commit `dcaf1f4f`, the same commit that wrote the surrounding @sec-corrgram text citing `@Friendly:02:corrgram` (Friendly, "Corrgrams: Exploratory displays for correlation matrices," *The American Statistician* 56(4), 316–324, 2002 — MF's own paper introducing the corrgram). Confirmed 2026-08-20 (GK) as a figure from that paper. — *NPR: resolved 2026-08-23 (MF), verified against the ASA/T&F author-reuse policy — authors generally retain the right to reuse their own figures and tables from ASA/T&F journals in future non-commercial works, including a book they author or edit, without needing formal written permission or a fee, provided full original attribution is given. Attribution is already present via the `@Friendly:02:corrgram` citation in the surrounding text.*
 
 ### `child/04-grand-tour.qmd`
 
@@ -70,7 +75,7 @@ All other figures in this child doc are author-generated and excluded: `images/p
 
 ## Chapter 5: Dimension Reduction
 
-- `images/MV-juicer.png` — "MV Juicer" illustration; appears to be a composite of stock clipart (fruit-head, juicer line art, gear-brain head) assembled in `images/MV-juicer.pptx` — **verify licensing of the individual clipart elements** (T&F Appendix A explicitly lists ClipArt as potentially copyrighted)
+- [TFQ] `images/MV-juicer.png` — "MV Juicer" illustration; appears to be a composite of stock clipart (fruit-head, juicer line art, gear-brain head) assembled in `images/MV-juicer.pptx` (T&F Appendix A explicitly lists ClipArt as potentially copyrighted) — *TFQ: resolved 2026-08-23 (MF) — the individual clipart elements can't be traced (no watermarks, but per guide rule 2 that doesn't establish public domain; MF has no record of the original source, and a reverse image search is the only remaining option, with no guarantee of a conclusive answer). Rather than block on an unresolvable search or wrongly claim NPR, this is flagged as a question for T&F to rule on. The figure caption (`fig-MV-juicer`, Ch. 5) now reads "Source: Author image, using publicly available clipart" to flag this in the book text itself. See consolidated "Flagged for T&F" section.*
 - [NPR] `images/Pearson1901.png` — Karl Pearson's 1901 geometric diagram for line/plane of closest fit — *NPR: public domain. Published 1901; Pearson d. 1936, so life+70 expired 2007 and US pre-1930.*
 - [NPR] `images/Pearson1901_2.png` — Pearson's diagram of the elliptical geometry of regression and PCA; caption: "_Source_: Pearson (1901), p. 566" — *NPR: public domain, same basis as above.*
 - [NPR] `images/pca-animation1.gif` / `images/pca-animation-combined.jpg` — 3D rotation animation of the `iris` data toward PCA axes; generated by `R/iris/iris-3D-spin.R`, whose header comment is "# from: https://r-graph-gallery.com/3-r-animated-cube.html" — *NPR: author-generated output of MF's own R script on the `iris` data; the credited tutorial supplied a coding technique (a method, not artwork). Proof: generating script in repo.*
@@ -85,9 +90,7 @@ Excluded as author-generated: `images/pca-rotation.png` (source PowerPoint `imag
 
 ## Chapter 6: Overview of Linear Models
 
-No figures requiring permission. The chapter has three figures: `images/techniques-table.png` (`fig-techniques`), a plain summary table (visually inspected — no clipart or third-party content, added in commit `95af901b` alongside other original chapter diagrams); `fig-workers-fits`, generated inline by `ggplot()` on the `workers` dataset; and `fig-poly`, generated inline by `matplot()` on author-constructed data.
-
-- *Verify that* `fig-techniques` *is made by MF*
+No figures requiring permission. The chapter has three figures: [NPR] `images/techniques-table.png` (`fig-techniques`), a plain summary table (visually inspected — no clipart or third-party content, added in commit `95af901b` alongside other original chapter diagrams) — *NPR: confirmed 2026-08-23 by MF — he made the table himself; original work, no third-party material.*; `fig-workers-fits`, generated inline by `ggplot()` on the `workers` dataset; and `fig-poly`, generated inline by `matplot()` on author-constructed data.
 
 ## Chapter 7: Plots for Univariate Response Models
 
@@ -102,10 +105,10 @@ Excluded as author-generated, with no external-source comments in their scripts:
 ## Chapter 9: Collinearity & Ridge Regression
 
 - `images/collinearity-diagnostics-SPSS.png` — SPSS collinearity diagnostics table; caption: "_Source_: Arndt Regorz, How to interpret a Collinearity Diagnostics table in SPSS, [https://bit.ly/3YRB82b](https://bit.ly/3YRB82b)" (a screenshot from a third-party tutorial — T&F lists screenshots as potentially copyrighted. **Alternative:** the numbers themselves are raw data and not copyrightable; re-typesetting the table in the book's own style, or re-running the analysis in SPSS, would avoid the permission question — only the existing layout/image requires permission)
-- `images/wheres-waldo.png` — *Where's Waldo* scene (copyrighted character/illustration); caption: "_Source_: Modified from [https://bit.ly/48KPcOo](https://bit.ly/48KPcOo)" (qmd comment also notes "based on" an X/Twitter post) — **high risk**: commercially-owned character art (Martin Handford / Walker Books / Candlewick); permission is likely slow, expensive, or refused — recommend replacing or dropping this figure
+- `images/wheres-waldo.png` — *Where's Waldo* scene (copyrighted character/illustration); caption: "_Source_: Modified from [https://bit.ly/48KPcOo](https://bit.ly/48KPcOo)" (qmd comment also notes "based on" an X/Twitter post) — **high risk**: commercially-owned character art (Martin Handford / Walker Books / Candlewick); permission is likely slow, expensive, or refused. **Decided 2026-08-23 (MF): requesting anyway** — not willing to drop the figure; proceeding despite the risk so the diligence is on record either way. Contacts: Candlewick permissions@candlewick.com, Walker Books UK permissions@walker.co.uk (both ~6-week, formal-license processes).
 - `images/collin-demo.png` — 3D regression-plane collinearity demo; caption: "_Source_: Adapted from @Fox:2016:ARA, Fig. 13.2" — redrawn/adapted artwork from a published book (rightsholder: SAGE Publications) — needs permission unless a substantial-transformation claim is documented (guide, footnote 1)
 - [NPR] `fig-collin-data-beta` — data-space/β-space collinearity demo, generated inline (per `R/collin-data-beta.R`); footnote `[^Fox-cite]` states "This example is adapted from one by John Fox (2022), [Collinearity Diagnostics](https://socialsciences.mcmaster.ca/jfox/Courses/SORA-TABA/slides-collinearity.pdf)," and the figure caption repeats "This figure adapts an example by John Fox (2022)" — *NPR: author-generated inline by MF's own code; what is adapted is Fox's worked example (a method/dataset, not his artwork), fully re-created and credited. Proof: generating code in repo and shown in chapter.*
-- `images/ridge-demo.png` — geometric diagram of ridge regression (OLS ellipses meeting the constraint circle); caption: "_Source_: @Friendly-etal:ellipses:2013" — generated by `R/ridge-demo.R` using base R and the `ellipse` package; this redraws Friendly's own figure from that 2013 journal article, so it's self-citation rather than third-party content, but the original was published in *Statistical Science* and may still need publisher clearance for reuse — **verify permission status with the journal** (note: the T&F guide explicitly counts "material you … created previously, whether published or not" as third-party; check the IMS/Statistical Science copyright agreement for author-reuse rights)
+- [NPR] `images/ridge-demo.png` — geometric diagram of ridge regression (OLS ellipses meeting the constraint circle); caption: "_Source_: @Friendly-etal:ellipses:2013" — generated by `R/ridge-demo.R` using base R and the `ellipse` package; this redraws Friendly's own figure from that 2013 journal article. — *NPR: resolved 2026-08-23 (MF), verified against the IMS/Statistical Science author-reuse policy — authors typically retain the intrinsic right to use their own text, data, and figures from Statistical Science in subsequent personal scholarly work, teaching, and presentations, provided proper attribution/citation to the original publication is included. Attribution is already present via the `@Friendly-etal:ellipses:2013` citation in the caption.*
 
 All other figures in this chapter are generated inline by visible R code on `cars`, `Acetylene`, `longley`, or simulated data (e.g. `fig-cars-tableplot`, `fig-cars-collin-biplot`, `fig-collin-centering`, the `fig-longley-*` ridge-trace and biplot figures) — none reference external images or sources.
 
@@ -122,7 +125,7 @@ Excluded as author-generated: `images/VisualizingSSP.png` (`fig-visualizing-SSP`
 ## Chapter 12: Visualizing Multivariate Models
 
 - `images/iris-diagram.jpg` (`fig-iris-diagram`) — diagram of iris flower anatomy; caption: "_Source_: @DeSilva2020" (third-party diagram from a published source — permission required from the rightsholder of the De Silva (2020) publication)
-- `images/cancor-diagram-udi.png` (`fig-cancor-diagram`) — canonical correlation angle diagram; caption: "_Source_: Re-drawn by Udi Alter following a Cross-Validated discussion by user 'ttnphns', [https://bit.ly/4dgq2cp](https://bit.ly/4dgq2cp)" — nuanced case: the original diagram is Stack Exchange user content (CC BY-SA, so reuse with attribution is permitted without asking), but this is a *redraw/adaptation*, and CC BY-SA's ShareAlike clause nominally requires adaptations to carry the same license. If Udi's version takes only the geometric *concept* (angle between variates) rather than copying the original's expression, it can be documented as a substantially transformed new work with a courtesy credit — **decide which claim to document; discuss with MF**
+- [NPR] `images/cancor-diagram-udi.png` (`fig-cancor-diagram`) — canonical correlation angle diagram; caption: "_Source_: Re-drawn by Udi Alter following a Cross-Validated discussion by user 'ttnphns', [https://bit.ly/4dgq2cp](https://bit.ly/4dgq2cp)" — *NPR: resolved 2026-08-23 (MF) as a substantially transformed redraw (guide, footnote 1) — Udi's version takes only the geometric concept (angle between variates) from the Cross Validated discussion, not the original's expression, and is a new work. Courtesy credit to the original author, Cross Validated user 'ttnphns', is already present in the caption.*
 
 Excluded as author-generated: `images/dogfood-quartet.png` (`fig-dogfood-quartet`, via `R/dogfood/dogfood-quartet.R`, no external-source comment) and `images/iris-HE2.png` (`fig-iris-HE2`, via `R/iris/iris-HE.R`, no external-source comment). Several other `include_graphics()` calls in this file are inside HTML comment blocks and not actually rendered: the reuse of `images/HE-framework.png`, `images/arcmanov.png`, `images/iris-flowers-labeled.png` (captioned "_Source_: P. I. Adegbite," but never shown), and `images/iris-HE1.png`. Every other figure in the chapter is generated inline by visible R code (`heplot()`, `candisc()`, `cancor()` calls on `dogfood`, `iris`, `Plastic`, `MockJury`, `NLSY`, `schooldata`, `Rohwer`).
 
@@ -132,7 +135,7 @@ No figures requiring permission. There are no `knitr::include_graphics()` calls 
 
 ## Chapter 14: Multivariate Influence and Robust Estimation
 
-- `images/weight-functions.jpg` (`fig-weight-fns`) — hand-drawn sketch (tablet/whiteboard-style handwriting and freehand curves) comparing the OLS, L1, and biweight objective functions. No generating script or source citation found — **could not confirm authorship either way; verify with MF** (if MF drew it, it becomes [NPR] as original work)
+- [NPR] `images/weight-functions.jpg` (`fig-weight-fns`) — hand-drawn sketch (tablet/whiteboard-style handwriting and freehand curves) comparing the OLS, L1, and biweight objective functions. No generating script (it's a scan/photo of a hand drawing, not code output) — *NPR: confirmed 2026-08-23 by MF — he drew the sketch himself; original work, no third-party material.*
 
 Every other figure in the chapter (scatterplot matrices, influence/LR plots, DFBETAS plots, robust-weight index plots) is generated inline by visible R code on the toy, `NLSY`, and `peng` datasets.
 
@@ -167,14 +170,14 @@ is "avoid third-party material and avoid permissions."
 | 6 | `images/tesseract.gif` + `images/tesseract-frames.png` | Ch 1 | "ediacura" (YouTube creator) | Contact via YouTube channel; T&F lists YouTube content as copyrighted |
 | 7 | `images/ReavenMiller-3d-annotated.png` | Ch 1 | Springer (*Diabetologia*, 1979) | STM Guidelines route available (CRC & Springer both signatories) |
 | 8 | `images/Cover-GEB.png` | Ch 2 (+ child/04-grand-tour) | Basic Books / Hachette | Book-cover artwork; used twice |
-| 9 | `images/DataSaurusDozen.gif` | Ch 3 | Autodesk Research (Matejka & Fitzmaurice) | **Or regenerate** from CC0 `datasauRus` data → NPR |
-| 10 | `images/datasaurus-dozen.jpg` | Ch 3 | X post by Selçuk Korkmaz (underlying art: Autodesk Research) | **Or regenerate** from CC0 `datasauRus` data → NPR |
+| 9 | `images/DataSaurusDozen.gif` | Ch 3 | Autodesk Research (Matejka & Fitzmaurice) | Not regenerating (MF, 2026-08-23) — requesting instead; no confirmed email, LinkedIn only |
+| 10 | `images/datasaurus-dozen.jpg` | Ch 3 | X post by Selçuk Korkmaz (underlying art: Autodesk Research) | Not regenerating (MF, 2026-08-23) — requesting instead; confirmed email available |
 | 11 | `images/mahalanobis.png` | Ch 4 | Ou Zhang (blog author) | Redrawn artwork; or document substantial transformation |
 | 12 | `images/big5-qgraph-rodrigues.png` | child/04-network | Rodrigues (2021), source publication/blog | |
 | 13 | `images/pca4ds-figure-2-11.png` | Ch 5 | Publisher of @Aluja-etal-2018 | Book figure; STM route may apply |
 | 14 | `images/image-compression-SVD.png` | Ch 5 | Tomio Kobayashi (post author) | |
 | 15 | `images/collinearity-diagnostics-SPSS.png` | Ch 9 | Arndt Regorz (tutorial author) | **Or re-typeset** the table (numbers are raw data → NPR) |
-| 16 | `images/wheres-waldo.png` | Ch 9 | Martin Handford / Walker Books / Candlewick | **High risk** — recommend replace or drop |
+| 16 | `images/wheres-waldo.png` | Ch 9 | Martin Handford / Walker Books / Candlewick | **High risk**, but MF decided (2026-08-23) to request anyway rather than drop the figure |
 | 17 | `images/collin-demo.png` | Ch 9 | SAGE Publications (@Fox:2016:ARA) | Adapted artwork; or document substantial transformation |
 | 18 | `images/iris-diagram.jpg` | Ch 12 | Rightsholder of @DeSilva2020 | |
 
@@ -183,13 +186,24 @@ is "avoid third-party material and avoid permissions."
 | Figure | Chapter | What to verify |
 |--------|---------|----------------|
 | ~~`images/1D-4D.png`~~ | Ch 1 | Resolved 2026-07-10: replaced by author-drawn TikZ redraw (`latex/diagrams/fig-1D-4D.tex`) → NPR |
-| `images/MV-juicer.png` | Ch 5 | Licenses of the individual clipart elements in `MV-juicer.pptx` |
-| `images/corrgram-renderings.png` | Ch 4 | Confirmed 2026-08-20 (GK) as a figure from `@Friendly:02:corrgram` (not the corrgram package vignette). Needs ASA/T&F journal reuse-rights check, same as `ridge-demo.png` below — sole MF authorship does not make it NPR (guide rule 6) |
-| `images/techniques-table.png` (`fig-techniques`) | Ch 6 | Confirm MF authorship |
-| `images/ridge-demo.png` | Ch 9 | IMS/*Statistical Science* author-reuse rights for Friendly et al. (2013) figure (own prior work still counts as third-party per guide) |
-| `images/weight-functions.jpg` | Ch 14 | Confirm MF drew the sketch; if so → NPR |
-| `images/cancor-diagram-udi.png` | Ch 12 | Decide claim: CC BY-SA attribution vs. substantially-transformed redraw (see entry) |
-| `images/history/hertzsprung1-annotated.jpg` | Ch 1 | Tagged [NPR] (US public domain, pre-1930), but note UK/EU life+70 term runs to 2038 (Hertzsprung d. 1967) — document in log |
+| ~~`images/MV-juicer.png`~~ | Ch 5 | Resolved 2026-08-23: untraceable clipart sources, no watermark but that isn't proof of PD (guide rule 2) → flagged [TFQ], see "Flagged for T&F" below |
+| ~~`images/corrgram-renderings.png`~~ | Ch 4 | Resolved 2026-08-23: verified against the ASA/T&F author-reuse policy (own figure, attribution present) → NPR |
+| ~~`images/techniques-table.png` (`fig-techniques`)~~ | Ch 6 | Resolved 2026-08-23: confirmed MF made it himself → NPR |
+| ~~`images/ridge-demo.png`~~ | Ch 9 | Resolved 2026-08-23: verified against the IMS/Statistical Science author-reuse policy (own figure, attribution present) → NPR |
+| ~~`images/weight-functions.jpg`~~ | Ch 14 | Resolved 2026-08-23: confirmed MF drew the sketch himself → NPR |
+| ~~`images/cancor-diagram-udi.png`~~ | Ch 12 | Resolved 2026-08-23: documented as a substantially-transformed redraw, with courtesy credit to 'ttnphns' → NPR |
+| ~~`images/history/hertzsprung1-annotated.jpg`~~ | Ch 1 | Resolved 2026-08-23: already `[NPR]` in the Ch. 1 entry above, with the UK/EU life+70 caveat documented there in full — nothing further to verify here. The caveat itself (US PD by publication date vs. UK/EU life+70 running to 2038) still needs to be carried into the T&F permissions log alongside the other [NPR] proofs (see "Action items" below). |
+
+### Flagged for T&F (TFQ)
+
+Due diligence was done, but copyright status can't be resolved from the author's end.
+Not claimed as NPR; not pursued as a formal permission request either — flagged for
+T&F to make the call, with a plain-language source note also added to the figure's own
+caption so the flag is visible in the book text itself, not just this log.
+
+| Figure | Chapter | History |
+|--------|---------|---------|
+| `images/MV-juicer.png` (`fig-MV-juicer`) | Ch 5 | Composite of stock clipart (fruit-head, juicer line art, gear-brain head) assembled in `images/MV-juicer.pptx`; MF has no record of the original source(s) and the elements aren't watermarked. Per guide rule 2, no watermark ≠ public domain, so that can't be used as a PD claim; a reverse image search is the only remaining diligence step and isn't guaranteed to be conclusive. Caption now reads "Source: Author image, using publicly available clipart" (@fig-MV-juicer, `05-pca-biplot.qmd`) to flag this for readers/reviewers as well. |
 
 ### Action items for the permissions log
 
@@ -199,9 +213,7 @@ is "avoid third-party material and avoid permissions."
   animation), or the generating R script in this repo.
 - Add a CC BY-SA license notice for `images/pca-springs-cropped.gif` alongside the
   existing "Amoeba" credit.
-- Consider regenerating items 9, 10, and 15 from data/code to shrink the permission list —
-  per the guide, figures built by MF's own code from raw data need no permission.
-  `corrgram-renderings.png` has the same escape valve (swap in a fresh `corrgram()`/
-  `corrplot()` panel) as a way to sidestep the journal reuse-rights question entirely,
-  since the existing PNG is now confirmed as a reproduction from Friendly (2002) — see
-  the Ch. 4 entry above.
+- Consider regenerating item 15 from data/code to shrink the permission list — per the
+  guide, figures built by MF's own code from raw data need no permission. (Items 9 and 10
+  were also candidates for this, but MF decided 2026-08-23 not to regenerate them —
+  requesting permission instead.)

@@ -1,10 +1,10 @@
 # index-plots.R
 # Visualizations of the subject index distribution for Vis-MLM-book.
-# Reads issues/index-terms-ch.csv (produced by index-add-chapters.R).
-# Saves plots to issues/index-plots/
+# Reads issues/indexing/index-terms-ch.csv (produced by index-add-chapters.R).
+# Saves plots to issues/indexing/index-plots/
 #
 # Run from the project root:
-#   Rscript issues/index-plots.R
+#   Rscript issues/indexing/index-plots.R
 
 library(dplyr)
 library(ggplot2)
@@ -12,10 +12,10 @@ library(stringr)
 library(forcats)
 library(tidyr)
 
-outdir <- "issues/index-plots"
+outdir <- "issues/indexing/index-plots"
 if (!dir.exists(outdir)) dir.create(outdir)
 
-idx <- read.csv("issues/index-terms-ch.csv", stringsAsFactors = FALSE)
+idx <- read.csv("issues/indexing/index-terms-ch.csv", stringsAsFactors = FALSE)
 
 # ── Chapter page lengths from index.toc ───────────────────────────────────────
 toc_raw <- readLines("pdf/index.toc")

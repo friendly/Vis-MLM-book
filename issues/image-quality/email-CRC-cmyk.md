@@ -53,4 +53,4 @@ From Shashi (CRC Press production):
 > * Is there a minimum DPI requirement? — **300dpi**
 
 All three questions answered — no TIFF conversion needed, format stays
-PNG/JPG. See `issues/cmyk-conversion-plan.md` for the implementation plan.
+PNG/JPG. See `issues/image-quality/cmyk-conversion-plan.md` for the implementation plan.

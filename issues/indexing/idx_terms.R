@@ -10,10 +10,10 @@
 #
 # Usage: source this file from the project root, or set either variable
 # before sourcing to override the default:
-#   idx_file <- "pdf/index.idx"; source("issues/idx_terms.R")
+#   idx_file <- "pdf/index.idx"; source("issues/indexing/idx_terms.R")
 
 if (!exists("idx_file")) idx_file <- "index.idx"          # built at project root by quarto render
-if (!exists("out_file")) out_file <- "issues/index-terms.csv"
+if (!exists("out_file")) out_file <- "issues/indexing/index-terms.csv"
 
 lines <- readLines(idx_file, warn = FALSE, encoding = "latin1")
 

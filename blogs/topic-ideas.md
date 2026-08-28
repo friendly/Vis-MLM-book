@@ -65,8 +65,8 @@ Peddle, 1910)" because Haskell sorts first. Fix: reorder the keys in the
 source to match the alphabetical render order. A good "verify the actual
 rendered output, not just the diff" lesson.
 
-*Source:* `issues/paren-citations.md` (full row-by-row table with categories
-A–E and decisions), `issues/paren-citations-plan.md`, `memory/apa-csl-group-sorting.md`.
+*Source:* `issues/solved/paren-citations.md` (full row-by-row table with categories
+A–E and decisions), `issues/solved/paren-citations-plan.md`, `memory/apa-csl-group-sorting.md`.
 
 ### 3. Auditing RGB vs CMYK for print
 
@@ -95,11 +95,11 @@ typo was found riding along — the book's Hofstadter cover image (*Gödel,
 Escher, Bach*) had been mis-titled "*Gödel, Bach and Escher*" everywhere in
 the text, alongside the low-res image flag. Both were fixed in the same pass.
 
-*Source:* `issues/CMYK-colors.md`, `issues/cmyk-conversion-plan.md`,
-`issues/CMYK-checklist.md`, `issues/cmyk-image-audit.R` +
-`cmyk-image-audit-results.csv`, `issues/email-CRC-cmyk.md` (CRC's actual
+*Source:* `issues/image-quality/CMYK-colors.md`, `issues/image-quality/cmyk-conversion-plan.md`,
+`issues/image-quality/CMYK-checklist.md`, `issues/image-quality/cmyk-image-audit.R` +
+`cmyk-image-audit-results.csv`, `issues/image-quality/email-CRC-cmyk.md` (CRC's actual
 spec reply), `issues/Gavin-SummerWork.md` (Gavin's task framing),
-`issues/GBE-to-GEB-switch.md` (the cover typo).
+`issues/solved/GBE-to-GEB-switch.md` (the cover typo).
 
 ### 4. The mystery of the duplicated index entries
 
@@ -122,8 +122,8 @@ for 10 terms. The actual fix requires a post-build normalization pass
 and clobbers the fix). A good "the fix looked complete but wasn't" story,
 and a nice companion/counterpoint to the `blog-quarto-indexes.qmd` draft.
 
-*Source:* `memory/index_duplicates_fix.md`, `issues/duplicate-index-entries.md`,
-`issues/dup-index.txt`.
+*Source:* `memory/index_duplicates_fix.md`, `issues/indexing/duplicate-index-entries.md`,
+`issues/indexing/dup-index.txt`.
 
 ### 5. Indexing a book with an AI pair, chapter by chapter
 
@@ -131,7 +131,7 @@ Less a bug-fix story, more a workflow/methodology one: rather than a single
 sweep, the subject index was built up chapter by chapter in dedicated
 sessions, with Claude proposing `\ix{}`/`\ixmain{}`/`\ixon{}`/`\ixoff{}` calls
 for a chapter's key terms (statistical concepts, named methods, datasets) for
-Michael to accept or reject — roughly 15–30 minutes per chapter. The `issues/subject-index.md`
+Michael to accept or reject — roughly 15–30 minutes per chapter. The `issues/indexing/subject-index.md`
 work log is detailed enough to make a good post on its own: entry counts by
 chapter before/after (Ch. 10 went from 1 manual entry to 39; Ch. 12 from 5 to
 38), the five different approaches considered (skim the compiled PDF first,
@@ -140,11 +140,11 @@ concordance, cross-checking a comparable book's index), and the editorial
 judgment calls (disambiguating two sections both titled "Example: Penguin
 data"; deciding which terms are worth a `see`-style cross-reference).
 Could pair naturally with a short aside on the Zipf-plot / index-density
-visualizations Michael made *of* the index itself (`issues/index-plots.R`,
-`issues/index-plots/*.png`) — a fun meta-visualization for a data-viz book.
+visualizations Michael made *of* the index itself (`issues/indexing/index-plots.R`,
+`issues/indexing/index-plots/*.png`) — a fun meta-visualization for a data-viz book.
 
-*Source:* `issues/subject-index.md` (the full work log), `issues/index-plots.R`
-and `issues/index-plots/` (entries-per-chapter, page-density, Zipf, top-terms
+*Source:* `issues/indexing/subject-index.md` (the full work log), `issues/indexing/index-plots.R`
+and `issues/indexing/index-plots/` (entries-per-chapter, page-density, Zipf, top-terms
 plots), `issues/GK-index-issues.md`.
 
 ### 6. Git conflicts in a book that commits its own PDF

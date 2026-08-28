@@ -1,14 +1,14 @@
 # Plan: Fix Parenthesized Narrative Citations `(@key)` → `[@key]`
 
 **Status: RESOLVED — STAGE 2 COMPLETE 2026-07-11** — all `OK` rows from the reviewed
-inventory in `issues/paren-citations.md` applied on the `citation-fixes` branch (22 edits;
+inventory in `issues/solved/paren-citations.md` applied on the `citation-fixes` branch (22 edits;
 row 3 was already fixed in the source). Deviations from the plan, per GK: work done on the
 existing `citation-fixes` branch rather than a fresh one. Build verification completed
 2026-07-11: full rebuild (`./build.sh --all --authorindex` + fix-index pass) succeeded and
 the rendered-HTML symptom grep found zero doubled citations. The detection
 grep was re-run post-fix: only row 9 (Cat. E, intentional) and row 26 (dead file
 `04b-higher.qmd`, no decision) still match. Rows 26–27 (dead files) remain unfixed.
-Cross-referenced in `issues/GK-June3-issues.md`.
+Cross-referenced in `issues/solved/GK-June3-issues.md`.
 
 ## The problem
 
@@ -29,7 +29,7 @@ college courses [@Costelloe:1915].     → (Costelloe, 1915)
 ```
 
 Prior history: two instances were hand-fixed on 2026-06-03 (`13-eqcov.qmd:552`,
-`14-infl-robust.qmd:31` — see `issues/GK-June3-issues.md`), and a broader cleanup was
+`14-infl-robust.qmd:31` — see `issues/solved/GK-June3-issues.md`), and a broader cleanup was
 deferred. A scan on 2026-07-09 found **~24 remaining instances** across 12 files.
 
 ## Fix categories
@@ -68,7 +68,7 @@ syntax and must be excluded from detection.
    brackets), so the single-line grep currently has full recall on the sources. Re-run
    both passes fresh in Stage 1 anyway, since text will have changed.
 
-2. Write every hit to **`issues/paren-citations.md`** as a review table, one row per
+2. Write every hit to **`issues/solved/paren-citations.md`** as a review table, one row per
    instance, with columns:
 
    | # | File:line | Current source text | Proposed fix | Category | Decision |
@@ -92,7 +92,7 @@ syntax and must be excluded from detection.
 
 ## Review gate (GK + Michael)
 
-- Review `issues/paren-citations.md`; fill in the Decision column.
+- Review `issues/solved/paren-citations.md`; fill in the Decision column.
 - Special attention to Category D and E rows — these change sentence structure or are
   intentionally narrative.
 - Give Claude the go-ahead for Stage 2 (fixes applied only to rows marked `OK` or with
@@ -103,7 +103,7 @@ syntax and must be excluded from detection.
 1. Work on a fresh branch (e.g. `fix-paren-citations`).
 2. Apply each approved row with exact-string edits (Edit tool, not blind sed — several
    patterns are near-duplicates and context matters).
-3. Update the Decision column in `issues/paren-citations.md` to `FIXED <date>` per row.
+3. Update the Decision column in `issues/solved/paren-citations.md` to `FIXED <date>` per row.
 4. Verify:
    - Re-run the Stage 1 detection grep → only `skip`/Category-E rows remain.
    - Render at least one affected chapter to HTML and confirm citations now appear as
@@ -111,7 +111,7 @@ syntax and must be excluded from detection.
      smoke test.
    - Full `Build -> All Formats` before the next PDF submission (per CLAUDE.md, HTML-only
      builds leave `docs/` inconsistent).
-5. Cross-reference the fix in `issues/GK-June3-issues.md` (the "broader scan ... not yet
+5. Cross-reference the fix in `issues/solved/GK-June3-issues.md` (the "broader scan ... not yet
    done" bullet) and mark this plan **RESOLVED**.
 
 ## Current instance inventory (scan of 2026-07-09, for reference)

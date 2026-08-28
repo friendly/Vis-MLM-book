@@ -6,11 +6,11 @@ Date: 2026-05-31
 
 The dual-build problem is not one issue; it is three interacting issues:
 
-1. The Quarto config state is internally inconsistent. `_quarto.yml` now includes the online-only appendices, while `_quarto-online.yml` still lists the same appendices. Claude's `issues/dual-build-plan.md` correctly noticed this conflict, but its assumption that the print profile suppresses base appendices is not reliable and is contradicted by `quarto inspect --profile print` in this checkout.
+1. The Quarto config state is internally inconsistent. `_quarto.yml` now includes the online-only appendices, while `_quarto-online.yml` still lists the same appendices. Claude's `issues/solved/dual-build-plan.md` correctly noticed this conflict, but its assumption that the print profile suppresses base appendices is not reliable and is contradicted by `quarto inspect --profile print` in this checkout.
 2. `build.sh --all` renders HTML first and PDF last into the same `project.output-dir: docs`. Quarto book renders treat `docs/` as the active output directory and can remove outputs from the prior format. That explains the reported behavior: the PDF can be correct while the HTML site is wiped or left incomplete.
 3. The PDF TOC/bookmark issues are mostly separate from the HTML/PDF profile issue. The part-heading TOC bug comes from `krantz.cls`'s deferred `\l@part` implementation; the duplicate index bookmarks come from `krantz`/`imakeidx`/manual `\addcontentsline` interactions.
 
-I would not treat `issues/dual-build-plan.md` as a safe implementation plan without modification. It is directionally useful, but it understates the output-directory cleanup problem and over-trusts profile behavior around `book.appendices`.
+I would not treat `issues/solved/dual-build-plan.md` as a safe implementation plan without modification. It is directionally useful, but it understates the output-directory cleanup problem and over-trusts profile behavior around `book.appendices`.
 
 ## Current build topology
 
@@ -40,7 +40,7 @@ Script:
 
 ## Confirmed observations
 
-`quarto inspect --profile online` on Quarto 1.8.27 reports the effective book render list with the three appendices once. So the duplicate appendices in `_quarto.yml` and `_quarto-online.yml` do not currently show as duplicated in inspect output. That weakens the specific "appendices will render twice" fear in `issues/dual-build-plan.md`, at least for Quarto 1.8.27.
+`quarto inspect --profile online` on Quarto 1.8.27 reports the effective book render list with the three appendices once. So the duplicate appendices in `_quarto.yml` and `_quarto-online.yml` do not currently show as duplicated in inspect output. That weakens the specific "appendices will render twice" fear in `issues/solved/dual-build-plan.md`, at least for Quarto 1.8.27.
 
 However, `quarto inspect --profile print` also reports the three appendices in the effective `book.appendices` and `book.render` list. That directly contradicts the plan's assumption that redefining `book.chapters` in `_quarto-print.yml` suppresses base appendices.
 
@@ -71,7 +71,7 @@ project:
 
 `build.sh --all` renders HTML into `docs/`, then renders PDF into the same `docs/`. Quarto book renders clean or reconcile the output directory for the active render. When the later PDF render runs, Quarto can remove HTML files and HTML support directories because they are not outputs for the PDF render.
 
-This matches the reported symptom: "proper PDF but wiping out HTML." It also matches older issue notes in `issues/build-problems/quarto-latex-woes.md`, which say that rendering PDF deleted `docs/*.html` and images under `docs/`.
+This matches the reported symptom: "proper PDF but wiping out HTML." It also matches older issue notes in `issues/solved/quarto-latex-woes.md`, which say that rendering PDF deleted `docs/*.html` and images under `docs/`.
 
 Rendering formats separately avoids some cross-reference resolution failures, but it does not by itself protect the earlier format's output when both formats target `docs/`.
 

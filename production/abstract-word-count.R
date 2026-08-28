@@ -1,15 +1,15 @@
 # abstract-word-count.R
-# Verify word counts of chapter abstracts in issues/chapter-abstracts.md
-# (Step 4 of issues/abstract-plan.md). Flags any abstract outside the
-# strict 100-200 word limit. Run from the project root or issues/:
-#   Rscript issues/abstract-word-count.R
+# Verify word counts of chapter abstracts in production/chapter-abstracts.md
+# (Step 4 of production/abstract-plan.md). Flags any abstract outside the
+# strict 100-200 word limit. Run from the project root or production/:
+#   Rscript production/abstract-word-count.R
 
-path <- if (file.exists("issues/chapter-abstracts.md")) {
-  "issues/chapter-abstracts.md"
+path <- if (file.exists("production/chapter-abstracts.md")) {
+  "production/chapter-abstracts.md"
 } else if (file.exists("chapter-abstracts.md")) {
   "chapter-abstracts.md"
 } else {
-  stop("chapter-abstracts.md not found; run from the project root or issues/")
+  stop("chapter-abstracts.md not found; run from the project root or production/")
 }
 
 lines <- readLines(path, encoding = "UTF-8")

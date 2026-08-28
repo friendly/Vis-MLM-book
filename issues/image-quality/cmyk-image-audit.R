@@ -1,6 +1,6 @@
 # cmyk-image-audit.R
 # Read-only audit of raster images embedded in the PDF build, per step 3 of
-# issues/cmyk-conversion-plan.md. For every images/*.png|jpg|jpeg actually
+# issues/image-quality/cmyk-conversion-plan.md. For every images/*.png|jpg|jpeg actually
 # reachable in the PDF (excludes when-format="html" blocks and exempt
 # formats gif/webp/svg/pptx), reports current colorspace and *effective*
 # print DPI — pixel width divided by the image's largest used print width
@@ -9,7 +9,7 @@
 # Requires ImageMagick (`magick`) and xelatex on PATH.
 #
 # Run from the project root:
-#   Rscript issues/cmyk-image-audit.R
+#   Rscript issues/image-quality/cmyk-image-audit.R
 
 library(dplyr)
 library(stringr)
@@ -155,7 +155,7 @@ report <- bind_cols(worst_case, meta) |>
 
 # ── 5. Report ────────────────────────────────────────────────────────────
 
-outfile <- "issues/cmyk-image-audit-results.csv"
+outfile <- "issues/image-quality/cmyk-image-audit-results.csv"
 write.csv(report, outfile, row.names = FALSE)
 
 cat(sprintf("\n%d unique raster images used in the PDF build.\n", nrow(report)))

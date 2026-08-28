@@ -31,15 +31,15 @@ in the `make-rcode-appendix` script.
 
 The final version of the book must use the CMYK rather than RGB color encoding for printing. This
 has been done for all figures generated from the text (R figures, LaTeX vector colors), but the
-static images under `images/` are still RGB — see `issues/CMYK-colors.md` for full status and
-`issues/cmyk-conversion-plan.md` for the conversion plan. CRC confirmed (2026-07-10, in
-`issues/email-CRC-cmyk.md`): ICC profile = US Web Coated SWOP, PNG/JPG format is fine (no TIFF),
+static images under `images/` are still RGB — see `issues/image-quality/CMYK-colors.md` for full status and
+`issues/image-quality/cmyk-conversion-plan.md` for the conversion plan. CRC confirmed (2026-07-10, in
+`issues/image-quality/email-CRC-cmyk.md`): ICC profile = US Web Coated SWOP, PNG/JPG format is fine (no TIFF),
 minimum 300 dpi.
 
-**Your task:** `issues/cmyk-image-audit.R` audited every raster image actually used in the PDF
+**Your task:** `issues/image-quality/cmyk-image-audit.R` audited every raster image actually used in the PDF
 (85 total) and estimated each one's *effective* print DPI — pixel width divided by how large it's
 actually printed in the book, not the (usually meaningless) embedded metadata DPI tag. Results are
-in `issues/cmyk-image-audit-results.csv`. **69 of the 85 are flagged `LOW-DPI`** (effective dpi
+in `issues/image-quality/cmyk-image-audit-results.csv`. **69 of the 85 are flagged `LOW-DPI`** (effective dpi
 under 300 at the size they're printed).
 
 For each `LOW-DPI` row, please check whether a higher-resolution original exists (original photo,
