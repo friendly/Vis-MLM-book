@@ -59,6 +59,13 @@ hand-tuned static images, same pattern as ch03's `ch02-anscombe1-old.png`).
 This run is also what surfaced the scale of the gap below: ch04 has 61
 `#| label: fig-*` chunks total, but only 40 made it into the collage.
 
+Also tried on ch05 (`05-pca-biplot.qmd`): 20 PNGs correctly matched and
+ordered into a 5x4 grid. Same recurring pattern again, at smaller scale --
+orphans `04-outlier-demo1.png`/`04-outlier-demo2.png` trace to
+`fig-outlier-demo` (now `knitr::include_graphics("images/outlier-demo.png")`)
+and `fig-outlier-animation` (`images/outlier-demo.gif`), out of 22 `fig-*`
+labels in the chapter. No new wrinkle beyond what ch03/ch04 already showed.
+
 ### Known gap: `knitr::include_graphics()` figures are silently skipped
 
 Some figures aren't knitr chunk *output* -- they're pre-made images pulled in
@@ -194,3 +201,4 @@ a manual step (see Next steps below).
   `fig-draft-lottery-photo`)
 - `images/ch04_collage.jpg` -- second trial, larger chapter (40 of 61
   figures; see the gap discussion above for what's missing and why)
+- `images/ch05_collage.jpg` -- third trial (20 of 22 figures)
