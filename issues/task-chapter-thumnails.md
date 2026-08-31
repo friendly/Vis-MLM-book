@@ -199,8 +199,12 @@ a manual step (see Next steps below).
       status update above
 - [ ] Decide how to handle a `fig-*` label with no image at all (e.g.
       `eval: false`, chunk disabled) -- skip silently vs. warn
-- [ ] Decide whether/how to represent non-static formats (e.g. the
-      `DataSaurusDozen.gif`) in a static collage
+- [x] Decide whether/how to represent non-static formats (e.g. the
+      `DataSaurusDozen.gif`) in a static collage -- decided (2026-08-31): leave
+      them out entirely, rather than picking an arbitrary frame. Any
+      `include_graphics()`-resolved path ending in `.gif` is dropped by
+      `.add_static_image()` and reported (info only) via `.report_skipped()`-style
+      message, same as an unresolved conditional
 - [ ] Once the gap is fixed, run across all chapters (ch01, ch03-ch15) and
       sanity-check each collage
 - [ ] Firm up default `columns`/`geometry` choices based on real review use,

@@ -101,6 +101,20 @@ chapter_figs_ordered <- function(chapter, book_dir = ".") {
           " -- not a plain literal path: ", trimws(text))
 }
 
+#' A resolved static-image path to add to the ordered list -- unless it's an
+#' animated .gif, which a static collage can't represent (there's no single
+#' "the" frame); those are left out entirely, reported for info only, rather
+#' than silently dropped or arbitrarily picking one frame.
+#' @return the path as a length-1 character vector, or character(0) if skipped
+.add_static_image <- function(path, file, line_no) {
+  if (grepl("\\.gif$", path, ignore.case = TRUE)) {
+    message("Skipped animated GIF at ", basename(file), ":", line_no,
+            " -- not represented in a static collage: ", path)
+    return(character(0))
+  }
+  path
+}
+
 #' Figures for one chapter, in true source order, covering both
 #' figs/<chapter>/*.png (R-generated) and static images/*.png|jpg|... embedded
 #' via a literal knitr::include_graphics("images/...") or
@@ -157,12 +171,12 @@ chapter_figs_ordered <- function(chapter, book_dir = ".") {
         imgs <- regmatches(call_text, gregexpr('images/[^"\')]+', call_text, perl = TRUE))[[1]]
 
         if (length(imgs) == 1) {
-          ordered <- c(ordered, file.path(book_dir, imgs))
+          ordered <- c(ordered, .add_static_image(file.path(book_dir, imgs), f, i))
         } else if (length(imgs) == 0) {
           m <- regmatches(call_text, regexpr('here::here\\(\\s*"images"\\s*,\\s*"[^"]+"', call_text, perl = TRUE))
           if (length(m) && nzchar(m)) {
             fn <- sub('.*,\\s*"([^"]+)".*', "\\1", m)
-            ordered <- c(ordered, file.path(book_dir, "images", fn))
+            ordered <- c(ordered, .add_static_image(file.path(book_dir, "images", fn), f, i))
           } else {
             .report_skipped(f, i, ln)
           }
