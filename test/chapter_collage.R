@@ -221,21 +221,27 @@ chapter_figs <- function(chapter, book_dir = ".", type = c("figs", "all")) {
 #'   embedded via `knitr::include_graphics()`
 #' @param geometry passed to [myutil::magick_collage()] -- smaller than the
 #'   package default, since this is meant as a compact overview
+#' @param out_file where to write the collage. Defaults to
+#'   `images/<chapter>_collage.jpg`; pass something else (e.g. to compare a
+#'   `type = "figs"` vs. `type = "all"` collage for the same chapter side by
+#'   side) without overwriting the default output.
 #' @param ... other arguments passed to [myutil::magick_collage()]
 #' @return the collage file path, invisibly
 #' @details
-#' The collage is written to `images/<chapter>_collage.jpg`, not
+#' The collage defaults to `images/<chapter>_collage.jpg`, not
 #' `figs/<chapter>/` -- `figs/` is knitr's own generated-figure output
 #' directory (regenerated, possibly wiped, on a full rebuild), while
 #' `images/` is already this book's convention for hand-placed static
 #' assets (e.g. `images/anscombe1.png`). Writing the collage into
 #' `figs/<chapter>/` would also risk `chapter_figs_ordered()` picking up
 #' the collage from a *previous* run as an "orphan" file on the next one.
-chapter_collage <- function(chapter, book_dir = ".", type = c("figs", "all"), geometry = "x250+5+5", ...) {
+chapter_collage <- function(chapter, book_dir = ".", type = c("figs", "all"),
+                             geometry = "x250+5+5",
+                             out_file = file.path(book_dir, "images", paste0(chapter, "_collage.jpg")),
+                             ...) {
   type <- match.arg(type)
   files <- chapter_figs(chapter, book_dir, type = type)
   columns <- ceiling(sqrt(length(files)))
-  out_file <- file.path(book_dir, "images", paste0(chapter, "_collage.jpg"))
   myutil::magick_collage(files = files, columns = columns, geometry = geometry,
                           out_file = out_file, ...)
 }
@@ -243,5 +249,12 @@ chapter_collage <- function(chapter, book_dir = ".", type = c("figs", "all"), ge
 # ---- demo ----
 if (FALSE) {
   chapter_collage("ch03")
-  chapter_collage("ch01", type = "all")
+  chapter_collage("ch04", type = "all")
+
+  # Compare "figs" vs. "all" side by side for a few chapters, without
+  # touching the default images/<chapter>_collage.jpg output
+  for (ch in c("ch03", "ch04", "ch05")) {
+    chapter_collage(ch, type = "figs", out_file = paste0("images/", ch, "_collage_figs.jpg"))
+    chapter_collage(ch, type = "all",  out_file = paste0("images/", ch, "_collage_all.jpg"))
+  }
 }
