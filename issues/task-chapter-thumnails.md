@@ -17,7 +17,28 @@ without paging through the rendered HTML or the `.qmd` source. Built on
 - A thumbnail grid, generated straight from `figs/chNN/`, is a much faster
   review pass than opening the built HTML chapter.
 
-## Status: prototype working, one known gap
+## Status (2026-08-31 update)
+
+The `include_graphics()` gap below is **fixed** -- `chapter_figs(chapter, type =
+"all")` now interleaves static `images/` embeds with `figs/<chapter>/` output in
+true source order (the old behavior is unchanged and still available as
+`chapter_figs(chapter, type = "figs")` / `chapter_figs_ordered()`). It only
+resolves a literal `knitr::include_graphics("images/...")` or `here::here("images",
+...)` call -- not `<img>` tags, pandoc `![]()` syntax, or a conditional expression
+(e.g. picking `.pdf` vs `.png` by output format) -- those are skipped with an
+info-only message rather than guessed at.
+
+Separately: `04b-higher.qmd` (referenced throughout the rest of this file as part
+of ch04's structure) was draft material never actually used in the book, and has
+been moved to `working-text/04b-higher.qmd` so it stops showing up in these scans
+(which only look at root-level `.qmd` files). The duplicate-label/inconsistent-path
+issue noted below between `04-multivariate_plots.qmd` and `04b-higher.qmd` is now
+moot for the same reason -- `04b-higher.qmd` isn't part of ch04's source set at
+all anymore. The rest of this file (prose below) predates both fixes and is kept
+as-is for the history of how the gap was diagnosed; see `test/chapter_collage.R`
+for the current implementation.
+
+## Original status: prototype working, one known gap
 
 `test/chapter_collage.R` has two functions:
 
@@ -137,7 +158,7 @@ carry over well to a printed book).
 
 ## Chapter figures at a glance
 
-![All figures in this chapter](images/ch03_collage.jpg){#fig-ch03-overview fig-alt="Thumbnail grid of every figure in this chapter, in the order they appear."}
+![All figures in this chapter](images/ch03_collage.jpg){#fig-ch03-overview fig-alt="Thumbnail grid of code figures in this chapter, in the order they appear."}
 
 :::
 ```
@@ -172,10 +193,10 @@ a manual step (see Next steps below).
 
 ## Next steps
 
-- [ ] Extend `chapter_figs_ordered()` to parse chunk bodies so labeled chunks
-      whose only output is `knitr::include_graphics("path")` resolve to that
-      path instead of being silently skipped -- now the main blocker, per
-      ch04 (missing ~1/3 of that chapter's figures), not an edge case
+- [x] Extend the figure scan to resolve labeled chunks whose only output is
+      `knitr::include_graphics("path")`, instead of silently skipping them --
+      done via `chapter_figs(chapter, type = "all")`, see the 2026-08-31
+      status update above
 - [ ] Decide how to handle a `fig-*` label with no image at all (e.g.
       `eval: false`, chunk disabled) -- skip silently vs. warn
 - [ ] Decide whether/how to represent non-static formats (e.g. the
@@ -193,7 +214,10 @@ a manual step (see Next steps below).
 ## Related files
 
 - `test/chapter_collage.R` -- prototype script (`chapter_figs_ordered()`,
-  `chapter_collage()`)
+  `chapter_figs()`, `chapter_collage()`)
+- `working-text/04b-higher.qmd` -- unused draft material, moved here 2026-08-31
+  so it stops showing up in root-level `.qmd` scans (was previously mistaken
+  for part of ch04's real source)
 - `myutil` package (`C:\Dropbox\R\projects\myutil`, `R/magick_collage.R`) --
   the general-purpose montage function this depends on
 - `images/ch03_collage.jpg` -- first working example output (incomplete,
