@@ -6,9 +6,22 @@
 # plot appears later in the chapter.
 #
 # Each chapter's fig.path (e.g. "figs/ch03/") is set via
-# knitr::opts_chunk$set() near the top of its .qmd file(s) -- ch04 is split
-# across 04-multivariate_plots.qmd and 04b-higher.qmd, both writing into
-# figs/ch04/, so a chapter can map to more than one source file.
+# knitr::opts_chunk$set() near the top of its .qmd file -- the file-finding
+# logic below still supports a chapter spanning more than one source file
+# (matching every root-level .qmd that sets a given fig.path), but as of
+# 2026-08-31 every chapter maps 1:1 to a single file. That used to include
+# 04b-higher.qmd (also writing into figs/ch04/), which was draft material
+# never actually used in the book; it's been moved to working-text/ (outside
+# this scan, which only looks at the project root, non-recursively) so it
+# stops showing up in ch04's figure list.
+#
+# chapter_figs_ordered() only covers R-generated figures under figs/<chapter>/.
+# A chapter can also embed static images from images/ directly via
+# knitr::include_graphics() (book covers, historical diagrams, etc.) -- those
+# never land in figs/<chapter>/, so they're invisible to chapter_figs_ordered().
+# chapter_figs(type = "all") covers both, interleaved in true source order.
+# Only intended for top-level book chapters (the ones listed in _quarto.yml),
+# not child/*.qmd includes or appendix/test files.
 
 library(myutil)
 
@@ -67,10 +80,131 @@ chapter_figs_ordered <- function(chapter, book_dir = ".") {
   file.path(figs_dir, c(ordered, leftover))
 }
 
+# ---- type = "all" internals ------------------------------------------
+
+#' Which .qmd file(s) set fig.path for this chapter -- same detection
+#' chapter_figs_ordered() uses inline; factored out here so chapter_figs()
+#' doesn't have to duplicate the fig.path regex separately.
+.find_chapter_qmds <- function(chapter, book_dir) {
+  qmd_files <- list.files(book_dir, pattern = "\\.qmd$", full.names = TRUE)
+  fig_path_pat <- paste0('fig\\.path\\s*=\\s*"figs/', chapter, '/"')
+  sort(qmd_files[vapply(qmd_files, function(f) {
+    any(grepl(fig_path_pat, readLines(f, warn = FALSE)))
+  }, logical(1))])
+}
+
+#' Info-only note for an include_graphics() call that couldn't be resolved
+#' to exactly one literal image path (most commonly a conditional expression
+#' picking between e.g. a .pdf and a .png by output format).
+.report_skipped <- function(file, line_no, text) {
+  message("Skipped include_graphics() at ", basename(file), ":", line_no,
+          " -- not a plain literal path: ", trimws(text))
+}
+
+#' Figures for one chapter, in true source order, covering both
+#' figs/<chapter>/*.png (R-generated) and static images/*.png|jpg|... embedded
+#' via a literal knitr::include_graphics("images/...") or
+#' here::here("images", "...") call. Used by chapter_figs(type = "all").
+#'
+#' Doesn't attempt <img> tags, pandoc `![]()` syntax, or a conditional
+#' include_graphics() call (e.g. picking .pdf vs .png by output format) --
+#' those are skipped with a message (see .report_skipped()) rather than
+#' guessed at.
+.chapter_figs_all <- function(chapter, book_dir = ".") {
+  figs_dir <- file.path(book_dir, "figs", chapter)
+  pngs <- list.files(figs_dir, pattern = "\\.png$")
+
+  source_qmds <- .find_chapter_qmds(chapter, book_dir)
+  if (length(source_qmds) == 0) {
+    warning("No .qmd file sets fig.path for '", chapter, "' -- falling back to chapter_figs_ordered()")
+    return(chapter_figs_ordered(chapter, book_dir))
+  }
+
+  used <- character(0)
+  ordered <- character(0)
+
+  for (f in source_qmds) {
+    lines <- readLines(f, warn = FALSE)
+
+    for (i in seq_along(lines)) {
+      ln <- lines[i]
+
+      lab <- regmatches(ln, regexpr("(?<=#\\|\\s{0,3}label:\\s)fig-[[:alnum:]_-]+", ln, perl = TRUE))
+      if (!length(lab)) {
+        lab <- trimws(regmatches(ln, regexpr("(?<=```\\{r[ ,])\\s*fig-[[:alnum:]_-]+", ln, perl = TRUE)))
+      }
+      if (length(lab) && nzchar(lab)) {
+        hits <- pngs[grepl(paste0("^", lab, "-[0-9]+\\.png$"), pngs)]
+        hits <- hits[order(as.integer(sub(paste0("^", lab, "-([0-9]+)\\.png$"), "\\1", hits)))]
+        if (length(hits)) {
+          ordered <- c(ordered, file.path(figs_dir, hits))
+          used <- c(used, hits)
+        }
+        next
+      }
+
+      if (grepl("include_graphics", ln, fixed = TRUE)) {
+        # The call can wrap across lines (most notably a conditional picking
+        # between two literal paths by output format) -- gather forward to
+        # the closing paren, up to a handful of lines, before deciding.
+        call_lines <- ln
+        j <- i
+        while (!grepl("\\)\\s*$", call_lines[length(call_lines)]) && j < min(i + 6, length(lines))) {
+          j <- j + 1
+          call_lines <- c(call_lines, lines[j])
+        }
+        call_text <- paste(call_lines, collapse = " ")
+        imgs <- regmatches(call_text, gregexpr('images/[^"\')]+', call_text, perl = TRUE))[[1]]
+
+        if (length(imgs) == 1) {
+          ordered <- c(ordered, file.path(book_dir, imgs))
+        } else if (length(imgs) == 0) {
+          m <- regmatches(call_text, regexpr('here::here\\(\\s*"images"\\s*,\\s*"[^"]+"', call_text, perl = TRUE))
+          if (length(m) && nzchar(m)) {
+            fn <- sub('.*,\\s*"([^"]+)".*', "\\1", m)
+            ordered <- c(ordered, file.path(book_dir, "images", fn))
+          } else {
+            .report_skipped(f, i, ln)
+          }
+        } else {
+          .report_skipped(f, i, ln)  # ambiguous, e.g. a conditional with two branches
+        }
+      }
+    }
+  }
+
+  leftover <- sort(setdiff(pngs, used))
+  if (length(leftover)) {
+    message("Not traced to a fig-* label in ", chapter, ", appended at the end: ",
+            paste(leftover, collapse = ", "))
+  }
+
+  c(ordered, file.path(figs_dir, leftover))
+}
+
+#' Figures for one chapter, ordered as they appear in its .qmd source(s)
+#'
+#' @param chapter chapter folder name under figs/, e.g. `"ch03"`
+#' @param book_dir book project root
+#' @param type `"figs"` (default) -- R-generated figures under
+#'   `figs/<chapter>/` only, i.e. [chapter_figs_ordered()]. `"all"` -- also
+#'   includes static images embedded via a literal
+#'   `knitr::include_graphics("images/...")` call, interleaved in source
+#'   order; see [.chapter_figs_all()] for what that does and doesn't catch.
+#' @return character vector of image paths, in source order
+chapter_figs <- function(chapter, book_dir = ".", type = c("figs", "all")) {
+  type <- match.arg(type)
+  if (type == "figs") chapter_figs_ordered(chapter, book_dir)
+  else .chapter_figs_all(chapter, book_dir)
+}
+
 #' Thumbnail collage of all figures in one chapter
 #'
 #' @param chapter chapter folder name under figs/, e.g. `"ch03"`
 #' @param book_dir book project root
+#' @param type passed to [chapter_figs()] -- `"figs"` (default) for
+#'   R-generated figures only, `"all"` to also include static images/*
+#'   embedded via `knitr::include_graphics()`
 #' @param geometry passed to [myutil::magick_collage()] -- smaller than the
 #'   package default, since this is meant as a compact overview
 #' @param ... other arguments passed to [myutil::magick_collage()]
@@ -83,8 +217,9 @@ chapter_figs_ordered <- function(chapter, book_dir = ".") {
 #' assets (e.g. `images/anscombe1.png`). Writing the collage into
 #' `figs/<chapter>/` would also risk `chapter_figs_ordered()` picking up
 #' the collage from a *previous* run as an "orphan" file on the next one.
-chapter_collage <- function(chapter, book_dir = ".", geometry = "x250+5+5", ...) {
-  files <- chapter_figs_ordered(chapter, book_dir)
+chapter_collage <- function(chapter, book_dir = ".", type = c("figs", "all"), geometry = "x250+5+5", ...) {
+  type <- match.arg(type)
+  files <- chapter_figs(chapter, book_dir, type = type)
   columns <- ceiling(sqrt(length(files)))
   out_file <- file.path(book_dir, "images", paste0(chapter, "_collage.jpg"))
   myutil::magick_collage(files = files, columns = columns, geometry = geometry,
@@ -92,4 +227,7 @@ chapter_collage <- function(chapter, book_dir = ".", geometry = "x250+5+5", ...)
 }
 
 # ---- demo ----
-chapter_collage("ch03")
+if (FALSE) {
+  chapter_collage("ch03")
+  chapter_collage("ch01", type = "all")
+}
