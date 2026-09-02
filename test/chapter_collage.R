@@ -219,12 +219,27 @@ chapter_figs <- function(chapter, book_dir = ".", type = c("figs", "all")) {
 #' @param type passed to [chapter_figs()] -- `"figs"` (default) for
 #'   R-generated figures only, `"all"` to also include static images/*
 #'   embedded via `knitr::include_graphics()`
-#' @param geometry passed to [myutil::magick_collage()] -- smaller than the
-#'   package default, since this is meant as a compact overview
 #' @param out_file where to write the collage. Defaults to
 #'   `images/<chapter>_collage.jpg`; pass something else (e.g. to compare a
 #'   `type = "figs"` vs. `type = "all"` collage for the same chapter side by
 #'   side) without overwriting the default output.
+#' @param max.cols cap on `columns` (`ceiling(sqrt(n))` otherwise, which for
+#'   a `type = "all"` chapter with 60+ images works out to 8-9 columns --
+#'   each thumbnail ends up too small to read at that width). Ignored if
+#'   `ceiling(sqrt(n))` is already <= `max.cols` (small chapters are
+#'   unaffected).
+#' @param thumb.height target height, in pixels, of each individual
+#'   thumbnail (width is automatic, keeping aspect ratio) -- this is what
+#'   was previously the hardcoded `x250` in a `geometry` string passed
+#'   straight through to [myutil::magick_collage()]/[magick::image_montage()].
+#'   Note this sets an *absolute* pixel size, independent of `max.cols`/row
+#'   count -- if your image viewer scales the whole collage to fit a fixed
+#'   window instead of showing it at full size, a taller (more-rows) collage
+#'   can still look smaller on screen even after raising `thumb.height`,
+#'   since the whole file gets shrunk more to fit. Raising `max.cols` (fewer
+#'   rows) helps in that situation; raising `thumb.height` helps when
+#'   viewing at full size/zoomed in.
+#' @param padding pixels of spacing between thumbnails (both directions)
 #' @param ... other arguments passed to [myutil::magick_collage()]
 #' @return the collage file path, invisibly
 #' @details
@@ -236,12 +251,15 @@ chapter_figs <- function(chapter, book_dir = ".", type = c("figs", "all")) {
 #' `figs/<chapter>/` would also risk `chapter_figs_ordered()` picking up
 #' the collage from a *previous* run as an "orphan" file on the next one.
 chapter_collage <- function(chapter, book_dir = ".", type = c("figs", "all"),
-                             geometry = "x250+5+5",
                              out_file = file.path(book_dir, "images", paste0(chapter, "_collage.jpg")),
+                             max.cols = 6,
+                             thumb.height = 250,
+                             padding = 5,
                              ...) {
   type <- match.arg(type)
   files <- chapter_figs(chapter, book_dir, type = type)
-  columns <- ceiling(sqrt(length(files)))
+  columns <- min(max.cols, ceiling(sqrt(length(files))))
+  geometry <- paste0("x", thumb.height, "+", padding, "+", padding)
   myutil::magick_collage(files = files, columns = columns, geometry = geometry,
                           out_file = out_file, ...)
 }
@@ -257,4 +275,11 @@ if (FALSE) {
     chapter_collage(ch, type = "figs", out_file = paste0("images/", ch, "_collage_figs.jpg"))
     chapter_collage(ch, type = "all",  out_file = paste0("images/", ch, "_collage_all.jpg"))
   }
+
+  # A many-figure chapter can still look small once the whole collage is
+  # scaled to fit a viewer window, even with default thumb.height -- try a
+  # bigger one (helps if viewing at full size/zoomed in; raise max.cols
+  # instead if your viewer scales the whole image to fit a fixed window)
+  chapter_collage("ch05", type = "all", thumb.height = 400,
+                   out_file = "images/ch05_collage_all_400.jpg")
 }
