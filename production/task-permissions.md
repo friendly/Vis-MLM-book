@@ -153,6 +153,14 @@ Tracks work on clearing third-party figures for CRC/Taylor & Francis submission,
   byte-identical to before (all 21 rows still `not started`/`flagged for T&F`, nothing to
   preserve yet). The "don't re-run casually" rule below no longer applies.
 
+- **2026-09-04:** Sent all 5 rows in "Ready to apply — publisher permissions systems":
+  Springer (`fig-ReavenMiller-3d`, via CCC/RightsLink), Hachette (`Cover-GEB.png`, both
+  `fig-cover-GEB` and `fig-cover-GEB2` rows, one form covering both usages), O'Reilly
+  (`Wilke-FundamentalsOfDataVis.png`, via CCC Marketplace), and Princeton University Press
+  (`healy-dava-vis-cover-pupress.jpg`) all now
+  `applied`; SAGE (`collin-demo.png`) was already `cleared - STM automatic`, no request
+  needed. Logged via `update_permissions()`.
+
 ## What the script does
 
 `production/build-permissions-csv.R` does **not** re-derive copyright status — that
@@ -281,17 +289,19 @@ individual directly** (5 distinct rightsholders in the formal-system bucket, 10 
 individuals/parties in the direct-contact bucket, once the two duplicated figures are
 collapsed to one contact each).
 
-### Ready to apply — publisher permissions systems (CCC/RightsLink or a permissions page)
+### Ready to apply — publisher permissions systems (CCC/RightsLink or a permissions page) — [DONE, 2026-09-04]
 
-| Fig | Figure | Rightsholder | Contact |
-|---|---|---|---|
-| 1.7 | `ReavenMiller-3d-annotated.png` | Springer (*Diabetologia*, 1979) | RightsLink via the article's "Reprints and Permissions" link on link.springer.com; CCC support springernaturesupport@copyright.com |
-|  |  |  | **GK:** Covered by the STM Permissions Guidelines, with notification required by Springer. Submit through RightsLink as a publisher, select CRC Press as the publisher, and obtain and save the gratis STM license. |
-| 2.3 / 4.41 | `Cover-GEB.png` (used twice) | Basic Books / Hachette | Permission request form (hachettebookgroup.com) → permissions.Generic@hbgusa.com; expect a fee, multi-week turnaround |
-| 9.3 | `collin-demo.png` | SAGE Publications | RightsLink via us.sagepub.com/en-us/nam/books-permissions |
-|  |  |  | **GK:** Cleared under the STM Permissions Guidelines through SAGE's automatic process. Do not send a permission request or use RightsLink. The original Figure 13.2 has no third-party credit, and the manuscript provides attribution. |
-| — | `Wilke-FundamentalsOfDataVis.png` (Preface) | O'Reilly Media | copyright.com, or +1 (707) 827-7000 |
-| — | `healy-dava-vis-cover-pupress.jpg` (Preface) | Princeton University Press | Online form: press.princeton.edu/resources/permissions (2–4 wk) |
+All 5 rows applied for or cleared; see `permissions-tracking.csv` for dates (evidence/confirmation links belong in `production/permissions/`, not this file or the CSV, since some encode account/session details).
+
+| Fig | Figure | Rightsholder | Contact | Status |
+|---|---|---|---|---|
+| 1.7 | `ReavenMiller-3d-annotated.png` | Springer (*Diabetologia*, 1979) | RightsLink via the article's "Reprints and Permissions" link on link.springer.com; CCC support springernaturesupport@copyright.com | **[APPLIED]** 2026-09-04, via CCC/RightsLink |
+|  |  |  | **GK:** Covered by the STM Permissions Guidelines, with notification required by Springer. Submit through RightsLink as a publisher, select CRC Press as the publisher, and obtain and save the gratis STM license. | |
+| 2.3 / 4.41 | `Cover-GEB.png` (used twice) | Basic Books / Hachette | Permission request form (hachettebookgroup.com) → permissions.Generic@hbgusa.com; expect a fee, multi-week turnaround | **[APPLIED]** 2026-09-04, both `fig-cover-GEB` and `fig-cover-GEB2` rows |
+| 9.3 | `collin-demo.png` | SAGE Publications | RightsLink via us.sagepub.com/en-us/nam/books-permissions | **[CLEARED]** — STM automatic, no request needed |
+|  |  |  | **GK:** Cleared under the STM Permissions Guidelines through SAGE's automatic process. Do not send a permission request or use RightsLink. The original Figure 13.2 has no third-party credit, and the manuscript provides attribution. | |
+| — | `Wilke-FundamentalsOfDataVis.png` (Preface) | O'Reilly Media | copyright.com, or +1 (707) 827-7000 | **[APPLIED]** 2026-09-04, via CCC Marketplace form |
+| — | `healy-dava-vis-cover-pupress.jpg` (Preface) | Princeton University Press | Online form: press.princeton.edu/resources/permissions (2–4 wk) | **[APPLIED]** 2026-09-04 |
 
 ### Ready to apply — direct email/contact confirmed
 
