@@ -55,27 +55,32 @@ This skips FactoMineR's ggplot/`theme_factominer()`/showtext code path entirely 
 reproducibility, and should restore the figure's original base-R appearance matching
 `pdf/Vis-MLM.pdf`.
 
-**Status of verification**: confirmed working in isolated/bisected test renders (direct `Rscript`
-calls with the real `crime.PCA_sup` object, and a full-chapter-prefix `quarto render`) — the
-`showtext` hook (checked directly via `getHook("plot.new")`/`getHook("grid.newpage")`) stays
-inactive throughout, and `fig-diabetes-ggbiplot` renders at normal text size in that test.
-**However**, a `quarto render 05-pca-biplot.qmd` of the real chapter file after applying the fix
-still showed tiny text in `figs/ch05/fig-diabetes-ggbiplot-1.png` — this is unreconciled and needs
-a clean re-render + re-check before considering this closed. (Possibly a red herring from output-
-path overlap: bisection scratch test files were also writing into the same `figs/ch05/` directory
-during the same investigation session — needs a from-scratch verification render with no test
-files present.)
+**Status: RESOLVED and verified (2026-09-06).** Initially, re-rendering the real
+`05-pca-biplot.qmd` kept showing tiny text even with the fix applied, despite the fix working in
+every isolated/bisected test — which turned out to have its own explanation, below. Cleared up by
+restarting RStudio and re-rendering; all four affected figures (`fig-crime-factominer`,
+`fig-diabetes-ggbiplot`, `fig-diabetes-mds`, `fig-mtcars-biplot`) now render correctly, matching
+the classic/base-R appearance expected from `pdf/Vis-MLM.pdf`.
 
-**Separate, lower-priority issue**: even with `graph.type = "classic"`, `fig-crime-factominer`
-itself may still be worth a look — before this fix, the active-variable labels (black) rendered
-noticeably smaller than the supplementary-variable labels (blue) *within that single figure*,
-which looks like a distinct FactoMineR quirk unrelated to the showtext leak. Not yet re-checked
-with `graph.type = "classic"`.
+**Why the fix initially appeared not to work**: RStudio's Render button starts
+`quarto preview <file> --no-watch-inputs --no-browse` under the hood, which keeps a persistent R
+session alive across re-renders for speed. An earlier render (from *before* this fix existed) had
+already tripped `showtext::showtext_auto()` in that lingering session, and every subsequent
+render — including ones after the code fix was applied — kept hitting that same poisoned session
+via the project's `.quarto/` cache, regardless of the source code. Standalone/bisected test
+renders never showed this because they always spawned a fresh R process. Killing the stale
+`quarto preview` process (found via `tasklist` — a `quarto.exe`/`deno.exe` pair holding a lock on
+`.quarto/project-cache/deno-kv-file`) by restarting RStudio, then clearing `.quarto/` and
+re-rendering, resolved it immediately. **Takeaway for future "this should be fixed but isn't"
+cases**: check for a lingering `quarto preview` process (`tasklist | grep quarto`) before assuming
+the code fix is wrong — a fresh `Session → Restart R` alone does not kill it, since it's a
+separate OS process from the RStudio R session.
 
-**For Gavin**: the diagnosis and fix mechanism above are solid (directly verified via the
-showtext hook state and isolated reproductions), but the final "does the real chapter render
-clean end-to-end" check is not yet confirmed — see the unreconciled note above. Worth a second
-pair of eyes on both the mechanism and that last verification step.
+**Separate, lower-priority issue, not yet rechecked**: even with `graph.type = "classic"`, before
+this fix `fig-crime-factominer`'s active-variable labels (black) rendered noticeably smaller than
+the supplementary-variable labels (blue) *within that single figure*. Now that the figure renders
+via the classic/base-R path (confirmed in the clean re-render), this may already be moot, but
+worth a glance.
 
 ## Fig 5.18 (`fig-crime-factominer`, ~ lines 1313:1318) - all text tiny
 
@@ -115,25 +120,24 @@ correct length and style.
   (Consistent with root cause: that standalone script never runs `fig-crime-factominer`.)
 
 - Confirmed reproducible even after `Session → Restart R` + rendering only `05-pca-biplot.qmd`
-  directly (fresh session, still broken) — this initially seemed to rule out "session state",
-  but is fully explained by the showtext hook getting (re-)installed by `fig-crime-factominer`
-  early in that same fresh-session render.
+  directly (fresh session, still broken) — this initially seemed to rule out "session state", and
+  in fact was a *different* session-state issue than the R session itself: a separate, lingering
+  `quarto preview` OS process (see root cause section above) that `Session → Restart R` alone
+  doesn't touch. Restarting RStudio (which kills that process) + a clean re-render fixed it.
 
-**Status**: Root cause identified and fix applied (see above) — needs a final clean verification
-render.
+**Status**: RESOLVED — fix applied and verified in a clean re-render (see root cause above).
 
 ## Fig 5.23 (`fig-diabetes-mds`, ~lines 1593:1607) 
 
 - This is not a ggbplot-- it's produced using `ggpubr::ggscatter()`. But all text is also tiny in this plot
 - Also, variable names are missing on the vectors vs. the previous version.
 - Can we replace the use of `geom_segment()` with ggarrow?
-- Very likely the same showtext root cause (comes later in the chapter than `fig-crime-factominer`)
-  — should clear once the fix is verified, but not yet individually re-checked.
+- Confirmed same showtext root cause — fixed and verified in the clean re-render.
 
 ## Fig 5.28 (`fig-mtcars-biplot`, ~lines 1901:1907) 
 
 - Variable names are missing in this plot.
-- Very likely the same showtext root cause — not yet individually re-checked after the fix.
+- Confirmed same showtext root cause — fixed and verified in the clean re-render.
 
 ## Figs 5.36, 5.37 (`fig-peng-out-biplot1`, `fig-peng-out-biplot2`)
 
