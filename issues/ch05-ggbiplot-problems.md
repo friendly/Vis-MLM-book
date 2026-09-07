@@ -55,6 +55,13 @@ This skips FactoMineR's ggplot/`theme_factominer()`/showtext code path entirely 
 reproducibility, and should restore the figure's original base-R appearance matching
 `pdf/Vis-MLM.pdf`.
 
+**Upstream fixed (2026-09-07)**: filed as
+[husson/FactoMineR#41](https://github.com/husson/FactoMineR/issues/41); the maintainer (François
+Husson) confirmed the bug and fixed it in FactoMineR **v2.17**
+([comment](https://github.com/husson/FactoMineR/issues/41#issuecomment-5571375397)), submitted to
+CRAN. Once 2.17 is installed, the `graph.type = "classic"` workaround above should no longer be
+necessary — but worth leaving in place until that's actually verified against the fixed version.
+
 **Status: RESOLVED and verified (2026-09-06).** Initially, re-rendering the real
 `05-pca-biplot.qmd` kept showing tiny text even with the fix applied, despite the fix working in
 every isolated/bisected test — which turned out to have its own explanation, below. Cleared up by
