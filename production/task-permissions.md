@@ -340,6 +340,20 @@ All 5 rows applied for or cleared; see `permissions-tracking.csv` for dates (evi
 `images/icons/books.jpg` (Preface montage) is covered by the four individual book-cover
 permissions above (Wilke, Healy, Unwin, Rennie) — no fifth request.
 
+## LinkedIn
+
+Contacts below are reachable only (or best-reachable) via LinkedIn rather than email.
+A LinkedIn connection/message request to someone outside your network often goes unseen
+unless it's paid InMail or they happen to check their "Other"/filtered inbox — a first
+attempt with no response isn't necessarily a refusal. Give it a couple of weeks and try a
+follow-up, or an alternate route (department page, co-author, etc.) before giving up.
+
+| Fig | Figure | Person | LinkedIn | Status |
+|---|---|---|---|---|
+| 5.30 | `image-compression-SVD.png` | Tomio Kobayashi | linkedin.com/in/tomio-kobayashi-9869ba30/ | **MF tried once, no response** — worth a follow-up or a second attempt |
+| 5.17 | `pca4ds-figure-2-11.png` | Tomàs Aluja-Banet | linkedin.com/in/tomas-aluja-b0b24713/ | Not yet attempted — EIO department contact page is an alternative if LinkedIn doesn't work |
+| 3.2 | `DataSaurusDozen.gif` | Justin Matejka (Autodesk Research) | linkedin.com/in/justinmatejka/ | Not yet attempted — try to find a firmer/email contact first; LinkedIn is the fallback |
+
 ## Gavin tasks
 
 Handoff point (2026-08-23, MF): the identification, categorization, and contact research
@@ -384,6 +398,8 @@ script does" above).
    contacts) directly. For Waldo specifically: send to both Candlewick and Walker Books,
    expect ~6 weeks and a real chance of refusal — MF wants it sent anyway, so document
    whatever comes back rather than substituting a different figure on your own call.
+   Kobayashi and Aluja-Banet are LinkedIn-route contacts — see "## LinkedIn" above before
+   reaching out (Kobayashi in particular already had one unanswered attempt from MF).
 
 3. `DataSaurusDozen.gif` ("Nearly ready to apply"): try to find a firmer contact than
    LinkedIn for Autodesk Research/Matejka before falling back to a LinkedIn message.
