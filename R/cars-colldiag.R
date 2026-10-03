@@ -58,7 +58,7 @@ tableplot(cd)
 
 cars.X <- cars |>
   select(where(is.numeric)) |>
-  select(-mpg) |>
+  select(-"mpg") |>
   tidyr::drop_na()
 cars.pca <- prcomp(cars.X, scale. = TRUE)
 cars.pca
@@ -103,6 +103,8 @@ biplot(cars.pca,
 par(op)
 
 # try factoextra
+# 
+# NB: this doesn't use coord_equal(). But the figure without it looks better on the page, unless axes are flipped.
 
 library(factoextra)
 
