@@ -152,8 +152,7 @@ dev.copy2pdf(file="SC1-hecan.pdf")
 #                data=SocialCog,
 #               subset=rownames(SocialCog)!="15")
 
-SC.rlm <- robmlm(cbind( MgeEmotions, ToM, ExtBias, PersBias) ~ Dx,
-               data=SocialCog)
+SC.rlm <- robmlm(SC.mlm)
 
 Anova(SC.rlm)
 print(linearHypothesis(SC.rlm, "Dx1"), SSP=FALSE)

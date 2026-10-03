@@ -141,11 +141,9 @@ peng.mlm1 <- lm(cbind(bill_length, bill_depth, flipper_length, body_mass) ~
 peng.mlm2 <- lm(cbind(bill_length, bill_depth, flipper_length, body_mass) ~
                   species + island + sex, data=peng)
 
-peng.rlm <- robmlm(cbind(bill_length, bill_depth, flipper_length, body_mass) ~
-                    species, data=peng)
+peng.rlm <- robmlm(peng.mlm1)
 # all main effects
-peng.rlm2 <- robmlm(cbind(bill_length, bill_depth, flipper_length, body_mass) ~
-                  species + island + sex, data=peng)
+peng.rlm2 <- robmlm(peng.mlm2)
 
 op <- par(mar = c(4, 4, 3, 1) +.1)
 col = peng.colors("dark")[peng$species]

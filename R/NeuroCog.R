@@ -67,8 +67,7 @@ dev.copy2pdf(file="NC-hecan.pdf")
 
 ## fit a robust MLM, downweighting possible outliers
 
-NC.rlm <- robmlm(cbind( Speed, Attention, Memory, Verbal, Visual, ProbSolv) ~ Dx,
-               data=NeuroCog)
+NC.rlm <- robmlm(NC.mlm)
 Anova(NC.rlm)
 #uniStats(NC.rlm)
 

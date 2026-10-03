@@ -106,9 +106,7 @@ pairs(school.mod2,
 
 ## Robust MLM
 
-school.rlm <- robmlm(cbind(reading, mathematics, selfesteem) ~ 
-                   education + occupation + visit + counseling + teacher, 
-                 data=schooldata)
+school.rlm <- robmlm(school.mod)
 
 #plot(school.rlm)
 
