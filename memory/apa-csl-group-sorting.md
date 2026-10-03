@@ -13,6 +13,6 @@ key it precedes. If the prefix is attached to a key that does not sort first, it
 the middle of the rendered group, e.g. `[e.g., @Peddle:1910; @Haskell:1919]` →
 "(Haskell, 1919; e.g., Peddle, 1910)". Fix: order the keys alphabetically by first author
 in the source so the prefix sits on the group's first-rendered item. Bit us on
-2026-07-11 in the paren-citations cleanup (rows 2 and 17 of issues/paren-citations.md).
+2026-07-11 in the paren-citations cleanup (rows 2 and 17 of issues/solved/paren-citations.md).
 
 Related lesson from the same incident: [[verify-rendered-output-per-change]].

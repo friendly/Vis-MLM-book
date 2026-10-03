@@ -31,7 +31,7 @@ The actual source files touched on both branches (`01-Prelude.qmd`, `13-eqcov.qm
    git diff --name-only --diff-filter=U -z | xargs -0 git add --
    ```
 
-2. Committed the merge → `6e082b49` ("Merge branch 'master' into part-pages-test"). The merge also brought in files new on master: `index.pdf`, `issues/duplicate-index-entries.md`, `issues/dup-index.txt`, `issues/dup-index.txt.bak`.
+2. Committed the merge → `6e082b49` ("Merge branch 'master' into part-pages-test"). The merge also brought in files new on master: `index.pdf`, `issues/indexing/duplicate-index-entries.md`, `issues/indexing/dup-index.txt`, `issues/indexing/dup-index.txt.bak`.
 
 3. Rebuilt everything from the merged sources with `./build.sh --all --fix-index` (same invocation as master's last build), so all artifacts — including the part-page diagrams — are consistent again.
 

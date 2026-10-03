@@ -365,4 +365,4 @@ and may conflict with the CRC `krantz` class requirements.
 - `make-authorindex.sh` — shell script to invoke with correct env vars
 - `latex/preamble.tex` — loads `authorindex` package; contains the `\citeproc` patch
 - `latex/after-body.tex` — `\printauthorindex` call (active)
-- `issues/build-problems/authorindex.md` — original problem note + TeX.SE link
+- `issues/solved/authorindex.md` — original problem note + TeX.SE link

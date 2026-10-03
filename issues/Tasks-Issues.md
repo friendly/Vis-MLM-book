@@ -1,5 +1,9 @@
 # Tasks and Issues for Revisions of Book
 
+**Note (2026-08-25):** new items go in `issues/TASKS.md` now — this file stays as the
+original project notes (mostly historical/superseded; most items below are `[DONE]` or
+`[FIXED]`).
+
 ## Getting Started (original notes)
 
 Scan the contents of this project to understand the organization of the files for producing
@@ -70,7 +74,7 @@ Some of these are old/stale/solved; review these & move to solved/ those no long
   - See Quarto discussion: https://github.com/quarto-dev/quarto-cli/discussions/11087
   - Reference model: https://github.com/bgreenwell/quarto-crc (Quarto-CRC starter)
 
-* **Author index**: `authorindex` Perl script fails. Tracked in `build-problems/authorindex.md`. If this cannot be made
+* **Author index**: `authorindex` Perl script fails. Tracked in `issues/solved/authorindex.md`. If this cannot be made
   to run, I wonder if it would be possible to re-write what this does in R. [**DONE**: See `task-authorindex.md`]
 
 * **Cover page**: `images/cover/cover-peng.jpg` cannot be included via Quarto front matter;

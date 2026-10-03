@@ -159,7 +159,7 @@ No TODOs found.
 
 `child/04-network.qmd` — **deleted** (orphaned duplicate of the "Visualizing partial
 correlations" section already live in `04-multivariate_plots.qmd`; `pvPlot()` move to
-`heplots` is done — see `issues/pvPlot.md`)
+`heplots` is done — see `issues/solved/pvPlot.md`)
 
 ### `child/04-grand-tour.qmd`
 

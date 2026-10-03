@@ -3,7 +3,7 @@
 #' ---
 
 library(ggplot2)
-library(ggbiplot)
+#library(ggbiplot)
 library(dplyr)
 library(tidyr)
 #library(corrplot)

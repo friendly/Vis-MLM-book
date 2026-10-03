@@ -4,7 +4,9 @@
 
 library(MASS)
 library(ggpubr)
+library(ggbiplot)
 library(dplyr)
+source("R/common.R")    # legend_inside()
 
 data(Diabetes, package="heplots")
 
@@ -58,6 +60,35 @@ mplot +
             size = 4) +
   theme(legend.position = "inside",
         legend.position.inside = c(.8, .8))
+
+# same plot, using ggbiplot::ggvector() instead of geom_segment()+geom_text()
+# -- simpler (no manual nudge/angle), and draws nicer arrowheads via ggarrow
+
+mplot +
+  coord_fixed(clip = "off") +
+  ggvector(x = vectors[, "Dim1"], y = vectors[, "Dim2"],
+           label = rownames(vectors),
+           scale = scale_fac,
+           linewidth = 1.1,
+           angle = 0,
+           size = 6) +
+  legend_inside(c(.8, .8))
+
+# ggvector() for the arrows (nicer arrowheads), but with horizontal labels --
+# ggvector()'s own text layer always angles labels along the vector, with no
+# option to override this, so draw the labels separately instead
+
+mplot +
+  coord_fixed(clip = "off") +
+  ggvector(x = vectors[, "Dim1"], y = vectors[, "Dim2"],
+           geom.var = "arrow",
+           scale = scale_fac,
+           linewidth = 1.1) +
+  geom_text(data = as.data.frame(vectors),
+            aes(x = 1.15*scale_fac*Dim1, y = 1.07*scale_fac*Dim2,
+                label = rownames(vectors)),
+            size = 6) +
+  legend_inside(c(.8, .8))
 
 
 # find stress over several dimensions
