@@ -88,8 +88,8 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 | [ ] | [`mona-pca.png`](../../images/mona-pca.png) | 630×912 | 144 | 80% (4.4″) | 1316 px | 38% |  |  |
 | [ ] | [`Pearson1901_2.png`](../../images/Pearson1901_2.png) | 632×539 | 144 | 80% (4.4″) | 1316 px | 38% |  |  |
 | [ ] | [`image-compression-SVD.png`](../../images/image-compression-SVD.png) | 720×402 | 146 | 90% (4.9″) | 1480 px | 43% |  |  |
-| [ ] | [`peng-out-biplot-12.png`](../../images/peng-out-biplot-12.png) | 577×533 | 150 | 70% (3.8″) | 1151 px | 35% |  |  |
-| [ ] | [`peng-out-biplot-34.png`](../../images/peng-out-biplot-34.png) | 577×533 | 150 | 70% (3.8″) | 1151 px | 35% |  |  |
+| [X] | [`peng-out-biplot-12.png`](../../images/peng-out-biplot-12.png) | 1803×1665 | 470 | 70% (3.8″) | 1151 px | 109% | REGENERATE | 2026-10-03: DPI resolved. Existing file is now 1803×1665 px (previously 577×533), giving about 470 effective DPI at the current 70% print width, above CRC’s 300-DPI minimum. Source: [R/penguin/peng-out-biplot.R](../../R/penguin/peng-out-biplot.R), which exports at 300 DPI with a canvas of 577/96 × 533/96 inches. No further resolution increase needed. The overlapping flipper-length/body-mass labels are a separate placement issue, also visible in HTML; they do not affect this DPI resolution. |
+| [X] | [`peng-out-biplot-34.png`](../../images/peng-out-biplot-34.png) | 1803×1665 | 470 | 70% (3.8″) | 1151 px | 109% | REGENERATE | 2026-10-03: DPI resolved. Existing file is now 1803×1665 px (previously 577×533), giving about 470 effective DPI at the current 70% print width, above CRC’s 300-DPI minimum. Source: [R/penguin/peng-out-biplot.R](../../R/penguin/peng-out-biplot.R), which exports at 300 DPI with a canvas of 577/96 × 533/96 inches. No further resolution increase needed. |
 | [ ] | [`Pearson1901.png`](../../images/Pearson1901.png) | 524×427 | 159 | 60% (3.3″) | 987 px | 31% |  |  |
 | [ ] | [`outlier-demo.png`](../../images/outlier-demo.png) | 916×433 | 167 | 100% (5.5″) | 1644 px | 55% |  |  |
 | [ ] | [`pca4ds-figure-2-11.png`](../../images/pca4ds-figure-2-11.png) | 880×416 | 178 | 90% (4.9″) | 1480 px | 53% |  |  |
@@ -177,7 +177,8 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 
 ## Progress
 
-- Total LOW-DPI images: **69**
-- Resolved (REPLACE): **19** as of July 11th, 2026 (05:30PM EDT; **GK**)
-- Resolved (SHRINK): 
-- Resolved (ACCEPT / flag to CRC): 
+- Images flagged LOW-DPI in the original audit: **69**.
+- Resolved: **21** as of 2026-10-03 (**18 REPLACE**, **3 REGENERATE**).
+- Unchecked: **48**. This is the checklist count, not a refreshed audit of active print images.
+- Resolved (SHRINK): **0**.
+- Resolved (ACCEPT / flag to CRC): **0**.
