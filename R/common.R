@@ -28,6 +28,31 @@ grDevices::pdf.options(colormodel = "cmyk")
 Sys.setenv(TEXLIVE_WINDOWS_EXTERNAL_GS = "1")
 
 # --------------
+# minimum package versions
+# --------------
+
+# The book uses features in recent package versions, which may be newer than
+# those installed (or, at times, those on CRAN). Stop here with a clear message, rather than failing obscurely in some
+# later chapter.
+#   heplots 1.8.6: robmlm(<mlm>) method, used in Ch. 14 (on CRAN since Oct. 2026)
+# NB: other packages may need the same treatment. If another case arises, add
+#     the package and minimum version here, with a note on what needs it.
+min_versions <- c(
+  heplots = "1.8.6"
+)
+too_old <- names(min_versions)[
+  sapply(names(min_versions),
+         function(p) packageVersion(p) < min_versions[[p]])
+]
+if (length(too_old) > 0) {
+  stop("This book needs newer versions of: ",
+       paste0(too_old, " (>= ", min_versions[too_old], ")", collapse = ", "),
+       ". Update with install.packages(); if CRAN is not yet that recent, ",
+       "install from GitHub, e.g., remotes::install_github('friendly/heplots')")
+}
+rm(min_versions, too_old)
+
+# --------------
 # knitr related
 # --------------
 
