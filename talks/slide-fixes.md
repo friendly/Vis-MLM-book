@@ -13,10 +13,12 @@ Suggested order: the three organizer figures in section 1 (slides 42, 46, 52), t
 
 ## 1. Too small on the slide
 
+Slides 42 and 46 were re-laid out on 2026-10-06: figure at the left at full height (5.7 in), takeaway line at the right in 24 pt, figure-number tag removed. The same pattern can be used for the others.
+
 The image file is fine; only the layout needs changing (e.g., drop the bullets or the takeaway line and give the figure the full slide height).
 
-- [ ] **Slide 42 (opt), Fig 9.13 bivariate ridge traces** -- Organizer. `figs/ch09/fig-longley-pairs-1.png`. Shown as a 4.3-inch square; the panels are unreadable. Needs the full slide height.
-- [ ] **Slide 46, Fig 10.9 HE framework** -- Organizer. `images/HE-framework.png`. Shown 6 inches wide with tiny inner text; also only 163 dpi at that size (971 x 700 px).
+- [x] **Slide 42 (opt), Fig 9.13 bivariate ridge traces** -- Organizer. `figs/ch09/fig-longley-pairs-1.png`. Shown as a 4.3-inch square; the panels are unreadable. Needs the full slide height.
+- [x] **Slide 46, Fig 10.9 HE framework** -- Organizer. `images/HE-framework.png`. Shown 6 inches wide with tiny inner text; also only 163 dpi at that size (971 x 700 px).
 - [ ] **Slide 52, Fig 12.17 school HE plot** -- Organizer. `figs/ch12/fig-school-heplot1-1.png`. Squeezed beside four bullets; the predictor labels are small.
 - [ ] **Slide 14, Fig 4.31 penguin scatterplot matrix** -- `figs/ch04/fig-peng-spm-1.png`. A 4.8-inch square beside bullets; axis text is illegible.
 - [ ] **Slide 29, Fig 7.2 regression quartet** -- `figs/ch07/fig-duncan-plot-model-1.png`. Four panels in a 5.7-inch box; point labels and axes are tiny.
