@@ -15,6 +15,8 @@ Suggested order: the three organizer figures in section 1 (slides 42, 46, 52), t
 
 Slides 42 and 46 were re-laid out on 2026-10-06: figure at the left at full height (5.7 in), takeaway line at the right in 24 pt, figure-number tag removed. The same pattern can be used for the others.
 
+Slide 64 was given the same layout, and the figures on slides 65-67 were enlarged by about 20% (65, 67: 10.3 x 5.2 in with the takeaway line underneath; 66: a 5.7-inch square), with the figure-number tags removed. The label problems on slides 65-67 listed in section 3 remain.
+
 The image file is fine; only the layout needs changing (e.g., drop the bullets or the takeaway line and give the figure the full slide height).
 
 - [x] **Slide 42 (opt), Fig 9.13 bivariate ridge traces** -- Organizer. `figs/ch09/fig-longley-pairs-1.png`. Shown as a 4.3-inch square; the panels are unreadable. Needs the full slide height.
