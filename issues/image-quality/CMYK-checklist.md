@@ -146,7 +146,7 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 
 | Done | Image | Pixels | Eff. DPI | Printed at | Px needed @300 | Max `out-width` @300 | Action | Notes |
 |------|-------|--------|----------|------------|----------------|----------------------|--------|-------|
-| [ ] | [`VisualizingSSP.png`](../../images/VisualizingSSP.png) | 830×311 | 152 | 100% (5.5″) | 1644 px | 50% |  |  |
+| [X] | [`VisualizingSSP.png`](../../images/VisualizingSSP.png) | 830×311 | 152 | 100% (5.5″) | 1644 px | 50% | REPLACE | 2026-10-08: The plot panels in source `.pptx` are 480×480 rasters, so a straight `.pptx` -> `.pdf` -> `magick` pass would only upsample them. Instead: re-rendered the three panels at 2400×2400 from `R/mathscore/mathscore-SS.R` (scratch copy, only change `png(..., res = 72*5)` at 5× size); exported slide 2 of the `.pptx` -> `.pdf` (intermediate, not kept); used `magick` at `-density 250` to render it and composited the hi-res panels over the originals at their exact slide positions; cropped `.png` (now 2218×845, eff. 405 dpi). `.pptx` and R script unchanged. Thin `Between` ellipse differs very slightly (script uses unseeded `jitter()`). |
 | [ ] | [`ANCOVA-ex.png`](../../images/ANCOVA-ex.png) | 1034×493 | 210 | 90% (4.9″) | 1480 px | 62% |  |  |
 
 ## Ch. 12: MLM Visualization (`12-mlm-viz.qmd`) — 5 images
@@ -178,7 +178,7 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 ## Progress
 
 - Images flagged LOW-DPI in the original audit: **69**.
-- Resolved: **21** as of 2026-10-03 (**18 REPLACE**, **3 REGENERATE**).
-- Unchecked: **48**. This is the checklist count, not a refreshed audit of active print images.
+- Resolved: **22** as of 2026-10-08 (**19 REPLACE**, **3 REGENERATE**).
+- Unchecked: **47**. This is the checklist count, not a refreshed audit of active print images.
 - Resolved (SHRINK): **0**.
 - Resolved (ACCEPT / flag to CRC): **0**.
