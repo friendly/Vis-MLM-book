@@ -10,7 +10,8 @@ Slide decks for talks based on the book.
 
 | File | What it is |
 |---|---|
-| `Vis-MLM-talk.pptx` | The deck: 70 slides, 16:9, in ten PowerPoint sections. **This is now the working copy; edit it directly in PowerPoint.** |
+| `Vis-MLM-talk2.pptx` | The deck: 74 slides, 16:9, in ten PowerPoint sections. **This is the working copy; edit it directly in PowerPoint.** Started on 2026-10-07 as a copy of `Vis-MLM-talk.pptx`, for restructuring the talk. |
+| `Vis-MLM-talk.pptx` | The earlier 70-slide version, kept for reference. Slide numbers in `slide-fixes.md` and in the notes below refer to this file; in `Vis-MLM-talk2.pptx` add 1 for slides 3--46 and 4 from slide 47 on. |
 | `outline.md` | Topics, the organizer's seven requested figures (with file names), and rough timing |
 | `build-talk.py` | Generator for the *initial* draft. It no longer matches the deck (hand edits, plus the "R packages" slide added later). Don't run it with `--force`; use `-o other.pptx` if a fresh copy is ever wanted. Needs `pip install python-pptx Pillow`. |
 | `base-16x9.pptx` | Empty 16:9 file with the standard Office layouts, used by the generator |
@@ -29,12 +30,13 @@ First full draft, including all optional sections. Slides that are optional for 
 
 - **Read the slide text.** Bullets, takeaway lines and speaker notes were drafted from the figure captions and chapter text; check them for accuracy and voice.
 
-- **Check the animations** in slide show mode: pollen "EUREKA", the grand tour, PCA by springs (Fig 5.5), and PCA to t-SNE (Fig 5.26). The pollen GIF has toolbar icons baked into its frames.
+- **Check the animations** [DONE] in slide show mode: pollen "EUREKA", the grand tour, PCA by springs (Fig 5.5), and PCA to t-SNE (Fig 5.26). The pollen GIF has toolbar icons baked into its frames.
 
 - **Cover image.** The "The book" and closing slides (2 and 69) now show `images/cover/cover-peng.jpg`, uncropped. It still carries the older title ("Visualization of ..."), and is only 638 x 878 px; swap in a current cover when there is one.
 
 - **Figures to revisit:**
   - DONE: the effect-display slide (32, Fig 7.17) now uses `images/prestige-allEffects.png`, re-drawn by `images/prestige-allEffects.R` with the three plots in one row.
+  
   - The biplot slide uses the basic crime biplot (Fig 5.13), because the enhanced one (Fig 5.14, `figs/ch05/fig-crime-biplot2-1.png`) has its legend clipped in the image file. That probably affects the book figure too.
   - The Duncan added-variable image (Fig 7.27, `images/duncan-av-influence.png`) is only 1300 x 650 px and may look soft when projected.
 
