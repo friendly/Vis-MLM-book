@@ -1,6 +1,15 @@
 This looks wonderful! Your use of animations here is something I'd like to emulate in future talks--they are so intuitive.
 
-I've listed slide-by-slide comments below:
+I've listed overall notes and slide-by-slide comments below:
+
+# Overall
+- Perhaps theme slides according to their corresponding part color in the book?
+- I think the current layout in terms of content is great, though see a few comments in the Slide-by-slide section
+
+# Slide-by-slide
+
+## Slide 5
+- Does not include the section on discriminant analysis
 
 ## Slide 13
 - An idea: instead of Horst's artwork, perhaps use `penguinglyphs` to display the average penguin per species?
@@ -44,22 +53,22 @@ I've listed slide-by-slide comments below:
   + Maybe a table with cols for **H** and **E** ellipses, and rows for "Shows," "Direction," and "Size/Shape"? My only qualm with this is consistency with the rest of the presentation.
   
 ## Slide 50
-- Bold H and E
+- (Minor) Bold H and E
 
 ## Slide 51
 - See `images/VisualizingSSP.png` on the `dpi-fixes` branch for a higher-res image
 
 ## Slide 52
-- Bold H and E
+- (Minor) Bold H and E
 
 ## Slide 53
-- Bold H
+- (Minor) Bold H
 
 ## Slide 55
-- Bold H and E
+- (Minor) Bold H and E
 
 ## Slide 58
-- Bold H
+- (Minor) Bold H
 
 ## Slide 73
 - (Minor) Book cover can be enlarged; can use the same layout as slide 2
