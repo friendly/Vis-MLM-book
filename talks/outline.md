@@ -142,3 +142,22 @@ All seven of the organizer's figures are in the core version except Figure 9.13,
 | Sharing | `.pptx` or PDF | A web page; PDF export is less reliable |
 
 Suggestion: PowerPoint for this first talk, since direct editing matters most and every figure wanted already exists as an image file.
+
+## Other slides
+
+From an SCS short course: 
+  * C:\Dropbox\Documents\SCS\VisMLM-course\lectures\lecture2.pptx
+  * C:\Dropbox\Documents\SCS\VisMLM-course\lectures\lecture3.pptx
+
+## Slide layout / design
+
+* This talk needs an overall theme design: font sizes, colors, background, slide titles, ...
+
+* Animations: I often apply animations to the text and images within a slide to tell the story sequentially, by progressive reveals.
+
+* On the title slide, to give a visual sense of content, I typically use 3 thumbnail images drawn from the talk at the top of the
+  slide
+
+* For section slides, I usually use either (a) thumbnails or (b) some background image. Text after the section title can contain bullet points.
+
+
