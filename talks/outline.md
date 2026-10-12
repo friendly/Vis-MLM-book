@@ -149,6 +149,13 @@ From an SCS short course:
   * C:\Dropbox\Documents\SCS\VisMLM-course\lectures\lecture2.pptx
   * C:\Dropbox\Documents\SCS\VisMLM-course\lectures\lecture3.pptx
 
+Better: CARME talk, My Life in Pictures: slides 10-40
+  * C:\Dropbox\Documents\Presentations\carme2023\LifeInPictures-CARME.pptx
+  * -> More penguin examples, but they don't use my penguin colors
+  * Less slavish to the order of chapters in the book, but more thematic (Elliptical insights, Waldo Space)
+  * But, these slides show R code examples, which I haven't done elsewhere
+  * Better use of PPT animation, progressive reveals, ...
+
 ## Slide layout / design
 
 * This talk needs an overall theme design: font sizes, colors, background, slide titles, ...
