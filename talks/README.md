@@ -10,13 +10,14 @@ Slide decks for talks based on the book.
 
 | File | What it is |
 |---|---|
-| `Vis-MLM-talk2.pptx` | The deck: 74 slides, 16:9, in ten PowerPoint sections. **This is the working copy; edit it directly in PowerPoint.** Started on 2026-10-07 as a copy of `Vis-MLM-talk.pptx`, for restructuring the talk. |
-| `Vis-MLM-talk.pptx` | The earlier 70-slide version, kept for reference. Slide numbers in `slide-fixes.md` and in the notes below refer to this file; in `Vis-MLM-talk2.pptx` add 1 for slides 3--46 and 4 from slide 47 on. |
+| `Vis-MLM-talk3.pptx` | The deck: 88 slides, 16:9. **This is the working copy; edit it directly in PowerPoint.** Started on 2026-10-11 from `Vis-MLM-talk2.pptx`, re-arranged into a thematic arc rather than chapter order, with some slides brought in from the CARME 2023 talk. Hidden slides at the end are backup. |
+| `Vis-MLM-talk2.pptx` | The previous version (74 slides, in chapter order), kept for comparison. |
 | `outline.md` | Topics, the organizer's seven requested figures (with file names), and rough timing |
 | `build-talk.py` | Generator for the *initial* draft. It no longer matches the deck (hand edits, plus the "R packages" slide added later). Don't run it with `--force`; use `-o other.pptx` if a fresh copy is ever wanted. Needs `pip install python-pptx Pillow`. |
 | `base-16x9.pptx` | Empty 16:9 file with the standard Office layouts, used by the generator |
-| `slide-fixes.md` | Checklist of figures that need fixing, from a slide-by-slide review on 2026-10-06 |
-| `images/` | Figures not in the book, or re-drawn for the talk, each with the R script that makes it |
+| `slide-fixes.md` | Checklist of figures that need fixing, from a slide-by-slide review on 2026-10-06. Its slide numbers, and those in the notes below, refer to the original 70-slide `Vis-MLM-talk.pptx`, since deleted (the last version is in the git history). |
+| `images/` | Figures not in the book, or re-drawn for the talk. Two older ones have their script alongside (`prestige-allEffects.R`, `peng-simpsons-split.py`). |
+| `R/` | R scripts that draw the talk-only figures in `images/` (run from the project root). `peng-talk-figs.R` and `peng-HE-overview.R` re-draw the CARME penguin figures in the book's penguin colors. |
 
 ## Status (2026-10-06)
 
