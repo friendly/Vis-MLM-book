@@ -11,7 +11,7 @@ library(dplyr)
 library(tibble)
 
 data(peng, package="heplots")
-contrasts(peng$species) <- matrix(c(1,-1,0, -1, -1, -2), 3,2)
+contrasts(peng$species) <- matrix(c(1,-1,0, -1, -1, 2), 3,2)
 contrasts(peng$species)
 
 source(here::here("R", "penguin", "penguin-colors.R"))
