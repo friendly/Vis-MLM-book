@@ -17,7 +17,7 @@ Slide decks for talks based on the book.
 | `base-16x9.pptx` | Empty 16:9 file with the standard Office layouts, used by the generator |
 | `slide-fixes.md` | Checklist of figures that need fixing, from a slide-by-slide review on 2026-10-06. Its slide numbers, and those in the notes below, refer to the original 70-slide `Vis-MLM-talk.pptx`, since deleted (the last version is in the git history). |
 | `images/` | Figures not in the book, or re-drawn for the talk. Two older ones have their script alongside (`prestige-allEffects.R`, `peng-simpsons-split.py`). |
-| `R/` | R scripts that draw the talk-only figures in `images/` (run from the project root). `peng-talk-figs.R` and `peng-HE-overview.R` re-draw the CARME penguin figures in the book's penguin colors. |
+| `R/` | R scripts that draw the talk-only figures in `images/` (run from the project root). `peng-talk-figs.R` and `peng-HE-overview.R` re-draw the CARME penguin figures in the book's penguin colors. `peng-HE-plots.R` draws the penguin HE plots that replace the iris examples (Figs 12.5, 12.7, 12.8). |
 
 ## Status (2026-10-06)
 
