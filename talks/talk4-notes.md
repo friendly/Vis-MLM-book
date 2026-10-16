@@ -63,12 +63,18 @@ Threads that run across sections: the **ellipse**; the **juicer** (slide 23 → 
 1. **Section 5 has no univariate lead-in.** With the Duncan influence plot (41) hidden, leverage, residuals
    and Cook's D appear for the first time in their multivariate form on slide 65. A sentence in slide 65's
    notes would cover it, or bring the Duncan plot back.
+   **MF:** I'll leave this as is, and add a sentence in slide 65
+   
 2. **The HE section shows only MANOVA.** With slide 59 hidden, no visible HE plot has a quantitative predictor,
    and slide 65 then introduces the school data (multivariate regression) from scratch. Slide 4 promises
    "the HE plot framework for multivariate models."
+   **MF:** I'll unhide slide 59 for now, but that will be a quick one
+   .
 3. **Length.** Remaining cut candidates:
-   - Section 3, measurement error (35-39): drop slide 35 (text only) and merge 38 with 39; or drop
-     the whole strand (5 slides).
+   - Section 3, measurement error (35-39): drop slide 35 (text only); or drop the whole strand.
+     **Done 2026-10-16:** 39 merged into 38 and hidden. Slide 38 now shows all three GIFs in a row
+     (data space, β space for Heart ~ Stress, and slide 39's (βCoffee, βStress) space), with a third
+     bullet on βCoffee moving toward its marginal value; 39's text went into 38's speaker notes.
    - Section 3, ridge: drop 44 and 45; slide 46's opening line already sets up the contrast with the
      usual ridge trace.
    - Section 4: 61-63 (LDA, both prediction-region slides) are flagged optional; 60 already makes the
@@ -90,7 +96,8 @@ Threads that run across sections: the **ellipse**; the **juicer** (slide 23 → 
 
 ## Smaller to-dos
 
-- **Speaker notes missing** on visible slides 17, 23, 28, 31, 36, 38, 39, 46, 48, 58, 60, 64, 70.
+- **Speaker notes missing** on visible slides 17, 23, 28, 31, 36, 46, 48, 58, 60, 64, 70
+  (38 now has notes; 39 is hidden).
   Slide 46 (generalized ridge trace plots) is the one most worth writing.
 - **Still flagged `[OPTIONAL for a 45-minute talk]`** in the notes of visible slides 21, 34, 37, 44,
   45, 47, 57, 61, 62, 63. Remove the flag on the ones that are staying.
