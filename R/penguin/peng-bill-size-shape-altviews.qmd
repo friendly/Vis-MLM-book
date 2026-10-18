@@ -1,0 +1,397 @@
+---
+title: "Thinking about Penguin Variables"
+subtitle: "Bill size and shape as an alternative view of bill length and depth"
+author: "Michael Friendly"
+date: today
+format:
+  html:
+    toc: true
+    code-fold: show
+    fig-width: 7
+    fig-height: 5
+execute:
+  message: false
+  warning: false
+---
+
+```{r setup}
+#| include: false
+knitr::opts_chunk$set(comment = "#>", fig.align = "center")
+options(digits = 4)
+```
+
+## Variables as recorded vs. variables as meant
+
+Data analysis usually starts with the variables as they were recorded. But the way a variable was *measured* is not necessarily the way it is best *thought about*. A researcher records height and weight because those are easy to measure; a physician may care more about body mass index, an expression of weight relative to height. A chemist records concentrations, but the meaningful quantities may be their ratios.
+
+The Palmer penguins data are a familiar example in multivariate analysis. Two of the variables, `bill_length` and `bill_depth`, describe the penguin's bill (technically, the *culmen*, the upper ridge of the bill): its length from the base to the tip, and its depth, top to bottom, at the base. Plotted against each other, they produce one of the best known examples of Simpson's paradox: within each species, longer bills are deeper, but across the species, the relation is negative.
+
+This vignette asks a simple question: **what do these two measurements represent?** Length and depth are not two separate traits of a bill; together they describe one object. Two natural questions about any such object are:
+
+* How *big* is it? --- its **size**
+* What *proportions* does it have? --- its **shape**: is it long and slender, or short and stubby?
+
+This suggests replacing (length, depth) with
+
+$$
+\text{Size} = L \times D \qquad \text{Shape} = L / D \; ,
+$$
+
+or, more conveniently, their logarithms
+
+$$
+\begin{aligned}
+\log \text{Size}  &= \log L + \log D \\
+\log \text{Shape} &= \log L - \log D \; .
+\end{aligned}
+$$
+
+Size is (proportional to) the area of the bill's profile, in mm^2^; shape is a dimensionless ratio, about 2 for a bill twice as long as it is deep.
+
+The size and shape idea goes back to the early days of multivariate morphometrics (Jolicoeur & Mosimann, 1960; Mosimann, 1970), where the first principal component of log measurements was often interpreted as "size" and the remaining ones as "shape". Here we take a simpler, more direct route, defining size and shape from what the variables mean, and then asking whether the data agree.
+
+### An equivalent, not a different, model
+
+In matrix terms, the log size--shape variables are a linear transformation of the log length--depth variables,
+
+$$
+\begin{pmatrix} \log \text{Size} \\ \log \text{Shape} \end{pmatrix}
+=
+\begin{pmatrix} 1 & \phantom{-}1 \\ 1 & -1 \end{pmatrix}
+\begin{pmatrix} \log L \\ \log D \end{pmatrix}
+= \mathbf{T} \begin{pmatrix} \log L \\ \log D \end{pmatrix} \; .
+$$
+
+The columns of $\mathbf{T}$ are orthogonal and of equal length ($\sqrt{2}$), so $\mathbf{T}$ is just a **rotation** by 45° (and a rescaling by $\sqrt{2}$). Nothing about the data has changed; we are simply looking at the same point cloud from a different angle. Consequently:
+
+* Every **multivariate** test (MANOVA, Hotelling's $T^2$, canonical discriminant analysis) gives *identical* results in the two coordinate systems, because these are invariant under nonsingular linear transformations of the responses.
+* **Univariate** analyses, and **plots**, are not invariant. They depend on which directions we choose as our axes.
+
+The payoff, if there is one, is in interpretation: in the right coordinates, the story may be simpler.
+
+## Data and setup
+
+The data used here is `heplots::peng` (Gorman, Williams & Fraser, 2014), a cleaned version of `palmerpenguins::penguins` with the 333 complete cases and shorter variable names.
+
+```{r packages}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(patchwork)
+library(car)
+library(heplots)
+
+data(peng, package = "heplots")
+
+peng <- peng |>
+  mutate(
+    size       = bill_length * bill_depth,
+    shape      = bill_length / bill_depth,
+    log_length = log(bill_length),
+    log_depth  = log(bill_depth),
+    log_size   = log_length + log_depth,
+    log_shape  = log_length - log_depth,
+    log_mass   = log(body_mass)
+  )
+```
+
+Throughout, the species are shown in the colors of Allison Horst's penguin artwork: orange for Adelie, purple for Chinstrap, green for Gentoo.
+
+```{r colors}
+peng_cols <- c(Adelie = "#F37A00", Chinstrap = "#6A3D9A", Gentoo = "#33a02c")
+
+theme_set(theme_bw(base_size = 14))
+scale_penguins <- list(
+  scale_color_manual(values = peng_cols, aesthetics = c("colour", "fill"))
+)
+```
+
+Rather than legends, the plots label the species directly. Two small helpers do the work: `species_labels()` places a label at each species' mean, and `peng_plot()` draws a scatterplot with points, 68% and 95% data ellipses, the within-species regression lines and (optionally) the dashed regression line for all penguins pooled, ignoring species.
+
+```{r helpers}
+species_labels <- function(x, y, data = peng, by = NULL, size = 5) {
+  means <- data |>
+    group_by(species, across(all_of(by))) |>
+    summarise(x = mean({{ x }}), y = mean({{ y }}), .groups = "drop")
+  geom_label(data = means, aes(x = x, y = y, label = species, color = species),
+             fill = "white", alpha = 0.75, size = size, fontface = "bold",
+             inherit.aes = FALSE)
+}
+
+peng_plot <- function(x, y, data = peng, pooled = TRUE, by = NULL) {
+  p <- ggplot(data, aes(x = {{ x }}, y = {{ y }},
+                        color = species, shape = species, fill = species)) +
+    geom_point(size = 1.5, alpha = 0.6) +
+    stat_ellipse(geom = "polygon", level = 0.68, alpha = 0.15) +
+    stat_ellipse(geom = "polygon", level = 0.95, alpha = 0.10) +
+    geom_smooth(method = "lm", formula = y ~ x, se = FALSE, linewidth = 1.5) +
+    scale_penguins +
+    theme(legend.position = "none")
+  if (pooled)
+    p <- p + geom_smooth(aes(x = {{ x }}, y = {{ y }}), inherit.aes = FALSE,
+                         method = "lm", formula = y ~ x,
+                         se = FALSE, color = "black", linetype = "dashed",
+                         linewidth = 1)
+  p + species_labels({{ x }}, {{ y }}, data = data, by = by)
+}
+```
+
+## Two views of the same bills
+
+@fig-two-views shows the familiar view on the left and the size--shape view on the right.
+
+```{r}
+#| label: fig-two-views
+#| fig-width: 10
+#| fig-height: 5
+#| fig-cap: "Left: bill depth vs. bill length, showing Simpson's paradox: positive slopes within species, a negative slope (dashed) overall. Right: the same data as log shape vs. log size. The species now differ mainly in the vertical direction, and size and shape are nearly unrelated within each species."
+p1 <- peng_plot(bill_length, bill_depth) +
+  labs(x = "Bill length (mm)", y = "Bill depth (mm)", title = "Length & depth")
+
+p2 <- peng_plot(log_size, log_shape) +
+  labs(x = "log Size = log(L x D)", y = "log Shape = log(L / D)",
+       title = "Size & shape")
+
+p1 + p2
+```
+
+Several things change in the size--shape view:
+
+* **The paradox disappears.** The within-species regression lines are nearly flat and the pooled line is nearly flat too. There is no longer a conflict between the within-group and between-group relations to explain.
+* **The ellipses are nearly circular** and their axes are roughly parallel to the coordinate axes. Within a species, size and shape vary nearly independently.
+* **The species separate along one axis.** Shape alone distinguishes all three species: Adelie have the stubbiest bills, Gentoo the most slender, with Chinstrap in between. Size adds a second, smaller distinction: Chinstrap bills are larger than those of the other two.
+
+The species means tell the same story in natural units. A Gentoo bill is, on average, over three times as long as it is deep; an Adelie bill only about twice.
+
+```{r means}
+peng |>
+  group_by(species) |>
+  summarise(n = n(),
+            length = mean(bill_length), depth = mean(bill_depth),
+            size = mean(size), shape = mean(shape))
+```
+
+## Seeing the rotation
+
+Because the size--shape coordinates are a rotation of the log length--depth coordinates, we can draw them directly on a plot of the logs. In @fig-rotation the solid gray lines connect bills of the same size ($\log L + \log D = $ constant) and the dotted lines connect bills of the same shape ($\log L - \log D = $ constant). With an aspect ratio of 1, these meet at right angles.
+
+```{r}
+#| label: fig-rotation
+#| fig-width: 7
+#| fig-height: 6
+#| fig-cap: "Log bill depth vs. log bill length, with lines of constant size (solid gray, slope -1) and constant shape (dotted, slope +1). The within-species ellipses are elongated along the size direction; the species are separated along the shape direction."
+iso_size  <- tibble(k = seq(5.6, 7.2, by = 0.2))
+iso_shape <- tibble(k = seq(0.6, 1.4, by = 0.2))
+
+peng_plot(log_length, log_depth, pooled = FALSE) +
+  geom_abline(data = iso_size, aes(intercept = k, slope = -1),
+              color = "gray50", linewidth = 0.3) +
+  geom_abline(data = iso_shape, aes(intercept = -k, slope = 1),
+              color = "gray50", linewidth = 0.3, linetype = "dotted") +
+  coord_equal() +
+  labs(x = "log Bill length", y = "log Bill depth")
+```
+
+Read this way, the Simpson's paradox in the original plot has a simple explanation. *Within* a species, bills vary mostly in size: big birds have bills that are both longer and deeper, so the within-species slopes are positive. *Between* species, the main difference is in shape: going from Adelie to Gentoo, bills get longer but shallower, so the between-species relation is negative.
+
+## Do the data agree?
+
+We chose size and shape on substantive grounds, not from the data. Two quick checks show the choice is well supported.
+
+**Within-species correlations.** If size and shape are natural dimensions for variation within a species, they should be close to uncorrelated there.
+
+```{r correlations}
+within_r <- function(x, y)
+  peng |>
+    group_by(species) |>
+    summarise(r = cor({{ x }}, {{ y }})) |>
+    bind_rows(tibble(species = "(pooled)",
+                     r = cor(pull(peng, {{ x }}), pull(peng, {{ y }}))))
+
+full_join(within_r(bill_length, bill_depth) |> rename(r_length_depth = r),
+          within_r(log_size, log_shape)     |> rename(r_size_shape = r),
+          by = "species")
+```
+
+The within-species correlations of length and depth are moderate to large, and differ in sign from the pooled correlation. Those of size and shape are all near zero.
+
+**Within-species principal components.** The first principal component of the within-species covariance matrix of (log L, log D) is the direction of greatest variation within a species. If this is "size", it should point at 45°, along the vector $(1, 1)/\sqrt{2}$.
+
+```{r pca}
+peng |>
+  group_by(species) |>
+  group_modify(~ {
+    e <- eigen(cov(cbind(.x$log_length, .x$log_depth)))
+    v <- e$vectors[, 1] * sign(e$vectors[1, 1])
+    tibble(PC1_length = v[1], PC1_depth = v[2],
+           pct_var = 100 * e$values[1] / sum(e$values),
+           angle   = atan2(v[2], v[1]) * 180 / pi)
+  })
+```
+
+For each species the first component lies within a few degrees of 45° and accounts for 70--83% of the within-species variance. The dominant direction of variation within each species is, almost exactly, size.
+
+## One variable at a time
+
+A multivariate view is not always available. Readers of a paper, or a table of univariate tests, see one variable at a time. Here the size--shape representation does even better, because it concentrates the species differences in a single variable (@fig-densities).
+
+```{r}
+#| label: fig-densities
+#| fig-width: 10
+#| fig-height: 4
+#| fig-cap: "Densities of the four bill variables by species. Neither bill length nor bill depth separates all three species; log shape does, with little overlap."
+peng_long <- peng |>
+  select(species, bill_length, bill_depth, log_size, log_shape) |>
+  pivot_longer(-species, names_to = "variable") |>
+  mutate(variable = factor(variable,
+                           levels = c("bill_length", "bill_depth", "log_size", "log_shape")))
+
+dens_peaks <- peng_long |>
+  group_by(variable, species) |>
+  summarise(d = list(density(value)), .groups = "drop") |>
+  mutate(x = sapply(d, \(d) d$x[which.max(d$y)]),
+         y = sapply(d, \(d) max(d$y)))
+
+ggplot(peng_long, aes(x = value, fill = species, color = species)) +
+  geom_density(alpha = 0.4) +
+  geom_label(data = dens_peaks, aes(x = x, y = y, label = species, color = species),
+             fill = "white", alpha = 0.75, size = 3.5, fontface = "bold",
+             vjust = 0, inherit.aes = FALSE) +
+  facet_wrap(~ variable, scales = "free", nrow = 1) +
+  scale_y_continuous(expand = expansion(mult = c(0.02, 0.15))) +
+  scale_penguins +
+  labs(x = NULL, y = "Density") +
+  theme(legend.position = "none")
+```
+
+The proportion of variance accounted for by species, $\eta^2$, in a one-way ANOVA of each variable puts numbers on this:
+
+```{r eta2}
+eta2 <- function(v) {
+  a <- anova(lm(reformulate("species", v), data = peng))
+  a[1, "Sum Sq"] / sum(a[, "Sum Sq"])
+}
+sapply(c("bill_length", "bill_depth", "log_size", "log_shape"), eta2)
+```
+
+Shape accounts for nearly 90% of the variance; neither length nor depth reaches 75%.
+
+## Sex differences: bigger, not different
+
+Male penguins are larger than females. Does this extend to the shape of their bills? @fig-sex suggests not.
+
+```{r}
+#| label: fig-sex
+#| fig-width: 10
+#| fig-height: 5
+#| fig-cap: "Log size and log shape by species, separately for females and males. The configuration of the species is the same in both panels, but shifted to the right for males: males have larger bills of the same shape."
+peng_plot(log_size, log_shape, pooled = FALSE, by = "sex") +
+  facet_wrap(~ sex, labeller = as_labeller(c(f = "Female", m = "Male"))) +
+  labs(x = "log Size", y = "log Shape")
+```
+
+A two-way MANOVA model confirms this. As promised, the multivariate tests are the same whichever pair of variables we use:
+
+```{r manova}
+mod_LD <- lm(cbind(log_length, log_depth) ~ species + sex, data = peng)
+mod_SS <- lm(cbind(log_size, log_shape)   ~ species + sex, data = peng)
+
+Anova(mod_LD)
+Anova(mod_SS)
+```
+
+But the univariate tests now separate the two effects cleanly. Species differ strongly in both size and shape; the sexes differ strongly in size and not at all in shape.
+
+```{r univariate}
+summary(aov(mod_SS))
+```
+
+In the original variables, the sex effect is spread over both length and depth, and the reader has to work out that the two increases are in proportion.
+
+## HE plots
+
+Hypothesis--error (HE) plots show these models directly. In each panel of @fig-heplots, the **E** ellipse shows the within-group (residual) covariance, and the **H** ellipses show the variation of the species means and the sex means, scaled here so that their size is comparable to the error ellipse (`size = "effect"`).
+
+```{r}
+#| label: fig-heplots
+#| fig-width: 10
+#| fig-height: 5
+#| fig-cap: "HE plots for the MANOVA of bill measures on species and sex. Left: log length and log depth. Right: log size and log shape. The two plots are the same picture rotated by 45 degrees. In the right panel, the sex effect is a horizontal line (size only) and the error ellipse is aligned with the axes."
+op <- par(mfrow = c(1, 2), mar = c(4, 4, 1, 1) + 0.1)
+heplot(mod_LD, size = "effect", fill = TRUE, fill.alpha = 0.1, asp = 1,
+       xlab = "log Bill length", ylab = "log Bill depth")
+heplot(mod_SS, size = "effect", fill = TRUE, fill.alpha = 0.1, asp = 1,
+       xlab = "log Size", ylab = "log Shape")
+par(op)
+```
+
+In the size--shape version:
+
+* The **error ellipse** has its axes parallel to the coordinate axes: residual size and shape are uncorrelated.
+* The **sex effect** degenerates to a line (one degree of freedom) that is almost exactly horizontal: a pure size difference.
+* The **species** ellipse is tall and narrow: species differ mostly in shape, with Chinstrap displaced to the right by its larger bills.
+
+The within-species data ellipses (@fig-covellipses) show the same alignment, with the pooled within-group ellipse in black.
+
+```{r}
+#| label: fig-covellipses
+#| fig-width: 10
+#| fig-height: 5
+#| fig-cap: "Within-species 68% data ellipses and the pooled within-group ellipse (black), in log length--depth coordinates (left) and log size--shape coordinates (right)."
+op <- par(mfrow = c(1, 2), mar = c(4, 4, 1, 1) + 0.1)
+cols <- c(peng_cols, "black")
+covEllipses(cbind(log_length, log_depth) ~ species, data = peng,
+            pooled = TRUE, fill = TRUE, fill.alpha = 0.1, col = cols,
+            xlab = "log Bill length", ylab = "log Bill depth", asp = 1)
+covEllipses(cbind(log_size, log_shape) ~ species, data = peng,
+            pooled = TRUE, fill = TRUE, fill.alpha = 0.1, col = cols,
+            xlab = "log Size", ylab = "log Shape", asp = 1)
+par(op)
+```
+
+## Size, shape, and body mass
+
+Thinking of bill size as an *area* suggests one more question. If bills simply scaled with the rest of the body (isometric growth), bill area would grow as body mass to the 2/3 power, since mass is proportional to volume. On log scales, this means a slope of 2/3 for log size on log mass, and a slope of 0 for log shape (@fig-allometry).
+
+```{r}
+#| label: fig-allometry
+#| fig-width: 10
+#| fig-height: 5
+#| fig-cap: "Bill size (left) and bill shape (right) vs. body mass, on log scales. Bill size increases with body mass within each species; bill shape does not depend on body mass within any species, although the pooled line (dashed) suggests that it does."
+p3 <- peng_plot(log_mass, log_size) +
+  labs(x = "log Body mass", y = "log Bill size")
+p4 <- peng_plot(log_mass, log_shape) +
+  labs(x = "log Body mass", y = "log Bill shape")
+p3 + p4
+```
+
+The within-species slopes are:
+
+```{r slopes}
+slopes <- function(y) {
+  b <- coef(lm(reformulate("species / log_mass - 1", y), data = peng))
+  b[grep(":log_mass", names(b))]
+}
+rbind(log_size = slopes("log_size"), log_shape = slopes("log_shape")) |>
+  `colnames<-`(levels(peng$species))
+```
+
+Shape is unrelated to body mass within all three species. The positive pooled slope in the right panel is another between-species effect, not a within-species one: Gentoo are both the heaviest penguins and the ones with the most slender bills. The size slopes for Adelie and Chinstrap are close to the isometric value of 2/3; Gentoo bills grow faster than isometry would predict. These are rough, descriptive slopes (mass and bill measures both contain measurement error, so ordinary least squares slopes are attenuated), but they illustrate that thinking about *what a variable measures* can suggest a baseline to compare against, here the value 2/3, that the raw variables would not.
+
+## Lessons
+
+* **Look at what the variables mean before you analyze them.** Length and depth are two measurements of one object. Re-expressing them as size and shape is a choice made on substantive grounds, not by fitting the data.
+
+* **Equivalent models can tell different stories.** Because the transformation is linear (in the logs) and nonsingular, nothing in the multivariate model changes: the fitted values, residuals and tests are the same. What changes is which questions are easy to answer and which plots are easy to read.
+
+* **A good re-expression simplifies.** In the size--shape coordinates, within-species variation is nearly uncorrelated, species differences are concentrated in one variable, the sex effect is confined to the other, and Simpson's paradox goes away.
+
+* **Check the choice against the data.** Here the within-species principal components point almost exactly in the size direction, so the substantive choice and the empirical one agree.
+
+The same reasoning applies to the other penguin variables. Flipper length and body mass are also, in part, measures of overall size; one might go on to define an overall body size (for example, the mean of the four log measurements) and express each variable relative to it. That is a story for another vignette.
+
+## References {.unnumbered}
+
+* Gorman, K. B., Williams, T. D., & Fraser, W. R. (2014). Ecological sexual dimorphism and environmental variability within a community of Antarctic penguins (genus *Pygoscelis*). *PLoS ONE*, 9(3), e90081.
+* Jolicoeur, P., & Mosimann, J. E. (1960). Size and shape variation in the painted turtle. A principal component analysis. *Growth*, 24, 339--354.
+* Mosimann, J. E. (1970). Size allometry: Size and shape variables with characterizations of the lognormal and generalized gamma distributions. *Journal of the American Statistical Association*, 65(330), 930--945.
