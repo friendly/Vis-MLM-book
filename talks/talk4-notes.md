@@ -4,7 +4,7 @@ Status of `Vis-MLM-talk4.pptx` as of 2026-10-17, after the hidden slides were mo
 This file replaces `outline.md` as the working summary. `outline.md` is the plan written before there were
 any slides; keep it for the organizer's figure list and the original timing, but the deck has moved on.
 
-**Talk:** Methodology & Statistics Group, Utrecht, 5 November 2026. 45 minutes + discussion.
+**Talk:** Methodology & Statistics Group, Utrecht, 6 November 2026. 45 minutes + discussion.
 
 ## Deck at a glance
 

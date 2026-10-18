@@ -2,7 +2,7 @@
 
 Slide decks for talks based on the book.
 
-## Utrecht, 5 November 2026
+## Utrecht, 6 November 2026
 
 **Title:** Visualizing Multivariate Data and Models in R: A Romance in Many Dimensions
 
@@ -43,5 +43,3 @@ First full draft, including all optional sections. Slides that are optional for 
   - The Duncan added-variable image (Fig 7.27, `images/duncan-av-influence.png`) is only 1300 x 650 px and may look soft when projected.
 
 - **Closing slide** "Book, code and packages" still lists the four packages now shown on slide 3; trim it.
-
-- **Title slide** says only "Utrecht, 5 November 2026"; add the venue or host.
