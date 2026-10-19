@@ -6,6 +6,7 @@ date: today
 format:
   html:
     toc: true
+    embed-resources: true
     code-fold: show
     fig-width: 7
     fig-height: 5
@@ -20,26 +21,34 @@ knitr::opts_chunk$set(comment = "#>", fig.align = "center")
 options(digits = 4)
 ```
 
-## Variables as recorded vs. variables as meant
+## Variables we record vs. variables we mean
 
-Data analysis usually starts with the variables as they were recorded. But the way a variable was *measured* is not necessarily the way it is best *thought about*. A researcher records height and weight because those are easy to measure; a physician may care more about body mass index, an expression of weight relative to height. A chemist records concentrations, but the meaningful quantities may be their ratios.
+Data analysis usually starts with the variables as they were recorded. But the way a variable was *measured* is not necessarily the way it is best *thought about*:
 
-The Palmer penguins data are a familiar example in multivariate analysis. Two of the variables, `bill_length` and `bill_depth`, describe the penguin's bill (technically, the *culmen*, the upper ridge of the bill): its length from the base to the tip, and its depth, top to bottom, at the base (@fig-culmen). Plotted against each other, they produce one of the best known examples of Simpson's paradox: within each species, longer bills are deeper, but across the species, the relation is negative.
+* A researcher records height and weight because those are easy to measure. But a physician may care more about body mass index, an expression of weight relative to height. 
+* A chemist records concentrations of compounds, but the meaningful quantities may be their ratios. 
+* Two raters assess a collection of patients on several measures of outcome in therapy, but our main interest might be in how these agree or disagree.
 
-![The two bill measurements: length, from the base of the bill to its tip, and depth, top to bottom at the base. Artwork by Allison Horst.](../../images/culmen_depth-notext.png){#fig-culmen width=60%}
+The Palmer penguins data (Gorman, Williams & Fraser, 2014)
+have recently become a familiar example in multivariate analysis. Penguins of three species
+on islands near Palmer Station in Antarctica were measured on four aspects of their bodies. 
+Two of the variables, `bill_length` and `bill_depth`, describe the penguin's bill (technically, the *culmen*, the upper ridge of the bill): its length from the base to the tip, and its depth, top to bottom, at the base (@fig-culmen). Plotted against each other, they produce one of the best known examples of Simpson's paradox: within each species, longer bills are deeper, but across the species, the relation is negative. But maybe, there's a simple re-framing of the variables variables _recorded_ into ones
+better _thought about_, that makes Simpson disappear.
 
-This vignette asks a simple question: **what do these two measurements represent?** Length and depth are not two separate traits of a bill; together they describe one object. Two natural questions about any such object are:
+![The two bill measurements: length, from the base of the bill to its tip, and depth, top to bottom at the base. Artwork by Allison Horst.](../../images/culmen_depth-notext.png){#fig-culmen width=50%}
+
+This vignette asks a simple question: **what do these two measurements really represent for penguins?** Length and depth are not biologically two separate traits of a bill; together they describe one object: its' **beak**. Two natural questions about any such object are:
 
 * How *big* is it? --- its **size**
 * What *proportions* does it have? --- its **shape**: is it long and slender, or short and stubby?
 
-This suggests replacing (length, depth) with
+This suggests replacing (length, depth) with:
 
 $$
 \text{Size} = L \times D \qquad \text{Shape} = L / D \; ,
 $$
 
-or, more conveniently, their logarithms
+or, more conveniently, their logarithms which are additive rather than multiplicative:
 
 $$
 \begin{aligned}
@@ -48,9 +57,9 @@ $$
 \end{aligned}
 $$
 
-Size is (proportional to) the area of the bill's profile, in mm^2^; shape is a dimensionless ratio, about 2 for a bill twice as long as it is deep.
+The **units matter** here: Size is (proportional to) the area of the bill's profile, is in mm^2^; but shape is a **dimensionless** ratio, about 2 for a bill twice as long as it is deep. That's easy to think about!
 
-The size and shape idea goes back to the early days of multivariate morphometrics (Jolicoeur & Mosimann, 1960; Mosimann, 1970), where the first principal component of log measurements was often interpreted as "size" and the remaining ones as "shape". Here we take a simpler, more direct route, defining size and shape from what the variables mean, and then asking whether the data agree.
+The size and shape idea goes back to the early days of multivariate morphometrics (Jolicoeur & Mosimann, 1960; Mosimann, 1970), where the first principal component of log measurements was often interpreted as "size" and the remaining ones as "shape". Here we take a simpler, more direct route, defining size and shape from what the variables _mean_, and then asking whether the data agree in these two different representations. 
 
 ### An equivalent, not a different, model
 
@@ -138,7 +147,7 @@ peng_plot <- function(x, y, data = peng, pooled = TRUE, by = NULL) {
 }
 ```
 
-## Two views of the same bills
+## Two views of the same beaks
 
 @fig-two-views shows the familiar view on the left and the size--shape view on the right.
 
@@ -175,7 +184,7 @@ peng |>
 
 ## Seeing the rotation
 
-Because the size--shape coordinates are a rotation of the log length--depth coordinates, we can draw them directly on a plot of the logs. In @fig-rotation the solid gray lines connect bills of the same size ($\log L + \log D = $ constant) and the dashed lines connect bills of the same shape ($\log L - \log D = $ constant). The lines are drawn at round values of $L \times D$ (in steps of 100 mm^2^) and of $L / D$ (in steps of 0.5), a few of which are labeled. With an aspect ratio of 1, the two sets of lines meet at right angles.
+Because the size--shape coordinates are a 45$^o$ rotation of the log length--depth coordinates, we can draw them directly on a plot of the logs. In @fig-rotation the solid gray lines connect bills of the same size $(\log L + \log D = \text{constant})$ and the dashed lines connect bills of the same shape $(\log L - \log D = \text{constant})$. The lines are drawn at round values of $L \times D$ (in steps of 100 mm^2^) and of $L / D$ (in steps of 0.5), a few of which are labeled. With an aspect ratio of 1, the two sets of lines meet at right angles.
 
 ```{r}
 #| label: fig-rotation
@@ -210,7 +219,7 @@ Read this way, the Simpson's paradox in the original plot has a simple explanati
 
 ## Do the data agree?
 
-We chose size and shape on substantive grounds, not from the data. Two quick checks show the choice is well supported.
+I chose size and shape on _substantive_ grounds, not from the _data_. Two quick checks show the choice is well supported, in that there is a natural translation of statistical ideas from (L, D) space to (Size, Shape) space.
 
 **Within-species correlations.** If size and shape are natural dimensions for variation within a species, they should be close to uncorrelated there.
 
@@ -303,7 +312,8 @@ This is also why the size and shape coordinates make the within-species correlat
 
 ## One variable at a time
 
-A multivariate view is not always available. Readers of a paper, or a table of univariate tests, see one variable at a time. Here the size--shape representation does even better, because it concentrates the species differences in a single variable (@fig-densities).
+A multivariate view is not always on authors' minds. Some readers of a paper, on multivariate data like the
+penguins, may only be shown tables or plots for one variable at a time. Here the size--shape representation does even better, because it concentrates the species differences in a single variable (@fig-densities).
 
 ```{r}
 #| label: fig-densities
@@ -448,6 +458,65 @@ rbind(log_size = slopes("log_size"), log_shape = slopes("log_shape")) |>
 
 Shape is unrelated to body mass within all three species. The positive pooled slope in the right panel is another between-species effect, not a within-species one: Gentoo are both the heaviest penguins and the ones with the most slender bills. The size slopes for Adelie and Chinstrap are close to the isometric value of 2/3; Gentoo bills grow faster than isometry would predict. These are rough, descriptive slopes (mass and bill measures both contain measurement error, so ordinary least squares slopes are attenuated), but they illustrate that thinking about *what a variable measures* can suggest a baseline to compare against, here the value 2/3, that the raw variables would not.
 
+## Sums and differences: the Tukey trick
+
+Here's a trick I learned from John Tukey. When two variables $x_1$ and $x_2$ are *commensurable*, measured in the same units and on comparable scales, and are positively correlated, you can always replace them by their sum (or mean) and their difference without losing information, and often with _a gain in interpretability_:
+
+$$
+s = x_1 + x_2 \qquad d = x_1 - x_2 \; .
+$$
+
+This is the same 45° rotation used above for size and shape. As a graphical method, the plot of the difference $d$ against the mean $s/2$ is known as the **Tukey mean-difference plot** (Cleveland, 1993, pp. 22--23). In medicine, where it is the standard way to compare two methods of measuring the same quantity, it is called the **Bland--Altman plot** (Bland & Altman, 1986); see the [Wikipedia article](https://en.wikipedia.org/wiki/Bland%E2%80%93Altman_plot) for a description and variants. 
+
+As we did for the penguins, that article recommends taking logs first when the two measurements differ by a _ratio_ rather than an _amount_. Stated more directly, the diagram of penguin bills (@fig-culmen), suggested that
+the product, $L \times D = \text{area}$ was a natural measure of bill **size**, while the ratio $L / D$ could be
+interpreted as **shape**.
+
+
+Two things make the Tukey trick work:
+
+* First, the new variables are nearly uncorrelated. The covariance of the sum and the difference is
+
+$$
+\text{Cov}(s, d) = \text{Var}(x_1) - \text{Var}(x_2) \; ,
+$$
+
+whatever the correlation between $x_1$ and $x_2$. When the two variables have about the same variance, $s$ and $d$ are almost uncorrelated, *no matter how strongly $x_1$ and $x_2$ are correlated*. If both have variance $\sigma^2$, the variances of the sum and difference are $2\sigma^2 (1 + r)$ and $2\sigma^2 (1 - r)$, which shows where the variation went: the larger the correlation $r$, the more of it is carried by the sum and the less by the difference.
+
+* Second, sums and differences usually *mean* something. The sum (or average) is the overall level or amount the two variables share; the difference is the contrast between them. For the penguins, these are size and shape. For two test scores, they are overall ability and a profile difference; for two measurement methods, they are the average reading and the disagreement between methods.
+
+"Commensurable" is doing real work here. On the raw scale, bill length has two to three times the standard deviation of bill depth, so their sum and difference would still be correlated. On the log scale, each standard deviation is roughly a *coefficient of variation*, a relative spread, and these are nearly equal:
+
+```{r sd-logs}
+peng |>
+  group_by(species) |>
+  summarise(sd_length     = sd(bill_length),
+            sd_depth      = sd(bill_depth),
+            sd_log_length = sd(log_length),
+            sd_log_depth  = sd(log_depth),
+            r_size_shape  = cor(log_size, log_shape))
+```
+
+Taking logs is what makes length and depth commensurable, and that, in turn, is why log size and log shape are so nearly uncorrelated within each species.
+
+The same trick is a simple cure for **collinearity** among predictors in a regression. If $x_1$ and $x_2$ are highly correlated, their separate coefficients are poorly determined; replacing them by $s$ and $d$ gives nearly uncorrelated predictors and an equivalent model. The coefficients are just re-expressed, as the average and the half-difference of the original ones:
+
+$$
+b_s = (b_1 + b_2) / 2 \qquad b_d = (b_1 - b_2) / 2 \; .
+$$
+
+For example, predicting log body mass from the log bill measurements (and species):
+
+```{r collinearity}
+m_LD <- lm(log_mass ~ species + log_length + log_depth, data = peng)
+m_SS <- lm(log_mass ~ species + log_size   + log_shape, data = peng)
+b <- coef(m_LD)[c("log_length", "log_depth")]
+cbind(from_LD = c(log_size  = mean(b), log_shape = unname(-diff(b)) / 2),
+      m_SS    = coef(m_SS)[c("log_size", "log_shape")])
+```
+
+This doesn't create information that wasn't in the data. When $r$ is large, the difference has little variance, and its coefficient is still estimated imprecisely. What the rotation does is put that imprecision where it belongs, in one interpretable contrast, rather than spreading it over both of the original coefficients.
+
 ## Lessons
 
 * **Look at what the variables mean before you analyze them.** Length and depth are two measurements of one object. Re-expressing them as size and shape is a choice made on substantive grounds, not by fitting the data.
@@ -458,10 +527,14 @@ Shape is unrelated to body mass within all three species. The positive pooled sl
 
 * **Check the choice against the data.** Here the within-species principal components point almost exactly in the size direction, so the substantive choice and the empirical one agree.
 
+* **Sums and differences are a general tool.** For positively correlated, commensurable variables, rotating to their sum and difference gives nearly uncorrelated variables that are usually easier to interpret, and is a simple remedy for collinearity.
+
 The same reasoning applies to the other penguin variables. Flipper length and body mass are also, in part, measures of overall size; one might go on to define an overall body size (for example, the mean of the four log measurements) and express each variable relative to it. That is a story for another vignette.
 
 ## References {.unnumbered}
 
+* Bland, J. M., & Altman, D. G. (1986). Statistical methods for assessing agreement between two methods of clinical measurement. *The Lancet*, 327(8476), 307--310. https://doi.org/10.1016/S0140-6736(86)90837-8
+* Cleveland, W. S. (1993). *Visualizing Data*. Hobart Press. pp. 22–23. ISBN 978-0-9634884-0-4.
 * Gorman, K. B., Williams, T. D., & Fraser, W. R. (2014). Ecological sexual dimorphism and environmental variability within a community of Antarctic penguins (genus *Pygoscelis*). *PLoS ONE*, 9(3), e90081.
 * Jolicoeur, P., & Mosimann, J. E. (1960). Size and shape variation in the painted turtle. A principal component analysis. *Growth*, 24, 339--354.
 * Mosimann, J. E. (1970). Size allometry: Size and shape variables with characterizations of the lognormal and generalized gamma distributions. *Journal of the American Statistical Association*, 65(330), 930--945.
