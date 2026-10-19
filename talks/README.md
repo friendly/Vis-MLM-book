@@ -13,6 +13,7 @@ Slide decks for talks based on the book.
 | `Vis-MLM-talk4.pptx` | `Vis-MLM-talk3.pptx` with the PCA/biplot "Multivariate juicers" slides moved up to section 2, right after the data-display slides, and the canonical discriminant slides ("The MANOVA juicer") moved to the end of the HE plot section. Made on 2026-10-15 for comparison with talk3; **now the working copy.** Current state, open gaps and to-dos: `talk4-notes.md`. |
 | `talk4-notes.md` | Where talk4 stands: sections and slide ranges, story line, open gaps, the organizer's figures, to-dos |
 | `Vis-MLM-talk3.pptx` | The deck in its previous order (the working copy until talk4). Started on 2026-10-11 from `Vis-MLM-talk2.pptx` (in chapter order; deleted, the last version is in the git history), re-arranged into a thematic arc, with some slides brought in from the CARME 2023 talk. |
+| `section-headers.md` | Brief for section-header slide designs (slide 5 done; others pending). Progress and exact geometry: `styles/section-header-handoff.md` |
 | `outline.md` | Topics, the organizer's seven requested figures (with file names), and rough timing |
 | `build-talk.py` | Generator for the *initial* draft. It no longer matches the deck (hand edits, plus the "R packages" slide added later). Don't run it with `--force`; use `-o other.pptx` if a fresh copy is ever wanted. Needs `pip install python-pptx Pillow`. |
 | `base-16x9.pptx` | Empty 16:9 file with the standard Office layouts, used by the generator |
