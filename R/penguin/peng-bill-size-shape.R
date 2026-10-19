@@ -88,21 +88,32 @@ peng_plot(size, shape) +
        title = "Size & shape (raw scale)")
 
 # Show that size/shape is a rotation of log L, log D: draw the size & shape
-# axes as iso-lines in the (log L, log D) plot
-iso <- expand_grid(k = seq(5.6, 7.2, by = 0.2))   # log size contours
-iso_shape <- expand_grid(k = seq(0.6, 1.4, by = 0.2))   # log shape contours
+# axes as iso-lines in the (log L, log D) plot, at round values of L x D and L / D
+iso_size  <- tibble(size  = seq(400, 1200, by = 100), k = log(size))   # log size contours
+iso_shape <- tibble(shape = seq(1.5, 4, by = 0.5),   k = log(shape))   # log shape contours
+
+# label a couple of lines of each kind, placed (by y) in empty space near the
+# top edge (size) and lower left (shape)
+lab_size  <- iso_size  |> filter(size %in% c(800, 1000)) |>
+  mutate(y = 3.06, x = k - y, label = paste0("L x D = ", size))
+lab_shape <- iso_shape |> filter(shape %in% c(2.5, 3)) |>
+  mutate(y = c(2.60, 2.55), x = k + y, label = paste0("L / D = ", shape))
 
 peng_plot(log_length, log_depth, pooled = FALSE) +
-  geom_abline(data = iso, aes(intercept = k, slope = -1),
-              color = "gray50", linewidth = 0.3, inherit.aes = FALSE) +
+  geom_abline(data = iso_size, aes(intercept = k, slope = -1),
+              color = "gray50", linewidth = 0.7, inherit.aes = FALSE) +
   geom_abline(data = iso_shape, aes(intercept = -k, slope = 1),
-              color = "gray50", linewidth = 0.3, linetype = "dotted",
+              color = "gray50", linewidth = 0.7, linetype = "dashed",
               inherit.aes = FALSE) +
-  coord_equal() +
+  geom_label(data = lab_size, aes(x = x, y = y, label = label), angle = -45,
+             size = 3.5, color = "gray30", fill = "white", linewidth = 0,
+             inherit.aes = FALSE) +
+  geom_label(data = lab_shape, aes(x = x, y = y, label = label), angle = 45,
+             size = 3.5, color = "gray30", fill = "white", linewidth = 0,
+             inherit.aes = FALSE) +
+  coord_equal(xlim = c(3.44, 4.12), ylim = c(2.50, 3.10), expand = FALSE) +
   labs(x = "log Bill length", y = "log Bill depth",
-       title = "Solid gray: constant size;  dotted: constant shape")
-
-# TODO: Label a couple of the diagonal lines
+       title = "Solid gray: constant size;  dashed: constant shape")
 
 #' ## 2. Within-species correlations
 # In (L, D) the within-species correlations are positive, overall correlation negative
@@ -130,6 +141,55 @@ peng |>
            pct_var = 100 * e$values[1] / sum(e$values),
            angle = atan2(v[2], v[1]) * 180 / pi)   # 45 = pure size direction
   })
+
+# Show this: center each species at its means, so only within-species variation
+# remains. Draw 68% data ellipses and each species' PC1 axis (+/- 2 SD) against
+# the size direction (slope +1, dashed as in the rotation plot) and the shape
+# direction (slope -1, solid)
+peng_c <- peng |>
+  group_by(species) |>
+  mutate(c_length = log_length - mean(log_length),
+         c_depth  = log_depth  - mean(log_depth)) |>
+  ungroup()
+
+pc1 <- peng_c |>
+  group_by(species) |>
+  group_modify(~ {
+    e <- eigen(cov(cbind(.x$c_length, .x$c_depth)))
+    v <- e$vectors[, 1] * sign(e$vectors[1, 1])
+    r <- 2 * sqrt(e$values[1])
+    tibble(x = -r * v[1], y = -r * v[2], xend = r * v[1], yend = r * v[2],
+           angle = atan2(v[2], v[1]) * 180 / pi)
+  }) |>
+  ungroup() |>
+  mutate(label = sprintf("%s: %.0f°", species, angle),
+         # the PC1 axes nearly coincide, so stack their labels in the lower right
+         lab_x = 0.15, lab_y = -0.04 - 0.035 * (row_number() - 1))
+
+ggplot(peng_c, aes(x = c_length, y = c_depth, color = species, fill = species)) +
+  geom_abline(slope =  1, intercept = 0, color = "gray50", linewidth = 0.7,
+              linetype = "dashed") +
+  geom_abline(slope = -1, intercept = 0, color = "gray50", linewidth = 0.7) +
+  annotate("text", x = -0.15, y = -0.15, label = "size direction", angle = 45,
+           vjust = -0.5, color = "gray30", size = 4.5) +
+  annotate("text", x = -0.13, y = 0.13, label = "shape direction", angle = -45,
+           vjust = -0.5, color = "gray30", size = 4.5) +
+  geom_point(size = 1, alpha = 0.5) +
+  stat_ellipse(geom = "polygon", level = 0.68, alpha = 0.05, linewidth = 1) +
+  geom_segment(data = pc1, aes(x = x, y = y, xend = xend, yend = yend),
+               linewidth = 1.5, inherit.aes = FALSE,
+               color = peng.colors("dark")[as.character(pc1$species)]) +
+  geom_label(data = pc1, aes(x = lab_x, y = lab_y, label = label, color = species),
+             fill = "white", size = 4.5, fontface = "bold",
+             hjust = 0, inherit.aes = FALSE) +
+  annotate("text", x = 0.15, y = -0.04 + 0.035, label = "PC1 angle",
+           hjust = 0, color = "gray30", size = 4.5) +
+  coord_equal(xlim = c(-0.2, 0.25), ylim = c(-0.2, 0.2)) +
+  theme_penguins("dark") +
+  theme(legend.position = "none") +
+  labs(x = "log Bill length (centered within species)",
+       y = "log Bill depth (centered within species)",
+       title = "Within-species PC1 axes lie along the size direction")
 
 #' ## 3. Univariate views: which variable separates the species?
 
@@ -169,15 +229,22 @@ sapply(c("bill_length", "bill_depth", "log_size", "log_shape"), eta2) |> round(3
 
 #' ## 4. Sex differences: is dimorphism mainly in size?
 
+sex_fill <- scale_fill_discrete(labels = c(f = "Female", m = "Male"))
 p3 <- ggplot(peng, aes(x = species, y = log_size, fill = sex)) +
   geom_boxplot(alpha = 0.6) +
-  labs(y = "log Size", title = "Size")
+  sex_fill +
+  labs(x = NULL, y = "log Size", title = "Size") +
+  theme(legend.position = "none")
+# legend inside the right panel, lower right (empty: Gentoo shapes are high)
 p4 <- ggplot(peng, aes(x = species, y = log_shape, fill = sex)) +
   geom_boxplot(alpha = 0.6) +
-  labs(y = "log Shape", title = "Shape")
-p3 + p4 + plot_layout(guides = "collect")
-
-# TODO: Use label inside right panel, lower right
+  sex_fill +
+  labs(x = NULL, y = "log Shape", title = "Shape", fill = NULL) +
+  theme(legend.position = "inside",
+        legend.position.inside = c(0.98, 0.02),
+        legend.justification = c(1, 0),
+        legend.background = element_rect(color = "gray70"))
+p3 + p4
 
 # Size/shape ellipses, by species, faceted by sex
 peng_plot(log_size, log_shape, pooled = FALSE, by = "sex") +

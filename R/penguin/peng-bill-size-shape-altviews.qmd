@@ -173,22 +173,34 @@ peng |>
 
 ## Seeing the rotation
 
-Because the size--shape coordinates are a rotation of the log length--depth coordinates, we can draw them directly on a plot of the logs. In @fig-rotation the solid gray lines connect bills of the same size ($\log L + \log D = $ constant) and the dotted lines connect bills of the same shape ($\log L - \log D = $ constant). With an aspect ratio of 1, these meet at right angles.
+Because the size--shape coordinates are a rotation of the log length--depth coordinates, we can draw them directly on a plot of the logs. In @fig-rotation the solid gray lines connect bills of the same size ($\log L + \log D = $ constant) and the dashed lines connect bills of the same shape ($\log L - \log D = $ constant). The lines are drawn at round values of $L \times D$ (in steps of 100 mm^2^) and of $L / D$ (in steps of 0.5), a few of which are labeled. With an aspect ratio of 1, the two sets of lines meet at right angles.
 
 ```{r}
 #| label: fig-rotation
 #| fig-width: 7
 #| fig-height: 6
-#| fig-cap: "Log bill depth vs. log bill length, with lines of constant size (solid gray, slope -1) and constant shape (dotted, slope +1). The within-species ellipses are elongated along the size direction; the species are separated along the shape direction."
-iso_size  <- tibble(k = seq(5.6, 7.2, by = 0.2))
-iso_shape <- tibble(k = seq(0.6, 1.4, by = 0.2))
+#| fig-cap: "Log bill depth vs. log bill length, with lines of constant size (solid gray, slope -1) and constant shape (dashed, slope +1). The within-species ellipses are elongated along the size direction; the species are separated along the shape direction."
+iso_size  <- tibble(size  = seq(400, 1200, by = 100), k = log(size))
+iso_shape <- tibble(shape = seq(1.5, 4, by = 0.5),   k = log(shape))
+
+# label a couple of lines of each kind, in empty space
+lab_size  <- iso_size  |> filter(size %in% c(800, 1000)) |>
+  mutate(y = 3.06, x = k - y, label = paste0("L x D = ", size))
+lab_shape <- iso_shape |> filter(shape %in% c(2.5, 3)) |>
+  mutate(y = c(2.60, 2.55), x = k + y, label = paste0("L / D = ", shape))
 
 peng_plot(log_length, log_depth, pooled = FALSE) +
   geom_abline(data = iso_size, aes(intercept = k, slope = -1),
-              color = "gray50", linewidth = 0.3) +
+              color = "gray50", linewidth = 0.7) +
   geom_abline(data = iso_shape, aes(intercept = -k, slope = 1),
-              color = "gray50", linewidth = 0.3, linetype = "dotted") +
-  coord_equal() +
+              color = "gray50", linewidth = 0.7, linetype = "dashed") +
+  geom_label(data = lab_size, aes(x = x, y = y, label = label), angle = -45,
+             size = 3.5, color = "gray30", fill = "white", linewidth = 0,
+             inherit.aes = FALSE) +
+  geom_label(data = lab_shape, aes(x = x, y = y, label = label), angle = 45,
+             size = 3.5, color = "gray30", fill = "white", linewidth = 0,
+             inherit.aes = FALSE) +
+  coord_equal(xlim = c(3.44, 4.12), ylim = c(2.50, 3.10), expand = FALSE) +
   labs(x = "log Bill length", y = "log Bill depth")
 ```
 
@@ -230,6 +242,62 @@ peng |>
 ```
 
 For each species the first component lies within a few degrees of 45° and accounts for 70--83% of the within-species variance. The dominant direction of variation within each species is, almost exactly, size.
+
+@fig-pc1 shows this directly. Each species has been shifted to its own means, which removes the differences *between* species (mostly in shape) and leaves only the variation *within* species. Each species' first principal component axis is drawn through the origin, ±2 standard deviations long, against the size direction (slope +1, dashed, as in @fig-rotation) and the perpendicular shape direction (slope −1, solid).
+
+```{r}
+#| label: fig-pc1
+#| fig-width: 7
+#| fig-height: 6
+#| fig-cap: "Within-species variation in log bill length and depth, with each species centered at its means. Ellipses are 68% data ellipses; the thick lines are each species' first principal component axis. All three lie close to the size direction (dashed). The Adelie ellipse is the least elongated, so its first component is less dominant."
+peng_c <- peng |>
+  group_by(species) |>
+  mutate(c_length = log_length - mean(log_length),
+         c_depth  = log_depth  - mean(log_depth)) |>
+  ungroup()
+
+pc1 <- peng_c |>
+  group_by(species) |>
+  group_modify(~ {
+    e <- eigen(cov(cbind(.x$c_length, .x$c_depth)))
+    v <- e$vectors[, 1] * sign(e$vectors[1, 1])
+    r <- 2 * sqrt(e$values[1])
+    tibble(x = -r * v[1], y = -r * v[2], xend = r * v[1], yend = r * v[2],
+           angle = atan2(v[2], v[1]) * 180 / pi)
+  }) |>
+  ungroup() |>
+  mutate(label = sprintf("%s: %.0f°", species, angle),
+         # the PC1 axes nearly coincide, so stack their labels on the right
+         lab_x = 0.15, lab_y = -0.04 - 0.035 * (row_number() - 1))
+
+ggplot(peng_c, aes(x = c_length, y = c_depth, color = species, fill = species)) +
+  geom_abline(slope =  1, intercept = 0, color = "gray50", linewidth = 0.7,
+              linetype = "dashed") +
+  geom_abline(slope = -1, intercept = 0, color = "gray50", linewidth = 0.7) +
+  annotate("text", x = -0.15, y = -0.15, label = "size direction", angle = 45,
+           vjust = -0.5, color = "gray30", size = 4.5) +
+  annotate("text", x = -0.13, y = 0.13, label = "shape direction", angle = -45,
+           vjust = -0.5, color = "gray30", size = 4.5) +
+  geom_point(size = 1, alpha = 0.5) +
+  stat_ellipse(geom = "polygon", level = 0.68, alpha = 0.05, linewidth = 1) +
+  geom_segment(data = pc1, aes(x = x, y = y, xend = xend, yend = yend),
+               linewidth = 1.5, inherit.aes = FALSE,
+               color = peng_cols[as.character(pc1$species)]) +
+  geom_label(data = pc1, aes(x = lab_x, y = lab_y, label = label, color = species),
+             fill = "white", size = 4.5, fontface = "bold",
+             hjust = 0, inherit.aes = FALSE) +
+  annotate("text", x = 0.15, y = -0.04 + 0.035, label = "PC1 angle",
+           hjust = 0, color = "gray30", size = 4.5) +
+  coord_equal(xlim = c(-0.2, 0.25), ylim = c(-0.2, 0.2)) +
+  scale_penguins +
+  theme(legend.position = "none") +
+  labs(x = "log Bill length (centered within species)",
+       y = "log Bill depth (centered within species)")
+```
+
+Two features of the plot carry the argument. First, the three first component axes very nearly coincide with each other and with the size diagonal: the species share a common pattern of within-species variation, and that pattern is variation in size. Second, the ellipses are elongated along this diagonal and shorter across it: within a species, penguins differ much more in how big their bills are than in their proportions. The Adelie ellipse is the roundest of the three, which matches its smaller share of variance on the first component (70%, against about 83% for the other two).
+
+This is also why the size and shape coordinates make the within-species correlations vanish. Rotating the coordinate axes to lie (nearly) along the long and short axes of these ellipses is what makes the two new variables nearly uncorrelated.
 
 ## One variable at a time
 
