@@ -14,7 +14,7 @@ Do not modify the PowerPoint without approval for the specific change. Slide 5 w
 
 Section headers must retain their role and existing typography, text positions, and hierarchy. Avoid replacing them with explanatory slides. The user explicitly wants to avoid an obviously AI-generated appearance. Existing illustrations tied to the actual following slides are useful sources.
 
-Rejected for this section: an R-generated heart-shaped point cloud shown in three projections. It took over the layout, changed typography, used anonymous data, and the views were insufficiently distinct. Do not revisit this direction for slide 5. Its exploratory files remain in `../images/slide5-romance*`.
+Rejected for this section: an R-generated heart-shaped point cloud shown in three projections. It took over the layout, changed typography, used anonymous data, and the views were insufficiently distinct. Do not revisit this direction for slide 5. Its exploratory files were deleted 2026-10-19 (last version in commit 48e854c6).
 
 ## Approved slide 5
 
@@ -37,8 +37,6 @@ Assets in `../images/`:
 
 - `slide6-source-2.jpg`: original Flatland illustration extracted from slide 6, reused without raster editing.
 - `slide5-flatland-final.png`: final approved slide 5 rendered through PowerPoint at 1920 x 1080.
-- `slide5-flatland-preview.png`: earlier preview before centering and background tint.
-- `slide5-original.png`: original slide 5 render.
 - `section0-slide6.png` through `section0-slide9.png`: section reference renders.
 - `slide6-source-4.png`: other slide 6 picture, penguin scatterplot, not used in the approved design.
 
