@@ -102,6 +102,8 @@ peng_plot(log_length, log_depth, pooled = FALSE) +
   labs(x = "log Bill length", y = "log Bill depth",
        title = "Solid gray: constant size;  dotted: constant shape")
 
+# TODO: Label a couple of the diagonal lines
+
 #' ## 2. Within-species correlations
 # In (L, D) the within-species correlations are positive, overall correlation negative
 # (Simpson's paradox). Does size/shape make the within-species variables closer to
@@ -175,6 +177,8 @@ p4 <- ggplot(peng, aes(x = species, y = log_shape, fill = sex)) +
   labs(y = "log Shape", title = "Shape")
 p3 + p4 + plot_layout(guides = "collect")
 
+# TODO: Use label inside right panel, lower right
+
 # Size/shape ellipses, by species, faceted by sex
 peng_plot(log_size, log_shape, pooled = FALSE, by = "sex") +
   facet_wrap(~ sex, labeller = as_labeller(c(f = "Female", m = "Male"))) +
@@ -214,6 +218,8 @@ covEllipses(cbind(log_size, log_shape) ~ species, data = peng,
             pooled = TRUE, fill = TRUE, fill.alpha = 0.1, col = cols,
             xlab = "log Size", ylab = "log Shape", asp = 1)
 par(op)
+
+# TODO: In talk, include sex in the model
 
 op <- par(mfrow = c(1, 2), mar = c(4, 4, 1, 1) + 0.1)
 heplot(mod_LD, size = "effect", fill = TRUE, fill.alpha = 0.1, asp = 1,
