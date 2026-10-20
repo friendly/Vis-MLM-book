@@ -66,6 +66,19 @@ Same structure as slides 5 and 23, in the section's green (the "sec3" title boxe
   - `Section 3 ridge illustration`, width 365: `../images/section-headers/section3-ridge-ellipses.png`, the two generalized ridge trace plots from slide 42, cropped below the text above them (top 34.5% removed).
 - `Section 3 Wally`: `../images/section-headers/section3-wally.wmf` (the Wally drawing used on slides 32, 34, 39), at left 500, top 196, 52 x 52, just after the title; white made transparent and a thin border line cropped off (2 pt left/top, 1 pt right/bottom). The user moved him here from the far right end of the title line.
 
+## Approved slide 44
+
+Title: "The HE plot framework"; subtitle "Seeing multivariate tests as ellipses" (the user may add more subtitle points; the subtitle placeholder spans 361-479 pt, below the banner, so two or three more lines fit before PowerPoint shrinks the text). Applied 2026-10-20 by `section4-header.ps1` (a record, not to be re-run).
+
+Same structure as slides 5, 23 and 31, in the section's orange (the "sec4" title boxes: `#CC6600` at 78% transparency):
+
+- Background: `FollowMasterBackground = 0`, then radial `TwoColorGradient(7, 1)`, `#F7F4F1` center, `#E4C09E` edges.
+- Banner, the section's own "Data → Data ellipses → HE plot" storyline from slide 46, all penguins in bill length × bill depth; top 14, height 200 (this slide's text sits lower: visible title at about 295), gaps 50, centered:
+  - `Section 4 data ellipses illustration`, width 189: `../images/peng-HE-overview-1-ellipses.png` (an existing talk figure).
+  - `Section 4 HE plot illustration`, width 200: `../images/section-headers/section4-peng-HE-effect.png`, the left (effect scaling) half of `../images/peng-HE-signif.png`, as on slide 49.
+  - `Section 4 canonical HE illustration`, width 250: `../images/peng-candisc-HE.png` (an existing talk figure; as on slide 53).
+- `Section 4 arrow 1`, `2`: msoShapeRightArrow in the gaps, 30 x 22, fill `#CC6600`, no line, vertically centered on the plates; echo slide 46's red arrows. They take the place of the hearts and Wally as the slide's motif.
+
 ## Remaining section headers
 
 The brief's slide numbers have shifted. Current main-talk headers as inspected in this session:
@@ -78,7 +91,7 @@ The brief's slide numbers have shifted. Current main-talk headers as inspected i
 | 44 | The HE plot framework | Seeing multivariate tests as ellipses; brief says slide 40 |
 | 57 | Checking multivariate models | Outliers, influence, robust estimation |
 
-Done so far: slides 5, 23 (and slide 24's title) and 31. Next: 44, 57. Work one section at a time, inspect actual slide content rather than relying on the brief's shorthand titles, show a preview, and obtain approval before updating the deck.
+Done so far: slides 5, 23 (and slide 24's title), 31 and 44. Next: 57. Work one section at a time, inspect actual slide content rather than relying on the brief's shorthand titles, show a preview, and obtain approval before updating the deck.
 
 ## Technical workflow
 
