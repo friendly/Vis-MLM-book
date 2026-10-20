@@ -43,6 +43,22 @@ Assets in `../images/`:
 - `section0-slide6.png` through `section0-slide9.png`: section reference renders.
 - `slide6-source-4.png`: other slide 6 picture, penguin scatterplot, not used in the approved design.
 
+## Approved slide 23 (and slide 24 title)
+
+Title: "Flatland and Spaceland: dimension reduction"; subtitle "PCA, biplots, and nonlinear methods". Applied 2026-10-20 by `section2-header.ps1` (a record, not to be re-run).
+
+Same structure as slide 5, in the section's teal instead of slate (the teal of the "sec2" title boxes on slides 25-30, `#008080` at 78% transparency, 1.5 pt `#008080` border):
+
+- Background: `FollowMasterBackground = 0` (needed: this slide followed the master, unlike slide 5), then radial `TwoColorGradient(7, 1)`, `#F2F6F6` center, `#8EC0C0` edges.
+- Banner of three framed plates (same frame and shadow as slide 5), top 14, height 190, gaps 22, centered; left to right they follow the subtitle (rotate, juice, go nonlinear):
+  - `Section 2 PCA illustration`, width 190: `../images/section2-pca-original.png`, first frame of the slide 25 GIF (original data and its ellipse).
+  - `Section 2 biplot illustration`, width 220: `../images/section2-peng-biplot.png`, penguin biplot from slide 28.
+  - `Section 2 t-SNE illustration`, width 380: `../images/section2-pca-tsne.png`, PCA vs. t-SNE from slide 29.
+- No motif beside the title (offered: the IN/OUT juicer drawing from slide 24; not used, so as not to pre-empt slide 24).
+- Render: `../images/slide23-final.png`.
+
+Slide 24 ("Multivariate Juicers", Blank layout): its title is a text box (`TextBox 9`), formerly white on dark navy `#0B3041`. Now in the sec2 colors: fill `#008080` at 0.78 transparency, 1.5 pt `#008080` line, black text. Still differs from slides 25-30 in square corners (COM cannot change a text box's shape type), position/size (70, 28, 830 x 65 vs. 48, 21.6, 864 x 61.2) and font (Aptos 48 pt vs. Aptos Display 36 pt); the user was offered an exact match (replace it with a copy of slide 25's title shape) and has not asked for it. Render: `../images/slide24-final.png`.
+
 ## Remaining section headers
 
 The brief's slide numbers have shifted. Current main-talk headers as inspected in this session:
@@ -55,7 +71,7 @@ The brief's slide numbers have shifted. Current main-talk headers as inspected i
 | 44 | The HE plot framework | Seeing multivariate tests as ellipses; brief says slide 40 |
 | 57 | Checking multivariate models | Outliers, influence, robust estimation |
 
-Only slide 5 has been changed so far. Work one section at a time, inspect actual slide content rather than relying on the brief's shorthand titles, show a preview, and obtain approval before updating the deck.
+Done so far: slides 5 and 23 (and slide 24's title). Next: 31, 44, 57. Work one section at a time, inspect actual slide content rather than relying on the brief's shorthand titles, show a preview, and obtain approval before updating the deck.
 
 ## Technical workflow
 
