@@ -28,7 +28,11 @@ Current design (points; slide is 960 x 540):
 
 - Background: radial gradient, `TwoColorGradient(7, 1)` (msoGradientFromCenter): `#F2F3F6` at the center, `#8EA1C2` at the edges. The center is rectangular, not circular; the user accepted this.
 - Illustration `Section 0 Flatland illustration`: left 135, top 10, width 690, height 210. Overlay deleted (full strength); 0.75 pt `#3A3A3A` frame; black shadow, blur 8, offset (2, 3), transparency 0.6.
-- Subtitles (`Text Placeholder 2`): font color `#2F3B52` (dark slate) instead of the layout's muted gray. Changed on this slide only; the other header slides may want the same, possibly via the Slide Master layout.
+- Subtitles (`Text Placeholder 2`): font color `#2F3B52` (dark slate) instead of the muted gray. Set on this slide directly, and since 2026-10-20 also the default for all header slides (see below).
+
+## Section Header layout: subtitle color
+
+All six header slides (5, 10, 23, 31, 44, 57) use the one "Section Header" layout of the deck's only master. Its subtitle placeholder was the theme text color at 82% tint (muted gray); on 2026-10-20 it was changed to `#2F3B52`, so slides 23, 31, 44 and 57 now get dark slate subtitles. Slide 5 sets `#2F3B52` itself and slide 10 sets black (`tx1`, over its photo), so neither changed. Applied by `section-header-subtitle-color.ps1` (a record, not to be re-run); renders after the change: `../images/section-header-slide23.png`, `...31.png`, `...44.png`, `...57.png`, which also show these slides' plain starting point for their designs.
 - Hearts `Romance heart 1`–`6`: msoShapeHeart, fill `#C8435A`, no line, height 0.9 x width. A trail rising to the upper right of the title, smaller and fainter as it goes, echoing the Sphere rising and vanishing in the drawing. (left, top, width, rotation, transparency): (690, 318, 32, -12, 0.05), (756, 296, 27, 8, 0.20), (813, 276, 22, -10, 0.35), (862, 258, 17, 12, 0.50), (900, 243, 13, -8, 0.65), (930, 232, 9, 10, 0.78).
 - Applied by `slide5-header.ps1` (in this folder); a record and template, not to be re-run on the current deck.
 
