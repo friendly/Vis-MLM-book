@@ -10,6 +10,8 @@ Keep all work for this task under `talks/`; this is not a HistData task. Images 
 
 Do not modify the PowerPoint without approval for the specific change. Slide 5 was approved and updated twice: first on 2026-10-19 (pale solid background), then redesigned on 2026-10-20 (radial background, hearts; see below). Commit the user's own unsaved/uncommitted deck changes separately before applying an approved edit, so each edit is easy to undo.
 
+**Slide numbers below are as of the work on each slide.** On 2026-10-20, after all of it, a new slide 19 ("Thinking about Penguin variables", `add-slide19-altviews.ps1`) was inserted, so every slide after 18 moved down one: the headers are now 5, 10, 24, 32, 45, 58, and the Closing slides 62-64.
+
 ## Design preferences established
 
 Section headers must retain their role and existing typography, text positions, and hierarchy. Avoid replacing them with explanatory slides. The user explicitly wants to avoid an obviously AI-generated appearance. Existing illustrations tied to the actual following slides are useful sources.
