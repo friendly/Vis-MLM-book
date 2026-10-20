@@ -332,6 +332,9 @@ ggplot(year_long, aes(x = fyear, y = value, color = species, group = species)) +
 #' ## 8. Things to consider
 # * Isometry holds only roughly; the empirical within-species SMA slope (~3.2) or PC1
 #   could define stoutness instead (cf. the "scaled mass index", Peig & Green, 2009, Oikos).
-# * Check the Palmer LTER documentation for a change in flipper measurement after 2007.
+# * Gorman et al. (2014) and the palmerpenguins docs mention no change in flipper measurement;
+#   the EDI metadata were not reachable. In penguins_raw, the 2007 -> 2008 jump appears in all
+#   species and islands at once, and digit preference (flippers ending in 0/5, masses in 00)
+#   is high in 2007-08 and normal in 2009: practice varied. See body-flipper.qmd.
 #   If it was a protocol change, adjust flipper length for year before computing stoutness.
 # * Whether body_size is better as F x M^(1/3) or just as PC1 of the four log measures.

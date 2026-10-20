@@ -2355,7 +2355,10 @@ window.Quarto = {
   <li><a href="#does-the-cube-law-hold" id="toc-does-the-cube-law-hold" class="nav-link" data-scroll-target="#does-the-cube-law-hold">Does the cube law hold?</a></li>
   <li><a href="#one-variable-at-a-time" id="toc-one-variable-at-a-time" class="nav-link" data-scroll-target="#one-variable-at-a-time">One variable at a time</a></li>
   <li><a href="#sex-differences" id="toc-sex-differences" class="nav-link" data-scroll-target="#sex-differences">Sex differences</a></li>
-  <li><a href="#does-stoutness-vary-by-year" id="toc-does-stoutness-vary-by-year" class="nav-link" data-scroll-target="#does-stoutness-vary-by-year">Does stoutness vary by year?</a></li>
+  <li><a href="#does-stoutness-vary-by-year" id="toc-does-stoutness-vary-by-year" class="nav-link" data-scroll-target="#does-stoutness-vary-by-year">Does stoutness vary by year?</a>
+  <ul class="collapse">
+  <li><a href="#a-measurement-artifact" id="toc-a-measurement-artifact" class="nav-link" data-scroll-target="#a-measurement-artifact">A measurement artifact?</a></li>
+  </ul></li>
   <li><a href="#body-and-bill" id="toc-body-and-bill" class="nav-link" data-scroll-target="#body-and-bill">Body and bill</a>
   <ul class="collapse">
   <li><a href="#four-variables-together" id="toc-four-variables-together" class="nav-link" data-scroll-target="#four-variables-together">Four variables together</a></li>
@@ -2941,7 +2944,126 @@ Figure 4: Means (+/- 1 SE) of flipper length, body mass and log stoutness by ye
 </div>
 </div>
 <p><a href="#fig-year" class="quarto-xref">Figure 4</a> gives a clear answer. <strong>Body mass shows no year effect at all</strong> (<span class="math inline">\(F\)</span> = 0.02). <strong>Flipper length increased</strong> from 2007 to 2008 in every species, by about 4 mm (Adelie), 6 mm (Chinstrap) and 3 mm (Gentoo), and then changed little. The decline in stoutness is entirely due to flipper length.</p>
-<p>That makes it hard to read as a change in body condition, which would show up in mass. Flipper length in adult penguins should not change by several mm from one season to the next. A change in how, or by whom, flippers were measured after 2007 is a plausible explanation, though I have not checked the Palmer LTER documentation. If that is what happened, flipper length should be adjusted for year before computing stoutness (and size, which has a smaller year effect for the same reason).</p>
+<p>That makes it hard to read as a change in body condition, which would show up in mass. Flipper length in adult penguins should not change by several mm from one season to the next.</p>
+<section id="a-measurement-artifact" class="level3">
+<h3 class="anchored" data-anchor-id="a-measurement-artifact">A measurement artifact?</h3>
+<p>The documentation says nothing about a change. Gorman, Williams &amp; Fraser (2014) measured the right flipper “using a ruler ±1 mm” and body mass with Pesola spring scales (±25 or ±50 g). They pool all three years for their size analyses, and mention no change in methods, instruments or people across 2007–2009. The documentation of <code>palmerpenguins::penguins_raw</code> (Horst, Hill &amp; Gorman, 2020) defines the variables but does not discuss methods, and its <code>Comments</code> column has only notes on sampling (missing blood samples, incomplete clutches). The full methods are in the metadata of the three EDI data packages (Palmer Station Antarctica LTER &amp; Gorman, 2020a, b, c), which I could not reach.</p>
+<p>The raw data give two clues. First, the 2007–2008 increase in flipper length appears at once in every species on every island where it was measured:</p>
+<div class="cell" data-layout-align="center">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>pr <span class="ot">&lt;-</span> palmerpenguins<span class="sc">::</span>penguins_raw <span class="sc">|&gt;</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">year    =</span> <span class="fu">format</span>(<span class="st">`</span><span class="at">Date Egg</span><span class="st">`</span>, <span class="st">&quot;%Y&quot;</span>),</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">species =</span> <span class="fu">sub</span>(<span class="st">&quot; .*&quot;</span>, <span class="st">&quot;&quot;</span>, Species),</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>         <span class="at">flipper =</span> <span class="st">`</span><span class="at">Flipper Length (mm)</span><span class="st">`</span>,</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>         <span class="at">mass    =</span> <span class="st">`</span><span class="at">Body Mass (g)</span><span class="st">`</span>)</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>pr <span class="sc">|&gt;</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(species, Island, year) <span class="sc">|&gt;</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">flipper =</span> <span class="fu">mean</span>(flipper, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> year, <span class="at">values_from =</span> flipper) <span class="sc">|&gt;</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>(<span class="at">digits =</span> <span class="dv">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">species</th>
+<th style="text-align: left;">Island</th>
+<th style="text-align: right;">2007</th>
+<th style="text-align: right;">2008</th>
+<th style="text-align: right;">2009</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Adelie</td>
+<td style="text-align: left;">Biscoe</td>
+<td style="text-align: right;">182</td>
+<td style="text-align: right;">190</td>
+<td style="text-align: right;">192</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Adelie</td>
+<td style="text-align: left;">Dream</td>
+<td style="text-align: right;">186</td>
+<td style="text-align: right;">192</td>
+<td style="text-align: right;">191</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Adelie</td>
+<td style="text-align: left;">Torgersen</td>
+<td style="text-align: right;">189</td>
+<td style="text-align: right;">192</td>
+<td style="text-align: right;">193</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Chinstrap</td>
+<td style="text-align: left;">Dream</td>
+<td style="text-align: right;">192</td>
+<td style="text-align: right;">198</td>
+<td style="text-align: right;">198</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Gentoo</td>
+<td style="text-align: left;">Biscoe</td>
+<td style="text-align: right;">215</td>
+<td style="text-align: right;">218</td>
+<td style="text-align: right;">218</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>Simultaneous increases of 3 to 8 mm in adult birds of three species on three islands look more like a change in how the flippers were measured than like biology.</p>
+<p>Second, the measurements show <strong>digit preference</strong>, which changed over the years. With a ruler read to the nearest mm, about 20% of values should end in 0 or 5; masses read to the nearest 25 g should end in 00 about 25% of the time.</p>
+<div class="cell" data-layout-align="center">
+<details open class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>pr <span class="sc">|&gt;</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(year) <span class="sc">|&gt;</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">n</span>(),</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">flipper_0_or_5 =</span> <span class="fu">mean</span>(flipper <span class="sc">%%</span> <span class="dv">5</span> <span class="sc">==</span> <span class="dv">0</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">mass_00        =</span> <span class="fu">mean</span>(mass <span class="sc">%%</span> <span class="dv">100</span> <span class="sc">==</span> <span class="dv">0</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>(<span class="at">digits =</span> <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">year</th>
+<th style="text-align: right;">n</th>
+<th style="text-align: right;">flipper_0_or_5</th>
+<th style="text-align: right;">mass_00</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">2007</td>
+<td style="text-align: right;">110</td>
+<td style="text-align: right;">0.36</td>
+<td style="text-align: right;">0.50</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2008</td>
+<td style="text-align: right;">114</td>
+<td style="text-align: right;">0.38</td>
+<td style="text-align: right;">0.60</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">2009</td>
+<td style="text-align: right;">120</td>
+<td style="text-align: right;">0.19</td>
+<td style="text-align: right;">0.34</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>In 2007 and 2008, more than a third of the flipper lengths end in 0 or 5 (about twice the expected rate): someone was often rounding to the nearest 5 mm. Masses were often rounded to the nearest 100 g (50% and 60% end in 00). In 2009 the flipper rate is at the expected 20%, and the mass rate falls to 34%. So the measuring practice did change, but between 2008 and 2009, not between 2007 and 2008 where the jump in flipper length is. The rounding is evidence that measurement practice varied over the study, not an explanation of the jump itself.</p>
+<p>The data could settle this if the same birds had been measured in different years. Some <code>Individual ID</code>s do appear in more than one year, but they appear to be nest-based labels that may be reused each season, so they cannot be taken to identify the same bird.</p>
+<p>The conclusion stands: the year effect on stoutness is a flipper-length effect, and a change in measurement is the most likely reason, though not a documented one. If it is, flipper length should be adjusted for year before computing stoutness (and size, which has a smaller year effect for the same reason).</p>
+</section>
 </section>
 <section id="body-and-bill" class="level2">
 <h2 class="anchored" data-anchor-id="body-and-bill">Body and bill</h2>
@@ -2949,11 +3071,11 @@ Figure 4: Means (+/- 1 SE) of flipper length, body mass and log stoutness by ye
 <div class="cell" data-layout-align="center">
 <details open class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>within_cor <span class="ot">&lt;-</span> <span class="cf">function</span>(groups)</span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cor</span>(<span class="fu">resid</span>(<span class="fu">lm</span>(<span class="fu">reformulate</span>(groups, <span class="st">&quot;cbind(bill_size, bill_shape, body_size, stoutness)&quot;</span>),</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>               <span class="at">data =</span> peng)))</span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="fu">within_cor</span>(<span class="st">&quot;species&quot;</span>) <span class="sc">|&gt;</span> knitr<span class="sc">::</span><span class="fu">kable</span>(<span class="at">digits =</span> <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>within_cor <span class="ot">&lt;-</span> <span class="cf">function</span>(groups)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cor</span>(<span class="fu">resid</span>(<span class="fu">lm</span>(<span class="fu">reformulate</span>(groups, <span class="st">&quot;cbind(bill_size, bill_shape, body_size, stoutness)&quot;</span>),</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>               <span class="at">data =</span> peng)))</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="fu">within_cor</span>(<span class="st">&quot;species&quot;</span>) <span class="sc">|&gt;</span> knitr<span class="sc">::</span><span class="fu">kable</span>(<span class="at">digits =</span> <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
@@ -3000,7 +3122,7 @@ Figure 4: Means (+/- 1 SE) of flipper length, body mass and log stoutness by ye
 </div>
 <details open class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">within_cor</span>(<span class="st">&quot;species * sex&quot;</span>) <span class="sc">|&gt;</span> knitr<span class="sc">::</span><span class="fu">kable</span>(<span class="at">digits =</span> <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">within_cor</span>(<span class="st">&quot;species * sex&quot;</span>) <span class="sc">|&gt;</span> knitr<span class="sc">::</span><span class="fu">kable</span>(<span class="at">digits =</span> <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
@@ -3049,11 +3171,11 @@ Figure 4: Means (+/- 1 SE) of flipper length, body mass and log stoutness by ye
 <div class="cell" data-layout-align="center">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>p5 <span class="ot">&lt;-</span> <span class="fu">peng_plot</span>(body_size, bill_size)  <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">&quot;log Body size&quot;</span>, <span class="at">y =</span> <span class="st">&quot;log Bill size&quot;</span>)</span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>p6 <span class="ot">&lt;-</span> <span class="fu">peng_plot</span>(stoutness, bill_size)  <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">&quot;log Stoutness&quot;</span>, <span class="at">y =</span> <span class="st">&quot;log Bill size&quot;</span>)</span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>p7 <span class="ot">&lt;-</span> <span class="fu">peng_plot</span>(body_size, bill_shape) <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">&quot;log Body size&quot;</span>, <span class="at">y =</span> <span class="st">&quot;log Bill shape&quot;</span>)</span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>p8 <span class="ot">&lt;-</span> <span class="fu">peng_plot</span>(stoutness, bill_shape) <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">&quot;log Stoutness&quot;</span>, <span class="at">y =</span> <span class="st">&quot;log Bill shape&quot;</span>)</span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>(p5 <span class="sc">+</span> p6) <span class="sc">/</span> (p7 <span class="sc">+</span> p8)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>p5 <span class="ot">&lt;-</span> <span class="fu">peng_plot</span>(body_size, bill_size)  <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">&quot;log Body size&quot;</span>, <span class="at">y =</span> <span class="st">&quot;log Bill size&quot;</span>)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>p6 <span class="ot">&lt;-</span> <span class="fu">peng_plot</span>(stoutness, bill_size)  <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">&quot;log Stoutness&quot;</span>, <span class="at">y =</span> <span class="st">&quot;log Bill size&quot;</span>)</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>p7 <span class="ot">&lt;-</span> <span class="fu">peng_plot</span>(body_size, bill_shape) <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">&quot;log Body size&quot;</span>, <span class="at">y =</span> <span class="st">&quot;log Bill shape&quot;</span>)</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>p8 <span class="ot">&lt;-</span> <span class="fu">peng_plot</span>(stoutness, bill_shape) <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">&quot;log Stoutness&quot;</span>, <span class="at">y =</span> <span class="st">&quot;log Bill shape&quot;</span>)</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>(p5 <span class="sc">+</span> p6) <span class="sc">/</span> (p7 <span class="sc">+</span> p8)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <div id="fig-body-bill" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
@@ -3080,8 +3202,8 @@ Figure 5: Bill size (top) and bill shape (bottom) vs. body size (left) and sto
 <div class="cell" data-layout-align="center">
 <details open class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>mod4 <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="fu">cbind</span>(bill_size, bill_shape, body_size, stoutness) <span class="sc">~</span> species <span class="sc">+</span> sex, <span class="at">data =</span> peng)</span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">Anova</span>(mod4)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>mod4 <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="fu">cbind</span>(bill_size, bill_shape, body_size, stoutness) <span class="sc">~</span> species <span class="sc">+</span> sex, <span class="at">data =</span> peng)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="fu">Anova</span>(mod4)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>#&gt; 
@@ -3094,8 +3216,8 @@ Figure 5: Bill size (top) and bill shape (bottom) vs. body size (left) and sto
 </div>
 <details open class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>cd <span class="ot">&lt;-</span> <span class="fu">candisc</span>(mod4, <span class="at">term =</span> <span class="st">&quot;species&quot;</span>)</span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>cd<span class="sc">$</span>structure <span class="sc">|&gt;</span> knitr<span class="sc">::</span><span class="fu">kable</span>(<span class="at">digits =</span> <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>cd <span class="ot">&lt;-</span> <span class="fu">candisc</span>(mod4, <span class="at">term =</span> <span class="st">&quot;species&quot;</span>)</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>cd<span class="sc">$</span>structure <span class="sc">|&gt;</span> knitr<span class="sc">::</span><span class="fu">kable</span>(<span class="at">digits =</span> <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
@@ -3134,7 +3256,7 @@ Figure 5: Bill size (top) and bill shape (bottom) vs. body size (left) and sto
 <div class="cell" data-layout-align="center">
 <details open class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(cd, <span class="at">ellipse =</span> <span class="cn">TRUE</span>, <span class="at">col =</span> peng_cols, <span class="at">var.col =</span> <span class="st">&quot;black&quot;</span>, <span class="at">var.lwd =</span> <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(cd, <span class="at">ellipse =</span> <span class="cn">TRUE</span>, <span class="at">col =</span> peng_cols, <span class="at">var.col =</span> <span class="st">&quot;black&quot;</span>, <span class="at">var.lwd =</span> <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <div id="fig-candisc" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
@@ -3158,7 +3280,7 @@ Figure 6: Canonical discriminant plot for species, from the four re-expressed v
 <li><strong>The rotation works, but needs a cube root first.</strong> Flipper length and body mass are in different units; on the scale of <span class="math inline">\((\log F, \log M / 3)\)</span>, a 45° rotation gives body <strong>size</strong> and <strong>stoutness</strong>, mass relative to flipper length cubed.</li>
 <li><strong>Penguins scale roughly isometrically</strong>, across species and sexes: the SMA slopes of <span class="math inline">\(\log M\)</span> on <span class="math inline">\(\log F\)</span> are near 3. Within a single species and sex, the relation is weak.</li>
 <li><strong>Species differ in size, hardly in stoutness.</strong> Stoutness is mostly individual variation, like a body condition index; sexes differ in size, except that Adelie males are also stouter.</li>
-<li><strong>The year effect on stoutness is a flipper-length effect</strong>, possibly a measurement artifact rather than biology.</li>
+<li><strong>The year effect on stoutness is a flipper-length effect</strong>, most likely a measurement artifact rather than biology. No change in method is documented, but the jump appears in all species and islands at once, and digit preference shows that measuring practice varied between years.</li>
 <li><strong>Bill size tracks body size; bill shape tracks only species.</strong> With the four re-expressed variables, the canonical dimensions read as “big Gentoo with a long thin bill” and “Chinstrap’s bigger bill”.</li>
 </ul>
 <p>Unlike the bill, the body measurements do not hide a paradox. What the re-expression gives here is interpretation: two variables whose names say what they mean.</p>
@@ -3166,7 +3288,7 @@ Figure 6: Canonical discriminant plot for species, from the four re-expressed v
 <h3 class="anchored" data-anchor-id="still-to-do">Still to do</h3>
 <ul>
 <li>Isometry is only approximate. The observed within-species SMA slope (about 3.2) could define stoutness instead of the theoretical 3, as in the scaled mass index of Peig &amp; Green (2009).</li>
-<li>Check the Palmer LTER documentation for a change in flipper measurement after 2007, and if so adjust flipper length for year.</li>
+<li>Check the methods in the EDI metadata (not reachable here) for a change in flipper measurement after 2007, or ask K. Gorman. If confirmed, adjust flipper length for year before computing stoutness.</li>
 </ul>
 </section>
 </section>
@@ -3174,6 +3296,10 @@ Figure 6: Canonical discriminant plot for species, from the four re-expressed v
 <h2 class="unnumbered anchored" data-anchor-id="references">References</h2>
 <ul>
 <li>Gorman, K. B., Williams, T. D., &amp; Fraser, W. R. (2014). Ecological sexual dimorphism and environmental variability within a community of Antarctic penguins (genus <em>Pygoscelis</em>). <em>PLoS ONE</em>, 9(3), e90081.</li>
+<li>Horst, A. M., Hill, A. P., &amp; Gorman, K. B. (2020). <em>palmerpenguins: Palmer Archipelago (Antarctica) penguin data</em>. R package version 0.1.0. <a href="https://doi.org/10.5281/zenodo.3960218" class="uri">https://doi.org/10.5281/zenodo.3960218</a></li>
+<li>Palmer Station Antarctica LTER, &amp; Gorman, K. (2020a). Structural size measurements and isotopic signatures of foraging among adult male and female Adélie penguins (<em>Pygoscelis adeliae</em>) nesting along the Palmer Archipelago near Palmer Station, 2007–2009 ver 5. Environmental Data Initiative. <a href="https://doi.org/10.6073/pasta/98b16d7d563f265cb52372c8ca99e60f" class="uri">https://doi.org/10.6073/pasta/98b16d7d563f265cb52372c8ca99e60f</a></li>
+<li>Palmer Station Antarctica LTER, &amp; Gorman, K. (2020b). Structural size measurements and isotopic signatures of foraging among adult male and female Gentoo penguin (<em>Pygoscelis papua</em>) nesting along the Palmer Archipelago near Palmer Station, 2007–2009 ver 5. Environmental Data Initiative. <a href="https://doi.org/10.6073/pasta/7fca67fb28d56ee2ffa3d9370ebda689" class="uri">https://doi.org/10.6073/pasta/7fca67fb28d56ee2ffa3d9370ebda689</a></li>
+<li>Palmer Station Antarctica LTER, &amp; Gorman, K. (2020c). Structural size measurements and isotopic signatures of foraging among adult male and female Chinstrap penguin (<em>Pygoscelis antarcticus</em>) nesting along the Palmer Archipelago near Palmer Station, 2007–2009 ver 6. Environmental Data Initiative. <a href="https://doi.org/10.6073/pasta/c14dfcfada8ea13a17536e73eb6fbe9e" class="uri">https://doi.org/10.6073/pasta/c14dfcfada8ea13a17536e73eb6fbe9e</a></li>
 <li>Peig, J., &amp; Green, A. J. (2009). New perspectives for estimating body condition from mass/length data: the scaled mass index as an alternative method. <em>Oikos</em>, 118(12), 1883–1891.</li>
 <li>Warton, D. I., Wright, I. J., Falster, D. S., &amp; Westoby, M. (2006). Bivariate line-fitting methods for allometry. <em>Biological Reviews</em>, 81(2), 259–291.</li>
 </ul>

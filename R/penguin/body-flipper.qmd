@@ -326,7 +326,47 @@ sapply(c("flipper_length", "body_mass", "body_size", "stoutness"), year_F) |>
 
 @fig-year gives a clear answer. **Body mass shows no year effect at all** ($F$ = 0.02). **Flipper length increased** from 2007 to 2008 in every species, by about 4 mm (Adelie), 6 mm (Chinstrap) and 3 mm (Gentoo), and then changed little. The decline in stoutness is entirely due to flipper length.
 
-That makes it hard to read as a change in body condition, which would show up in mass. Flipper length in adult penguins should not change by several mm from one season to the next. A change in how, or by whom, flippers were measured after 2007 is a plausible explanation, though I have not checked the Palmer LTER documentation. If that is what happened, flipper length should be adjusted for year before computing stoutness (and size, which has a smaller year effect for the same reason).
+That makes it hard to read as a change in body condition, which would show up in mass. Flipper length in adult penguins should not change by several mm from one season to the next.
+
+### A measurement artifact?
+
+The documentation says nothing about a change. Gorman, Williams & Fraser (2014) measured the right flipper "using a ruler ±1 mm" and body mass with Pesola spring scales (±25 or ±50 g). They pool all three years for their size analyses, and mention no change in methods, instruments or people across 2007--2009. The documentation of `palmerpenguins::penguins_raw` (Horst, Hill & Gorman, 2020) defines the variables but does not discuss methods, and its `Comments` column has only notes on sampling (missing blood samples, incomplete clutches). The full methods are in the metadata of the three EDI data packages (Palmer Station Antarctica LTER & Gorman, 2020a, b, c), which I could not reach.
+
+The raw data give two clues. First, the 2007--2008 increase in flipper length appears at once in every species on every island where it was measured:
+
+```{r flipper-island}
+#| code-fold: true
+pr <- palmerpenguins::penguins_raw |>
+  mutate(year    = format(`Date Egg`, "%Y"),
+         species = sub(" .*", "", Species),
+         flipper = `Flipper Length (mm)`,
+         mass    = `Body Mass (g)`)
+
+pr |>
+  group_by(species, Island, year) |>
+  summarise(flipper = mean(flipper, na.rm = TRUE), .groups = "drop") |>
+  pivot_wider(names_from = year, values_from = flipper) |>
+  knitr::kable(digits = 1)
+```
+
+Simultaneous increases of 3 to 8 mm in adult birds of three species on three islands look more like a change in how the flippers were measured than like biology.
+
+Second, the measurements show **digit preference**, which changed over the years. With a ruler read to the nearest mm, about 20% of values should end in 0 or 5; masses read to the nearest 25 g should end in 00 about 25% of the time.
+
+```{r digits}
+pr |>
+  group_by(year) |>
+  summarise(n = n(),
+            flipper_0_or_5 = mean(flipper %% 5 == 0, na.rm = TRUE),
+            mass_00        = mean(mass %% 100 == 0, na.rm = TRUE)) |>
+  knitr::kable(digits = 2)
+```
+
+In 2007 and 2008, more than a third of the flipper lengths end in 0 or 5 (about twice the expected rate): someone was often rounding to the nearest 5 mm. Masses were often rounded to the nearest 100 g (50% and 60% end in 00). In 2009 the flipper rate is at the expected 20%, and the mass rate falls to 34%. So the measuring practice did change, but between 2008 and 2009, not between 2007 and 2008 where the jump in flipper length is. The rounding is evidence that measurement practice varied over the study, not an explanation of the jump itself.
+
+The data could settle this if the same birds had been measured in different years. Some `Individual ID`s do appear in more than one year, but they appear to be nest-based labels that may be reused each season, so they cannot be taken to identify the same bird.
+
+The conclusion stands: the year effect on stoutness is a flipper-length effect, and a change in measurement is the most likely reason, though not a documented one. If it is, flipper length should be adjusted for year before computing stoutness (and size, which has a smaller year effect for the same reason).
 
 ## Body and bill
 
@@ -387,7 +427,7 @@ Each canonical dimension now has a meaning that can be named (@fig-candisc). The
 * **The rotation works, but needs a cube root first.** Flipper length and body mass are in different units; on the scale of $(\log F, \log M / 3)$, a 45° rotation gives body **size** and **stoutness**, mass relative to flipper length cubed.
 * **Penguins scale roughly isometrically**, across species and sexes: the SMA slopes of $\log M$ on $\log F$ are near 3. Within a single species and sex, the relation is weak.
 * **Species differ in size, hardly in stoutness.** Stoutness is mostly individual variation, like a body condition index; sexes differ in size, except that Adelie males are also stouter.
-* **The year effect on stoutness is a flipper-length effect**, possibly a measurement artifact rather than biology.
+* **The year effect on stoutness is a flipper-length effect**, most likely a measurement artifact rather than biology. No change in method is documented, but the jump appears in all species and islands at once, and digit preference shows that measuring practice varied between years.
 * **Bill size tracks body size; bill shape tracks only species.** With the four re-expressed variables, the canonical dimensions read as "big Gentoo with a long thin bill" and "Chinstrap's bigger bill".
 
 Unlike the bill, the body measurements do not hide a paradox. What the re-expression gives here is interpretation: two variables whose names say what they mean.
@@ -395,10 +435,14 @@ Unlike the bill, the body measurements do not hide a paradox. What the re-expres
 ### Still to do
 
 * Isometry is only approximate. The observed within-species SMA slope (about 3.2) could define stoutness instead of the theoretical 3, as in the scaled mass index of Peig & Green (2009).
-* Check the Palmer LTER documentation for a change in flipper measurement after 2007, and if so adjust flipper length for year.
+* Check the methods in the EDI metadata (not reachable here) for a change in flipper measurement after 2007, or ask K. Gorman. If confirmed, adjust flipper length for year before computing stoutness.
 
 ## References {.unnumbered}
 
 * Gorman, K. B., Williams, T. D., & Fraser, W. R. (2014). Ecological sexual dimorphism and environmental variability within a community of Antarctic penguins (genus *Pygoscelis*). *PLoS ONE*, 9(3), e90081.
+* Horst, A. M., Hill, A. P., & Gorman, K. B. (2020). *palmerpenguins: Palmer Archipelago (Antarctica) penguin data*. R package version 0.1.0. <https://doi.org/10.5281/zenodo.3960218>
+* Palmer Station Antarctica LTER, & Gorman, K. (2020a). Structural size measurements and isotopic signatures of foraging among adult male and female Adélie penguins (*Pygoscelis adeliae*) nesting along the Palmer Archipelago near Palmer Station, 2007--2009 ver 5. Environmental Data Initiative. <https://doi.org/10.6073/pasta/98b16d7d563f265cb52372c8ca99e60f>
+* Palmer Station Antarctica LTER, & Gorman, K. (2020b). Structural size measurements and isotopic signatures of foraging among adult male and female Gentoo penguin (*Pygoscelis papua*) nesting along the Palmer Archipelago near Palmer Station, 2007--2009 ver 5. Environmental Data Initiative. <https://doi.org/10.6073/pasta/7fca67fb28d56ee2ffa3d9370ebda689>
+* Palmer Station Antarctica LTER, & Gorman, K. (2020c). Structural size measurements and isotopic signatures of foraging among adult male and female Chinstrap penguin (*Pygoscelis antarcticus*) nesting along the Palmer Archipelago near Palmer Station, 2007--2009 ver 6. Environmental Data Initiative. <https://doi.org/10.6073/pasta/c14dfcfada8ea13a17536e73eb6fbe9e>
 * Peig, J., & Green, A. J. (2009). New perspectives for estimating body condition from mass/length data: the scaled mass index as an alternative method. *Oikos*, 118(12), 1883--1891.
 * Warton, D. I., Wright, I. J., Falster, D. S., & Westoby, M. (2006). Bivariate line-fitting methods for allometry. *Biological Reviews*, 81(2), 259--291.
