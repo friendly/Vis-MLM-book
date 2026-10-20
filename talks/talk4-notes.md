@@ -101,9 +101,11 @@ Threads that run across sections: the **ellipse**; the **juicer** (slide 24 → 
 
 ## Smaller to-dos
 
-- **Section-header designs** (started 2026-10-19 with ChatGPT): slide 5 done (Flatland sphere
-  illustration + pale tint, approved); slides 23, 31, 44, 57 still to do, one at a time with a preview
-  first. Brief: `section-headers.md`; state, geometry and workflow: `styles/section-header-handoff.md`.
+- **Section-header designs**: DONE 2026-10-20. Slides 5, 23, 31, 44, 57 each have a radial background
+  in their section's color and a banner of framed figures from the section (slide 10 is MF's own);
+  slide 24's title box is in the section teal; the Section Header layout's subtitles are dark slate.
+  Details, colors and geometry: `styles/section-header-handoff.md`. Not done: slide 63 ("Questions?")
+  and the hidden backup header 67, which use the same layout.
 - **Speaker notes missing** on visible slides 23, 28, 31, 36, 42, 44, 51, 53, 57, 63.
   Slide 42 (generalized ridge trace plots) is the one most worth writing.
 - **Still flagged `[OPTIONAL for a 45-minute talk]`** in the notes of visible slides 34, 37, 40, 41, 43,
