@@ -59,6 +59,20 @@ Same structure as slide 5, in the section's teal instead of slate (the teal of t
 
 Slide 24 ("Multivariate Juicers", Blank layout): its title is a text box (`TextBox 9`), formerly white on dark navy `#0B3041`. Now in the sec2 colors: fill `#008080` at 0.78 transparency, 1.5 pt `#008080` line, black text. Still differs from slides 25-30 in square corners (COM cannot change a text box's shape type), position/size (70, 28, 830 x 65 vs. 48, 21.6, 864 x 61.2) and font (Aptos 48 pt vs. Aptos Display 36 pt); the user was offered an exact match (replace it with a copy of slide 25's title shape) and has not asked for it. Render: `../images/slide24-final.png`.
 
+## Approved slide 31
+
+Title: "Elliptical Insights"; a subtitle line and four bullets (outlier detection, measurement error, understanding collinearity, ridge regression). Applied 2026-10-20 by `section3-header.ps1` (a record, not to be re-run).
+
+Same structure as slides 5 and 23, in the section's green (the "sec3" title boxes: `#267342` at 78% transparency, 1.5 pt border):
+
+- Background: `FollowMasterBackground = 0`, then radial `TwoColorGradient(7, 1)`, `#F3F6F4` center, `#9DC0AA` edges.
+- Banner of three framed plates (same frame and shadow), top 14, height 150 (shorter than slides 5/23: this slide's text starts higher, the visible title at about 196), gaps 22, centered; left to right they follow the bullets:
+  - `Section 3 outlier illustration`, width 162: `../images/section3-peng-biplot-dim34.png`, penguin biplot of dimensions 3-4 from slide 34 (outliers 283, 35, 10 labeled). Chosen by the user over the Waldo-space plot of slide 32.
+  - `Section 3 measurement error illustration`, width 315: `../images/section3-data-beta-space.png`, data space and beta space from slide 37.
+  - `Section 3 ridge illustration`, width 365: `../images/section3-ridge-ellipses.png`, the two generalized ridge trace plots from slide 42, cropped below the text above them (top 34.5% removed).
+- `Section 3 Wally`: `../images/section3-wally.wmf` (the Wally drawing used on slides 32, 34, 39), at left 500, top 196, 52 x 52, just after the title; white made transparent and a thin border line cropped off (2 pt left/top, 1 pt right/bottom). The user moved him here from the far right end of the title line.
+- Render: `../images/slide31-final.png`.
+
 ## Remaining section headers
 
 The brief's slide numbers have shifted. Current main-talk headers as inspected in this session:
@@ -71,7 +85,7 @@ The brief's slide numbers have shifted. Current main-talk headers as inspected i
 | 44 | The HE plot framework | Seeing multivariate tests as ellipses; brief says slide 40 |
 | 57 | Checking multivariate models | Outliers, influence, robust estimation |
 
-Done so far: slides 5 and 23 (and slide 24's title). Next: 31, 44, 57. Work one section at a time, inspect actual slide content rather than relying on the brief's shorthand titles, show a preview, and obtain approval before updating the deck.
+Done so far: slides 5, 23 (and slide 24's title) and 31. Next: 44, 57. Work one section at a time, inspect actual slide content rather than relying on the brief's shorthand titles, show a preview, and obtain approval before updating the deck.
 
 ## Technical workflow
 
