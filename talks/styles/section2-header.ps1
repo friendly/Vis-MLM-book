@@ -1,7 +1,7 @@
 # Record of the 2026-10-20 section 2 header changes, via PowerPoint COM. Already applied: do NOT re-run on the current deck.
 # Slide 23: teal radial background + banner of three figures from slides 25, 28, 29. Slide 24: title box in the section teal.
-# Saves the deck and exports talks/images/slide23-final.png, slide24-final.png. PowerPoint must be closed.
-$img  = "C:\R\Projects\Vis-MLM-book\talks\images"
+# Saves the deck. PowerPoint must be closed. (Renders are not kept; export from the deck when needed.)
+$img  = "C:\R\Projects\Vis-MLM-book\talks\images\section-headers"
 $deck = "C:\R\Projects\Vis-MLM-book\talks\Vis-MLM-talk4.pptx"
 
 function BGR($hex) { $r = [Convert]::ToInt32($hex.Substring(1,2),16); $g = [Convert]::ToInt32($hex.Substring(3,2),16); $b = [Convert]::ToInt32($hex.Substring(5,2),16); $r + 256*$g + 65536*$b }
@@ -39,7 +39,5 @@ $b.Fill.Visible = -1; $b.Fill.ForeColor.RGB = $teal; $b.Fill.Transparency = 0.78
 $b.Line.Visible = -1; $b.Line.ForeColor.RGB = $teal; $b.Line.Weight = 1.5
 $b.TextFrame.TextRange.Font.Color.RGB = 0
 $pres.Save()
-$pres.Slides.Item(23).Export("$img\slide23-final.png", "PNG", 1920, 1080)
-$pres.Slides.Item(24).Export("$img\slide24-final.png", "PNG", 1920, 1080)
 
 $pres.Close(); $app.Quit()

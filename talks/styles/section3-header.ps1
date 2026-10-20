@@ -1,7 +1,7 @@
 # Record of the 2026-10-20 section 3 header change (slide 31), via PowerPoint COM. Already applied: do NOT re-run on the current deck.
 # Green radial background + banner of three figures from slides 34, 37, 42, and Wally just after the title.
-# Saves the deck and exports talks/images/slide31-final.png. PowerPoint must be closed.
-$img  = "C:\R\Projects\Vis-MLM-book\talks\images"
+# Saves the deck. PowerPoint must be closed. (Renders are not kept; export from the deck when needed.)
+$img  = "C:\R\Projects\Vis-MLM-book\talks\images\section-headers"
 $deck = "C:\R\Projects\Vis-MLM-book\talks\Vis-MLM-talk4.pptx"
 
 function BGR($hex) { $r = [Convert]::ToInt32($hex.Substring(1,2),16); $g = [Convert]::ToInt32($hex.Substring(3,2),16); $b = [Convert]::ToInt32($hex.Substring(5,2),16); $r + 256*$g + 65536*$b }
@@ -41,5 +41,4 @@ $w.PictureFormat.TransparentBackground = -1; $w.PictureFormat.TransparencyColor 
 $w.PictureFormat.CropLeft = 2; $w.PictureFormat.CropTop = 2; $w.PictureFormat.CropRight = 1; $w.PictureFormat.CropBottom = 1
 
 $pres.Save()
-$s.Export("$img\slide31-final.png", "PNG", 1920, 1080)
 $pres.Close(); $app.Quit()

@@ -1,7 +1,7 @@
 # Record of how the slide 5 section-header design was applied (2026-10-20), via PowerPoint COM.
 # Already applied: do NOT re-run on the current deck (the overlay it deletes is gone, and it would
 # add a second set of hearts). Kept as a template for the other section headers.
-# Saves the deck and exports talks/images/slide5-final.png. PowerPoint must be closed.
+# Saves the deck. PowerPoint must be closed. (Renders are not kept; export from the deck when needed.)
 $deck = "C:\R\Projects\Vis-MLM-book\talks\Vis-MLM-talk4.pptx"
 
 function BGR($hex) { $r = [Convert]::ToInt32($hex.Substring(1,2),16); $g = [Convert]::ToInt32($hex.Substring(3,2),16); $b = [Convert]::ToInt32($hex.Substring(5,2),16); $r + 256*$g + 65536*$b }
@@ -45,5 +45,4 @@ foreach ($h in $hearts) {
 }
 
 $pres.Save()
-$s.Export("C:\R\Projects\Vis-MLM-book\talks\images\slide5-final.png", "PNG", 1920, 1080)
 $pres.Close(); $app.Quit()
