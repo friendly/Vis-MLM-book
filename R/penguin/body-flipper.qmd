@@ -1,0 +1,404 @@
+---
+title: "Penguin Bodies: Size and Stoutness"
+subtitle: "Is there a re-expression of flipper length and body mass, like bill size and shape?"
+author: "Michael Friendly"
+date: today
+format:
+  html:
+    toc: true
+    embed-resources: true
+    code-fold: show
+    fig-width: 7
+    fig-height: 5
+execute:
+  message: false
+  warning: false
+---
+
+```{r setup}
+#| include: false
+knitr::opts_chunk$set(comment = "#>", fig.align = "center")
+options(digits = 3)
+```
+
+## The question
+
+In [Thinking about Penguin Variables](https://friendly.github.io/blog/posts/2026-10-peng-altviews/), bill length ($L$) and bill depth ($D$) were re-expressed as bill **size** and **shape**,
+
+$$
+\log \text{Size} = \log L + \log D \qquad \log \text{Shape} = \log L - \log D \; ,
+$$
+
+a 45° rotation of the log length--depth plane. The new axes had clear meanings, the within-species variation lay almost entirely along size, the species separated along shape, and Simpson's paradox disappeared.
+
+The other two penguin measurements are `flipper_length` ($F$) and `body_mass` ($M$). Is there a similar re-expression of these? This note describes what was tried and what came of it. The code is also in `body-flipper.R`.
+
+## Putting mass and length on the same footing
+
+For the bill, length and depth are both lengths, in mm, so their sum and difference on the log scale mean something directly. Flipper length and body mass are not like that. Mass goes with volume, and volume goes with the cube of length. A penguin that is 10% longer in every dimension, with the same proportions, is $1.1^3 = 1.33$ times as heavy.
+
+So the first step is to turn mass into a length-like quantity, its cube root, $M^{1/3}$. On the log scale that is just $\log M / 3$. Then the same 45° rotation of $(\log F, \; \log M / 3)$ gives
+
+$$
+\begin{aligned}
+\log \text{Size}      &= \log F + \tfrac{1}{3} \log M &= \log\left(F \times M^{1/3}\right) \\
+\log \text{Stoutness} &= \tfrac{1}{3} \log M - \log F &= \log\left(M^{1/3} / F\right) \; .
+\end{aligned}
+$$
+
+**Size** is overall body size. **Stoutness** says whether a penguin is heavy or light for its flipper length. Cubing it gives $M / F^3$, which is the same idea as the condition factor $K = W / L^3$ that fisheries biologists use for fish, or the ponderal index for people. Stoutness has no units; for these penguins $M / F^3$ is about 0.5 g/cm³.
+
+This re-expression comes with a prediction. If penguins scale up **isometrically**, keeping their proportions as they get bigger, then $\log M$ increases by 3 for each unit increase in $\log F$. Bigger penguins and smaller ones then differ only in size, so variation within a species lies along the size axis and stoutness does not depend on size. Whether that is so is something the data can tell us.
+
+## Data and helpers
+
+The data are `heplots::peng` (Gorman, Williams & Fraser, 2014), the 333 complete cases of `palmerpenguins::penguins`. The bill variables from the earlier post are computed too, for comparisons later.
+
+```{r packages}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(patchwork)
+library(car)
+library(heplots)
+library(candisc)
+
+data(peng, package = "heplots")
+
+peng <- peng |>
+  mutate(
+    log_flipper = log(flipper_length),
+    log_mass3   = log(body_mass) / 3,                   # log of the cube root of mass
+    body_size   = log_flipper + log_mass3,
+    stoutness   = log_mass3 - log_flipper,
+    K           = body_mass / (flipper_length / 10)^3,  # raw stoutness, g / cm^3
+    log_length  = log(bill_length),
+    log_depth   = log(bill_depth),
+    bill_size   = log_length + log_depth,
+    bill_shape  = log_length - log_depth,
+    fyear       = factor(year)
+  )
+```
+
+The species colors and the plotting helpers are the ones from the earlier post. `species_labels()` now takes an optional `nudge` table to move labels that would otherwise overlap.
+
+```{r helpers}
+#| code-fold: true
+#| code-summary: "Show the helpers"
+peng_cols <- c(Adelie = "#F37A00", Chinstrap = "#6A3D9A", Gentoo = "#33a02c")
+
+theme_set(theme_bw(base_size = 14))
+scale_penguins <- list(
+  scale_color_manual(values = peng_cols, aesthetics = c("colour", "fill"))
+)
+
+# `nudge`: optional data frame of species, dx, dy, to move labels that would overlap
+species_labels <- function(x, y, data = peng, by = NULL, size = 5, nudge = NULL) {
+  means <- data |>
+    group_by(species, across(all_of(by))) |>
+    summarise(x = mean({{ x }}), y = mean({{ y }}), .groups = "drop")
+  if (!is.null(nudge))
+    means <- means |>
+      left_join(nudge, by = "species") |>
+      mutate(x = x + coalesce(dx, 0), y = y + coalesce(dy, 0))
+  geom_label(data = means, aes(x = x, y = y, label = species, color = species),
+             fill = "white", alpha = 0.75, size = size, fontface = "bold",
+             inherit.aes = FALSE)
+}
+
+peng_plot <- function(x, y, data = peng, pooled = TRUE, by = NULL, nudge = NULL) {
+  p <- ggplot(data, aes(x = {{ x }}, y = {{ y }},
+                        color = species, shape = species, fill = species)) +
+    geom_point(size = 1.5, alpha = 0.6) +
+    stat_ellipse(geom = "polygon", level = 0.68, alpha = 0.15) +
+    stat_ellipse(geom = "polygon", level = 0.95, alpha = 0.10) +
+    geom_smooth(method = "lm", formula = y ~ x, se = FALSE, linewidth = 1.5) +
+    scale_penguins +
+    theme(legend.position = "none")
+  if (pooled)
+    p <- p + geom_smooth(aes(x = {{ x }}, y = {{ y }}), inherit.aes = FALSE,
+                         method = "lm", formula = y ~ x,
+                         se = FALSE, color = "black", linetype = "dashed",
+                         linewidth = 1)
+  p + species_labels({{ x }}, {{ y }}, data = data, by = by, nudge = nudge)
+}
+```
+
+## Two views of the same bodies
+
+@fig-two-views shows flipper length and body mass as recorded (top) and as size and stoutness (bottom).
+
+```{r}
+#| label: fig-two-views
+#| fig-width: 8
+#| fig-height: 10
+#| fig-cap: "Top: body mass vs. flipper length. Mass increases with flipper length both within species and across them, so there is no Simpson's paradox here. Bottom: the same data as log stoutness vs. log size, with equal scales on the two axes. The species are spread out along size; within each species, the variation is mainly in size too."
+p1 <- peng_plot(flipper_length, body_mass,
+                nudge = tibble(species = c("Adelie", "Chinstrap"),
+                               dx = c(-6, 7), dy = c(450, -500))) +
+  labs(x = "Flipper length (mm)", y = "Body mass (g)", title = "Flipper & mass")
+
+p2 <- peng_plot(body_size, stoutness,
+                nudge = tibble(species = c("Adelie", "Chinstrap"),
+                               dx = c(-0.04, 0.03), dy = c(0.07, -0.07))) +
+  coord_equal() +
+  labs(x = "log Size = log(F x M^(1/3))", y = "log Stoutness\n= log(M^(1/3) / F)",
+       title = "Size & stoutness (log scale)")
+
+p1 / p2 + plot_layout(heights = c(1.4, 1))
+```
+
+Two things stand out, one different from the bill and one the same.
+
+* **No paradox to resolve.** For the bill, the within-species and pooled relations had opposite signs. Here, mass increases with flipper length within every species and across all of them (pooled $r$ = `r cor(peng$flipper_length, peng$body_mass)`). The rotation has no dramatic reversal to undo.
+* **The species differ in size, not stoutness.** On equal scales (bottom panel), the three species are strung out along the size axis, Gentoo far to the right, while their stoutness overlaps almost completely. To a first approximation, a Gentoo is a scaled-up Adelie.
+
+## Does the cube law hold?
+
+The isometric prediction is that, within a species, $\log M$ increases by 3 for each unit of $\log F$. The ordinary regression slope of $\log M$ on $\log F$ is the wrong estimate of this. Flipper length has its own measurement error and natural variation, and the regression slope is pulled toward zero by it (the same attenuation as in measurement error in a predictor). Studies of allometry instead use the **standardized major axis** (SMA) slope, $\text{sd}(\log M) / \text{sd}(\log F)$, which treats the two variables symmetrically (Warton et al., 2006). An equivalent check is the angle of the first principal component in the $(\log F, \log M / 3)$ plane, which is 45° under isometry.
+
+```{r allometry}
+allometry <- function(data)
+  data |>
+    summarise(n = n(),
+              r     = cor(log_flipper, log_mass3),
+              b_ols = coef(lm(I(3 * log_mass3) ~ log_flipper))[2],
+              b_sma = 3 * sd(log_mass3) / sd(log_flipper),
+              angle = {
+                v <- eigen(cov(cbind(log_flipper, log_mass3)))$vectors[, 1]
+                v <- v * sign(v[1])
+                atan2(v[2], v[1]) * 180 / pi
+              },
+              .groups = "drop")
+
+peng |> group_by(species) |> allometry() |> knitr::kable(digits = 2)
+```
+
+The SMA slopes (2.8 to 3.6) are close to 3, and the PC1 angles (42° to 56°) close to 45°. The OLS slopes, at 1.7 to 2.3, show how much attenuation there is. @fig-pc1 shows the within-species variation, with each species centered at its means.
+
+```{r}
+#| label: fig-pc1
+#| code-fold: true
+#| fig-width: 7
+#| fig-height: 6
+#| fig-cap: "Within-species variation in log flipper length and log mass / 3, each species centered at its means. Ellipses are 68% data ellipses; the thick lines are each species' first principal component axis. All three lie near the size direction (dashed)."
+peng_c <- peng |>
+  group_by(species) |>
+  mutate(c_flipper = log_flipper - mean(log_flipper),
+         c_mass3   = log_mass3   - mean(log_mass3)) |>
+  ungroup()
+
+pc1 <- peng_c |>
+  group_by(species) |>
+  group_modify(~ {
+    e <- eigen(cov(cbind(.x$c_flipper, .x$c_mass3)))
+    v <- e$vectors[, 1] * sign(e$vectors[1, 1])
+    r <- 2 * sqrt(e$values[1])
+    tibble(x = -r * v[1], y = -r * v[2], xend = r * v[1], yend = r * v[2],
+           angle = atan2(v[2], v[1]) * 180 / pi)
+  }) |>
+  ungroup() |>
+  mutate(label = sprintf("%s: %.0f°", species, angle),
+         lab_x = 0.05, lab_y = -0.06 - 0.01 * (row_number() - 1))
+
+ggplot(peng_c, aes(x = c_flipper, y = c_mass3, color = species, fill = species)) +
+  geom_abline(slope =  1, intercept = 0, color = "gray50", linewidth = 0.7,
+              linetype = "dashed") +
+  geom_abline(slope = -1, intercept = 0, color = "gray50", linewidth = 0.7) +
+  annotate("text", x = -0.07, y = -0.07, label = "size direction", angle = 45,
+           vjust = -0.5, color = "gray30", size = 4.5) +
+  annotate("text", x = -0.065, y = 0.065, label = "stoutness direction", angle = -45,
+           vjust = -0.5, color = "gray30", size = 4.5) +
+  geom_point(size = 1, alpha = 0.5) +
+  stat_ellipse(geom = "polygon", level = 0.68, alpha = 0.05, linewidth = 1) +
+  geom_segment(data = pc1, aes(x = x, y = y, xend = xend, yend = yend),
+               linewidth = 1.5, inherit.aes = FALSE,
+               color = peng_cols[as.character(pc1$species)]) +
+  geom_label(data = pc1, aes(x = lab_x, y = lab_y, label = label, color = species),
+             fill = "white", size = 4.5, fontface = "bold",
+             hjust = 0, inherit.aes = FALSE) +
+  annotate("text", x = 0.05, y = -0.06 + 0.01, label = "PC1 angle",
+           hjust = 0, color = "gray30", size = 4.5) +
+  coord_equal(xlim = c(-0.1, 0.1), ylim = c(-0.1, 0.1)) +
+  scale_penguins +
+  theme(legend.position = "none") +
+  labs(x = "log Flipper length (centered within species)",
+       y = "log Body mass / 3 (centered within species)")
+```
+
+There is a catch. Each species includes both sexes, and males are larger in every dimension. Part of the within-species "size" axis is simply males vs. females. Within each species--sex group, the correlations are much weaker and the angles scatter more widely:
+
+```{r allometry-sex}
+peng |> group_by(species, sex) |> allometry() |> knitr::kable(digits = 2)
+```
+
+With correlations of 0.23 to 0.67, the PC1 direction is poorly determined, and several of the angles fall well below 45°. So the cube law describes the differences between the sexes and species reasonably well, but within a group of same-sex adults, flipper length and mass vary fairly independently.
+
+## One variable at a time
+
+How much of the variation in each variable is due to species, how much to sex, and how much is left over? @tbl-eta2 gives the proportions of the total sum of squares in a model with species and sex.
+
+```{r}
+#| label: tbl-eta2
+#| tbl-cap: "Proportion of variance due to species, sex and residual, for each body variable."
+eta2 <- function(v) {
+  a <- anova(lm(reformulate(c("species", "sex"), v), data = peng))
+  setNames(a[, "Sum Sq"] / sum(a[, "Sum Sq"]), c("species", "sex", "residual"))
+}
+sapply(c("log_flipper", "log_mass3", "body_size", "stoutness"), eta2) |>
+  knitr::kable(digits = 3)
+```
+
+Size carries the species differences ($\eta^2$ = 0.76), as much as flipper length alone does. Stoutness carries little of them (0.14): about 79% of its variance is individual variation. That is what one would want from a measure of **body condition**: something that varies from bird to bird, rather than from species to species.
+
+## Sex differences
+
+```{r}
+#| label: fig-sex
+#| code-fold: true
+#| fig-width: 10
+#| fig-height: 5
+#| fig-cap: "Log size and log stoutness by species and sex. Males are larger in every species. Only for Adelie are the males also stouter."
+sex_fill <- scale_fill_discrete(labels = c(f = "Female", m = "Male"))
+p3 <- ggplot(peng, aes(x = species, y = body_size, fill = sex)) +
+  geom_boxplot(alpha = 0.6) +
+  sex_fill +
+  labs(x = NULL, y = "log Size", title = "Size") +
+  theme(legend.position = "none")
+p4 <- ggplot(peng, aes(x = species, y = stoutness, fill = sex)) +
+  geom_boxplot(alpha = 0.6) +
+  sex_fill +
+  labs(x = NULL, y = "log Stoutness", title = "Stoutness", fill = NULL) +
+  theme(legend.position = "inside",
+        legend.position.inside = c(0.98, 0.02),
+        legend.justification = c(1, 0),
+        legend.background = element_rect(color = "gray70"))
+p3 + p4
+```
+
+As for the bill, sexual dimorphism is mainly a matter of size: males are bigger in every species (@fig-sex). The exception is Adelie, where the males are also heavier for their flipper length. That is a species $\times$ sex interaction for stoutness, which also explains why the Adelie ellipse in @fig-two-views is the tallest.
+
+## Does stoutness vary by year?
+
+If stoutness is body condition, it should be sensitive to how good the feeding was, and so might differ between years. The data cover three seasons, 2007 to 2009.
+
+```{r year-models}
+m0 <- lm(stoutness ~ species * sex, data = peng)
+m1 <- lm(stoutness ~ species * sex + fyear, data = peng)
+m2 <- lm(stoutness ~ (species + sex) * fyear + species:sex, data = peng)
+anova(m0, m1, m2)
+```
+
+Adding year clearly helps ($F$ = 21, $R^2$ from `r summary(m0)$r.squared` to `r summary(m1)$r.squared`), and the year effect is the same for all species and both sexes (the interactions add nothing). Stoutness declined from 2007 to 2009. But stoutness is a ratio, so the question is which part of it changed.
+
+```{r}
+#| label: fig-year
+#| code-fold: true
+#| fig-width: 10
+#| fig-height: 5
+#| fig-cap: "Means (+/- 1 SE) of flipper length, body mass and log stoutness by year and species. Body mass did not change; flipper length increased from 2007 to 2008 in all three species, and stoutness fell as a result."
+year_long <- peng |>
+  select(species, fyear, flipper_length, body_mass, stoutness) |>
+  pivot_longer(c(flipper_length, body_mass, stoutness), names_to = "variable") |>
+  mutate(variable = factor(variable, levels = c("flipper_length", "body_mass", "stoutness"),
+                           labels = c("Flipper length (mm)", "Body mass (g)", "log Stoutness")))
+
+ggplot(year_long, aes(x = fyear, y = value, color = species, group = species)) +
+  stat_summary(fun.data = mean_se, geom = "pointrange",
+               position = position_dodge(width = 0.3)) +
+  stat_summary(fun = mean, geom = "line", linewidth = 1,
+               position = position_dodge(width = 0.3)) +
+  facet_wrap(~ variable, scales = "free_y") +
+  scale_penguins +
+  theme(legend.position = "top") +
+  labs(x = "Year", y = "Mean (+/- 1 SE)", color = NULL)
+```
+
+```{r year-components}
+#| code-fold: true
+year_F <- function(v) {
+  a <- Anova(lm(reformulate("(species + sex) * fyear + species:sex", v), data = peng))
+  unlist(a["fyear", c("F value", "Pr(>F)")])
+}
+sapply(c("flipper_length", "body_mass", "body_size", "stoutness"), year_F) |>
+  t() |> knitr::kable(digits = c(2, 4), caption = "Year effects, from a model with species, sex and their interactions with year")
+```
+
+@fig-year gives a clear answer. **Body mass shows no year effect at all** ($F$ = 0.02). **Flipper length increased** from 2007 to 2008 in every species, by about 4 mm (Adelie), 6 mm (Chinstrap) and 3 mm (Gentoo), and then changed little. The decline in stoutness is entirely due to flipper length.
+
+That makes it hard to read as a change in body condition, which would show up in mass. Flipper length in adult penguins should not change by several mm from one season to the next. A change in how, or by whom, flippers were measured after 2007 is a plausible explanation, though I have not checked the Palmer LTER documentation. If that is what happened, flipper length should be adjusted for year before computing stoutness (and size, which has a smaller year effect for the same reason).
+
+## Body and bill
+
+How do the two body variables relate to bill size and shape? The within-species correlations, with species (and then species and sex) removed:
+
+```{r within-cor}
+within_cor <- function(groups)
+  cor(resid(lm(reformulate(groups, "cbind(bill_size, bill_shape, body_size, stoutness)"),
+               data = peng)))
+
+within_cor("species") |> knitr::kable(digits = 2)
+within_cor("species * sex") |> knitr::kable(digits = 2)
+```
+
+```{r}
+#| label: fig-body-bill
+#| code-fold: true
+#| fig-width: 10
+#| fig-height: 8
+#| fig-cap: "Bill size (top) and bill shape (bottom) vs. body size (left) and stoutness (right). Bill size increases with body size within each species. Bill shape is unrelated to either body variable within species; it differs only between species."
+p5 <- peng_plot(body_size, bill_size)  + labs(x = "log Body size", y = "log Bill size")
+p6 <- peng_plot(stoutness, bill_size)  + labs(x = "log Stoutness", y = "log Bill size")
+p7 <- peng_plot(body_size, bill_shape) + labs(x = "log Body size", y = "log Bill shape")
+p8 <- peng_plot(stoutness, bill_shape) + labs(x = "log Stoutness", y = "log Bill shape")
+(p5 + p6) / (p7 + p8)
+```
+
+The pattern is simple (@fig-body-bill):
+
+* **Bill size goes with body size** ($r$ = 0.70 within species, 0.38 within species and sex). Bigger penguins have bigger bills.
+* **Bill shape goes with nothing.** Its within-species correlations with body size and stoutness are all near zero. Bill shape is a species trait, not something that varies with how big or how heavy a bird is. The pooled (dashed) lines suggest otherwise, but only because the species differ on both.
+* **Stoutness is unrelated to the bill** once sex is taken into account. How well fed a penguin is has nothing to do with its beak.
+
+### Four variables together
+
+With the four re-expressed variables, the MANOVA and the canonical discriminant analysis for species give a compact summary.
+
+```{r candisc}
+mod4 <- lm(cbind(bill_size, bill_shape, body_size, stoutness) ~ species + sex, data = peng)
+Anova(mod4)
+
+cd <- candisc(mod4, term = "species")
+cd$structure |> knitr::kable(digits = 2)
+```
+
+```{r}
+#| label: fig-candisc
+#| fig-width: 8
+#| fig-height: 6
+#| fig-cap: "Canonical discriminant plot for species, from the four re-expressed variables. The first dimension (87%) separates Gentoo, with large bodies and long, thin bills. The second (13%) separates Chinstrap from Adelie by bill size."
+plot(cd, ellipse = TRUE, col = peng_cols, var.col = "black", var.lwd = 2)
+```
+
+Each canonical dimension now has a meaning that can be named (@fig-candisc). The first, accounting for 87% of the between-species variation, is Gentoo vs. the others: big body and long, thin bill (body size and bill shape). The second is Chinstrap vs. Adelie: two species of about the same body size, the Chinstrap with the bigger bill. Stoutness contributes little to either.
+
+## What was found
+
+* **The rotation works, but needs a cube root first.** Flipper length and body mass are in different units; on the scale of $(\log F, \log M / 3)$, a 45° rotation gives body **size** and **stoutness**, mass relative to flipper length cubed.
+* **Penguins scale roughly isometrically**, across species and sexes: the SMA slopes of $\log M$ on $\log F$ are near 3. Within a single species and sex, the relation is weak.
+* **Species differ in size, hardly in stoutness.** Stoutness is mostly individual variation, like a body condition index; sexes differ in size, except that Adelie males are also stouter.
+* **The year effect on stoutness is a flipper-length effect**, possibly a measurement artifact rather than biology.
+* **Bill size tracks body size; bill shape tracks only species.** With the four re-expressed variables, the canonical dimensions read as "big Gentoo with a long thin bill" and "Chinstrap's bigger bill".
+
+Unlike the bill, the body measurements do not hide a paradox. What the re-expression gives here is interpretation: two variables whose names say what they mean.
+
+### Still to do
+
+* Isometry is only approximate. The observed within-species SMA slope (about 3.2) could define stoutness instead of the theoretical 3, as in the scaled mass index of Peig & Green (2009).
+* Check the Palmer LTER documentation for a change in flipper measurement after 2007, and if so adjust flipper length for year.
+
+## References {.unnumbered}
+
+* Gorman, K. B., Williams, T. D., & Fraser, W. R. (2014). Ecological sexual dimorphism and environmental variability within a community of Antarctic penguins (genus *Pygoscelis*). *PLoS ONE*, 9(3), e90081.
+* Peig, J., & Green, A. J. (2009). New perspectives for estimating body condition from mass/length data: the scaled mass index as an alternative method. *Oikos*, 118(12), 1883--1891.
+* Warton, D. I., Wright, I. J., Falster, D. S., & Westoby, M. (2006). Bivariate line-fitting methods for allometry. *Biological Reviews*, 81(2), 259--291.
