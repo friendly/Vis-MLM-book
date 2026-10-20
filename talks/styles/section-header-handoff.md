@@ -1,6 +1,6 @@
 # Section-header visuals: handoff
 
-Updated: 2026-10-19
+Updated: 2026-10-20
 
 ## Files and scope
 
@@ -8,7 +8,7 @@ Working deck: `C:/R/Projects/Vis-MLM-book/talks/Vis-MLM-talk4.pptx`.
 Original brief: `../section-headers.md`.
 Keep all work for this task under `talks/`; this is not a HistData task. Generated assets belong in `talks/images/`, and design/handoff notes in `talks/styles/`.
 
-Do not modify the PowerPoint without approval for the specific change. Slide 5 was explicitly approved and updated. The user approved its final appearance and requested deletion of the backup; that backup has been deleted.
+Do not modify the PowerPoint without approval for the specific change. Slide 5 was approved and updated twice: first on 2026-10-19 (pale solid background), then redesigned on 2026-10-20 (radial background, hearts; see below). Commit the user's own unsaved/uncommitted deck changes separately before applying an approved edit, so each edit is easy to undo.
 
 ## Design preferences established
 
@@ -20,27 +20,24 @@ Rejected for this section: an R-generated heart-shaped point cloud shown in thre
 
 Title: "Why a romance in many dimensions?"
 
-Used Abbott's Flatland sphere illustration already present on slide 6. Placed it centered at the top, preserving all existing slide 5 text, formatting, and positions. Added a pale blue-gray background derived from the header fill of slides in this section.
+Uses Abbott's Flatland sphere illustration already present on slide 6, centered at the top; title and subtitle positions and fonts unchanged.
 
-Exact PowerPoint geometry and colors (points):
+History: the 2026-10-19 version had a solid pale `#F2F3F6` background and the illustration faded by a 70%-transparent overlay. The user found it too light. On 2026-10-20 three previews were compared: (A) a vertical slate-to-light linear gradient, (B) a radial gradient, (C) B plus hearts. The user chose C, with the hearts moved up beside the title. The user also found the muted gray subtitle text too faint, on this and probably the other header slides.
 
-- Slide: 960 x 540 (13 1/3 x 7 1/2 inches).
-- Illustration: left 135, top 10, width 690, height 210. Horizontally centered.
-- Background: solid `#F2F3F6`.
-- Header source color: PowerPoint RGB integer 6567967, with header fill transparency 0.78. Slide background was calculated as 6% of the underlying header color plus 94% white.
-- Illustration softened with a rectangle in the slide background color, directly over the picture: same geometry, no line, fill transparency 0.70 (30% opaque).
-- Added picture name: `Section 0 Flatland illustration`.
-- Overlay name: `Flatland illustration softening overlay`.
-- Existing title, two subtitle paragraphs, and slide number unchanged.
+Current design (points; slide is 960 x 540):
+
+- Background: radial gradient, `TwoColorGradient(7, 1)` (msoGradientFromCenter): `#F2F3F6` at the center, `#8EA1C2` at the edges. The center is rectangular, not circular; the user accepted this.
+- Illustration `Section 0 Flatland illustration`: left 135, top 10, width 690, height 210. Overlay deleted (full strength); 0.75 pt `#3A3A3A` frame; black shadow, blur 8, offset (2, 3), transparency 0.6.
+- Subtitles (`Text Placeholder 2`): font color `#2F3B52` (dark slate) instead of the layout's muted gray. Changed on this slide only; the other header slides may want the same, possibly via the Slide Master layout.
+- Hearts `Romance heart 1`–`6`: msoShapeHeart, fill `#C8435A`, no line, height 0.9 x width. A trail rising to the upper right of the title, smaller and fainter as it goes, echoing the Sphere rising and vanishing in the drawing. (left, top, width, rotation, transparency): (690, 318, 32, -12, 0.05), (756, 296, 27, 8, 0.20), (813, 276, 22, -10, 0.35), (862, 258, 17, 12, 0.50), (900, 243, 13, -8, 0.65), (930, 232, 9, 10, 0.78).
+- Applied by `slide5-header.ps1` (in this folder); a record and template, not to be re-run on the current deck.
 
 Assets in `../images/`:
 
+- `slide5-final.png`: current slide 5, rendered through PowerPoint at 1920 x 1080.
 - `slide6-source-2.jpg`: original Flatland illustration extracted from slide 6, reused without raster editing.
-- `slide5-flatland-final.png`: final approved slide 5 rendered through PowerPoint at 1920 x 1080.
 - `section0-slide6.png` through `section0-slide9.png`: section reference renders.
 - `slide6-source-4.png`: other slide 6 picture, penguin scatterplot, not used in the approved design.
-
-No backup of the deck should be recreated unless needed for a future approved edit. The user asked to remove the slide 5 backup after acceptance.
 
 ## Remaining section headers
 
@@ -54,10 +51,10 @@ The brief's slide numbers have shifted. Current main-talk headers as inspected i
 | 44 | The HE plot framework | Seeing multivariate tests as ellipses; brief says slide 40 |
 | 57 | Checking multivariate models | Outliers, influence, robust estimation |
 
-Only slide 5 was changed in this conversation. Work one section at a time, inspect actual slide content rather than relying on the brief's shorthand titles, show a preview, and obtain approval before updating the deck.
+Only slide 5 has been changed so far. Work one section at a time, inspect actual slide content rather than relying on the brief's shorthand titles, show a preview, and obtain approval before updating the deck.
 
 ## Technical workflow
 
-PowerPoint COM was available via an escalated PowerShell command. Read-only opening and slide.Export produced faithful previews with the deck's actual typography. For the approved edit, opened the deck writable, made changes only to slide 5, saved, exported the final slide, and closed the deck. Non-escalated COM failed with logon-session error 80070520; the escalated call worked.
+PowerPoint COM works from Claude Code's PowerShell tool (`New-Object -ComObject PowerPoint.Application`). For previews, open the deck read-only (`Presentations.Open($deck, $true, $false, $false)`), make the changes in memory, `Slide.Export(..., "PNG", 1920, 1080)` to the scratchpad, and close without saving; the real deck is untouched. For an approved edit, open it writable, make the same changes, `Save()`, export the final render to `../images/`, and close. PowerPoint must be closed first (check for a `~$Vis-MLM-talk4.pptx` lock file).
 
-Filesystem permissions in this chat were still rooted in HistData, so writing to the actual book talks directory required escalation. Do not use HistData as a staging directory for future work on this talk.
+COM colors are BGR integers: R + 256 G + 65536 B. Some slides (e.g. 10) use theme colors, which python-pptx cannot report as RGB; export a render to see them.
