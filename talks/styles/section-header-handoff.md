@@ -79,6 +79,19 @@ Same structure as slides 5, 23 and 31, in the section's orange (the "sec4" title
   - `Section 4 canonical HE illustration`, width 250: `../images/peng-candisc-HE.png` (an existing talk figure; as on slide 53).
 - `Section 4 arrow 1`, `2`: msoShapeRightArrow in the gaps, 30 x 22, fill `#CC6600`, no line, vertically centered on the plates; echo slide 46's red arrows. They take the place of the hearts and Wally as the slide's motif.
 
+## Approved slide 57
+
+Title: "Checking multivariate models"; subtitle "Outliers, influence and robust estimation". Applied 2026-10-20 by `section5-header.ps1` (a record, not to be re-run).
+
+Same structure as the others, in the section's brick red (the "sec5" title boxes: `#A33B2B` at 78% transparency):
+
+- Background: `FollowMasterBackground = 0`, then radial `TwoColorGradient(7, 1)`, `#F7F3F2` center, `#D5A79F` edges.
+- Banner, one plate per word of the subtitle; top 14, height 200 (same text position as slide 44), gaps 22, centered:
+  - `Section 5 distance plot illustration`, width 200: `../images/section-headers/section5-distance-plot.png`, school data distance plot from slide 58.
+  - `Section 5 influence plot illustration`, width 200: `../images/section-headers/section5-influence-plot.png`, school data influence bubble plot from slide 58.
+  - `Section 5 robust weights illustration`, width 280: `../images/section-headers/section5-robust-weights.png`, penguin robust-MLM weights from slide 60 (Cyrano 0, Hook Nose 0.13).
+- No motif: the user declined both arrows (as on slide 44) and the mvinfluence/heplots hex logos. School data in two plates and penguins in one mirrors the section itself; the user accepted it.
+
 ## Remaining section headers
 
 The brief's slide numbers have shifted. Current main-talk headers as inspected in this session:
@@ -91,7 +104,7 @@ The brief's slide numbers have shifted. Current main-talk headers as inspected i
 | 44 | The HE plot framework | Seeing multivariate tests as ellipses; brief says slide 40 |
 | 57 | Checking multivariate models | Outliers, influence, robust estimation |
 
-Done so far: slides 5, 23 (and slide 24's title), 31 and 44. Next: 57. Work one section at a time, inspect actual slide content rather than relying on the brief's shorthand titles, show a preview, and obtain approval before updating the deck.
+All done as of 2026-10-20: slides 5, 23 (and slide 24's title), 31, 44 and 57; slide 10 is the user's own design. Not done: slide 63 ("Questions? Discussion?") and the hidden backup header slide 67 also use the Section Header layout but were not part of this task. Work one section at a time, inspect actual slide content rather than relying on the brief's shorthand titles, show a preview, and obtain approval before updating the deck.
 
 ## Technical workflow
 
