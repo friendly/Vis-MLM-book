@@ -284,9 +284,54 @@ plot(cd, ellipse = TRUE, col = peng.colors("dark"), var.col = "black", var.lwd =
 # Can1 (87%) is Gentoo vs. the others: big body, long thin bill. Can2 (13%) is Chinstrap
 # vs. Adelie: bill size. A tidy two-dimensional story, each axis with a named meaning.
 
-#' ## 7. Things to consider
+#' ## 7. Does stoutness vary by year?
+# If stoutness is body condition, it might differ between good and bad years (2007 - 2009)
+
+peng <- peng |> mutate(fyear = factor(year))
+table(peng$species, peng$fyear)
+
+m0 <- lm(stoutness ~ species * sex, data = peng)
+m1 <- lm(stoutness ~ species * sex + fyear, data = peng)
+m2 <- lm(stoutness ~ (species + sex) * fyear + species:sex, data = peng)
+anova(m0, m1, m2)
+Anova(m2)
+etasq(m2, partial = FALSE)
+
+# A year main effect (eta^2 = 0.08, R^2 0.27 -> 0.35), the same in all species and both
+# sexes: penguins got less stout from 2007 to 2009. But which component changed?
+for (v in c("flipper_length", "body_mass", "body_size"))
+  print(Anova(lm(reformulate("(species + sex) * fyear + species:sex", v), data = peng)))
+
+peng |>
+  group_by(species, fyear) |>
+  summarise(n = n(), flipper = mean(flipper_length), mass = mean(body_mass),
+            K = mean(K), .groups = "drop")
+
+year_long <- peng |>
+  select(species, sex, fyear, flipper_length, body_mass, stoutness) |>
+  pivot_longer(c(flipper_length, body_mass, stoutness), names_to = "variable") |>
+  mutate(variable = factor(variable, levels = c("flipper_length", "body_mass", "stoutness"),
+                           labels = c("Flipper length (mm)", "Body mass (g)", "log Stoutness")))
+
+ggplot(year_long, aes(x = fyear, y = value, color = species, group = species)) +
+  stat_summary(fun.data = mean_se, geom = "pointrange",
+               position = position_dodge(width = 0.3)) +
+  stat_summary(fun = mean, geom = "line", linewidth = 1,
+               position = position_dodge(width = 0.3)) +
+  facet_wrap(~ variable, scales = "free_y") +
+  theme_penguins("dark") +
+  theme(legend.position = "top") +
+  labs(x = "Year", y = "Mean (+/- 1 SE)", color = NULL)
+
+# Body mass shows no year effect at all (F = 0.02); flipper length rises by 3 - 6 mm
+# from 2007 to 2008 in every species (F = 25). So the year effect on stoutness is
+# entirely flipper length. Real growth in flipper length in one year seems unlikely for
+# adult birds; a change in how (or by whom) flippers were measured after 2007 is a
+# plausible alternative. Either way, it's not body condition, which would show in mass.
+
+#' ## 8. Things to consider
 # * Isometry holds only roughly; the empirical within-species SMA slope (~3.2) or PC1
 #   could define stoutness instead (cf. the "scaled mass index", Peig & Green, 2009, Oikos).
-# * Stoutness = body condition is likely seasonal and year-dependent: try adding `year`
-#   (in heplots::peng, 2007 - 2009) to the model.
+# * Check the Palmer LTER documentation for a change in flipper measurement after 2007.
+#   If it was a protocol change, adjust flipper length for year before computing stoutness.
 # * Whether body_size is better as F x M^(1/3) or just as PC1 of the four log measures.
