@@ -112,7 +112,8 @@ Threads that run across sections: the **ellipse**; the **juicer** (slide 25 → 
   slide 25's title box is in the section teal; the Section Header layout's subtitles are dark slate.
   Closing slides 62-64 are gold. Details, colors and geometry: `styles/section-header-handoff.md`.
   Not done: the hidden backup header 68, which uses the same layout.
-- **Speaker notes missing** on visible slides 24, 29, 32, 37, 43, 45, 52, 54, 58, 64, and the new 19.
+- **Speaker notes missing** on visible slides 24, 29, 32, 37, 43, 45, 52, 54, 58, 64 (and 19, which
+  MF doesn't think needs them).
   Slide 43 (generalized ridge trace plots) is the one most worth writing.
 - **Still flagged `[OPTIONAL for a 45-minute talk]`** in the notes of visible slides 35, 38, 41, 42, 44,
   51, 55, 56, 57. Remove the flag on the ones that are staying.
