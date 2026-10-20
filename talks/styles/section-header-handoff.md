@@ -92,6 +92,13 @@ Same structure as the others, in the section's brick red (the "sec5" title boxes
   - `Section 5 robust weights illustration`, width 280: `../images/section-headers/section5-robust-weights.png`, penguin robust-MLM weights from slide 60 (Cyrano 0, Hook Nose 0.13).
 - No motif: the user declined both arrows (as on slide 44) and the mvinfluence/heplots hex logos. School data in two plates and penguins in one mirrors the section itself; the user accepted it.
 
+## Closing section colors (slides 61-63)
+
+Before 2026-10-20 the Closing slides shared section 5's brick red. Now gold, chosen by the user from three previews (A gold `#D4AF37`, B mustard `#B8860B`, too close to section 4's orange; C yellow `#E0C030`). Applied by `closing-colors.ps1` (a record, not to be re-run):
+
+- Slides 61 (Summary) and 62 (Book, code and packages) moved to gold copies of their layouts, "Title and Content · sec6" and "Two Content · sec6" (duplicates of the sec5 ones): title box fill `#D4AF37` at 78% transparency, border `#D4AF37`, as for the other sections.
+- Slides 61, 62 and 63 ("Questions? Discussion?", Section Header layout) have a solid very light gold background `#FDF9EF` (about 6% gold over white). Slide 63 has no radial background or banner, unlike the other headers.
+
 ## Remaining section headers
 
 The brief's slide numbers have shifted. Current main-talk headers as inspected in this session:
