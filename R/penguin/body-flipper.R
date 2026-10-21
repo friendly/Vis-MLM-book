@@ -3,7 +3,7 @@
 #' author: Michael Friendly
 #' ---
 
-# Companion to peng-bill-size-shape.R. For the bill, (log L, log D) rotated by 45 degrees gave
+# Follow-up to peng-bill-size-shape-altviews.qmd (code in peng-bill-size-shape.R). For the bill, (log L, log D) rotated by 45 degrees gave
 #   log size  = log L + log D,  log shape = log L - log D.
 # Flipper length and body mass are not in the same units: length is a length, mass ~ volume ~ length^3.
 # Put them on a common footing first: M^(1/3) is a length-like quantity, so use
@@ -94,11 +94,12 @@ p1 <- peng_plot(flipper_length, body_mass,
 p2 <- peng_plot(body_size, stoutness,
                 nudge = tibble(species = c("Adelie", "Chinstrap"),
                                dx = c(-0.04, 0.03), dy = c(0.07, -0.07))) +
-  coord_equal() +
-  labs(x = "log Size = log(F x M^(1/3))", y = "log Stoutness\n= log(M^(1/3) / F)",
-       title = "Size & stoutness (log scale)")
+  coord_equal(ylim = c(-2.70, -2.32)) +   # equal scales, with room so the panel isn't flat
+  labs(x = "log Body size = log(F x M^(1/3))", y = "log Stoutness\n= log(M^(1/3) / F)",
+       title = "Body size & stoutness (log scale)")
 
-p1 / p2 + plot_layout(heights = c(1.4, 1))
+# match p1's aspect ratio to p2's, so patchwork doesn't squash either panel
+p1 + theme(aspect.ratio = 0.7) | p2
 
 # Species differ in size; their stoutness is about the same: a Gentoo is, roughly,
 # a scaled-up Adelie. Within species, size and stoutness are only weakly related.
@@ -221,7 +222,7 @@ sex_fill <- scale_fill_discrete(labels = c(f = "Female", m = "Male"))
 p3 <- ggplot(peng, aes(x = species, y = body_size, fill = sex)) +
   geom_boxplot(alpha = 0.6) +
   sex_fill +
-  labs(x = NULL, y = "log Size", title = "Size") +
+  labs(x = NULL, y = "log Body size", title = "Body size") +
   theme(legend.position = "none")
 p4 <- ggplot(peng, aes(x = species, y = stoutness, fill = sex)) +
   geom_boxplot(alpha = 0.6) +
@@ -238,7 +239,7 @@ p3 + p4
 
 peng_plot(body_size, stoutness, pooled = FALSE, by = "sex") +
   facet_wrap(~ sex, labeller = as_labeller(c(f = "Female", m = "Male"))) +
-  labs(x = "log Size", y = "log Stoutness")
+  labs(x = "log Body size", y = "log Stoutness")
 
 #' ## 5. Body vs. bill: size goes with size, shape with nothing?
 
