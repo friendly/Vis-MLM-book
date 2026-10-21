@@ -118,6 +118,8 @@ Suggested on 2026-10-21. MF is holding these for now; pick up here when trimming
 
 ## Organizer's seven figures
 
+MF: Those were just initial suggestions, useful, but now superceeded.
+
 | Figure | Slide | Status |
 |---|---|---|
 | 5.5 PCA by springs | 27 | visible |
@@ -137,8 +139,8 @@ Suggested on 2026-10-21. MF is holding these for now; pick up here when trimming
   Not done: the hidden backup header 68, which uses the same layout.
 - **Speaker notes**: as of 2026-10-21 every visible slide has notes except the section headers 24, 45, 58,
   slide 19 and the "Questions?" slide 64, which don't need them.
-- **Still flagged `[OPTIONAL for a 45-minute talk]`** in the notes of visible slides 35, 38, 41, 42, 44,
-  51, 55, 56, 57. Remove the flag on the ones that are staying.
+- **Still flagged `[OPTIONAL for a 45-minute talk]`** in the notes of visible slides 35, 38, 41, 42,
+  51, 55, 56, 57 (44's flag is gone as of 2026-10-21). Remove the flag on the ones that are staying.
 - Slide 17 has no takeaway line under the figures (slides 15 and 18 do).
 - Slide 19's reveal animation: DONE 2026-10-21 (MF).
 - Backup slide 74 ("Which observations drive the fit?") has a stray "." text box (matters only if it comes back).
