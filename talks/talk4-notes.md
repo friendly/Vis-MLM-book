@@ -112,13 +112,12 @@ Threads that run across sections: the **ellipse**; the **juicer** (slide 25 → 
   slide 25's title box is in the section teal; the Section Header layout's subtitles are dark slate.
   Closing slides 62-64 are gold. Details, colors and geometry: `styles/section-header-handoff.md`.
   Not done: the hidden backup header 68, which uses the same layout.
-- **Speaker notes missing** on visible slides 24, 29, 32, 37, 43, 45, 52, 54, 58, 64 (and 19, which
-  MF doesn't think needs them).
-  Slide 43 (generalized ridge trace plots) is the one most worth writing.
+- **Speaker notes**: as of 2026-10-21 every visible slide has notes except the section headers 24, 45, 58,
+  slide 19 and the "Questions?" slide 64, which don't need them.
 - **Still flagged `[OPTIONAL for a 45-minute talk]`** in the notes of visible slides 35, 38, 41, 42, 44,
   51, 55, 56, 57. Remove the flag on the ones that are staying.
 - Slide 17 has no takeaway line under the figures (slides 15 and 18 do).
-- Slide 19 needs its reveal animation (MF, in PowerPoint): `Size shape plot` and `Reveal text` on one click.
+- Slide 19's reveal animation: DONE 2026-10-21 (MF).
 - Backup slide 74 ("Which observations drive the fit?") has a stray "." text box (matters only if it comes back).
 - From the README: the cover image on slides 2 and 63 still has the old title; the title slide could
   name the host.
