@@ -93,6 +93,29 @@ Threads that run across sections: the **ellipse**; the **juicer** (slide 25 → 
    - Slide 33 (Waar is Wally) repeats the demo on slide 26 (same points 101, 102). If cut, move the
      "I call this Waldo space" line into slide 26's notes.
 
+## Cut candidates, 2026-10-21 (on hold)
+
+Suggested on 2026-10-21. MF is holding these for now; pick up here when trimming.
+
+- **Section 5 (58-61)** is already short, so it doesn't save much. Keep 58 (header) and 59 (school
+  distance/influence plots, Fig 11.18). **Merge 60 and 61** into one slide: the influence plot beside the robmlm()
+  weight index plot, one bullet each ("Cyrano: most influential -> weight 0"; "Hook Nose: among the others ->
+  weight 0.13"). Move the "hat values depend only on group size" line to the notes. Can be done via COM with
+  PowerPoint closed.
+
+- Larger savings elsewhere (all still flagged `[OPTIONAL]` in their notes):
+
+  | Slides | What | Suggestion |
+  |---|---|---|
+  | 55-57 | LDA main ideas + two prediction-region slides | Cut all three, or keep only 57; 54 (MANOVA juicer) makes the main point |
+  | 41-42 | Ridge regression; the usual ridge trace | Cut both; slide 43's opening line sets up the contrast |
+  | 38 | Data space and beta space are dual | Cut if measurement error stays short; 39's GIFs carry it |
+  | 35 | Outliers in the smallest dimensions | Keep (Waldo-space thread); drop 33 instead, which repeats slide 26's demo |
+  | 51 | HE pairs plots | Quick cut; one sentence on slide 50 instead |
+
+- Tally: cutting 41, 42, 51, 55-57 and merging 60+61 takes 64 visible slides to 57; dropping 33 and 38 too
+  gives 55.
+
 ## Organizer's seven figures
 
 | Figure | Slide | Status |
