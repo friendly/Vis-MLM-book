@@ -1,5 +1,6 @@
 # Record of the 2026-10-21 title slide (slide 1) changes, via PowerPoint COM. Already applied: do NOT re-run on the current deck.
-# Coral radial background (MF chose B-coral over azure and gold); the three thumbnails framed and shadowed as on the
+# Gold radial background (MF first chose B-coral, then switched to C-gold the same day; only the background was redone);
+# the three thumbnails framed and shadowed as on the
 # section headers, at one top edge and centered with equal gaps; the www icon moved onto the URL line, white made transparent.
 # Saves the deck. PowerPoint must be closed.
 $deck = "C:\R\Projects\Vis-MLM-book\talks\Vis-MLM-talk4.pptx"
@@ -11,10 +12,10 @@ $pres = $app.Presentations.Open($deck, $false, $false, $false)
 $s = $pres.Slides.Item(1)
 if ($s.Shapes.Title.TextFrame.TextRange.Text -notmatch "^Visualizing Multivariate") { throw "slide 1 is not the title slide" }
 
-# coral radial background: cream center, coral edges
+# gold radial background: pale cream center, bright gold edges (coral, applied first, was #FFF8F2 / #F28C6B)
 $f = $s.Background.Fill
 $f.TwoColorGradient(7, 1)
-$f.ForeColor.RGB = (BGR "#FFF8F2"); $f.BackColor.RGB = (BGR "#F28C6B")
+$f.ForeColor.RGB = (BGR "#FFFBEA"); $f.BackColor.RGB = (BGR "#E8C547")
 
 # thumbnails: top 25, equal 22 pt gaps, centered; 0.75 pt frame and soft shadow as on slide 5
 $names = "Thumbnail: data ellipses", "Thumbnail: biplot", "Thumbnail: HE plot"

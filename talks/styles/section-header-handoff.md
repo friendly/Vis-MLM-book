@@ -103,9 +103,9 @@ Before 2026-10-20 the Closing slides shared section 5's brick red. Now gold, cho
 
 ## Title slide (slide 1)
 
-Redesigned 2026-10-21 in the style of the section headers, but bright; MF chose B coral from three previews (A azure `#5DADE2` edges, B coral, C gold `#E8C547` edges). Applied by `title-slide.ps1` (a record, not to be re-run):
+Redesigned 2026-10-21 in the style of the section headers, but bright. Three previews: A azure (`#5DADE2` edges), B coral (`#F28C6B`), C gold. MF first chose B, then switched to C the same day; gold also bookends the talk with the Closing slides (a brighter gold than their `#D4AF37`). Applied by `title-slide.ps1` (a record, not to be re-run):
 
-- Background: radial `TwoColorGradient(7, 1)`, `#FFF8F2` center, `#F28C6B` edges (the slide already had its own background, so `FollowMasterBackground` was already 0).
+- Background: radial `TwoColorGradient(7, 1)`, `#FFFBEA` center, `#E8C547` edges (the slide already had its own background, so `FollowMasterBackground` was already 0).
 - The three existing thumbnails ("Thumbnail: data ellipses", "Thumbnail: biplot", "Thumbnail: HE plot"; sizes unchanged) at top 25, 22 pt gaps, centered, with the slide 5 frame and shadow.
 - The www icon (renamed "www icon", was "Picture 7") moved from top 464.7, where it covered "Group" on the venue line, to 488 on the URL line, with its white made transparent (`TransparentBackground`); the white "WWW" letters inside the globe show the background too.
 
