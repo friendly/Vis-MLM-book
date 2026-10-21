@@ -101,6 +101,14 @@ Before 2026-10-20 the Closing slides shared section 5's brick red. Now gold, cho
 - Slides 61 (Summary) and 62 (Book, code and packages) moved to gold copies of their layouts, "Title and Content · sec6" and "Two Content · sec6" (duplicates of the sec5 ones): title box fill `#D4AF37` at 78% transparency, border `#D4AF37`, as for the other sections.
 - Slides 61, 62 and 63 ("Questions? Discussion?", Section Header layout) have a solid very light gold background `#FDF9EF` (about 6% gold over white). Slide 63 has no radial background or banner, unlike the other headers.
 
+## Title slide (slide 1)
+
+Redesigned 2026-10-21 in the style of the section headers, but bright; MF chose B coral from three previews (A azure `#5DADE2` edges, B coral, C gold `#E8C547` edges). Applied by `title-slide.ps1` (a record, not to be re-run):
+
+- Background: radial `TwoColorGradient(7, 1)`, `#FFF8F2` center, `#F28C6B` edges (the slide already had its own background, so `FollowMasterBackground` was already 0).
+- The three existing thumbnails ("Thumbnail: data ellipses", "Thumbnail: biplot", "Thumbnail: HE plot"; sizes unchanged) at top 25, 22 pt gaps, centered, with the slide 5 frame and shadow.
+- The www icon (renamed "www icon", was "Picture 7") moved from top 464.7, where it covered "Group" on the venue line, to 488 on the URL line, with its white made transparent (`TransparentBackground`); the white "WWW" letters inside the globe show the background too.
+
 ## Remaining section headers
 
 The brief's slide numbers have shifted. Current main-talk headers as inspected in this session:
