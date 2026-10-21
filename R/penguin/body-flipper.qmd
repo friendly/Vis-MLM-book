@@ -23,9 +23,11 @@ options(digits = 3)
 
 ## The question
 
-Data analysis usually starts with the variables as they were recorded, but what is easy to *measure* is not always what is best to *think about*. A physician records height and weight, but body mass index, weight relative to height, says more about a patient. Re-expressing the measured variables as combinations with clear meanings (ratios, or sums and differences of logs, which rotate the original axes) can make plots easier to read and models easier to interpret, without changing what the data say.
+Data analysis usually starts with the variables as they were recorded, but what is easy to *measure* is not always what is best to *think about*. A physician records height and weight, but body mass index, weight relative to height, says more about a patient. Re-expressing the measured variables as combinations with clear meanings (ratios, or sums and differences of logs, which rotate the original axes) can make plots easier to read and models easier to interpret, without changing what the data say to a multivariate model. The statistics are equivalent under such transformations,
+but our understanding can be better grounded in what the variables mean.
 
-In [Thinking about Penguin Variables](https://friendly.github.io/blog/posts/2026-10-peng-altviews/), bill length ($L$) and bill depth ($D$) were re-expressed as bill **size** and **shape**,
+In a first pass at this topic for the penguins data [Thinking about Penguin Variables](https://friendly.github.io/blog/posts/2026-10-peng-altviews/), it was natural to think of re-expressing
+bill length ($L$) and bill depth ($D$)  bill **size** and **shape**,
 
 $$
 \log \text{Size} = \log L + \log D \qquad \log \text{Shape} = \log L - \log D \; ,
@@ -33,7 +35,12 @@ $$
 
 a 45° rotation of the log length--depth plane. The new axes had clear meanings, the within-species variation lay almost entirely along size, the species separated along shape, and Simpson's paradox disappeared.
 
-That post ended by noting that flipper length and body mass are also, in part, measures of overall size, and left them as "a story for another vignette." This is that follow-up (the earlier analysis is in `peng-bill-size-shape-altviews.qmd`). The other two penguin measurements are `flipper_length` ($F$) and `body_mass` ($M$). Is there a similar re-expression of these? This note describes what was tried and what came of it. The code is also in `body-flipper.R`.
+That post ended by noting that flipper length and body mass are also, in part, measures of overall size, and left them as "a story for another vignette." This is that follow-up (the earlier analysis is in `peng-bill-size-shape-altviews.qmd`). The other two penguin measurements are `flipper_length` ($F$) and `body_mass` ($M$). 
+
+Is there a similar re-expression of these that makes more sense in terms of what matters to a penguin---
+**allometry**: the study of how the shape, anatomy, physiology, or behavior of an organism changes in proportion to its overall body size? 
+This note describes what was tried and what came of it. In the process, I discovered some questions regarding the data itself: exactly how the data was recorded and whether there were any changes over time.
+The code is also in `body-flipper.R`.
 
 ![Two penguins: what makes one bigger, or stouter, than another? Drawing by Kristin Henry ([\@kristinHenry\@vis.social](https://vis.social/@kristinHenry)).](../../images/KHenry-penguins.jpg){#fig-khenry width=50%}
 
@@ -337,7 +344,7 @@ That makes it hard to read as a change in body condition, which would show up in
 
 ### A measurement artifact?
 
-The documentation says nothing about a change. Gorman, Williams & Fraser (2014) measured the right flipper "using a ruler ±1 mm" and body mass with Pesola spring scales (±25 or ±50 g). They pool all three years for their size analyses, and mention no change in methods, instruments or people across 2007--2009. The documentation of `palmerpenguins::penguins_raw` (Horst, Hill & Gorman, 2020) defines the variables but does not discuss methods, and its `Comments` column has only notes on sampling (missing blood samples, incomplete clutches). The full methods are in the metadata of the three EDI data packages (Palmer Station Antarctica LTER & Gorman, 2020a, b, c), which I could not reach.
+The documentation says nothing about a change. Gorman, Williams & Fraser (2014) measured the right flipper "using a ruler ±1 mm" and body mass with Pesola spring scales (±25 or ±50 g). They pool all three years for their size analyses, and mention no change in methods, instruments or people across 2007--2009. The documentation of `palmerpenguins::penguins_raw` (Horst, Hill & Gorman, 2020) defines the variables but does not discuss methods, and its `Comments` column has only notes on sampling (missing blood samples, incomplete clutches). The full methods are in the metadata of the three EDI data packages (Palmer Station Antarctica LTER & Gorman, 2020a, b, c), which I have not accessed yet.
 
 The raw data give two clues. First, the 2007--2008 increase in flipper length appears at once in every species on every island where it was measured:
 
@@ -416,7 +423,11 @@ mod4 <- lm(cbind(bill_size, bill_shape, body_size, stoutness) ~ species + sex, d
 Anova(mod4)
 
 cd <- candisc(mod4, term = "species")
-cd$structure |> knitr::kable(digits = 2)
+
+# show structure coefficients, with the large ones (|r| > 0.5) in bold
+bold_large <- function(s, cut = 0.5)
+  apply(s, 2, \(r) ifelse(abs(r) > cut, sprintf("**%.2f**", r), sprintf("%.2f", r)))
+bold_large(cd$structure) |> knitr::kable(align = "r")
 ```
 
 ```{r}
@@ -429,6 +440,53 @@ plot(cd, ellipse = TRUE, col = peng_cols, var.col = "black", var.lwd = 2)
 
 Each canonical dimension now has a meaning that can be named (@fig-candisc). The first, accounting for 87% of the between-species variation, is Gentoo vs. the others: big body and long, thin bill (body size and bill shape). The second is Chinstrap vs. Adelie: two species of about the same body size, the Chinstrap with the bigger bill. Stoutness contributes little to either.
 
+### Compared with the original variables
+
+What would the same analysis say in terms of the variables as recorded? To compare like with like, use their logs, $(\log L, \log D, \log F, \log M)$. The re-expressed variables are a nonsingular linear transformation of these, so the MANOVA tests, the canonical correlations, and the canonical scores are all **identical**. The only thing that changes is how each canonical dimension is described: the structure coefficients, the correlations of the variables with the canonical scores.
+
+```{r candisc-orig}
+mod4_orig <- lm(cbind(log_length, log_depth, log_flipper, log_mass) ~ species + sex,
+                data = peng |> mutate(log_mass = log(body_mass)))
+cd_orig <- candisc(mod4_orig, term = "species")
+
+# same canonical correlations
+rbind(reexpressed = cd$canrsq, original = cd_orig$canrsq)
+
+# the scores are the same up to sign; flip so the two plots have the species in the same places
+flip <- sign(diag(cor(cd$scores[, c("Can1", "Can2")], cd_orig$scores[, c("Can1", "Can2")])))
+for (j in 1:2) {
+  can <- paste0("Can", j)
+  cd_orig$scores[, can]  <- flip[j] * cd_orig$scores[, can]
+  cd_orig$structure[, j] <- flip[j] * cd_orig$structure[, j]
+  cd_orig$coeffs.raw[, j] <- flip[j] * cd_orig$coeffs.raw[, j]
+  cd_orig$coeffs.std[, j] <- flip[j] * cd_orig$coeffs.std[, j]
+  cd_orig$means[, j]     <- flip[j] * cd_orig$means[, j]
+}
+bold_large(cd_orig$structure) |> knitr::kable(align = "r")
+```
+
+```{r}
+#| label: fig-candisc-compare
+#| fig-width: 12
+#| fig-height: 6
+#| fig-cap: "Canonical discriminant plots for species from the original log variables (left) and the re-expressed variables (right). The points and ellipses are identical; only the variable vectors differ. On the left, the first dimension involves all four variables; on the right, it is mainly body size and bill shape."
+op <- par(mfrow = c(1, 2), mar = c(4, 4, 2, 1) + 0.1)
+# same vector scale in both panels, and room for their labels
+plot(cd_orig, ellipse = TRUE, col = peng_cols, var.col = "black", var.lwd = 2,
+     xlim = c(-12, 12), scale = 10, var.cex = 1.4, main = "Original (log) variables")
+plot(cd, ellipse = TRUE, col = peng_cols, var.col = "black", var.lwd = 2,
+     xlim = c(-12, 12), scale = 10, var.cex = 1.4, main = "Size, shape & stoutness")
+par(op)
+```
+
+The picture of the species is the same in both panels of @fig-candisc-compare; what differs is the story the variable vectors tell.
+
+* **With the original variables**, the first dimension (Gentoo, on the left, vs. the others) is correlated with all four: flipper length ($-0.92$), body mass ($-0.85$) and bill length ($-0.64$) in one direction, bill depth ($0.82$) in the other. Gentoo are bigger in three measurements but smaller in one. Describing this dimension needs all four variables and an explanation of why bill depth goes the other way.
+* **With the re-expressed variables**, the first dimension is two things: large body size and a long, thin bill (bill shape). The odd sign of bill depth has an explanation: Gentoo bills are not small, they are differently shaped.
+* **The second dimension** (Chinstrap vs. Adelie) is mainly bill length in the original variables ($0.76$). In the re-expressed variables, it is bill size ($0.85$): Chinstrap have bigger bills than Adelie of the same body size, and somewhat longer ones relative to their depth.
+
+So the re-expression does not find anything new about how the species differ; it can't, since the canonical space is the same. What it does is let each canonical dimension be described by one or two variables with clear meanings, instead of a contrast among all four.
+
 ## What was found
 
 * **The rotation works, but needs a cube root first.** Flipper length and body mass are in different units; on the scale of $(\log F, \log M / 3)$, a 45° rotation gives body **size** and **stoutness**, mass relative to flipper length cubed: a penguin version of the condition factor $K = W / L^3$ used for fish.
@@ -437,12 +495,16 @@ Each canonical dimension now has a meaning that can be named (@fig-candisc). The
 * **The year effect on stoutness is a flipper-length effect**, most likely a measurement artifact rather than biology. No change in method is documented, but the jump appears in all species and islands at once, and digit preference shows that measuring practice varied between years.
 * **Bill size tracks body size; bill shape tracks only species.** With the four re-expressed variables, the canonical dimensions read as "big Gentoo with a long thin bill" and "Chinstrap's bigger bill".
 
-Unlike the bill, the body measurements do not hide a paradox. What the re-expression gives here is interpretation: two variables whose names say what they mean.
-
 ### Still to do
 
 * Isometry is only approximate. The observed within-species SMA slope (about 3.2) could define stoutness instead of the theoretical 3, as in the scaled mass index of Peig & Green (2009).
-* Check the methods in the EDI metadata (not reachable here) for a change in flipper measurement after 2007, or ask K. Gorman. If confirmed, adjust flipper length for year before computing stoutness.
+* Check the methods in the EDI metadata (not accessed yet) for a change in flipper measurement after 2007, or ask K. Gorman. If confirmed, adjust flipper length for year before computing stoutness.
+
+## Conclusions
+
+Unlike penguin bills, their body measurements do not hide a statistical paradox. What the re-expression gives here is interpretation: two variables whose names seem better to say what they mean--- at least to me. It would be interesting
+to hear the views of biologists about the analysis here, and the more general topic of how they decide what
+are the meaningful transformations of the variables they measure into ones that more closely relate to biology.
 
 ## References {.unnumbered}
 
