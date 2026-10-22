@@ -442,26 +442,38 @@ Each canonical dimension now has a meaning that can be named (@fig-candisc). The
 
 ### Compared with the original variables
 
-What would the same analysis say in terms of the variables as recorded? To compare like with like, use their logs, $(\log L, \log D, \log F, \log M)$. The re-expressed variables are a nonsingular linear transformation of these, so the MANOVA tests, the canonical correlations, and the canonical scores are all **identical**. The only thing that changes is how each canonical dimension is described: the structure coefficients, the correlations of the variables with the canonical scores.
+What would the same analysis say in terms of the variables as recorded? To compare like with like, use their logs, $(\log L, \log D, \log F, \log M)$. The re-expressed variables are a nonsingular linear transformation of these, so the MANOVA tests, the canonical correlations, and the canonical scores (up to sign) are all **identical**. The only thing that changes is how each canonical dimension is described: the structure coefficients, the correlations of the variables with the canonical scores.
 
 ```{r candisc-orig}
 mod4_orig <- lm(cbind(log_length, log_depth, log_flipper, log_mass) ~ species + sex,
                 data = peng |> mutate(log_mass = log(body_mass)))
 cd_orig <- candisc(mod4_orig, term = "species")
 
-# same canonical correlations
-rbind(reexpressed = cd$canrsq, original = cd_orig$canrsq)
+# same squared canonical correlations, and so the same % of between-species variation
+rbind(reexpressed = cd$canrsq, original = cd_orig$canrsq,
+      percent = cd$pct[1:2]) |>
+  `colnames<-`(c("Can1", "Can2"))
+```
 
-# the scores are the same up to sign; flip so the two plots have the species in the same places
-flip <- sign(diag(cor(cd$scores[, c("Can1", "Can2")], cd_orig$scores[, c("Can1", "Can2")])))
-for (j in 1:2) {
-  can <- paste0("Can", j)
-  cd_orig$scores[, can]  <- flip[j] * cd_orig$scores[, can]
-  cd_orig$structure[, j] <- flip[j] * cd_orig$structure[, j]
-  cd_orig$coeffs.raw[, j] <- flip[j] * cd_orig$coeffs.raw[, j]
-  cd_orig$coeffs.std[, j] <- flip[j] * cd_orig$coeffs.std[, j]
-  cd_orig$means[, j]     <- flip[j] * cd_orig$means[, j]
+The structure coefficients for the original variables:
+
+```{r candisc-orig-structure}
+#| code-fold: true
+#| code-summary: "Show the code to match signs"
+# The canonical scores are the same up to sign. Make the signs of the canonical
+# dimensions agree, so both plots have the species in the same places.
+# (ggbiplot::reflect() does this for PCA and lda objects, but not candisc.)
+reflect_candisc <- function(cd, columns) {
+  for (j in columns) {
+    cd$scores[, paste0("Can", j)] <- -cd$scores[, paste0("Can", j)]
+    for (el in c("structure", "coeffs.raw", "coeffs.std", "means"))
+      cd[[el]][, j] <- -cd[[el]][, j]
+  }
+  cd
 }
+flip <- diag(cor(cd$scores[, c("Can1", "Can2")], cd_orig$scores[, c("Can1", "Can2")]))
+cd_orig <- reflect_candisc(cd_orig, which(flip < 0))
+
 bold_large(cd_orig$structure) |> knitr::kable(align = "r")
 ```
 
@@ -481,11 +493,19 @@ par(op)
 
 The picture of the species is the same in both panels of @fig-candisc-compare; what differs is the story the variable vectors tell.
 
-* **With the original variables**, the first dimension (Gentoo, on the left, vs. the others) is correlated with all four: flipper length ($-0.92$), body mass ($-0.85$) and bill length ($-0.64$) in one direction, bill depth ($0.82$) in the other. Gentoo are bigger in three measurements but smaller in one. Describing this dimension needs all four variables and an explanation of why bill depth goes the other way.
-* **With the re-expressed variables**, the first dimension is two things: large body size and a long, thin bill (bill shape). The odd sign of bill depth has an explanation: Gentoo bills are not small, they are differently shaped.
-* **The second dimension** (Chinstrap vs. Adelie) is mainly bill length in the original variables ($0.76$). In the re-expressed variables, it is bill size ($0.85$): Chinstrap have bigger bills than Adelie of the same body size, and somewhat longer ones relative to their depth.
+* **With the original variables**, the first dimension (Gentoo, on the left, vs. the others) is correlated with all four: flipper length ($-0.92$), body mass ($-0.85$) and bill length ($-0.64$) in one direction, bill depth ($0.82$) in the other. Gentoo have the longest flippers and the greatest mass, bills longer than Adelie's (about as long as Chinstrap's), but the shallowest bills. Describing this dimension needs all four variables and an explanation of why bill depth goes the other way.
+* **With the re-expressed variables**, the first dimension is two things: large body size and a long, thin bill (bill shape). This also accounts for the odd sign of bill depth. Gentoo bills are no bigger than Adelie bills (mean log bill size 6.57 vs. 6.56, which is why bill size is nearly uncorrelated with Can1), but they are a different shape: long and thin, so shallow for their length. And because Gentoo are much bigger birds, their bills are actually *small for their bodies*, something the original variables do not show at all (see below).
+* **The second dimension** (Chinstrap vs. Adelie) is mainly bill length in the original variables ($0.76$). In the re-expressed variables, it is mainly bill size ($0.85$), with some bill shape ($0.34$). Here the original variables are, if anything, simpler. Chinstrap and Adelie have about the same body size and the same bill depth; they differ in bill length alone. The re-expression splits that one difference in two, because a longer bill is both a bigger bill and a longer one for its depth.
 
-So the re-expression does not find anything new about how the species differ; it can't, since the canonical space is the same. What it does is let each canonical dimension be described by one or two variables with clear meanings, instead of a contrast among all four.
+The small Gentoo bill is easy to check. Within species, log bill size increases with log body size, by about 1.3 for each unit (the slopes range from 1.1 to 1.65 across species, so this is an average). Comparing the species at the same body size:
+
+```{r bill-adjusted}
+coef(lm(bill_size ~ species + body_size, data = peng))
+```
+
+At the same body size, Gentoo bills are smaller than Adelie bills by about 0.31 on the log scale: about 27% less bill area ($e^{-0.31} = 0.73$), or about 14% smaller per linear dimension. Chinstrap bills are larger by 0.19, about 10% per linear dimension.
+
+So the re-expression does not change how the species are separated; it can't, since the canonical space is the same. What it does is let the first dimension, which carries 87% of the separation, be described by two variables with clear meanings instead of a contrast among all four. The second dimension is about equally simple either way. And describing the species in terms of size and shape led to one observation that the original variables hide: Gentoo have small bills for their size.
 
 ## What was found
 
@@ -493,7 +513,9 @@ So the re-expression does not find anything new about how the species differ; it
 * **Penguins scale roughly isometrically**, across species and sexes: the SMA slopes of $\log M$ on $\log F$ are near 3. Within a single species and sex, the relation is weak.
 * **Species differ in body size, hardly in stoutness.** Gentoo are about 13% larger than Adelie per linear dimension; the species means of stoutness differ by under 3%. Stoutness is mostly individual variation, like a body condition index; sexes differ in body size, except that Adelie males are also stouter.
 * **The year effect on stoutness is a flipper-length effect**, most likely a measurement artifact rather than biology. No change in method is documented, but the jump appears in all species and islands at once, and digit preference shows that measuring practice varied between years.
-* **Bill size tracks body size; bill shape tracks only species.** With the four re-expressed variables, the canonical dimensions read as "big Gentoo with a long thin bill" and "Chinstrap's bigger bill".
+* **Bill size tracks body size; bill shape tracks only species.** Within species, bigger penguins have bigger bills, but bill shape doesn't vary with body size or stoutness.
+* **Same separation, simpler description.** The canonical analysis of the original (log) variables separates the species in exactly the same way; only the description changes. The first dimension (87%) is a contrast among all four original variables, but in the re-expressed variables it is just large body size and a long, thin bill. The second (Chinstrap vs. Adelie) is equally simple either way: a longer bill.
+* **Gentoo have small bills for their size.** Their bills are no bigger than Adelie bills, although the birds are much bigger: at the same body size, a Gentoo bill has about 27% less area, about 14% smaller per linear dimension.
 
 ### Still to do
 

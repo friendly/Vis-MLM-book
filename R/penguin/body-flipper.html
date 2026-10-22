@@ -3295,7 +3295,7 @@ Figure 7: Canonical discriminant plot for species, from the four re-expressed v
 </section>
 <section id="compared-with-the-original-variables" class="level3">
 <h3 class="anchored" data-anchor-id="compared-with-the-original-variables">Compared with the original variables</h3>
-<p>What would the same analysis say in terms of the variables as recorded? To compare like with like, use their logs, <span class="math inline">\((\log L, \log D, \log F, \log M)\)</span>. The re-expressed variables are a nonsingular linear transformation of these, so the MANOVA tests, the canonical correlations, and the canonical scores are all <strong>identical</strong>. The only thing that changes is how each canonical dimension is described: the structure coefficients, the correlations of the variables with the canonical scores.</p>
+<p>What would the same analysis say in terms of the variables as recorded? To compare like with like, use their logs, <span class="math inline">\((\log L, \log D, \log F, \log M)\)</span>. The re-expressed variables are a nonsingular linear transformation of these, so the MANOVA tests, the canonical correlations, and the canonical scores (up to sign) are all <strong>identical</strong>. The only thing that changes is how each canonical dimension is described: the structure coefficients, the correlations of the variables with the canonical scores.</p>
 <div class="cell" data-layout-align="center">
 <details open class="code-fold">
 <summary>Code</summary>
@@ -3303,27 +3303,37 @@ Figure 7: Canonical discriminant plot for species, from the four re-expressed v
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>                <span class="at">data =</span> peng <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">log_mass =</span> <span class="fu">log</span>(body_mass)))</span>
 <span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>cd_orig <span class="ot">&lt;-</span> <span class="fu">candisc</span>(mod4_orig, <span class="at">term =</span> <span class="st">&quot;species&quot;</span>)</span>
 <span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a><span class="co"># same canonical correlations</span></span>
-<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a><span class="fu">rbind</span>(<span class="at">reexpressed =</span> cd<span class="sc">$</span>canrsq, <span class="at">original =</span> cd_orig<span class="sc">$</span>canrsq)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a><span class="co"># same squared canonical correlations, and so the same % of between-species variation</span></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a><span class="fu">rbind</span>(<span class="at">reexpressed =</span> cd<span class="sc">$</span>canrsq, <span class="at">original =</span> cd_orig<span class="sc">$</span>canrsq,</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>      <span class="at">percent =</span> cd<span class="sc">$</span>pct[<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>]) <span class="sc">|&gt;</span></span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">colnames&lt;-</span><span class="st">`</span>(<span class="fu">c</span>(<span class="st">&quot;Can1&quot;</span>, <span class="st">&quot;Can2&quot;</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>#&gt;              [,1]  [,2]
-#&gt; reexpressed 0.942 0.714
-#&gt; original    0.942 0.714</code></pre>
+<pre><code>#&gt;               Can1   Can2
+#&gt; reexpressed  0.942  0.714
+#&gt; original     0.942  0.714
+#&gt; percent     86.679 13.321</code></pre>
 </div>
-<details open class="code-fold">
-<summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># the scores are the same up to sign; flip so the two plots have the species in the same places</span></span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>flip <span class="ot">&lt;-</span> <span class="fu">sign</span>(<span class="fu">diag</span>(<span class="fu">cor</span>(cd<span class="sc">$</span>scores[, <span class="fu">c</span>(<span class="st">&quot;Can1&quot;</span>, <span class="st">&quot;Can2&quot;</span>)], cd_orig<span class="sc">$</span>scores[, <span class="fu">c</span>(<span class="st">&quot;Can1&quot;</span>, <span class="st">&quot;Can2&quot;</span>)])))</span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (j <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>) {</span>
-<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>  can <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">&quot;Can&quot;</span>, j)</span>
-<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>  cd_orig<span class="sc">$</span>scores[, can]  <span class="ot">&lt;-</span> flip[j] <span class="sc">*</span> cd_orig<span class="sc">$</span>scores[, can]</span>
-<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>  cd_orig<span class="sc">$</span>structure[, j] <span class="ot">&lt;-</span> flip[j] <span class="sc">*</span> cd_orig<span class="sc">$</span>structure[, j]</span>
-<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>  cd_orig<span class="sc">$</span>coeffs.raw[, j] <span class="ot">&lt;-</span> flip[j] <span class="sc">*</span> cd_orig<span class="sc">$</span>coeffs.raw[, j]</span>
-<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>  cd_orig<span class="sc">$</span>coeffs.std[, j] <span class="ot">&lt;-</span> flip[j] <span class="sc">*</span> cd_orig<span class="sc">$</span>coeffs.std[, j]</span>
-<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>  cd_orig<span class="sc">$</span>means[, j]     <span class="ot">&lt;-</span> flip[j] <span class="sc">*</span> cd_orig<span class="sc">$</span>means[, j]</span>
-<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a><span class="fu">bold_large</span>(cd_orig<span class="sc">$</span>structure) <span class="sc">|&gt;</span> knitr<span class="sc">::</span><span class="fu">kable</span>(<span class="at">align =</span> <span class="st">&quot;r&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>The structure coefficients for the original variables:</p>
+<div class="cell" data-layout-align="center">
+<details class="code-fold">
+<summary>Show the code to match signs</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The canonical scores are the same up to sign. Make the signs of the canonical</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="co"># dimensions agree, so both plots have the species in the same places.</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="co"># (ggbiplot::reflect() does this for PCA and lda objects, but not candisc.)</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>reflect_candisc <span class="ot">&lt;-</span> <span class="cf">function</span>(cd, columns) {</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (j <span class="cf">in</span> columns) {</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>    cd<span class="sc">$</span>scores[, <span class="fu">paste0</span>(<span class="st">&quot;Can&quot;</span>, j)] <span class="ot">&lt;-</span> <span class="sc">-</span>cd<span class="sc">$</span>scores[, <span class="fu">paste0</span>(<span class="st">&quot;Can&quot;</span>, j)]</span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (el <span class="cf">in</span> <span class="fu">c</span>(<span class="st">&quot;structure&quot;</span>, <span class="st">&quot;coeffs.raw&quot;</span>, <span class="st">&quot;coeffs.std&quot;</span>, <span class="st">&quot;means&quot;</span>))</span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>      cd[[el]][, j] <span class="ot">&lt;-</span> <span class="sc">-</span>cd[[el]][, j]</span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>  cd</span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>flip <span class="ot">&lt;-</span> <span class="fu">diag</span>(<span class="fu">cor</span>(cd<span class="sc">$</span>scores[, <span class="fu">c</span>(<span class="st">&quot;Can1&quot;</span>, <span class="st">&quot;Can2&quot;</span>)], cd_orig<span class="sc">$</span>scores[, <span class="fu">c</span>(<span class="st">&quot;Can1&quot;</span>, <span class="st">&quot;Can2&quot;</span>)]))</span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>cd_orig <span class="ot">&lt;-</span> <span class="fu">reflect_candisc</span>(cd_orig, <span class="fu">which</span>(flip <span class="sc">&lt;</span> <span class="dv">0</span>))</span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a><span class="fu">bold_large</span>(cd_orig<span class="sc">$</span>structure) <span class="sc">|&gt;</span> knitr<span class="sc">::</span><span class="fu">kable</span>(<span class="at">align =</span> <span class="st">&quot;r&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
@@ -3385,11 +3395,23 @@ Figure 8: Canonical discriminant plots for species from the original log variab
 </div>
 <p>The picture of the species is the same in both panels of <a href="#fig-candisc-compare" class="quarto-xref">Figure 8</a>; what differs is the story the variable vectors tell.</p>
 <ul>
-<li><strong>With the original variables</strong>, the first dimension (Gentoo, on the left, vs. the others) is correlated with all four: flipper length (<span class="math inline">\(-0.92\)</span>), body mass (<span class="math inline">\(-0.85\)</span>) and bill length (<span class="math inline">\(-0.64\)</span>) in one direction, bill depth (<span class="math inline">\(0.82\)</span>) in the other. Gentoo are bigger in three measurements but smaller in one. Describing this dimension needs all four variables and an explanation of why bill depth goes the other way.</li>
-<li><strong>With the re-expressed variables</strong>, the first dimension is two things: large body size and a long, thin bill (bill shape). The odd sign of bill depth has an explanation: Gentoo bills are not small, they are differently shaped.</li>
-<li><strong>The second dimension</strong> (Chinstrap vs. Adelie) is mainly bill length in the original variables (<span class="math inline">\(0.76\)</span>). In the re-expressed variables, it is bill size (<span class="math inline">\(0.85\)</span>): Chinstrap have bigger bills than Adelie of the same body size, and somewhat longer ones relative to their depth.</li>
+<li><strong>With the original variables</strong>, the first dimension (Gentoo, on the left, vs. the others) is correlated with all four: flipper length (<span class="math inline">\(-0.92\)</span>), body mass (<span class="math inline">\(-0.85\)</span>) and bill length (<span class="math inline">\(-0.64\)</span>) in one direction, bill depth (<span class="math inline">\(0.82\)</span>) in the other. Gentoo have the longest flippers and the greatest mass, bills longer than Adelie’s (about as long as Chinstrap’s), but the shallowest bills. Describing this dimension needs all four variables and an explanation of why bill depth goes the other way.</li>
+<li><strong>With the re-expressed variables</strong>, the first dimension is two things: large body size and a long, thin bill (bill shape). This also accounts for the odd sign of bill depth. Gentoo bills are no bigger than Adelie bills (mean log bill size 6.57 vs. 6.56, which is why bill size is nearly uncorrelated with Can1), but they are a different shape: long and thin, so shallow for their length. And because Gentoo are much bigger birds, their bills are actually <em>small for their bodies</em>, something the original variables do not show at all (see below).</li>
+<li><strong>The second dimension</strong> (Chinstrap vs. Adelie) is mainly bill length in the original variables (<span class="math inline">\(0.76\)</span>). In the re-expressed variables, it is mainly bill size (<span class="math inline">\(0.85\)</span>), with some bill shape (<span class="math inline">\(0.34\)</span>). Here the original variables are, if anything, simpler. Chinstrap and Adelie have about the same body size and the same bill depth; they differ in bill length alone. The re-expression splits that one difference in two, because a longer bill is both a bigger bill and a longer one for its depth.</li>
 </ul>
-<p>So the re-expression does not find anything new about how the species differ; it can’t, since the canonical space is the same. What it does is let each canonical dimension be described by one or two variables with clear meanings, instead of a contrast among all four.</p>
+<p>The small Gentoo bill is easy to check. Within species, log bill size increases with log body size, by about 1.3 for each unit (the slopes range from 1.1 to 1.65 across species, so this is an average). Comparing the species at the same body size:</p>
+<div class="cell" data-layout-align="center">
+<details open class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">coef</span>(<span class="fu">lm</span>(bill_size <span class="sc">~</span> species <span class="sc">+</span> body_size, <span class="at">data =</span> peng))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>#&gt;      (Intercept) speciesChinstrap    speciesGentoo        body_size 
+#&gt;           -3.840            0.191           -0.311            1.303</code></pre>
+</div>
+</div>
+<p>At the same body size, Gentoo bills are smaller than Adelie bills by about 0.31 on the log scale: about 27% less bill area (<span class="math inline">\(e^{-0.31} = 0.73\)</span>), or about 14% smaller per linear dimension. Chinstrap bills are larger by 0.19, about 10% per linear dimension.</p>
+<p>So the re-expression does not change how the species are separated; it can’t, since the canonical space is the same. What it does is let the first dimension, which carries 87% of the separation, be described by two variables with clear meanings instead of a contrast among all four. The second dimension is about equally simple either way. And describing the species in terms of size and shape led to one observation that the original variables hide: Gentoo have small bills for their size.</p>
 </section>
 </section>
 <section id="what-was-found" class="level2">
@@ -3399,7 +3421,9 @@ Figure 8: Canonical discriminant plots for species from the original log variab
 <li><strong>Penguins scale roughly isometrically</strong>, across species and sexes: the SMA slopes of <span class="math inline">\(\log M\)</span> on <span class="math inline">\(\log F\)</span> are near 3. Within a single species and sex, the relation is weak.</li>
 <li><strong>Species differ in body size, hardly in stoutness.</strong> Gentoo are about 13% larger than Adelie per linear dimension; the species means of stoutness differ by under 3%. Stoutness is mostly individual variation, like a body condition index; sexes differ in body size, except that Adelie males are also stouter.</li>
 <li><strong>The year effect on stoutness is a flipper-length effect</strong>, most likely a measurement artifact rather than biology. No change in method is documented, but the jump appears in all species and islands at once, and digit preference shows that measuring practice varied between years.</li>
-<li><strong>Bill size tracks body size; bill shape tracks only species.</strong> With the four re-expressed variables, the canonical dimensions read as “big Gentoo with a long thin bill” and “Chinstrap’s bigger bill”.</li>
+<li><strong>Bill size tracks body size; bill shape tracks only species.</strong> Within species, bigger penguins have bigger bills, but bill shape doesn’t vary with body size or stoutness.</li>
+<li><strong>Same separation, simpler description.</strong> The canonical analysis of the original (log) variables separates the species in exactly the same way; only the description changes. The first dimension (87%) is a contrast among all four original variables, but in the re-expressed variables it is just large body size and a long, thin bill. The second (Chinstrap vs. Adelie) is equally simple either way: a longer bill.</li>
+<li><strong>Gentoo have small bills for their size.</strong> Their bills are no bigger than Adelie bills, although the birds are much bigger: at the same body size, a Gentoo bill has about 27% less area, about 14% smaller per linear dimension.</li>
 </ul>
 <section id="still-to-do" class="level3">
 <h3 class="anchored" data-anchor-id="still-to-do">Still to do</h3>
