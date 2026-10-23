@@ -8,7 +8,7 @@
 #   body size  = log F + log M/3, stoutness  = log M/3 - log F (heavy for its flippers)
 # Here: describe the three birds in those terms, relative to their own species
 # (and sex), to see whether the names fit; section 6 does the same for the
-# four birds Cara Thompson named (useR! 2022).  Notes in test/penguin-names.md.
+# four birds Cara Thompson named (useR! 2022).  Notes in R/penguin/names/penguin-names.md.
 
 library(dplyr)
 library(tidyr)

@@ -1,6 +1,6 @@
 # Naming the unusual penguins: 283, 10 and 35
 
-Analysis: `test/penguin-names.R` (run from the project root). Data: `heplots::peng`, 333 birds; case
+Analysis: `R/penguin/names/penguin-names.R` (run from the project root); figures from `penguin-names-figs.R`. Data: `heplots::peng`, 333 birds; case
 numbers are row numbers, as in the book.
 
 ## The question
@@ -224,8 +224,18 @@ Adelies are often narcasistic extroverts, not very open to experience."
    unusual, and whether its name fits. Hook Nose doesn't, which motivates the renaming.
 4. The table above: one bird per extreme.
 
-Figures to make: Thompson's plot with all six birds labeled; the bill-shape against stoutness plot within
-species, with the six birds marked.
+Figures (`penguin-names-figs.R`, in `figs/`):
+
+- `names-thompson-view.png`: Thompson's view (flipper length vs bill length, point size for body mass), with
+  all six birds labeled. The BFG sits among the Gentoos; Socrates and Falstaff look unremarkable here.
+- `names-shape-stoutness.png`: bill shape against stoutness, as z-scores within species, with 68% and 95%
+  ellipses. Each named bird lands at a different extreme: Cyrano to the right (and up), Socrates to the left,
+  Falstaff at the top, Tinkerbell at the bottom, the BFG in the slender, lean corner, Average Joe at the center.
+
+A caveat that shows in the second figure: within species, 10 is the second stubbiest bird, not the
+first. That is a Gentoo male, case 183 (bill 44.4 × 17.3 mm, z = −3.93, against −3.43 for case 10). Case 10
+has the lowest raw L / D (1.64) because Adelies have stubby bills to begin with. Case 183 is a candidate for
+another name.
 
 ## Where the names appear, if they change
 
