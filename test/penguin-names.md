@@ -113,6 +113,106 @@ My pick: **Cyrano, Socrates and Falstaff.** The long nose, the snub nose and the
 contrast between the first two makes the point that it is the *shape* of the bill (L / D), not its length or
 depth alone, that marks them out. This is the size and shape story of the vignette.
 
+## Thompson's four birds
+
+Cyrano's name comes from Cara Thompson's useR! 2022 poster, [*Level Up Your
+Labels*](https://www.cararthompson.com/talks/user2022/) [@Thompson2022], a lesson in annotating plots.
+Her plot, titled *"Perfectly proportional penguins - with a few exceptions!"*, shows flipper length against
+bill length. Four text boxes name four birds. The code, kept in `R/penguin/peng-outliers.R`, finds them
+by their bill and flipper lengths in `palmerpenguins::penguins`. Matched to the book's `heplots::peng`
+(section 6 of `penguin-names.R`), they are:
+
+| Nickname | Case (`peng`) | Row in `penguins` | Species, sex | Her label |
+|---|---|---|---|---|
+| The BFG | 124 | 130 | Adelie m | "Sitting comfortably within the cluster of Gentoos, this Adelie penguin defies the predictions of his species" |
+| Tinkerbell | 304 | 315 | Chinstrap f | "The smallest penguin in the set defies the odds on weight for her species and flipper and bill length." |
+| Average Joes | 166 | 172 | Gentoo m | "The Gentoos tend to stick to their trend, with very few outliers. Heavier penguins have longer flippers and longer bills." |
+| Cyrano | 283 | 294 | Chinstrap f | "With an exceptionally long bill and the shortest flippers bar one among the Chinstraps" |
+
+Case numbers differ between the two datasets because `peng` drops the 11 birds with missing values.
+
+### As recorded
+
+| Case | Bill length | Bill depth | L / D | Flipper | Mass | M/F³ |
+|---|---|---|---|---|---|---|
+| 124 BFG | **44.1** (40.4) | 18.0 (19.1) | 2.45 (2.12) | **210** (192) | 4000 (4043) | **0.43** (0.57) |
+| 304 Tinkerbell | 46.9 (46.6) | **16.6** (17.6) | 2.83 (2.65) | 192 (192) | **2700** (3527) | **0.38** (0.50) |
+| 166 Average Joe | 48.7 (49.5) | 15.1 (15.7) | 3.23 | 222 (222) | 5350 (5485) | 0.49 |
+| 283 Cyrano | **58.0** (46.6) | 17.8 (17.6) | **3.26** (2.65) | **181** (192) | 3700 (3527) | **0.62** (0.50) |
+
+Means for the bird's species and sex are in parentheses.
+
+### In the vignettes' variables
+
+z-scores within species, with the rank of |z| among all 333 birds in brackets, and the bird's D²:
+
+| Case | bill size | bill shape | body size | stoutness | D² within (rank) | D² ignoring species (rank) |
+|---|---|---|---|---|---|---|
+| 124 BFG | 1.00 | 1.97 [12] | 1.98 [13] | −1.82 [22] | 15.8 (3) | 5.0 (89) |
+| 304 Tinkerbell | −1.18 | 1.18 | −1.96 [14] | **−2.84 [1]** | 11.0 (10) | 10.5 (5) |
+| 166 Average Joe | 0.29 | 0.31 | 0.69 | −0.17 | 0.6 (319) | 2.4 (250) |
+| 283 Cyrano | 1.19 | **3.80 [2]** | −1.24 | 2.50 [6] | 23.6 (1) | 27.8 (1) |
+
+### Reading her labels against the data
+
+Thompson picked her birds by eye, from one 2D plot. All her readings check out, and the 4D analysis adds
+something to each.
+
+- **The BFG (124)** has the longest flippers of any Adelie (210 mm; rank 1 of 333 on |z| for flipper
+  length) and a long bill (97th percentile). On bill length and flipper length alone, a discriminant
+  analysis calls him a Gentoo with probability 0.97, so he does sit "comfortably within the cluster of
+  Gentoos". But his bill is deep, as an Adelie's is, and in all four measures he isn't a Gentoo at all: the
+  LDA calls him a Chinstrap, but only just (0.53). The book's D² ignoring species misses him (rank 89).
+  **Within species he is the third most unusual bird in the data**, after Cyrano and case 10. His oddity is
+  spread across a large body and a slender bill, with lean proportions (long flippers for his mass).
+  "The BFG" (big, long-limbed, gentle) fits.
+
+- **Tinkerbell (304)** is the lightest bird of all 333 (2700 g; next 2850). Her flippers and bill
+  length are ordinary for a Chinstrap female, so she is light *for her size*. She is **the least stout penguin
+  in the data** (M/F³ = 0.38, rank 1 on stoutness). She is the mirror image of case 35, the stoutest. Her
+  bill is also shallow (3rd percentile in depth). "Tinkerbell" fits: small and light, and her D² ignoring
+  species ranks 5th.
+
+- **Average Joe (166)** is just that. His flipper length is exactly the Gentoo male mean, and his D²
+  within species ranks 319 of 333. Thompson used him to stand for the Gentoo trend. He is the control
+  case.
+
+- **Cyrano (283)**: her label is exact. Her flippers, at 181 mm, are tied for second shortest among the
+  Chinstraps (case 272 has 178). The analysis above adds that the long bill is slender, and the short
+  flippers on an ordinary mass make her stout.
+
+### Two families of names
+
+Thompson's names are characters from fiction (Dahl, Barrie, Rostand) and describe a bird's body. The
+names proposed above for 10 and 35 continue the theme. The full set of unusual birds, each extreme on a
+different interpretable dimension:
+
+| Case | Name | Extreme on | Named by |
+|---|---|---|---|
+| 283 | Cyrano | bill shape: most slender, for a Chinstrap | Thompson |
+| 10 | (Hook Nose → Socrates?) | bill shape: most stubby, of all 333 | Friendly |
+| 124 | The BFG | flipper length: longest Adelie; looks like a Gentoo in 2D | Thompson |
+| 35 | (Falstaff?) | stoutness: stoutest, of all 333 | — |
+| 304 | Tinkerbell | stoutness: least stout, and the lightest, of all 333 | Thompson |
+| 166 | Average Joe | nothing (the control) | Thompson |
+
+The pairs work: Cyrano and Socrates are the long nose and the snub nose; Falstaff and Tinkerbell are the
+stoutest and the slightest.
+
+### A blog post: "Call me by my name ..."
+
+Material for a post:
+
+1. Thompson's poster, and how naming points makes a plot memorable.
+2. How 2D views pick out some birds and miss others: the BFG looks like a Gentoo in her plot, but the book's
+   D² ignoring species ranks him 89th. Within species he ranks 3rd.
+3. The vignettes' variables (bill size and shape, body size and stoutness) show what makes each bird
+   unusual, and whether its name fits. Hook Nose doesn't, which motivates the renaming.
+4. The table above: one bird per extreme.
+
+Figures to make: Thompson's plot with all six birds labeled; the bill-shape against stoutness plot within
+species, with the six birds marked.
+
 ## Where the names appear, if they change
 
 Book:
