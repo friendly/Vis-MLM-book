@@ -10,7 +10,7 @@ D² on the four measures (Ch 4, `fig-peng-cqplot`):
 
 | Case | Species, sex | Current name | Why |
 |---|---|---|---|
-| 283 | Chinstrap, female | **Cyrano** | very long bill |
+| 283 | Chinstrap, female | **Cyrano** | very long bill; name from Cara Thompson's useR! 2022 poster ([Level Up Your Labels](https://www.cararthompson.com/talks/user2022/)), cited as `@Thompson2022` |
 | 10 | Adelie, male | **Hook Nose** | "very short and curved bill": bill depth read as curvature |
 | 35 | Adelie, male | (none) | Ch 5: "probably much heavier than most and has short flippers" |
 
