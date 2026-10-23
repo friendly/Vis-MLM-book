@@ -199,11 +199,25 @@ different interpretable dimension:
 The pairs work: Cyrano and Socrates are the long nose and the snub nose; Falstaff and Tinkerbell are the
 stoutest and the slightest.
 
-### A blog post: "Call me by my name ..."
+### A blog post: "Palmer Penguins Cry Out: 'Call me by my name'"
 
 Material for a post:
 
+**Intro / framing**
+
+It could start with a conversation or block quote, then explained among pengiuns: "Hey Bro, have you noticed that all these scientists
+measured us up the wazoo, published papers, and our data is now famous and used for statistics and data
+graphics? They don't even know our names, even with those tags on our flippers."
+
+Could also say, "Why didn't they bother to give us the Big Five personality scales? Those orange
+Adelies are often narcasistic extroverts, not very open to experience."
+
 1. Thompson's poster, and how naming points makes a plot memorable.
+  --> This was the impetus for me to think about a more general mechanism for labeling "interesting" points
+  in plots done with `ggplots`, which was very nicely done throughout the `car` package.
+  --> `heplots::noteworthy() --> attempts at `stat_noteworthy()`, still not as general as `car`, for the 
+  wide variety of plots it works with.
+  
 2. How 2D views pick out some birds and miss others: the BFG looks like a Gentoo in her plot, but the book's
    D² ignoring species ranks him 89th. Within species he ranks 3rd.
 3. The vignettes' variables (bill size and shape, body size and stoutness) show what makes each bird
