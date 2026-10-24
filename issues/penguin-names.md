@@ -10,9 +10,9 @@ The book names two of the three "noteworthy" penguins found by Mahalanobis D² i
 
 Doubts about "Hook Nose" led to a blog post, *Palmer Penguins Cry Out: "Call Me by My Name"*:
 
-- draft: `friendly.github.io/blog/drafts/VisMLM/penguin-names/index.qmd`
-- planning notes, with the full analysis: `.../penguin-names/planning.md`
-- analysis code: `.../penguin-names/R/penguin-names.R`
+- analysis, notes and figures, in this repo: `R/penguin/names/` (`penguin-names.md`,
+  `penguin-names.R`, `penguin-names-figs.R`, `figs/`)
+- blog draft: `friendly.github.io/blog/drafts/VisMLM/penguin-names/index.qmd`
 - published URL (when it is): `https://friendly.github.io/blog/posts/<slug>/` -- slug TBD
 
 It re-expresses the measures as bill shape, log(L/D), and stoutness, log(M^(1/3)/F) (from the two
@@ -68,6 +68,5 @@ Footnote suggestions (once the post is published):
   flippers of his species, ...").
 - `05-pca-biplot.qmd:2339-2340`: "Our friend Cyrano ... with **his** exceptionally long, straight bill."
   Cyrano is female (the Ch 4 footnote says so): "her".
-- `04-multivariate_plots.qmd:1819-1820`, the Cyrano footnote: "Edmund Rostand" should be **Edmond**;
-  "Rozanne" should be **Roxane** (the heroine of the play). Could also credit Cara Thompson here as the
-  source of the name (`@Thompson2022`), since the blog post now says I got it from her.
+- DONE (`d765b903`): the Cyrano footnote (`04-multivariate_plots.qmd:1819-1821`) now has Edmond
+  Rostand and Roxane, and credits `@Thompson2022` for the name.
