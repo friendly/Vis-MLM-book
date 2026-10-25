@@ -1,4 +1,4 @@
-# Penguin names: Hook Nose -> Socrates, and a name for case 35 (Falstaff)
+# Penguin names: Hook Nose -> Snub Nose ("Socrates"), and a name for case 35 (Falstaff)
 
 Status (2026-10-24): **not yet applied to the book.** Waiting until the blog post is published, so the
 changes can point to it.
@@ -23,7 +23,9 @@ earlier posts, `2026-10-peng-altviews` and `2026-10-peng-body`), standardized wi
 - **Case 10 is not hook-nosed.** Bill depth is measured top to bottom at the base: it is thickness,
   not curvature. Nothing in the data measures a hook. His bill is short (34.6 mm, 4th percentile of
   Adelies) and deep (21.1 mm, 97th): L/D = 1.64, the stubbiest bill of all 333 as measured.
-  A snub nose, the opposite of Cyrano's. New name: **Socrates** (the famous snub nose; Plato, Xenophon).
+  A snub nose, the opposite of Cyrano's. New name: **Snub Nose** (decided 2026-10-25), with
+  **Socrates** as his literary alias (the famous snub nose; Plato, Xenophon) -- "Socrates" alone
+  seemed too obscure. The blog uses 'Snub Nose ("Socrates")' in the heading, Snub Nose elsewhere.
 - **Case 35 is the stout one.** Ordinary bill; 4650 g on 184 mm flippers. M/F³ = 0.75, the stoutest
   penguin in the data (next 0.69). Ch 5's guess, "much heavier than most and has short flippers", is
   right. New name: **Falstaff** (Shakespeare's fat knight).
@@ -32,16 +34,16 @@ earlier posts, `2026-10-peng-altviews` and `2026-10-peng-body`), standardized wi
 - Cara Thompson's other names (useR! 2022 poster, where "Cyrano" originally came from): **The BFG**
   (124), **Tinkerbell** (304), **Average Joe** (166). Cite as `@Thompson2022`.
 
-## Where to change "Hook Nose" -> "Socrates"
+## Where to change "Hook Nose" -> "Snub Nose"
 
 | Where | Now | Change |
 |---|---|---|
-| `04-multivariate_plots.qmd:1817` | "I'll call case 10, with a very short and curved bill, "Hook Nose"." | "...with a very short, deep bill, "Socrates"" + footnote (see below) |
-| `05-pca-biplot.qmd:2341` | "Case 10 (Hook Nose) ... with a highly curved beak." | "Case 10 (Socrates) ... with a short, stubby bill." |
-| `14-infl-robust.qmd:494` | "case 10 is the Adélie bird we labeled "Hook Nose"" | "Socrates" |
-| `14-infl-robust.qmd:622` | `name = c("HookNose", "Cyrano")` | `"Socrates"` |
-| `14-infl-robust.qmd:636` | ""Hook Nose" (10) gets a weight of 0.13" | "Socrates" |
-| `R/penguin/peng-manova.R:160, 180` | `name = c("HookNose", "Cyrano")` | `"Socrates"` |
+| `04-multivariate_plots.qmd:1817` | "I'll call case 10, with a very short and curved bill, "Hook Nose"." | "...with a very short, deep bill, "Snub Nose"" + footnote with Socrates (see below) |
+| `05-pca-biplot.qmd:2341` | "Case 10 (Hook Nose) ... with a highly curved beak." | "Case 10 (Snub Nose) ... with a short, stubby bill." |
+| `14-infl-robust.qmd:494` | "case 10 is the Adélie bird we labeled "Hook Nose"" | "Snub Nose" |
+| `14-infl-robust.qmd:622` | `name = c("HookNose", "Cyrano")` | `"SnubNose"` |
+| `14-infl-robust.qmd:636` | ""Hook Nose" (10) gets a weight of 0.13" | "Snub Nose" |
+| `R/penguin/peng-manova.R:160, 180` | `name = c("HookNose", "Cyrano")` | `"SnubNose"` |
 
 Also: the talk decks `talks/Vis-MLM-talk.pptx` and `talks/Vis-MLM-talk4.pptx` (outlier, influence and
 robust-MLM slides; search for "Hook"), and the notes `talks/talk4-notes.md`, `talks/outline.md`,
@@ -54,11 +56,11 @@ robust-MLM slides; search for "Hook"), and the notes `talks/talk4-notes.md`, `ta
 | `04-multivariate_plots.qmd:1778` | "The other two (10, 35) are well within the confidence envelope." | no name needed yet |
 | `04-multivariate_plots.qmd:1817-1824` | Names 283 and 10; "Case 35 is well inside the Adélie ellipse, so perhaps it is unusual on one of the other variables." | Keep 35 unnamed here: the mystery is the point. Optionally "...we'll meet him again in @sec-..." |
 | `05-pca-biplot.qmd:2342` | "case 35 is at the high end of dimension 4, so probably is much heavier than most and has short flippers." | **Name him here**, where his oddity is explained: "Case 35 ... has short flippers. Let's call him "Falstaff".[^falstaff]" (Also capitalize "case" -- the sentence starts lowercase.) |
-| `05-pca-biplot.qmd:2253` | "three Penguins (283, 10, 35) were identified as noteworthy" | could become "(Cyrano, Socrates and 35)"; probably leave as numbers |
+| `05-pca-biplot.qmd:2253` | "three Penguins (283, 10, 35) were identified as noteworthy" | could become "(Cyrano, Snub Nose and 35)"; probably leave as numbers |
 
 Footnote suggestions (once the post is published):
 
-- Ch 4, on Socrates: `[^socrates]: The snub nose of Socrates is described by Plato and Xenophon. In earlier drafts I called him "Hook Nose", reading bill depth as curvature; it measures thickness. See [the blog post](URL) for why these penguins are unusual, and whether their names fit.`
+- Ch 4, on Snub Nose: `[^snubnose]: Call him "Socrates", if you like: the snub nose of Socrates is described by Plato and Xenophon. In earlier drafts I called him "Hook Nose", reading bill depth as curvature; it measures thickness. See [the blog post](URL) for why these penguins are unusual, and whether their names fit.`
 - Ch 5, on Falstaff: `[^falstaff]: After Shakespeare's fat knight in *Henry IV*. Relative to his flipper length, he is the stoutest penguin in the data; see [the blog post](URL).`
 
 ## Other things noticed along the way
