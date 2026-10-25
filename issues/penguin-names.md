@@ -1,7 +1,7 @@
 # Penguin names: Hook Nose -> Snub Nose ("Socrates"), and a name for case 35 (Falstaff)
 
-Status (2026-10-24): **not yet applied to the book.** Waiting until the blog post is published, so the
-changes can point to it.
+Status (2026-10-25): **not yet applied to the book.** The blog post is now published, so the changes
+can point to it (URL below).
 
 ## Background
 
@@ -13,7 +13,7 @@ Doubts about "Hook Nose" led to a blog post, *Palmer Penguins Cry Out: "Call Me 
 - analysis, notes and figures, in this repo: `R/penguin/names/` (`penguin-names.md`,
   `penguin-names.R`, `penguin-names-figs.R`, `figs/`)
 - blog draft: `friendly.github.io/blog/drafts/VisMLM/penguin-names/index.qmd`
-- published URL (when it is): `https://friendly.github.io/blog/posts/<slug>/` -- slug TBD
+- published 2026-10-25: <https://friendly.github.io/blog/posts/2026-10-peng-names/>
 
 It re-expresses the measures as bill shape, log(L/D), and stoutness, log(M^(1/3)/F) (from the two
 earlier posts, `2026-10-peng-altviews` and `2026-10-peng-body`), standardized within species.
@@ -60,8 +60,8 @@ robust-MLM slides; search for "Hook"), and the notes `talks/talk4-notes.md`, `ta
 
 Footnote suggestions (once the post is published):
 
-- Ch 4, on Snub Nose: `[^snubnose]: Call him "Socrates", if you like: the snub nose of Socrates is described by Plato and Xenophon. In earlier drafts I called him "Hook Nose", reading bill depth as curvature; it measures thickness. See [the blog post](URL) for why these penguins are unusual, and whether their names fit.`
-- Ch 5, on Falstaff: `[^falstaff]: After Shakespeare's fat knight in *Henry IV*. Relative to his flipper length, he is the stoutest penguin in the data; see [the blog post](URL).`
+- Ch 4, on Snub Nose: `[^snubnose]: Call him "Socrates", if you like: the snub nose of Socrates is described by Plato and Xenophon. In earlier drafts I called him "Hook Nose", reading bill depth as curvature; it measures thickness. See [the blog post](https://friendly.github.io/blog/posts/2026-10-peng-names/) for why these penguins are unusual, and whether their names fit.`
+- Ch 5, on Falstaff: `[^falstaff]: After Shakespeare's fat knight in *Henry IV*. Relative to his flipper length, he is the stoutest penguin in the data; see [the blog post](https://friendly.github.io/blog/posts/2026-10-peng-names/).`
 
 ## Other things noticed along the way
 
