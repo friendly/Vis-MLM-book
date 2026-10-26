@@ -91,7 +91,7 @@ Same structure as the others, in the section's brick red (the "sec5" title boxes
 - Banner, one plate per word of the subtitle; top 14, height 200 (same text position as slide 44), gaps 22, centered:
   - `Section 5 distance plot illustration`, width 200: `../images/section-headers/section5-distance-plot.png`, school data distance plot from slide 58.
   - `Section 5 influence plot illustration`, width 200: `../images/section-headers/section5-influence-plot.png`, school data influence bubble plot from slide 58.
-  - `Section 5 robust weights illustration`, width 280: `../images/section-headers/section5-robust-weights.png`, penguin robust-MLM weights from slide 60 (Cyrano 0, Hook Nose 0.13).
+  - `Section 5 robust weights illustration`, width 280: `../images/section-headers/section5-robust-weights.png`, penguin robust-MLM weights from slide 60 (Cyrano 0, Snub Nose 0.13).
 - No motif: the user declined both arrows (as on slide 44) and the mvinfluence/heplots hex logos. School data in two plates and penguins in one mirrors the section itself; the user accepted it.
 
 ## Closing section colors (slides 61-63)

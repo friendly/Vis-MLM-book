@@ -38,17 +38,17 @@ and the linear road map of the book.
    HDR, slide 17) → Simpson's paradox → bill size & shape (slide 19) → scatterplot matrices, effect ordering, parallel coordinates, tours.
 3. **Juicers and Waldo space** (24-31): PCA as rotation and by springs, biplots ("the data juicer"),
    PCA vs. t-SNE.
-4. **Elliptical insights** (32-44): outliers (Waar is Wally?, the penguin outliers Cyrano and Hook Nose,
+4. **Elliptical insights** (32-44): outliers (Waar is Wally?, the penguin outliers Cyrano and Snub Nose,
    the smallest dimensions); measurement error with the coffee/stress data (data space and β space);
    collinearity (Waldo space again) and ridge regression.
 5. **HE plots** (45-57): data ellipses → H and E ellipses → effect vs. significance scaling → contrasts →
    HE pairs plots → quantitative predictors → canonical discriminant plots ("the MANOVA juicer") → LDA
    prediction regions.
 6. **Checking multivariate models** (58-61): school data distance and influence plots; influential and
-   down-weighted penguins (Cyrano and Hook Nose return).
+   down-weighted penguins (Cyrano and Snub Nose return).
 
 Threads that run across sections: the **ellipse**; the **juicer** (slide 25 → 29 → 54); **Waldo space**
-(the smallest dimensions: 26, 33, 35, 40, 44); **Cyrano and Hook Nose** (34, 35 → 60, 61).
+(the smallest dimensions: 26, 33, 35, 40, 44); **Cyrano and Snub Nose** (34, 35 → 60, 61).
 
 ## Changes in this round (2026-10-15/17)
 
@@ -99,7 +99,7 @@ Suggested on 2026-10-21. MF is holding these for now; pick up here when trimming
 
 - **Section 5 (58-61)** is already short, so it doesn't save much. Keep 58 (header) and 59 (school
   distance/influence plots, Fig 11.18). **Merge 60 and 61** into one slide: the influence plot beside the robmlm()
-  weight index plot, one bullet each ("Cyrano: most influential -> weight 0"; "Hook Nose: among the others ->
+  weight index plot, one bullet each ("Cyrano: most influential -> weight 0"; "Snub Nose: among the others ->
   weight 0.13"). Move the "hat values depend only on group size" line to the notes. Can be done via COM with
   PowerPoint closed.
 

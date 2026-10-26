@@ -330,9 +330,9 @@ Numbering verified against `_quarto.yml`: Ch 13 = `13-eqcov.qmd`, Ch 14 = `14-in
 - The Mysterious Case 9 (toy example, Barrett 2003): one x, two nearly perfectly correlated responses y1, y2 (r = 0.9997); case 9 has tiny univariate Cook's D in each separate regression (DFBETAS near 0) but multivariate D 10× larger than any other case — ill-conditioning of highly correlated responses magnifies small discrepancies.
 - Influence plots: `mvinfluence::influencePlot.mlm()` — `type = "stres"` plots squared studentized residual vs hat value (cutoffs: 2–3 × p/n; Beta calibration); `type = "LR"` plots log leverage vs log residual, where contours of constant Cook's distance are diagonal lines with slope −1.
 - NLSY example (`heplots::NLSY`, child reading & math ~ parents' income, education): "noteworthy" point labeling (large on any of residual, hat, Cook's D); groups of low-leverage/large-residual vs high-leverage/small-residual points.
-- Penguin example: MANOVA model with factor predictor — hat values proportional to 1/n_j (Chinstrap most unusual); influential birds "Cyrano" (case 283) and "Hook Nose" (case 10).
+- Penguin example: MANOVA model with factor predictor — hat values proportional to 1/n_j (Chinstrap most unusual); influential birds "Cyrano" (case 283) and "Snub Nose" (case 10).
 - Robust estimation: reliable estimates when outliers present; M-, S-, MM-estimators; `heplots::robmlm()` = M-estimation, replaces least squares ρ(e) = e² with robust loss (L1, biweight with tuning constant); iteratively reweighted least squares (IRLS); a robust MANOVA by substituting robmlm() for lm().
-- Penguin robust fit: index plot of final observation weights (`plot()` method) — Cyrano weighted exactly 0 (excluded), Hook Nose 0.13; `heplots::rel_diff()` percent change in coefficients, largest for Chinstrap bill_depth and body_mass.
+- Penguin robust fit: index plot of final observation weights (`plot()` method) — Cyrano weighted exactly 0 (excluded), Snub Nose 0.13; `heplots::rel_diff()` percent change in coefficients, largest for Chinstrap bill_depth and body_mass.
 
 **Datasets:** `Toy` (constructed, Barrett 2003), `NLSY` (heplots), `peng` (heplots; Palmer penguins).
 

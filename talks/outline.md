@@ -104,7 +104,7 @@ The book's own progression is the simplest story line: from plots of *data*, to 
 
 - Multivariate influence: "The Mysterious Case 9" (Ch 14).
 
-- Robust MLMs: observation weights for the penguins, and the fates of "Cyrano" and "HookNose".
+- Robust MLMs: observation weights for the penguins, and the fates of "Cyrano" and "Snub Nose".
 
 - Optional (Ch 13): visualizing equality of covariance matrices, Box's *M*, and a multivariate analog of Levene's test.
 
