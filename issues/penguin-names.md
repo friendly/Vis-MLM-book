@@ -12,7 +12,7 @@ Doubts about "Hook Nose" led to a blog post, *Palmer Penguins Cry Out: "Call Me 
 
 - analysis, notes and figures, in this repo: `R/penguin/names/` (`penguin-names.md`,
   `penguin-names.R`, `penguin-names-figs.R`, `figs/`)
-- blog draft: `friendly.github.io/blog/drafts/VisMLM/penguin-names/index.qmd`
+- blog source: `friendly.github.io/blog/posts/2026-10-peng-names/index.qmd`
 - published 2026-10-25: <https://friendly.github.io/blog/posts/2026-10-peng-names/>
 
 It re-expresses the measures as bill shape, log(L/D), and stoutness, log(M^(1/3)/F) (from the two
@@ -62,6 +62,21 @@ Footnote suggestions (once the post is published):
 
 - Ch 4, on Snub Nose: `[^snubnose]: Call him "Socrates", if you like: the snub nose of Socrates is described by Plato and Xenophon. In earlier drafts I called him "Hook Nose", reading bill depth as curvature; it measures thickness. See [the blog post](https://friendly.github.io/blog/posts/2026-10-peng-names/) for why these penguins are unusual, and whether their names fit.`
 - Ch 5, on Falstaff: `[^falstaff]: After Shakespeare's fat knight in *Henry IV*. Relative to his flipper length, he is the stoutest penguin in the data; see [the blog post](https://friendly.github.io/blog/posts/2026-10-peng-names/).`
+
+### On hold: a nod to T. S. Eliot, "The Naming of Cats"
+
+The published post (after the `rownames()` paragraph) maps Eliot's three names onto the penguins:
+row number, field ID (`N71A2`), and the name "no human research can discover". For the book, at most
+one line, folded into the Ch 4 footnote for case 10:
+
+> I'll call case 10, with a very short, deep bill, "Socrates".[^socrates]
+>
+> [^socrates]: ... Naming penguins, like naming cats [@Eliot1939], is a difficult matter.
+> See @Friendly2026-peng-names for the full roll call.
+
+Needs two bib entries: Eliot, *Old Possum's Book of Practical Cats* (1939), and the blog post.
+If that's more apparatus than the joke is worth, leave Eliot out of the book. The poem is still in
+copyright (Eliot d. 1965): short phrases with attribution only, and add it to the permissions list.
 
 ## Other things noticed along the way
 
