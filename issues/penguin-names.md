@@ -1,7 +1,6 @@
 # Penguin names: Hook Nose -> Snub Nose ("Socrates"), and a name for case 35 (Falstaff)
 
-Status (2026-10-25): **not yet applied to the book.** The blog post is now published, so the changes
-can point to it (URL below).
+Status (2026-10-26): **applied to the book text** (Ch 4, 5, 14 and `R/penguin/peng-manova.R`): Snub Nose, with the Socrates footnote, in Ch 4; Falstaff named, with a footnote, in Ch 5; Cyrano is "her" in Ch 5. Not done yet: the talk decks and notes, naming the BFG in Ch 14, and Eliot (on hold).
 
 ## Background
 

@@ -157,7 +157,7 @@ plot(peng.rlm,
 
 notables <- tibble(
   id = c(10, 283),
-  name = c("HookNose", "Cyrano"),
+  name = c("SnubNose", "Cyrano"),
   wts = peng.rlm$weights[id]
 )
 text(notables$id, notables$wts, 
@@ -177,7 +177,7 @@ plot(peng.rlm2,
 
 notables <- tibble(
   id = c(10, 283),
-  name = c("HookNose", "Cyrano"),
+  name = c("SnubNose", "Cyrano"),
   wts = peng.rlm2$weights[id]
 )
 text(notables$id, notables$wts, 
