@@ -69,9 +69,9 @@ The published post (after the `rownames()` paragraph) maps Eliot's three names o
 row number, field ID (`N71A2`), and the name "no human research can discover". For the book, at most
 one line, folded into the Ch 4 footnote for case 10:
 
-> I'll call case 10, with a very short, deep bill, "Socrates".[^socrates]
+> I'll call case 10, with a very short, deep bill, "Snub Nose".[^snub]
 >
-> [^socrates]: ... Naming penguins, like naming cats [@Eliot1939], is a difficult matter.
+> [^snub]: ... Naming penguins, like naming cats [@Eliot1939], is a difficult matter.
 > See @Friendly2026-peng-names for the full roll call.
 
 Needs two bib entries: Eliot, *Old Possum's Book of Practical Cats* (1939), and the blog post.
