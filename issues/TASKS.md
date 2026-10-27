@@ -83,6 +83,56 @@ place to log new items. `Tasks-Issues.md` stays where it is as the original proj
   - [ ] Compile the final Permissions Summary file for CRC/T&F submission once the
         above is done (see "T&F Submission" in `task-permissions.md`)
 
+### License for the online (HTML) edition -- waiting on the editor
+
+(2026-10-27) The HTML book carries no reuse licence, and the existing footer
+(`_quarto.yml:102`, `page-footer: "Copyright 2024, Michael Friendly"`) never shows: it is at the
+top level, and Quarto only reads `page-footer` under `book:`.
+
+Proposal, sent to the editor for feedback (also check the CRC contract):
+
+- Text and the author's own figures: **CC BY-NC-ND 4.0** (attribution, non-commercial, no
+  derivatives). Alternative: CC BY-NC-SA 4.0, if adapting figures for teaching should be allowed.
+  Precedents: *Geocomputation with R* (CRC) uses BY-NC-ND; *Advanced R* (CRC) uses BY-NC-SA.
+
+- Third-party material (Waldo, permissioned figures) explicitly **excluded** from the licence.
+
+- R code under the **MIT** licence.
+
+Draft notice (Preface or Colophon, HTML only):
+
+> The online version of this book is free to read. © 2026 Michael Friendly. The text and the
+> author's own figures are licensed under a Creative Commons Attribution-NonCommercial-NoDerivatives
+> 4.0 International License (CC BY-NC-ND 4.0). Figures and other material from other sources are
+> excluded and remain the property of their copyright holders, as noted in their captions. The R
+> code in the book is available under the MIT License.
+
+Notes on BY-NC-SA vs. getting proper credit (2026-10-27):
+
+- BY-NC-SA 4.0 lets anyone share and adapt for non-commercial purposes, if they give credit
+  (BY) and release adaptations under the same licence (SA). Irrevocable; MF can still license
+  differently to others (e.g. CRC for print).
+
+- Attribution is required "in any reasonable manner", and the licensor may specify it. So the
+  notice should include a "Please cite as" line, which makes that citation a condition for text
+  and figures: "Friendly, M. (2026). *Visualizing Multivariate Data and Models in R*. CRC Press.
+  https://friendly.github.io/Vis-MLM-book/"
+
+- Code: MIT only requires keeping the copyright notice in substantial copies, not a citation.
+  CC licences are not recommended for software, and NC would block use at work. Proposal: MIT
+  plus a (non-binding) request to cite the book in published work that uses the code.
+
+  - [ ] Get the editor's feedback on the licence (and whether the contract specifies one) --
+        MF is first asking the editor the general question (is a CC licence for the HTML
+        edition OK, and which one?) before proposing the specifics above
+
+  - [ ] Move `page-footer` under `book:` with the year and a CC badge:
+        "© 2026 Michael Friendly · CC BY-NC-ND 4.0" (linking to the licence)
+
+  - [ ] Add the licence notice, in a `.content-visible when-format="html"` block
+
+  - [ ] Re-render HTML
+
 ### Indexing: subject-index coverage + supporting cleanup
 
   (2026-08-25) `\index{}` entries have been started but coverage is uneven across
