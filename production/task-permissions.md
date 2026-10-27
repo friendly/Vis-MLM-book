@@ -167,6 +167,16 @@ Tracks work on clearing third-party figures for CRC/Taylor & Francis submission,
   The request also covers the free online edition. Logged via `update_permissions()`
   as `applied`. Expect ~6 weeks. The email and form are in `production/permissions/emails/`.
 
+- **2026-10-27 (MF):** Rulings from the T&F editor. (1) Book covers need no permission: all 7
+  cover rows (`Cover-GEB.png` x2, Wilke, Healy, Rennie, Unwin, and the `books.jpg` montage) set to
+  `NPR`, a new status level in `update_permissions()`. The requests already sent to Hachette,
+  O'Reilly and Princeton UP are moot (Princeton had already granted). (2) For the composite
+  `MV-juicer.png` (`[TFQ]`): "err on the side of caution and either remove or replace the images if
+  the original copyright holder cannot be traced." Recorded in its notes; not yet acted on.
+  (3) The editor asked whether the Waldo request had been sent: yes, 2026-10-26.
+  Later the same day: `MV-juicer.png` replaced in Ch 5 by `images/MV-juicer-gpt.png`, a new version of the
+  same design made with ChatGPT; caption source "Author image, with assistance of ChatGPT"; row set to `NPR`.
+
 ## What the script does
 
 `production/build-permissions-csv.R` does **not** re-derive copyright status — that

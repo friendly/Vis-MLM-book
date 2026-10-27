@@ -70,13 +70,16 @@ place to log new items. `Tasks-Issues.md` stays where it is as the original proj
   - [ ] Chase a firmer contact for `DataSaurusDozen.gif` (Autodesk Research/Matejka —
         currently LinkedIn-only) and for `tesseract.gif`/`tesseract-frames.png`
         ("ediacura" on YouTube — no contact found yet, check the video's About tab)
-  - [ ] Raise the two CRC-owned book covers (`Rennie-cover.png`, `Unwin-GmooG.webp`)
-        with the T&F Editorial Assistant directly — internal, not an external request
+  - [x] Raise the two CRC-owned book covers (`Rennie-cover.png`, `Unwin-GmooG.webp`)
+        with the T&F Editorial Assistant directly — internal, not an external request.
+        DONE 2026-10-27: T&F editor ruled all book covers NPR (no permission required)
   - [ ] Record `applied_date`/`contact`/`status`/`doc_path` in
         `permissions-tracking.csv` as responses land (evidence under
         `production/permissions/`)
-  - [ ] Get T&F's ruling on the 1 `[TFQ]` row (`images/MV-juicer.png`, untraceable
-        clipart) and resolve it to NPR / permission-required / replace
+  - [x] Get T&F's ruling on the 1 `[TFQ]` row (`images/MV-juicer.png`, untraceable
+        clipart) and resolve it to NPR / permission-required / replace.
+        Ruling 2026-10-27: remove or replace if the clipart sources can't be traced.
+        DONE 2026-10-27: replaced by `images/MV-juicer-gpt.png` (ChatGPT), row set to NPR
   - [ ] Compile the final Permissions Summary file for CRC/T&F submission once the
         above is done (see "T&F Submission" in `task-permissions.md`)
 

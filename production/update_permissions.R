@@ -13,7 +13,7 @@
 #'
 #' `status` follows the vocabulary already used in task-permissions.md's
 #' Gavin-tasks section: "not started" -> "applied" -> "granted" / "denied" /
-#' "no response", plus "flagged for T&F" for TFQ rows (not normally set by
+#' "no response", or "NPR" (no permission required, e.g. on the publisher's ruling), plus "flagged for T&F" for TFQ rows (not normally set by
 #' hand -- build-permissions-csv.R assigns it at generation time).
 #'
 #' Setting `status = "applied"` auto-stamps `applied_date` to today unless
@@ -48,7 +48,7 @@
 #' # update_permissions(fig_label = "fig-mahalanobis",
 #' #                     notes = "No response after a week, trying X/Twitter")
 
-STATUS_LEVELS <- c("not started", "applied", "granted", "denied", "no response", "flagged for T&F")
+STATUS_LEVELS <- c("not started", "applied", "granted", "denied", "no response", "flagged for T&F", "NPR")
 
 update_permissions <- function(fig_label = NULL, filename = NULL, status = NULL,
                                 applied_date = NULL, applied_by = NULL, contact = NULL,
