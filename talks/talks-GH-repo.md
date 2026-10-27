@@ -29,9 +29,9 @@ Suggested layout, one folder per talk:
 ```
 Vis-MLM-talks/
   README.md                    # list of talks: date, venue, title, links to PDF and PPTX
-  2026-11-Utrecht/
-    Vis-MLM-Utrecht-2026.pdf
-    Vis-MLM-Utrecht-2026.pptx
+  Utrecht/
+    Vis-MLM-Utrecht.pdf
+    Vis-MLM-Utrecht.pptx
 ```
 
 - Create it with `gh repo create friendly/Vis-MLM-talks --public --description "Slides for talks on Visualizing Multivariate Data and Models in R"`, then clone it somewhere outside the book project, e.g. `C:\R\Projects\Vis-MLM-talks`.
