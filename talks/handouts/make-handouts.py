@@ -18,6 +18,19 @@ FONT = "Calibri"
 
 slides = json.loads((HERE / "notes.json").read_text(encoding="utf-8"))
 talk = re.sub(r"\s+", " ", slides[0]["title"]).strip() or "Talk"
+
+# the handouts use JPEG copies of the exported PNGs, sized for how large each prints (about 280 dpi): with
+# the full-size PNGs each PDF was about 20 MB. slides/slide-NN.jpg for the 2x2 (4.9in wide),
+# slides/small-NN.jpg for the notes pages (2.5in)
+JPEG = {"slide": ["-resize", "1400x788", "-quality", "80"],
+        "small": ["-resize", "720x405", "-quality", "85"]}
+for s in slides:
+    png = HERE / "slides" / f"slide-{s['slide']:02d}.png"
+    for stem, opts in JPEG.items():
+        jpg = png.with_name(f"{stem}-{s['slide']:02d}.jpg")
+        if not jpg.exists() or jpg.stat().st_mtime < png.stat().st_mtime:
+            subprocess.run(["magick", str(png), "-background", "white", "-flatten", *opts, str(jpg)], check=True)
+
 stamp = date.today().strftime("%Y-%m-%d")
 
 SPECIAL = {"\\": r"\textbackslash{}", "&": r"\&", "%": r"\%", "$": r"\$", "#": r"\#", "_": r"\_",
@@ -34,7 +47,7 @@ def paras(s):
     return r"\par ".join(tex(p) for p in parts)
 
 
-def preamble(geometry, landscape=False):
+def preamble(geometry, landscape=False, stem="slide"):
     return rf"""\documentclass[10pt]{{article}}
 \usepackage[{PAPER}{",landscape" if landscape else ""},{geometry}]{{geometry}}
 \usepackage{{fontspec}}
@@ -48,7 +61,7 @@ def preamble(geometry, landscape=False):
 \fancyfoot[L]{{\footnotesize\color{{gray}} {tex(talk)}}}
 \fancyfoot[R]{{\footnotesize\color{{gray}} {stamp}\quad page \thepage}}
 \newsavebox{{\rowbox}}
-\newcommand{{\slide}}[2]{{{{\color{{frame}}\fbox{{\includegraphics[width=\dimexpr#1-0.8pt\relax]{{slides/slide-#2.png}}}}}}}}
+\newcommand{{\slide}}[2]{{{{\color{{frame}}\fbox{{\includegraphics[width=\dimexpr#1-0.8pt\relax]{{slides/{stem}-#2.jpg}}}}}}}}
 \begin{{document}}
 """
 
@@ -85,7 +98,7 @@ def notes_pages():
 \ifdim\dimexpr\ht\rowbox+\dp\rowbox\relax>{rowh}\typeout{{ROW-OVERFLOW slide {s['slide']}}}\fi
 \parbox[t][{rowh}][t]{{\linewidth}}{{\usebox{{\rowbox}}}}""")
         rows.append(r"\newpage" if i % 3 == 2 else r"\par\vspace{6pt}{\color{frame}\hrule}\vspace{8pt}")
-    return preamble("margin=0.5in,top=0.45in,bottom=0.7in") + "\n".join(rows) + "\n\\end{document}\n"
+    return preamble("margin=0.5in,top=0.45in,bottom=0.7in", stem="small") + "\n".join(rows) + "\n\\end{document}\n"
 
 
 for name, text in [("handout-2x2", two_by_two()), ("handout-notes", notes_pages())]:
