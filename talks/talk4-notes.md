@@ -135,7 +135,7 @@ MF: Those were just initial suggestions, useful, but now superceeded.
 - **Section-header designs**: DONE 2026-10-20. Slides 5, 24, 32, 45, 58 each have a radial background
   in their section's color and a banner of framed figures from the section (slide 10 is MF's own);
   slide 25's title box is in the section teal; the Section Header layout's subtitles are dark slate.
-  Closing slides 62-64 are gold. Details, colors and geometry: `styles/section-header-handoff.md`.
+  Closing slides 62-64 are gold. Details, colors and geometry: `section-header-handoff.md`.
   Not done: the hidden backup header 68, which uses the same layout.
 - **Speaker notes**: as of 2026-10-21 every visible slide has notes except the section headers 24, 45, 58,
   slide 19 and the "Questions?" slide 64, which don't need them.

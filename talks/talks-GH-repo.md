@@ -10,7 +10,7 @@ Notes written 2026-10-21. Nothing here has been done yet.
 
 - `talks/` is about 48 MB on disk (the current deck is 32 MB). Every version of every file is still in the git history, about 1.3 GB in all, which is most of the repo's 1.36 GB on GitHub.
 
-- The R scripts in `talks/R/` and `talks/styles/peng-dark-figs.R` are run from the book's project root and `source("R/penguin/penguin-colors.R")`. So the working material is easiest to keep *inside* the book's project folder, not in a separate project.
+- The R scripts in `talks/R/` are run from the book's project root and `source("R/penguin/penguin-colors.R")`. So the working material is easiest to keep *inside* the book's project folder, not in a separate project.
 
 - `.gitignore` already has `~$.*`, so PowerPoint lock files never get committed.
 

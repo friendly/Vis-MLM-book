@@ -5,8 +5,8 @@ Updated: 2026-10-20
 ## Files and scope
 
 Working deck: `C:/R/Projects/Vis-MLM-book/talks/Vis-MLM-talk4.pptx`.
-Original brief: `../section-headers.md`.
-Keep all work for this task under `talks/`; this is not a HistData task. Images placed on header slides go in `talks/images/section-headers/`; design/handoff notes and the COM scripts in `talks/styles/`. Slide renders are not kept in the repo (they go stale as soon as the deck is edited): export them from the deck when needed, previews to the scratchpad. Renders and source images deleted on 2026-10-20 are in commit ca83f118 and earlier.
+Original brief: `section-headers.md`.
+Keep all work for this task under `talks/`; this is not a HistData task. Images placed on header slides go in `talks/images/section-headers/`; design/handoff notes in `talks/` (the one-off PowerShell COM scripts that were in `talks/styles/` were removed on 2026-11-10; see git history). Slide renders are not kept in the repo (they go stale as soon as the deck is edited): export them from the deck when needed, previews to the scratchpad. Renders and source images deleted on 2026-10-20 are in commit ca83f118 and earlier.
 
 Do not modify the PowerPoint without approval for the specific change. Slide 5 was approved and updated twice: first on 2026-10-19 (pale solid background), then redesigned on 2026-10-20 (radial background, hearts; see below). Commit the user's own unsaved/uncommitted deck changes separately before applying an approved edit, so each edit is easy to undo.
 
