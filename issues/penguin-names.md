@@ -45,8 +45,8 @@ earlier posts, `2026-10-peng-altviews` and `2026-10-peng-body`), standardized wi
 | `R/penguin/peng-manova.R:160, 180` | `name = c("HookNose", "Cyrano")` | `"SnubNose"` |
 
 Also: the talk decks `talks/Vis-MLM-talk.pptx` and `talks/Vis-MLM-talk4.pptx` (outlier, influence and
-robust-MLM slides; search for "Hook"), and the notes `talks/talk4-notes.md`, `talks/outline.md`,
-`talks/styles/section-header-handoff.md`, `production/abstract-notes.md`.
+robust-MLM slides; search for "Hook"), and the notes `talks/notes/talk4-notes.md`, `talks/notes/outline.md`,
+`talks/notes/section-header-handoff.md`, `production/abstract-notes.md`.
 
 ## Where "Falstaff" could be used for case 35
 

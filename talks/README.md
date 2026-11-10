@@ -10,15 +10,16 @@ Slide decks for talks based on the book.
 
 | File | What it is |
 |---|---|
-| `Vis-MLM-talk4.pptx` | **The working copy.** Made on 2026-10-15 from `Vis-MLM-talk3.pptx` (the deck in its previous order; deleted 2026-10-20, the last version is in the git history), with the PCA/biplot "Multivariate juicers" slides moved up to section 2, right after the data-display slides, and the canonical discriminant slides ("The MANOVA juicer") moved to the end of the HE plot section. Current state, open gaps and to-dos: `talk4-notes.md`. |
-| `talk4-notes.md` | Where talk4 stands: sections and slide ranges, story line, open gaps, the organizer's figures, to-dos |
-| `section-headers.md` | Brief for section-header slide designs (slide 5 done; others pending). Progress and exact geometry: `section-header-handoff.md` |
-| `outline.md` | Topics, the organizer's seven requested figures (with file names), and rough timing |
+| `Vis-MLM-talk4.pptx` | **The working copy.** Made on 2026-10-15 from `Vis-MLM-talk3.pptx` (the deck in its previous order; deleted 2026-10-20, the last version is in the git history), with the PCA/biplot "Multivariate juicers" slides moved up to section 2, right after the data-display slides, and the canonical discriminant slides ("The MANOVA juicer") moved to the end of the HE plot section. Current state, open gaps and to-dos: `notes/talk4-notes.md`. |
+| `notes/talk4-notes.md` | Where talk4 stands: sections and slide ranges, story line, open gaps, the organizer's figures, to-dos |
+| `notes/section-headers.md` | Brief for section-header slide designs (slide 5 done; others pending). Progress and exact geometry: `notes/section-header-handoff.md` |
+| `notes/outline.md` | Topics, the organizer's seven requested figures (with file names), and rough timing |
 | `build-talk.py` | Generator for the *initial* draft. It no longer matches the deck (hand edits, plus the "R packages" slide added later). Don't run it with `--force`; use `-o other.pptx` if a fresh copy is ever wanted. Needs `pip install python-pptx Pillow`. |
 | `base-16x9.pptx` | Empty 16:9 file with the standard Office layouts, used by the generator |
-| `slide-fixes.md` | Checklist of figures that need fixing, from a slide-by-slide review on 2026-10-06. Its slide numbers, and those in the notes below, refer to the original 70-slide `Vis-MLM-talk.pptx`, since deleted (the last version is in the git history). |
+| `notes/slide-fixes.md` | Checklist of figures that need fixing, from a slide-by-slide review on 2026-10-06. Its slide numbers, and those in the notes below, refer to the original 70-slide `Vis-MLM-talk.pptx`, since deleted (the last version is in the git history). |
 | `images/` | Figures not in the book, or re-drawn for the talk. Two older ones have their script alongside (`prestige-allEffects.R`, `peng-simpsons-split.py`). |
 | `R/` | R scripts that draw the talk-only figures in `images/` (run from the project root). `peng-talk-figs.R` and `peng-HE-overview.R` re-draw the CARME penguin figures in the book's penguin colors. `peng-HE-plots.R` draws the penguin HE plots that replace the iris examples (Figs 12.5, 12.7, 12.8). |
+| `notes/` | Working notes on the talk: the ones above, plus `section-header-handoff.md` (section-header design and geometry), `GK-notes.md` (Gavin's comments on the deck) and `talks-GH-repo.md` (plan for moving the talk material to its own GitHub repo) |
 
 ## Status (2026-10-06)
 
