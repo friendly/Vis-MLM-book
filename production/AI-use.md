@@ -42,7 +42,7 @@ image.
 
 - **Tool.** ChatGPT (OpenAI), model GPT 6.1 Sol Light, used in October 2026.
 - **Originality and accuracy.** The idea and design of the figure are my own; ChatGPT produced the
-  drawing from my description. I confirm that the image is original, that it contains no third-party
+  drawing from my text description alone; no images were uploaded. I confirm that the image is original, that it contains no third-party
   material, and that it accurately shows the concept described in the text.
 - **Terms of use.** I have checked OpenAI's terms of use for ChatGPT, under which the user owns the
   output and may use it commercially, including in publications. I therefore confirm that the image is
