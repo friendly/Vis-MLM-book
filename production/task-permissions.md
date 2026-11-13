@@ -183,6 +183,10 @@ Tracks work on clearing third-party figures for CRC/Taylor & Francis submission,
   checked; right to publish, with no further permissions needed; and full responsibility for the
   content, including the accuracy of references. The image was made from a text description only, with no
   uploaded images. Tracking row `fig-MV-juicer`: `doc_path` set to `production/AI-use.md`, note added.
+  Same day: the row was switched to the current file `images/MV-juicer-gpt.png`. A new **Resolved** table
+  in `fig-permission-list.md` now holds items resolved without a grant; `build-permissions-csv.R`
+  reads it and gives those rows `copyright_status = NPR`. Fig 5.1 moved there from the TFQ
+  table, which is now empty.
 
 ## What the script does
 

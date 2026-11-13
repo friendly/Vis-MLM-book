@@ -203,7 +203,18 @@ caption so the flag is visible in the book text itself, not just this log.
 
 | Figure | Chapter | History |
 |--------|---------|---------|
-| `images/MV-juicer-gpt.png` (`fig-MV-juicer`) | Ch 5 | **Current image:** `images/MV-juicer-gpt.png`, made with ChatGPT from a text description only (no third-party material), replacing the original on the T&F ruling of 2026-10-27; NPR. **Original image** (`MV-juicer.png`, no longer used): composite of stock clipart (fruit-head, juicer line art, gear-brain head) assembled in `images/MV-juicer.pptx`; MF has no record of the original source(s) and the elements aren't watermarked. Per guide rule 2, no watermark ≠ public domain, so that can't be used as a PD claim; a reverse image search is the only remaining diligence step and isn't guaranteed to be conclusive. Caption now reads "Source: Author image, using publicly available clipart" (@fig-MV-juicer, `05-pca-biplot.qmd`) to flag this for readers/reviewers as well. **Resolved 2026-10-27:** T&F ruled to replace it; now `images/MV-juicer-gpt.png` (ChatGPT, text description only, no third-party material), NPR. AI use documented 2026-11-13 in `production/AI-use.md`. |
+| _None open; the one TFQ item was resolved 2026-10-27 (see "Resolved" below)._ | | |
+
+### Resolved
+
+Items that were tracked above (permission required, verify, or TFQ) and later resolved
+without a permission grant: e.g. replaced, removed, or ruled NPR by T&F. They stay in the
+tracking CSV with `copyright_status = NPR`, so the audit trail is kept. Same columns as the
+TFQ table; give the resolution and date first in History.
+
+| Figure | Chapter | History |
+|--------|---------|---------|
+| `images/MV-juicer-gpt.png` (`fig-MV-juicer`) | Ch 5 | **Resolved 2026-10-27 (was TFQ):** replaced on the T&F ruling. **Current image:** `images/MV-juicer-gpt.png`, made with ChatGPT from a text description only (no third-party material), replacing the original on the T&F ruling of 2026-10-27; NPR. **Original image** (`MV-juicer.png`, no longer used): composite of stock clipart (fruit-head, juicer line art, gear-brain head) assembled in `images/MV-juicer.pptx`; MF has no record of the original source(s) and the elements aren't watermarked. Per guide rule 2, no watermark ≠ public domain, so that can't be used as a PD claim; a reverse image search is the only remaining diligence step and isn't guaranteed to be conclusive. Caption now reads "Source: Author image, using publicly available clipart" (@fig-MV-juicer, `05-pca-biplot.qmd`) to flag this for readers/reviewers as well. **Resolved 2026-10-27:** T&F ruled to replace it; now `images/MV-juicer-gpt.png` (ChatGPT, text description only, no third-party material), NPR. AI use documented 2026-11-13 in `production/AI-use.md`. |
 
 ### Action items for the permissions log
 
