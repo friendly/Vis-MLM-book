@@ -41,14 +41,12 @@ sources could not be traced, following Taylor & Francis's advice of 27 October 2
 image.
 
 - **Tool.** ChatGPT (OpenAI), model GPT 6.1 Sol Light, used in October 2026.
-- **Originality and accuracy.** The idea and design of the figure are my own; ChatGPT produced the
-  drawing from my text description alone; no images were uploaded. I confirm that the image is original, that it contains no third-party
-  material, and that it accurately shows the concept described in the text.
-- **Terms of use.** I have checked OpenAI's terms of use for ChatGPT, under which the user owns the
-  output and may use it commercially, including in publications. I therefore confirm that the image is
-  suitable for publication.
-- **Right to publish.** Under those terms I have the right to publish the image. Because it contains
-  no third-party material, no further permissions are required.
+- **Originality and accuracy.** The idea and design of the figure are my own. I confirm the
+  originality and accuracy of the image.
+- **Terms of use.** I have checked OpenAI's terms of use for ChatGPT, and I therefore confirm that the
+  image is suitable for publication.
+- **Right to publish.** I have the right to publish the image, and have obtained any permissions where
+  required.
 - **Credit.** The caption reads "Source: Author image, with assistance of ChatGPT."
 
 **Responsibility**
