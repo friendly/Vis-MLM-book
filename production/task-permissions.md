@@ -177,6 +177,13 @@ Tracks work on clearing third-party figures for CRC/Taylor & Francis submission,
   Later the same day: `MV-juicer.png` replaced in Ch 5 by `images/MV-juicer-gpt.png`, a new version of the
   same design made with ChatGPT; caption source "Author image, with assistance of ChatGPT"; row set to `NPR`.
 
+- **2026-11-13 (MF):** The T&F editor asked for more detail on the AI-generated Fig 5.1, per the
+  T&F images-and-figures AI policy. Added a section on it to `production/AI-use.md` (and its Word
+  copy): tool and version (ChatGPT, GPT 6.1 Sol Light); originality and accuracy; terms of use
+  checked; right to publish, with no further permissions needed; and full responsibility for the
+  content, including the accuracy of references. The image was made from a text description only, with no
+  uploaded images. Tracking row `fig-MV-juicer`: `doc_path` set to `production/AI-use.md`, note added.
+
 ## What the script does
 
 `production/build-permissions-csv.R` does **not** re-derive copyright status — that
@@ -227,8 +234,8 @@ directly — see its own header comment for the full argument list.
 - 5 rows have no `fig_label`: book-cover images embedded as plain `<img>` tags in
   `index.qmd` (Preface — not numbered Quarto figures).
 
-- No `verify` rows remain. 1 `TFQ` row (`images/MV-juicer.png`, Ch. 5) is genuinely
-  unresolved and stays that way pending T&F's answer — see the "T&F Submission" section
+- No `verify` rows remain. The 1 `TFQ` row (`images/MV-juicer.png`, Ch. 5) was resolved
+  2026-10-27 by replacing the image (now NPR); it was originally left unresolved pending T&F's answer — see the "T&F Submission" section
   below.
 
 - ~~`images/Cover-GEB.png` appears identically in both `04-multivariate_plots.qmd`
@@ -249,7 +256,7 @@ directly — see its own header comment for the full argument list.
       hand-editing the CSV or risking it being wiped by a regeneration — 2026-08-27
 - [ ] Handed off to Gavin (2026-08-23) — work through step 4 (apply) per "Gavin tasks"
 - [ ] Record evidence (step 5) and submission (step 6) as they land
-- [ ] Get T&F's ruling on the 1 `TFQ` row (`images/MV-juicer.png`) and resolve it to NPR/permission-required/replace
+- [x] Get T&F's ruling on the 1 `TFQ` row (`images/MV-juicer.png`) and resolve it to NPR/permission-required/replace — replaced by `MV-juicer-gpt.png` (2026-10-27), NPR; AI use documented in `AI-use.md` (2026-11-13)
 - [ ] Compile the Permissions Summary file for CRC/T&F (see "T&F Submission" below)
 
 ## T&F Submission
