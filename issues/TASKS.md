@@ -9,6 +9,24 @@ place to log new items. `Tasks-Issues.md` stays where it is as the original proj
 
 ## Open items
 
+### datavis.ca links: fix if York UIT can't restore the site (ON HOLD)
+
+  (2026-11-16) www.datavis.ca was taken offline by York UIT (PHP security issue); `https://`
+  links now fail with a certificate error, `http://` ones redirect to York's "unavailable"
+  page. **Don't fix yet**: wait to see whether UIT restores the site. If it can't, these links
+  matter for the book (printed URLs can't be changed after publication).
+
+  Papers have moved to <https://friendly.github.io/papers/> (repo `friendly/papers`, same
+  paths), so most links can be fixed with `C:\R\Projects\papers\dev\rewrite_datavis_urls.R`
+  (dry run first; it uses DOIs where known, and fixes the broken `effect.pdf` and
+  `Corrgrams.pdf` paths). Non-paper links (`gallery/animation/manova/`, `duncanAV/`,
+  `milestones/...`) need a decision by hand. `vita.bib` has already been updated.
+
+  Files with links (2026-11-16): `bib/references.bib` (11), `00-Author.qmd` (3),
+  `01-Prelude.qmd` (3), `11-mlm-review.qmd` (2), `07-linear_models-plots.qmd` (1),
+  `_quarto.yml` (1), `_quarto-test.yml` (1).
+  Overall plan: `C:\Dropbox\GitHub\datavis\GH-migration-plan.md`.
+
 ### Scripts
 
  **`issues/` cleanup: `rcode-appendix/` grouping + a top-level `scripts/` folder?**
