@@ -86,18 +86,18 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 
 | Done | Image | Pixels | Eff. DPI | Printed at | Px needed @300 | Max `out-width` @300 | Action | Notes |
 |------|-------|--------|----------|------------|----------------|----------------------|--------|-------|
-| [ ] | [`mona-pca.png`](../../images/mona-pca.png) | 630×912 | 144 | 80% (4.4″) | 1316 px | 38% |  |  |
-| [ ] | [`Pearson1901_2.png`](../../images/Pearson1901_2.png) | 632×539 | 144 | 80% (4.4″) | 1316 px | 38% |  |  |
-| [ ] | [`image-compression-SVD.png`](../../images/image-compression-SVD.png) | 720×402 | 146 | 90% (4.9″) | 1480 px | 43% |  |  |
+| [X] | [`mona-pca.png`](../../images/mona-pca.png) | 630×912 | 144 | 80% (4.4″) | 1316 px | 38% | REGENERATE | 2026-11-20: Regenerated the nine panels from [R/PCA-MonaLisa.R](../../R/PCA-MonaLisa.R) and the local grayscale Mona Lisa. Rendered at 1890×2736, ~431 effective dpi at the existing 80% width. Same component counts and panel order. |
+| [X] | [`Pearson1901_2.png`](../../images/Pearson1901_2.png) | 632×539 | 144 | 80% (4.4″) | 1316 px | 38% | REPLACE | 2026-11-20: Cropped p. 566 of the [Internet Archive black-and-white scan](https://archive.org/download/londonedinburgh621901lond/londonedinburgh621901lond_bw.pdf). Used the native 500-ppi ink layer on white and slightly strengthened the strokes as approved. Now 2002×1724, ~457 effective dpi at 80% width. |
+| [X] | [`image-compression-SVD.png`](../../images/image-compression-SVD.png) | 720×402 | 146 | 90% (4.9″) | 1480 px | 43% | REPLACE | 2026-11-20: Retrieved [Kobayashi’s original upload](https://miro.medium.com/v2/1*3Ibw60VZ2-ZfvfjaL0xn-A.png) of the same schematic. Now 2752×1536, ~558 effective dpi at 90% width. |
 | [X] | [`peng-out-biplot-12.png`](../../images/peng-out-biplot-12.png) | 1803×1665 | 470 | 70% (3.8″) | 1151 px | 109% | REGENERATE | 2026-10-03: DPI resolved. Existing file is now 1803×1665 px (previously 577×533), giving about 470 effective DPI at the current 70% print width, above CRC’s 300-DPI minimum. Source: [R/penguin/peng-out-biplot.R](../../R/penguin/peng-out-biplot.R), which exports at 300 DPI with a canvas of 577/96 × 533/96 inches. No further resolution increase needed. The overlapping flipper-length/body-mass labels are a separate placement issue, also visible in HTML; they do not affect this DPI resolution. |
 | [X] | [`peng-out-biplot-34.png`](../../images/peng-out-biplot-34.png) | 1803×1665 | 470 | 70% (3.8″) | 1151 px | 109% | REGENERATE | 2026-10-03: DPI resolved. Existing file is now 1803×1665 px (previously 577×533), giving about 470 effective DPI at the current 70% print width, above CRC’s 300-DPI minimum. Source: [R/penguin/peng-out-biplot.R](../../R/penguin/peng-out-biplot.R), which exports at 300 DPI with a canvas of 577/96 × 533/96 inches. No further resolution increase needed. |
-| [ ] | [`Pearson1901.png`](../../images/Pearson1901.png) | 524×427 | 159 | 60% (3.3″) | 987 px | 31% |  |  |
+| [X] | [`Pearson1901.png`](../../images/Pearson1901.png) | 524×427 | 159 | 60% (3.3″) | 987 px | 31% | REPLACE | 2026-11-20: Cropped Pearson’s original diagram from p. 560 of the [scanned paper](https://pca.narod.ru/pearson1901.pdf) at native scan density. Approved crop is 1344×1095, ~409 effective dpi at the existing 60% width. |
 | [X] | [`outlier-demo.png`](../../images/outlier-demo.png) | 916×433 | 167 | 100% (5.5″) | 1644 px | 55% | REGENERATE | 2026-11-20: Re-rendered from [R/outlier-demo.R](../../R/outlier-demo.R) lines 1–67 (script unchanged; fixed seed) at 3× the original size (`png(width = 2748, height = 1299, res = 288)`; the original was a 916×433 export at 96 dpi). Now 2748×1299, eff. ~502 dpi at 5.5″. Checked against the old image: same data, labels and layout; only the font rendering differs slightly (rendered on macOS). |
-| [ ] | [`pca4ds-figure-2-11.png`](../../images/pca4ds-figure-2-11.png) | 880×416 | 178 | 90% (4.9″) | 1480 px | 53% |  |  |
+| [X] | [`pca4ds-figure-2-11.png`](../../images/pca4ds-figure-2-11.png) | 880×416 | 178 | 90% (4.9″) | 1480 px | 53% | REPLACE | 2026-11-20: Exported the approved [vector redraw](../../images/pca4ds-figure-2-11.svg) of Aluja et al., Figure 2.11, at 3×. Now 2640×1248, ~535 effective dpi at the existing 90% width. Original attribution retained. |
 | [X] | [`pca-animation-combined.jpg`](../../images/pca-animation-combined.jpg) | 1078×365 | 197 | 100% (5.5″) | 1644 px | 65% | REPLACE | 2026-11-20: Rebuilt from the full-size frames already in the repo, `images/pca-animation-split/frame_00.jpg` and `frame_32.jpg` (946×594 each; pixel-identical to the two pictures in `pca-animation-split/pca-animation-combined.pptx`). Placed with `magick` at the same positions and relative sizes as on the slide, then cropped to the old framing. Now 1744×590, eff. ~318 dpi at 5.5″. Checked against the old image: same content and framing. |
 | [X] | [`diabetes-3d-both.png`](../../images/diabetes-3d-both.png) | 1143×497 | 209 | 100% (5.5″) | 1644 px | 69% | REPLACE | Used source `.pptx`, converted -> `.pdf`, used `magick` to create high-res `.png`; cropped `.png` |
 | [X] | [`pca-rotation.png`](../../images/pca-rotation.png) | 884×357 | 230 | 70% (3.8″) | 1151 px | 53% | REPLACE | 2026-11-20: Re-exported from its source, `images/pca-rotation.pptx`, using the **Dec 2023 version from git** (commit `e84dcc98`), the one that made the old PNG. The current deck was edited in Apr 2024 and has black √λ labels; the book's are red. Exported to PDF from PowerPoint (which draws the √λ equations as vector text), rendered with `pdftoppm` at ~258 dpi, and cropped to the old framing (crop fitted so a 1× render lines up with the old PNG). Now 2652×1071, eff. ~690 dpi at 3.8″. Checked against the old image: same drawing, labels and colors. |
-| [ ] | [`pca-springs-frames.jpg`](../../images/pca-springs-frames.jpg) | 1349×411 | 246 | 100% (5.5″) | 1644 px | 82% |  |  |
+| [X] | [`pca-springs-frames.jpg`](../../images/pca-springs-frames.jpg) | 1349×411 | 246 | 100% (5.5″) | 1644 px | 82% | REGENERATE | 2026-11-20: Regenerated all 100 points and projections in frames 0, 20 and 128 using the seed and equations from [Amoeba’s animation code](https://gist.github.com/anonymous/7d888663c6ec679ea65428715b99bfdd). Exported the [vector frames](../../images/pca-springs/pca-springs-frames.svg) at 4047×1233, ~739 effective dpi at full text width. |
 
 ## Ch. 6: Linear Models (`06-linear_models.qmd`) — 1 image
 
@@ -195,12 +195,12 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
   (`here::here("images", ...)`), and `iris-diagram.jpg` (`here::here("images/...")`).
   No other printed image was missed.
 - Rows now: **69** (69 − 8 + 8).
-- Resolved: **44** as of 2026-11-20 (**25 REPLACE**, **19 REGENERATE**). Added 2026-11-20:
+- Resolved: **50** as of 2026-11-20 (**29 REPLACE**, **21 REGENERATE**). Added 2026-11-20:
   `duncan-av-influence.png`, `dual-points-lines.png`, `outlier-demo.png`,
   `pollen-eureka1`–`4.png`, the five `tours/` images, `crime-pvPlot-1-2.png`,
   `corrgram-renderings.png`, `proj-P2-vec.png`, `peng-colors.png` (REGENERATE), and
   `pca-animation-combined.jpg`, `mahalanobis.png`, `projection.png`, `pca-rotation.png`,
-  `proj-combined.png`, `proj-vectors-labels.png` (REPLACE).
-- Unchecked: **25** (21 from the audit + 4 added).
+  `proj-combined.png`, `proj-vectors-labels.png`, `Pearson1901.png`, `pca4ds-figure-2-11.png`, `Pearson1901_2.png`, `image-compression-SVD.png` (REPLACE), and `mona-pca.png`, `pca-springs-frames.jpg` (REGENERATE).
+- Unchecked: **19** (15 from the audit + 4 added).
 - Resolved (SHRINK): **0**.
 - Resolved (ACCEPT / flag to CRC): **0**.
