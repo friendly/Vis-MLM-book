@@ -92,9 +92,9 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 | [X] | [`peng-out-biplot-12.png`](../../images/peng-out-biplot-12.png) | 1803×1665 | 470 | 70% (3.8″) | 1151 px | 109% | REGENERATE | 2026-10-03: DPI resolved. Existing file is now 1803×1665 px (previously 577×533), giving about 470 effective DPI at the current 70% print width, above CRC’s 300-DPI minimum. Source: [R/penguin/peng-out-biplot.R](../../R/penguin/peng-out-biplot.R), which exports at 300 DPI with a canvas of 577/96 × 533/96 inches. No further resolution increase needed. The overlapping flipper-length/body-mass labels are a separate placement issue, also visible in HTML; they do not affect this DPI resolution. |
 | [X] | [`peng-out-biplot-34.png`](../../images/peng-out-biplot-34.png) | 1803×1665 | 470 | 70% (3.8″) | 1151 px | 109% | REGENERATE | 2026-10-03: DPI resolved. Existing file is now 1803×1665 px (previously 577×533), giving about 470 effective DPI at the current 70% print width, above CRC’s 300-DPI minimum. Source: [R/penguin/peng-out-biplot.R](../../R/penguin/peng-out-biplot.R), which exports at 300 DPI with a canvas of 577/96 × 533/96 inches. No further resolution increase needed. |
 | [ ] | [`Pearson1901.png`](../../images/Pearson1901.png) | 524×427 | 159 | 60% (3.3″) | 987 px | 31% |  |  |
-| [ ] | [`outlier-demo.png`](../../images/outlier-demo.png) | 916×433 | 167 | 100% (5.5″) | 1644 px | 55% |  |  |
+| [X] | [`outlier-demo.png`](../../images/outlier-demo.png) | 916×433 | 167 | 100% (5.5″) | 1644 px | 55% | REGENERATE | 2026-11-20: Re-rendered from [R/outlier-demo.R](../../R/outlier-demo.R) lines 1–67 (script unchanged; fixed seed) at 3× the original size (`png(width = 2748, height = 1299, res = 288)`; the original was a 916×433 export at 96 dpi). Now 2748×1299, eff. ~502 dpi at 5.5″. Checked against the old image: same data, labels and layout; only the font rendering differs slightly (rendered on macOS). |
 | [ ] | [`pca4ds-figure-2-11.png`](../../images/pca4ds-figure-2-11.png) | 880×416 | 178 | 90% (4.9″) | 1480 px | 53% |  |  |
-| [ ] | [`pca-animation-combined.jpg`](../../images/pca-animation-combined.jpg) | 1078×365 | 197 | 100% (5.5″) | 1644 px | 65% |  |  |
+| [X] | [`pca-animation-combined.jpg`](../../images/pca-animation-combined.jpg) | 1078×365 | 197 | 100% (5.5″) | 1644 px | 65% | REPLACE | 2026-11-20: Rebuilt from the full-size frames already in the repo, `images/pca-animation-split/frame_00.jpg` and `frame_32.jpg` (946×594 each; pixel-identical to the two pictures in `pca-animation-split/pca-animation-combined.pptx`). Placed with `magick` at the same positions and relative sizes as on the slide, then cropped to the old framing. Now 1744×590, eff. ~318 dpi at 5.5″. Checked against the old image: same content and framing. |
 | [X] | [`diabetes-3d-both.png`](../../images/diabetes-3d-both.png) | 1143×497 | 209 | 100% (5.5″) | 1644 px | 69% | REPLACE | Used source `.pptx`, converted -> `.pdf`, used `magick` to create high-res `.png`; cropped `.png` |
 | [ ] | [`pca-rotation.png`](../../images/pca-rotation.png) | 884×357 | 230 | 70% (3.8″) | 1151 px | 53% |  |  |
 | [ ] | [`pca-springs-frames.jpg`](../../images/pca-springs-frames.jpg) | 1349×411 | 246 | 100% (5.5″) | 1644 px | 82% |  |  |
@@ -118,14 +118,14 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 
 | Done | Image | Pixels | Eff. DPI | Printed at | Px needed @300 | Max `out-width` @300 | Action | Notes |
 |------|-------|--------|----------|------------|----------------|----------------------|--------|-------|
-| [ ] | [`duncan-av-influence.png`](../../images/duncan-av-influence.png) | 1300×650 | 237 | 100% (5.5″) | 1644 px | 79% |  |  |
+| [X] | [`duncan-av-influence.png`](../../images/duncan-av-influence.png) | 1300×650 | 237 | 100% (5.5″) | 1644 px | 79% | REGENERATE | 2026-11-20: Re-rendered from [R/Duncan/duncan-av-influence.R](../../R/Duncan/duncan-av-influence.R) (script unchanged) at 3× the original size (`png(width = 3900, height = 1950, res = 288)`; the original was a 1300×650 export at 96 dpi). Now 3900×1950, eff. ~712 dpi at 5.5″. Checked against the old image: same data, lines, arrows and labels; only the font rendering differs slightly (rendered on macOS). |
 
 ## Ch. 8: Linear Model Topics (`08-lin-mod-topics.qmd`) — 2 images
 
 | Done | Image | Pixels | Eff. DPI | Printed at | Px needed @300 | Max `out-width` @300 | Action | Notes |
 |------|-------|--------|----------|------------|----------------|----------------------|--------|-------|
 | [X] | [`coffee-data-beta-both.png`](../../images/coffee-data-beta-both.png) | 917×439 | 186 | 90% (4.9″) | 1480 px | 55% | REPLACE | Used source `.pptx`, converted -> `.pdf`, used `magick` to create high-res `.png`; cropped `.png` |
-| [ ] | [`dual-points-lines.png`](../../images/dual-points-lines.png) | 965×520 | 196 | 90% (4.9″) | 1480 px | 58% |  |  |
+| [X] | [`dual-points-lines.png`](../../images/dual-points-lines.png) | 965×520 | 196 | 90% (4.9″) | 1480 px | 58% | REGENERATE | 2026-11-20: Re-rendered from [R/dual-points-lines.R](../../R/dual-points-lines.R) lines 1–105 (script unchanged) at 3× the original size (`png(width = 2895, height = 1560, res = 288)`; the original was a 965×520 export at 96 dpi). Line 33's `intersections()` call errors outside the original session, but it isn't part of the figure. Now 2895×1560, eff. ~587 dpi at 4.9″. Checked against the old image: identical apart from slightly different font rendering (rendered on macOS). |
 
 ## Ch. 9: Collinearity & Ridge (`09-collinearity-ridge.qmd`) — 3 images
 
@@ -195,7 +195,9 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
   (`here::here("images", ...)`), and `iris-diagram.jpg` (`here::here("images/...")`).
   No other printed image was missed.
 - Rows now: **69** (69 − 8 + 8).
-- Resolved: **22** as of 2026-10-08 (**19 REPLACE**, **3 REGENERATE**).
-- Unchecked: **47** (39 from the audit + 8 added).
+- Resolved: **26** as of 2026-11-20 (**20 REPLACE**, **6 REGENERATE**). Added 2026-11-20:
+  `duncan-av-influence.png`, `dual-points-lines.png`, `outlier-demo.png` (REGENERATE) and
+  `pca-animation-combined.jpg` (REPLACE).
+- Unchecked: **43** (35 from the audit + 8 added).
 - Resolved (SHRINK): **0**.
 - Resolved (ACCEPT / flag to CRC): **0**.
