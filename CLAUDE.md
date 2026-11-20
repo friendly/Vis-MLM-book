@@ -67,6 +67,11 @@ together avoids this.
   while it is open and will fail with "process cannot access the file" (os error 32).
 - See `issues/quarto-pdf-help.md` and https://github.com/quarto-dev/quarto-cli/discussions/11087
 
+**Minimum package versions:** `R/common.R` stops the build if a package is older than the
+book needs (the `min_versions` vector near the top). Currently only `heplots >= 1.8.6`, for
+the `robmlm(<mlm>)` method used in Ch. 14 (on CRAN since Oct. 2026). Other packages may need the same guard: if the book starts relying on a feature
+newer than a package's CRAN release, add it to `min_versions` with a note on what needs it.
+
 **R setup:** `R/common.R` is sourced at the start of each chapter. It defines:
 - `pkg()` — format R package names (bold + optional citation)
 - `colorize()` / `colorize_bg()` — colored text for HTML and PDF

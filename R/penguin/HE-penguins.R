@@ -74,7 +74,7 @@ covEllipses(peng[,3:4], peng$species,
 
 ## MANOVA
 
-contrasts(peng$species)<-matrix(c(1,-1,0, -1, -1, -2), 3,2)
+contrasts(peng$species)<-matrix(c(1,-1,0, -1, -1, 2), 3,2)
 contrasts(peng$species)
 
 

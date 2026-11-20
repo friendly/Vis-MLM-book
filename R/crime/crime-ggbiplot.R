@@ -91,6 +91,7 @@ ggbiplot(crime.pca,
          varname.color = "black",
          clip = "off") +
   labs(fill = "Region", color = "Region") +
+  guides(shape = "none") +
   theme_minimal(base_size = 14) +
   theme(legend.direction = 'horizontal', legend.position = 'top')
 

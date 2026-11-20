@@ -179,7 +179,7 @@ mlm.influence(Toy.mlm)
 
 # Does robust model help?
 
-Toy.rlm <- robmlm(cbind(y1, y2) ~ x, data = Toy)
+Toy.rlm <- robmlm(Toy.mlm)
 plot(Toy.rlm)
 
 mlm.influence(Toy.rlm)

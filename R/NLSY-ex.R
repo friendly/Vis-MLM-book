@@ -154,8 +154,7 @@ influencePlot(NLSY.mod2)
 
 #-- robust methods
 
-NLSY.rlm <-  heplots::robmlm(cbind(read,math) ~ antisoc + hyperact + log2(income) + educ, 
-                data = NLSY |> filter(income != 0))
+NLSY.rlm <- heplots::robmlm(NLSY.mod2)
 Anova(NLSY.rlm)
 
 wts <- NLSY.rlm$weights

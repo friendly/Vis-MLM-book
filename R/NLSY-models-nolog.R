@@ -80,8 +80,7 @@ heplot(NLSY.mod2,
        lwd=c(2, 3, 3),
        label.pos = c("bottom", "top", "top", "top", "bottom"))
 
-NLSY.rlm <- robmlm(cbind(read, math) ~ income + educ, # + antisoc + hyperact , 
-               data = NLSY)
+NLSY.rlm <- robmlm(NLSY.mod1)
 
 heplot(NLSY.rlm, 
        fill=TRUE, fill.alpha = 0.2, 

@@ -18,7 +18,7 @@ influencePlot(pottery.mlm, id.n =4)
 influencePlot(pottery.mlm, id.n =4, type = "LR")
 
 
-pottery.rlm <- robmlm(cbind(Al, Fe, Mg, Ca, Na) ~ Site, data = Pottery)
+pottery.rlm <- robmlm(pottery.mlm)
 
 plot(pottery.rlm, segments = TRUE)
 

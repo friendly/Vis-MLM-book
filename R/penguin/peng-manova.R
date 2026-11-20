@@ -11,7 +11,7 @@ library(dplyr)
 library(tibble)
 
 data(peng, package="heplots")
-contrasts(peng$species) <- matrix(c(1,-1,0, -1, -1, -2), 3,2)
+contrasts(peng$species) <- matrix(c(1,-1,0, -1, -1, 2), 3,2)
 contrasts(peng$species)
 
 source(here::here("R", "penguin", "penguin-colors.R"))
@@ -141,11 +141,9 @@ peng.mlm1 <- lm(cbind(bill_length, bill_depth, flipper_length, body_mass) ~
 peng.mlm2 <- lm(cbind(bill_length, bill_depth, flipper_length, body_mass) ~
                   species + island + sex, data=peng)
 
-peng.rlm <- robmlm(cbind(bill_length, bill_depth, flipper_length, body_mass) ~
-                    species, data=peng)
+peng.rlm <- robmlm(peng.mlm1)
 # all main effects
-peng.rlm2 <- robmlm(cbind(bill_length, bill_depth, flipper_length, body_mass) ~
-                  species + island + sex, data=peng)
+peng.rlm2 <- robmlm(peng.mlm2)
 
 op <- par(mar = c(4, 4, 3, 1) +.1)
 col = peng.colors("dark")[peng$species]
@@ -159,7 +157,7 @@ plot(peng.rlm,
 
 notables <- tibble(
   id = c(10, 283),
-  name = c("HookNose", "Cyrano"),
+  name = c("SnubNose", "Cyrano"),
   wts = peng.rlm$weights[id]
 )
 text(notables$id, notables$wts, 
@@ -179,7 +177,7 @@ plot(peng.rlm2,
 
 notables <- tibble(
   id = c(10, 283),
-  name = c("HookNose", "Cyrano"),
+  name = c("SnubNose", "Cyrano"),
   wts = peng.rlm2$weights[id]
 )
 text(notables$id, notables$wts, 

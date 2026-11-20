@@ -7,7 +7,7 @@ data(peng, package="heplots")
 source(here::here("R", "penguin", "penguin-colors.R"))
 ## MANOVA
 
-contrasts(peng$species)<-matrix(c(1,-1,0, -1, -1, -2), 3,2)
+contrasts(peng$species)<-matrix(c(1,-1,0, -1, -1, 2), 3,2)
 contrasts(peng$species)
 
 

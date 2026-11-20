@@ -161,6 +161,34 @@ Tracks work on clearing third-party figures for CRC/Taylor & Francis submission,
   `applied`; SAGE (`collin-demo.png`) was already `cleared - STM automatic`, no request
   needed. Logged via `update_permissions()`.
 
+- **2026-10-26:** Sent the `wheres-waldo.png` request (`fig-wheres-waldo`) to both
+  Candlewick (permissions@candlewick.com) and Walker Books UK (permissions@walker.co.uk):
+  an email, the figure as it would appear in the book, and Walker's completed permissions form.
+  The request also covers the free online edition. Logged via `update_permissions()`
+  as `applied`. Expect ~6 weeks. The email and form are in `production/permissions/emails/`.
+
+- **2026-10-27 (MF):** Rulings from the T&F editor. (1) Book covers need no permission: all 7
+  cover rows (`Cover-GEB.png` x2, Wilke, Healy, Rennie, Unwin, and the `books.jpg` montage) set to
+  `NPR`, a new status level in `update_permissions()`. The requests already sent to Hachette,
+  O'Reilly and Princeton UP are moot (Princeton had already granted). (2) For the composite
+  `MV-juicer.png` (`[TFQ]`): "err on the side of caution and either remove or replace the images if
+  the original copyright holder cannot be traced." Recorded in its notes; not yet acted on.
+  (3) The editor asked whether the Waldo request had been sent: yes, 2026-10-26.
+  Later the same day: `MV-juicer.png` replaced in Ch 5 by `images/MV-juicer-gpt.png`, a new version of the
+  same design made with ChatGPT; caption source "Author image, with assistance of ChatGPT"; row set to `NPR`.
+
+- **2026-11-13 (MF):** The T&F editor asked for more detail on the AI-generated Fig 5.1, per the
+  T&F images-and-figures AI policy. Added a section on it to `production/AI-use.md` (and its Word
+  copy): tool and version (ChatGPT, GPT 6.1 Sol Light); originality and accuracy; terms of use
+  checked; right to publish, with any permissions obtained where required; and full responsibility
+  for the content, including the accuracy of references. The statement keeps strictly to the policy's
+  list. It makes no claim about what was given to ChatGPT: MF doesn't recall whether a reference
+  image was uploaded along with the text description. Tracking row `fig-MV-juicer`: `doc_path` set to `production/AI-use.md`, note added.
+  Same day: the row was switched to the current file `images/MV-juicer-gpt.png`. A new **Resolved** table
+  in `fig-permission-list.md` now holds items resolved without a grant; `build-permissions-csv.R`
+  reads it and gives those rows `copyright_status = NPR`. Fig 5.1 moved there from the TFQ
+  table, which is now empty.
+
 ## What the script does
 
 `production/build-permissions-csv.R` does **not** re-derive copyright status — that
@@ -211,8 +239,8 @@ directly — see its own header comment for the full argument list.
 - 5 rows have no `fig_label`: book-cover images embedded as plain `<img>` tags in
   `index.qmd` (Preface — not numbered Quarto figures).
 
-- No `verify` rows remain. 1 `TFQ` row (`images/MV-juicer.png`, Ch. 5) is genuinely
-  unresolved and stays that way pending T&F's answer — see the "T&F Submission" section
+- No `verify` rows remain. The 1 `TFQ` row (`images/MV-juicer.png`, Ch. 5) was resolved
+  2026-10-27 by replacing the image (now NPR); it was originally left unresolved pending T&F's answer — see the "T&F Submission" section
   below.
 
 - ~~`images/Cover-GEB.png` appears identically in both `04-multivariate_plots.qmd`
@@ -233,7 +261,7 @@ directly — see its own header comment for the full argument list.
       hand-editing the CSV or risking it being wiped by a regeneration — 2026-08-27
 - [ ] Handed off to Gavin (2026-08-23) — work through step 4 (apply) per "Gavin tasks"
 - [ ] Record evidence (step 5) and submission (step 6) as they land
-- [ ] Get T&F's ruling on the 1 `TFQ` row (`images/MV-juicer.png`) and resolve it to NPR/permission-required/replace
+- [x] Get T&F's ruling on the 1 `TFQ` row (`images/MV-juicer.png`) and resolve it to NPR/permission-required/replace — replaced by `MV-juicer-gpt.png` (2026-10-27), NPR; AI use documented in `AI-use.md` (2026-11-13)
 - [ ] Compile the Permissions Summary file for CRC/T&F (see "T&F Submission" below)
 
 ## T&F Submission
@@ -314,7 +342,7 @@ All 5 rows applied for or cleared; see `permissions-tracking.csv` for dates (evi
 | 5.17 | `pca4ds-figure-2-11.png` | Tomàs Aluja-Banet (per MF: contact first author directly) | Professor of Statistics, EIO Dept., UPC BarcelonaTech. No direct email confirmed (`imp.upc.edu` profile 404'd); try LinkedIn (linkedin.com/in/tomas-aluja-b0b24713/) or the EIO department contact page. Site states "© 1998-2020 ... All Rights Reserved" — permission genuinely required |
 | 12.3 | `iris-diagram.jpg` | Gayan De Silva (per MF: track down via the DOI) | DOI `10.13140/RG.2.2.14790.14406` resolves to a **ResearchGate self-upload**, confirming `publisher = Unpublished` — De Silva is the rightsholder directly, no publisher intermediary. Contact via his ResearchGate profile (researchgate.net/profile/Gayan-De-Silva) |
 | 3.x (PDF only) | `datasaurus-dozen.jpg` | Selçuk Korkmaz (X post; underlying art: Autodesk Research) | selcuk.korkmaz@hacettepe.edu.tr. MF decided 2026-08-23 not to regenerate from the CC0 `datasauRus` data — pursuing permission instead |
-| 9.2 | `wheres-waldo.png` | Martin Handford / Walker Books / Candlewick | Candlewick permissions@candlewick.com; Walker Books UK permissions@walker.co.uk (both ~6-week, formal-license processes). **High risk** — commercially-owned character art, permission may be slow/expensive/refused — but MF decided 2026-08-23 to request anyway rather than drop the figure. Send to both; document whatever comes back either way |
+| 9.2 | `wheres-waldo.png` | Martin Handford / Walker Books / Candlewick | Candlewick permissions@candlewick.com; Walker Books UK permissions@walker.co.uk (both ~6-week, formal-license processes). **High risk** — commercially-owned character art, permission may be slow/expensive/refused — but MF decided 2026-08-23 to request anyway rather than drop the figure. Send to both; document whatever comes back either way. **[APPLIED]** 2026-10-26, emailed both with Walker's form attached |
 
 ### Nearly ready to apply — contact needs manual completion
 

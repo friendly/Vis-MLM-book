@@ -76,7 +76,8 @@ ggplot(peng_plot,
 ggplot(iris, aes(x=Petal.Width, y=Petal.Length, fill=Sepal.Width)) +
   stat_density2d(geom="polygon", aes(fill = factor(..level..)))
 
-# From Cara Tompson
+# From Cara Thompson, "Level Up Your Labels", useR! 2022 poster,
+# https://www.cararthompson.com/talks/user2022/  (source of the nickname "Cyrano")
 
 # |- Exceptions ----
 p_exceptions <- peng |>
