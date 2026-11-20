@@ -37,10 +37,10 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 | [X] | [`1D-4D.png`](../../images/1D-4D.png) | 482×305 | 98 | 90% (4.9″) | 1480 px | 29% | REPLACE | 2026-07-10: was an unattributed web graphic (circulating online since ≥2015; no hi-res original found). Redrawn as an exact author TikZ replica, source `latex/diagrams/fig-1D-4D.tex` (geometry traced programmatically from the raster). Print uses **vector CMYK PDF** (`images/1D-4D.pdf`); PNG re-rendered at 600 dpi for HTML (2846×1801 px, eff. 577 dpi). `01-Prelude.qmd` picks PDF for LaTeX, PNG for HTML. Also resolves the permission question in `fig-permission-list.md`. |
 | [X] | [`flatland-spheres.jpg`](../../images/flatland-spheres.jpg) | 660×208 | 134 | 90% (4.9″) | 1480 px | 40% | REPLACE | `.pdf` retrieved from https://archive.org/details/flatlandromanceo00abbouoft/page/70/mode/2up , then used `magick` to create high-res `.png`, cropped `.png` and saved as `.jpg` |
 | [X] | [`history/discoveries.jpg`](../../images/history/discoveries.jpg) | 1007×367 | 184 | 100% (5.5″) | 1644 px | 61% | REPLACE | Used source `.pptx`, converted -> `.pdf`, used `magick` to create high-res `.png`, cropped `.png` and saved as `.jpg` |
-| [ ] | [`pollen-eureka1.png`](../../images/pollen-eureka1.png) | 535×531 | 195 | 50% (2.7″) | 822 px | 32% |  | Added 2026-11-20: missed by the July audit (included via markdown `![](images/...)`). One panel of a 2×2 layout, so it prints in a half-width column; the `{width=40%}` in the `.qmd` doesn't apply in the PDF. |
-| [ ] | [`pollen-eureka2.png`](../../images/pollen-eureka2.png) | 535×531 | 195 | 50% (2.7″) | 822 px | 32% |  | Added 2026-11-20; same as `pollen-eureka1.png`. |
-| [ ] | [`pollen-eureka3.png`](../../images/pollen-eureka3.png) | 535×531 | 195 | 50% (2.7″) | 822 px | 32% |  | Added 2026-11-20; same as `pollen-eureka1.png`. |
-| [ ] | [`pollen-eureka4.png`](../../images/pollen-eureka4.png) | 535×531 | 195 | 50% (2.7″) | 822 px | 32% |  | Added 2026-11-20; same as `pollen-eureka1.png`. |
+| [X] | [`pollen-eureka1.png`](../../images/pollen-eureka1.png) | 535×531 | 195 | 50% (2.7″) | 822 px | 32% | REGENERATE | Added 2026-11-20: missed by the July audit (included via markdown `![](images/...)`). One panel of a 2×2 layout, so it prints in a half-width column; the `{width=40%}` in the `.qmd` doesn't apply in the PDF. **Regenerated 2026-11-20** with new script [R/pollen-eureka-frames.R](../../R/pollen-eureka-frames.R). The old panels were 2023 screenshots of the rgl view in `R/pollen-animation.R`. The new ones use the same view (userMatrix), with each panel's zoom matched to its screenshot (0.87, 0.51, 0.223, 0.084 for panels 1–4) and point size set to match the old ink density. They're rendered at 3× pixel density through webshot2: each panel is now 1605×1593, eff. ~585 dpi at 2.7″. Visible changes, approved by GK: axis titles removed (the old ones read V1/V3), and in panel 1 the NUB tick labels sit on a different box edge (current rgl layout). |
+| [X] | [`pollen-eureka2.png`](../../images/pollen-eureka2.png) | 535×531 | 195 | 50% (2.7″) | 822 px | 32% | REGENERATE | Added 2026-11-20; regenerated 2026-11-20. Same as `pollen-eureka1.png`. |
+| [X] | [`pollen-eureka3.png`](../../images/pollen-eureka3.png) | 535×531 | 195 | 50% (2.7″) | 822 px | 32% | REGENERATE | Added 2026-11-20; regenerated 2026-11-20. Same as `pollen-eureka1.png`. |
+| [X] | [`pollen-eureka4.png`](../../images/pollen-eureka4.png) | 535×531 | 195 | 50% (2.7″) | 822 px | 32% | REGENERATE | Added 2026-11-20; regenerated 2026-11-20. Same as `pollen-eureka1.png`. |
 | [X] | [`ReavenMiller-3d-annotated.png`](../../images/ReavenMiller-3d-annotated.png) | 833×667 | 217 | 70% (3.8″) | 1151 px | 50% | REPLACE | Took non-annotated version from source journal article `.pdf`, added annotations in same exact style as the original `ReavenMiller-3d-annotated.png` file (via Pixelmator Pro). |
 | [ ] | [`tesseract-frames.png`](../../images/tesseract-frames.png) | 1280×256 | 234 | 100% (5.5″) | 1644 px | 77% |  |  |
 
@@ -195,9 +195,9 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
   (`here::here("images", ...)`), and `iris-diagram.jpg` (`here::here("images/...")`).
   No other printed image was missed.
 - Rows now: **69** (69 − 8 + 8).
-- Resolved: **26** as of 2026-11-20 (**20 REPLACE**, **6 REGENERATE**). Added 2026-11-20:
-  `duncan-av-influence.png`, `dual-points-lines.png`, `outlier-demo.png` (REGENERATE) and
-  `pca-animation-combined.jpg` (REPLACE).
-- Unchecked: **43** (35 from the audit + 8 added).
+- Resolved: **30** as of 2026-11-20 (**20 REPLACE**, **10 REGENERATE**). Added 2026-11-20:
+  `duncan-av-influence.png`, `dual-points-lines.png`, `outlier-demo.png`,
+  `pollen-eureka1`–`4.png` (REGENERATE) and `pca-animation-combined.jpg` (REPLACE).
+- Unchecked: **39** (35 from the audit + 4 added).
 - Resolved (SHRINK): **0**.
 - Resolved (ACCEPT / flag to CRC): **0**.
