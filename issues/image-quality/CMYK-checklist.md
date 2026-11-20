@@ -131,24 +131,24 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 
 | Done | Image | Pixels | Eff. DPI | Printed at | Px needed @300 | Max `out-width` @300 | Action | Notes |
 |------|-------|--------|----------|------------|----------------|----------------------|--------|-------|
-| [ ] | [`collinearity-diagnostics-SPSS.png`](../../images/collinearity-diagnostics-SPSS.png) | 927×257 | 169 | 100% (5.5″) | 1644 px | 56% |  |  |
+| [X] | [`collinearity-diagnostics-SPSS.png`](../../images/collinearity-diagnostics-SPSS.png) | 927×257 | 169 | 100% (5.5″) | 1644 px | 56% | REGENERATE | 2026-11-20: Retypeset the table at 3708×1028 (~677 effective dpi at full width), preserving the seven data rows, headings, shading and footnote. |
 | [X] | [`collin-demo.png`](../../images/collin-demo.png) | 1190×422 | 217 | 100% (5.5″) | 1644 px | 72% | REPLACE | Used source `.pptx`, converted -> `.pdf`, used `magick` to create high-res `.png`; cropped `.png` |
-| [ ] | [`wheres-waldo.png`](../../images/wheres-waldo.png) | 1474×569 | 299 | 90% (4.9″) | 1480 px | 89% |  |  |
+| [X] | [`wheres-waldo.png`](../../images/wheres-waldo.png) | 1474×569 | 299 | 90% (4.9″) | 1480 px | 89% | REPLACE | 2026-11-20: Rebuilt the composite from the [original scene](https://x.com/ErrorJustin/status/830205933598879744) and a [larger scan for the inset](https://vuss.io/wp-content/uploads/2025/01/Wheres-Waldo-Ocean-Super-High-Resolution.jpg), retaining the crop, oval and dashed connectors. The 2948×1138 file prints at ~598 dpi at the existing 90% width. The scene supplies ~542 native dpi. GK accepted the inset as shown (~333 source pixels across 1.86″, about 179 native dpi). |
 
 ## Ch. 10: Hotelling's T² (`10-hotelling.qmd`) — 1 image
 
 | Done | Image | Pixels | Eff. DPI | Printed at | Px needed @300 | Max `out-width` @300 | Action | Notes |
 |------|-------|--------|----------|------------|----------------|----------------------|--------|-------|
-| [ ] | [`T2-diagram.png`](../../images/T2-diagram.png) | 451×410 | 118 | 70% (3.8″) | 1151 px | 27% |  |  |
+| [X] | [`T2-diagram.png`](../../images/T2-diagram.png) | 451×410 | 118 | 70% (3.8″) | 1151 px | 27% | REGENERATE | 2026-11-20: Reconstructed the ellipse, mean vectors, projections, braces and labels from the book image. Approved 1804×1640 render gives ~470 effective dpi at 70% width. |
 
 ## Ch. 11: MLM Review (`11-mlm-review.qmd`) — 4 images
 
 | Done | Image | Pixels | Eff. DPI | Printed at | Px needed @300 | Max `out-width` @300 | Action | Notes |
 |------|-------|--------|----------|------------|----------------|----------------------|--------|-------|
-| [ ] | [`manova-diagram-anno.png`](../../images/manova-diagram-anno.png) | 413×219 | 108 | 70% (3.8″) | 1151 px | 25% |  | Added 2026-11-20: missed by the July audit (included via `here::here("images", ...)`). |
+| [X] | [`manova-diagram-anno.png`](../../images/manova-diagram-anno.png) | 413×219 | 108 | 70% (3.8″) | 1151 px | 25% | REGENERATE | Added 2026-11-20: missed by the July audit (included via `here::here("images", ...)`). 2026-11-20: Reconstructed the three ellipses and mean positions from the bitmap and retained all four slide annotations. Approved 1652×876 render gives ~431 effective dpi at 70% width. |
 | [X] | [`VisualizingSSP.png`](../../images/VisualizingSSP.png) | 830×311 | 152 | 100% (5.5″) | 1644 px | 50% | REPLACE | 2026-10-08: The plot panels in source `.pptx` are 480×480 rasters, so a straight `.pptx` -> `.pdf` -> `magick` pass would only upsample them. Instead: re-rendered the three panels at 2400×2400 from `R/mathscore/mathscore-SS.R` (scratch copy, only change `png(..., res = 72*5)` at 5× size); exported slide 2 of the `.pptx` -> `.pdf` (intermediate, not kept); used `magick` at `-density 250` to render it and composited the hi-res panels over the originals at their exact slide positions; cropped `.png` (now 2218×845, eff. 405 dpi). `.pptx` and R script unchanged. Thin `Between` ellipse differs very slightly (script uses unseeded `jitter()`). |
-| [ ] | [`manova-response-dimensions-anno.png`](../../images/manova-response-dimensions-anno.png) | 975×630 | 178 | 100% (5.5″) | 1644 px | 59% |  | Added 2026-11-20: missed by the July audit (included via `here::here("images", ...)`). |
-| [ ] | [`ANCOVA-ex.png`](../../images/ANCOVA-ex.png) | 1034×493 | 210 | 90% (4.9″) | 1480 px | 62% |  |  |
+| [X] | [`manova-response-dimensions-anno.png`](../../images/manova-response-dimensions-anno.png) | 975×630 | 178 | 100% (5.5″) | 1644 px | 59% | REGENERATE | Added 2026-11-20: missed by the July audit (included via `here::here("images", ...)`). Regenerated both panels at 4× with the six ellipses, projections, group labels and red arrows. The approved render uses naturally proportioned lettering and matching Calibri numerals in the captions and subscripts. Now 3900×2520, ~712 effective dpi at full text width. |
+| [X] | [`ANCOVA-ex.png`](../../images/ANCOVA-ex.png) | 1034×493 | 210 | 90% (4.9″) | 1480 px | 62% | REGENERATE | 2026-11-20: Re-rendered the seeded example from [R/ANCOVA-ex.R](../../R/ANCOVA-ex.R) at 3×, with point size adjusted from 3 to 2.4 in the render copy to match the original markers. Now 3102×1479, ~629 effective dpi at 90% width. |
 
 ## Ch. 12: MLM Visualization (`12-mlm-viz.qmd`) — 4 images
 
@@ -180,6 +180,7 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 - Do you have the source for `images/heatmap.png`?
 - I am not sure if a higher-res `images/datasaurus-dozen.jpg` exists
   + Should we try to recreate this figure?
+- Recreated the table in Fig. 9.1 from the original screenshot, matching the SPSS layout and typography as closely as possible. Did not take a new SPSS screenshot.
 
 ## Progress
 
@@ -195,12 +196,12 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
   (`here::here("images", ...)`), and `iris-diagram.jpg` (`here::here("images/...")`).
   No other printed image was missed.
 - Rows now: **69** (69 − 8 + 8).
-- Resolved: **50** as of 2026-11-20 (**29 REPLACE**, **21 REGENERATE**). Added 2026-11-20:
+- Resolved: **56** as of 2026-11-20 (**30 REPLACE**, **26 REGENERATE**). Added 2026-11-20:
   `duncan-av-influence.png`, `dual-points-lines.png`, `outlier-demo.png`,
   `pollen-eureka1`–`4.png`, the five `tours/` images, `crime-pvPlot-1-2.png`,
   `corrgram-renderings.png`, `proj-P2-vec.png`, `peng-colors.png` (REGENERATE), and
   `pca-animation-combined.jpg`, `mahalanobis.png`, `projection.png`, `pca-rotation.png`,
-  `proj-combined.png`, `proj-vectors-labels.png`, `Pearson1901.png`, `pca4ds-figure-2-11.png`, `Pearson1901_2.png`, `image-compression-SVD.png` (REPLACE), and `mona-pca.png`, `pca-springs-frames.jpg` (REGENERATE).
-- Unchecked: **19** (15 from the audit + 4 added).
+  `proj-combined.png`, `proj-vectors-labels.png`, `Pearson1901.png`, `pca4ds-figure-2-11.png`, `Pearson1901_2.png`, `image-compression-SVD.png`, `wheres-waldo.png` (REPLACE), and `mona-pca.png`, `pca-springs-frames.jpg`, `T2-diagram.png`, `manova-diagram-anno.png`, `ANCOVA-ex.png`, `manova-response-dimensions-anno.png`, `collinearity-diagnostics-SPSS.png` (REGENERATE).
+- Unchecked: **13** (11 from the audit + 2 added).
 - Resolved (SHRINK): **0**.
 - Resolved (ACCEPT / flag to CRC): **0**.
