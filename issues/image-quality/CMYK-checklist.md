@@ -72,7 +72,7 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 | [ ] | [`corrgram-renderings.png`](../../images/corrgram-renderings.png) | 656×245 | 150 | 80% (4.4″) | 1316 px | 39% |  |  |
 | [X] | [`projection.png`](../../images/projection.png) | 336×247 | 153 | 40% (2.2″) | 658 px | 20% | REPLACE | 2026-11-20: Re-exported from its source, slide 1 of `images/projections.pptx` (all vector). Exported to PDF from PowerPoint, rendered with `pdftoppm` at ~419 dpi, and cropped to the old framing (the crop was fitted so a 1× render lines up with the old PNG). Now 1344×988, eff. ~613 dpi at 2.2″. Checked against the old image: same drawing and labels. |
 | [X] | [`tours/peng-tour-demo-all.png`](../../images/tours/peng-tour-demo-all.png) | 992×356 | 181 | 100% (5.5″) | 1644 px | 60% | REPLACE | Used source `.pptx`, converted -> `.pdf`, used `magick` to create high-res `.png`; cropped `.png` |
-| [ ] | [`crime-pvPlot-1-2.png`](../../images/crime-pvPlot-1-2.png) | 1000×500 | 182 | 100% (5.5″) | 1644 px | 60% |  |  |
+| [X] | [`crime-pvPlot-1-2.png`](../../images/crime-pvPlot-1-2.png) | 1000×500 | 182 | 100% (5.5″) | 1644 px | 60% | REGENERATE | 2026-11-20: Re-rendered at 3× with new script [R/crime/crime-pvPlot-frames.R](../../R/crime/crime-pvPlot-frames.R). The original (Oct. 2024) is two 500×500 panels at 72 ppi, `crime-pvPlot1.png` and `crime-pvPlot2.png` (also regenerated, not printed), drawn with the book's old `pvPlot()` (git `713f707e:R/pvPlot.R`, via `car::scatterplot()`), not the current `heplots::pvPlot()`. The script carries a copy of that drawing code; with current `car` it also turns off the ellipse-centre dot and passes the state labels explicitly. Now 3000×1500, eff. ~548 dpi at 5.5″. Checked against the old image: same content and layout; only the font rendering differs slightly (macOS). **For Michael:** (1) the displayed code chunk `fig-crime-pvPlots-code` (`eval: false`, `ellipse.args = list(col = "red", levels = c(0.68, 0.95))`) does not produce this figure; a render of that code with `heplots::pvPlot()` looks quite different, and its 95% ellipses are clipped by the axes. (2) The text after the figure says "Arkansas (AK)" (AK is Alaska) and has "and and". |
 | [ ] | [`big5-qgraph-rodrigues.png`](../../images/big5-qgraph-rodrigues.png) | 910×627 | 184 | 90% (4.9″) | 1480 px | 55% |  |  |
 | [ ] | [`galton-corr.jpg`](../../images/galton-corr.jpg) | 745×631 | 194 | 70% (3.8″) | 1151 px | 45% |  |  |
 | [ ] | [`proj-P2-vec.png`](../../images/proj-P2-vec.png) | 532×468 | 194 | 50% (2.7″) | 822 px | 32% |  |  |
@@ -195,10 +195,10 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
   (`here::here("images", ...)`), and `iris-diagram.jpg` (`here::here("images/...")`).
   No other printed image was missed.
 - Rows now: **69** (69 − 8 + 8).
-- Resolved: **38** as of 2026-11-20 (**23 REPLACE**, **15 REGENERATE**). Added 2026-11-20:
+- Resolved: **39** as of 2026-11-20 (**23 REPLACE**, **16 REGENERATE**). Added 2026-11-20:
   `duncan-av-influence.png`, `dual-points-lines.png`, `outlier-demo.png`,
-  `pollen-eureka1`–`4.png`, the five `tours/` images (REGENERATE), and
+  `pollen-eureka1`–`4.png`, the five `tours/` images, `crime-pvPlot-1-2.png` (REGENERATE), and
   `pca-animation-combined.jpg`, `mahalanobis.png`, `projection.png`, `pca-rotation.png` (REPLACE).
-- Unchecked: **31** (27 from the audit + 4 added).
+- Unchecked: **30** (26 from the audit + 4 added).
 - Resolved (SHRINK): **0**.
 - Resolved (ACCEPT / flag to CRC): **0**.
