@@ -1,6 +1,7 @@
 # CMYK conversion — LOW-DPI image checklist
 
 Manual review checklist for the **69 images flagged `LOW-DPI`** in [cmyk-image-audit-results.csv](cmyk-image-audit-results.csv) (effective print resolution below CRC's 300 dpi minimum at the size the image is printed).
+Updated 2026-11-20: 8 rows removed (no longer printed) and 8 added (printed but missed by the audit); see *Progress*.
 Generated 2026-07-10 from the audit results; background in [Gavin-SummerWork.md](Gavin-SummerWork.md) (*RGB -> CMYK*), [CMYK-colors.md](CMYK-colors.md), and [cmyk-conversion-plan.md](cmyk-conversion-plan.md).
 
 ## How to use this checklist
@@ -29,13 +30,17 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 |------|-------|--------|----------|------------|----------------|----------------------|--------|-------|
 | [ ] | [`MF-gray.jpg`](../../images/MF-gray.jpg) | 172×225 | 105 | 30% (1.6″) | 494 px | 10% |  |  |
 
-## Ch. 1: Prelude (`01-Prelude.qmd`) — 5 images
+## Ch. 1: Prelude (`01-Prelude.qmd`) — 9 images
 
 | Done | Image | Pixels | Eff. DPI | Printed at | Px needed @300 | Max `out-width` @300 | Action | Notes |
 |------|-------|--------|----------|------------|----------------|----------------------|--------|-------|
 | [X] | [`1D-4D.png`](../../images/1D-4D.png) | 482×305 | 98 | 90% (4.9″) | 1480 px | 29% | REPLACE | 2026-07-10: was an unattributed web graphic (circulating online since ≥2015; no hi-res original found). Redrawn as an exact author TikZ replica, source `latex/diagrams/fig-1D-4D.tex` (geometry traced programmatically from the raster). Print uses **vector CMYK PDF** (`images/1D-4D.pdf`); PNG re-rendered at 600 dpi for HTML (2846×1801 px, eff. 577 dpi). `01-Prelude.qmd` picks PDF for LaTeX, PNG for HTML. Also resolves the permission question in `fig-permission-list.md`. |
 | [X] | [`flatland-spheres.jpg`](../../images/flatland-spheres.jpg) | 660×208 | 134 | 90% (4.9″) | 1480 px | 40% | REPLACE | `.pdf` retrieved from https://archive.org/details/flatlandromanceo00abbouoft/page/70/mode/2up , then used `magick` to create high-res `.png`, cropped `.png` and saved as `.jpg` |
 | [X] | [`history/discoveries.jpg`](../../images/history/discoveries.jpg) | 1007×367 | 184 | 100% (5.5″) | 1644 px | 61% | REPLACE | Used source `.pptx`, converted -> `.pdf`, used `magick` to create high-res `.png`, cropped `.png` and saved as `.jpg` |
+| [ ] | [`pollen-eureka1.png`](../../images/pollen-eureka1.png) | 535×531 | 195 | 50% (2.7″) | 822 px | 32% |  | Added 2026-11-20: missed by the July audit (included via markdown `![](images/...)`). One panel of a 2×2 layout, so it prints in a half-width column; the `{width=40%}` in the `.qmd` doesn't apply in the PDF. |
+| [ ] | [`pollen-eureka2.png`](../../images/pollen-eureka2.png) | 535×531 | 195 | 50% (2.7″) | 822 px | 32% |  | Added 2026-11-20; same as `pollen-eureka1.png`. |
+| [ ] | [`pollen-eureka3.png`](../../images/pollen-eureka3.png) | 535×531 | 195 | 50% (2.7″) | 822 px | 32% |  | Added 2026-11-20; same as `pollen-eureka1.png`. |
+| [ ] | [`pollen-eureka4.png`](../../images/pollen-eureka4.png) | 535×531 | 195 | 50% (2.7″) | 822 px | 32% |  | Added 2026-11-20; same as `pollen-eureka1.png`. |
 | [X] | [`ReavenMiller-3d-annotated.png`](../../images/ReavenMiller-3d-annotated.png) | 833×667 | 217 | 70% (3.8″) | 1151 px | 50% | REPLACE | Took non-annotated version from source journal article `.pdf`, added annotations in same exact style as the original `ReavenMiller-3d-annotated.png` file (via Pixelmator Pro). |
 | [ ] | [`tesseract-frames.png`](../../images/tesseract-frames.png) | 1280×256 | 234 | 100% (5.5″) | 1644 px | 77% |  |  |
 
@@ -54,7 +59,7 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 | [X] | [`anscombe1.png`](../../images/anscombe1.png) | 650×480 | 132 | 90% (4.9″) | 1480 px | 39% | REGENERATE | Regenerated at 3611×2666 (400 dpi, eff. ~737 dpi at 4.9″) via `ggsave()` from the faceted plot in `R/anscombe.R` (the `fig-anscombe1` chunk in `03-getting_started.qmd` shows the same code minus the gridline-removing `theme()` line); canvas 650/72 × 480/72 in matches the original export's proportions |
 | [X] | [`1969_draft_lottery_photo.jpg`](../../images/1969_draft_lottery_photo.jpg) | 1024×690 | 234 | 80% (4.4″) | 1316 px | 62% | REPLACE | Higher-res version retrieved from https://commons.wikimedia.org/wiki/File:1969_draft_lottery_photo.jpg |
 
-## Ch. 4: Multivariate Plots (`04-multivariate_plots.qmd`) — 22 images
+## Ch. 4: Multivariate Plots (`04-multivariate_plots.qmd`) — 18 images
 
 | Done | Image | Pixels | Eff. DPI | Printed at | Px needed @300 | Max `out-width` @300 | Action | Notes |
 |------|-------|--------|----------|------------|----------------|----------------------|--------|-------|
@@ -63,11 +68,7 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 | [ ] | [`tours/peng-tour-grand-lbls-split/frame_00.png`](../../images/tours/peng-tour-grand-lbls-split/frame_00.png) | 480×480 | 88 | 100% (5.5″) | 1644 px | 29% |  |  |
 | [ ] | [`tours/peng-tour-grand-lbls-split/frame_10.png`](../../images/tours/peng-tour-grand-lbls-split/frame_10.png) | 480×480 | 88 | 100% (5.5″) | 1644 px | 29% |  |  |
 | [ ] | [`tours/peng-tour-grand-lbls-split/frame_26.png`](../../images/tours/peng-tour-grand-lbls-split/frame_26.png) | 480×480 | 88 | 100% (5.5″) | 1644 px | 29% |  |  |
-| [ ] | [`tours/peng-tour-demo1.png`](../../images/tours/peng-tour-demo1.png) | 568×514 | 104 | 100% (5.5″) | 1644 px | 34% |  |  |
-| [ ] | [`tours/peng-tour-demo2.png`](../../images/tours/peng-tour-demo2.png) | 568×514 | 104 | 100% (5.5″) | 1644 px | 34% |  |  |
-| [ ] | [`tours/peng-tour-demo3.png`](../../images/tours/peng-tour-demo3.png) | 568×514 | 104 | 100% (5.5″) | 1644 px | 34% |  |  |
 | [ ] | [`mahalanobis.png`](../../images/mahalanobis.png) | 332×334 | 121 | 50% (2.7″) | 822 px | 20% |  |  |
-| [ ] | [`crime-cor.png`](../../images/crime-cor.png) | 540×540 | 123 | 80% (4.4″) | 1316 px | 32% |  |  |
 | [ ] | [`corrgram-renderings.png`](../../images/corrgram-renderings.png) | 656×245 | 150 | 80% (4.4″) | 1316 px | 39% |  |  |
 | [ ] | [`projection.png`](../../images/projection.png) | 336×247 | 153 | 40% (2.2″) | 658 px | 20% |  |  |
 | [X] | [`tours/peng-tour-demo-all.png`](../../images/tours/peng-tour-demo-all.png) | 992×356 | 181 | 100% (5.5″) | 1644 px | 60% | REPLACE | Used source `.pptx`, converted -> `.pdf`, used `magick` to create high-res `.png`; cropped `.png` |
@@ -81,7 +82,7 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 | [ ] | [`proj-vectors-labels.png`](../../images/proj-vectors-labels.png) | 1264×436 | 231 | 100% (5.5″) | 1644 px | 76% |  |  |
 | [ ] | [`galton-ellipse-r.jpg`](../../images/galton-ellipse-r.jpg) | 1083×622 | 247 | 80% (4.4″) | 1316 px | 65% |  |  |
 
-## Ch. 5: PCA & Biplots (`05-pca-biplot.qmd`) — 13 images
+## Ch. 5: PCA & Biplots (`05-pca-biplot.qmd`) — 12 images
 
 | Done | Image | Pixels | Eff. DPI | Printed at | Px needed @300 | Max `out-width` @300 | Action | Notes |
 |------|-------|--------|----------|------------|----------------|----------------------|--------|-------|
@@ -93,7 +94,6 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 | [ ] | [`Pearson1901.png`](../../images/Pearson1901.png) | 524×427 | 159 | 60% (3.3″) | 987 px | 31% |  |  |
 | [ ] | [`outlier-demo.png`](../../images/outlier-demo.png) | 916×433 | 167 | 100% (5.5″) | 1644 px | 55% |  |  |
 | [ ] | [`pca4ds-figure-2-11.png`](../../images/pca4ds-figure-2-11.png) | 880×416 | 178 | 90% (4.9″) | 1480 px | 53% |  |  |
-| [ ] | [`MV-juicer.png`](../../images/MV-juicer.png) | 836×427 | 191 | 80% (4.4″) | 1316 px | 50% |  |  |
 | [ ] | [`pca-animation-combined.jpg`](../../images/pca-animation-combined.jpg) | 1078×365 | 197 | 100% (5.5″) | 1644 px | 65% |  |  |
 | [X] | [`diabetes-3d-both.png`](../../images/diabetes-3d-both.png) | 1143×497 | 209 | 100% (5.5″) | 1644 px | 69% | REPLACE | Used source `.pptx`, converted -> `.pdf`, used `magick` to create high-res `.png`; cropped `.png` |
 | [ ] | [`pca-rotation.png`](../../images/pca-rotation.png) | 884×357 | 230 | 70% (3.8″) | 1151 px | 53% |  |  |
@@ -114,11 +114,10 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 | [X] | [`lin-comb4.png`](../../images/lin-comb4.png) | 332×489 | 152 | 40% (2.2″) | 658 px | 20% | REPLACE | Used source `.pptx`, converted -> `.pdf`, used `magick` to create high-res `.png`; cropped `.png` |
 | [X] | [`lin-comb-mra.png`](../../images/lin-comb-mra.png) | 873×542 | 159 | 100% (5.5″) | 1644 px | 53% | REPLACE | Used source `.pptx`, converted -> `.pdf`, used `magick` to create high-res `.png`; cropped `.png` |
 
-## Ch. 7: Linear Model Plots (`07-linear_models-plots.qmd`) — 2 images
+## Ch. 7: Linear Model Plots (`07-linear_models-plots.qmd`) — 1 image
 
 | Done | Image | Pixels | Eff. DPI | Printed at | Px needed @300 | Max `out-width` @300 | Action | Notes |
 |------|-------|--------|----------|------------|----------------|----------------------|--------|-------|
-| [ ] | [`Duncan-beta-diff.png`](../../images/Duncan-beta-diff.png) | 598×536 | 156 | 70% (3.8″) | 1151 px | 36% |  |  |
 | [ ] | [`duncan-av-influence.png`](../../images/duncan-av-influence.png) | 1300×650 | 237 | 100% (5.5″) | 1644 px | 79% |  |  |
 
 ## Ch. 8: Linear Model Topics (`08-lin-mod-topics.qmd`) — 2 images
@@ -142,22 +141,29 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 |------|-------|--------|----------|------------|----------------|----------------------|--------|-------|
 | [ ] | [`T2-diagram.png`](../../images/T2-diagram.png) | 451×410 | 118 | 70% (3.8″) | 1151 px | 27% |  |  |
 
-## Ch. 11: MLM Review (`11-mlm-review.qmd`) — 2 images
+## Ch. 11: MLM Review (`11-mlm-review.qmd`) — 4 images
 
 | Done | Image | Pixels | Eff. DPI | Printed at | Px needed @300 | Max `out-width` @300 | Action | Notes |
 |------|-------|--------|----------|------------|----------------|----------------------|--------|-------|
+| [ ] | [`manova-diagram-anno.png`](../../images/manova-diagram-anno.png) | 413×219 | 108 | 70% (3.8″) | 1151 px | 25% |  | Added 2026-11-20: missed by the July audit (included via `here::here("images", ...)`). |
 | [X] | [`VisualizingSSP.png`](../../images/VisualizingSSP.png) | 830×311 | 152 | 100% (5.5″) | 1644 px | 50% | REPLACE | 2026-10-08: The plot panels in source `.pptx` are 480×480 rasters, so a straight `.pptx` -> `.pdf` -> `magick` pass would only upsample them. Instead: re-rendered the three panels at 2400×2400 from `R/mathscore/mathscore-SS.R` (scratch copy, only change `png(..., res = 72*5)` at 5× size); exported slide 2 of the `.pptx` -> `.pdf` (intermediate, not kept); used `magick` at `-density 250` to render it and composited the hi-res panels over the originals at their exact slide positions; cropped `.png` (now 2218×845, eff. 405 dpi). `.pptx` and R script unchanged. Thin `Between` ellipse differs very slightly (script uses unseeded `jitter()`). |
+| [ ] | [`manova-response-dimensions-anno.png`](../../images/manova-response-dimensions-anno.png) | 975×630 | 178 | 100% (5.5″) | 1644 px | 59% |  | Added 2026-11-20: missed by the July audit (included via `here::here("images", ...)`). |
 | [ ] | [`ANCOVA-ex.png`](../../images/ANCOVA-ex.png) | 1034×493 | 210 | 90% (4.9″) | 1480 px | 62% |  |  |
 
-## Ch. 12: MLM Visualization (`12-mlm-viz.qmd`) — 5 images
+## Ch. 12: MLM Visualization (`12-mlm-viz.qmd`) — 4 images
 
 | Done | Image | Pixels | Eff. DPI | Printed at | Px needed @300 | Max `out-width` @300 | Action | Notes |
 |------|-------|--------|----------|------------|----------------|----------------------|--------|-------|
 | [ ] | [`dogfood-quartet.png`](../../images/dogfood-quartet.png) | 621×604 | 126 | 90% (4.9″) | 1480 px | 37% |  |  |
+| [ ] | [`iris-diagram.jpg`](../../images/iris-diagram.jpg) | 550×410 | 154 | 65% (3.6″) | 1068 px | 33% |  | Added 2026-11-20: missed by the July audit (included via `here::here("images/...")`). |
 | [ ] | [`HE-framework.png`](../../images/HE-framework.png) | 971×700 | 177 | 100% (5.5″) | 1644 px | 59% |  |  |
-| [ ] | [`iris-HE1.png`](../../images/iris-HE1.png) | 1000×500 | 182 | 100% (5.5″) | 1644 px | 60% |  |  |
 | [ ] | [`iris-HE2.png`](../../images/iris-HE2.png) | 1000×500 | 203 | 90% (4.9″) | 1480 px | 60% |  |  |
-| [ ] | [`arcmanov.png`](../../images/arcmanov.png) | 1503×1603 | 274 | 100% (5.5″) | 1644 px | 91% |  |  |
+
+## Ch. 14: Influence & Robust Estimation (`14-infl-robust.qmd`) — 1 image
+
+| Done | Image | Pixels | Eff. DPI | Printed at | Px needed @300 | Max `out-width` @300 | Action | Notes |
+|------|-------|--------|----------|------------|----------------|----------------------|--------|-------|
+| [ ] | [`weight-functions.jpg`](../../images/weight-functions.jpg) | 999×612 | 260 | 70% (3.8″) | 1151 px | 60% |  | Added 2026-11-20: missed by the July audit (included via `here::here("images", ...)`). |
 
 ## Ch. 15: Discriminant Analysis (`21-discrim.qmd`) — 1 image
 
@@ -178,7 +184,18 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 ## Progress
 
 - Images flagged LOW-DPI in the original audit: **69**.
+- 2026-11-20, rows **removed** (no longer printed; checked against the current print sources and the
+  2026-10-26 PDF build): `MV-juicer.png` (replaced by `MV-juicer-gpt.png`, about 350 dpi),
+  `Duncan-beta-diff.png`, `arcmanov.png`, `crime-cor.png` (the printed figure is now an R chunk),
+  `iris-HE1.png`, and `tours/peng-tour-demo1`/`2`/`3.png` (`peng-tour-demo-all.png` prints instead).
+  All of these chunks are commented out.
+- 2026-11-20, rows **added** (printed, but missed by the July audit, whose script only matches
+  `include_graphics("images/...")`): `pollen-eureka1`–`4.png` (markdown `![]()`),
+  `manova-diagram-anno.png`, `manova-response-dimensions-anno.png`, `weight-functions.jpg`
+  (`here::here("images", ...)`), and `iris-diagram.jpg` (`here::here("images/...")`).
+  No other printed image was missed.
+- Rows now: **69** (69 − 8 + 8).
 - Resolved: **22** as of 2026-10-08 (**19 REPLACE**, **3 REGENERATE**).
-- Unchecked: **47**. This is the checklist count, not a refreshed audit of active print images.
+- Unchecked: **47** (39 from the audit + 8 added).
 - Resolved (SHRINK): **0**.
 - Resolved (ACCEPT / flag to CRC): **0**.
