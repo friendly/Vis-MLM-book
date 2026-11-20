@@ -63,11 +63,11 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 
 | Done | Image | Pixels | Eff. DPI | Printed at | Px needed @300 | Max `out-width` @300 | Action | Notes |
 |------|-------|--------|----------|------------|----------------|----------------------|--------|-------|
-| [ ] | [`tours/peng-tour-anomalies-final.png`](../../images/tours/peng-tour-anomalies-final.png) | 460×460 | 84 | 100% (5.5″) | 1644 px | 27% |  |  |
-| [ ] | [`tours/peng-tour-lda-final.png`](../../images/tours/peng-tour-lda-final.png) | 460×460 | 84 | 100% (5.5″) | 1644 px | 27% |  |  |
-| [ ] | [`tours/peng-tour-grand-lbls-split/frame_00.png`](../../images/tours/peng-tour-grand-lbls-split/frame_00.png) | 480×480 | 88 | 100% (5.5″) | 1644 px | 29% |  |  |
-| [ ] | [`tours/peng-tour-grand-lbls-split/frame_10.png`](../../images/tours/peng-tour-grand-lbls-split/frame_10.png) | 480×480 | 88 | 100% (5.5″) | 1644 px | 29% |  |  |
-| [ ] | [`tours/peng-tour-grand-lbls-split/frame_26.png`](../../images/tours/peng-tour-grand-lbls-split/frame_26.png) | 480×480 | 88 | 100% (5.5″) | 1644 px | 29% |  |  |
+| [X] | [`tours/peng-tour-anomalies-final.png`](../../images/tours/peng-tour-anomalies-final.png) | 460×460 | 84 | 100% (5.5″) | 1644 px | 27% | REGENERATE | 2026-11-20: Rebuilt at 3× (1380×1380) with new script [R/penguin/peng-tour-frames.R](../../R/penguin/peng-tour-frames.R). The original came from an unseeded interactive guided tour, so its projection was recovered from the image itself: a 4×2 basis was fitted so that a `display_xy()` render overlays the original, and four different starting points all converged to the same basis. The audit's 84 dpi assumed full width; it actually prints in a half-width panel (was ~168 dpi, now ~505 dpi). Checked against the old image: same projection, points, axes and legend. |
+| [X] | [`tours/peng-tour-lda-final.png`](../../images/tours/peng-tour-lda-final.png) | 460×460 | 84 | 100% (5.5″) | 1644 px | 27% | REGENERATE | 2026-11-20: Rebuilt at 3× (1380×1380) the same way as `peng-tour-anomalies-final.png`, with the projection recovered from the original image. Was ~168 dpi as printed (half-width panel), now ~505 dpi. Checked against the old image: same projection, points, axes and legend. The old image's orange and green were slightly off the book's palette (#EA7E1A, #419F30); the new one uses the defined penguin colors. |
+| [X] | [`tours/peng-tour-grand-lbls-split/frame_00.png`](../../images/tours/peng-tour-grand-lbls-split/frame_00.png) | 480×480 | 88 | 100% (5.5″) | 1644 px | 29% | REGENERATE | 2026-11-20: Re-rendered at 3× (1440×1440) with new script [R/penguin/peng-tour-frames.R](../../R/penguin/peng-tour-frames.R). These are frames 1, 11 and 27 of the seeded grand tour (`set.seed(1234)`) in `R/penguin/peng-tourr.R`, which made `peng-tourr-grand-lbls.gif`. Settings were matched to that GIF: labels 283/10/35, Chinstrap drawn as diamonds (pch 18), and the cairo device for exact colors. The audit's 88 dpi assumed full width; it actually prints in a one-third-width panel (was ~265 dpi, now ~795 dpi). Checked against the old frame: same projection, points, labels and legend. The other 47 frames in this folder aren't used by the book and are unchanged. |
+| [X] | [`tours/peng-tour-grand-lbls-split/frame_10.png`](../../images/tours/peng-tour-grand-lbls-split/frame_10.png) | 480×480 | 88 | 100% (5.5″) | 1644 px | 29% | REGENERATE | 2026-11-20; same as `frame_00.png`. |
+| [X] | [`tours/peng-tour-grand-lbls-split/frame_26.png`](../../images/tours/peng-tour-grand-lbls-split/frame_26.png) | 480×480 | 88 | 100% (5.5″) | 1644 px | 29% | REGENERATE | 2026-11-20; same as `frame_00.png`. |
 | [ ] | [`mahalanobis.png`](../../images/mahalanobis.png) | 332×334 | 121 | 50% (2.7″) | 822 px | 20% |  |  |
 | [ ] | [`corrgram-renderings.png`](../../images/corrgram-renderings.png) | 656×245 | 150 | 80% (4.4″) | 1316 px | 39% |  |  |
 | [ ] | [`projection.png`](../../images/projection.png) | 336×247 | 153 | 40% (2.2″) | 658 px | 20% |  |  |
@@ -195,9 +195,10 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
   (`here::here("images", ...)`), and `iris-diagram.jpg` (`here::here("images/...")`).
   No other printed image was missed.
 - Rows now: **69** (69 − 8 + 8).
-- Resolved: **30** as of 2026-11-20 (**20 REPLACE**, **10 REGENERATE**). Added 2026-11-20:
+- Resolved: **35** as of 2026-11-20 (**20 REPLACE**, **15 REGENERATE**). Added 2026-11-20:
   `duncan-av-influence.png`, `dual-points-lines.png`, `outlier-demo.png`,
-  `pollen-eureka1`–`4.png` (REGENERATE) and `pca-animation-combined.jpg` (REPLACE).
-- Unchecked: **39** (35 from the audit + 4 added).
+  `pollen-eureka1`–`4.png`, the five `tours/` images (REGENERATE) and
+  `pca-animation-combined.jpg` (REPLACE).
+- Unchecked: **34** (30 from the audit + 4 added).
 - Resolved (SHRINK): **0**.
 - Resolved (ACCEPT / flag to CRC): **0**.
