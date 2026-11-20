@@ -163,7 +163,7 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 
 | Done | Image | Pixels | Eff. DPI | Printed at | Px needed @300 | Max `out-width` @300 | Action | Notes |
 |------|-------|--------|----------|------------|----------------|----------------------|--------|-------|
-| [ ] | [`weight-functions.jpg`](../../images/weight-functions.jpg) | 999×612 | 260 | 70% (3.8″) | 1151 px | 60% |  | Added 2026-11-20: missed by the July audit (included via `here::here("images", ...)`). |
+| [X] | [`weight-functions.jpg`](../../images/weight-functions.jpg) | 999×612 | 260 | 70% (3.8″) | 1151 px | 60% | REGENERATE | Added 2026-11-20: missed by the July audit (included via `here::here("images", ...)`). Traced Michael’s hand-drawn curves, axes and lettering into an [SVG source](../../images/weight-functions.svg). The approved 2997×1836 JPEG gives ~781 effective dpi at the existing 70% width. |
 
 ## Ch. 15: Discriminant Analysis (`21-discrim.qmd`) — 1 image
 
@@ -196,12 +196,12 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
   (`here::here("images", ...)`), and `iris-diagram.jpg` (`here::here("images/...")`).
   No other printed image was missed.
 - Rows now: **69** (69 − 8 + 8).
-- Resolved: **56** as of 2026-11-20 (**30 REPLACE**, **26 REGENERATE**). Added 2026-11-20:
+- Resolved: **57** as of 2026-11-20 (**30 REPLACE**, **27 REGENERATE**). Added 2026-11-20:
   `duncan-av-influence.png`, `dual-points-lines.png`, `outlier-demo.png`,
   `pollen-eureka1`–`4.png`, the five `tours/` images, `crime-pvPlot-1-2.png`,
   `corrgram-renderings.png`, `proj-P2-vec.png`, `peng-colors.png` (REGENERATE), and
   `pca-animation-combined.jpg`, `mahalanobis.png`, `projection.png`, `pca-rotation.png`,
-  `proj-combined.png`, `proj-vectors-labels.png`, `Pearson1901.png`, `pca4ds-figure-2-11.png`, `Pearson1901_2.png`, `image-compression-SVD.png`, `wheres-waldo.png` (REPLACE), and `mona-pca.png`, `pca-springs-frames.jpg`, `T2-diagram.png`, `manova-diagram-anno.png`, `ANCOVA-ex.png`, `manova-response-dimensions-anno.png`, `collinearity-diagnostics-SPSS.png` (REGENERATE).
-- Unchecked: **13** (11 from the audit + 2 added).
+  `proj-combined.png`, `proj-vectors-labels.png`, `Pearson1901.png`, `pca4ds-figure-2-11.png`, `Pearson1901_2.png`, `image-compression-SVD.png`, `wheres-waldo.png` (REPLACE), and `mona-pca.png`, `pca-springs-frames.jpg`, `T2-diagram.png`, `manova-diagram-anno.png`, `ANCOVA-ex.png`, `manova-response-dimensions-anno.png`, `collinearity-diagnostics-SPSS.png`, `weight-functions.jpg` (REGENERATE).
+- Unchecked: **12** (11 from the audit + 1 added).
 - Resolved (SHRINK): **0**.
 - Resolved (ACCEPT / flag to CRC): **0**.
