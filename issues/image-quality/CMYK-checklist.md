@@ -135,11 +135,12 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 | [X] | [`collin-demo.png`](../../images/collin-demo.png) | 1190×422 | 217 | 100% (5.5″) | 1644 px | 72% | REPLACE | Used source `.pptx`, converted -> `.pdf`, used `magick` to create high-res `.png`; cropped `.png` |
 | [X] | [`wheres-waldo.png`](../../images/wheres-waldo.png) | 1474×569 | 299 | 90% (4.9″) | 1480 px | 89% | REPLACE | 2026-11-20: Rebuilt the composite from the [original scene](https://x.com/ErrorJustin/status/830205933598879744) and a [larger scan for the inset](https://vuss.io/wp-content/uploads/2025/01/Wheres-Waldo-Ocean-Super-High-Resolution.jpg), retaining the crop, oval and dashed connectors. The 2948×1138 file prints at ~598 dpi at the existing 90% width. The scene supplies ~542 native dpi. GK accepted the inset as shown (~333 source pixels across 1.86″, about 179 native dpi). |
 
-## Ch. 10: Hotelling's T² (`10-hotelling.qmd`) — 1 image
+## Ch. 10: Hotelling's T² (`10-hotelling.qmd`) — 2 images
 
 | Done | Image | Pixels | Eff. DPI | Printed at | Px needed @300 | Max `out-width` @300 | Action | Notes |
 |------|-------|--------|----------|------------|----------------|----------------------|--------|-------|
 | [X] | [`T2-diagram.png`](../../images/T2-diagram.png) | 451×410 | 118 | 70% (3.8″) | 1151 px | 27% | REGENERATE | 2026-11-20: Reconstructed the ellipse, mean vectors, projections, braces and labels from the book image. Approved 1804×1640 render gives ~470 effective dpi at 70% width. |
+| [X] | [`HE-framework.png`](../../images/HE-framework.png) | 971×700 | 197 | 90% (4.9″) | 1480 px | 59% | REGENERATE | 2026-11-20: Moved here from Ch. 12. The audit found it in `12-mlm-viz.qmd`, but that chunk is commented out; the printed copy is `fig-HE-framework` in `10-hotelling.qmd` at `out-width: "90%"` (the audit's 100% / 177 dpi figures were from the Ch. 12 chunk). No `.pptx` source found. Redrew the four panels (data ellipses, HE plot, discriminant scores, canonical space) at 4× from the `mathscore` code in [R/mathscore/mathscore-figs.R](../../R/mathscore/mathscore-figs.R), each plot box at its original position, and redrew the Calibri titles and block arrows to the measured shapes and colours. Approved 3884×2800 render gives ~788 effective dpi at 90% width. |
 
 ## Ch. 11: MLM Review (`11-mlm-review.qmd`) — 4 images
 
@@ -150,14 +151,13 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 | [X] | [`manova-response-dimensions-anno.png`](../../images/manova-response-dimensions-anno.png) | 975×630 | 178 | 100% (5.5″) | 1644 px | 59% | REGENERATE | Added 2026-11-20: missed by the July audit (included via `here::here("images", ...)`). Regenerated both panels at 4× with the six ellipses, projections, group labels and red arrows. The approved render uses naturally proportioned lettering and matching Calibri numerals in the captions and subscripts. Now 3900×2520, ~712 effective dpi at full text width. |
 | [X] | [`ANCOVA-ex.png`](../../images/ANCOVA-ex.png) | 1034×493 | 210 | 90% (4.9″) | 1480 px | 62% | REGENERATE | 2026-11-20: Re-rendered the seeded example from [R/ANCOVA-ex.R](../../R/ANCOVA-ex.R) at 3×, with point size adjusted from 3 to 2.4 in the render copy to match the original markers. Now 3102×1479, ~629 effective dpi at 90% width. |
 
-## Ch. 12: MLM Visualization (`12-mlm-viz.qmd`) — 4 images
+## Ch. 12: MLM Visualization (`12-mlm-viz.qmd`) — 3 images
 
 | Done | Image | Pixels | Eff. DPI | Printed at | Px needed @300 | Max `out-width` @300 | Action | Notes |
 |------|-------|--------|----------|------------|----------------|----------------------|--------|-------|
-| [ ] | [`dogfood-quartet.png`](../../images/dogfood-quartet.png) | 621×604 | 126 | 90% (4.9″) | 1480 px | 37% |  |  |
+| [X] | [`dogfood-quartet.png`](../../images/dogfood-quartet.png) | 621×604 | 126 | 90% (4.9″) | 1480 px | 37% | REGENERATE | 2026-11-20: Re-rendered the 2×2 figure from [R/dogfood/dogfood-quartet.R](../../R/dogfood/dogfood-quartet.R) at 3× the original size (`png(width = 1863, height = 1812, res = 288)`; the original was a 621×604 export at 96 dpi). Render copy only adds `label.cex` (1.5; 1.25 in panel (d)) and `lwd = 1` for the panel (b) ellipses, so the labels and outlines match the printed image under heplots 1.8.6 (see *Comments*); script unchanged. Now 1863×1812, eff. ~378 dpi at 90% width. Checked against the old image: same content; only the font rendering differs slightly (rendered on macOS). |
 | [ ] | [`iris-diagram.jpg`](../../images/iris-diagram.jpg) | 550×410 | 154 | 65% (3.6″) | 1068 px | 33% |  | Added 2026-11-20: missed by the July audit (included via `here::here("images/...")`). |
-| [ ] | [`HE-framework.png`](../../images/HE-framework.png) | 971×700 | 177 | 100% (5.5″) | 1644 px | 59% |  |  |
-| [ ] | [`iris-HE2.png`](../../images/iris-HE2.png) | 1000×500 | 203 | 90% (4.9″) | 1480 px | 60% |  |  |
+| [X] | [`iris-HE2.png`](../../images/iris-HE2.png) | 1000×500 | 203 | 90% (4.9″) | 1480 px | 60% | REGENERATE | 2026-11-20: Re-rendered the effect/significance-scaling pair from [R/iris/iris-HE.R](../../R/iris/iris-HE.R) at 3× the original size (`png(width = 3000, height = 1500, res = 288)`; the original was a 1000×500 export at 96 dpi). Render copy only adds `label.cex = 1.5` so the ellipse labels match the printed image under heplots 1.8.6 (see *Comments*); script unchanged. Now 3000×1500, eff. ~608 dpi at 90% width. Checked against the old image: same content; only the font rendering differs slightly (rendered on macOS). |
 
 ## Ch. 14: Influence & Robust Estimation (`14-infl-robust.qmd`) — 1 image
 
@@ -175,12 +175,20 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 
 ### GK
 
+#### Cannot find
+
 - I cannot find a higher-res `images/MF-gray.jpg`
 - I cannot find a higher-res `images/tesseract.gif` to make a higher-res `images/tesseract-frames.png`
 - Do you have the source for `images/heatmap.png`?
 - I am not sure if a higher-res `images/datasaurus-dozen.jpg` exists
   + Should we try to recreate this figure?
+- I cannot find a higher-res `images/iris-diagram.jpg` (the copy on De Silva's ResearchGate page is the same 550×410)
+
+
+#### Other pertinent items
 - Recreated the table in Fig. 9.1 from the original screenshot, matching the SPSS layout and typography as closely as possible. Did not take a new SPSS screenshot.
+- `R/dogfood/dogfood-quartet.R` and `R/iris/iris-HE.R` no longer reproduce the printed `dogfood-quartet.png` and `iris-HE2.png`: heplots 1.8.6 sizes the ellipse labels ("Error", "formula", "Species") with the new `label.cex` argument instead of `cex`, so they now come out smaller. I set `label.cex` in a render copy only; the scripts are unchanged.
+  + Should the scripts (and any HE plots drawn live in the book that relied on `cex` for label size) set `label.cex`?
 
 ## Progress
 
@@ -196,12 +204,12 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
   (`here::here("images", ...)`), and `iris-diagram.jpg` (`here::here("images/...")`).
   No other printed image was missed.
 - Rows now: **69** (69 − 8 + 8).
-- Resolved: **57** as of 2026-11-20 (**30 REPLACE**, **27 REGENERATE**). Added 2026-11-20:
+- Resolved: **60** as of 2026-11-20 (**30 REPLACE**, **30 REGENERATE**). Added 2026-11-20:
   `duncan-av-influence.png`, `dual-points-lines.png`, `outlier-demo.png`,
   `pollen-eureka1`–`4.png`, the five `tours/` images, `crime-pvPlot-1-2.png`,
   `corrgram-renderings.png`, `proj-P2-vec.png`, `peng-colors.png` (REGENERATE), and
   `pca-animation-combined.jpg`, `mahalanobis.png`, `projection.png`, `pca-rotation.png`,
-  `proj-combined.png`, `proj-vectors-labels.png`, `Pearson1901.png`, `pca4ds-figure-2-11.png`, `Pearson1901_2.png`, `image-compression-SVD.png`, `wheres-waldo.png` (REPLACE), and `mona-pca.png`, `pca-springs-frames.jpg`, `T2-diagram.png`, `manova-diagram-anno.png`, `ANCOVA-ex.png`, `manova-response-dimensions-anno.png`, `collinearity-diagnostics-SPSS.png`, `weight-functions.jpg` (REGENERATE).
-- Unchecked: **12** (11 from the audit + 1 added).
+  `proj-combined.png`, `proj-vectors-labels.png`, `Pearson1901.png`, `pca4ds-figure-2-11.png`, `Pearson1901_2.png`, `image-compression-SVD.png`, `wheres-waldo.png` (REPLACE), and `mona-pca.png`, `pca-springs-frames.jpg`, `T2-diagram.png`, `manova-diagram-anno.png`, `ANCOVA-ex.png`, `manova-response-dimensions-anno.png`, `collinearity-diagnostics-SPSS.png`, `weight-functions.jpg`, `dogfood-quartet.png`, `iris-HE2.png`, `HE-framework.png` (REGENERATE).
+- Unchecked: **9** (8 from the audit + 1 added).
 - Resolved (SHRINK): **0**.
 - Resolved (ACCEPT / flag to CRC): **0**.
