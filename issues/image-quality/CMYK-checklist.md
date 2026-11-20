@@ -68,9 +68,9 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 | [X] | [`tours/peng-tour-grand-lbls-split/frame_00.png`](../../images/tours/peng-tour-grand-lbls-split/frame_00.png) | 480×480 | 88 | 100% (5.5″) | 1644 px | 29% | REGENERATE | 2026-11-20: Re-rendered at 3× (1440×1440) with new script [R/penguin/peng-tour-frames.R](../../R/penguin/peng-tour-frames.R). These are frames 1, 11 and 27 of the seeded grand tour (`set.seed(1234)`) in `R/penguin/peng-tourr.R`, which made `peng-tourr-grand-lbls.gif`. Settings were matched to that GIF: labels 283/10/35, Chinstrap drawn as diamonds (pch 18), and the cairo device for exact colors. The audit's 88 dpi assumed full width; it actually prints in a one-third-width panel (was ~265 dpi, now ~795 dpi). Checked against the old frame: same projection, points, labels and legend. The other 47 frames in this folder aren't used by the book and are unchanged. |
 | [X] | [`tours/peng-tour-grand-lbls-split/frame_10.png`](../../images/tours/peng-tour-grand-lbls-split/frame_10.png) | 480×480 | 88 | 100% (5.5″) | 1644 px | 29% | REGENERATE | 2026-11-20; same as `frame_00.png`. |
 | [X] | [`tours/peng-tour-grand-lbls-split/frame_26.png`](../../images/tours/peng-tour-grand-lbls-split/frame_26.png) | 480×480 | 88 | 100% (5.5″) | 1644 px | 29% | REGENERATE | 2026-11-20; same as `frame_00.png`. |
-| [ ] | [`mahalanobis.png`](../../images/mahalanobis.png) | 332×334 | 121 | 50% (2.7″) | 822 px | 20% |  |  |
+| [X] | [`mahalanobis.png`](../../images/mahalanobis.png) | 332×334 | 121 | 50% (2.7″) | 822 px | 20% | REPLACE | 2026-11-20: Re-exported at 4× from its source, `images/mahalanobis.svg`, Michael's Inkscape redraw. The SVG is fully vector; the copy of Ou Zhang's original embedded in it sits off the page as a tracing guide and doesn't show. An Inkscape 1.4.4 export at 96 dpi is pixel-identical to the old PNG. The new file is `inkscape mahalanobis.svg --export-type=png --export-dpi=384`: 1328×1336, eff. ~485 dpi at 2.7″. Content is unchanged, so the permission row is unaffected. |
 | [ ] | [`corrgram-renderings.png`](../../images/corrgram-renderings.png) | 656×245 | 150 | 80% (4.4″) | 1316 px | 39% |  |  |
-| [ ] | [`projection.png`](../../images/projection.png) | 336×247 | 153 | 40% (2.2″) | 658 px | 20% |  |  |
+| [X] | [`projection.png`](../../images/projection.png) | 336×247 | 153 | 40% (2.2″) | 658 px | 20% | REPLACE | 2026-11-20: Re-exported from its source, slide 1 of `images/projections.pptx` (all vector). Exported to PDF from PowerPoint, rendered with `pdftoppm` at ~419 dpi, and cropped to the old framing (the crop was fitted so a 1× render lines up with the old PNG). Now 1344×988, eff. ~613 dpi at 2.2″. Checked against the old image: same drawing and labels. |
 | [X] | [`tours/peng-tour-demo-all.png`](../../images/tours/peng-tour-demo-all.png) | 992×356 | 181 | 100% (5.5″) | 1644 px | 60% | REPLACE | Used source `.pptx`, converted -> `.pdf`, used `magick` to create high-res `.png`; cropped `.png` |
 | [ ] | [`crime-pvPlot-1-2.png`](../../images/crime-pvPlot-1-2.png) | 1000×500 | 182 | 100% (5.5″) | 1644 px | 60% |  |  |
 | [ ] | [`big5-qgraph-rodrigues.png`](../../images/big5-qgraph-rodrigues.png) | 910×627 | 184 | 90% (4.9″) | 1480 px | 55% |  |  |
@@ -96,7 +96,7 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 | [ ] | [`pca4ds-figure-2-11.png`](../../images/pca4ds-figure-2-11.png) | 880×416 | 178 | 90% (4.9″) | 1480 px | 53% |  |  |
 | [X] | [`pca-animation-combined.jpg`](../../images/pca-animation-combined.jpg) | 1078×365 | 197 | 100% (5.5″) | 1644 px | 65% | REPLACE | 2026-11-20: Rebuilt from the full-size frames already in the repo, `images/pca-animation-split/frame_00.jpg` and `frame_32.jpg` (946×594 each; pixel-identical to the two pictures in `pca-animation-split/pca-animation-combined.pptx`). Placed with `magick` at the same positions and relative sizes as on the slide, then cropped to the old framing. Now 1744×590, eff. ~318 dpi at 5.5″. Checked against the old image: same content and framing. |
 | [X] | [`diabetes-3d-both.png`](../../images/diabetes-3d-both.png) | 1143×497 | 209 | 100% (5.5″) | 1644 px | 69% | REPLACE | Used source `.pptx`, converted -> `.pdf`, used `magick` to create high-res `.png`; cropped `.png` |
-| [ ] | [`pca-rotation.png`](../../images/pca-rotation.png) | 884×357 | 230 | 70% (3.8″) | 1151 px | 53% |  |  |
+| [X] | [`pca-rotation.png`](../../images/pca-rotation.png) | 884×357 | 230 | 70% (3.8″) | 1151 px | 53% | REPLACE | 2026-11-20: Re-exported from its source, `images/pca-rotation.pptx`, using the **Dec 2023 version from git** (commit `e84dcc98`), the one that made the old PNG. The current deck was edited in Apr 2024 and has black √λ labels; the book's are red. Exported to PDF from PowerPoint (which draws the √λ equations as vector text), rendered with `pdftoppm` at ~258 dpi, and cropped to the old framing (crop fitted so a 1× render lines up with the old PNG). Now 2652×1071, eff. ~690 dpi at 3.8″. Checked against the old image: same drawing, labels and colors. |
 | [ ] | [`pca-springs-frames.jpg`](../../images/pca-springs-frames.jpg) | 1349×411 | 246 | 100% (5.5″) | 1644 px | 82% |  |  |
 
 ## Ch. 6: Linear Models (`06-linear_models.qmd`) — 1 image
@@ -195,10 +195,10 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
   (`here::here("images", ...)`), and `iris-diagram.jpg` (`here::here("images/...")`).
   No other printed image was missed.
 - Rows now: **69** (69 − 8 + 8).
-- Resolved: **35** as of 2026-11-20 (**20 REPLACE**, **15 REGENERATE**). Added 2026-11-20:
+- Resolved: **38** as of 2026-11-20 (**23 REPLACE**, **15 REGENERATE**). Added 2026-11-20:
   `duncan-av-influence.png`, `dual-points-lines.png`, `outlier-demo.png`,
-  `pollen-eureka1`–`4.png`, the five `tours/` images (REGENERATE) and
-  `pca-animation-combined.jpg` (REPLACE).
-- Unchecked: **34** (30 from the audit + 4 added).
+  `pollen-eureka1`–`4.png`, the five `tours/` images (REGENERATE), and
+  `pca-animation-combined.jpg`, `mahalanobis.png`, `projection.png`, `pca-rotation.png` (REPLACE).
+- Unchecked: **31** (27 from the audit + 4 added).
 - Resolved (SHRINK): **0**.
 - Resolved (ACCEPT / flag to CRC): **0**.
