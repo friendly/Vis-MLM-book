@@ -75,11 +75,11 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 | [X] | [`crime-pvPlot-1-2.png`](../../images/crime-pvPlot-1-2.png) | 1000×500 | 182 | 100% (5.5″) | 1644 px | 60% | REGENERATE | 2026-11-20: Re-rendered at 3× with new script [R/crime/crime-pvPlot-frames.R](../../R/crime/crime-pvPlot-frames.R). The original (Oct. 2024) is two 500×500 panels at 72 ppi, `crime-pvPlot1.png` and `crime-pvPlot2.png` (also regenerated, not printed), drawn with the book's old `pvPlot()` (git `713f707e:R/pvPlot.R`, via `car::scatterplot()`), not the current `heplots::pvPlot()`. The script carries a copy of that drawing code; with current `car` it also turns off the ellipse-centre dot and passes the state labels explicitly. Now 3000×1500, eff. ~548 dpi at 5.5″. Checked against the old image: same content and layout; only the font rendering differs slightly (macOS). **For Michael:** (1) the displayed code chunk `fig-crime-pvPlots-code` (`eval: false`, `ellipse.args = list(col = "red", levels = c(0.68, 0.95))`) does not produce this figure; a render of that code with `heplots::pvPlot()` looks quite different, and its 95% ellipses are clipped by the axes. (2) The text after the figure says "Arkansas (AK)" (AK is Alaska) and has "and and". |
 | [ ] | [`big5-qgraph-rodrigues.png`](../../images/big5-qgraph-rodrigues.png) | 910×627 | 184 | 90% (4.9″) | 1480 px | 55% |  |  |
 | [ ] | [`galton-corr.jpg`](../../images/galton-corr.jpg) | 745×631 | 194 | 70% (3.8″) | 1151 px | 45% |  |  |
-| [ ] | [`proj-P2-vec.png`](../../images/proj-P2-vec.png) | 532×468 | 194 | 50% (2.7″) | 822 px | 32% |  |  |
-| [ ] | [`peng-colors.png`](../../images/peng-colors.png) | 577×480 | 211 | 50% (2.7″) | 822 px | 35% |  |  |
-| [ ] | [`proj-combined.png`](../../images/proj-combined.png) | 1193×464 | 218 | 100% (5.5″) | 1644 px | 72% |  |  |
+| [X] | [`proj-P2-vec.png`](../../images/proj-P2-vec.png) | 532×468 | 194 | 50% (2.7″) | 822 px | 32% | REGENERATE | 2026-11-20: Re-rendered at 3× from `R/projections.R` lines 93–102, with the `par(mar = c(4, 5, 1, 1) + .1)` margins and a 96-dpi base (`png(1596, 1404, res = 288, type = "cairo")`). Now eff. ~580 dpi. Checked against the old image: same plot. |
+| [X] | [`peng-colors.png`](../../images/peng-colors.png) | 577×480 | 211 | 50% (2.7″) | 822 px | 35% | REGENERATE | 2026-11-20: Swatches re-rendered at 3× with `show_col(cols.mat)` from `R/penguin/penguin-colors.R` (`png(1731, 1440, res = 288, type = "cairo")`). The species names had been added afterwards in another program, with a drop shadow; they were redrawn in Arial with a matching soft shadow (ImageMagick) at the measured positions and size. Now eff. ~630 dpi. |
+| [X] | [`proj-combined.png`](../../images/proj-combined.png) | 1193×464 | 218 | 100% (5.5″) | 1644 px | 72% | REPLACE | 2026-11-20: Rebuilt from slide 2 of `images/projections.pptx` (PowerPoint PDF, ~288 dpi, cropped to the old framing). Panels (b) and (c) were re-rendered from `R/projections.R` lines 40–48 at their slide frame size with transparent backgrounds, then layered in slide order. **Panel (a)**, the hand-rotated rgl cube screenshot, still uses its original 434 px image, so it stays at ~236 dpi; the rest is ~650 dpi. |
 | [ ] | [`peng-tourr-diagram.png`](../../images/peng-tourr-diagram.png) | 997×505 | 227 | 80% (4.4″) | 1316 px | 60% |  |  |
-| [ ] | [`proj-vectors-labels.png`](../../images/proj-vectors-labels.png) | 1264×436 | 231 | 100% (5.5″) | 1644 px | 76% |  |  |
+| [X] | [`proj-vectors-labels.png`](../../images/proj-vectors-labels.png) | 1264×436 | 231 | 100% (5.5″) | 1644 px | 76% | REPLACE | 2026-11-20: Rebuilt from slide 3 of `images/projections.pptx` (high-res 4200×3000 panels; PowerPoint PDF at ~314 dpi, cropped to the old framing). The red P1/P2 labels aren't on the slide; they were redrawn in Arial (#FC4242) with a matching soft shadow at the measured positions and size. Now 3792×1308, eff. ~690 dpi. |
 | [ ] | [`galton-ellipse-r.jpg`](../../images/galton-ellipse-r.jpg) | 1083×622 | 247 | 80% (4.4″) | 1316 px | 65% |  |  |
 
 ## Ch. 5: PCA & Biplots (`05-pca-biplot.qmd`) — 12 images
@@ -195,11 +195,12 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
   (`here::here("images", ...)`), and `iris-diagram.jpg` (`here::here("images/...")`).
   No other printed image was missed.
 - Rows now: **69** (69 − 8 + 8).
-- Resolved: **40** as of 2026-11-20 (**23 REPLACE**, **17 REGENERATE**). Added 2026-11-20:
+- Resolved: **44** as of 2026-11-20 (**25 REPLACE**, **19 REGENERATE**). Added 2026-11-20:
   `duncan-av-influence.png`, `dual-points-lines.png`, `outlier-demo.png`,
   `pollen-eureka1`–`4.png`, the five `tours/` images, `crime-pvPlot-1-2.png`,
-  `corrgram-renderings.png` (REGENERATE), and
-  `pca-animation-combined.jpg`, `mahalanobis.png`, `projection.png`, `pca-rotation.png` (REPLACE).
-- Unchecked: **29** (25 from the audit + 4 added).
+  `corrgram-renderings.png`, `proj-P2-vec.png`, `peng-colors.png` (REGENERATE), and
+  `pca-animation-combined.jpg`, `mahalanobis.png`, `projection.png`, `pca-rotation.png`,
+  `proj-combined.png`, `proj-vectors-labels.png` (REPLACE).
+- Unchecked: **25** (21 from the audit + 4 added).
 - Resolved (SHRINK): **0**.
 - Resolved (ACCEPT / flag to CRC): **0**.
