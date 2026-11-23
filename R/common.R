@@ -109,8 +109,38 @@ knit_hooks$set(output = function(x, options) {
     if (any(nchar(x) > n)) x = strwrap(x, width = n)
     x = paste(x, collapse = '\n')
   }
+  # PDF: Latin Modern Mono has no check/cross marks (e.g., in MVN::mvn() output),
+  # which shows up as "undefined glyph" in the printer's preflight. Replace each
+  # by a single ASCII char so that column alignment is kept.
+  if (knitr::is_latex_output()) {
+    x = gsub("✓|✔", "+", x)   # check marks
+    x = gsub("✗|✘", "x", x)   # cross marks
+  }
   hook_output(x, options)
 })
+
+# PDF figures: R's pdf() device never embeds Helvetica/Symbol, which the printer's
+# preflight rejects ("non-embedded font"). Embed them via Ghostscript as each
+# figure is written. See issues/embed-fig-fonts.R for the one-off pass over figs/.
+if (knitr::is_latex_output()) {
+  gs <- "C:/Program Files/gs/gs9.56.0/bin/gswin64c.exe"
+  if (file.exists(gs)) {
+    Sys.setenv(R_GSCMD = gs)
+    knitr::opts_chunk$set(fig.process = function(x) {
+      if (grepl("\\.pdf$", x)) {
+        tmp <- tempfile(fileext = ".pdf")
+        ok <- tryCatch({
+          grDevices::embedFonts(x, outfile = tmp,
+            options = "-dPDFSETTINGS=/prepress -dEmbedAllFonts=true -dSubsetFonts=true")
+          file.exists(tmp) && file.size(tmp) > 0
+        }, error = function(e) FALSE)
+        if (ok) file.copy(tmp, x, overwrite = TRUE)
+        unlink(tmp)
+      }
+      x
+    })
+  } else warning("Ghostscript not found: figure fonts will not be embedded")
+}
 
 # Other useful hooks?
 #  See: `test/fig-cap-glue.R` for a hook to allow use of glue::glue() in figure captions
