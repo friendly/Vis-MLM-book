@@ -13,7 +13,10 @@
 # Usage: source("issues/embed-fig-fonts.R") from the project root.
 # Re-running is safe: files with all fonts embedded are skipped.
 
-gs <- "C:/Program Files/gs/gs9.56.0/bin/gswin64c.exe"
+gs <- c(Sys.which("gswin64c"),
+        rev(sort(Sys.glob("C:/Program Files/gs/gs*/bin/gswin64c.exe"))))
+gs <- gs[nzchar(gs)][1]
+if (is.na(gs)) stop("Ghostscript (gswin64c) not found")
 Sys.setenv(R_GSCMD = gs)
 pdffonts <- Sys.which("pdffonts")
 if (!nzchar(pdffonts))

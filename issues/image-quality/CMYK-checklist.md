@@ -210,7 +210,7 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
   `corrgram-renderings.png`, `proj-P2-vec.png`, `peng-colors.png` (REGENERATE), and
   `pca-animation-combined.jpg`, `mahalanobis.png`, `projection.png`, `pca-rotation.png`,
   `proj-combined.png`, `proj-vectors-labels.png`, `Pearson1901.png`, `pca4ds-figure-2-11.png`, `Pearson1901_2.png`, `image-compression-SVD.png`, `wheres-waldo.png` (REPLACE), and `mona-pca.png`, `pca-springs-frames.jpg`, `T2-diagram.png`, `manova-diagram-anno.png`, `ANCOVA-ex.png`, `manova-response-dimensions-anno.png`, `collinearity-diagnostics-SPSS.png`, `weight-functions.jpg`, `dogfood-quartet.png`, `iris-HE2.png`, `HE-framework.png` (REGENERATE).
-- Unchecked: **4** (all listed under "Cannot find").
+- Unchecked: **4** (all listed under "Cannot find"). MF, 2026-11-23: treat these as special cases, to be dealt with later if there's time, with no guarantees. They don't block the CMYK conversion. Next steps: `cmyk-next-steps.md`.
 - Resolved (SHRINK): **0**.
 - Resolved (ACCEPT / flag to CRC): **1** --- `MF-gray.jpg` (2026-11-23; no better source exists).
 - **Independent check, 2026-11-23** (`issues/image-quality/verify-dpi-fixes.R`, results in `verify-dpi-results.csv`): re-measured every row's current file against how it prints now (current `out-width`, `layout-ncol` panels, vector PDF substitutes). All 64 REPLACE/REGENERATE rows verified: 62 at ≥ 317 dpi, 2 printed as vector PDFs (`fig-book-parts`, `1D-4D`), and every file changed on or after the July audit. Still below 300 dpi: `datasaurus-dozen.jpg` (124), `iris-diagram.jpg` (153), `tesseract-frames.png` (233), `heatmap.png` (280), plus `MF-gray.jpg` (108, accepted).

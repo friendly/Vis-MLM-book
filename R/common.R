@@ -123,8 +123,11 @@ knit_hooks$set(output = function(x, options) {
 # preflight rejects ("non-embedded font"). Embed them via Ghostscript as each
 # figure is written. See issues/embed-fig-fonts.R for the one-off pass over figs/.
 if (knitr::is_latex_output()) {
-  gs <- "C:/Program Files/gs/gs9.56.0/bin/gswin64c.exe"
-  if (file.exists(gs)) {
+  # any installed Ghostscript (versions differ between machines); newest wins
+  gs <- c(Sys.which("gswin64c"),
+          rev(sort(Sys.glob("C:/Program Files/gs/gs*/bin/gswin64c.exe"))))
+  gs <- gs[nzchar(gs)][1]
+  if (!is.na(gs) && file.exists(gs)) {
     Sys.setenv(R_GSCMD = gs)
     knitr::opts_chunk$set(fig.process = function(x) {
       if (grepl("\\.pdf$", x)) {
