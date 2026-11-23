@@ -28,7 +28,7 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 
 | Done | Image | Pixels | Eff. DPI | Printed at | Px needed @300 | Max `out-width` @300 | Action | Notes |
 |------|-------|--------|----------|------------|----------------|----------------------|--------|-------|
-| [ ] | [`MF-gray.jpg`](../../images/MF-gray.jpg) | 172×225 | 105 | 30% (1.6″) | 494 px | 10% |  |  |
+| [X] | [`MF-gray.jpg`](../../images/MF-gray.jpg) | 172×225 | 105 | 30% (1.6″) | 494 px | 10% | ACCEPT | 2026-11-23: MF has no better source for this author photo. Shrinking isn't realistic (300 dpi would need ≤10% width). Accept as is and flag to CRC; they may prefer to supply or request an author photo themselves. |
 
 ## Ch. 1: Prelude (`01-Prelude.qmd`) — 9 images
 
@@ -177,7 +177,7 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
 
 #### Cannot find
 
-- I cannot find a higher-res `images/MF-gray.jpg`
+- I cannot find a higher-res `images/MF-gray.jpg` --- MF (2026-11-23): there is no better image; ACCEPT and flag to CRC.
 - I cannot find a higher-res `images/tesseract.gif` to make a higher-res `images/tesseract-frames.png`
 - Do you have the source for `images/heatmap.png`?
 - I am not sure if a higher-res `images/datasaurus-dozen.jpg` exists
@@ -210,6 +210,7 @@ The RGB→CMYK colorspace conversion itself is a separate scripted step (ImageMa
   `corrgram-renderings.png`, `proj-P2-vec.png`, `peng-colors.png` (REGENERATE), and
   `pca-animation-combined.jpg`, `mahalanobis.png`, `projection.png`, `pca-rotation.png`,
   `proj-combined.png`, `proj-vectors-labels.png`, `Pearson1901.png`, `pca4ds-figure-2-11.png`, `Pearson1901_2.png`, `image-compression-SVD.png`, `wheres-waldo.png` (REPLACE), and `mona-pca.png`, `pca-springs-frames.jpg`, `T2-diagram.png`, `manova-diagram-anno.png`, `ANCOVA-ex.png`, `manova-response-dimensions-anno.png`, `collinearity-diagnostics-SPSS.png`, `weight-functions.jpg`, `dogfood-quartet.png`, `iris-HE2.png`, `HE-framework.png` (REGENERATE).
-- Unchecked: **5** (all listed under "Cannot find").
+- Unchecked: **4** (all listed under "Cannot find").
 - Resolved (SHRINK): **0**.
-- Resolved (ACCEPT / flag to CRC): **0**.
+- Resolved (ACCEPT / flag to CRC): **1** --- `MF-gray.jpg` (2026-11-23; no better source exists).
+- **Independent check, 2026-11-23** (`issues/image-quality/verify-dpi-fixes.R`, results in `verify-dpi-results.csv`): re-measured every row's current file against how it prints now (current `out-width`, `layout-ncol` panels, vector PDF substitutes). All 64 REPLACE/REGENERATE rows verified: 62 at ≥ 317 dpi, 2 printed as vector PDFs (`fig-book-parts`, `1D-4D`), and every file changed on or after the July audit. Still below 300 dpi: `datasaurus-dozen.jpg` (124), `iris-diagram.jpg` (153), `tesseract-frames.png` (233), `heatmap.png` (280), plus `MF-gray.jpg` (108, accepted).

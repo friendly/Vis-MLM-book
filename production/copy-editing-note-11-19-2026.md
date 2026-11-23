@@ -49,6 +49,10 @@ Checked against `pdf/Vis-MLM.pdf` (Oct. 26 build) and its log `pdf/index.log`. T
 
 - [ ] **Gavin is handling this.** (Most figures are drawn in R with RGB colours, and the PNG images are RGB. Ghostscript can convert a whole PDF to CMYK (`-sColorConversionStrategy=CMYK`), but colours shift, so check the result against the printer's profile.)
 
+- [x] **Image resolution (Gavin's `dpi-fixes`, merged 2026-11-23).** Independent check (`issues/image-quality/verify-dpi-fixes.R`): 64 of the 69 low-resolution images are fixed, now ≥ 317 dpi as printed or vector. Four still need a better source (`datasaurus-dozen.jpg`, `iris-diagram.jpg`, `tesseract-frames.png`, `heatmap.png`). The author photo `MF-gray.jpg` (About the Author, ~108 dpi) has no better source: accept as is and tell CRC.
+
+- [ ] The RGB → CMYK conversion step itself (ImageMagick → `images-cmyk/`) hasn't been run yet.
+
 ## 4. Prelims in front matter
 
 - [ ] **Nothing for us to fix: CRC supplies the prelims.** `latex/before-body.tex` has only a placeholder copyright page ("Rest of the stuff, ISBN, ... goes here"). The production team inserts the series page, title page and copyright page with ISBN. Ask Lara whether they want us to remove our placeholder or leave blank pages for them to replace.
@@ -78,7 +82,7 @@ Thanks for passing on the production team's list. We've been able to fix most of
 
 - **Figure 7.17:** fixed. The bottom graph now shows the three curves in a single panel, so the x-axis labels no longer overlap.
 
-- **RGB to CMYK:** Gavin Klorfine is working on converting the figures.
+- **RGB to CMYK:** Gavin Klorfine is working on converting the figures. He has also replaced or regenerated nearly all of the low-resolution images. The one exception I can't fix is my author photo on the About the Author page: I have no higher-resolution version. Is it acceptable as is, or would you prefer a new photo?
 
 - **Prelims:** we assume your team will insert the series, title and copyright pages. Our PDF currently has a placeholder copyright page. Should we remove it, or leave blank pages for you to replace?
 
