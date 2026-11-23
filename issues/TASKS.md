@@ -45,7 +45,35 @@ place to log new items. `Tasks-Issues.md` stays where it is as the original proj
   revisit then, and figure out which of the 5 files are genuinely active vs. which are
   one-off investigation notes that *do* belong in `issues/rcode-appendix/`.
 
+### CRC preflight list (copy-editing note, 2026-11-19)
+
+  The production team's preflight flagged five things. Full notes (causes, fixes, file:line refs) and the draft reply to Lara: `production/copy-editing-note-11-19-2026.md`; reply as Word: `production/reply-Lara-preflight.docx`.
+
+  - [x] Undefined glyphs (pp. 224, 238, 240, 360) --- 2026-11-23. `\vec{\beta}` (= `\mathbf`, no lowercase Greek) → `\boldsymbol{\beta}` in Ch 7/8; ✓/✗ in `MVN::mvn()` output replaced by `+`/`x` in PDF output via the output hook in `R/common.R`.
+
+  - [x] Non-embedded fonts (162 pages) --- 2026-11-23. R's `pdf()` doesn't embed Helvetica/Symbol. `issues/embed-fig-fonts.R` fixed the 223 figures in `figs/`; a `fig.process` hook in `R/common.R` embeds fonts in every new PDF figure (finds any installed Ghostscript).
+
+  - [x] Fig 7.17 overlapping x-axis labels --- 2026-11-23. `income*type` panel now one multiline plot.
+
+  - [ ] RGB → CMYK --- delegated to Gavin 2026-11-23 (see next item).
+
+  - [ ] Prelims --- CRC inserts them; asked Lara whether to remove our placeholder copyright page (`latex/before-body.tex`).
+
+  - [ ] Send the reply to Lara --- **on hold** until the CMYK work is checked.
+
+  - [ ] Next full build: check `index.log` has no `Missing character` lines, `pdffonts index.pdf` has no `emb no` rows, and Fig 7.17 looks right.
+
 ### Image quality: CMYK conversion + low-DPI images for CRC print submission
+
+  **Update 2026-11-23:** Gavin's `dpi-fixes` branch merged. Independently verified (`issues/image-quality/verify-dpi-fixes.R`): 64 of 69 low-DPI images fixed (≥ 317 dpi or vector). `MF-gray.jpg` accepted (no better source). Still below 300 dpi, noted as special cases with no guarantee they'll be fixed: `datasaurus-dozen.jpg`, `iris-diagram.jpg`, `tesseract-frames.png`, `heatmap.png`. Vector content in the PDF is already all CMYK; the RGB is only the ~80 raster images from `images/`. Revised plan and Gavin/MF split: `issues/image-quality/cmyk-next-steps.md` (Lua filter instead of the `img_path()` call-site rewrite; commit `images-cmyk/`). Tasks sent to Gavin: `issues/image-quality/email-Gavin-cmyk.md`.
+
+  - [ ] **Gavin:** conversion script → `images-cmyk/` (committed), Lua filter, title-page images in `latex/preamble.tex`, before/after contact sheet, full build + `pdfimages -list` acceptance test (no rgb/index/icc images).
+
+  - [ ] **MF:** review the contact sheet for colour shifts; final build; send PDF + reply to Lara.
+
+  - [ ] Optional: the four low-DPI special cases (e.g. redraw `datasaurus-dozen` from the **datasauRus** package).
+
+  *Original notes (2026-08-25), superseded by the update above:*
 
   (2026-08-25) CRC requires the final PDF in CMYK; static raster images in `images/`
   aren't converted yet, and a chunk of them are below CRC's 300 dpi print minimum.
@@ -60,14 +88,11 @@ place to log new items. `Tasks-Issues.md` stays where it is as the original proj
   85 raster images actually used in the PDF, **0/85 converted to CMYK** (82 sRGB,
   3 Gray), **69/85 flagged LOW-DPI** (below 300 dpi at their largest used print size).
 
-  - [ ] Resolve the 69 LOW-DPI images (higher-res source, re-render, or re-crop —
-        see `CMYK-checklist.md` for the per-image plan/status column)
+  - [x] Resolve the 69 LOW-DPI images --- 64 done, 1 accepted, 4 special cases (2026-11-23)
   - [ ] Run the conversion script (`cmyk-conversion-plan.md` step 5) to produce
-        `images-cmyk/` from the RGB originals
-  - [ ] Wire up the `img_path()` helper in `R/common.R` (plan step 6) so PDF output
-        picks up `images-cmyk/` automatically, HTML keeps the RGB originals
-  - [ ] Re-run `issues/image-quality/cmyk-image-audit.R` after conversion to confirm
-        0 remaining sRGB/LOW-DPI flags among PDF-embedded images
+        `images-cmyk/` from the RGB originals --- Gavin
+  - [ ] ~~Wire up the `img_path()` helper~~ → Lua filter instead (`cmyk-next-steps.md`) --- Gavin
+  - [ ] Confirm 0 RGB images in the PDF after conversion (`pdfimages -list`) --- Gavin
   - [ ] Final verification pass: Ghostscript ink-coverage check + Acrobat Pro
         Separations panel on the submission-ready PDF (`cmyk-conversion-plan.md` step 7)
 
