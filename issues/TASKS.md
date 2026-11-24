@@ -55,7 +55,7 @@ place to log new items. `Tasks-Issues.md` stays where it is as the original proj
 
   - [x] Fig 7.17 overlapping x-axis labels --- 2026-11-23. `income*type` panel now one multiline plot.
 
-  - [ ] RGB → CMYK --- delegated to Gavin 2026-11-23 (see next item).
+  - [ ] RGB → CMYK --- delegated to Gavin 2026-11-23; images converted and filter in place 2026-11-24; waiting on his test build and PR (see next item).
 
   - [ ] Prelims --- CRC inserts them; asked Lara whether to remove our placeholder copyright page (`latex/before-body.tex`).
 
@@ -67,9 +67,17 @@ place to log new items. `Tasks-Issues.md` stays where it is as the original proj
 
   **Update 2026-11-23:** Gavin's `dpi-fixes` branch merged. Independently verified (`issues/image-quality/verify-dpi-fixes.R`): 64 of 69 low-DPI images fixed (≥ 317 dpi or vector). `MF-gray.jpg` accepted (no better source). Still below 300 dpi, noted as special cases with no guarantee they'll be fixed: `datasaurus-dozen.jpg`, `iris-diagram.jpg`, `tesseract-frames.png`, `heatmap.png`. Vector content in the PDF is already all CMYK; the RGB is only the ~80 raster images from `images/`. Revised plan and Gavin/MF split: `issues/image-quality/cmyk-next-steps.md` (Lua filter instead of the `img_path()` call-site rewrite; commit `images-cmyk/`). Tasks sent to Gavin: `issues/image-quality/email-Gavin-cmyk.md`.
 
-  - [ ] **Gavin:** conversion script → `images-cmyk/` (committed), Lua filter, title-page images in `latex/preamble.tex`, before/after contact sheet, full build + `pdfimages -list` acceptance test (no rgb/index/icc images).
+  **Update 2026-11-24:** Gavin converted the images on branch `convert-CMYK` (80 files in `images-cmyk/`: 71 CMYK, PNGs wrapped as PDF; 8 grayscale) and made a contact sheet. Checked: conversion correct, colour shifts accepted. The Lua filter `filters/cmyk-images.lua` is written, tested and wired into `_quarto.yml` on master (no-op until `images-cmyk/` exists). The title-page "images" are vector diagrams with no RGB: nothing to do. Details: `cmyk-next-steps.md`.
 
-  - [ ] **MF:** review the contact sheet for colour shifts; final build; send PDF + reply to Lara.
+  - [x] **Gavin:** conversion script → `images-cmyk/` (committed on `convert-CMYK`); before/after contact sheet --- 2026-11-24.
+
+  - [x] **MF:** review the contact sheet for colour shifts --- accepted 2026-11-24.
+
+  - [x] Lua filter --- written by Claude, on master 2026-11-24.
+
+  - [ ] **Gavin:** merge master into `convert-CMYK`; full PDF build; acceptance test (`pdfimages -list` shows no rgb/index/icc images except the cover; no `Missing character` in the log; all fonts embedded); then a PR with the summary.
+
+  - [ ] **MF:** review and merge the PR; final build; send PDF + reply to Lara.
 
   - [ ] Optional: the four low-DPI special cases (e.g. redraw `datasaurus-dozen` from the **datasauRus** package).
 
