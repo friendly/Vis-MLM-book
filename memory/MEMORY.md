@@ -18,3 +18,4 @@
 - [Chapter reorder](project_chapter_reorder.md) — 21-discrim is now Ch. 15, 15-case-studies is now the Appendix; file prefixes & CLAUDE.md table are stale
 - [APA CSL group sorting](apa-csl-group-sorting.md) — multi-key `[@a; @b]` groups get re-sorted alphabetically; attach any prefix (e.g., "e.g.,") to the alphabetically-first key
 - [Verify rendered output per change](verify-rendered-output-per-change.md) — after batch source edits, check each changed location in rendered output, not just a symptom grep
+- [CRC preflight checks](project_preflight_checks.md) — after each PDF build: no "Missing character" in log, all fonts embedded, no RGB images; fixes in R/common.R hooks

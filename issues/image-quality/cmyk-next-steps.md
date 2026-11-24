@@ -2,7 +2,17 @@
 
 Follows `cmyk-conversion-plan.md` (July). Written after CRC's preflight (production note of 2026-11-19, see `production/copy-editing-note-11-19-2026.md`) flagged "various figures use RGB color".
 
-## Where things stand
+## Update 2026-11-24
+
+- **Gavin, `convert-CMYK` branch:** `issues/image-quality/convert-images-cmyk.R` converted 80 images into `images-cmyk/`. 71 are CMYK (SWOP v2, full resolution). Converted PNGs are wrapped as PDF, since PNG can't hold CMYK. 8 neutral images became grayscale. There's a manifest with source/profile checksums. Contact sheet: `issues/image-quality/cmyk-contact-sheet/cmyk-contact-sheet.pdf`. MF checked: conversion correct; colour shifts (largest: `iris-diagram`, `corrgram-renderings`, `inverse`) are normal SWOP losses and accepted.
+
+- **Lua filter done (on master):** `filters/cmyk-images.lua`, wired into `_quarto.yml` under `format: pdf: filters:`. Tested on a small document covering markdown images, `include_graphics()` (with caption, `layout-ncol` panels, `fig-align`, absolute paths), a `figs/` image, and images with no CMYK copy. It maps `.png` → `.pdf` wrappers, keeps `.jpg`/grayscale `.png`, falls back to the RGB original, and leaves HTML untouched. It does nothing until `images-cmyk/` exists, so it was safe to land first.
+
+- **Title-page images in `latex/preamble.tex`: nothing to do.** They're the vector part/chapter diagrams `figs/diagrams/*.pdf`, which contain no raster images and no RGB.
+
+- **Remaining (Gavin):** merge master into `convert-CMYK`, do a full PDF build, run the acceptance test (below), then open a PR.
+
+## Where things stand (2026-11-23)
 
 Checked on the 2026-10-26 PDF (`pdf/Vis-MLM.pdf`):
 
