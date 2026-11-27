@@ -35,10 +35,13 @@ Sys.setenv(TEXLIVE_WINDOWS_EXTERNAL_GS = "1")
 # those installed (or, at times, those on CRAN). Stop here with a clear message, rather than failing obscurely in some
 # later chapter.
 #   heplots 1.8.6: robmlm(<mlm>) method, used in Ch. 14 (on CRAN since Oct. 2026)
+#   ggbiplot 0.6.6: ggvector(angle = ), used in Ch. 5 fig-diabetes-mds
+#                   (GitHub only as of Nov. 2026; CRAN has 0.6.5)
 # NB: other packages may need the same treatment. If another case arises, add
 #     the package and minimum version here, with a note on what needs it.
 min_versions <- c(
-  heplots = "1.8.6"
+  heplots  = "1.8.6",
+  ggbiplot = "0.6.6"
 )
 too_old <- names(min_versions)[
   sapply(names(min_versions),
@@ -48,7 +51,8 @@ if (length(too_old) > 0) {
   stop("This book needs newer versions of: ",
        paste0(too_old, " (>= ", min_versions[too_old], ")", collapse = ", "),
        ". Update with install.packages(); if CRAN is not yet that recent, ",
-       "install from GitHub, e.g., remotes::install_github('friendly/heplots')")
+       "install from GitHub, e.g., ",
+       paste0("remotes::install_github('friendly/", too_old, "')", collapse = "; "))
 }
 rm(min_versions, too_old)
 
