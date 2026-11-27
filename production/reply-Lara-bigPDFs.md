@@ -1,6 +1,8 @@
 # Email to Lara: the print PDF has grown large
 
-Draft, 2026-11-27. Background notes for me follow the email.
+Draft, 2026-11-27. **Superseded:** these questions are now merged into the single reply in
+`production/reply-Lara-preflight.md` (and `.docx`). Kept for the background notes below
+the email.
 
 ---
 

@@ -58,6 +58,9 @@ together avoids this.
 - HTML → `docs/` (served to GitHub Pages)
 - TeX intermediate → `./Vis-MLM.tex` (kept because `keep-tex: true`)
 - Older PDF copies are manually archived to `pdf/`
+- **Don't routinely commit `pdf/Vis-MLM.pdf`.** Since the CMYK conversion it is ~73 MB
+  (GitHub warns over 50 MB, rejects over 100 MB), and each commit adds a permanent copy
+  to the repo history. Commit it only for versions actually sent to CRC.
 
 **PDF:** Uses xelatex + `documentclass: krantz` (CRC house style).
 - Quarto PDF build is **unreliable** — often fails with LaTeX errors.

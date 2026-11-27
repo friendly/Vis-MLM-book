@@ -55,13 +55,13 @@ place to log new items. `Tasks-Issues.md` stays where it is as the original proj
 
   - [x] Fig 7.17 overlapping x-axis labels --- 2026-11-23. `income*type` panel now one multiline plot.
 
-  - [ ] RGB → CMYK --- delegated to Gavin 2026-11-23; images converted and filter in place 2026-11-24; waiting on his test build and PR (see next item).
+  - [x] RGB → CMYK --- 2026-11-27. Gavin's PR #61 merged. Checked on `pdf/Vis-MLM.pdf` (538 pp.): images 72 CMYK, 11 gray, 1 RGB (the cover); 0 `Missing character` lines in `index.log`; all 290 fonts embedded; Fig 7.17 looks right. PDF is now ~73 MB: see `production/reply-Lara-bigPDFs.md`.
 
   - [ ] Prelims --- CRC inserts them; asked Lara whether to remove our placeholder copyright page (`latex/before-body.tex`).
 
-  - [ ] Send the reply to Lara --- **on hold** until the CMYK work is checked.
+  - [ ] Send the reply to Lara --- CMYK work checked 2026-11-27. Update the CMYK paragraph of the draft first (it still says Gavin "is working on" it), and fold in the PDF-size questions from `production/reply-Lara-bigPDFs.md`.
 
-  - [ ] Next full build: check `index.log` has no `Missing character` lines, `pdffonts index.pdf` has no `emb no` rows, and Fig 7.17 looks right.
+  - [x] Next full build: check `index.log` has no `Missing character` lines, `pdffonts index.pdf` has no `emb no` rows, and Fig 7.17 looks right --- all OK on Gavin's build, 2026-11-27.
 
 ### Image quality: CMYK conversion + low-DPI images for CRC print submission
 
@@ -75,9 +75,11 @@ place to log new items. `Tasks-Issues.md` stays where it is as the original proj
 
   - [x] Lua filter --- written by Claude, on master 2026-11-24.
 
-  - [ ] **Gavin:** merge master into `convert-CMYK`; full PDF build; acceptance test (`pdfimages -list` shows no rgb/index/icc images except the cover; no `Missing character` in the log; all fonts embedded); then a PR with the summary.
+  - [x] **Gavin:** merge master into `convert-CMYK`; full PDF build; acceptance test (`pdfimages -list` shows no rgb/index/icc images except the cover; no `Missing character` in the log; all fonts embedded); then a PR with the summary --- PR #61, 2026-11-24.
 
-  - [ ] **MF:** review and merge the PR; final build; send PDF + reply to Lara.
+  - [x] **MF:** review and merge the PR --- merged 2026-11-27.
+
+  - [ ] **MF:** send PDF + reply to Lara. Ask her first about image resolution and file size (`production/reply-Lara-bigPDFs.md`); downsample `images-cmyk/` if she gives a target ppi, then rebuild.
 
   - [ ] Optional: the four low-DPI special cases (e.g. redraw `datasaurus-dozen` from the **datasauRus** package).
 
